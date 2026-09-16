@@ -17,6 +17,28 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "bond_instrument_commands_tests.cpp"
+    "equity_accumulator_instrument_commands_tests.cpp"
+    "equity_asian_option_instrument_commands_tests.cpp"
+    "equity_barrier_option_instrument_commands_tests.cpp"
+    "equity_digital_option_instrument_commands_tests.cpp"
+    "equity_forward_instrument_commands_tests.cpp"
+    "equity_option_instrument_commands_tests.cpp"
+    "equity_position_instrument_commands_tests.cpp"
+    "equity_swap_instrument_commands_tests.cpp"
+    "equity_variance_swap_instrument_commands_tests.cpp"
+    "fx_accumulator_instrument_commands_tests.cpp"
+    "fx_asian_forward_instrument_commands_tests.cpp"
+    "fx_barrier_option_instrument_commands_tests.cpp"
+    "fx_digital_option_instrument_commands_tests.cpp"
     "fx_forward_instrument_commands_tests.cpp"
+    "fx_vanilla_option_instrument_commands_tests.cpp"
+    "fx_variance_swap_instrument_commands_tests.cpp"
+    "lifecycle_event_commands_tests.cpp"
     "main.cpp"
+    "party_role_type_commands_tests.cpp"
+    "trade_id_type_commands_tests.cpp"
+    "trade_identifier_commands_tests.cpp"
+    "trade_party_role_commands_tests.cpp"
+    "trade_type_commands_tests.cpp"
 )

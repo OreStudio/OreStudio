@@ -20,6 +20,7 @@
 #include "ores.trading.core/presentation/trade_type_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <rfl/enums.hpp>
 
 namespace ores::trading::presentation {
 
@@ -29,6 +30,7 @@ std::vector<ores::diff::domain::field_value> render_trade_type_fields(const doma
 
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Product Type", .value = rfl::enum_to_string(v.product_type)});
     fields.push_back({.name = "Has Options", .value = v.has_options ? "true" : "false"});
     fields.push_back({.name = "Has Extension", .value = v.has_extension ? "true" : "false"});
     using ores::history::domain::provenance_fields;

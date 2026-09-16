@@ -84,7 +84,7 @@ public:
                                                      std::string instrument_id);
 
     /**
-     * @brief Process an FX forward instrument history request.
+     * @brief Process the FX forward instrument history request.
      */
     static void process_get_fx_forward_instrument_history(std::ostream& out,
                                                           ores::nats::service::nats_client& session,

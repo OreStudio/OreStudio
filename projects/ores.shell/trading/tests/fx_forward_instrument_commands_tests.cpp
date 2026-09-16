@@ -50,24 +50,25 @@ void log_in(nats_client& session, const std::string& party_id) {
     session.set_auth(std::move(info));
 }
 
-// The ten positionals the add verb reads: the eight user-supplied columns
-// in column order, then the change reason and the change commentary.
+// The positionals the add verb reads: one per user-supplied column, then the
+// change reason and the change commentary.
 std::vector<std::string> add_tokens() {
-    return {"Spot",
-            "EUR",
-            "1000",
-            "USD",
-            "1100",
-            "2026-01-03",
-            "T+2",
-            "a trade",
+    return {"sample",
+            "sample",
+            "1.0",
+            "sample",
+            "1.0",
+            "sample",
+            "sample",
+            "sample",
             "reason",
             "commentary"};
 }
 
 }
 
-TEST_CASE("register_commands_registers_the_pagination_callback", tags) {
+TEST_CASE("fx_forward_instrument_commands_register_commands_registers_the_pagination_callback",
+          tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -80,7 +81,7 @@ TEST_CASE("register_commands_registers_the_pagination_callback", tags) {
     CHECK(pagination.get_list_callback("fx_forward_instruments") != nullptr);
 }
 
-TEST_CASE("process_add_requires_a_logged_in_session", tags) {
+TEST_CASE("fx_forward_instrument_commands_process_add_requires_a_logged_in_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -94,7 +95,7 @@ TEST_CASE("process_add_requires_a_logged_in_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("process_add_reports_the_expected_argument_count", tags) {
+TEST_CASE("fx_forward_instrument_commands_process_add_reports_the_expected_argument_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -102,31 +103,32 @@ TEST_CASE("process_add_reports_the_expected_argument_count", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, {"Spot"});
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, {"sample"});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a short argument list: " << out.str();
     CHECK(out.str().find("Expected 10 arguments, got 1.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("process_add_names_the_field_of_a_malformed_token", tags) {
+TEST_CASE("fx_forward_instrument_commands_process_add_names_the_field_of_a_malformed_token", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     log_in(session, valid_party_id);
     auto tokens = add_tokens();
-    tokens[2] = "not-a-number";
+    tokens[2] = "not-a-value";
     std::ostringstream out;
 
     command_feedback::reset();
     fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, tokens);
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a malformed amount: " << out.str();
-    CHECK(out.str().find("bought_amount") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Output for a malformed bought_amount: " << out.str();
+    CHECK(out.str().find("Invalid value for bought_amount") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("process_add_rejects_a_session_with_no_default_party", tags) {
+TEST_CASE("fx_forward_instrument_commands_process_add_rejects_a_session_with_no_default_party",
+          tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -141,36 +143,8 @@ TEST_CASE("process_add_rejects_a_session_with_no_default_party", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("process_delete_requires_a_logged_in_session", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    fx_forward_instrument_commands::process_delete_fx_forward_instrument(out, session, "3f2504e0");
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("process_history_requires_a_logged_in_session", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    fx_forward_instrument_commands::process_get_fx_forward_instrument_history(
-        out, session, "3f2504e0");
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("process_add_sends_a_valid_token_vector_to_the_server", tags) {
+TEST_CASE("fx_forward_instrument_commands_process_add_sends_a_valid_token_vector_to_the_server",
+          tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -182,5 +156,35 @@ TEST_CASE("process_add_sends_a_valid_token_vector_to_the_server", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("fx_forward_instrument_commands_process_delete_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_delete_fx_forward_instrument(
+        out, session, "missing-key");
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("fx_forward_instrument_commands_process_history_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_get_fx_forward_instrument_history(
+        out, session, "missing-key");
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }

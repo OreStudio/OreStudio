@@ -102,11 +102,23 @@ public:
                                                   std::string {{primary_key.column}});
 
     /**
-     * @brief Process an {{entity_singular_words}} history request.
+     * @brief Process the {{entity_singular_words}} history request.
+{{^has_audit_group}}
+     *
+     * The verb takes free-form tokens rather than the key alone, because it
+     * also answers --diff and --version.
+{{/has_audit_group}}
      */
+{{#has_audit_group}}
     static void process_get_{{entity_singular}}_history(std::ostream& out,
                                                         ores::nats::service::nats_client& session,
                                                         std::string {{primary_key.column}});
+{{/has_audit_group}}
+{{^has_audit_group}}
+    static void process_get_{{entity_singular}}_history(
+        std::ostream& out, ores::nats::service::nats_client& session,
+        const std::vector<std::string>& args);
+{{/has_audit_group}}
 };
 
 }

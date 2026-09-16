@@ -2345,6 +2345,110 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _derive_supply(col, 'minted' if _is_uuid_column(col) else 'user')
         user_supplied_count += sum(1 for col in pk_members if col['is_user_supplied'])
         domain_entity['user_supplied_count'] = user_supplied_count
+        # Shell command units read each user-supplied column from a positional
+        # token. from_token<cpp_type> serves most columns, but two kinds need
+        # their own parse: a bool arrives as the word true or false, and an
+        # enum needs the type's own _from_string, which answers with an
+        # optional instead of throwing. The short name is what the unit's
+        # "namespace domain = ores::<component>::domain;" alias leaves of the
+        # column's fully qualified cpp_type.
+        for col in domain_entity.get('columns', []) + [pk_dict] + pk_members:
+            col['is_bool'] = col.get('cpp_type') == 'bool'
+            if col.get('is_enum'):
+                col['enum_short_name'] = col.get('cpp_type', '').split('::')[-1]
+        # The bool parser is a unit-local helper, so the shell command unit
+        # only emits it when one of its columns needs it.
+        domain_entity['has_bool_columns'] = any(
+            c.get('is_bool') and c.get('is_user_supplied')
+            for c in domain_entity.get('columns', [])
+        )
+        # The add verb rejects a session whose account carries no default
+        # party only when a column reads the acting party.
+        domain_entity['has_session_party_columns'] = any(
+            c.get('is_session_party')
+            for c in pk_members + list(domain_entity.get('columns', []))
+        )
+
+        def _unwrapped_cpp_type(col):
+            cpp = (col.get('cpp_type') or '').strip()
+            if cpp.startswith('std::optional<') and cpp.endswith('>'):
+                cpp = cpp[len('std::optional<') : -1].strip()
+            return cpp
+
+        def _malformed_token_kind(col):
+            """The parse that rejects a malformed token, or None when every
+            token converts. Mirrors the shell command unit's own branch order,
+            so the tests archetype never asserts a failure the unit cannot
+            produce."""
+            if col.get('is_enum'):
+                return 'enum'
+            if col.get('cpp_type') == 'bool':
+                return 'bool'
+            # from_token maps any token onto a string, and onto a bool through
+            # a comparison that never fails.
+            if _unwrapped_cpp_type(col) in ('std::string', 'bool'):
+                return None
+            return 'value'
+
+        # A token the column's own parse accepts. It satisfies the verb's
+        # conversion, not the server's validation, because the test that reads
+        # it stops at the transport boundary.
+        _sample_tokens = {
+            'std::string': 'sample',
+            'int': '1',
+            'std::int64_t': '1',
+            'std::uint64_t': '1',
+            'double': '1.0',
+            'float': '1.0',
+            'bool': 'false',
+            'boost::uuids::uuid': '3f2504e0-4f89-11d3-9a0c-0305e82c3301',
+        }
+
+        def _sample_token(col):
+            if col.get('is_enum'):
+                # A non-nullable enum column must declare :default_value:,
+                # which org_loader normalises to a scoped expression, so its
+                # last segment names a member the parser accepts.
+                default = (col.get('default_value') or '').strip()
+                return default.split('::')[-1] if default else 'sample'
+            return _sample_tokens.get(_unwrapped_cpp_type(col), 'sample')
+
+        # The tests archetype fills one token per user-supplied column and
+        # mutates one of them to force a parse failure. Both need the column's
+        # position, and the failure case needs a column whose parse can reject
+        # a token at all. The order is the unit's read order: the primary-key
+        # members first, then the plain columns.
+        positional_index = 0
+        malformed_token_column = None
+        for col in pk_members + list(domain_entity.get('columns', [])):
+            if not col.get('is_user_supplied'):
+                continue
+            col['positional_index'] = positional_index
+            col['sample_token'] = _sample_token(col)
+            positional_index += 1
+            if malformed_token_column is None:
+                kind = _malformed_token_kind(col)
+                if kind:
+                    name = col.get('name') or col.get('column') or ''
+                    malformed_token_column = {
+                        'name': name,
+                        'positional_index': col['positional_index'],
+                        'kind': kind,
+                        'token': {
+                            'enum': 'not-a-member',
+                            'bool': 'maybe',
+                            'value': 'not-a-value',
+                        }[kind],
+                        'error': {
+                            'enum': f'Invalid {name}: ',
+                            'bool': f"{name} must be 'true' or 'false'.",
+                            'value': f'Invalid value for {name}',
+                        }[kind],
+                    }
+        domain_entity['malformed_token_column'] = malformed_token_column
+        # The add verb reads one positional per user-supplied column plus the
+        # change reason and the change commentary.
+        domain_entity['add_positional_count'] = user_supplied_count + 2
         # Auto-inject identity/audit group headers into cpp.includes.domain so
         # models only need to list their own direct (non-group-field) includes.
         if has_identity_group or has_audit_group:

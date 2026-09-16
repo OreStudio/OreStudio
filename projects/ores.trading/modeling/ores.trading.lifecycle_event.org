@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 06F0B798-F261-4BBC-974E-52A41C4AA1F0
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.lifecycle_event
 #+description: Codegen entity model for the trading =lifecycle_event= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

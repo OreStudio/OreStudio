@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D18832B9-0D51-4617-A789-AB33E14AA41A
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.party_role_type
 #+description: Codegen entity model for the trading =party_role_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.

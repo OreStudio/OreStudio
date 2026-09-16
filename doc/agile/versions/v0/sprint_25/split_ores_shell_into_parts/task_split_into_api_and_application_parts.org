@@ -8,7 +8,7 @@
 #+filetags: :split_ores_shell_into_parts:sprint_25:v0:
 #+owner: marco
 #+branch: feature/split-ores-shell-into-parts
-#+pr:
+#+pr: 2082
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-16
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2082][#2082]] | [ores.shell] Split ores.shell into api and application parts |
 
 * Review
 

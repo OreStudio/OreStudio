@@ -17,7 +17,6 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
-    "bond_instrument_commands_tests.cpp"
     "equity_accumulator_instrument_commands_tests.cpp"
     "equity_asian_option_instrument_commands_tests.cpp"
     "equity_barrier_option_instrument_commands_tests.cpp"

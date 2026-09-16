@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
 #+created: 2026-09-16
-#+updated: 2026-09-16
+#+updated: 2026-09-17
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The facet and the ores.shell.trading part are landed. Twenty-three trading units are generated into the part, the part is linked into the application, the superseded hand-written units are deleted, both documents are rewritten, and the build and the shell suites are green. Fourteen trading entities are excluded and named in the task Result, and each of the two that can be closed has its own task. |
+| Now           | The facet and the ores.shell.trading part are landed. Twenty-two trading units are generated into the part, the part is linked into the application, the superseded hand-written units are deleted, both documents are rewritten, and the build and the shell suites are green. Fifteen trading entities are excluded and named in the task Result, and each of the three that can be closed has its own task. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise the PR. The =shell= drift gate passes, and every one of the 23 units regenerates clean from its own model and the committed templates. The live check through the shell is the one item left open, because it needs the service fleet and the shell builds its menus after login. The rates protocol migration and the trade field-group grammar follow in their own tasks. |
-| Last touched  | 2026-09-16                               |
+| Next          | Raise the PR. The =shell= drift gate passes, and every one of the 22 units regenerates clean from its own model and the committed templates. The live check through the shell is the one item left open, because it needs the service fleet and the shell builds its menus after login. The rates protocol migration, the trade field-group grammar, and the container add verbs follow in their own tasks. |
+| Last touched  | 2026-09-17                               |
 
 * Acceptance
 
@@ -37,8 +37,10 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 - The trading command units in =projects/ores.shell/trading/= are codegen
   output, the hand-written units are gone from the =application= part, and the
   shell's trading surface answers as it did before.
-- The full preset build and the ctest suite are green, and the codegen drift
-  gate covers the new part.
+- The full preset build and the ctest suite are green. The units are verified
+  against their models by a direct per-entity regeneration, because no
+  component drift gate reaches an archetype that writes into another
+  component's tree.
 
 * Tasks
 
@@ -46,8 +48,9 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 |------+-------+-------+-----+-------------|
 | [[id:824C610A-E8A9-4BE2-B8A0-59527458E66B][Land the shell-command facet and the ores.shell.trading part]] | DONE | 2026-09-16 | 2026-09-16 | Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree. |
 | [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] | DONE | 2026-09-16 | 2026-09-16 | Opt the trading entities in, generate their command units into the new part, link the part into the application so the hand-written aggregator reaches them, delete the hand-written units the generated ones replace, and prove the surface with a build, the suites, and a live check through the shell. |
-| [[id:C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842][Migrate the rates instruments to the generated protocol]] | BACKLOG | | | Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 23. |
+| [[id:C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842][Migrate the rates instruments to the generated protocol]] | BACKLOG | | | Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 22. |
 | [[id:5BB7DD1E-1699-4249-97D3-F002E99D8B32][Give the trade model its field-group grammar]] | BACKLOG | | | Teach the trade entity model to state which field group each column belongs to, and teach the shell-command generator to read it, so the trade command unit can be generated. |
+| [[id:CADAD363-E952-448A-B19C-66025AEBE018][Generate container add verbs in the shell command facet]] | BACKLOG | | | The bond instrument add verb assembles a container across three services in one command: the issue, the instrument, and the engaged option or trs fact row. The facet renders one row from one entity model, so bond_instrument stays hand-written until the model and the facet can express the container. |
 
 * Decisions
 
@@ -104,6 +107,20 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
   =ores.cpp.shell-command= therefore includes
   =regenerate_physical_space_inventories.py=. The same run cleared eighteen
   pages that earlier waves had left stale.
+- *The drift gate for the units is a direct regeneration* (2026-09-17). The
+  acceptance criterion first read "the codegen drift gate covers the new
+  part". It cannot hold as written. =check_component_drift.py --component
+  shell= regenerates the composite root alone, and the units are outputs of
+  =ores.trading= entity models, so the =trading= gate is the one that would
+  reach them, and this branch forbids it. The criterion now states the gate
+  that exists: regenerate each opted-in entity at =ores.cpp.shell-command=
+  and confirm the tree is unchanged. A general check for an archetype that
+  writes into another component's tree needs its own task.
+- *A container entity stays hand-written* (2026-09-17). The facet renders one
+  row from one entity model, so it cannot express an add verb that builds the
+  =bond_issue=, the instrument, and the engaged fact row in one command.
+  =bond_instrument= is de-opted and its hand-written unit returns to the
+  application part. Task CADAD363 owns the facet change that would readmit it.
 
 * Out of scope
 

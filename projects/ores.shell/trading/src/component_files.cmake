@@ -17,7 +17,6 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
-    "app/commands/trading/bond_instrument_commands.cpp"
     "app/commands/trading/equity_accumulator_instrument_commands.cpp"
     "app/commands/trading/equity_asian_option_instrument_commands.cpp"
     "app/commands/trading/equity_barrier_option_instrument_commands.cpp"
@@ -44,7 +43,6 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/bond_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"

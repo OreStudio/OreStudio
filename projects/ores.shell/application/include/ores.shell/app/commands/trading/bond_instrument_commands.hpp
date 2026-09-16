@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SHELL_APP_COMMANDS_BOND_INSTRUMENT_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_BOND_INSTRUMENT_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_TRADING_BOND_INSTRUMENT_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_TRADING_BOND_INSTRUMENT_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -36,7 +35,7 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Manages commands related to bond instruments.
+ * @brief Manages commands related to BOND INSTRUMENTS.
  */
 class bond_instrument_commands {
 private:
@@ -51,7 +50,7 @@ private:
 
 public:
     /**
-     * @brief Register bond instrument related commands.
+     * @brief Register bond-instrument related commands.
      */
     static void register_commands(cli::Menu& root_menu,
                                   ores::nats::service::nats_client& session,
@@ -67,14 +66,39 @@ public:
     /**
      * @brief Process an add bond instrument request.
      *
-     * The value arguments arrive as free-form tokens and are parsed in the
-     * body. A per-argument typed handler builds one template instantiation
-     * per argument count, which the Windows clang toolchain cannot mangle
-     * beyond a few dozen arguments.
+     * Add assembles the family rows of the reshaped bond model: one
+     * fresh issue row (minted issue_id) holding the bond terms, the
+     * slim instrument row pinned to that issue_id, and the engaged
+     * fact row of the product (bond_option for option_type,
+     * bond_trs for trs_return_type). The rows persist in that order
+     * through the per-entity save services; the issue row is saved
+     * first so the instrument's issue_id names a stored issue. The
+     * instrument id is minted client-side; the tenant and party
+     * scope come from the logged-in session. The audit change fields
+     * arrive as the trailing arguments, matching the reference-entity
+     * add verbs.
+     *
+     * The four add arguments whose wide columns have no row in this
+     * wave leave the surface: call_date, future_expiry_date,
+     * option_expiry_date and the ascot option type.
      */
     static void process_add_bond_instrument(std::ostream& out,
                                             ores::nats::service::nats_client& session,
-                                            const std::vector<std::string>& args);
+                                            std::string trade_type_code,
+                                            std::string security_id,
+                                            std::string issuer,
+                                            std::string currency,
+                                            double face_value,
+                                            double coupon_rate,
+                                            std::string coupon_frequency_code,
+                                            std::string day_count_code,
+                                            std::string issue_date,
+                                            std::string trs_return_type,
+                                            std::string trs_funding_leg_code,
+                                            std::string option_type,
+                                            std::string option_strike,
+                                            std::string change_reason_code,
+                                            std::string change_commentary);
 
     /**
      * @brief Process a delete bond instrument request.
@@ -84,7 +108,11 @@ public:
                                                std::string instrument_id);
 
     /**
-     * @brief Process the bond instrument history request.
+     * @brief Process an bond instrument history request.
+     *
+     * Unlike the reference entities, instruments have no ores.history
+     * provider: history renders over the per-product subject, so the
+     * diff flags are not offered.
      */
     static void process_get_bond_instrument_history(std::ostream& out,
                                                     ores::nats::service::nats_client& session,

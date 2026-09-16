@@ -269,6 +269,10 @@ diff, which is the codegen engine, the three facet templates, the model
 opt-ins, the link, and the =trade_type= mapper changes. The generated
 half is 23 units and their tests, and the build and the suite cover it.
 
+Row 6 records the GitHub review round on PR #2084. That finding arrived
+after the local pass and changed the unit count, so the Result below
+reads 22 where the local pass read 23.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The generated help and confirmation prose differs from the hand-written units it replaces: the success lines lowercase the entity name, the add usage string names the raw columns, and one debug log line drops the key | the 23 units | Declined | The generator standardises the wording across all 23 units. The claim the wave measured is about submenu names and verb shapes, and both are unchanged. |
@@ -276,23 +280,23 @@ half is 23 units and their tests, and the build and the suite cover it.
 | 3 | =has_bool_columns= scans the plain columns while the malformed-token loop scans the primary key and the plain columns, so a user-supplied bool primary-key member would generate a unit that calls =parse_flag= without emitting it | =core.py= | Declined | Unreachable today. No primary key in the estate is a bool; the keys are a uuid or a code. Recorded for the facet's hardening. |
 | 4 | =rfl::string_to_enum(...).value()= throws when the stored text is not an enumerator | =trade_type_mapper.cpp= | Declined | The idiom the marketdata and synthetic repository mappers already use, and the value comes from our own column. |
 | 5 | =misspell-fixer .= exits 1 | two =update-ore-to-v17= task records | Declined | Pre-existing and deliberate: both quote the upstream identifier =LOAD_PROFILE_1_EXPLICT=, and correcting it would make the record false. An isolated run over this diff's files reports "nothing to replace". |
+| 6 | The generated =bond_instruments add= takes 6 arguments and saves one =bond_instrument= row with a pre-existing =issue_id=. The deleted hand-written unit took 15 arguments and built the whole container: the =bond_issue=, the instrument, and the engaged =bond_option= or =bond_trs= fact row, across three services. The generated verb cannot create a bond. | the generated =bond_instrument= unit, against =trading_bond_relational_model.org:584= | Accepted | Verified against =git show 45a5746a84^:<unit>=, the generated unit, the caller, and the 23 model opt-ins. The finding is correct and the generated verb is not a substitute. =bond_instrument= is de-opted, its three generated files are deleted, the hand-written unit returns to =ores.shell.application=, and the fourth exclusion group below records it. The container shape is CADAD363, a new task on this story. |
 
 * Result
 
-Step 4 delivered 23 generated command units into
+Step 4 delivered 22 generated command units into
 =projects/ores.shell/trading/=, each with a header, an implementation, and a
 test file. The set is the 16 instrument units that have a generated protocol
-(=bond_instrument= plus the 10 equity and 6 fx instruments, one of which is
-the =fx_forward_instrument= probe), and the 6 shape-two units
-(=lifecycle_event=, =party_role_type=, =trade_identifier=, =trade_id_type=,
-=trade_party_role=, =trade_type=).
+(the 9 equity and 7 fx instruments, one of which is the =fx_forward_instrument=
+probe), and the 6 shape-two units (=lifecycle_event=, =party_role_type=,
+=trade_identifier=, =trade_id_type=, =trade_party_role=, =trade_type=).
 
-The build is green. =compass build ores.shell.trading.tests= compiles all 23
+The build is green. =compass build ores.shell.trading.tests= compiles all 22
 units and links the test binary. =compass test run -- -R ores.shell.trading=
 reports 100 per cent passed, 1 of 1 test, in 151 seconds.
 
-The hand-written surface serves 37 entity units. Fourteen are excluded, in
-three groups, and none of the three can be closed on this branch.
+The hand-written surface serves 37 entity units. Fifteen are excluded, in
+four groups, and none of the four can be closed on this branch.
 
 - **Four instruments have no model.** =commodity_instrument=,
   =composite_instrument=, =credit_instrument= and =scripted_instrument= carry
@@ -329,21 +333,31 @@ three groups, and none of the three can be closed on this branch.
   carries no property the generator reads. A shell-command unit for =trade=
   needs the model to state each column's group.
 
+- **=bond_instrument= needs a container add verb.** The facet renders one row
+  from one entity model. The bond add builds four rows across three services:
+  the =bond_issue= that holds every term, the slim instrument that pins the
+  trade to that issue, and the engaged =bond_option= or =bond_trs= fact row.
+  The generated verb would save one instrument row and demand an =issue_id=
+  that nothing else in the shell or Qt creates, so it cannot create a bond at
+  all. This entity was opted in and generated in step 4; the review round
+  below de-opted it and returned the hand-written unit. The container shape is
+  CADAD363, a new task on this story.
+
 The =protocol_include= mechanism built for the rates group was reverted once
 the group was excluded. With no consumer left it was speculative machinery.
 =core.py= returned to its task #186 state and both archetypes returned to
 their task #187 state. =fx_forward_instrument= regenerated byte-identical
 after the revert, which is the evidence that the refactor was
-behaviour-preserving for the 23 units.
+behaviour-preserving for the 22 units.
 
 The part's file lists were regenerated with
 =regenerate_cmake_component_files.py --component ores.shell.trading=, so they
-list 23 units and no rates files.
+list 22 units and no rates files.
 
 ** Steps 5 and 6, the swap
 
-The 23 superseded hand-written units and their headers are deleted from
-=ores.shell.application=, leaving 16 trading files: the 14 units that cannot
+The 22 superseded hand-written units and their headers are deleted from
+=ores.shell.application=, leaving 17 trading files: the 15 units that cannot
 be generated, the =ore_commands.cpp= unit, and the =trading_commands.cpp=
 aggregator.
 
@@ -368,7 +382,7 @@ hand-written trading units had no tests.
 
 The shell surface is unchanged, measured three ways.
 
-- All 23 submenu names in the generated units are byte-identical to the names
+- All 22 submenu names in the generated units are byte-identical to the names
   in the hand-written units they replace, compared against =git show HEAD:<file>=.
 - No submenu name appears twice across the 38 names registered under
   =app/commands/trading/= in both parts, which are the 37 entity submenus plus
@@ -382,6 +396,12 @@ The build is green for =ores.shell.exe=, =ores.qt.exe=,
 =compass test run -- -R ores.shell= reports 100 per cent passed, 0 failed out
 of 3, in 198.97 seconds.
 
+The round below re-ran the full preset build and the same suite after the bond
+restore. The build reaches =ores.qt.exe= with no error, and
+=compass test run -- -R ores.shell= reports 100 per cent passed, 0 failed out
+of 3, in 194.94 seconds. =regenerate_cmake_component_files.py --all --check=
+reports "All component_files.cmake up to date."
+
 ** Step 8, the drift gates
 
 =check_component_drift.py --component shell= passes on the committed tree:
@@ -389,18 +409,24 @@ of 3, in 198.97 seconds.
 
 That gate is weaker than it looks, and the weakness is worth stating. The run
 reports "Regenerating 1 models for component 'shell'" and writes only
-=projects/ores.shell/CMakeLists.txt=, the composite root. The 23 units are
+=projects/ores.shell/CMakeLists.txt=, the composite root. The 22 units are
 not shell models. They are outputs of =ores.trading= entity models, so no
 regeneration of the =shell= component can reach them, and the =trading=
 component is the one this branch forbids.
 
-The gate for the units is therefore a direct one: regenerate each of the 23
+The gate for the units is therefore a direct one: regenerate each of the 22
 entities from its model at =ores.cpp.shell-command=, then check the tree. The
-run wrote 69 files and left =git status= empty, so every committed unit is
+run wrote 66 files and left =git status= empty, so every committed unit is
 byte-identical to what the generator produces from the committed model and
 the committed templates. A general form of this check needs its own task,
 because under the current registry no component gate covers an archetype that
 writes into another component's tree.
+
+The round below re-ran both gates over the 22 units and the de-opted model.
+The regeneration wrote the same 66 files and touched nothing else, so the
+units still match their models. The =shell= gate then reported drift on
+exactly the round's own edits and nothing more, which is what it should
+report while those edits are uncommitted.
 
 The live check is the one item still open. It needs the service stack, and
 the shell builds its menus after login, so it cannot run against a bare
@@ -411,4 +437,4 @@ registered twice, one call from the REPL host reaches every trading unit, and
 the build and the shell suites are green. The drift criterion holds for the
 composite root and for the units, by the two runs above. The criterion "every
 trading entity the hand-written surface serves has a generated unit" is not
-met for the 14 named above, and the live check is still open.
+met for the 15 named above, and the live check is still open.

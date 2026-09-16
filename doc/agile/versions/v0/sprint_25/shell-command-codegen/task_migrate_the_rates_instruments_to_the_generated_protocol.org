@@ -2,7 +2,7 @@
 :ID: C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842
 :END:
 #+title: Task: Migrate the rates instruments to the generated protocol
-#+description: Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 23.
+#+description: Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 22.
 #+type: task
 #+level: s1
 #+filetags: :shell-command-codegen:sprint_25:v0:

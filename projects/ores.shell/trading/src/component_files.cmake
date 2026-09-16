@@ -17,21 +17,10 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
-    "app/command_args.cpp"
-    "app/command_feedback.cpp"
-    "app/commands/history_diff_renderer.cpp"
-    "app/pagination_context.cpp"
+    "app/commands/trading/fx_forward_instrument_commands.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_args.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_feedback.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_token.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/history_diff_renderer.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/ores.shell.app.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/pagination_context.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/request_helpers.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/fx_forward_instrument_commands.hpp"
 )

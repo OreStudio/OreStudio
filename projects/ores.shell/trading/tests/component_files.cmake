@@ -17,7 +17,6 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
-    "app_command_args_tests.cpp"
-    "app_command_token_tests.cpp"
+    "fx_forward_instrument_commands_tests.cpp"
     "main.cpp"
 )

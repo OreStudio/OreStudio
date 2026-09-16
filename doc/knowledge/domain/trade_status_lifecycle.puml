@@ -18,7 +18,7 @@
 @startuml
 !pragma layout smetana
 
-title Internal machine: the operational workflow
+title Trade lifecycle
 
 skinparam state {
     BackgroundColor #D6E8FA
@@ -41,8 +41,8 @@ skinparam DefaultFontColor #1A1A1E
 state "booked" as Booked
 state "verified" as Verified
 state "live" as Live
-state "expired" as Expired #E8D9F0 ##[bold]7A4B93
-state "cancelled" as Cancelled #E8D9F0 ##[bold]7A4B93
+state "expired" as Expired
+state "cancelled" as Cancelled
 
 Booked : Recorded in our books
 Verified : Our record matches the execution
@@ -66,17 +66,10 @@ note right of Verified
 end note
 
 note bottom of Live
-  A trade carries risk from the moment
-  it is released into the book, whether
-  or not its terms have been confirmed.
-  Confirmation does not appear in this
-  machine at all.
-end note
-
-note right of Cancelled
-  Shared states, marked in both figures.
-  Cancel and Expire are broadcast to both
-  machines and terminate each.
+  A trade carries risk from the moment it
+  is released into the book, whether or not
+  its terms have been confirmed. Confirmation
+  belongs to its own lifecycle.
 end note
 
 @enduml

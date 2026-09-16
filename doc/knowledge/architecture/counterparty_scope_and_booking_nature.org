@@ -139,21 +139,20 @@ which transitions exist rather than in which reports remember to
 filter. An intra-entity trade cannot settle by accident, because its
 machine holds no transition that would settle it.
 
-[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] sets out two machines rather than one. The internal
-machine carries every trade from =booked= through =verified= to
-=live=; the external machine carries the confirmation state of a trade
-faced outward, from =unconfirmed= to =confirmed=.
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] sets out two lifecycles rather than one. The trade
+lifecycle carries every trade from =booked= through =verified= to
+=live=. The confirmation lifecycle carries what has been agreed with a
+counterparty, from =unconfirmed= to =confirmed=.
 
 The two dimensions on this page decide one thing in that arrangement:
-whether a trade runs the external machine at all. A trade faced
-outward has terms to agree, so it does. An intra-entity transfer, a
-test booking or a hypothetical has nobody to agree with, so it does
-not.
+where the confirmation lifecycle starts. A trade faced outward has
+terms to agree, so it starts at =unconfirmed=. An intra-entity
+transfer, a test booking or a hypothetical has nobody to agree with,
+so it starts at =not_required= and stays there.
 
-The internal machine is unaffected either way. It reaches =live= on
+The trade lifecycle is unaffected either way. It reaches =live= on
 Activate without consulting anything, so every trade is live once
-released into the book, whatever its confirmation status and whether
-or not it has one.
+released into the book, whatever its confirmation status.
 
 The machinery runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its

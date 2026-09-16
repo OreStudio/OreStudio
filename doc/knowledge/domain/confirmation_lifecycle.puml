@@ -18,7 +18,7 @@
 @startuml
 !pragma layout smetana
 
-title External machine: the confirmation workflow
+title Confirmation lifecycle
 
 skinparam state {
     BackgroundColor #E3F0DC
@@ -38,36 +38,25 @@ skinparam note {
 skinparam BackgroundColor white
 skinparam DefaultFontColor #1A1A1E
 
+state "not required" as NotRequired #EFEFEF ##[bold]888888
 state "unconfirmed" as Unconfirmed
 state "queried" as Queried
 state "affirmed" as Affirmed
 state "confirmed" as Confirmed
-state "cancelled" as Cancelled #E8D9F0 ##[bold]7A4B93
-state "expired" as Expired #E8D9F0 ##[bold]7A4B93
 
+NotRequired : Nobody to agree terms with
 Unconfirmed : Terms not yet agreed
 Queried : The two records differ
 Affirmed : Both sides agree the terms
 Confirmed : Binding written record
-Cancelled : Nothing left to agree
-Expired : The contract has ceased
 
-[*] --> Unconfirmed : Book
-Unconfirmed --> Affirmed : Affirm
+[*] --> NotRequired : Book [no counterparty]
+[*] --> Unconfirmed : Book [faces a counterparty]
 Unconfirmed --> Queried : Query
+Unconfirmed --> Affirmed : Affirm
 Queried --> Affirmed : Resolve
 Affirmed --> Confirmed : Confirm
 Confirmed --> Unconfirmed : Amend
-Unconfirmed --> Cancelled : Cancel
-Queried --> Cancelled : Cancel
-Affirmed --> Cancelled : Cancel
-Confirmed --> Cancelled : Cancel
-Unconfirmed --> Expired : Expire / Mature / Exercise
-Queried --> Expired : Expire / Mature / Exercise
-Affirmed --> Expired : Expire / Mature / Exercise
-Confirmed --> Expired : Expire / Mature / Exercise
-Cancelled --> [*]
-Expired --> [*]
 
 note right of Confirmed
   Confirmed as of an external version.
@@ -77,16 +66,26 @@ note right of Confirmed
 end note
 
 note left of Unconfirmed
-  An unconfirmed trade is a
-  counterparty risk: the terms are
-  not enforceable in the form the
-  parties agreed.
+  An unconfirmed trade is a counterparty
+  risk: the terms are not enforceable in
+  the form the parties agreed. It is not
+  a reason to withhold the trade from
+  risk and P&L.
 end note
 
-note right of Cancelled
-  Shared states, marked in both figures.
-  Cancel and Expire are broadcast to both
-  machines and terminate each.
+note bottom of Affirmed
+  No state here is terminal. When the
+  trade expires or is cancelled this
+  lifecycle stops, and the status keeps
+  its last value, which still records
+  whether the trade was ever confirmed.
+end note
+
+note right of NotRequired
+  The default. An intra-entity transfer,
+  a test booking or a hypothetical stays
+  here for its whole life. Every trade
+  has a status; none is null.
 end note
 
 @enduml

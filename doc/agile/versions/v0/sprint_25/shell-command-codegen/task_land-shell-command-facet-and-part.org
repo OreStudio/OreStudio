@@ -8,7 +8,7 @@
 #+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
 #+owner: marco
 #+branch: feature/shell-command-facet-and-part
-#+pr:
+#+pr: 2083
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-16
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2083][#2083]] | [ores.shell] Land the shell-command facet and the trading part |
 
 * Review
 

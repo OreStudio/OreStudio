@@ -19,22 +19,53 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/trading/fx_forward_instrument_commands.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+using ores::nats::service::nats_client;
+using ores::shell::app::command_feedback;
+using ores::shell::app::pagination_context;
+using ores::shell::app::commands::fx_forward_instrument_commands;
+using namespace ores::logging;
 
 namespace {
 
 const std::string_view test_suite("ores.shell.trading.tests");
 const std::string tags("[commands]");
 
+const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+
+void log_in(nats_client& session, const std::string& party_id) {
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    info.default_party_id = party_id;
+    session.set_auth(std::move(info));
 }
 
-using ores::nats::service::nats_client;
-using ores::shell::app::pagination_context;
-using ores::shell::app::commands::fx_forward_instrument_commands;
-using namespace ores::logging;
+// The ten positionals the add verb reads: the eight user-supplied columns
+// in column order, then the change reason and the change commentary.
+std::vector<std::string> add_tokens() {
+    return {"Spot",
+            "EUR",
+            "1000",
+            "USD",
+            "1100",
+            "2026-01-03",
+            "T+2",
+            "a trade",
+            "reason",
+            "commentary"};
+}
+
+}
 
 TEST_CASE("register_commands_registers_the_pagination_callback", tags) {
     auto lg(make_logger(test_suite));
@@ -47,4 +78,109 @@ TEST_CASE("register_commands_registers_the_pagination_callback", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Looking up the pagination callback for fx_forward_instruments.";
     CHECK(pagination.get_list_callback("fx_forward_instruments") != nullptr);
+}
+
+TEST_CASE("process_add_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_add_reports_the_expected_argument_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, {"Spot"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a short argument list: " << out.str();
+    CHECK(out.str().find("Expected 10 arguments, got 1.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_add_names_the_field_of_a_malformed_token", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    auto tokens = add_tokens();
+    tokens[2] = "not-a-number";
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, tokens);
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a malformed amount: " << out.str();
+    CHECK(out.str().find("bought_amount") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_add_rejects_a_session_with_no_default_party", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, "");
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an account with no default party: " << out.str();
+    CHECK(out.str().find("no default party") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_delete_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_delete_fx_forward_instrument(out, session, "3f2504e0");
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_history_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_get_fx_forward_instrument_history(
+        out, session, "3f2504e0");
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("process_add_sends_a_valid_token_vector_to_the_server", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_forward_instrument_commands::process_add_fx_forward_instrument(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
 }

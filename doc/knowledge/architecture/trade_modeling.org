@@ -302,6 +302,7 @@ or page.
 * See also
 
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — who the firm faces, and whether anything happened.
+- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the contract shape a product type takes; aggregation rather than trade definition.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — what a trade needs to be valued, and a candidate relation against the trade.
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over deals, which has no identity of its own.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, one per =TradeType=.

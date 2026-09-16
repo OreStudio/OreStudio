@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 936ACDC4-830B-434E-82E7-A92276869869
+:END:
+#+title: Product Family
+#+description: The third classification a product type carries: its contract shape, independent of asset class, so that all swaps or all options can be seen across markets.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:refdata:taxonomy:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+A product type carries three independent classifications, and this document
+covers the third.
+
+| Classification | Answers | Authority |
+|----------------+---------+-----------|
+| *Product type* | What exactly is this? | ORE's =TradeType=, one to one |
+| *Asset class* | Which market does it reference? | Our own taxonomy, informed by analysis |
+| *Product family* | What shape of contract is it? | Our own taxonomy, described here |
+
+A *product family* is the contract shape a product type takes, stated
+independently of the market it references: a swap, an option, a forward, a
+future. It exists so that every swap can be seen across markets, or every
+option, which neither of the other two classifications permits. The product
+type is too fine, since =FxForward= and =CommodityForward= are separate values.
+The asset class is orthogonal, since it answers a different question.
+
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] covers the second classification, and its reasoning is not
+repeated here.
+
+* Why the families are ours rather than ISDA's
+
+The ISDA product taxonomy is the obvious source for this classification, and it
+does not supply one.
+
+Its values are colon-separated paths whose first segment is an asset class. The
+second segment looks like a contract shape when read through the interest rate
+or equity branches, which offer =IRSwap=, =Option= and =Forward=. Read across
+all five branches it is not a shape at all, because each asset class cuts the
+second level along a different kind of distinction.
+
+| Asset class | Second-level values | The distinction drawn |
+|-------------+---------------------+-----------------------|
+| InterestRate | CapFloor, CrossCurrency, Exotic, Forward, FRA, IRSwap, Option | Contract shape, with a complexity band |
+| Credit | Index, IndexTranche, SingleName, Swaptions, TotalReturnSwap, Exotic | Reference entity cardinality |
+| Equity | ContractForDifference, Forward, Option, PortfolioSwap, Swap, Other | Contract shape, with a catch-all |
+| ForeignExchange | Spot, Forward, NDF, NDO, VanillaOption, SimpleExotic, ComplexExotic | Shape, with complexity bands |
+| Commodity | Agricultural, Energy, Environmental, Freight, Metals, Index | Market segment |
+
+Commodity settles it. =Agricultural= and =Metals= are markets, not contract
+shapes, so no reading of the level yields a shape taxonomy. Credit cuts by how
+many reference entities a contract names; FX cuts by complexity. Even where
+shapes do appear the naming is inconsistent across branches, since interest
+rates carry =IRSwap= where equity carries =Swap=.
+
+Nor is the level abstract in the sense needed here: it is defined per asset
+class rather than across them, so two branches may use one word for different
+cuts or two words for one cut without contradiction.
+
+The families described here are therefore ORE Studio's own, derived by
+observing what the product types have in common. ISDA's taxonomy is prior art
+that declined to abstract at this level, and the reason is visible in the table
+above: each asset class had a more useful second cut available to it.
+
+* Registering ISDA as a scheme
+
+Declining to adopt ISDA's values is not declining to record them. The taxonomy
+is a published coding scheme, and the same treatment already applied to FpML's
+asset class scheme applies here: register the scheme, hold its values, and map
+them to the product type.
+
+That gives a product type a set of external classifications alongside its
+internal ones, each attributed to the authority that issued it.
+[[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] covers the mechanism.
+
+The mapping is what a consumer needs. A trade reported under a regime that
+requires an ISDA taxonomy value obtains it by mapping from its product type,
+rather than by the product type being expressed in ISDA's vocabulary.
+
+* The families
+
+Surveying the product types by the shape their names carry gives the following
+distribution.
+
+| Family | Product types | Examples |
+|--------+---------------+----------|
+| Option | 52 | =EquityOption=, =FxDigitalOption=, =CommodityAsianOption= |
+| Swap | 26 | =Swap=, =EquitySwap=, =CommoditySwap= |
+| Forward | 5 | =FxForward=, =CommodityForward=, =BondForward= |
+| Position | 5 | =EquityPosition=, =BondPosition=, =CommodityPosition= |
+| Swaption | 2 | =Swaption=, =CommoditySwaption= |
+| Future | 1 | =BondFuture= |
+| Repo | 1 | =BondRepo= |
+
+The distribution is itself informative. Options and swaps account for most of
+the catalogue, which is what makes the classification worth holding: a question
+about options spans fifty-two product types and five markets, and neither of
+the other classifications can express it.
+
+The remaining product types do not fall into a shape by name, and the families
+above are a survey rather than a settled enumeration. Establishing the complete
+list, and deciding whether a family such as =Position= is a contract shape at
+all, is work this document scopes rather than performs.
+
+* What a family is not
+
+** It is not a construction method
+
+=CompositeTrade= and =ScriptedTrade= describe how a payoff is expressed rather
+than what shape of contract it is. A scripted FX option remains an option, and
+a composite trade is a container whose contents determine its characteristics.
+
+Construction is a fourth, independent attribute. A product type is natively
+implemented, expressed as a script, or a container, and that fact is orthogonal
+to its family and to its asset class alike.
+
+** It is not an asset class
+
+The two are independent by construction, which is the point of holding both. An
+option exists in every market and a market contains most shapes, so the
+classification is a grid rather than a hierarchy.
+
+The current =product_type= column conflates them. Its values mix asset classes
+(=fx=, =bond=, =credit=, =equity=, =commodity=), one contract shape (=swap=)
+and two construction methods (=composite=, =scripted=), which is three axes in
+one attribute and the reason no value fits every product type cleanly.
+
+* Relation to the present effort
+
+Neither this classification nor the external schemes are required to model
+trades and their related entities.
+
+A product family serves aggregation and reporting: it answers questions about
+the catalogue rather than participating in the definition of a trade. A trade
+is complete without it, because its product type already determines everything
+the family could tell you.
+
+The same holds for the regulatory buckets described in
+[[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][regulatory risk buckets]]. Those are published enumerations that should be
+registered as schemes and mapped to the product type in the same way as ISDA's
+taxonomy, rather than adopted into any internal taxonomy.
+
+Both are therefore recorded here as work that follows the trade modelling
+effort rather than blocking it. [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] sets out the entities that
+effort covers.
+
+* Open questions
+
+- Whether =Position= is a contract shape. A position in a security is arguably
+  a holding rather than a contract, and grouping it with swaps and options may
+  say more about naming convention than about the domain.
+- How a product type with no shape in its name is classified, and whether the
+  family is derived from the name at all or asserted per product type.
+- Whether construction is a boolean, a small enumeration, or several
+  independent flags, given that a trade may be both composite and contain
+  scripted components.
+- Which external schemes are worth registering beyond ISDA's taxonomy and the
+  regulatory enumerations.
+
+* Sources
+
+The ISDA product taxonomy values are read from the FpML coding scheme at
+[[https://www.fpml.org/coding-scheme/product-taxonomy][fpml.org]], retrieved on 16 September 2026, by extracting every second path
+segment and grouping by asset class.
+
+The product type distribution is derived from
+=trading_trade_types_populate.sql= by matching the shape word terminating each
+code, which is a survey of naming convention rather than an authoritative
+classification.
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the second classification a product type carries.
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — published enumerations to be registered and mapped, not adopted.
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the catalogue these classifications apply to.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — the mechanism for holding an external scheme's values.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the entities a trade is built from.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -12,14 +12,13 @@
 
 * Overview
 
-ORE Studio models the operational state of a trade using a finite state machine
-(FSM). This document describes the FSM design: the states a trade can be in, the
-events that cause transitions between states, and the full taxonomy of trade
-activity types used for P&L attribution and reporting.
+A trade's operational state follows a finite state machine. This document
+describes that machine: the states a trade can be in, the events that cause
+transitions between them, and the taxonomy of activity types used for P&L
+attribution and reporting.
 
-The FSM is implemented using the generic state machine infrastructure in
-[[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]], which provides the database tables =ores_dq_fsm_machines_tbl=,
-=ores_dq_fsm_states_tbl=, and =ores_dq_fsm_transitions_tbl=.
+[[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade status FSM implementation]] covers how the machine is held
+in the database.
 
 * Two Core Concepts
 

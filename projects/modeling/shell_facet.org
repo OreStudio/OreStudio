@@ -2,69 +2,145 @@
 :ID: E38360B6-99FF-4AF0-937F-58F31BD573F5
 :END:
 #+title: Shell facet
-#+description: The shell facet of the MASD entity model: REPL command registration, message-based communication, and operation shapes for ores.shell entity commands.
+#+description: The shell facet of the MASD entity model: the ores.cpp.shell-command codegen facet, the command unit it emits, and the per-component adapter part that receives it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:masd:facet:modeling:shell:entity:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-09-16
 
-Shell entity commands live in =ores.shell= under
-=src/app/commands/{entity}_commands.cpp=. Each entity gets a
-commands class with a static =register_commands= method that creates
-a submenu and registers operations; all handlers are static methods
-that communicate with the server via a =client_session=. Phase 1
-delivers list + add; Phase 2 delivers history; Phase 3 adds recipe
-docs. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+An entity's shell commands are codegen output. The =ores.cpp.shell-command=
+facet emits one command unit per entity: a submenu that carries the =get=,
+=add=, =delete= and =history= verbs. The entity opts in from its own model,
+and the unit lands in the adapter part named for the entity's component.
 
-* Codegen gap
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-⚠ *No codegen profile exists for this layer.* Before creating shell
-commands for any new entity:
+* The facet
 
-1. Create mustache templates in =projects/ores.codegen/library/templates/=.
-2. Add the new facet's node to the =ores.shell= physical-space graph (=compass add facet=) with its Archetypes table.
-3. Validate against an existing entity (e.g. =currency=).
-4. Only then use codegen to generate the layer.
+| Field | Value |
+|---|---|
+| Facet | =ores.cpp.shell-command= |
+| Model type | =domain_entity= |
+| Level | =cross= |
+| Default | disabled |
+| Archetypes | =command_header=, =command_implementation=, =command_tests= |
 
-Until the profile exists, see the recipes for the manual path — but
-treat this as a workaround, not the target state.
+The facet is disabled by default, so an entity receives a unit only when its
+model asks for one. The three archetypes are all per-entity, and each entity
+owns its own three files.
 
-* Command class layout
+* Opting an entity in
 
-The commands class is all-static.  It carries an
-=inline static std::string_view logger_name= with the fully-qualified
-logger path and a static =lg()= accessor.  =register_commands= takes
-a =cli::Menu&= root and a =client_session&=; it inserts a submenu and
-registers one lambda per operation.  Each operation is a separate
-static =process_*= method.
+Add one property to the top-level properties drawer of the entity model,
+beside =:ID:=:
 
-* Registration in register_commands
+#+begin_src org
+:PROPERTIES:
+:ID: <uuid>
+:ores.cpp.shell-command.enabled: true
+:END:
+#+end_src
 
-Create a named submenu via =root_menu.Insert("{entities}")=.  Insert
-each operation by name with a capturing lambda that calls the
-corresponding =process_*= method.  Call =register_commands= once from
-=src/app/application.cpp= during startup.
+Then generate the unit:
 
-* Operation shapes
-
-| Operation | Menu path | Notes |
-|---|---|---|
-| List | ={entities} list= | Displays table via table I/O streaming |
-| Add | ={entities} add <params>= | Sends create request; displays confirmation |
-| History | ={entities} history <id>= | Shows all versions of a single entity |
-| Delete | ={entities} delete <key>= | Soft-delete; displays confirmation |
+#+begin_src sh
+./compass.sh codegen generate --model projects/ores.<component>/modeling/ores.<component>.<entity>.org --address ores.cpp.shell-command
+#+end_src
 
 * File locations
 
+The unit belongs to the adapter part named for its component, not to
+=ores.shell.application=.
+
 | File | Path |
 |---|---|
-| Header | =include/ores.shell/app/commands/{entity}_commands.hpp= |
-| Implementation | =src/app/commands/{entity}_commands.cpp= |
-| Application | =src/app/application.cpp= (call =register_commands=) |
+| Header | =projects/ores.shell/{component}/include/ores.shell/app/commands/{component}/{entity}_commands.hpp= |
+| Implementation | =projects/ores.shell/{component}/src/app/commands/{component}/{entity}_commands.cpp= |
+| Tests | =projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp= |
+
+Every consumer includes the header as
+=ores.shell/app/commands/{component}/{entity}_commands.hpp=, which is its path
+under the part's own =include/= directory. The part declares
+=#+component_kind: adapter=, so codegen writes only its two file lists beside
+the hand-authored CMakeLists.
+
+* Command class layout
+
+The commands class is all-static. It carries an
+=inline static std::string_view logger_name= with the fully-qualified logger
+path and a static =lg()= accessor.
+=register_commands(cli::Menu& root_menu, nats_client& session, pagination_context& pagination)=
+inserts one submenu named for the entity's plural, registers one lambda per
+verb, and calls =pagination.register_list_callback= for the list verb. Each
+verb is a separate static =process_*= method.
+
+* The two shapes
+
+The template branches on =has_audit_group=, which is true when the entity
+model declares =#+domain_audit_group:=. Both shapes carry the same four verbs
+under the same submenu name, so the two shapes never change the command a
+user types. They differ in the history verb.
+
+| Shape | History verb |
+|---|---|
+| With an audit group | ={entities} history <key>= |
+| Without an audit group | ={entities} history <key> [--diff] [--version <n>]= |
+
+A no-audit entity holds =change_reason_code=, =change_commentary= and
+=recorded_at= as flat members in place of =v.audit=. The add verb fills them
+from the last two positionals and from the clock, so its arity stays the same
+in both shapes.
+
+The =--diff= branch renders a unified diff through =render_history_diff= and
+returns early. A =--version= without =--diff= is rejected.
+
+The add verb takes free-form tokens rather than one typed parameter per
+column. The cli library expands a typed handler into one template
+instantiation per argument, and the Windows clang toolchain abandons the
+mangler on the deeper chains. A token vector holds the argument list at a
+fixed shape.
+
+* Who supplies a column's value
+
+The add verb fills one domain member per positional argument. The
+=:supplied_by:= annotation on a column says who supplies the value.
+
+| Value | Meaning |
+|---|---|
+| =user= | The default. The verb reads the value from the next positional. |
+| =minted= | The verb mints a fresh uuid. The default for a uuid primary key. |
+| =session_party= | The verb reads the acting party from the session, and fails when the account has no default party. |
+| =unset= | The verb leaves the member at its default and asks for nothing. |
+
+The =tenant_id= member takes no annotation. It is not a declared column, so
+the template names it directly and fills it from the session.
+
+A malformed token names the field it belongs to, and the block that builds
+the entity sits inside one =try=. The handler reports the failure through
+=fail()= and returns.
+
+* Registration
+
+One aggregator per component wires the units to the shell host. It is
+hand-written and lives in the application part at
+=projects/ores.shell/application/src/app/commands/{component}/{component}_commands.cpp=.
+It includes each unit's header and calls =register_commands= once per unit.
+=repl::setup_menus= calls the aggregator once at startup.
+
+The facet has no component-scoped archetype for that aggregator today, so
+adding an entity means one include and one call in the aggregator, plus a
+refresh of the part's file lists. A generated aggregator needs a render-time
+list of the component's opted-in entities, the same pattern the generator
+already uses for =_COMPONENT_FILES_TEMPLATES=.
+
+The units replace, they do not join. Delete the hand-written unit for an
+entity in the same change that generates its replacement, so the shell never
+carries two units for one submenu.
 
 * See also
 
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet, its archetypes and its routing table.
 - [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] — skill that drives this workflow.
 - [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] — recipe walkthrough.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

@@ -82,6 +82,74 @@ guarantee: a batch may deliver a rate reset and a correction together.
 [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] sets out the four axes an amendment sits on, and which
 combinations move which version.
 
+* The reason for update
+
+Every version carries a *reason for update*, drawn from an enumeration
+rather than typed as free text, so that changes can be reported on
+rather than only read.
+
+Two attributes qualify it. The *action type* distinguishes a human
+change from a system one, and the *action name* says which change it
+was. Separating them answers "how much of yesterday's activity was
+automatic" without inspecting each reason in turn.
+
+** The enumeration
+
+The reasons observed span four groups, and the groups are worth
+keeping distinct because they answer different questions.
+
+| Group | Examples |
+|-------+----------|
+| Provisional | Pre Live Created, Pre Live Amendment |
+| Lifecycle | Automated Fixing, Manual Fixing, Expiry, Fixing, Termination, Coupon Payment |
+| Amendment | Amendment: Direction, Rate, Notional, Yield Basis; Amended Counterparty; Amendment: Single-sided; Dummy Amendment |
+| Structural | Novation, Partial Assignment, Partial Tear Up, Book Closure, Brokerage Payout, Confo Dates |
+
+The provisional group is the one that shows the enumeration is not
+merely a label. =Pre Live Created= and =Pre Live Amendment= record a
+version produced while a trade was still in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][draft]], which means the
+provisional stage is versioned and audited exactly like any other. A
+draft is not outside the versioning model; it is inside it, carrying
+its own reasons.
+
+The amendment group is what makes the confirmable decision tractable.
+Because the reasons already partition changes by what was changed —
+direction, rate, notional, counterparty — whether a version is
+confirmable is a lookup on the reason rather than a field-by-field
+diff of the trade. [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] covers that classification.
+
+** The reason constrains the change
+
+A reason is not a comment attached after the fact. The interface should
+permit only changes consistent with the stated reason: a user who
+selects an economics amendment should not be able to modify fields
+unrelated to trade economics.
+
+That inverts the usual order. The reason is chosen first and bounds
+what may be edited, rather than being supplied afterwards to describe
+whatever was done.
+
+** When several causes coincide
+
+One activity per version is an aim rather than a guarantee, since a
+batch may deliver a fixing and a correction together. A priority order
+decides which reason names the version:
+
+1. Book moves
+2. Funding roll or reserve
+3. CEM charge or contra revenue
+4. Close outs
+5. Triggered
+6. Exercised or expired
+7. Fixing
+8. Misbooking
+
+Some reasons additionally require escalation, where a head of desk
+must approve the change rather than the usual approver.
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][The operational authorisation queue]] covers that side, along with the
+operational error flag that separates a change made for a business
+reason from one made because the booking was wrong.
+
 * The forms an amendment takes
 
 ** Normal amendment

@@ -82,6 +82,13 @@ assignments are also unconditional, so an entity with no
 64 trading models declare the audit group. Teach both shapes to the
 archetypes before opting those entities in.
 
+The facet has two archetypes and no tests archetype, so each generated unit's
+test file is hand-written today. Review of the first unit asked for that test
+shape to travel with the generator. The shape is one case per handler guard,
+the arity check, a malformed token that names its field, and a valid token
+vector that reaches the transport. Writing the archetype is a candidate for
+this task, so every generated unit arrives with its own test.
+
 Two documents still describe the hand-written flow, and they move with this
 task. [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] gives the file locations and class shapes
 of a hand-written unit, and [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new

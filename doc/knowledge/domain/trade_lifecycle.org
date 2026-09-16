@@ -20,76 +20,21 @@ attribution and reporting.
 [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade status FSM implementation]] covers how the machine is held
 in the database.
 
-* Two Core Concepts
+* Trade Status
 
-Trade status and activity type are distinct concepts that are often confused
-because both relate to what has happened to a trade. They serve different
-purposes and must be modelled separately.
+The /trade status/ is the operational state of a trade at a given
+moment. It answers the question: /what state is this trade in right
+now?/
 
-** Trade Status
+Status drives whether a trade is included in risk and P&L (only =live=
+trades), what operations are permissible on it, and how it is filtered
+for reporting and reconciliation.
 
-The /trade status/ is the operational state of a trade at a given moment. It
-answers the question: /what state is this trade in right now?/
+It is one of three things a lifecycle discussion routinely conflates.
+[[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] covers the second, an event that happened to a trade,
+and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the third, what the trade is.
 
-Status drives:
-- Whether a trade is included in risk and P&L calculations (only =live= trades).
-- What operations are permissible on the trade.
-- Reporting and reconciliation filters.
-
-** Activity Type
-
-The /activity type/ classifies the event that created or changed a trade record.
-It answers the question: /why does this trade record exist, and what kind of change
-does it represent?/
-
-Activity type drives:
-- P&L attribution: which P&L bucket did this change fall into?
-- Trade activity reporting: how is the day's activity broken down?
-- Confirmation workflow: does this activity require a new legal confirmation?
-- Audit and reconciliation.
-
-Activity types are grouped into four categories: New Activity, Life-Cycle Event,
-Misbooking, and Valuation Change.
-
-* Two Lifecycles
-
-A trade carries two statuses, because two questions are asked of it and
-the answers move independently.
-
-| Status | Lifecycle | Question |
-|--------+-----------+----------|
-| =trade_status= | Trade | Where has this trade got to? |
-| =confirmation_status= | Confirmation | What have we and the counterparty agreed? |
-
-Every trade carries both. Neither is ever null: a trade with nobody to
-agree terms with sits at =not_required= for its whole life.
-
-Read together they locate a trade.
-
-| Trade | =trade_status= | =confirmation_status= |
-|-------+----------------+-----------------------|
-| Client swap, just booked | =booked= | =unconfirmed= |
-| Client swap, in the book, paperwork outstanding | =live= | =unconfirmed= |
-| Client swap, counterparty disputes a term | =live= | =queried= |
-| Client swap, fully papered | =live= | =confirmed= |
-| Client swap, confirmable amendment booked | =live= | =unconfirmed= |
-| Desk transfer between our own books | =live= | =not_required= |
-| Test booking | =live= | =not_required= |
-| Matured client swap | =expired= | =confirmed= |
-
-The second row is the one a single status cannot express: the trade is
-in the book and carrying risk while its confirmation is outstanding.
-
-[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and deal versioning]] draws the same division from the
-version side. The internal version moves on every recorded change,
-while the external version moves only when the terms the customer
-agreed to change, so each version has a lifecycle.
-
-The consequences differ in kind, which is the evidence that these are
-two lifecycles and not one. An unverified trade is an internal control
-exception. An unconfirmed trade is a counterparty risk.
-
-** The trade lifecycle
+* The Trade Lifecycle
 
 [[proj:doc/knowledge/domain/trade_status_lifecycle.png]]
 
@@ -110,236 +55,58 @@ exception. An unconfirmed trade is a counterparty risk.
 | =booked= | =cancelled= | Cancel | Cancelled before verification. |
 | =verified= | =cancelled= | Cancel | Cancelled before activation. |
 | =live= | =cancelled= | Cancel / Terminate | Cancelled or terminated while active. |
+| =booked=, =verified=, =live= | unchanged | Amend | A change to the deal; see below. |
 
-Confirmation does not appear here. A trade carries risk from the
-moment it is released into the book, whether or not its terms have
-been confirmed, so a pending client trade is managed from the start.
+** Amendment leaves the state unchanged
 
-Authorisation is not a state either. It is our workflow rather than a
-term of the deal, so it is metadata on the trade.
+A trade may be amended at any point before it reaches a terminal
+state, and amending does not move it. A live trade that is amended
+stays live; a booked trade that is amended stays booked.
 
-** The confirmation lifecycle
+What an amendment does produce is a version. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers
+what a version is and how the internal and external versions move,
+and [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] classifies which amendments are economic,
+which are confirmable, and which are real.
 
-[[proj:doc/knowledge/domain/confirmation_lifecycle.png]]
+A change that cannot be made in place is not an amendment. Cancelling
+and rebooking produces two trades, each with its own lifecycle, and is
+covered under the forms an amendment takes.
 
-| State | Description | Initial |
-|-------+-------------+---------|
-| =not_required= | Nobody to agree terms with. | Yes, by default |
-| =unconfirmed= | Terms not yet agreed. | Yes, where a counterparty exists |
-| =queried= | The two records differ. | No |
-| =affirmed= | Both sides agree the economic terms. | No |
-| =confirmed= | The binding written record, as of an external version. | No |
+** Confirmation is a separate lifecycle
 
-| From | To | Event | Notes |
-|------+----+-------+-------|
-| (initial) | =not_required= | Book | The trade faces no counterparty. |
-| (initial) | =unconfirmed= | Book | The trade faces a counterparty with terms to agree. |
-| =unconfirmed= | =queried= | Query | The counterparty's record differs from ours. |
-| =unconfirmed= | =affirmed= | Affirm | The counterparty agrees the economic terms. |
-| =queried= | =affirmed= | Resolve | The difference is settled. |
-| =affirmed= | =confirmed= | Confirm | The binding record supersedes the earlier agreement. |
-| =confirmed= | =unconfirmed= | Amend | A confirmable amendment moves the external version. |
+Confirmation does not appear in this lifecycle. A trade carries risk
+from the moment it is released into the book, whether or not its terms
+have been confirmed, so a pending client trade is managed from the
+start and an unconfirmed trade is a counterparty risk rather than an
+inactive one.
 
-=not_required= has no transitions out. An intra-entity transfer, a
-test booking or a hypothetical enters it at booking and stays there,
-which states positively that confirmation was never owed rather than
-leaving a reader to infer it from an absent value.
+A trade therefore carries two statuses. =trade_status= is the state
+above. =confirmation_status= is a state in the confirmation lifecycle,
+which [[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]] covers, and which
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] decides the starting point of.
 
-No other state is terminal either. A confirmed trade returns to
-=unconfirmed= whenever a confirmable amendment moves the external
-version, which is why confirmation is stated as of a version rather
-than once and for all.
+| Trade | =trade_status= | =confirmation_status= |
+|-------+----------------+-----------------------|
+| Client swap, just booked | =booked= | =unconfirmed= |
+| Client swap, in the book, paperwork outstanding | =live= | =unconfirmed= |
+| Client swap, fully papered | =live= | =confirmed= |
+| Desk transfer between our own books | =live= | =not_required= |
+| Matured client swap | =expired= | =confirmed= |
 
-When the trade expires or is cancelled this lifecycle simply stops.
-The status keeps its last value, which still records whether the trade
-was ever confirmed. A matured trade reading =confirmed= is a different
-fact from one reading =unconfirmed=, and a terminal state overwriting
-both would lose it.
+The second row is the one a single status cannot express.
 
-** How the lifecycles relate
+** Authorisation is not a state
 
-Barely, which is the point.
-
-They share one event. Book creates a trade, which starts the trade
-lifecycle at =booked= and the confirmation lifecycle at either
-=unconfirmed= or =not_required=, according to whether there is anyone
-to agree terms with. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] decides
-which.
-
-Nothing else is shared. Neither lifecycle reads the other's status, no
-transition in one is conditional on the other, and no state appears in
-both.
-
-That independence is what lets a trade be live and unconfirmed at
-once.
-
-A third lifecycle needs no change to either of these. A settlement or
-a confirmation message has its own states and its own status, which is
-how Calypso separates trades, payments and messages.
-
-* Temporal Versioning and Amendments
-
-** Normal Amendments
-
-When a trade's terms are amended (e.g. Restructure, Novation, Upsize), ORE
-Studio does not create a new trade record. Instead, it uses temporal versioning:
-
-- The existing trade row's =valid_to= is set to the current timestamp.
-- A new row is inserted with the same =id=, =valid_from= set to now, and
-  =valid_to= set to infinity.
-- The new temporal version carries status =booked=, pending re-confirmation of
-  the amended terms.
-- On confirmation, the status transitions to =live=.
-
-This preserves the full amendment history of the trade under a single =id=.
-
-#+begin_example
-trade_id = X
-─────────────────────────────────────────────────────────────────
- valid_from    valid_to       status   terms
-─────────────────────────────────────────────────────────────────
- 2026-01-10    2026-03-01     live     notional=10M
- 2026-03-01    ∞              new      notional=15M   ◀ upsize
-─────────────────────────────────────────────────────────────────
-#+end_example
-
-** Cancel and Rebook
-
-The =successor_trade_id= field is used exclusively for /cancel and rebook/
-scenarios, where a trade is cancelled and an entirely new trade is created to
-replace it. This is distinct from a normal amendment:
-
-- The original trade is moved to =cancelled= status.
-- A new trade with a fresh =id= is created (entering =booked= status).
-- The new trade's =successor_trade_id= is set to the original trade's =id= for
-  traceability.
-
-Use cases: Misbooking correction, administrative re-booking.
-
-** Misbooking Correction
-
-A misbooking creates a /correction trade/ with =successor_trade_id= pointing to
-the erroneous original:
-
-1. Original erroneous trade: status → =cancelled=.
-2. Correction trade created: fresh =id=, =successor_trade_id= = original =id=.
-3. Correction trade status begins at =booked=, and reaches =live= through
-   verification and, where the trade faces a counterparty, confirmation.
-
-* Activity Type Taxonomy
-
-Activity types are used for P&L attribution and trade activity reporting. They
-are classified into four categories.
-
-** New Activity
-
-New Activity events require legal confirmation. They produce a trade record in
-=booked= status, reaching =live= through verification and, where the trade
-faces a counterparty, confirmation.
-
-| Activity Type      | Description                                                                                                              | Status Effect                                                           |
-|--------------------+--------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------|
-| New                | A new legal contract. Trade exists today but did not exist yesterday.                                                    | New trade → =booked=                                                       |
-| Close-Out          | Equal and opposite trade to close an existing open position. May include a value-transfer deal (buyout, buy-back).       | Original trade → =cancelled=; new close-out trade → =booked=              |
-| Early Termination  | Trade terminated before its scheduled maturity. Covers close-out, tear-up, and compression (netted swap elimination).   | Original trade → =cancelled=; termination trade → =booked= if applicable  |
-| Restructure / Roll | Terms of an existing trade renegotiated: components added, removed, or heavily modified. Requires new confirmation.      | New temporal version of trade → =booked=                                   |
-| Partial Close-Out  | Notionals of an existing trade reduced. Also known as tear-up or downsize. Requires new confirmation.                    | New temporal version of trade → =booked=                                   |
-| Upsize             | Notionals of an existing trade increased. Requires new confirmation.                                                     | New temporal version of trade → =booked=                                   |
-| Novation           | Trade counterparty changed (assignment). Bank may step in/out with or without risk change. New confirmation required.    | New temporal version of trade → =booked=                                   |
-| Funding Roll       | P&L from new funding tickets rolling a book balance from day T to T+1. Includes interest paid/received on the position. | New trade → =booked=                                                       |
-| Contra Revenue     | Revenue reduction (expense-like): brokerage, agency commissions, bullion fees, sales credits, transfer pricing.         | New trade → =booked=                                                       |
-| CVA / WWR          | Credit Valuation Adjustment or Wrong-Way Risk trade. Captures counterparty default risk and correlated credit exposure.  | New trade → =booked=                                                       |
-
-** Life-Cycle Events
-
-Life-Cycle Events are changes to the value of the trade specific to the terms of
-the original contract. No legal confirmation is required.
-
-| Activity Type      | Description                                                                                                              | Status Effect             |
-|--------------------+--------------------------------------------------------------------------------------------------------------------------+---------------------------|
-| Rate Reset         | Daily fixing impact: actual rate versus previous day's projected rate, for floating-rate products such as IRS.           | None                      |
-| Floating Reset     | Floating rate reset per the terms of the trade; similar to Rate Reset but may also include spread changes.               | None                      |
-| Fixings            | A fixing has been published; cashflows referencing the fixing are updated. P&L captured between day-0 and cash trade.    | None                      |
-| Notional Reset     | Notional changes per contract terms (e.g. resettable notional). Not an upsize or downsize; no confirmation needed.       | None                      |
-| Strike Reset       | Strike reset per contract terms. Supported for resettable call/put and resettable double-digital barriers.               | None                      |
-| Expired            | Trade status changed because it expired out of the money, referenced against an expiry fixing.                           | =live= → =expired=        |
-| Exercised          | Trade status changed because it was exercised in the money, referenced against an expiry fixing.                         | =live= → =expired=        |
-| Physical Delivery  | Physical settlement during the life of the trade or at expiry.                                                           | None                      |
-| Cash Settlement    | Cash payment during the life of a trade or at expiry. Includes option rebates.                                           | None                      |
-| Maturity           | Contract ceases after its last fixing or payment. Trade has passed its maturity date. No confirmation required.          | =live= → =expired=        |
-| Triggered          | Trade amended due to a barrier trigger event.                                                                            | Depends on trigger type   |
-| Corporate Actions  | Action initiated by a company that impacts issued equity or debt.                                                        | None                      |
-| Rebalance          | Change to various components per a defined event within the original confirmation.                                       | None                      |
-| Amortisation       | Change in notional per the terms of the initial trade.                                                                   | None                      |
-
-** Misbooking
-
-A misbooking is a change to a trade due to an error in the booking terms of the
-original contract.
-
-| Activity Type | Description                                                                                                              | Status Effect                                           |
-|---------------+--------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------|
-| Misbooking    | Correction of an erroneous booking. Creates a correction trade with =successor_trade_id= referencing the original trade. | Original → =cancelled=; correction trade → =booked=        |
-
-** Valuation Changes
-
-Valuation Changes are changes to the value of a trade that are not specific to
-the terms of the contract. They represent changes in analytics, models, or static
-data inputs. No confirmation is required. These are treated as amendments — they
-do not change the trade's operational status.
-
-| Activity Type               | Description                                                                                         | Status Effect |
-|-----------------------------+-----------------------------------------------------------------------------------------------------+---------------|
-| Model / Model Parameters    | P&L from changes within valuation models impacting trade value.                                     | None (amend)  |
-| System Release / Analytics  | P&L from changes within valuation models due to a system or analytics upgrade.                      | None (amend)  |
-| Static Data                 | Amendments to static data inputs to the trade (e.g. counterparty change affecting funding curves).  | None (amend)  |
-| Script Changes              | Change to the valuation script for structured trades, impacting trade value.                        | None (amend)  |
-
-** Cancellation
-
-| Activity Type | Description                                                                                             | Status Effect          |
-|---------------+---------------------------------------------------------------------------------------------------------+------------------------|
-| Cancel        | Trade removed or set to Cancelled/Deleted status. Leads to reversal of historic ledger postings.        | any state → =cancelled= |
-
-* Activity Type to FSM Mapping Summary
-
-| Activity Type               | Category          | Requires Confirmation | Status Transition                              |
-|-----------------------------+-------------------+-----------------------+------------------------------------------------|
-| New                         | New Activity      | Yes                   | (init) → =booked=                                |
-| Close-Out                   | New Activity      | Yes                   | original → =cancelled=; new trade → =booked=     |
-| Early Termination           | New Activity      | Yes                   | =live= → =cancelled=                          |
-| Restructure / Roll          | New Activity      | Yes                   | new temporal version → =booked=                  |
-| Partial Close-Out           | New Activity      | Yes                   | new temporal version → =booked=                  |
-| Upsize                      | New Activity      | Yes                   | new temporal version → =booked=                  |
-| Novation                    | New Activity      | Yes                   | new temporal version → =booked=                  |
-| Funding Roll                | New Activity      | Yes                   | new trade → =booked=                             |
-| Contra Revenue              | New Activity      | Yes                   | new trade → =booked=                             |
-| CVA / WWR                   | New Activity      | Yes                   | new trade → =booked=                             |
-| Rate Reset                  | Life-Cycle Event  | No                    | None                                          |
-| Floating Reset              | Life-Cycle Event  | No                    | None                                          |
-| Fixings                     | Life-Cycle Event  | No                    | None                                          |
-| Notional Reset              | Life-Cycle Event  | No                    | None                                          |
-| Strike Reset                | Life-Cycle Event  | No                    | None                                          |
-| Expired                     | Life-Cycle Event  | No                    | =live= → =expired=                            |
-| Exercised                   | Life-Cycle Event  | No                    | =live= → =expired=                            |
-| Physical Delivery           | Life-Cycle Event  | No                    | None                                          |
-| Cash Settlement             | Life-Cycle Event  | No                    | None                                          |
-| Maturity                    | Life-Cycle Event  | No                    | =live= → =expired=                            |
-| Triggered                   | Life-Cycle Event  | No                    | Depends on trigger type                       |
-| Corporate Actions           | Life-Cycle Event  | No                    | None                                          |
-| Rebalance                   | Life-Cycle Event  | No                    | None                                          |
-| Amortisation                | Life-Cycle Event  | No                    | None                                          |
-| Misbooking                  | Misbooking        | No                    | original → =cancelled=; correction → =booked=    |
-| Model / Model Parameters    | Valuation Change  | No                    | None (amend)                                  |
-| System Release / Analytics  | Valuation Change  | No                    | None (amend)                                  |
-| Static Data                 | Valuation Change  | No                    | None (amend)                                  |
-| Script Changes              | Valuation Change  | No                    | None (amend)                                  |
-| Cancel                      | Cancellation      | No                    | any → =cancelled=                             |
+Authorisation is our workflow rather than a term of the deal, so it is
+metadata on the trade. Treating it as a state would make the firm
+issue confirmations for its own internal approvals.
 
 * See also
 
-- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how this lifecycle is realised in the database.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — what confirmation is, and which changes require a new one.
-- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — the two dimensions that determine whether this lifecycle applies unchanged.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events that create, change or end a trade.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what an amendment produces.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the second status a trade carries.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the two dimensions that decide where confirmation starts.
+- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the entities a trade is built from.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

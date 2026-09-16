@@ -177,7 +177,7 @@ is a change to the structure. The rules in brief:
   contract already provides for is not.
 
 The full model, with the amend classification and the confirmable-event
-list, is on [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+list, is on [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]].
 
 ** Structure operations
 
@@ -284,7 +284,7 @@ Two consequences follow for the trade model:
   describing the deal to the customer. They are not legs.
 
 The confirmation side of this is on
-[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]].
 
 ** Naming across systems
 
@@ -378,7 +378,7 @@ Development on structures should ground on four rules:
 * See also
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — the confirmation model
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the confirmation model
   that a structure version drives.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
   operate on a structure.

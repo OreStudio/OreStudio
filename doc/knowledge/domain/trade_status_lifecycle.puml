@@ -54,6 +54,10 @@ Cancelled : Removed from the book
 Booked --> Verified : Verify
 Verified --> Live : Activate
 Live --> Expired : Expire / Mature / Exercise
+
+Booked --> Booked : Amend
+Verified --> Verified : Amend
+Live --> Live : Amend
 Booked --> Cancelled : Cancel
 Verified --> Cancelled : Cancel
 Live --> Cancelled : Cancel / Terminate
@@ -70,6 +74,13 @@ note bottom of Live
   is released into the book, whether or not
   its terms have been confirmed. Confirmation
   belongs to its own lifecycle.
+end note
+
+note left of Booked
+  Amend leaves the state unchanged and
+  produces a new version. A change that
+  cannot be made in place is a cancel
+  and a rebook, which is two trades.
 end note
 
 @enduml

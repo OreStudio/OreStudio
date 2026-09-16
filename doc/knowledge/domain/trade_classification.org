@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 03C12558-69AC-4925-AAE1-85FFF75B10BA
 :END:
-#+title: Counterparty scope and booking nature
-#+description: Why no single flag says what a trade contributes to, how counterparty scope and booking nature select a state machine, and what the machine cannot decide on its own.
+#+title: Trade Classification
+#+description: The two dimensions that classify a trade — counterparty scope and booking nature — why one flag cannot replace them, and what follows for what a trade contributes to.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:lifecycle:modeling:
@@ -318,6 +318,6 @@ enumerations.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; this page is the other axis.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states and transitions these dimensions select between.
 - [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how that lifecycle is held in the database.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — what confirmation is, and why a non-confirming trade cannot use this machine unchanged.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what confirmation is, and why a non-confirming trade cannot use this machine unchanged.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — explicit variation over inheritance webs.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -1,0 +1,119 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.shell.application Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            class application {
+                +login_config : optional<config::login_options>
+                -connection_config_ : optional<nats::config::nats_options>
+                -login_config_ : optional<config::login_options>
+            }
+            class host {
+            }
+            class repl {
+                -session_ : ores::nats::service::nats_client&
+                -pagination_ : pagination_context
+            }
+            class script_runner {
+            }
+            namespace commands #F2F2F2 {
+                class account_parties_commands {
+                }
+                class accounts_commands {
+                    +account_id : string
+                    +days : int
+                }
+                class bundles_commands {
+                }
+                class change_reason_categories_commands {
+                }
+                class change_reasons_commands {
+                }
+                class compute_commands {
+                }
+                class connection_commands {
+                }
+                class countries_commands {
+                }
+                class crm_commands {
+                }
+                class currencies_commands {
+                }
+                class lei_commands {
+                }
+                class marketdata_commands {
+                }
+                class navigation_commands {
+                    +size : uint32_t
+                }
+                class orgmode_commands {
+                }
+                class parties_commands {
+                }
+                class provision_commands {
+                }
+                class rbac_commands {
+                }
+                class reports_commands {
+                }
+                class script_commands {
+                }
+                class subscription_commands {
+                }
+                class synthetic_commands {
+                }
+                class tenants_commands {
+                }
+                class variability_commands {
+                }
+                class workflow_commands {
+                }
+            }
+        }
+        namespace config #F2F2F2 {
+            class login_options <<struct>> {
+                +username : string
+                +password : string
+            }
+            class options <<struct>> {
+                +logging : optional<logging::logging_options>
+                +connection : optional<nats::config::nats_options>
+                +login : optional<login_options>
+                +telemetry : optional<telemetry::exporting::telemetry_options>
+            }
+            class parser {
+            }
+            class parser_exception {
+                -message_ : const string
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.application.puml"
+' End:
+@enduml

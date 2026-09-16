@@ -47,7 +47,8 @@ struct host_runner_sync_options final {
  * application -> on exception, log diagnostic information and rethrow.
  *
  * Extracted from what used to be ~90% near-identical lines hand-duplicated
- * across ores.cli/host.cpp and ores.shell/host.cpp (see
+ * across ores.cli/src/app/host.cpp and
+ * ores.shell/application/src/app/host.cpp (see
  * task_investigate_cli_shell_host_divergence.org: sync execution is
  * load-bearing for both -- neither belongs on run_host_async's io_context --
  * but their own bodies still shared this much structure with each other).

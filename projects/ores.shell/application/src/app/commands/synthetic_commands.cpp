@@ -149,7 +149,8 @@ folder_path_parts(const std::map<std::string, synthetic::domain::folder>& by_id,
                   const std::string& id) {
     std::vector<std::string> parts;
     std::string cur = id;
-    while (!cur.empty() && parts.size() < 32) { // cycle guard
+    // The depth cap breaks any parent cycle.
+    while (!cur.empty() && parts.size() < 32) {
         auto it = by_id.find(cur);
         if (it == by_id.end())
             break;
@@ -254,8 +255,9 @@ match_folder_path(const std::map<std::string, synthetic::domain::folder>& by_id,
                     next.push_back(id);
             }
         level = std::move(next);
+        // No component matched anywhere.
         if (level.empty())
-            return {}; // a component matched nothing anywhere
+            return {};
     }
     return level;
 }
@@ -462,8 +464,9 @@ std::size_t print_folder_tree(std::ostream& out,
                               const std::map<std::string, synthetic::domain::folder>& by_id,
                               std::set<std::string>& visited,
                               int depth) {
+    // Parent cycles are not expected, but never loop forever.
     if (!visited.insert(folder_id).second)
-        return 0; // parent cycles are not expected, but never loop forever
+        return 0;
     auto it = by_id.find(folder_id);
     if (it == by_id.end())
         return 0;

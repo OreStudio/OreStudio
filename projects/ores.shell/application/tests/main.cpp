@@ -35,6 +35,6 @@ int main(int argc, char* argv[]) {
     }
     BOOST_SCOPE_EXIT_END
 
-    ores::testing::logging_listener::set_test_module_name("ores.shell.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.shell.application.tests");
     return Catch::Session().run(argc, argv);
 }

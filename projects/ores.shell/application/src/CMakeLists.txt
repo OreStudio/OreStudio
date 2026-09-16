@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,29 +15,29 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.shell")
+set(name "ores.shell.application")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
+set(ORES_SHELL_APPLICATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-add_library(${lib_target_name} ${lib_files})
+add_library(${lib_target_name} STATIC ${lib_files} ${HEADERS})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_SHELL_LIBRARY)
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.shell/include)
+    ${ORES_SHELL_APPLICATION_DIR}/include)
 
 find_package(cli CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.shell.api.lib
         ores.telemetry.core.lib
         ores.utility.lib
     PRIVATE
@@ -57,15 +57,21 @@ target_link_libraries(${lib_target_name}
         ores.synthetic.api.lib
         ores.trading.api.lib
         ores.workflow.api.lib
+        ores.logging.lib
         ores.nats.lib
         ores.orgmode.lib
         ores.service.lib
         cli::cli)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+# ores.shell is an application-internal component: its parts are linked into
+# ores.shell.exe and into ores.qt.exe, and are not useful as redistributable
+# artifacts. Keep static, so the two parts share no import/export macro.
+if(NOT WIN32)
+    install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
+endif()
 
-set(exe_binary_name ${name})
-set(exe_target_name ${name}.exe)
+set(exe_binary_name "ores.shell")
+set(exe_target_name "ores.shell.exe")
 
 set(exe_files ${files})
 list(FILTER exe_files INCLUDE REGEX "main.cpp")

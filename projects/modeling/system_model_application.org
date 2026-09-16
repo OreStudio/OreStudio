@@ -106,13 +106,21 @@ Related documents:
 
 ** ores.shell
 
-POSIX shell and Emacs Lisp developer tooling — database administration scripts,
-build helpers, and project automation. Not part of the production binary; it is
-the operator toolkit for managing a running system.
+Interactive REPL for connecting to ORE Studio over NATS. It parses command-line
+arguments and a configuration file, auto-connects and auto-logs-in from that
+configuration, and exposes commands for querying and provisioning a running
+system from a terminal. It is the surface the system tests drive, and the
+Emacs dashboard launches it.
 
-| Sub-component | Role                                        | Dependencies |
-|---------------+---------------------------------------------+--------------|
-| [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]    | Shell scripts for database admin and builds | —            |
+| Sub-component | Role | Dependencies |
+|---------------+------+--------------|
+| [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]             | Composite: the REPL adapter, adds its parts | —              |
+| [[id:35C549C4-A6C0-4037-84DF-63E677C8C61E][ores.shell.application]] | REPL host, config parsing, script runner, command units; builds ores.shell.exe | [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]] |
+| [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]]         | Shared plumbing: argument parsing, feedback, pagination, request helpers | —              |
+
+Related documents:
+
+- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — usage recipes, and the single source of truth for the =.ores= script library.
 
 ** ores.lisp
 

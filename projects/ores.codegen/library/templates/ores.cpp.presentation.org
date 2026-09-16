@@ -46,8 +46,8 @@ see the covering task's Notes for the full remaining list.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:19D528D6-50D3-451C-AA83-8A7B449C3A26][ores.cpp.presentation.history_field_mapper_header]] | Declares =render_{entity}_fields()=. =presentation= profile. |
-| [[id:CDB5DA90-3CDC-4496-821E-B1CC0331720B][ores.cpp.presentation.history_field_mapper_impl]] | One =field_value= push per field, dispatched on the column's =render_is_*= type flags. =presentation= profile. |
+| [[id:19D528D6-50D3-451C-AA83-8A7B449C3A26][ores.cpp.presentation.history_field_mapper_header]] | Declares render_{entity}_fields(): domain type -> ordered ores::diff::domain::field_value list. =presentation= profile. |
+| [[id:CDB5DA90-3CDC-4496-821E-B1CC0331720B][ores.cpp.presentation.history_field_mapper_impl]] | Implements render_{entity}_fields(): one field_value push per field, dispatched on the column's type flags. =presentation= profile. |
 
 * See also
 

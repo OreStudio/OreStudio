@@ -21,12 +21,13 @@ See [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-t
 
 * Archetypes
 
-| Archetype | Output | Description |
-|-----------+--------+-------------|
-| [[id:8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D6][ores.cpp.oresmd.enums]] | =oresmd_enums.hpp= | All per-asset-class quote-type enums plus volatility_model_subtype |
-| [[id:9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][ores.cpp.oresmd.identifiers]] | =market_data_identifier.hpp=, =market_data_requirement.hpp= | Identifier and requirement structs |
-| [[id:A3C4D5E6-F7A8-B9C0-D1E2-F3A4B5C6D7E8][ores.cpp.oresmd.parser]] | =oresmd_parser.cpp= | =query_params=, =parse_*=, =validate_*=, =to_uri= |
-| [[id:B4D5E6F7-A8B9-C0D1-E2F3-A4B5C6D7E8F9][ores.cpp.oresmd.projections]] | =oresmd_projections.cpp= | =ore_type=, =ore_*_metric=, =quote_key_*= |
-| [[id:C5E6F7A8-B9C0-D1E2-F3A4-B5C6D7E8F9A0][ores.cpp.oresmd.resolver]] | =oresmd_resolver.cpp= | =resolve_*=, dispatch |
-| [[id:D6F7A8B9-C0D1-E2F3-A4B5-C6D7E8F9A0B1][ores.cpp.oresmd.parser_tests]] | =oresmd_oresmd_parser_tests.cpp= | Parse, round-trip, rejection Catch2 tests |
-| [[id:E7A8B9C0-D1E2-F3A4-B5C6-D7E8F9A0B1C2][ores.cpp.oresmd.projection_tests]] | =oresmd_oresmd_projections_tests.cpp= | Quote-key projection Catch2 tests |
+| Archetype | Description |
+|-----------+-------------|
+| [[id:8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D6][ores.cpp.oresmd.enums]] | All per-asset-class quote-type enums plus volatility_model_subtype. |
+| [[id:9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][ores.cpp.oresmd.identifiers]] | Identifier and requirement structs with quote_type and vol fields. |
+| [[id:B4D5E6F7-A8B9-C0D1-E2F3-A4B5C6D7E8F9][ores.cpp.oresmd.parser]] | query_params, parse_*, validate_*, to_uri branches. |
+| [[id:E7A8B9C0-D1E2-F3A4-B5C6-D7E8F9A0B1C2][ores.cpp.oresmd.parser_tests]] | Parse, round-trip, and rejection Catch2 tests. |
+| [[id:F8A9B0C1-D2E3-F4A5-B6C7-D8E9F0A1B2C3][ores.cpp.oresmd.projection_tests]] | Quote-key projection Catch2 tests. |
+| [[id:C5E6F7A8-B9C0-D1E2-F3A4-B5C6D7E8F9A0][ores.cpp.oresmd.projections]] | ore_type, ore_*_metric, quote_key_* functions. |
+| [[id:A3C4D5E6-F7A8-B9C0-D1E2-F3A4B5C6D7E8][ores.cpp.oresmd.requirements]] | Requirement structs with quote_type field. |
+| [[id:D6F7A8B9-C0D1-E2F3-A4B5-C6D7E8F9A0B1][ores.cpp.oresmd.resolver]] | resolve_* functions merging a requirement with defaults. |

@@ -2304,6 +2304,47 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             col['is_identity_group_column'] = (
                 has_identity_group and col.get('group', '') == 'identity'
             )
+        # Who supplies each field's value, for facets that build an entity
+        # from user input (the shell command units). A column states it with
+        # :supplied_by:, and the default is "user" -- a positional argument.
+        # The other values name the other sources: "minted" mints a fresh
+        # uuid, "session_party" reads the acting party from the logged-in
+        # session, and "unset" leaves the member at its default. A uuid
+        # primary key defaults to "minted" because the row does not exist
+        # yet and the client owns its key; any other key defaults to "user",
+        # since a text key such as a code is the caller's to choose.
+        def _is_uuid_column(col):
+            return col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get(
+                'cpp_type', ''
+            )
+
+        def _derive_supply(col, default):
+            supply = col.get('supplied_by') or default
+            col['is_user_supplied'] = supply == 'user'
+            col['is_minted'] = supply == 'minted'
+            col['is_session_party'] = supply == 'session_party'
+            # The member path on the domain struct. A column in the identity
+            # group nests one level deeper, and the access differs by whether
+            # the column came from the plain list or the primary-key dict
+            # (see _natural_key_node_to_dict: it renames 'name' to 'column').
+            name = col.get('name') or col.get('column') or ''
+            col['member_access'] = (
+                'identity.' if col['is_identity_group_column'] else ''
+            ) + name
+            return col['is_user_supplied']
+        user_supplied_count = 0
+        for col in domain_entity.get('columns', []):
+            if _derive_supply(col, 'user'):
+                user_supplied_count += 1
+        # The key dict mirrors its first member at the top level, for the
+        # consumers that read only a single-column key, so the mirror takes
+        # the same derived flags. Only the members are counted: counting the
+        # mirror as well would count a single-column key twice.
+        pk_members = list(pk_dict.get('columns', [])) or [pk_dict]
+        for col in [pk_dict] + pk_members:
+            _derive_supply(col, 'minted' if _is_uuid_column(col) else 'user')
+        user_supplied_count += sum(1 for col in pk_members if col['is_user_supplied'])
+        domain_entity['user_supplied_count'] = user_supplied_count
         # Auto-inject identity/audit group headers into cpp.includes.domain so
         # models only need to list their own direct (non-group-field) includes.
         if has_identity_group or has_audit_group:

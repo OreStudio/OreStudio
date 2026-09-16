@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 7CF22895-824F-45C4-85A1-A31C3CA78EFF
+:END:
+#+title: ores.cpp.shell-command.command_header
+#+description: Shell REPL command unit header: submenu and process_* declarations for one entity.
+#+type: archetype
+#+output: projects/ores.shell/{component}/include/ores.shell/app/commands/{component}/{entity}_commands.hpp
+#+facet: ores.cpp.shell-command
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+The class declaration for one entity's shell command unit. The unit owns
+one submenu of the component's root menu and one =process_*= handler for
+each of the four CRUD verbs.
+
+Two substitutions place the output, and both come from ={component}=, the
+short component name without the product prefix. The part directory is
+=ores.shell.<component>=, so a =trading= entity writes into
+=projects/ores.shell/trading/=. The include path keeps the shared
+=ores.shell/= prefix the other parts use, so a unit moves between the
+adapter parts without an edit to any =#include=.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_shell_command_header.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_shell_command_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_SHELL_APP_COMMANDS_{{entity_singular_upper}}_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_{{entity_singular_upper}}_COMMANDS_HPP
+
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.shell/app/pagination_context.hpp"
+#include <ostream>
+#include <string>
+#include <vector>
+
+namespace cli {
+
+class Menu;
+
+}
+
+namespace ores::shell::app::commands {
+
+/**
+ * @brief Manages commands related to {{entity_plural_words}}.
+ */
+class {{entity_singular}}_commands {
+private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.{{component}}.{{entity_singular}}_commands";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Register {{entity_singular_words}} related commands.
+     */
+    static void register_commands(cli::Menu& root_menu,
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
+
+    /**
+     * @brief Process a get {{entity_plural_words}} request.
+     */
+    static void process_get_{{entity_plural}}(std::ostream& out,
+                                              ores::nats::service::nats_client& session,
+                                              pagination_context& pagination);
+
+    /**
+     * @brief Process an add {{entity_singular_words}} request.
+     *
+     * The value arguments arrive as free-form tokens and are parsed in the
+     * body. A per-argument typed handler builds one template instantiation
+     * per argument count, which the Windows clang toolchain cannot mangle
+     * beyond a few dozen arguments.
+     */
+    static void process_add_{{entity_singular}}(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
+
+    /**
+     * @brief Process a delete {{entity_singular_words}} request.
+     */
+    static void process_delete_{{entity_singular}}(std::ostream& out,
+                                                  ores::nats::service::nats_client& session,
+                                                  std::string {{primary_key.column}});
+
+    /**
+     * @brief Process an {{entity_singular_words}} history request.
+     */
+    static void process_get_{{entity_singular}}_history(std::ostream& out,
+                                                        ores::nats::service::nats_client& session,
+                                                        std::string {{primary_key.column}});
+};
+
+}
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]].
+- Sibling archetype: [[id:9409FEC6-FDF7-496D-BAA1-EEF027BB1D76][ores.cpp.shell-command.command_implementation]].
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — the variables this template reads.

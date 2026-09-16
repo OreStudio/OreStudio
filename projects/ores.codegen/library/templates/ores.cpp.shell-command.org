@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: D7287835-B101-4829-8B93-5C7F4FC9BA70
+:END:
+#+title: ores.cpp.shell-command
+#+description: Shell REPL command units for entity CRUD verbs: the per-entity submenu, its get/add/delete/history handlers, and the per-menu registrar.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+default: disabled
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+This page is the literate source for the =ores.cpp.shell-command= facet of the
+codegen template library. Each archetype below is documented, and holds its
+=mustache= source, in its own linked page — this page is the facet-level
+summary and the routing table to them.
+
+* Summary
+
+Two templates that project one entity onto one shell REPL command unit: a
+header declaring the unit class and a source holding its four handler
+bodies. The unit owns the =get=, =add=, =delete= and =history= verbs of one
+submenu, and registers that submenu on the root menu. The templates are
+opt-in and disabled by default.
+
+* The ores.cpp.shell-command facet
+
+The facet consumes a =domain_entity= model and writes the shell's view of
+it. The model already carries everything the templates need: the entity
+names and title, the component, the API sub-component, the primary key and
+the columns.
+
+The facet writes into the entity's own adapter part under
+=projects/ores.shell/=, not into the entity's domain component. A
+=trading= entity lands in =projects/ores.shell/trading/=, at
+=src/app/commands/trading/= and =include/ores.shell/app/commands/trading/=.
+That part declares =#+component_kind: adapter=, so codegen writes only its
+file lists beside the hand-authored CMakeLists, as
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] describes.
+
+One variable places that output. ={component}= resolves to the short
+component name without the product prefix, so a =trading= entity yields
+=trading= and not =ores.trading=. The template body reads the same value
+under ={{component}}=, and uses it for the =ores.<component>::domain=
+namespace and the =<component>.v1.<entity_plural>.list= subject. Output
+paths and template bodies therefore share one spelling of the component.
+
+The per-product split is the point of the shape. Each entity owns a file,
+so a component's units can be added and removed one at a time. A generated
+aggregator then calls each unit's =register_commands= in turn, which is
+what the hand-written =trading_commands.cpp= does today for its 39 units.
+That aggregator needs a component-scoped archetype and a render-time list
+of the component's opted-in entities, the same pattern the generator
+already uses for =_COMPONENT_FILES_TEMPLATES=.
+
+*Opt-in, disabled by default* — enabling the facet is a per-entity
+decision, expressed as an =:ores.cpp.shell-command.enabled: true= entry in
+the entity model's properties drawer, exactly as
+=ores.cpp.eventing-integration-test= does it.
+
+The add verb takes free-form tokens rather than one typed parameter per
+column. The cli library expands a typed handler into one template
+instantiation per argument, and the Windows clang toolchain abandons the
+mangler on the deeper chains. A token vector holds the argument list at a
+fixed shape, so the argument count no longer shapes the generated types.
+
+*The supply annotation.* The add verb fills one domain member per
+positional argument. The =:supplied_by:= annotation on a column says who
+supplies the value, and the generator turns it into the ={{user_supplied_count}}=
+arity and the ={{#is_*}}= sections the template reads. The four values are:
+
+| Value             | Meaning                                                       |
+|-------------------+---------------------------------------------------------------|
+| =user=            | The default. The verb reads the value from the next positional. |
+| =minted=          | The verb mints a fresh uuid. The default for a uuid primary key. |
+| =session_party=   | The verb reads the acting party from the session, and fails when the account has no default party. |
+| =unset=           | The verb leaves the member at its default and asks for nothing. |
+
+The =tenant_id= member takes no annotation. It is not a declared column, so
+the template names it directly and fills it from the session.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:7CF22895-824F-45C4-85A1-A31C3CA78EFF][ores.cpp.shell-command.command_header]] | Shell REPL command unit header: submenu and process_* declarations for one entity. |
+| [[id:9409FEC6-FDF7-496D-BAA1-EEF027BB1D76][ores.cpp.shell-command.command_implementation]] | Shell REPL command unit implementation: the registration lambdas and the process_* bodies for one entity. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — the variables the two templates read.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

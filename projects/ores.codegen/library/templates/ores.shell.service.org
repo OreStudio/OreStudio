@@ -35,7 +35,7 @@ inside the ={{#service_registry}}= section.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:00B6E9E9-277D-4201-BD4A-7FC09036F650][ores.shell.service.vars]] | Sourced shell fragment enumerating the service registry: a ={{#services}}= loop emitting one variable per service ={{name}}= inside the ={{#service_registry}}= section. Consumed by the =service-registry= profile; output =projects/ores.sql/service_vars.sh=, sourced by the compass environment tooling (=env_init.py= / =compass_db.py=). |
+| [[id:00B6E9E9-277D-4201-BD4A-7FC09036F650][ores.shell.service.vars]] | Sourced shell fragment enumerating the service registry: a ={{#services}}= loop emitting one variable per service ={{name}}= inside the ={{#service_registry}}= section. Generated via =--address ores.shell.service=; output =projects/ores.sql/service_vars.sh=, sourced by the compass environment tooling (=env_init.py= / =compass_db.py=). |
 
 * See also
 

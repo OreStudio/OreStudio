@@ -47,7 +47,7 @@ idiom for the grant lists. Otherwise the group's standard constructs.
 |-----------+-------------|
 | [[id:F69A9286-6262-45C1-87CF-11693F80C3E1][ores.sql.service.account_roles_populate]] | Assigns each service account its ={{iam_role}}=. Output =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=. |
 | [[id:4BB161A1-7C81-4C19-9FAA-AA0630B586AF][ores.sql.service.accounts_populate]] | IAM application accounts for the services (=email=, =description=, password via psql variable). Output =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=. |
-| [[id:EB5E6878-28F3-4D63-BD92-2FD67595D388][ores.sql.service.db_grants]] | Grants each service role its DML surface: per-service =dml_prefixes= list the table-name prefixes the service may touch. Output =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=. |
+| [[id:EB5E6878-28F3-4D63-BD92-2FD67595D388][ores.sql.service.db_grants]] | Grants each service role its DML surface: per-service =dml_prefixes=/=select_prefixes=/=execute_prefixes= list the table/function-name prefixes the service may touch. Output =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=. |
 | [[id:A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D][ores.sql.service.users_create]] | One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=. |
 
 * See also

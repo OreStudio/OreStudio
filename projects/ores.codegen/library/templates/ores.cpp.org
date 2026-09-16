@@ -42,17 +42,23 @@ do not edit by hand.
 | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] | 6 | Per-component C++ scaffolding: export, main header, stub domain type, test main. |
 | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]] | 7 | Domain types: class, JSON I/O, table I/O. |
 | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]] | 1 | C++ enum types. |
+| [[id:CD698EB1-D411-4BF7-84B0-9794D47C802A][ores.cpp.eventing-integration-test]] | 1 | Per-entity Catch2 test proving the DB-write -> pg_notify -> postgres_event_source -> event_bus -> NATS-publish pipeline end to end. |
 | [[id:EF08BD8A-21CD-4D5F-A574-5C850722DE16][ores.cpp.field-group]] | 1 | C++ field-group headers. |
 | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] | 2 | Fake-data generators for testing. |
+| [[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]] | 2 | Per-entity history-provider registrar pair registering an entity's history provider into the ores.history dispatch registry. |
+| [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]] | 2 | Consumer-side in-process cache mirroring a producer entity, kept fresh via eventing. |
+| [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] | 2 | Per-entity NATS event-mapping registrar pair wiring an entity's Postgres LISTEN/NOTIFY channel to its changed-event pipeline. |
 | [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] | 1 | NATS changed-event publishers. |
-| [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] | 2 | Per-entity NATS event-mapping registrar pair wiring an entity's Postgres channel to its changed-event pipeline. |
 | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] | 1 | NATS subscription handlers. |
 | [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] | 2 | Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler. |
+| [[id:F1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6][ores.cpp.oresmd]] | 8 | oresmd quote-type codegen: enums, identifier/requirement structs, parser, projections, resolver, and tests. |
+| [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] | 2 | Server-side rendering of a domain type for display: history field mapper. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |
-| [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] | 12 | Qt UI: windows, dialogs, controllers, client models. |
+| [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] | 9 | Qt UI: windows, dialogs, controllers, client models. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
 | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 12 | Service-application C++ scaffold: application, host, config options/parser, main. |
+| [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 2 | Shell REPL command units for entity CRUD verbs: the per-entity submenu, its get/add/delete/history handlers, and the per-menu registrar. |
 
 * See also
 

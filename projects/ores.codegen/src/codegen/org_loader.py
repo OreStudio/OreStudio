@@ -2609,11 +2609,13 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     for k in ("name", "full_name", "brief", "description"):
         if k in fm:
             c[k] = fm[k]
-    # Component kind (flat | api | core | service | composite) selects the
-    # scaffolding variant set via the graph's kind discriminator; defaults
-    # to "flat". A composite has sub-components and no code of its own, so
-    # it generates none of the code-bearing archetypes; the one thing it
-    # does own is the CMakeLists that adds its parts.
+    # Component kind (flat | api | core | service | composite | adapter)
+    # selects the scaffolding variant set via the graph's kind discriminator;
+    # defaults to "flat". A composite has sub-components and no code of its
+    # own, so it generates none of the code-bearing archetypes; the one thing
+    # it does own is the CMakeLists that adds its parts. An adapter is a part
+    # of such a composite whose build files are hand-authored, so no
+    # build-file archetype serves it and only the file lists are generated.
     c["kind"] = fm.get("component_kind", "flat")
     # Part order is declared rather than derived. Dependency order is not
     # alphabetical -- ores.qt needs headless and api ahead of the plugins

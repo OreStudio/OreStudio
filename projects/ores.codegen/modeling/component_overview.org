@@ -139,9 +139,9 @@ controller, and the two =.ui= form files.  Patterns are in
 ** Component scaffold profiles
 
 All variants run via =--address ores.cpp.component=; the overview's
-=#+component_kind:= frontmatter (=api=/=core=/=service=/=flat=) picks
-which one. They create a new component skeleton rather than entity
-code: CMakeLists, a master header, a stub header+impl, and test
+=#+component_kind:= frontmatter (=api=/=core=/=service=/=flat=/=composite=/
+=adapter=) picks which one. They create a new component skeleton rather than
+entity code: CMakeLists, a master header, a stub header+impl, and test
 harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split model and CMake dep chain.
 
 | =#+component_kind:= | Part | Files |
@@ -150,6 +150,13 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
 | =core= | =ores.COMPONENT.core= | 10 (same set, core CMake deps) |
 | =service= | =ores.COMPONENT.service= | 19 (core set + export.hpp + app/config headers+impls + main.cpp) |
 | =flat= (default) | standalone (no split) | 10 (generic CMake deps + export.hpp) |
+| =composite= | composite root | 1 (the root CMakeLists that adds the =#+parts:=) |
+| =adapter= | adapter part | 2 (the =src/= and =tests/component_files.cmake= file lists) |
+
+A =composite= holds parts and no code of its own, and an =adapter= is one of
+its parts with hand-authored build files. Both exist so that generation
+never writes over a hand-tuned CMakeLists. An undeclared kind selects
+=flat=, which serves neither case.
 
 * Test fixtures
 

@@ -290,6 +290,15 @@ confirmation more than on the trade. See
 We have the versioning primitives and we do not yet have the
 confirmation model.
 
+Confirmation already carries lifecycle weight even so. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]]
+makes Confirm the only transition from =new= to =live=, so a trade
+that is never confirmed never becomes active. That binds the
+confirmation model to the state machine more tightly than the missing
+pieces below suggest, and it is why a trade that does not confirm —
+an internal transfer, a test booking — needs either its own machine or
+another way into =live=. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] covers
+which trades those are.
+
 What exists:
 
 - Reference data versions a composite by touching the parent when a
@@ -349,6 +358,7 @@ What is missing, and what development should add:
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition model
   whose changes this page classifies.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the machine in which confirmation is the transition from new to live.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning
   spine our entities already carry.

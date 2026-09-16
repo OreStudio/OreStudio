@@ -1,0 +1,78 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Trade status state machine
+
+skinparam state {
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4A78A8
+    ArrowFontColor #1A1A1E
+    StartColor #4A78A8
+    EndColor #4A78A8
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+state "new" as New
+state "live" as Live
+state "expired" as Expired
+state "cancelled" as Cancelled
+
+New : Booked; awaiting confirmation of terms
+Live : Confirmed and active; in risk and P&L
+Expired : Contract ceased naturally
+Cancelled : Removed from the book
+
+[*] --> New : Book
+New --> Live : Confirm
+New --> Cancelled : Cancel
+Live --> Expired : Expire / Mature / Exercise
+Live --> Cancelled : Cancel / Terminate
+Expired --> [*]
+Cancelled --> [*]
+
+note right of New
+  New Activity events land here.
+  They require confirmation.
+end note
+
+note right of Live
+  Life-Cycle Events apply here.
+  They change terms without
+  changing status.
+end note
+
+note bottom of Cancelled
+  Confirm is the only route into Live.
+  A trade that never confirms, such as an
+  intra-entity transfer, a test booking or
+  a hypothetical, cannot reach Live in
+  this machine.
+end note
+
+@enduml

@@ -139,8 +139,14 @@ which transitions exist rather than in which reports remember to
 filter. An intra-entity trade cannot settle by accident, because its
 machine holds no transition that would settle it.
 
-We already hold the machinery. The
-[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade status state machine]] runs on =ores_dq_fsm_machines_tbl=,
+We already hold the machinery, and one machine. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] sets
+out the states a trade takes — =new=, =live=, =expired= and
+=cancelled= — with Confirm as the only transition from =new= to
+=live=. That machine therefore describes an external, actual trade,
+and the combinations that never confirm cannot reach =live= within it.
+Reconciling the two is the first piece of work this page implies.
+
+The [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][same machine]] runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its
 transitions carry a guard function, and a
 [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] already holds a state in one of those machines. The model
@@ -302,6 +308,8 @@ enumerations.
 * See also
 
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; this page is the other axis.
-- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the machinery these dimensions select.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states and transitions these dimensions select between.
+- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how that lifecycle is held in the database.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — what confirmation is, and why a non-confirming trade cannot use this machine unchanged.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — explicit variation over inheritance webs.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -1,9 +1,13 @@
 :PROPERTIES:
 :ID: B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D
 :END:
-#+title: Trade Status State Machine
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+title: Trade Lifecycle
+#+description: The lifecycle a trade runs through: the states its operational status takes, the events that move between them, the activity type taxonomy that classifies each event, and how amendments produce versions.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:lifecycle:modeling:
+#+created: 2026-09-16
+#+updated: 2026-09-16
 #+startup: inlineimages
 
 * Overview
@@ -71,34 +75,26 @@ Misbooking, and Valuation Change.
 
 ** State Diagram
 
-#+begin_example
-                              ┌─────────────────────────────────────────────────────┐
-                              │              TRADE STATUS STATE MACHINE              │
-                              └─────────────────────────────────────────────────────┘
+[[proj:doc/knowledge/domain/trade_lifecycle.png]]
 
-                                      (initial)
-                                          │
-                                      Book│
-                                          ▼
-                                   ┌─────────────┐
-                                   │     NEW      │  ◀──── New Activity events
-                                   │  (initial)   │         (require confirmation)
-                                   └──────┬──────┘
-                            Cancel │      │ Confirm
-                                   │      ▼
-                              ┌────▼   ┌─────────────┐
-                              │        │    LIVE      │  ◀──── Life-Cycle Events
-                              │        │  (active)    │         (in-terms changes)
-                              │        └──────┬──────┘
-                              │  Cancel/      │ Expire/
-                              │  Terminate    │ Mature/
-                              │               │ Exercise
-                              ▼               ▼
-                         ┌──────────┐  ┌──────────────┐
-                         │CANCELLED │  │   EXPIRED    │
-                         │(terminal)│  │  (terminal)  │
-                         └──────────┘  └──────────────┘
-#+end_example
+
+** What the machine assumes
+
+The only transition from =new= to =live= is Confirm, so the machine as seeded
+assumes every trade is confirmed with a counterparty. [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and deal
+versioning]] sets out what a confirmation is and which changes require another.
+
+That assumption holds for a trade faced outward, and fails for several kinds
+that do not confirm. An intra-entity transfer has no external counterparty to
+agree terms with; a test booking confirms nothing by design; a hypothetical is
+never dealt. Under the machine above each of those would remain in =new=
+indefinitely, since no other transition reaches =live=.
+
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] proposes the two dimensions that
+determine which case a trade falls into, and argues that each combination
+selects its own machine. This machine is the external, actual one. Whether the
+others are separate machines or a further transition into =live= on this one is
+open, and the choice is a modelling decision rather than a lifecycle fact.
 
 * Temporal Versioning and Amendments
 
@@ -257,48 +253,10 @@ do not change the trade's operational status.
 | Script Changes              | Valuation Change  | No                    | None (amend)                                  |
 | Cancel                      | Cancellation      | No                    | any → =cancelled=                             |
 
-* Database Representation
+* See also
 
-** Trade Status FSM
-
-The trade status machine is seeded in =ores_dq_fsm_machines_tbl= under the name
-=trade_status= with four states and five transitions as described above.
-
-The =ores_trading_trades_tbl= carries a =status_id= column (soft foreign key to
-=ores_dq_fsm_states_tbl=) representing the trade's current status.
-
-** Activity Types
-
-The full set of activity types is stored in =ores_trading_activity_types_tbl=
-(replaces the narrower =ores_trading_lifecycle_events_tbl=). Each activity type
-record includes:
-
-- =code=: unique identifier (e.g. =novation=, =rate_reset=).
-- =category=: one of =new_activity=, =lifecycle_event=, =misbooking=,
-  =valuation_change=, =cancellation=.
-- =requires_confirmation=: boolean.
-- =fsm_transition_id=: optional reference to the triggered FSM transition (null
-  for no-status-change activities).
-- =description=: human-readable description.
-
-** FSM Transition Enforcement
-
-Before a trade status transition is applied, the server validates it against the
-=ores_dq_fsm_transitions_tbl= to confirm the (from_state, to_state) pair is
-legal for the =trade_status= machine. Invalid transitions are rejected with an
-error response.
-
-* Related Components
-
-| Component | File                                                                  | Purpose                                 |
-|-----------+-----------------------------------------------------------------------+-----------------------------------------|
-| ores.dq   | [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]               | FSM infrastructure (machines, states, transitions) |
-| ores.trading | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]       | Trade domain model and repository       |
-| ores.fpml | [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]             | FpML trade format parsing               |
-| sql       | =ores_dq_fsm_machines_tbl=                                            | FSM machine definitions                 |
-| sql       | =ores_dq_fsm_states_tbl=                                              | FSM state definitions                   |
-| sql       | =ores_dq_fsm_transitions_tbl=                                         | FSM transition rules                    |
-| sql       | =ores_trading_trades_tbl=                                             | Trade records with =status_id= column   |
-| sql       | =ores_trading_activity_types_tbl=                                     | Activity type reference data            |
-
-| Top: [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | Previous: [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] |
+- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how this lifecycle is realised in the database.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — what confirmation is, and which changes require a new one.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — the two dimensions that determine whether this lifecycle applies unchanged.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the entities a trade is built from.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

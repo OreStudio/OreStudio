@@ -47,16 +47,27 @@ Three properties follow, and each has a system consequence.
 3. It is the record of the terms, not of the trade. A trade can exist
    unconfirmed; it cannot settle unconfirmed.
 
-** Verification, affirmation, confirmation
+** Acknowledgment, affirmation, confirmation
 
 Three steps sit between an execution and a confirmed deal, and the
-words are not interchangeable.
+words are not interchangeable. All three are bilateral; the internal
+check that precedes them is [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]].
 
 | Step | Who acts | What it establishes | System consequence |
 |------+----------+---------------------+--------------------|
-| Verification | The firm, internally | Our record matches the execution | A verified trade may enter the population |
+| Acknowledgment | One counterparty, sending to the other | A record of all the terms, signed and sent | The other side has something to agree or dispute |
 | Affirmation | The two counterparties, on the economic terms | Both sides agree the terms | The trade is affirmable; a query is raised instead if the terms differ |
 | Confirmation | The two counterparties, in writing | The binding record, superseding earlier agreement | The trade is confirmed as of a version |
+
+The CFTC defines the first and third. An acknowledgment is "a written
+or electronic record of all of the terms of a swap signed and sent by
+one counterparty to the other"; a confirmation is "legally binding
+documentation that memorializes the agreement of the counterparties to
+all of the terms of a swap transaction".
+
+It defines no step called verification, and the word is used in the
+industry for both the internal check and a bilateral one. This corpus
+therefore avoids it. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] records the ambiguity.
 
 Affirmation is not confirmation, and a platform makes the difference
 easy to miss. DTCC Deriv/SERV ran an affirmation service, AffirmXpress,
@@ -66,9 +77,10 @@ matching and confirmation service "resulting in legal confirmation
 within seconds of affirmation". The affirmation was the trigger; the
 confirmation was the legal act.
 
-The three steps also age differently. An unverified trade is an
-internal control exception. An unconfirmed trade is a counterparty
-risk, because the terms are not yet enforceable in the form the parties
+Ageing separates the internal check from the bilateral ones. An
+unauthorised trade is an internal control exception, and
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]] covers it. An unconfirmed trade is a counterparty risk,
+because the terms are not yet enforceable in the form the parties
 agreed.
 
 ** The confirmation lifecycle
@@ -93,8 +105,8 @@ agreed.
 | =affirmed= | =confirmed= | Confirm | The binding record supersedes the earlier agreement. |
 | =confirmed= | =unconfirmed= | Amend | A confirmable amendment moves the external version. |
 
-The three steps above are the transitions: verification belongs to the
-[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]], while affirmation and confirmation belong here.
+The steps above are its transitions. The internal check that precedes
+them belongs to [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]] as authorisation.
 
 =not_required= has no transitions out. An intra-entity transfer, a
 test booking or a hypothetical enters it at booking and stays there,
@@ -199,7 +211,7 @@ confirmation follows the trade population, not the message flow.
 
 A trade must be in the population before it can receive events. The
 population is a state machine, and the states track the confirmation
-steps above: captured, verified, affirmed, confirmed. The states are
+steps above: captured, acknowledged, affirmed, confirmed. The states are
 not decoration. Each one gates a different capability, and the useful
 implementation reads the gate rather than re-deriving the state at each
 call site.
@@ -258,13 +270,12 @@ We have the versioning primitives and we do not yet have the
 confirmation model.
 
 The two-version rule above has a counterpart in state. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]]
-carries an external machine whose states are =unconfirmed=,
+carries a confirmation lifecycle whose states are =unconfirmed=,
 =queried=, =affirmed= and =confirmed=, moving on the external version
-exactly as this rule describes, alongside an internal machine that
-moves on the internal version. The three steps distinguished above map
-onto them directly: verification is a transition in the internal
-machine, while affirmation and confirmation are transitions in the
-external one.
+exactly as this rule describes, alongside a trade lifecycle that moves
+on the internal version. The steps distinguished above are transitions
+in the confirmation lifecycle; the internal check that precedes them is
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]], a transition in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]].
 
 What exists:
 
@@ -326,6 +337,7 @@ What is missing, and what development should add:
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition model
   whose changes this page classifies.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the other status a trade carries.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — the internal control that precedes these steps.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — the external version a confirmation is stated as of.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — which activities require a new confirmation.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.

@@ -99,6 +99,13 @@ independent of one another.
   affirmation and confirmation are three distinct steps, and only the
   last is binding.
 
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — the Middle Office control that releases a trade
+  into the book, and why it moves no version.
+
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Authorisation Queue]] — the Operations screen every trade passes
+  through, its states, and why a denial cannot become an
+  authorisation.
+
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the
   taxonomy of events. Every activity answers three questions at once:
   does it move a version, does it require a new confirmation, does it

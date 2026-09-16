@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 785C68A0-DD94-404A-BF16-57814554DA12
+:END:
+#+title: Authorisation Queue
+#+description: The Operations screen through which every trade passes: how it is grouped, the states a deal moves through, why a denial cannot become an authorisation, and the reports that make the control auditable.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:controls:operations:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+The authorisation queue is the screen on which Operations works. Every
+trade passes through it, and [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]] covers what the control is
+and why it exists.
+
+It is a deal queue specifically. Other authorisation queues exist
+elsewhere in the system, the fixing manager being the clearest, and
+they are not this one.
+
+* How the queue is organised
+
+The primary division is by complexity, because the two halves are
+worked differently.
+
+| Class | Contents |
+|-------+----------|
+| *Flow* | Spot, forward, cash, vanillas, interest rate swaps |
+| *Non-flow* | Everything more complex |
+
+Within each, deals are grouped by their state: awaiting authorisation,
+held over, amendments, new, authorised and denied, with an all-trades
+view alongside.
+
+Ordering is by recency, with one override: a non-exercised trade
+approaching expiry appears at the top, in red. The queue prioritises
+by urgency rather than by arrival alone, because an option that
+expires unexercised while sitting in a queue is a loss that the queue
+caused.
+
+* The states a deal moves through
+
+| State | Meaning | Exit |
+|-------+---------+------|
+| =unseen= | Arrived, not yet looked at | Authorise, deny, or hold over |
+| =held_over= | Parked pending a query | Authorise or deny once resolved |
+| =authorised= | Approved; visible to risk and downstream | Un-authorise, with a reason |
+| =denied= | Rejected | None; authorising raises an exception |
+
+=unseen= is a working state rather than a record of fact. An operator
+may restore a deal to unseen, having picked it up, looked at it, and
+left it for someone else.
+
+** A denial cannot become an authorisation
+
+The prohibition is deliberate and is the most informative rule in the
+queue. A deal cannot move from denied to authorised, and an attempt
+raises an exception. The reverse is also prohibited.
+
+The reasoning is that reversing a terminal decision is not a
+correction but evidence that something went wrong, and is worth
+surfacing rather than absorbing. The route back is an explicit
+un-authorise carrying a reason, which is an undo rather than a second
+decision.
+
+That distinction runs through this corpus. [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] treats an
+undo as a mirror rather than a deletion, for the same reason.
+
+** Held over is a suspension, not a rejection
+
+A deal is held over pending information: a query on the margin a
+customer holds, a question on the sales ticket, an awaited amendment.
+
+The reason is chosen from an enumeration rather than typed, and the
+enumeration is revealing. Most of its entries are not doubts about the
+trade at all but handover markers between regional teams: asia to
+authorise, london to follow, new york order. The queue is doing double
+duty as a follow-the-sun workflow.
+
+Holding a trade over carries risk in both directions, and both are
+real. A genuine trade held over is a binding agreement carrying
+unmanaged risk hidden from the traders. A trade that is not genuinely
+ours needs to come off the books rather than sit in a queue.
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] covers the second case.
+
+Two reports follow: the time a deal has been held, and a held-over
+report listing what stayed in the queue overnight, with reasons.
+
+* What the operator sees
+
+Fields that have changed are highlighted, which is what makes an
+amendment reviewable rather than merely visible.
+
+A structure displays all its components. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] covers why a
+typed structure authorises as a whole.
+
+Each deal carries its settlements and confirmations, with their own
+flags and comments, and may be marked off for premium or expiry
+netting.
+
+** Comments are always required
+
+A denial requires a comment, and so does a hold. The notes go further:
+comments are always required, including on an authorisation.
+
+An amendment additionally carries a reason code and a department, and
+an operational error flag. That flag is the one that earns its place:
+it separates a trade that changed for a business reason from one that
+was booked wrongly, which is what makes an error rate measurable
+rather than anecdotal.
+
+Some reasons require escalation, where a head of desk must authorise
+the change rather than the usual approver. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers
+the reason codes themselves.
+
+** Concurrency is a notification, not a lock
+
+A new version may appear while an operator is still authorising the
+previous one. The queue notifies and offers a refresh rather than
+locking the deal.
+
+That is a deliberate choice about who waits. A lock would block the
+trader from amending while Operations reads, which inverts the
+priority between booking and checking.
+
+* Auto-authorisation
+
+Not everything needs a person. Counterparties and product types may be
+marked for auto-authorisation by rule, and Operations configures the
+rules.
+
+One case is not configurable: an exercised deal authorises
+automatically. An exercise is a system-generated consequence of an
+already-authorised option meeting an observed fixing, so there is no
+new human decision to check.
+
+Auto-authorised deals still produce their own report, so the exemption
+is visible rather than silent. That is the pattern throughout: an
+exception to a control is recorded, not hidden.
+
+* Exception flags that cause a hold
+
+The queue sits alongside other categories Operations monitors, and
+these frequently cause a deal to be held.
+
+| Flag | Meaning |
+|------+---------|
+| Late | Saved or executed past a cut-off |
+| Off-premises | Executed somewhere other than the trader's agreed location |
+| Out of hours | Outside regional business hours, at a weekend, or on a public holiday |
+| Unconfirmed | Not confirmed, or confirmed too late |
+
+The first three are about the circumstances of booking rather than the
+terms of the trade, which is what distinguishes this control from the
+agreement steps.
+
+* Reports
+
+| Report | Purpose |
+|--------+---------|
+| Unauthorised trades | By recency, one row per structure |
+| Auto-authorised deals | Visibility of what bypassed human review |
+| User authorisations | Authorisations by user |
+| Errors prior to authorisation | Errors noted against the authorisation |
+| Held over report | What stayed in the queue overnight, with reasons |
+| Post trade amendments and cancellations | Changes after the trade date |
+| Same day amends and cancellations | Booked and modified the same day |
+
+Structures collapse to a single row in each, which is the reporting
+counterpart of authorising a structure as a whole.
+
+* Open questions
+
+- Whether =unseen= and =held_over= belong to the same enumeration as
+  =authorised= and =denied=, given the first two are working states an
+  operator sets and the second two are decisions.
+- Whether un-authorise returns a deal to =unseen= or to a distinct
+  state that records the reversal.
+- How the queue relates to [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]]: whether authorisation
+  is a transition within it or a separate status alongside it, as
+  confirmation is.
+
+* Sources
+
+Drawn from internal analysis notes on authorisation, which summarise
+requirements material. No external standard is cited.
+
+* See also
+
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — what the control is and why it exists.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the state a trade occupies while it waits here.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the front-office screen this one checks the work of.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events an authorisation approves.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the controls guarding the same boundary.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

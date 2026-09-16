@@ -41,7 +41,7 @@ and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the
 | State | Description | Initial | Terminal |
 |-------+-------------+---------+----------|
 | =booked= | Recorded in our books. | Yes | No |
-| =verified= | Our record matches the execution. | No | No |
+| =authorised= | Operations has checked the booking and released it. | No | No |
 | =live= | Contributing to risk and P&L. | No | No |
 | =expired= | Contract ceased naturally: expired, matured, exercised. | No | Yes |
 | =cancelled= | Removed from the book. | No | Yes |
@@ -49,13 +49,13 @@ and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the
 | From | To | Event | Notes |
 |------+----+-------+-------|
 | (initial) | =booked= | Book | Any trade-creating activity. |
-| =booked= | =verified= | Verify | Our record is checked against the execution. |
-| =verified= | =live= | Activate | Released into the book. |
+| =booked= | =authorised= | Authorise | Operations checks the booking and releases it. |
+| =authorised= | =live= | Activate | Enters risk and P&L. |
 | =live= | =expired= | Expire / Mature / Exercise | Contract ceases naturally. |
-| =booked= | =cancelled= | Cancel | Cancelled before verification. |
-| =verified= | =cancelled= | Cancel | Cancelled before activation. |
+| =booked= | =cancelled= | Cancel | Cancelled before authorisation. |
+| =authorised= | =cancelled= | Cancel | Cancelled before activation. |
 | =live= | =cancelled= | Cancel / Terminate | Cancelled or terminated while active. |
-| =booked=, =verified=, =live= | unchanged | Amend | A change to the deal; see below. |
+| =booked=, =authorised=, =live= | unchanged | Amend | A change to the deal; see below. |
 
 ** Amendment leaves the state unchanged
 
@@ -95,14 +95,22 @@ which [[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]] covers, and whi
 
 The second row is the one a single status cannot express.
 
-** Authorisation is not a state
+** Authorisation moves no version
 
-Authorisation is our workflow rather than a term of the deal, so it is
-metadata on the trade. Treating it as a state would make the firm
-issue confirmations for its own internal approvals.
+Authorisation is a control rather than a term of the deal, so it moves
+no version: a version produced by authorising would itself require
+authorisation, without end. It is a statement about a version rather
+than a change to the trade.
+
+It is nonetheless a state here, because an unauthorised trade exists
+and contributes to nothing, which is a fact about where the trade has
+got to. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] covers the control and
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][the authorisation queue]] the screen it happens on.
 
 * See also
 
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — the control that releases a trade into the book.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Authorisation Queue]] — the screen a trade waits on.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events that create, change or end a trade.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what an amendment produces.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the second status a trade carries.

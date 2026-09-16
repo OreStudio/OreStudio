@@ -39,13 +39,13 @@ skinparam BackgroundColor white
 skinparam DefaultFontColor #1A1A1E
 
 state "booked" as Booked
-state "verified" as Verified
+state "authorised" as Verified
 state "live" as Live
 state "expired" as Expired
 state "cancelled" as Cancelled
 
 Booked : Recorded in our books
-Verified : Our record matches the execution
+Verified : Operations has released it
 Live : Contributing to risk and P&L
 Expired : Contract ceased naturally
 Cancelled : Removed from the book
@@ -65,8 +65,9 @@ Expired --> [*]
 Cancelled --> [*]
 
 note right of Verified
-  An unverified trade is an
-  internal control exception.
+  Operations checks what the trader
+  booked. An unauthorised trade exists
+  and contributes to nothing.
 end note
 
 note bottom of Live

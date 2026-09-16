@@ -263,9 +263,19 @@ via its "Verifies task" field.
 
 * Review
 
+Local review of =bdc48fb93c..fcd29e7025=, the five commits this task adds.
+The pass ran the misspell check and walked the hand-written half of the
+diff, which is the codegen engine, the three facet templates, the model
+opt-ins, the link, and the =trade_type= mapper changes. The generated
+half is 23 units and their tests, and the build and the suite cover it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The generated help and confirmation prose differs from the hand-written units it replaces: the success lines lowercase the entity name, the add usage string names the raw columns, and one debug log line drops the key | the 23 units | Declined | The generator standardises the wording across all 23 units. The claim the wave measured is about submenu names and verb shapes, and both are unchanged. |
+| 2 | =_sample_token= falls back to =sample= for an enum column with no =:default_value:=, and org_loader only requires a default for a *non-nullable* enum, so a nullable enum would generate a test whose expected parse succeeds on a token the parser rejects | =core.py= | Declined | Unreachable today. =trade_type.product_type= is the only opted-in enum and it is non-nullable with a default. Recorded for the facet's hardening. |
+| 3 | =has_bool_columns= scans the plain columns while the malformed-token loop scans the primary key and the plain columns, so a user-supplied bool primary-key member would generate a unit that calls =parse_flag= without emitting it | =core.py= | Declined | Unreachable today. No primary key in the estate is a bool; the keys are a uuid or a code. Recorded for the facet's hardening. |
+| 4 | =rfl::string_to_enum(...).value()= throws when the stored text is not an enumerator | =trade_type_mapper.cpp= | Declined | The idiom the marketdata and synthetic repository mappers already use, and the value comes from our own column. |
+| 5 | =misspell-fixer .= exits 1 | two =update-ore-to-v17= task records | Declined | Pre-existing and deliberate: both quote the upstream identifier =LOAD_PROFILE_1_EXPLICT=, and correcting it would make the record false. An isolated run over this diff's files reports "nothing to replace". |
 
 * Result
 

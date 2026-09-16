@@ -332,7 +332,7 @@ The pieces that exist:
 The target for trading follows the relational reading instead. A
 composite instrument is =composite_instruments= rows and
 =composite_legs= rows joined by keys, a leg is keyed by its instrument
-and its leg sequence, and each entity versions on its own spine. The
+and its leg sequence, and each entity versions on its own timeline. The
 aggregate version of the reference-data model is deliberately not
 adopted for trading, because it is object-graph thinking. See
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] for the review criteria that

@@ -57,8 +57,8 @@ A trade runs two state machines, and they answer different questions.
 
 | Machine | Question | Spine | Applies to |
 |---------+----------+-------+------------|
-| *Internal* | Where has this trade got to in our books? | The audit spine, moving on the internal version | Every trade |
-| *External* | What have we and the counterparty agreed? | The commercial spine, moving on the external version | Trades faced outward |
+| *Internal* | Where has this trade got to in our books? | The operational workflow, moving on the internal version | Every trade |
+| *External* | What have we and the counterparty agreed? | The confirmation workflow, moving on the external version | Trades faced outward |
 
 [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and deal versioning]] draws the same division from the
 version side: the internal version moves on every recorded change,
@@ -92,16 +92,17 @@ Every trade runs this one, whatever it faces.
 |------+----+-------+-------|
 | (initial) | =booked= | Book | Any trade-creating activity. |
 | =booked= | =verified= | Verify | Our record is checked against the execution. |
-| =verified= | =live= | Confirm | The counterparty has agreed the terms. |
-| =verified= | =live= | Activate | There is nobody to agree terms with. |
+| =verified= | =live= | Activate | Released into the book. |
 | =live= | =expired= | Expire / Mature / Exercise | Contract ceases naturally. |
 | =booked= | =cancelled= | Cancel | Cancelled before verification. |
 | =verified= | =cancelled= | Cancel | Cancelled before activation. |
 | =live= | =cancelled= | Cancel / Terminate | Cancelled or terminated while active. |
 
-Two events reach =live=, and the machine does not distinguish the
-kinds of trade that send them. It has no knowledge of counterparties
-or of confirmation.
+Confirmation does not appear in this machine. A trade carries risk
+from the moment it is released into the book, whether or not its terms
+have been confirmed, so a pending client trade flows to the trader's
+book and is managed from the start. An unconfirmed trade is a
+counterparty risk rather than an inactive one.
 
 Authorisation is not a state here. It is our workflow rather than a
 term of the deal, so it is metadata on the trade.
@@ -121,6 +122,7 @@ starts.
 | =queried= | The two records differ. | No | No |
 | =affirmed= | Both sides agree the economic terms. | No | No |
 | =confirmed= | The binding written record, as of an external version. | No | No |
+| =expired= | The contract has ceased. | No | Yes |
 | =cancelled= | Nothing left to agree. | No | Yes |
 
 | From | To | Event | Notes |
@@ -131,48 +133,59 @@ starts.
 | =queried= | =affirmed= | Resolve | The difference is settled. |
 | =affirmed= | =confirmed= | Confirm | The binding record supersedes the earlier agreement. |
 | =confirmed= | =unconfirmed= | Amend | A confirmable amendment moves the external version. |
+| any | =expired= | Expire / Mature / Exercise | The contract ceases, so there is nothing further to agree. |
 | any | =cancelled= | Cancel | The trade is cancelled at any point. |
 
-Only =cancelled= is terminal. A confirmed trade returns to
-=unconfirmed= whenever a confirmable amendment moves the external
-version, which is why confirmation is stated as of a version rather
-than once and for all.
+=expired= and =cancelled= are terminal, and are the two states this
+machine shares with the internal one. Everything else is not: a
+confirmed trade returns to =unconfirmed= whenever a confirmable
+amendment moves the external version, which is why confirmation is
+stated as of a version rather than once and for all.
+
+A trade may reach =expired= from any state, including =unconfirmed=. A
+contract that matured without ever being confirmed is a control
+failure, and the machine records it rather than preventing it.
 
 ** How the machines relate
 
-They share a vocabulary of events and one state. Nothing else connects
-them, and neither inspects the other.
+They share a vocabulary of events and two states. Nothing else
+connects them, and neither inspects the other.
 
 | Event | Internal machine | External machine |
 |-------+------------------+------------------|
-| Book | (initial) → =booked= | (initial) → =unconfirmed= |
+| *Book* | (initial) → =booked= | (initial) → =unconfirmed= |
 | Verify | =booked= → =verified= | — |
+| Activate | =verified= → =live= | — |
 | Affirm | — | =unconfirmed= → =affirmed= |
 | Query | — | =unconfirmed= → =queried= |
 | Resolve | — | =queried= → =affirmed= |
-| *Confirm* | =verified= → =live= | =affirmed= → =confirmed= |
-| Activate | =verified= → =live= | — |
+| Confirm | — | =affirmed= → =confirmed= |
 | Amend | — | =confirmed= → =unconfirmed= |
-| Expire / Mature / Exercise | =live= → =expired= | — |
+| *Expire / Mature / Exercise* | =live= → =expired= | any → =expired= |
 | *Cancel* | any → =cancelled= | any → =cancelled= |
 
-Two events are broadcast to both machines, and they are the whole of
-the relationship.
+Three events are broadcast to both machines, and they are the whole of
+the relationship. Book starts each, and Expire and Cancel end each in
+the two states they share. Both shared states carry the same colour in
+both figures.
 
-*Confirm* advances the external machine to =confirmed= and the
-internal machine to =live=. Neither transition is conditional on the
-other; both machines simply respond to the same event.
+Everything between those boundaries belongs to one machine alone.
+Verification and activation are ours; affirmation, confirmation and
+amendment are the counterparty's. Neither set appears in the other
+machine.
 
-*Cancel* terminates both, in the one state they share. A cancelled
-trade is cancelled in our books and has nothing left to agree with
-anyone, and the shared colouring in both figures marks it as the same
-state.
+That separation is what makes a trade live before it is confirmed. The
+internal machine reaches =live= on Activate and never consults the
+external one, so a pending client trade is in the book and managed
+from the start while its confirmation is still outstanding. The
+outstanding confirmation is visible as the external machine sitting in
+=unconfirmed=, which is a counterparty risk rather than a reason to
+withhold the trade from risk and P&L.
 
-The arrangement decides the case that a single machine cannot express.
-A trade with no counterparty never emits Affirm, Query or Confirm, so
-its external machine never leaves =unconfirmed= and is simply not
-consulted. Its internal machine reaches =live= on Activate instead.
-[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] sets out which trades those are.
+A trade with no counterparty simply never runs the external machine.
+It emits no Affirm, Query or Confirm, and its internal machine is
+unaffected either way. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] sets out
+which trades those are.
 
 Adding a third machine needs no change to either of these. A
 settlement or a confirmation message has its own states and subscribes

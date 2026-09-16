@@ -111,9 +111,9 @@ counted, explained and cleared.
 A deal carries two version numbers.
 
 - The /internal version/ moves on every recorded change to the deal. It
-  is the audit spine. It answers "what did we hold, and when".
+  is the audit trail. It answers "what did we hold, and when".
 - The /external version/ moves only when the terms the customer has
-  agreed to change. It is the commercial spine. It answers "what has
+  agreed to change. It is the commercial record. It answers "what has
   the customer agreed to".
 
 The rule in one sentence: a trade changes version only if the agreement
@@ -305,7 +305,7 @@ What exists:
   child changes, so "as of version N" is a temporal window join. See
   [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
 - Trading does not adopt that design. Each entity versions on its own
-  spine and the composite read is a temporal join over keys.
+  timeline and the composite read is a temporal join over keys.
 - The blotter exposes the deal actions that produce versions: Amend,
   Cancel, Clone and Roll Forward. See
   [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
@@ -361,6 +361,6 @@ What is missing, and what development should add:
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the machine in which confirmation is the transition from new to live.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning
-  spine our entities already carry.
+  mechanism our entities already carry.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — trade activity categories, and why a version
   boundary matters to an attribution run.

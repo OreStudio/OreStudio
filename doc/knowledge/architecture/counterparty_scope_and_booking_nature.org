@@ -145,14 +145,15 @@ machine carries every trade from =booked= through =verified= to
 faced outward, from =unconfirmed= to =confirmed=.
 
 The two dimensions on this page decide one thing in that arrangement:
-which event carries a trade to =live=. A trade faced outward is
-confirmed, and Confirm advances both machines. A trade with nobody to
-agree with — an intra-entity transfer, a test booking, a hypothetical
-— never emits Confirm at all, so its external machine is never
-consulted and its internal machine reaches =live= on Activate instead.
+whether a trade runs the external machine at all. A trade faced
+outward has terms to agree, so it does. An intra-entity transfer, a
+test booking or a hypothetical has nobody to agree with, so it does
+not.
 
-Neither machine inspects the other. The dimensions decide which events
-a trade emits, and the machines respond to the events they recognise.
+The internal machine is unaffected either way. It reaches =live= on
+Activate without consulting anything, so every trade is live once
+released into the book, whatever its confirmation status and whether
+or not it has one.
 
 The machinery runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its

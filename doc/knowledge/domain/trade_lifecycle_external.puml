@@ -18,7 +18,7 @@
 @startuml
 !pragma layout smetana
 
-title External machine: the commercial spine
+title External machine: the confirmation workflow
 
 skinparam state {
     BackgroundColor #E3F0DC
@@ -43,12 +43,14 @@ state "queried" as Queried
 state "affirmed" as Affirmed
 state "confirmed" as Confirmed
 state "cancelled" as Cancelled #E8D9F0 ##[bold]7A4B93
+state "expired" as Expired #E8D9F0 ##[bold]7A4B93
 
 Unconfirmed : Terms not yet agreed
 Queried : The two records differ
 Affirmed : Both sides agree the terms
 Confirmed : Binding written record
 Cancelled : Nothing left to agree
+Expired : The contract has ceased
 
 [*] --> Unconfirmed : Book
 Unconfirmed --> Affirmed : Affirm
@@ -60,7 +62,12 @@ Unconfirmed --> Cancelled : Cancel
 Queried --> Cancelled : Cancel
 Affirmed --> Cancelled : Cancel
 Confirmed --> Cancelled : Cancel
+Unconfirmed --> Expired : Expire / Mature / Exercise
+Queried --> Expired : Expire / Mature / Exercise
+Affirmed --> Expired : Expire / Mature / Exercise
+Confirmed --> Expired : Expire / Mature / Exercise
 Cancelled --> [*]
+Expired --> [*]
 
 note right of Confirmed
   Confirmed as of an external version.
@@ -77,9 +84,9 @@ note left of Unconfirmed
 end note
 
 note right of Cancelled
-  Shared state. Cancel is
-  broadcast to both machines
-  and terminates each.
+  Shared states, marked in both figures.
+  Cancel and Expire are broadcast to both
+  machines and terminate each.
 end note
 
 @enduml

@@ -68,7 +68,7 @@ A legal entity is a legal entity. Internal and external describe our
 relationship to one, not a property of the entity itself, and the same
 entity can be both: an inter-entity trade faces a legal entity of our
 own group, which is external to the booking entity and internal to the
-firm. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] makes that argument on the
+firm. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] makes that argument on the
 trade side, where =inter_entity= is a first-class value precisely
 because the distinction is a matter of degree.
 
@@ -115,4 +115,4 @@ qualifying flag belongs on a sensitivity rather than in the taxonomy.
 * See also
 
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; this gap was found while writing it.
-- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — why internal and external is a matter of degree on the trade side.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] — why internal and external is a matter of degree on the trade side.

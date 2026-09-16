@@ -55,7 +55,7 @@ yet; this prototype runs ahead of it.
 That source now has a page in the repo:
 [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
 (PR #2063, merged 2026-09-11), with
-[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]]
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]]
 beside it. Tickets cite the page, not the source file.
 
 Decisions taken while charting, which fix the frame for every task below:

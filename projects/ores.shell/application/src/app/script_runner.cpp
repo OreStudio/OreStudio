@@ -65,7 +65,8 @@ std::string expand_env_vars(const std::string& in, std::string& missing) {
                 i = j;
                 continue;
             }
-            ++j; // consume '}'
+            // Step over the closing brace.
+            ++j;
         }
         namespace pe = ores::platform::environment;
         if (const auto val = pe::environment::get_value(name)) {

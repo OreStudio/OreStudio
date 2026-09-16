@@ -35,3 +35,4 @@ separate per-address component entries are needed.
 | trading-cpp | projects/ores.trading/modeling | |
 | workflow-cpp | projects/ores.workflow/modeling | |
 | workspace-cpp | projects/ores.workspace/modeling | |
+| shell | projects/ores.shell/modeling | |

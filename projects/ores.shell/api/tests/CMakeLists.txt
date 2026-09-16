@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.shell")
+set(name "ores.shell.api")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
@@ -30,6 +30,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.testing.lib
+        ores.logging.lib
         Catch2::Catch2
         ores.openssl_cleanup
         Threads::Threads)

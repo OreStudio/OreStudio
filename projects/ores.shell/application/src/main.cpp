@@ -48,5 +48,7 @@ int main(int argc, char** argv) {
         std::cerr << "Application was forced to terminate." << std::endl;
         return EXIT_FAILURE;
     }
-    return EXIT_FAILURE; // keep GCC happy.
+    // Unreachable: every path above returns. Present to silence the
+    // "control reaches end of non-void function" warning.
+    return EXIT_FAILURE;
 }

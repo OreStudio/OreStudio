@@ -18,6 +18,5 @@
 #
 set(files
     "app_command_args_tests.cpp"
-    "app_script_runner_tests.cpp"
     "main.cpp"
 )

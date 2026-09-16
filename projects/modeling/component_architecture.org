@@ -54,7 +54,6 @@ Current simple components:
 | =ores.platform= | Platform abstraction (reflect-cpp, JSON glue) |
 | =ores.security= | Authentication and authorisation primitives |
 | =ores.service= | Shared service-layer helpers (handler_helpers, request_context) |
-| =ores.shell= | Interactive shell and command registry |
 | =ores.storage= | Object storage client |
 | =ores.testing= | Test helpers and fixtures |
 | =ores.utility= | General-purpose utilities (UUID, time, string) |
@@ -126,6 +125,7 @@ Current composite components and their active sub-components:
 | =ores.refdata= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.reporting= | =api=, =core=, =service=, =modeling= |
 | =ores.scheduler= | =api=, =core=, =service=, =modeling= |
+| =ores.shell= | =api=, =application=, =modeling= |
 | =ores.synthetic= | =api=, =core=, =service= |
 | =ores.telemetry= | =core=, =service=, =database= |
 | =ores.trading= | =api=, =core=, =service=, =modeling= |
@@ -141,6 +141,28 @@ These receive wrong codegen output and must be ignored. See [[* Known issues]].
 * Sub-component catalogue
 
 Exhaustive list of every sub-component name in use and its canonical role.
+
+** Naming and scope
+
+A sub-component name is scoped to its parent component. Two components can
+therefore use the same sub-component name, and a sub-component can carry the
+name of a component.
+
+The adapter components =ores.qt= and =ores.shell= use this rule. Each part
+of an adapter projects one domain area, and the part takes the name of the
+domain component it projects. =ores.qt.trading= and =ores.shell.trading=
+both take their name from =ores.trading=. The rule covers every domain area,
+=refdata=, =compute= and =workflow= included.
+
+Read the full name to identify a part. =ores.shell.trading= is a part of
+=ores.shell=. =ores.trading= is a component in its own right. This is the
+*fractal* case: the same name appears at two levels of the tree, and the
+full name resolves which one is meant.
+
+The command facet follows the same rule. A generated command unit for a
+=trading= entity writes into =ores.shell.trading=, not into =ores.shell=
+directly, so only the adapter that owns the domain links the domain's
+protocol types.
 
 ** Standard roles (most groups use these three)
 
@@ -160,16 +182,16 @@ Exhaustive list of every sub-component name in use and its canonical role.
 | =database= | =ores.telemetry= | Database persistence layer — owns the DB schema and repository for the group when the persistence concern is large enough to separate from =core=. |
 | =quant= | =ores.analytics= | Dependency-light quantitative math library — CRM spanning-tree topology, the derived-rate engine and stochastic price processes. It carries no database or NATS dependency and is consumed for its mathematics alone, by =ores.refdata.core=, the =ores.synthetic= api and service, =ores.marketdata.service=, and the =ores.qt.refdata= and =ores.qt.synthetic= plugins. No part of =ores.analytics= links it today, so its placement here records where the mathematics belongs by subject rather than an existing dependency. |
 
-** Application-layer roles (=ores.qt= only)
+** Application-layer roles (=ores.qt= and =ores.shell=)
 
-=ores.qt= is the Application layer: a single composite component whose children are
-Qt UI plugins, each projecting one domain area. The sub-component names here
+=ores.qt= and =ores.shell= are the Application layer: each is a composite
+component whose children project domain areas. The sub-component names here
 are domain-area names, not the standard roles.
 
 | Name | Role |
 |------|------|
-| =application= | The Qt MDI host application — main window, MDI area, plugin loader, menu bar. |
-| =api= | Shared Qt types and utilities used across all Qt plugins. |
+| =application= | The runnable host of an adapter component. In =ores.qt= it is the MDI host application (main window, MDI area, plugin loader, menu bar); in =ores.shell= it is the process entry point, config parser, REPL loop and script runner, and it builds =ores.shell.exe=. |
+| =api= | Shared infrastructure of an adapter component, used across all of its parts. In =ores.qt= it is the Qt types and utilities; in =ores.shell= it is the argument parsing, feedback, pagination and request plumbing. |
 | =refdata= | Reference-data Qt plugin (country, currency, rounding types, …). |
 | =analytics= | Analytics Qt plugin. |
 | =compute= | Compute Qt plugin. |

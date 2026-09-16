@@ -19,81 +19,44 @@
 
 title ores.shell Component
 
-set namespaceSeparator ::
-
-namespace ores #F2F2F2 {
-    namespace shell #F2F2F2 {
-        namespace app #F2F2F2 {
-            class application {
-                +login_config : optional<config::login_options>
-                -connection_config_ : optional<nats::config::nats_options>
-                -login_config_ : optional<config::login_options>
-            }
-            class host {
-            }
-            class entity_page_state <<struct>> {
-                +current_offset : uint32_t
-                +total_count : uint32_t
-            }
-            class pagination_context {
-                -page_size_ : uint32_t
-                -last_entity_ : string
-                -entity_states_ : unordered_map<string, entity_page_state>
-                -list_callbacks_ : unordered_map<string, list_callback>
-            }
-            class repl {
-                -session_ : ores::nats::service::nats_client&
-                -pagination_ : pagination_context
-            }
-            namespace commands #F2F2F2 {
-                class accounts_commands {
-                    +account_id : string
-                    +days : int
-                }
-                class change_reason_categories_commands {
-                }
-                class change_reasons_commands {
-                }
-                class connection_commands {
-                }
-                class countries_commands {
-                }
-                class currencies_commands {
-                }
-                class navigation_commands {
-                    +size : uint32_t
-                }
-                class rbac_commands {
-                }
-                class script_commands {
-                }
-                class subscription_commands {
-                }
-                class tenants_commands {
-                }
-                class variability_commands {
-                }
-            }
-        }
-        namespace config #F2F2F2 {
-            class login_options <<struct>> {
-                +username : string
-                +password : string
-            }
-            class options <<struct>> {
-                +logging : optional<logging::logging_options>
-                +connection : optional<nats::config::nats_options>
-                +login : optional<login_options>
-                +telemetry : optional<telemetry::exporting::telemetry_options>
-            }
-            class parser {
-            }
-            class parser_exception {
-                -message_ : const string
-            }
-        }
+package "ores.shell.api" #F2F2F2 {
+    class command_args <<struct>> {
+        +positionals : vector<string>
+        +options : map<string, string>
+    }
+    class command_feedback {
+    }
+    class entity_page_state <<struct>> {
+        +current_offset : uint32_t
+        +total_count : uint32_t
+    }
+    class pagination_context {
+        -page_size_ : uint32_t
+        -last_entity_ : string
+        -entity_states_ : unordered_map<string, entity_page_state>
+        -list_callbacks_ : unordered_map<string, list_callback>
+    }
+    class history_diff_renderer {
     }
 }
+
+package "ores.shell.application" #F2F2F2 {
+    class application {
+        +login_config : optional<config::login_options>
+        -connection_config_ : optional<nats::config::nats_options>
+        -login_config_ : optional<config::login_options>
+    }
+    class host {
+    }
+    class repl {
+        -session_ : ores::nats::service::nats_client&
+        -pagination_ : pagination_context
+    }
+    class script_runner {
+    }
+}
+
+ores.shell.application ..> ores.shell.api : depends on
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

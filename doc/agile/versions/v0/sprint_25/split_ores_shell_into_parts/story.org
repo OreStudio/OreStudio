@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: A52DCD72-BEF4-4655-9987-A3103B288576
+:END:
+#+title: Story: Split ores.shell into composable parts
+#+description: Split the ores.shell monolith into api and application parts, declare it a codegen composite, and audit the result.
+#+type: story
+#+level: s2
+#+filetags: :ores.shell:architecture:component:codegen:sprint_25:v0:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.shell= is one component with one CMake target, so a domain adapter
+cannot link the shell plumbing without also pulling in the REPL host, and
+codegen has no part to write a generated command unit into. Split the
+component into parts behind one CMake root, declare it a codegen composite
+so the root is generated rather than hand-maintained, and confirm the
+result builds and tests as before.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Done. The split, the generated root and the audit are complete, the build and both suites are green, and the PR is going up. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge, then start the per-domain adapter parts. |
+| Last touched  | 2026-09-16                               |
+
+* Acceptance
+
+- The modeling org declares =ores.shell= a composite with parts =api=,
+  =application= and =modeling=, and the signed-off folder catalogue records
+  their roles.
+- The root =CMakeLists.txt= is codegen output; regenerating it is a no-op.
+- =api= and =application= build as separate targets, and =ores.shell.exe= is
+  still produced.
+- Both part test suites pass.
+- The component architecture audit ran against the split, and its findings
+  are recorded in the component overview.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2915CF39-6936-4942-97C1-F0C11247F11E][Split ores.shell into api and application parts]] | DONE | 2026-09-16 | 2026-09-16 | Move the component's sources into an api part and an application part, each its own CMake target, and declare the composite so its root is generated. |
+| [[id:0EF917F2-9AFB-457D-BFD0-07C4E8B201A7][Run the component architecture audit against the split shell]] | DONE | 2026-09-16 | 2026-09-16 | Apply the 15-item component architecture checklist to ores.shell as split, fix the mechanical findings, and record the triage in the component overview. |
+
+* Decisions
+
+- *Parts, not one target.* The split follows =ores.qt=: an =api= part holding
+  the plumbing and an =application= part holding the runnable host. The
+  naming rule for a part named after a component is now written into the
+  component architecture catalogue, because the next wave adds
+  =ores.shell.<domain>= parts and the name repeats at two levels of the tree.
+- *The root is generated.* =ores.shell= is the first Application-layer
+  component declared with =#+component_kind: composite=, so its root is
+  codegen output like every other composite root.
+- *No build-slice change.* The measured peak (one gcc translation unit at
+  6.76 GiB against =MemoryHigh=8G) is recorded in the drop-in, but the values
+  are left for a separate decision.
+
+* Out of scope
+
+- The per-domain adapter parts (=ores.shell.trading= and its siblings). This
+  story only makes the split that lets them exist.
+- The shell-command codegen facet, which the next wave picks up.

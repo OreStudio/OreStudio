@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 24748A22-DB67-4E22-A52F-5D0FBA668D10
+:END:
+#+title: Trade
+#+description: Hub note for trades in ORE Studio's domain model: the entities a trade is built from, the three classifications it carries, the two lifecycles it runs, and what it needs in order to be valued.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:structure_note:trading:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+A trade is the record of an agreement. Describing one fully takes four
+questions, and each has its own answer and its own document.
+
+*What is it made of?* Four entities, not one: the product type, the
+security issue where one exists, the trade itself, and the instrument
+carrying its economic terms.
+
+*What kind of thing is it?* Three independent classifications: the
+market it references, the shape of contract it takes, and who the firm
+faces in it.
+
+*What happens to it?* Two lifecycles running side by side, a taxonomy
+of the events that move them, and a versioning scheme that records
+every change.
+
+*What does it need, and what does it become?* Market data in order to
+be valued, and a position once aggregated with its neighbours.
+
+Each of the four questions is independent of the others. A trade's
+classification does not change over its life, its lifecycle does not
+depend on what it is made of, and its market data requirements follow
+from its entities rather than from its state. Conflating them is the
+recurring error these documents exist to prevent, and
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] states the sharpest form of it: what a trade /is/,
+where it has /got to/, and what /happened/ to it are three different
+kinds of statement.
+
+* Documents in this cluster
+
+Read in the order below for a first pass; jump to any document for a
+specific concept.
+
+** What a trade is made of
+
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] — start
+  here. Derives the four entities from domain observations, sets out
+  the relationships between them, and establishes the correspondence
+  each must keep with ORE's representation, since ORE is the ground
+  truth for what can be priced. Carries the prior art: the ISDA product
+  taxonomy, FpML, the Common Domain Model, the vendor platforms, and
+  ORE.
+
+- [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond Issuance]] — the
+  security issue at its clearest. What an issuer creates, why a
+  re-opened tranche keeps the line's identifier, and why an issue
+  exists whether or not anyone has traded it.
+
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard Financial
+  Identifiers]] and [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade
+  Identifiers]] — the codes that name each level. ISIN, CUSIP and SEDOL
+  name a security issue; UTI and USI name a trade in a form two
+  counterparties share.
+
+** How a trade is classified
+
+Three classifications, all properties of the product type, all
+independent of one another.
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — which
+  market a product references. Surveys seven external schemes that
+  disagree, and proposes the taxonomy that satisfies them.
+
+- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — what
+  shape of contract it is, independent of its market, so that every
+  option or every swap can be seen across markets.
+
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] —
+  who the firm faces and whether anything actually happened. Two
+  dimensions rather than one flag, because a trade may be internal,
+  test or hypothetical in combinations a boolean cannot express.
+
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]]
+  — the aggregation buckets SIMM and FRTB charge against. Examined
+  during the asset class work and set aside, because a bucket carries a
+  framework's parameters rather than describing the domain.
+
+** What happens to a trade
+
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the
+  trade status machine: booked, verified, live, expired, cancelled.
+  Amendment appears as a self-transition, because amending a trade does
+  not move it.
+
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the
+  second status a trade carries, and its own lifecycle. Verification,
+  affirmation and confirmation are three distinct steps, and only the
+  last is binding.
+
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the
+  taxonomy of events. Every activity answers three questions at once:
+  does it move a version, does it require a new confirmation, does it
+  change the state.
+
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what a
+  change produces. Two versions, because the audit trail and the
+  commercial record move at different rates.
+
+The two lifecycles are independent, which is the point. A trade is live
+and carrying risk from the moment it is released into the book, whether
+or not its terms have been confirmed.
+
+** What a trade needs and becomes
+
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements
+  and Resolution]] — the hub for what a trade needs in order to be
+  valued, and how a logical need resolves to a concrete item.
+
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the
+  sensitivities a trade carries, each taken with respect to one of
+  those requirements.
+
+- [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — what a trade
+  becomes once aggregated. A deal is an event and a position is a
+  state, which is why a position has no identity of its own.
+
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset
+  Class]] — the catalogue, with one page per product type.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] — identity by key, and explicit variation over inheritance webs.
+- [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — SIMM, FRTB and the others, and what each computes.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

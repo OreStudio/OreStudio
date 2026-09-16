@@ -24,33 +24,10 @@ following responsibilities:
 - *Instrument*: The economic terms of that agreement.
 
 #+begin_note
-*Scope.* This document covers the entities a trade is built from and the
-relationships between them. Several neighbouring subjects have their own
-documents, and each is named here so a reader can find it.
-
-What a trade /is/:
-
-- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] — the market a product type references, and how the
-  classification relates to the product type.
-- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product family]] — the shape of contract a product type takes,
-  independent of its market.
-- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] — the two dimensions that classify a trade:
-  who the firm faces, and whether anything actually happened.
-
-What happens to a trade:
-
-- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] — the states a trade moves through.
-- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] — the events that create, change or end one.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] — what a change produces, and the two versions it
-  may move.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what is agreed with the counterparty, and the
-  second status a trade carries.
-
-What a trade needs and what it becomes:
-
-- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market data requirement]] — what a trade needs in order to be valued.
-- [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over trades, which has no identity of its
-  own and is therefore not an entity here.
+This document covers the entities a trade is built from and the
+relationships between them. [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] is the hub for the cluster, and
+names every neighbouring subject: how a trade is classified, what
+happens to it over its life, and what it needs in order to be valued.
 #+end_note
 
 The relationships between these entities are as follows. A product type
@@ -322,6 +299,7 @@ or page.
 
 * See also
 
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the hub for this cluster.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] — who the firm faces, and whether anything happened.
 - [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the contract shape a product type takes; aggregation rather than trade definition.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a trade moves through.

@@ -26,7 +26,6 @@
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
@@ -147,30 +146,42 @@ void fx_forward_instrument_commands::process_add_fx_forward_instrument(
 
     domain::fx_forward_instrument v;
     std::size_t next = 0;
-    if (const auto tenant = utility::uuid::tenant_id::from_string(session.auth().tenant_id);
-        tenant) {
-        v.identity.tenant_id = *tenant;
-    }
-    v.identity.instrument_id = boost::uuids::random_generator()();
-    v.identity.trade_type_code =
-        ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    const auto& party = session.auth().default_party_id;
-    if (party.empty()) {
-        fail(out) << "The logged-in account has no default party. Set one before adding "
-                  << "FX forward instruments." << std::endl;
+    try {
+        if (const auto tenant = utility::uuid::tenant_id::from_string(session.auth().tenant_id);
+            tenant) {
+            v.identity.tenant_id = *tenant;
+        }
+        v.identity.instrument_id = boost::uuids::random_generator()();
+        v.identity.trade_type_code = ores::shell::app::from_token<std::string>(
+            parsed->positionals[next++], "trade_type_code");
+        const auto& party = session.auth().default_party_id;
+        if (party.empty()) {
+            fail(out) << "The logged-in account has no default party. Set one before adding "
+                      << "FX forward instruments." << std::endl;
+            return;
+        }
+        v.identity.party_id = ores::shell::app::from_token<boost::uuids::uuid>(party, "party_id");
+        v.bought_currency = ores::shell::app::from_token<std::string>(parsed->positionals[next++],
+                                                                      "bought_currency");
+        v.bought_amount =
+            ores::shell::app::from_token<double>(parsed->positionals[next++], "bought_amount");
+        v.sold_currency =
+            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "sold_currency");
+        v.sold_amount =
+            ores::shell::app::from_token<double>(parsed->positionals[next++], "sold_amount");
+        v.value_date =
+            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "value_date");
+        v.settlement =
+            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "settlement");
+        v.description =
+            ores::shell::app::from_token<std::string>(parsed->positionals[next++], "description");
+        v.audit.modified_by = session.auth().username;
+        v.audit.change_reason_code = std::move(parsed->positionals[next++]);
+        v.audit.change_commentary = std::move(parsed->positionals[next++]);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
         return;
     }
-    v.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(party);
-    v.bought_currency = ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    v.bought_amount = ores::shell::app::from_token<double>(parsed->positionals[next++]);
-    v.sold_currency = ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    v.sold_amount = ores::shell::app::from_token<double>(parsed->positionals[next++]);
-    v.value_date = ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    v.settlement = ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    v.description = ores::shell::app::from_token<std::string>(parsed->positionals[next++]);
-    v.audit.modified_by = session.auth().username;
-    v.audit.change_reason_code = std::move(parsed->positionals[next++]);
-    v.audit.change_commentary = std::move(parsed->positionals[next++]);
 
     auto req = trading::messaging::save_fx_forward_instrument_request::from(std::move(v));
 

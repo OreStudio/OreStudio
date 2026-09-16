@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -91,6 +92,22 @@ T from_token(const std::string& token) {
                       "from_token has no conversion for this column type. "
                       "Add one to command_token.hpp before generating a shell "
                       "command unit for an entity that uses it.");
+    }
+}
+
+/**
+ * @brief Convert one command token, naming the column on failure.
+ *
+ * The generated command units pass the column name so a malformed token
+ * reports the field it belongs to. Without it the caller sees only the
+ * boost::bad_lexical_cast text, which names no field.
+ */
+template <typename T>
+T from_token(const std::string& token, std::string_view column_name) {
+    try {
+        return from_token<T>(token);
+    } catch (const std::exception&) {
+        throw std::runtime_error("Invalid value for " + std::string(column_name) + ": " + token);
     }
 }
 

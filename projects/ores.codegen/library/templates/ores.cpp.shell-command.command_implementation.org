@@ -37,6 +37,11 @@ Three constructs carry weight here.
 - One ={{#is_*}}= section per supply source selects how the member is
   filled. The default is =user=, which consumes the next positional.
 
+A malformed token must name the field it belongs to, so every conversion
+passes the column name to =from_token=, and the block that builds the
+entity sits inside one =try=. The handler reports the failure through
+=fail()= and returns, as the hand-written units it replaces do.
+
 The column loop stays free of type branching. Each column's =cpp_type= is
 already its target type, including the =std::optional= wrapper, so one
 conversion helper named for that type serves every column.
@@ -64,7 +69,6 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component}}.api/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
@@ -179,40 +183,45 @@ void {{entity_singular}}_commands::process_add_{{entity_singular}}(
 
     domain::{{entity_singular}} v;
     std::size_t next = 0;
+    try {
 {{#has_identity_group}}
-    if (const auto tenant =
-            utility::uuid::tenant_id::from_string(session.auth().tenant_id);
-        tenant) {
-        v.identity.tenant_id = *tenant;
-    }
+        if (const auto tenant =
+                utility::uuid::tenant_id::from_string(session.auth().tenant_id);
+            tenant) {
+            v.identity.tenant_id = *tenant;
+        }
 {{/has_identity_group}}
 {{#primary_key.columns}}
 {{#is_user_supplied}}
-    v.{{member_access}} =
-        ores::shell::app::from_token<{{{cpp_type}}}>(parsed->positionals[next++]);
+        v.{{member_access}} = ores::shell::app::from_token<{{{cpp_type}}}>(
+            parsed->positionals[next++], "{{column}}");
 {{/is_user_supplied}}
 {{#is_minted}}
-    v.{{member_access}} = boost::uuids::random_generator()();
+        v.{{member_access}} = boost::uuids::random_generator()();
 {{/is_minted}}
 {{/primary_key.columns}}
 {{#columns}}
 {{#is_user_supplied}}
-    v.{{member_access}} =
-        ores::shell::app::from_token<{{{cpp_type}}}>(parsed->positionals[next++]);
+        v.{{member_access}} = ores::shell::app::from_token<{{{cpp_type}}}>(
+            parsed->positionals[next++], "{{name}}");
 {{/is_user_supplied}}
 {{#is_session_party}}
-    const auto& party = session.auth().default_party_id;
-    if (party.empty()) {
-        fail(out) << "The logged-in account has no default party. Set one before adding "
-                  << "{{entity_plural_words}}." << std::endl;
-        return;
-    }
-    v.{{member_access}} = boost::lexical_cast<boost::uuids::uuid>(party);
+        const auto& party = session.auth().default_party_id;
+        if (party.empty()) {
+            fail(out) << "The logged-in account has no default party. Set one before adding "
+                      << "{{entity_plural_words}}." << std::endl;
+            return;
+        }
+        v.{{member_access}} = ores::shell::app::from_token<boost::uuids::uuid>(party, "{{name}}");
 {{/is_session_party}}
 {{/columns}}
-    v.audit.modified_by = session.auth().username;
-    v.audit.change_reason_code = std::move(parsed->positionals[next++]);
-    v.audit.change_commentary = std::move(parsed->positionals[next++]);
+        v.audit.modified_by = session.auth().username;
+        v.audit.change_reason_code = std::move(parsed->positionals[next++]);
+        v.audit.change_commentary = std::move(parsed->positionals[next++]);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
 
     auto req = {{component}}::messaging::save_{{entity_singular}}_request::from(std::move(v));
 

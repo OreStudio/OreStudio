@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 785C68A0-DD94-404A-BF16-57814554DA12
 :END:
-#+title: Authorisation Queue
-#+description: The Operations screen through which every trade passes: how it is grouped, the states a deal moves through, why a denial cannot become an authorisation, and the reports that make the control auditable.
+#+title: Operational Authorisation Queue
+#+description: The Operations screen through which every trade passes: the operational authorisation lifecycle, how the queue is grouped, why a denial cannot become an authorisation, and the reports that make the control auditable.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:controls:operations:
@@ -11,9 +11,9 @@
 
 * Summary
 
-The authorisation queue is the screen on which Operations works. Every
-trade passes through it, and [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]] covers what the control is
-and why it exists.
+The operational authorisation queue is the screen on which Operations
+works. Every trade passes through it, and [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]]
+covers what the control is and why it exists.
 
 It is a deal queue specifically. Other authorisation queues exist
 elsewhere in the system, the fixing manager being the clearest, and
@@ -39,7 +39,13 @@ by urgency rather than by arrival alone, because an option that
 expires unexercised while sitting in a queue is a loss that the queue
 caused.
 
-* The states a deal moves through
+* The operational authorisation lifecycle
+
+A trade's =operational_authorisation_status= moves through this
+lifecycle. It is not a state of the trade itself:
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]] runs alongside and is unaffected by it.
+
+[[proj:doc/knowledge/domain/operational_authorisation_lifecycle.png]]
 
 | State | Meaning | Exit |
 |-------+---------+------|
@@ -92,7 +98,7 @@ report listing what stayed in the queue overnight, with reasons.
 Fields that have changed are highlighted, which is what makes an
 amendment reviewable rather than merely visible.
 
-A structure displays all its components. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] covers why a
+A structure displays all its components. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] covers why a
 typed structure authorises as a whole.
 
 Each deal carries its settlements and confirmations, with their own
@@ -177,9 +183,9 @@ counterpart of authorising a structure as a whole.
   operator sets and the second two are decisions.
 - Whether un-authorise returns a deal to =unseen= or to a distinct
   state that records the reversal.
-- How the queue relates to [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]]: whether authorisation
-  is a transition within it or a separate status alongside it, as
-  confirmation is.
+- Whether a denied trade should be removed from the book, since it
+  remains =live= in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]] while carrying a decision
+  that it should not stand.
 
 * Sources
 
@@ -188,8 +194,8 @@ requirements material. No external standard is cited.
 
 * See also
 
-- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — what the control is and why it exists.
-- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the state a trade occupies while it waits here.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — what the control is and why it exists.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this lifecycle runs alongside.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the front-office screen this one checks the work of.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events an authorisation approves.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the controls guarding the same boundary.

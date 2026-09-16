@@ -51,7 +51,7 @@ Three properties follow, and each has a system consequence.
 
 Three steps sit between an execution and a confirmed deal, and the
 words are not interchangeable. All three are bilateral; the internal
-check that precedes them is [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]].
+check that precedes them is [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]].
 
 | Step | Who acts | What it establishes | System consequence |
 |------+----------+---------------------+--------------------|
@@ -67,7 +67,7 @@ all of the terms of a swap transaction".
 
 It defines no step called verification, and the word is used in the
 industry for both the internal check and a bilateral one. This corpus
-therefore avoids it. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] records the ambiguity.
+therefore avoids it. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] records the ambiguity.
 
 Affirmation is not confirmation, and a platform makes the difference
 easy to miss. DTCC Deriv/SERV ran an affirmation service, AffirmXpress,
@@ -79,7 +79,7 @@ confirmation was the legal act.
 
 Ageing separates the internal check from the bilateral ones. An
 unauthorised trade is an internal control exception, and
-[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]] covers it. An unconfirmed trade is a counterparty risk,
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]] covers it. An unconfirmed trade is a counterparty risk,
 because the terms are not yet enforceable in the form the parties
 agreed.
 
@@ -275,7 +275,7 @@ carries a confirmation lifecycle whose states are =unconfirmed=,
 exactly as this rule describes, alongside a trade lifecycle that moves
 on the internal version. The steps distinguished above are transitions
 in the confirmation lifecycle; the internal check that precedes them is
-[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][authorisation]], a transition in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]].
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]], a transition in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]].
 
 What exists:
 
@@ -337,7 +337,7 @@ What is missing, and what development should add:
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition model
   whose changes this page classifies.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the other status a trade carries.
-- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Authorisation]] — the internal control that precedes these steps.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the internal control that precedes these steps.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — the external version a confirmation is stated as of.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — which activities require a new confirmation.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: A9E9D1EF-5879-4488-87C8-BDD914C3B502
 :END:
-#+title: Authorisation
-#+description: The internal control that releases a trade into the book: why it is metadata rather than trade data, the kinds of authorisation, and how it differs from the agreement steps with a counterparty.
+#+title: Operational Authorisation
+#+description: The Operations control that releases a trade to risk and downstream: why it is metadata rather than trade data, the other authorisations it must be distinguished from, and how it differs from the agreement steps with a counterparty.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:controls:operations:
@@ -11,23 +11,26 @@
 
 * Summary
 
-*Authorisation* is the Middle Office control that releases a trade into
-the book. Operations examines what the trader booked and decides
-whether it is correct, permitted and real.
+*Operational authorisation* is the control by which Operations
+releases a trade to risk and downstream. It examines what the trader
+booked and decides whether it is correct, permitted and real.
 
-Several controls carry the name, and the unqualified word means this
-one. Where another is meant it is qualified: a credit line
-authorisation, a trader authorisation.
-
-It is the gate between booking and liveness in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]],
-and it is the reason that lifecycle has a state between =booked= and
-=live= at all. An unauthorised trade exists in the system and
-contributes to nothing.
+Several distinct controls are called authorisation, so each is
+qualified by who performs it: operational, credit, trader, market
+risk. The unqualified word has historically meant this one, which is
+precisely why it needs a prefix.
 
 Two properties make it behave unlike anything else that happens to a
-trade. It is metadata rather than trade data, so it moves no version.
-And it is entirely internal, so it must not be confused with the steps
-by which terms are agreed with a counterparty.
+trade.
+
+It is *metadata rather than trade data*, so it moves no version and is
+not a state of the trade. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][The trade lifecycle]] is unaffected by it: a
+trade is =live= from the moment it is booked, and whether it
+contributes to risk and P&L follows from combining its state with this
+status rather than from either alone.
+
+It is *entirely internal*, so it must not be confused with the steps by
+which terms are agreed with a counterparty.
 
 * Why authorisation is metadata
 
@@ -59,6 +62,22 @@ across sources.
 Authorisation is what lets a deal /reach/ the other three.
 [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] covers them.
 
+** Why the prefix
+
+Four controls share the word, and they differ in who performs them and
+what they establish.
+
+| Control | Performed by | Establishes |
+|---------+--------------+-------------|
+| *Operational authorisation* | Operations, the Middle Office | The booking is correct, permitted and real |
+| *Credit authorisation* | Credit | The counterparty has the line for it |
+| *Trader authorisation* | The desk | The desk stands behind it |
+| *Market risk authorisation* | Market Risk | The exposure is within limit |
+
+Without a prefix, "the trade is authorised" states nothing useful, and
+a system holding one status called =authorised= cannot say which of
+the four it means.
+
 ** A note on "verification"
 
 The word is used for two different things and should be avoided as a
@@ -74,20 +93,11 @@ This corpus therefore names the internal control *authorisation* and
 the bilateral steps *acknowledgment*, *affirmation* and
 *confirmation*, and does not use "verification" for either.
 
-* Kinds of authorisation
+* What else authorisation attaches to
 
-Authorisation is not one thing, and the unqualified word normally
-means the Middle Office check.
-
-| Kind | Asks |
-|------+------|
-| Middle Office | Is the booking correct and permitted? |
-| Credit line | Does the counterparty have the line for it? |
-| Trader | Does the desk stand behind it? |
-
-Beyond those, authorisation may attach to a product type — whether the
-firm is permitted to trade this kind of thing at all — which matters
-most for ad-hoc structures.
+Beyond a trade, authorisation may attach to a product type — whether
+the firm is permitted to trade this kind of thing at all — which
+matters most for ad-hoc structures.
 
 ** Meta-authorisations
 
@@ -166,9 +176,9 @@ What must be captured:
 - Who authorised, and in what capacity, travelling downstream with the
   trade.
 
-[[id:785C68A0-DD94-404A-BF16-57814554DA12][The authorisation queue]] covers the screen this happens on, the states
-a deal moves through, and the reports that make the control
-auditable.
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][The operational authorisation queue]] covers the screen this happens
+on, the lifecycle a decision moves through, and the reports that make
+the control auditable.
 
 * Open questions
 
@@ -199,8 +209,8 @@ which fields it carries.
 
 * See also
 
-- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Authorisation Queue]] — the Operations screen and its states.
-- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the state authorisation releases a trade from.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — the Operations screen and the authorisation lifecycle.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this control does not move.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the steps by which terms are agreed with a counterparty.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what does move a version, and why authorisation does not.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the controls that guard the same boundary.

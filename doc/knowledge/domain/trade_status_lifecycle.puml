@@ -38,6 +38,10 @@ skinparam note {
 skinparam BackgroundColor white
 skinparam DefaultFontColor #1A1A1E
 
+state "draft" as Draft #EDE7E0 ##[bold]8A7A6A
+
+Draft : Recorded; no agreement yet
+
 state "live" as Live {
   state "unauthorised" as Unauthorised #F0E2D0 ##[bold]A87A4A
   state "authorised" as Authorised #F0E2D0 ##[bold]A87A4A
@@ -58,7 +62,11 @@ state "cancelled" as Cancelled
 Expired : Contract ceased naturally
 Cancelled : Removed from the book
 
+[*] --> Draft : Capture
 [*] --> Live : New
+Draft --> Live : Execute
+Draft --> Cancelled : Discard
+Draft --> Draft : Amend
 Live --> Expired : Expire
 Live --> Cancelled : Cancel
 Expired --> Live : Unexpire
@@ -90,10 +98,18 @@ end note
 
 note left of Expired
   Expire and cancel are reversible.
-  Unexpire and uncancel
-  correct a record rather than revive
-  an agreement, so a trade returning
-  to live arrives unauthorised.
+  Unexpire and uncancel correct a
+  record rather than revive an
+  agreement, so a trade returning to
+  live arrives unauthorised.
+end note
+
+note right of Draft
+  A draft is not yet an agreement, so
+  it contributes to nothing and has no
+  authorisation to hold. It carries a
+  reason saying what blocks it and who
+  is responsible for unblocking it.
 end note
 
 @enduml

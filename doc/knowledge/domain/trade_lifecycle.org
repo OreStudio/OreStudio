@@ -40,9 +40,15 @@ and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the
 
 | State | Description | Initial |
 |-------+-------------+---------|
+| =draft= | Recorded, but no agreement has been struck. | Yes |
 | =live= | The agreement stands. | Yes |
 | =expired= | Contract ceased naturally: expired, matured, exercised. | No |
 | =cancelled= | Removed from the book. | No |
+
+There are two ways in. A trade booked against an agreement already
+struck enters at =live=. One recorded before any agreement exists —
+a requirement taken down over the phone, a quote being explored —
+enters at =draft=.
 
 No state is terminal. A trade may end in =expired= or =cancelled=, but
 both are reversible, because either may have been recorded in error.
@@ -55,7 +61,11 @@ instead.
 
 | From | To | Event | Notes |
 |------+----+-------+-------|
-| (initial) | =live= | New | Any trade-creating activity. |
+| (initial) | =draft= | Capture | Recorded before any agreement exists. |
+| (initial) | =live= | New | Booked against an agreement already struck. |
+| =draft= | =live= | Execute | The agreement is struck. |
+| =draft= | =cancelled= | Discard | The draft comes to nothing. |
+| =draft= | =draft= | Amend | The draft is refined. |
 | =live= | =expired= | Expire | The contract ceases naturally. |
 | =live= | =cancelled= | Cancel | The trade is removed from the book. |
 | =expired= | =live= | Unexpire | The expiry was recorded in error. |
@@ -76,11 +86,60 @@ Three states, and a trade is in the first of them from the moment it
 is booked. There is no state between booking and liveness, because the
 agreement exists as soon as it is struck.
 
+** A draft is not yet a trade
+
+The distinction between =draft= and =live= is whether an agreement
+exists, and it is not the same as the distinction between
+=unauthorised= and =authorised=.
+
+An unauthorised trade is an agreement that Operations has not yet
+released. A draft is not an agreement at all. Neither contributes to
+risk and P&L, but they fail to for different reasons, and only one of
+them is something a counterparty could hold the firm to.
+
+A draft therefore carries no authorisation status. There is nothing to
+release until the agreement exists, which is why the composite in the
+diagram sits inside =live= and not around both.
+
+*** What blocks a draft
+
+A draft carries a reason saying why it is not live, and the reason
+names who is responsible for unblocking it: waiting for allocation to
+a business, waiting for counterparty details, waiting for input from
+the requestor.
+
+Recording the responsible party rather than only the cause is what
+makes a trade exceptions report actionable. The report lists what is
+in a provisional state, how long it has been there, and who is looking
+at it.
+
+*** The provisional family
+
+Several situations look alike and are not, and reporting depends on
+telling them apart.
+
+| Situation | What it is | Contributes |
+|-----------+------------+-------------|
+| Draft or RFQ | Being explored; no agreement | No |
+| Pre-live or incomplete | An agreement exists but details are missing | No |
+| Pending | An agreement exists; the client will replace it with allocations | To risk only |
+| Hypothetical | A question, never intended to become a trade | No |
+
+The first two are both =draft= here, distinguished by their reason.
+The third is =live=: a pending trade flows to the trader's book so
+risk is managed from the start, while sending no confirmations and not
+settling, which is a matter for its confirmation status rather than
+its state.
+
+The fourth is not a state at all. A hypothetical is classified rather
+than staged, and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers it: it is a trade whose
+booking nature is =hypothetical=, and it never becomes anything else.
+
 ** Amendment never moves the state
 
-Amend leaves =expired= and =cancelled= unchanged: a trade that has
-ceased can still have its record corrected, and correcting it does not
-revive it. Reviving one is a different event, and the next section
+Amend leaves =draft=, =expired= and =cancelled= unchanged. A draft
+being refined is still a draft; a trade that has ceased can still have
+its record corrected, and correcting it does not revive it. Reviving one is a different event, and the next section
 covers it.
 
 Within =live=, amendment moves the authorisation flag rather than the

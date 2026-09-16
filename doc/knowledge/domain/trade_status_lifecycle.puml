@@ -59,8 +59,8 @@ Expired : Contract ceased naturally
 Cancelled : Removed from the book
 
 [*] --> Live : New
-Live --> Expired : Expiry
-Live --> Cancelled : Cancellation
+Live --> Expired : Expire
+Live --> Cancelled : Cancel
 Expired --> Live : Unexpire
 Cancelled --> Live : Uncancel
 Expired --> Expired : Amend
@@ -89,8 +89,8 @@ note bottom of Cancelled
 end note
 
 note left of Expired
-  Expiry and cancellation are
-  reversible. Unexpire and uncancel
+  Expire and cancel are reversible.
+  Unexpire and uncancel
   correct a record rather than revive
   an agreement, so a trade returning
   to live arrives unauthorised.

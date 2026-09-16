@@ -56,8 +56,8 @@ instead.
 | From | To | Event | Notes |
 |------+----+-------+-------|
 | (initial) | =live= | New | Any trade-creating activity. |
-| =live= | =expired= | Expiry | The contract ceases naturally. |
-| =live= | =cancelled= | Cancellation | The trade is removed from the book. |
+| =live= | =expired= | Expire | The contract ceases naturally. |
+| =live= | =cancelled= | Cancel | The trade is removed from the book. |
 | =expired= | =live= | Unexpire | The expiry was recorded in error. |
 | =cancelled= | =live= | Uncancel | The cancellation was recorded in error. |
 | =expired=, =cancelled= | unchanged | Amend | The record is corrected without being revived. |
@@ -103,7 +103,7 @@ confirmable, and which are real.
 A change that cannot be made in place is not an amendment. Cancelling
 and rebooking produces two trades, each with its own lifecycle.
 
-** Expiry and cancellation are reversible
+** Expire and cancel are reversible
 
 Neither is terminal, because either may have been recorded in error: a
 cancellation booked against the wrong trade, an expiry driven by a

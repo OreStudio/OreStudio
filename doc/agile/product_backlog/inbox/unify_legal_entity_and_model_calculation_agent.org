@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: D6D034ED-5E79-4CAC-93A8-F5098824DF95
+:END:
+#+title: Unify legal entity identity and model the calculation agent
+#+description: Two related gaps found while documenting trade modelling: a trade role cannot name one of our own legal entities, so the common case of the booking party being calculation agent is unrepresentable; and the dispute consequence that follows from designating a calculation agent is recorded nowhere.
+#+type: capture
+#+level: cross
+#+filetags: :trading:refdata:identity:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two related gaps in how a trade names the parties to it, found while
+documenting trade modelling. They are captured together because the
+second cannot be modelled cleanly until the first is decided.
+
+*Legal entity identity is split in two.* =party= holds "an internal
+legal entity participating in financial transactions" and
+=counterparty= holds "an external trading partner". They are separate
+tables with separate identity, joined by
+=party_counterparty_junction=, which records only which counterparties
+a party can see.
+
+*The calculation agent cannot be one of our own entities.*
+=trade_party_role= assigns a role on a trade as =(trade_id,
+counterparty_id, role)=, and =party_role_type= already seeds
+=CalculationAgent=, described as "determines fixings and payments".
+But =counterparty_id= is non-nullable with a hard foreign key to
+=ores_refdata_counterparties_tbl=, so only an external party can fill
+a role. The common case, in which the booking entity is the
+calculation agent, is unrepresentable.
+
+* Why
+
+Control of a trade has a legal consequence, and the notes state it
+directly: "choosing the booking party means that in case of a
+calculation dispute, the counterparty will not have the rights to
+dispute the calculations done". The designation determines who may
+challenge a valuation, so failing to record it correctly is not a
+cosmetic gap.
+
+The notes give three cases and a fourth arrangement.
+
+- Control sits with the party owning the booking system.
+- Control sits with the counterparty.
+- Control sits with a third party.
+- Control is joint between a pair of parties, or follows the ISDA
+  Master Agreement, which supplies fallbacks where either party
+  disputes the calculations.
+
+Only the second and third are expressible today. The first requires a
+role to name a =party=. Joint control is structurally possible,
+because the indexes on =trade_party_role= are not unique and two
+=CalculationAgent= rows would insert, but nothing declares whether two
+rows mean joint control or a data error, so no consumer can rely on
+it. The dispute fallback itself has no home at all.
+
+The two gaps meet in the first case. Whether a role can name one of
+our own entities depends on whether the split between =party= and
+=counterparty= is kept, worked around, or removed.
+
+** Why unification is worth analysing rather than assuming
+
+A legal entity is a legal entity. Internal and external describe our
+relationship to one, not a property of the entity itself, and the same
+entity can be both: an inter-entity trade faces a legal entity of our
+own group, which is external to the booking entity and internal to the
+firm. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] makes that argument on the
+trade side, where =inter_entity= is a first-class value precisely
+because the distinction is a matter of degree.
+
+Against that, the split is not arbitrary. The two tables carry
+different attributes today, and unification touches
+=party_counterparty_junction= and everything reading either table, so
+the analysis has to establish that the shared identity earns its cost.
+
+* Candidate approaches
+
+Recorded to frame the analysis, not to pre-empt it.
+
+| Approach | Effect | Cost |
+|----------+--------+------|
+| Exclusive-or reference | =trade_party_role= gains a nullable =party_id= beside a nullable =counterparty_id=, with a check that exactly one is set | Small; keeps both hard foreign keys, but every reader must handle the alternation |
+| Party reference added | A role row may point either way, with no constraint | Smaller, and weaker: nothing prevents both or neither |
+| Unified legal entity | One identity for any legal entity, with internal and external becoming a relationship rather than a table | Largest; touches the junction and every consumer of either table |
+
+The dispute fallback is a separate decision in each case. It qualifies
+the calculation agent role rather than the trade, so it belongs on the
+role row rather than on the trade, in the same way that a framework's
+qualifying flag belongs on a sensitivity rather than in the taxonomy.
+
+* Acceptance sketch
+
+- The three control cases from the notes, plus joint control, are each
+  representable and distinguishable.
+- Whether two =CalculationAgent= rows mean joint control is declared,
+  and enforced rather than left to convention.
+- The dispute fallback is recorded where a reader can find it from the
+  trade.
+- A decision on the =party= and =counterparty= split is recorded with
+  its reasoning, whether or not it changes.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.party.org= — internal legal entity.
+- =projects/ores.refdata/modeling/ores.refdata.counterparty.org= — external trading partner.
+- =projects/ores.refdata/modeling/ores.refdata.party_counterparty_junction.org= — the visibility link between them.
+- =projects/ores.trading/modeling/ores.trading.trade_party_role.org= — the role assignment, and the hard foreign key that creates the gap.
+- =projects/ores.sql/populate/trading/trading_party_role_types_populate.sql= — where =CalculationAgent= is seeded.
+- =projects/ores.refdata/modeling/ores.refdata.book.org= — carries =party_id=, so the booking entity is reachable from a trade through its book.
+
+* See also
+
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; this gap was found while writing it.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — why internal and external is a matter of degree on the trade side.

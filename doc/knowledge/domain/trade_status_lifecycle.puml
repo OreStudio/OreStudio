@@ -38,40 +38,48 @@ skinparam note {
 skinparam BackgroundColor white
 skinparam DefaultFontColor #1A1A1E
 
-state "live" as Live
+state "live" as Live {
+  state "unauthorised" as Unauthorised #F0E2D0 ##[bold]A87A4A
+  state "authorised" as Authorised #F0E2D0 ##[bold]A87A4A
+
+  Unauthorised : Exists; contributes to nothing
+  Authorised : Contributes to risk and P&L
+
+  [*] --> Unauthorised
+  Unauthorised --> Authorised : Authorise
+  Authorised --> Unauthorised : Un-authorise
+}
+
 state "expired" as Expired
 state "cancelled" as Cancelled
 
-Live : The agreement stands
 Expired : Contract ceased naturally
 Cancelled : Removed from the book
 
 [*] --> Live : New
 Live --> Expired : Expiry
 Live --> Cancelled : Cancellation
-
-Live --> Live : Amend
-Expired --> Expired : Amend
-Cancelled --> Cancelled : Amend
-
 Expired --> [*]
 Cancelled --> [*]
 
 note right of Live
-  A trade is live from the moment it
-  is booked. Whether it contributes to
-  risk and P&L depends on its
-  authorisation status, which is a
-  separate attribute.
+  Amend is a self-transition on every
+  state, including the terminal ones.
+  A cancelled or expired trade can be
+  corrected without being revived, and
+  what an amend produces is a version
+  rather than a different state.
 end note
 
 note bottom of Cancelled
-  Amend is a self-transition on every
-  state, including the terminal ones:
-  a cancelled or expired trade can
-  still be corrected. What an amend
-  produces is a version, not a
-  different state.
+  The substates of live are shown to
+  place them, not to model them. They
+  are not states of this machine: the
+  trade carries an operational
+  authorisation flag, whose own
+  lifecycle has four values, and
+  contribution follows from combining
+  the two.
 end note
 
 @enduml

@@ -44,6 +44,12 @@ and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the
 | =expired= | Contract ceased naturally: expired, matured, exercised. | No | Yes |
 | =cancelled= | Removed from the book. | No | Yes |
 
+The diagram shows =live= as a composite state containing
+=unauthorised= and =authorised=, because that is where the distinction
+sits and a reader looking for it will look there. Those substates are
+not states of this machine, and the next section says what they are
+instead.
+
 | From | To | Event | Notes |
 |------+----+-------+-------|
 | (initial) | =live= | New | Any trade-creating activity. |
@@ -69,6 +75,24 @@ confirmable, and which are real.
 A change that cannot be made in place is not an amendment. Cancelling
 and rebooking produces two trades, each with its own lifecycle.
 
+** The substates of live are a flag
+
+An operational authorisation decision is metadata, so it is held as a
+flag on the trade rather than as a state in this machine. A version
+produced by authorising would itself require authorisation, without
+end, so authorising states something /about/ a trade rather than
+changing it.
+
+The composite in the diagram places the distinction without modelling
+it. Two substates are drawn because two are what a reader needs in
+order to see where contribution comes from; the flag itself carries
+four values, whose transitions are set out in
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][the operational authorisation queue]].
+
+Drawing it inside =live= is deliberate. The flag is meaningful only
+while a trade is live: a cancelled trade's authorisation history
+remains on the record, but there is nothing left for it to release.
+
 ** A trade carries three statuses
 
 This lifecycle is one of three, and the other two are not states of
@@ -89,9 +113,9 @@ Confirmation is an agreement with a counterparty, which
 trade has one at all.
 
 Contribution follows from the combination rather than from any one of
-them. A trade contributes to risk and P&L when it is =live= and
-=authorised=; an unauthorised live trade exists and contributes to
-nothing. That is why contribution is a derived predicate and not a
+them. A trade contributes to risk and P&L when it is =live= and its
+operational authorisation flag reads =authorised=; an unauthorised
+live trade exists and contributes to nothing. That is why contribution is a derived predicate and not a
 state, a point [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] makes at length.
 
 | Trade | =trade_status= | authorisation | confirmation |

@@ -148,10 +148,9 @@ Credit spread is divided three ways:
 
 - =CSR_NS=: Non-securitisation
 - =CSR_SNC=: Securitisation outside the correlation trading portfolio
-- =CSR_SC=
-   () and
-securitisation within it (). That is the second framework to subdivide
-credit, after SIMM, and it subdivides it along a different axis: securitisation
+- =CSR_SC=: Securitisation within the correlation trading portfolio
+
+As with SIMM, FRTB also subdivides credit, but along the axis of securitisation
 status rather than qualifying status. That two frameworks require two
 incompatible subdivisions of one class indicates that neither subdivision
 belongs in the taxonomy, and that both are properties of the exposure.
@@ -161,170 +160,147 @@ FRTB confirms this in its own record layout. A CRIF row carries
 and =bb_rw= as separate fields, so the framework already treats this
 kind of attribute as a column rather than as a class.
 
-FRTB treats neither bond nor inflation as a class. Inflation is a risk
-factor within =GIRR=, which places FRTB with SIMM and against FpML and
-ORE's risk filter. Bond is absent for the reason common to every risk
-classification surveyed here, namely that a bond's sensitivity
-decomposes into interest rate and credit sensitivity.
+FRTB treats neither bond nor inflation as a class. Inflation is a risk factor
+within =GIRR=, which places FRTB with SIMM and against FpML and ORE's risk
+filter. Bond is absent for the reason common to every risk classification
+surveyed here, namely that a bond's sensitivity decomposes into interest rate
+and credit sensitivity.
 
-FRTB also carries two charges that are not sensitivities and so have
-no place in a sensitivity taxonomy: the default risk charge (=DRC=),
-itself split the same three ways as credit spread, and the residual
-risk add-on (=RRAO=).
+FRTB also carries two charges that are not sensitivities and so have no place in
+a sensitivity taxonomy: the default risk charge (=DRC=), itself split the same
+three ways as credit spread, and the residual risk add-on (=RRAO=).
 
 ** ORE's AssetClass
 
 ORE holds =enum class AssetClass { EQ, FX, COM, IR, INF, CR, BOND,
 BOND_INDEX, PORTFOLIO_DETAILS }= in =ored/utilities/parsers.hpp=.
 
-It attaches this to /underlyings/, not to trades. =Trade= declares
-=virtual std::map<AssetClass, std::set<std::string>>
-underlyingIndices(...)=, so a trade reports the indices it requires
-grouped by asset class, and one trade can report under several classes
-at once.
+It attaches this to /underlyings/, not to trades. =Trade= declares =virtual
+std::map<AssetClass, std::set<std::string>> underlyingIndices(...)=, so a trade
+reports the indices it requires grouped by asset class, and one trade can report
+under several classes at once.
 
-ORE defines neither the concept nor a rationale for the values. The
-user guide uses the term only descriptively, as in "depending on the
-underlying asset class" when explaining why a barrier option is an
-=FxGenericBarrierOption= rather than a =CommodityGenericBarrierOption=,
-and constrains some products so that "all underlyings must be from the
-same asset class".
+ORE defines neither the concept nor a rationale for the values. The user guide
+uses the term only descriptively, as in "depending on the underlying asset
+class" when explaining why a barrier option is an =FxGenericBarrierOption=
+rather than a =CommodityGenericBarrierOption=, and constrains some products so
+that "all underlyings must be from the same asset class".
 
-Three of the nine values are not asset classes in any other scheme
-here. =BOND_INDEX= separates an index from a single bond;
-=PORTFOLIO_DETAILS= marks portfolio-level data rather than a market.
-The user guide itself counts six asset classes, listing IR, FX, EQ,
-COM, CR and INF as ORE's product coverage and describing the scripted
-trade module as covering "five of the six asset classes covered in
-ORE". The enumeration and the prose do not agree, and nothing
+Three of the nine values are not asset classes in any other scheme here.
+=BOND_INDEX= separates an index from a single bond; =PORTFOLIO_DETAILS= marks
+portfolio-level data rather than a market. The user guide itself counts six
+asset classes, listing IR, FX, EQ, COM, CR and INF as ORE's product coverage and
+describing the scripted trade module as covering "five of the six asset classes
+covered in ORE". The enumeration and the prose do not agree, and nothing
 reconciles them.
 
 ** ORE's RiskClass
 
-=orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
-InterestRate, Inflation, Credit, Equity, FX, Commodity }=, used to
-filter sensitivities for reporting.
+=orea/engine/riskfilter.hpp= holds =enum class RiskClass { All, InterestRate,
+Inflation, Credit, Equity, FX, Commodity }=, used to filter sensitivities for
+reporting.
 
-Its six substantive values are a strict coarsening of ORE's
-=AssetClass=: bond and bond index disappear, because a bond's
-sensitivity decomposes into interest rate and credit sensitivity
-rather than forming a risk class of its own, and portfolio details
-disappear because they carry no risk.
+Its six substantive values are a strict coarsening of ORE's =AssetClass=: bond
+and bond index disappear, because a bond's sensitivity decomposes into interest
+rate and credit sensitivity rather than forming a risk class of its own, and
+portfolio details disappear because they carry no risk.
 
-Inflation remains a sibling of interest rate, which places ORE with
-FpML and against SIMM and FRTB on the placement of inflation.
+Inflation remains a sibling of interest rate, which places ORE with FpML and
+against SIMM and FRTB on the placement of inflation.
 
 ** The Common Domain Model
 
-CDM defines a product from three attributes, one of which is a
-taxonomy that classifies it, alongside an identifier and the economic
-terms. It does not define its own asset class list, and delegates
-classification to a taxonomy reference.
+CDM defines a product from three attributes, one of which is a taxonomy that
+classifies it, alongside an identifier and the economic terms. It does not
+define its own asset class list, and delegates classification to a taxonomy
+reference.
 
-CDM therefore treats classification as a property referencing an
-external scheme rather than as an enumeration embedded in the product,
-which is one structural response to the variation described above.
-[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] covers CDM more fully.
+CDM therefore treats classification as a property referencing an external scheme
+rather than as an enumeration embedded in the product, which is one structural
+response to the variation described above. [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] covers CDM more fully.
 
 * Analysis
 
-** Two dimensions of variation
+** Identifying Variation Dimensions
 
-The seven classifications differ along two independent dimensions.
-Treating the two as one accounts for much of the apparent disorder.
+The seven classifications differ along two independent dimensions. Treating the
+two as one accounts for much of the apparent disorder.
 
-The first dimension is *the subject classified*. A product, a trade
-underlying, a market data series and a risk sensitivity are four
-distinct subjects, and a classification of one is not a classification
-of another. ORE's =AssetClass= and ORE's =RiskClass= differ principally
-because the first classifies underlyings and the second classifies
-sensitivities.
+The first dimension is *the subject classified*. A product, a trade underlying,
+a market data series and a risk sensitivity are four distinct subjects, and a
+classification of one is not a classification of another. ORE's =AssetClass= and
+ORE's =RiskClass= differ principally because the first classifies underlyings
+and the second classifies sensitivities.
 
-The second dimension is *granularity*. SIMM demonstrates it within a
-single framework: =RatesFX= is one node where =InterestRate= and =FX=
-are two. A second apparent instance, the division of credit, is
-examined below and proves to be a property rather than a finer
-granularity.
+The second dimension is *granularity*. SIMM demonstrates it within a single
+framework: =RatesFX= is one node where =InterestRate= and =FX= are two. A second
+apparent instance, the division of credit, is examined below and proves to be a
+property rather than a finer granularity.
 
-** Is risk class a genuine dimension?
+** Modeling ORE Risk Classes
 
-Whether risk class constitutes a genuine requirement, or two names for
-one concept arrived at by accident, determines whether the proposal
-below needs one attribute or two.
+Whether risk class constitutes a genuine requirement, or two names for one
+concept arrived at by accident, determines whether the proposal below needs one
+attribute or two. The test is cardinality. A product carries exactly one product
+class, whereas a trade carries as many risk classes as it has kinds of
+sensitivity:
 
-The test is cardinality. A product carries exactly one product class,
-whereas a trade carries as many risk classes as it has kinds of
-sensitivity.
+- A fixed-rate bond is one product of class =Bond=. Its risk is interest rate
+  risk and credit risk, which is two classes.
+- A cross-currency swap is one product of class =InterestRate=. Its risk is
+  interest rate risk in two currencies and FX risk.
+- An equity option denominated in a foreign currency is one product of class
+  =Equity=. Its risk includes FX risk for a book based elsewhere.
 
-- A fixed-rate bond is one product of class =Bond=. Its risk is
-  interest rate risk and credit risk, which is two classes.
-- A cross-currency swap is one product of class =InterestRate=. Its
-  risk is interest rate risk in two currencies and FX risk.
-- An equity option denominated in a foreign currency is one product of
-  class =Equity=. Its risk includes FX risk for a book based
-  elsewhere.
+A one-to-one relation and a one-to-many relation differ structurally rather than
+terminologically. No single attribute holds both, so a model serving both
+purposes through one field is incorrect for one of them.
 
-A one-to-one relation and a one-to-many relation differ structurally
-rather than terminologically. No single attribute holds both, so a
-model serving both purposes through one field is incorrect for one of
-them.
+Two independent sources corroborate this. SIMM holds both classifications
+simultaneously, over the same trades and within one framework, and requires
+both; a framework able to collapse them would have done so. ORE encodes the same
+distinction in a signature: =Trade::underlyingIndices()= returns
+=std::map<AssetClass, std::set<std::string>>=, a map keyed by class, because one
+trade reaches into several classes. A classification that was a property of the
+trade would have required a single return value.
 
-Two independent sources corroborate this. SIMM holds both
-classifications simultaneously, over the same trades and within one
-framework, and requires both; a framework able to collapse them would
-have done so. ORE encodes the same distinction in a signature:
-=Trade::underlyingIndices()= returns =std::map<AssetClass,
-std::set<std::string>>=, a map keyed by class, because one trade
-reaches into several classes. A classification that was a property of
-the trade would have required a single return value.
+The dimension is therefore a requirement. The surrounding inconsistencies are
+modeling errors. Risk classification and product classification are distinct
+attributes with distinct cardinality rather than distinct taxonomies. Thus, a
+single taxonomy referenced once by a product and many times by a trade's risk
+satisfies both use cases.
 
-The dimension is therefore a requirement. The surrounding
-inconsistencies are not, and constitute modeling errors: two
-enumerations named =RiskClass= within one codebase holding different
-values, an =AssetClass= enumeration carrying =PORTFOLIO_DETAILS=,
-which satisfies no definition of an asset class given here, and a user
-guide counting six values where the code holds nine.
+Before we proceed, we must also tackle risk class as it is used in a SIMM
+context.
 
-The conclusion is narrower than it first appears. Risk classification
-and product classification are distinct attributes with distinct
-cardinality. They are not necessarily distinct taxonomies, and the
-proposal below adopts that position: one taxonomy, referenced once by
-a product and many times by a trade's risk.
+** Modeling SIMM Risk Classes
 
-** Neither subset nor superset
+A subset relation holds in one case and fails in another. ORE's =RiskClass= is a
+strict coarsening of ORE's =AssetClass=, so risk reporting is served by omitting
+the values it does not require.
 
-A subset relation holds in one case and fails in another. ORE's
-=RiskClass= is a strict coarsening of ORE's =AssetClass=, so risk
-reporting is served by omitting the values it does not require.
+SIMM does not stand in that relation to any product classification. Its
+=RiskClass= omits bond and inflation, which is coarsening, and distinguishes
+qualifying from non-qualifying credit, which resembles refinement. The following
+section shows the second of these to be a property rather than a refinement, but
+the coarsening alone already prevents the two from being reconciled by selection
+from a single list.
 
-SIMM does not stand in that relation to any product classification.
-Its =RiskClass= omits bond and inflation, which is coarsening, and
-distinguishes qualifying from non-qualifying credit, which resembles
-refinement. The following section shows the second of these to be a
-property rather than a refinement, but the coarsening alone already
-prevents the two from being reconciled by selection from a single
-list.
+SIMM appears to require two classes the other schemes lack, =CreditQualifying=
+and =CreditNonQualifying=. Its =RiskType= enumeration shows otherwise.
 
-** What SIMM adds is properties, not classes
+The SIMM risk types are =Commodity=, =CommodityVol=, =CreditNonQ=, =CreditQ=,
+=CreditVol=, =CreditVolNonQ=, =Equity=, =EquityVol=, =FX=, =FXVol=, =Inflation=,
+=IRCurve=, =IRVol= and =InflationVol=. These values form a cross-product of an
+asset class, a greek (delta or vega), and, on credit alone, a qualifying flag.
 
-SIMM appears to require two classes the other schemes lack,
-=CreditQualifying= and =CreditNonQualifying=. Its =RiskType=
-enumeration shows otherwise.
-
-The SIMM risk types are =Commodity=, =CommodityVol=, =CreditNonQ=,
-=CreditQ=, =CreditVol=, =CreditVolNonQ=, =Equity=, =EquityVol=, =FX=,
-=FXVol=, =Inflation=, =IRCurve=, =IRVol= and =InflationVol=. These
-values form a cross-product of an asset class, a greek (delta or
-vega), and, on credit alone, a qualifying flag.
-
-Qualifying status designates no market. It describes a reference
-entity's eligibility under the framework's rules, is observed from the
-same data as any other credit exposure, and exists because SIMM
-assigns the two categories different risk weights. =RiskClass=
-flattens class against flag for a purpose its own declaration states:
-"the ordering here matters. It is used in indexing in to correlation
-matrices". The enumeration therefore functions as an index rather than
-as a taxonomy.
+Qualifying status designates no market. It describes a reference entity's
+eligibility under the framework's rules, is observed from the same data as any
+other credit exposure, and exists because SIMM assigns the two categories
+different risk weights. =RiskClass= flattens class against flag for a purpose
+its own declaration states: "the ordering here matters. It is used in indexing
+in to correlation matrices". The enumeration therefore functions as an index
+rather than as a taxonomy.
 
 =RatesFX= admits the same reading, being a grouping adopted because
 margin is computed on the pair together.
@@ -409,15 +385,15 @@ rate curve rather than beside it.
 
 ** How each use case cuts it
 
-| Use case | Cut |
-|----------+-----|
-| Product classification | The root: six classes |
-| Market data filtering | The root, plus =InterestRate.Inflation= |
-| Risk reporting, ORE style | Root minus =Bond=, plus =InterestRate.Inflation= |
-| SIMM margin, product side | Root with =InterestRate= and =ForeignExchange= merged |
-| SIMM margin, risk side | Root minus =Bond=, with inflation inside interest rate, plus a qualifying property on credit |
+| Use case                    | Cut                                                                                              |
+|-----------------------------+--------------------------------------------------------------------------------------------------|
+| Product classification      | The root: six classes                                                                            |
+| Market data filtering       | The root, plus =InterestRate.Inflation=                                                          |
+| Risk reporting, ORE style   | Root minus =Bond=, plus =InterestRate.Inflation=                                                 |
+| SIMM margin, product side   | Root with =InterestRate= and =ForeignExchange= merged                                            |
+| SIMM margin, risk side      | Root minus =Bond=, with inflation inside interest rate, plus a qualifying property on credit     |
 | FRTB capital, sensitivities | Root minus =Bond=, with inflation inside interest rate, plus a securitisation property on credit |
-| ISDA product taxonomy | Root minus =Bond=, then deeper product levels |
+| ISDA product taxonomy       | Root minus =Bond=, then deeper product levels                                                    |
 
 All but one use case is a cut of the same tree. The exception is
 SIMM's =RatesFX=, which merges two nodes, whereas a cut selects nodes
@@ -549,7 +525,6 @@ The FpML asset class values registered here are read from
 
 * See also
 
-- [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — SIMM, FRTB and SA-CCR, which prescribe most of the classifications surveyed here.
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to, and why it is a second reference into this taxonomy.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities; a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.

@@ -56,6 +56,41 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+The drift acceptance needs a caveat before work starts. =trading-cpp= sits
+outside =KNOWN_DRIFT_FREE= by the decision of 2026-09-06 in
+[[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]], and the drift has
+grown since. A component-wide regeneration today rewrites 132 tracked files
+and materialises 44 untracked ones, none of them this task's.
+
+The gate for this task is therefore the =shell= component, which is
+drift-free: =check_component_drift.py --component shell= passes because the
+generated units land in =projects/ores.shell/trading/= and the run writes
+nothing outside the part. Do not run =--component trading-cpp= on this
+branch, and do not run =--all= before the trading estate is reworked. Generate
+one entity at a time, so a surprise in one entity's output is legible.
+
+The facet's two archetypes serve one key shape and one audit shape today, and
+both gaps come due in this task. The delete and history verbs take a single
+key string, and the implementation template writes
+=req.{{primary_key.column}} = ...= and =req.ids = {id}=. That matches a
+single-column key and no other. A compound-key entity's request carries one
+field per key member, as =delete_bond_leg_request= does with =ids=,
+=leg_roles= and =leg_numbers=, so those verbs need one token per key member
+before the 14 compound-key trading entities can be generated. The audit
+assignments are also unconditional, so an entity with no
+=#+domain_audit_group:= has no =v.audit= and does not compile. Only 26 of the
+64 trading models declare the audit group. Teach both shapes to the
+archetypes before opting those entities in.
+
+Two documents still describe the hand-written flow, and they move with this
+task. [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] gives the file locations and class shapes
+of a hand-written unit, and [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new
+entity?]] walks through writing one. Rewrite both for the generate-first flow
+when the hand-written units retire, so an agent adding an entity is not sent
+to write code the generator owns. The skill
+[[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] already carries the corrected gap
+note.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -269,18 +269,47 @@ These values form a cross-product of an asset class, a greek (delta or vega),
 and, on credit alone, a qualifying flag. For the present purposes we will ignore
 credit, which is handled by the next section.
 
+*** The ORE Studio realisation requires further analysis
 
+The preceding argument establishes that risk class is a distinct
+attribute, and that one taxonomy serves both it and product class. It
+does not establish how ORE Studio should hold it, and two observations
+indicate that the question belongs to a different body of work.
 
+The first concerns granularity. A regulatory risk class names a market,
+whereas a sensitivity is taken with respect to a specific input: not
+interest rate risk in general, but the EUR discount curve. That input
+is a market data requirement, described in [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]].
+A risk class is therefore the asset class of a requirement, and the set
+of risk classes a trade carries is the projection of its requirements
+onto their asset classes.
 
+The second concerns the shape of the underlying relation. [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]]
+records that a sensitivity is defined by the input it moves rather than
+by the instrument. A sensitivity is consequently a pairing of a
+requirement with a greek, and delta and gamma share one requirement
+because both are derivatives with respect to spot, differing only in
+order. SIMM's risk types are the same pairing stated at the coarser
+grain of asset class rather than of individual requirement.
 
-Before we proceed, we must also tackle risk class as it is used in a SIMM
-context.
+Both observations point to one relation, between a trade and the market
+data requirements it generates, from which risk classes and risk types
+are derived by projection and aggregation. Establishing that relation
+is the subject of the market data requirement work rather than of this
+taxonomy, and the taxonomy is complete without it: what remains is to
+determine how the derived attributes are stored, not which values they
+draw on.
+
+Before proceeding to the taxonomy itself, the SIMM treatment of credit
+requires examination, since it appears to contradict the single-taxonomy
+conclusion reached above.
 
 ** Handling Credit Special Cases
 
 Within its taxonomy, SIMM distinguishes /qualifying/ from /non-qualifying/
-credit. In
-
+credit. On its face this is a subdivision of the credit class, and therefore an
+argument that the taxonomy requires subclasses. Examination of the enumeration
+in which those values sit shows otherwise.
 
 Qualifying status designates no market. It describes a reference entity's
 eligibility under the framework's rules, is observed from the same data as any

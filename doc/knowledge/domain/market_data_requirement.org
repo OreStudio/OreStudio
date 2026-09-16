@@ -283,6 +283,64 @@ trade's specific maturities and the day's date are known only once. "Static" and
 "dynamic" name that temporal and informational distinction directly, without
 implying anything about system behaviour that is not actually there.
 
+** What a requirement is also the subject of
+
+This document frames a requirement as an input a valuation must load.
+The same object serves a second purpose, which the framing above does
+not record: it is what a sensitivity is taken with respect to.
+
+[[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]] states that a sensitivity is defined by the input it moves
+rather than by the instrument. That input is a requirement. A
+sensitivity is therefore a pairing of a requirement with a greek, and
+the pairing explains a relation that is otherwise puzzling: delta and
+gamma share one requirement, because both are derivatives with respect
+to spot and differ only in order, whereas vega, rega and sega do not,
+because an FX volatility surface is quoted as three distinct objects
+and each greek moves a different one.
+
+Aggregating that pairing upwards recovers the regulatory
+classifications. Projecting a requirement onto its asset class gives a
+risk class; crossing that class with a greek gives a risk type, which
+is what SIMM and FRTB enumerate. [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] and [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][risk classes]] treat
+those as taxonomies in their own right; on the account given here they
+are the requirement relation viewed at a coarser grain.
+
+** The instance level as a stored relation
+
+The three levels are introduced above as a staging of derivation,
+justified by their differing costs. The instance level has a further
+property that suits it to storage, and the properties already stated
+establish it: an instance set requires no valuation date and no
+analytics, being pure attribute lookup, and stays valid across every
+valuation date until the trade itself changes.
+
+Those are the conditions for a durable relation between a trade and its
+requirements. The static level is a rule that generates such rows rather
+than a set of rows, and the dynamic level changes with every valuation
+date and costs a partial pricing run to derive, so neither is a
+candidate. Whether such a relation should be held, and whether the
+static level additionally warrants storage so that a product type's
+needs can be answered before any trade of that type exists, are
+questions for [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]] rather than for this document.
+
+** An assumption worth testing
+
+The chain of inclusions asserted above,
+$\mathrm{static}(\tau(t)) \supseteq \mathrm{instance}(t) \supseteq
+\mathrm{dynamic}(t, d)$, holds only if a trade instance can never
+require market data that its type does not already declare.
+
+Several ordinary cases appear to violate it. A collateral agreement
+naming a non-standard collateral currency, an explicit discount curve
+assignment, or an index override each attaches a requirement to one
+trade that the product type alone does not imply. Were any of these to
+occur, the instance level would extend the static set rather than
+refine it, and the first inclusion would fail.
+
+The question is recorded rather than settled, because the formalism
+rests on the chain and the consequences of its failure are not confined
+to notation.
+
 * See also
 
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
@@ -291,3 +349,7 @@ implying anything about system behaviour that is not actually there.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space every resolved identifier is drawn from.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC, Bloomberg, and ORE quote key compared, a worked instance of the identity attributes discussed above.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, a second worked instance.
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — a sensitivity is a requirement paired with a greek.
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the class a requirement projects onto.
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the classes a trade is sensitive to, derived from its requirements.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the entities a trade is built from, and where a stored requirement relation would sit.

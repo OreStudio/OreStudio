@@ -85,6 +85,13 @@ A risk class names a market, not a particular curve or surface. Within
 the EUR ESTR curve, each with its own tenor points. Within =Equity=
 sit the individual spot prices and volatility surfaces.
 
+Those individual factors are [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirements]], and the
+relation between a trade and its requirements is the finer statement of
+the join described here. A risk class is the asset class a requirement
+projects onto, so the set of risk classes a trade carries is the
+projection of its requirement set. Whether the join is held directly or
+derived from that relation is treated in the open questions below.
+
 Those instances are market data rather than taxonomy, and
 [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]] records that market data series carry an asset class of
 their own. A sensitivity therefore resolves through two steps: the
@@ -285,6 +292,13 @@ does.
   this set. Storing it duplicates the computation and risks
   disagreement; deriving it means the classification is unavailable
   before pricing, which defeats using it to route or to filter.
+- *Is the join a separate relation at all?* A trade's requirements are
+  known once it is booked, without a valuation date and without
+  analytics, and each projects onto an asset class. The join described
+  here may therefore be a view over that relation rather than a table
+  of its own, in which case it needs to exist independently only to
+  answer the question for a product type that has no trades yet.
+  [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market data requirement]] sets out the relation this depends on.
 - *How is a merged grouping expressed?* SIMM's =RatesFX= combines two
   nodes. A cut selects nodes rather than combining them, so this needs
   a grouping declared over the tree, or SIMM's product side is treated
@@ -317,6 +331,8 @@ rationale.
 * See also
 
 - [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — what SIMM, FRTB and SA-CCR each compute, and why their enumerations are prescriptive.
+- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the individual inputs a class aggregates.
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub for the requirement cluster.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy both attributes reference.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities, and why a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.

@@ -75,7 +75,7 @@ via its "Verifies task" field.
 * Result
 
 Delivered the analysis as the knowledge doc
-=doc/knowledge/architecture/trading_data_oriented_model.org= (ID
+=doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_trading_data_oriented_model.org= (ID
 dfe15809-ab5a-4eb7-8afb-251bf5d0b911), using the
 [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] skill against the data-oriented criteria of
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][BBD43BF2]].

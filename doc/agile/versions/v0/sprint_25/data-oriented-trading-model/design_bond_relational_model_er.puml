@@ -238,6 +238,6 @@ ores_trading_bond_instruments_tbl ||--o{ ores_trading_schedules_tbl : "exercise,
 ores_trading_schedules_tbl ||--o{ ores_trading_schedule_dates_tbl : "dates"
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar trading_bond_relational_model_er.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar design_bond_relational_model_er.puml"
 ' End:
 @enduml

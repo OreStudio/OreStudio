@@ -15,6 +15,21 @@ product is both a stand-alone trade and a building block for bond
 derivatives. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond |
+| Short name              | Bond |
+| ORE Studio product code | =Bond= |
+| Asset class             | =bond= |
+| Family                  | Security |
+| ORE trade data node     | =BondData= |
+| ORE documentation       | =bond.tex= |
+
 * Summary
 
 A bond is a security that evidences a loan from the holder to the
@@ -116,13 +131,13 @@ and rate sensitivities on the ORE engine.
 
 ORE's own catalogue shows the short form with reference data:
 
-#+begin_example
+#+begin_src xml
 <BondData>
   <SecurityId>ISIN:XS0982710740</SecurityId>
   <BondNotional>100000000.0</BondNotional>
   <CreditRisk>true</CreditRisk>
 </BondData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]],
 listing =BondData= (reference-data form).

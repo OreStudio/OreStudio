@@ -14,6 +14,21 @@ redeems early when its accumulated profit reaches a target. ORE
 offers it for FX, equity and commodity underlyings. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Target Redemption Forward |
+| Short name              | TaRF |
+| ORE Studio product code | =FxTaRF=, =EquityTaRF=, =CommodityTaRF= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Forward |
+| ORE trade data node     | =FxTaRFData=, =EquityTaRFData=, =CommodityTaRFData= |
+| ORE documentation       | =tarf.tex= |
+
 * Summary
 
 A TaRF is a strip of forwards on one underlying. Each fixing date
@@ -209,7 +224,7 @@ ORE's catalogue shows a long FX TaRF on EUR-USD with exact payment.
 It buys one million euros at 1.1 per fixing, with double leverage
 below 1.05, and a cumulated profit cap of 100000:
 
-#+begin_example
+#+begin_src xml
 <Trade id="FX_TARF">
   <TradeType>FxTaRF</TradeType>
   <Envelope/>
@@ -256,7 +271,7 @@ below 1.05, and a cumulated profit cap of 100000:
     </Barriers>
   </FxTaRFData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]],
 listing =FxTaRF data=. The catalogue also shows an equity TaRF with a

@@ -14,6 +14,21 @@ at an agreed price. ORE models it with the trade type =ForwardBond=.
 The container node is =ForwardBondData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Forward Bond |
+| Short name              | Forward Bond |
+| ORE Studio product code | =ForwardBond= |
+| Asset class             | =bond= |
+| Family                  | Forward |
+| ORE trade data node     | =ForwardBondData= |
+| ORE documentation       | =forwardbond.tex= |
+
 * Summary
 
 A forward bond establishes an agreement to buy or sell an underlying
@@ -171,7 +186,7 @@ ORE's catalogue shows a long, physically settled forward bond with a
 premium. The example names a benchmark compounding curve and a
 settlement amount of one million:
 
-#+begin_example
+#+begin_src xml
 <ForwardBondData>
   <BondData>
     ...
@@ -190,7 +205,7 @@ settlement amount of one million:
   </PremiumData>
   <LongInForward>true</LongInForward>
 </ForwardBondData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]],
 listing =Forward Bond Data=. The source spells the settlement value

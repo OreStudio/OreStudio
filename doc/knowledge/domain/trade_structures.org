@@ -95,9 +95,9 @@ The third consequence is a data-model constraint, not a preference.
 Where a model stores a leg as an owned child of a parent object, every
 read of the parent drags in the whole subtree, and no read can cross
 structures. Where a leg is a row with a key, the structure is a join.
-[[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] states the same rule for
-the trading component: =trade=, =instrument= and =leg= are sets of rows
-joined by keys, and no aggregate versions as a whole.
+The trading component holds to that rule: =trade=, =instrument= and
+=leg= are sets of rows joined by keys, and no aggregate versions as a
+whole.
 
 ** The deal topology of a structure
 
@@ -177,7 +177,7 @@ is a change to the structure. The rules in brief:
   contract already provides for is not.
 
 The full model, with the amend classification and the confirmable-event
-list, is on [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+list, is on [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]].
 
 ** Structure operations
 
@@ -284,7 +284,7 @@ Two consequences follow for the trade model:
   describing the deal to the customer. They are not legs.
 
 The confirmation side of this is on
-[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]].
 
 ** Naming across systems
 
@@ -310,12 +310,10 @@ not a local dialect.
 
 ** In ORE Studio
 
-The trading component has no object graph today. Its entities are
-separate tables, and
-[[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] records the consequence:
-ownership and aggregate versioning do not exist as model concepts, and
-the composite as-of read is a temporal join over keys rather than a
-version on the parent.
+The trading component has no object graph. Its entities are separate
+tables, so ownership and aggregate versioning do not exist as model
+concepts, and the composite as-of read is a temporal join over keys
+rather than a version on the parent.
 
 The pieces that exist:
 
@@ -334,7 +332,7 @@ The pieces that exist:
 The target for trading follows the relational reading instead. A
 composite instrument is =composite_instruments= rows and
 =composite_legs= rows joined by keys, a leg is keyed by its instrument
-and its leg sequence, and each entity versions on its own spine. The
+and its leg sequence, and each entity versions on its own timeline. The
 aggregate version of the reference-data model is deliberately not
 adopted for trading, because it is object-graph thinking. See
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] for the review criteria that
@@ -380,14 +378,12 @@ Development on structures should ground on four rules:
 * See also
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — the confirmation model
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the confirmation model
   that a structure version drives.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
   operate on a structure.
 - [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional
   aggregation methods it offers.
-- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — why composition is
-  keys and joins, not an object graph.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the review criteria that
   follow from that model.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the

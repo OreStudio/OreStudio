@@ -1,0 +1,91 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Confirmation lifecycle
+
+skinparam state {
+    BackgroundColor #E3F0DC
+    BorderColor #4C7A44
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4C7A44
+    ArrowFontColor #1A1A1E
+    StartColor #4C7A44
+    EndColor #4C7A44
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+state "not required" as NotRequired #EFEFEF ##[bold]888888
+state "unconfirmed" as Unconfirmed
+state "queried" as Queried
+state "affirmed" as Affirmed
+state "confirmed" as Confirmed
+
+NotRequired : Nobody to agree terms with
+Unconfirmed : Terms not yet agreed
+Queried : The two records differ
+Affirmed : Both sides agree the terms
+Confirmed : Binding written record
+
+[*] --> NotRequired : Book [no counterparty]
+[*] --> Unconfirmed : Book [faces a counterparty]
+Unconfirmed --> Queried : Query
+Unconfirmed --> Affirmed : Affirm
+Queried --> Affirmed : Resolve
+Affirmed --> Confirmed : Confirm
+Confirmed --> Unconfirmed : Amend
+
+note right of Confirmed
+  Confirmed as of an external version.
+  A confirmable amendment moves that
+  version and returns the trade to
+  unconfirmed.
+end note
+
+note left of Unconfirmed
+  An unconfirmed trade is a counterparty
+  risk: the terms are not enforceable in
+  the form the parties agreed. It is not
+  a reason to withhold the trade from
+  risk and P&L.
+end note
+
+note bottom of Affirmed
+  No state here is terminal. When the
+  trade expires or is cancelled this
+  lifecycle stops, and the status keeps
+  its last value, which still records
+  whether the trade was ever confirmed.
+end note
+
+note right of NotRequired
+  The default. An intra-entity transfer,
+  a test booking or a hypothetical stays
+  here for its whole life. Every trade
+  has a status; none is null.
+end note
+
+@enduml

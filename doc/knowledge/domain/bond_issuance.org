@@ -18,7 +18,7 @@ model of the family both build on this concept. Return to
 
 * Summary
 
-An issue is one security, with one ISIN and one set of terms. The
+An issue is one security, with one [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][ISIN]] and one set of terms. The
 borrower fixes the terms at issuance: currency, face value, coupon,
 schedule and maturity. The terms do not change when the bond changes
 hands. Trades of the bond reference the issue; they do not copy or
@@ -53,10 +53,18 @@ terms that define the borrower's debt:
 
 ** One issue per ISIN
 
-The ISIN names the issue. One issue has one ISIN, and one ISIN names
+The [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][ISIN]] names the issue. One issue has one ISIN, and one ISIN names
 one issue. When a borrower needs different terms, it issues a new bond,
 which is a new issue with a new ISIN. The terms of an existing issue
 stay as they were fixed at issuance.
+
+An ISIN identifies the security rather than the listing, so the same
+ISIN appears on every venue where the issue trades. A re-opened tranche
+carries the ISIN of the line it joins, which is why an ISIN names a
+security and not a single sale event. [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]]
+covers the scheme, along with CUSIP and SEDOL, which form the national
+identifier inside a United States or United Kingdom ISIN
+respectively.
 
 ** The issue and the trade
 
@@ -91,6 +99,8 @@ What differs between trades is the price, the size and the parties.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 ** Trade forms whose economics are the issue's economics
 
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]]. The cash bond
@@ -121,5 +131,8 @@ What differs between trades is the price, the size and the parties.
 - [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]]. A structured
   product whose underlyings are issues of convertible bonds.
 
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial
+  identifiers]]. ISIN, CUSIP and SEDOL, which name the issue, alongside
+  the entity, venue and market data schemes.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]. The hub of all
   knowledge notes.

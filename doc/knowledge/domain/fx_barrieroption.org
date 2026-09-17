@@ -14,6 +14,21 @@ family. Its life depends on a spot rate reaching a level. ORE models
 it with the trade type =FxBarrierOption=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Barrier Option |
+| Short name              | FX Barrier Option |
+| ORE Studio product code | =FxBarrierOption= |
+| Asset class             | =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxBarrierOptionData= |
+| ORE documentation       | =fx_barrieroption.tex= |
+
 * Summary
 
 An FX barrier option exists only while an FX spot condition holds.
@@ -119,7 +134,7 @@ them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long European call with an up-and-in barrier:
 
-#+begin_example
+#+begin_src xml
 <FxBarrierOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -146,7 +161,7 @@ ORE's catalogue shows a long European call with an up-and-in barrier:
   <SoldCurrency>USD</SoldCurrency>
   <SoldAmount>1100000</SoldAmount>
 </FxBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_barrieroption.tex][fx_barrieroption.tex]],
 listing =FX Barrier Option data= (optional elements omitted).

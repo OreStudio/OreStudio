@@ -16,6 +16,21 @@ products in the catalogue run on this module under the surface. This
 note records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Generic Scripted Products |
+| Short name              | Generic Scripted Products |
+| ORE Studio product code | =ScriptedTrade= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | none; see below |
+| ORE trade data node     | =ScriptedTradeData= |
+| ORE documentation       | =genericscriptedproducts.tex= |
+
 * Summary
 
 A scripted trade defines its payoff in a small script language

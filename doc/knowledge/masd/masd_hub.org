@@ -32,21 +32,21 @@ without it.
 
 * Reading order
 
-** 1. The methodology
+** The methodology
 
 [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — start here. The
 logical-physical split and the four metamodels. Read it as a map: it names
 every part the following pages treat in detail, and the names do not
 change afterwards.
 
-** 2. What you author
+** What you author
 
 [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the Logical
 Metamodel, its packages, and its levels of abstraction. This is the space
 a modeller works in and the only one where a domain concept exists as
 itself rather than as a projection of itself.
 
-** 3. What you project into
+** What you project into
 
 [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — a language
 or platform with its conventions. Read before physical space, because it
@@ -57,21 +57,21 @@ different file in C++ than it is in SQL.
 folders, file morphology, and the component structure. Now the file layout
 reads as a consequence rather than a convention.
 
-** 4. How the projected artefacts group
+** How the projected artefacts group
 
 [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — a container for
 related artefacts of one technical space. Facets are what the generator's
 templates are organised by, so this is the page that connects the
 methodology to the template library.
 
-** 5. How one model yields different output
+** How one model yields different output
 
 [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the Variability
 Metamodel: features, profiles, and non-structural variation. Read after
 facets, because variability is expressed as choices within a projection
 and there is nothing to vary until the projection exists.
 
-** 6. How this project does it
+** How this project does it
 
 [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the mapping
 from each MASD concept onto ORE Studio's own directories, models and

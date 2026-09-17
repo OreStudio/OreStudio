@@ -13,6 +13,21 @@ A credit linked swap mixes swap payments with credit contingency. ORE
 models it with the trade type =CreditLinkedSwap=. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Credit Linked Swap |
+| Short name              | Credit Linked Swap |
+| ORE Studio product code | =CreditLinkedSwap= |
+| Asset class             | =credit= |
+| Family                  | Swap |
+| ORE trade data node     | =CreditLinkedSwapData= |
+| ORE documentation       | =creditlinkedswap.tex= |
+
 * Summary
 
 A credit linked swap is a swap whose payments depend on credit events
@@ -106,7 +121,7 @@ engine.
 
 ORE's catalogue shows a trade with the four leg groups:
 
-#+begin_example
+#+begin_src xml
 <CreditLinkedSwapData>
   <CreditCurveId>RED:46A844|SNRFOR|USD|XR14</CreditCurveId>
   <SettlesAccrual>false</SettlesAccrual>
@@ -125,7 +140,7 @@ ORE's catalogue shows a trade with the four leg groups:
     <LegData> ... </LegData>
   </RecoveryPayments>
 </CreditLinkedSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditlinkedswap.tex][creditlinkedswap.tex]],
 listing =Credit Linked Swap Data= (leg detail abbreviated).

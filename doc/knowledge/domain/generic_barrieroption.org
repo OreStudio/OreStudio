@@ -15,6 +15,21 @@ expiry. ORE prices it on FX, equity and commodity underlyings, single
 or multiple. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Generic Barrier Option |
+| Short name              | Generic Barrier Option |
+| ORE Studio product code | =FxGenericBarrierOption=, =EquityGenericBarrierOption=, =CommodityGenericBarrierOption= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxGenericBarrierOptionData=, =EquityGenericBarrierOptionData=, =CommodityGenericBarrierOptionData= |
+| ORE documentation       | =generic_barrieroption.tex= |
+
 * Summary
 
 The product pays a vanilla call or put, an asset-or-nothing or a
@@ -229,7 +244,7 @@ with a full barrier structure. The trade monitors a down-and-out at
 1.1 and an up-and-in at 1.3 daily until expiry, and adds a
 Transatlantic up-and-out at 1.3:
 
-#+begin_example
+#+begin_src xml
 <FxGenericBarrierOptionData>
   <Underlying>
     <Type>FX</Type>
@@ -292,7 +307,7 @@ Transatlantic up-and-out at 1.3:
     </BarrierData>
   </TransatlanticBarrier>
 </FxGenericBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]],
 listing =Generic Barrier Option data (FX Underlying)=. The catalogue

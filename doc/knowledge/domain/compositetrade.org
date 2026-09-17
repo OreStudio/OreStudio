@@ -14,6 +14,21 @@ trades. ORE models it with the trade type =CompositeTrade=. The
 container node is =CompositeTradeData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Composite Trade |
+| Short name              | Composite Trade |
+| ORE Studio product code | =CompositeTrade= |
+| Asset class             | inherited from the component subtrades |
+| Family                  | none; a container rather than a shape, see [[id:936ACDC4-830B-434E-82E7-A92276869869][product family]] |
+| ORE trade data node     | =CompositeTradeData= |
+| ORE documentation       | =compositetrade.tex= |
+
 * Summary
 
 A composite trade bundles several component trades into one position.
@@ -129,7 +144,7 @@ engine.
 ORE's catalogue shows a composite with two component trades and a
 sum notional:
 
-#+begin_example
+#+begin_src xml
 <CompositeTradeData>
   <Currency>USD</Currency>
   <NotionalCalculation>Sum</NotionalCalculation>
@@ -142,7 +157,7 @@ sum notional:
     </SubTrade>
   </Components>
 </CompositeTradeData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]],
 listing =Composite trade data=. The catalogue also shows the

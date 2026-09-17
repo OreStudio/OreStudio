@@ -142,7 +142,7 @@ exclusion documented in 6c59c3cbfb and repaired in 2e75d95704.
 Change of scope on 2026-09-09: bond's conversion is superseded. The
 data-oriented redesign ([[id:688959F0-A1AB-4021-A57E-1103AD92773A][688959F0]])
 approved the bond relational pilot (analysis PR #2039, deliverable
-=trading_bond_relational_model.org=) and its
+=design_bond_relational_model.org=) and its
 =implement-bond-relational-codegen= task converts the family in the
 atomised shape: nine entities on the SCD2 spine (issue, per-trade
 instrument, five product fact tables, two issue-keyed child tables).

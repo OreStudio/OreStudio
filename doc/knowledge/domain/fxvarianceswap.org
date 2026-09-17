@@ -15,6 +15,21 @@ it ends. ORE models it with the trade type =FxVarianceSwap=. This
 note records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Variance Swap |
+| Short name              | FX Variance Swap |
+| ORE Studio product code | =FxVarianceSwap= |
+| Asset class             | =fx= |
+| Family                  | Swap |
+| ORE trade data node     | =FxVarianceSwapData= |
+| ORE documentation       | =fxvarianceswap.tex= |
+
 * Summary
 
 An FX variance swap depends on the volatility of an underlying FX
@@ -119,7 +134,7 @@ on the ORE engine.
 
 ORE's catalogue shows a long variance swap on euro-yen:
 
-#+begin_example
+#+begin_src xml
 <FxVarianceSwapData>
   <StartDate>2018-05-10</StartDate>
   <EndDate>2018-11-12</EndDate>
@@ -134,7 +149,7 @@ ORE's catalogue shows a long variance swap on euro-yen:
   <Calendar>EUR</Calendar>
   <MomentType>Variance</MomentType>
 </FxVarianceSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]],
 listing =Variance Swap data=.

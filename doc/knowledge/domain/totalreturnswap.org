@@ -15,6 +15,21 @@ payment. ORE prices the generic form with an accrual method. The same
 product is also known as a contract for difference. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Total Return Swap |
+| Short name              | TRS |
+| ORE Studio product code | =TotalReturnSwap= |
+| Asset class             | =equity= |
+| Family                  | Swap |
+| ORE trade data node     | =TotalReturnSwapData= |
+| ORE documentation       | =totalReturnSwap.tex= |
+
 * Summary
 
 The generic total return swap swaps the performance of an underlying
@@ -208,7 +223,7 @@ ORE's catalogue shows a generic total return swap on a convertible
 bond, with a daily-reset fixed funding leg, a period-reset floating
 funding leg, and an additional cashflow leg:
 
-#+begin_example
+#+begin_src xml
 <TotalReturnSwapData>
   <UnderlyingData>
     <Trade>
@@ -264,7 +279,7 @@ funding leg, and an additional cashflow leg:
     </LegData>
   </AdditionalCashflowData>
 </TotalReturnSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]],
 listing =Generic Total Return Swap with Convertible Bond underlying=.

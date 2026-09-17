@@ -14,6 +14,21 @@ index on one leg. ORE models it as a =Swap= with a YY leg, or as a
 sibling of the [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] in its product catalogue. This note
 records the domain grounding, as ORE documents it.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Year-on-Year Inflation Swap |
+| Short name              | Year-on-Year Inflation Swap |
+| ORE Studio product code | none; not a product in its own right |
+| Asset class             | =inflation= |
+| Family                  | Swap |
+| ORE trade data node     | =YYLegData= on a =Swap= |
+| ORE documentation       | =yyswap.tex= |
+
 * Summary
 
 A year-on-year (YoY) inflation swap exchanges annual inflation-linked
@@ -98,7 +113,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows the structure with the =Swap= trade type. The
 fixed-rate leg is abbreviated.
 
-#+begin_example
+#+begin_src xml
 <SwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -114,7 +129,7 @@ fixed-rate leg is abbreviated.
     </YYLegData>
   </LegData>
 </SwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]],
 listing =Year on Year Swap Data= (using Swap trade type).

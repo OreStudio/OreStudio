@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 74721BF2-2290-4AA7-8871-E215DA04351F
 :END:
-#+title: Confirmations and Deal Versioning
+#+title: Confirmations
 #+description: What a trade confirmation is, the internal and external version model, amendment classification, and the events that must be re-confirmed.
 #+type: knowledge
 #+level: cross
@@ -47,16 +47,27 @@ Three properties follow, and each has a system consequence.
 3. It is the record of the terms, not of the trade. A trade can exist
    unconfirmed; it cannot settle unconfirmed.
 
-** Verification, affirmation, confirmation
+** Acknowledgment, affirmation, confirmation
 
 Three steps sit between an execution and a confirmed deal, and the
-words are not interchangeable.
+words are not interchangeable. All three are bilateral; the internal
+check that precedes them is [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]].
 
 | Step | Who acts | What it establishes | System consequence |
 |------+----------+---------------------+--------------------|
-| Verification | The firm, internally | Our record matches the execution | A verified trade may enter the population |
+| Acknowledgment | One counterparty, sending to the other | A record of all the terms, signed and sent | The other side has something to agree or dispute |
 | Affirmation | The two counterparties, on the economic terms | Both sides agree the terms | The trade is affirmable; a query is raised instead if the terms differ |
 | Confirmation | The two counterparties, in writing | The binding record, superseding earlier agreement | The trade is confirmed as of a version |
+
+The CFTC defines the first and third. An acknowledgment is "a written
+or electronic record of all of the terms of a swap signed and sent by
+one counterparty to the other"; a confirmation is "legally binding
+documentation that memorializes the agreement of the counterparties to
+all of the terms of a swap transaction".
+
+It defines no step called verification, and the word is used in the
+industry for both the internal check and a bilateral one. This corpus
+therefore avoids it. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] records the ambiguity.
 
 Affirmation is not confirmation, and a platform makes the difference
 easy to miss. DTCC Deriv/SERV ran an affirmation service, AffirmXpress,
@@ -66,10 +77,52 @@ matching and confirmation service "resulting in legal confirmation
 within seconds of affirmation". The affirmation was the trigger; the
 confirmation was the legal act.
 
-The three steps also age differently. An unverified trade is an
-internal control exception. An unconfirmed trade is a counterparty
-risk, because the terms are not yet enforceable in the form the parties
+Ageing separates the internal check from the bilateral ones. An
+unauthorised trade is an internal control exception, and
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]] covers it. An unconfirmed trade is a counterparty risk,
+because the terms are not yet enforceable in the form the parties
 agreed.
+
+** The confirmation lifecycle
+
+[[proj:doc/knowledge/domain/confirmation_lifecycle.png]]
+
+| State | Description | Initial |
+|-------+-------------+---------|
+| =not_required= | Nobody to agree terms with. | Yes, by default |
+| =unconfirmed= | Terms not yet agreed. | Yes, where a counterparty exists |
+| =queried= | The two records differ. | No |
+| =affirmed= | Both sides agree the economic terms. | No |
+| =confirmed= | The binding written record, as of an external version. | No |
+
+| From | To | Event | Notes |
+|------+----+-------+-------|
+| (initial) | =not_required= | Book | The trade faces no counterparty. |
+| (initial) | =unconfirmed= | Book | The trade faces a counterparty with terms to agree. |
+| =unconfirmed= | =queried= | Query | The counterparty's record differs from ours. |
+| =unconfirmed= | =affirmed= | Affirm | The counterparty agrees the economic terms. |
+| =queried= | =affirmed= | Resolve | The difference is settled. |
+| =affirmed= | =confirmed= | Confirm | The binding record supersedes the earlier agreement. |
+| =confirmed= | =unconfirmed= | Amend | A confirmable amendment moves the external version. |
+
+The steps above are its transitions. The internal check that precedes
+them belongs to [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]] as authorisation.
+
+=not_required= has no transitions out. An intra-entity transfer, a
+test booking or a hypothetical enters it at booking and stays there,
+which states positively that confirmation was never owed rather than
+leaving a reader to infer it from an absent value.
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] decides which trades those are.
+
+No other state is terminal either. A confirmed trade returns to
+=unconfirmed= whenever a confirmable amendment moves the external
+version, which is why confirmation is stated as of a version rather
+than once and for all. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers the versions
+themselves, and [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] which amendments are confirmable.
+
+When the trade expires or is cancelled this lifecycle simply stops.
+The status keeps its last value, which still records whether the trade
+was ever confirmed.
 
 ** Why confirmation timing is regulated
 
@@ -106,66 +159,6 @@ deadlines in themselves. The practical reading is the same either way:
 a trade that ages past its deadline is an exception that must be
 counted, explained and cleared.
 
-** The two-version rule
-
-A deal carries two version numbers.
-
-- The /internal version/ moves on every recorded change to the deal. It
-  is the audit spine. It answers "what did we hold, and when".
-- The /external version/ moves only when the terms the customer has
-  agreed to change. It is the commercial spine. It answers "what has
-  the customer agreed to".
-
-The rule in one sentence: a trade changes version only if the agreement
-with the customer has changed.
-
-The external version is the handle the customer's records match. When a
-client queries a trade, they quote the version they hold. A system that
-bumps the external version for internal reasons forces a confirmation
-the customer never agreed to and never asked for.
-
-Two consequences are worth stating plainly:
-
-1. Authorisation does not bump either version. Authorisation is our
-   workflow state, not a term of the deal. Treating it as a term would
-   make the firm issue confirmations for its own internal approvals.
-   Authorisation is metadata on the trade.
-2. An economic change is normally confirmable, and a non-economic
-   change normally is not. The two properties are close, but they are
-   not the same property, and the next section separates them.
-
-** Classification of an amendment
-
-Amendments are classified on four orthogonal axes. They are not values
-of one enumeration, and an amendment sits on all four at once.
-
-| Axis | Values | What it decides |
-|------+--------+-----------------|
-| Economic | Economic / non-economic | Whether the deal must be revalued |
-| Confirmable | Confirmable / non-confirmable | Whether a new confirmation is issued |
-| Real | Real / null | Whether anything at all feeds downstream |
-| Customer-visible | External version moves / does not move | Whether the customer sees a change |
-
-Two combinations deserve a note.
-
-A /null amend/ is real on none of the axes. The value entered equals
-the value held, so nothing changed. The record of the attempt is worth
-keeping for the audit trail, but a null amend must not move the
-external version and must not raise a confirmation.
-
-A /misbooking correction/ is real and economic, and it is confirmable,
-even though it is not a change of mind. It corrects an error in the
-original booking terms, so the confirmed terms change, and the customer
-must agree them again.
-
-** One activity per version
-
-Each version carries one activity record that states why it exists.
-Where several causes land at once, the system records them in a fixed
-priority order and the highest-priority cause names the version. The
-priority order exists because one-activity-per-version is an aim, not a
-guarantee: a batch may deliver a rate reset and a correction together.
-
 ** Confirmable events
 
 The events that raise a confirmation:
@@ -195,20 +188,6 @@ and user-defined links. [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structu
 the full table of linkages and marks which ones have an economic
 effect.
 
-** Undoing an event
-
-Most confirmable events have a mirror. A cancellation is undone by a
-reinstatement, a restructure by a reversion, a confirmation by an
-un-confirm. Two rules govern the family:
-
-1. Never delete a version. Post the mirror event and let the record
-   show both.
-2. A matched pair is P&L neutral. The mirror event restores the prior
-   state exactly, so the pair moves no value.
-
-The second rule is the test of a correct implementation. If undoing an
-event changes the P&L, the undo is not a mirror; it is a second event.
-
 ** Confirming a deal and confirming a structure
 
 A structure is confirmed as a whole when the parts have no independent
@@ -232,7 +211,7 @@ confirmation follows the trade population, not the message flow.
 
 A trade must be in the population before it can receive events. The
 population is a state machine, and the states track the confirmation
-steps above: captured, verified, affirmed, confirmed. The states are
+steps above: captured, acknowledged, affirmed, confirmed. The states are
 not decoration. Each one gates a different capability, and the useful
 implementation reads the gate rather than re-deriving the state at each
 call site.
@@ -290,14 +269,21 @@ confirmation more than on the trade. See
 We have the versioning primitives and we do not yet have the
 confirmation model.
 
+The two-version rule above has a counterpart in state. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]]
+carries a confirmation lifecycle whose states are =unconfirmed=,
+=queried=, =affirmed= and =confirmed=, moving on the external version
+exactly as this rule describes, alongside a trade lifecycle that moves
+on the internal version. The steps distinguished above are transitions
+in the confirmation lifecycle; the internal check that precedes them is
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]], a transition in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]].
+
 What exists:
 
 - Reference data versions a composite by touching the parent when a
   child changes, so "as of version N" is a temporal window join. See
   [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
 - Trading does not adopt that design. Each entity versions on its own
-  spine and the composite read is a temporal join over keys. See
-  [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]].
+  timeline and the composite read is a temporal join over keys.
 - The blotter exposes the deal actions that produce versions: Amend,
   Cancel, Clone and Roll Forward. See
   [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
@@ -347,13 +333,17 @@ What is missing, and what development should add:
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition model
   whose changes this page classifies.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the other status a trade carries.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the internal control that precedes these steps.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the external version a confirmation is stated as of.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — which activities require a new confirmation.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning
-  spine our entities already carry.
-- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the per-entity
-  versioning the trading component targets.
+  mechanism our entities already carry.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — trade activity categories, and why a version
   boundary matters to an attribution run.

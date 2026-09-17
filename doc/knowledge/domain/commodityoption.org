@@ -14,6 +14,21 @@ buyer gains the right to trade a commodity at a set price. ORE models
 it with the trade type =CommodityOption=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Commodity Option |
+| Short name              | Commodity Option |
+| ORE Studio product code | =CommodityOption= |
+| Asset class             | =commodity= |
+| Family                  | Option |
+| ORE trade data node     | =CommodityOptionData= |
+| ORE documentation       | =commodityoption.tex= |
+
 * Summary
 
 A commodity option gives the buyer the right, not the obligation, to
@@ -96,7 +111,7 @@ engine.
 
 ORE's catalogue shows a short European put on crude oil:
 
-#+begin_example
+#+begin_src xml
 <CommodityOptionData>
   <OptionData>
     <LongShort>Short</LongShort>
@@ -120,7 +135,7 @@ ORE's catalogue shows a short European put on crude oil:
   <IsFuturePrice>true</IsFuturePrice>
   <FutureExpiryDate>2029-04-28</FutureExpiryDate>
 </CommodityOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoption.tex][commodityoption.tex]],
 listing =Commodity Option data= (closing tags normalised).

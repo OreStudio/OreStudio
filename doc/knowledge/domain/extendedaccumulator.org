@@ -14,6 +14,21 @@ a barrier decision date. ORE represents it as a scripted trade with
 the node =ExtendedAccumulatorData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Extended Accumulator |
+| Short name              | Extended Accumulator |
+| ORE Studio product code | =FxAccumulator=, =EquityAccumulator=, =CommodityAccumulator= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Forward |
+| ORE trade data node     | =FxAccumulatorData=, =EquityAccumulatorData=, =CommodityAccumulatorData= |
+| ORE documentation       | =extendedaccumulator.tex= |
+
 * Summary
 
 An extended accumulator trades like an accumulator: at each regular
@@ -143,7 +158,7 @@ ORE's catalogue shows a long extended accumulator on EUR-USD. Six
 monthly installments run from September 2019, with the extension
 decision on 25 February 2020:
 
-#+begin_example
+#+begin_src xml
 <Trade id="FxExtendedAccumulatorLong">
   <TradeType>ScriptedTrade</TradeType>
   <Envelope>
@@ -217,7 +232,7 @@ decision on 25 February 2020:
     </ConditionalSettlementDates>
   </ExtendedAccumulatorData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/extendedaccumulator.tex][extendedaccumulator.tex]],
 the extended accumulator example trade.

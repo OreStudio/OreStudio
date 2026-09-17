@@ -56,7 +56,7 @@ their columns. Its instruction to this task reads: "The codegen task
 must read the ORE XSD product structures (=bondFutureData=,
 =bondRepoData= and the Ascot shape in ores.ore's domain) to fix the
 fact tables' columns, which this page names but does not invent"
-(=trading_bond_relational_model.org=, section "What each surface must
+(=design_bond_relational_model.org=, section "What each surface must
 change"). This note records that reading against
 =external/ore/xsd/instruments.xsd=, and the deletion inventory of the
 hand-written stack. The ER's decided columns stay primary; the XSD

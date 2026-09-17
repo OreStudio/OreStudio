@@ -15,6 +15,21 @@ form. ORE documents the family in one catalogue section with fifteen
 variations, each with its own payoff script. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Exotic Variance and Volatility Derivatives |
+| Short name              | Exotic Variance and Volatility Derivatives |
+| ORE Studio product code | =FxVarianceSwap=, =FxPairwiseVarianceSwap=, =FxBasketVarianceSwap=, =EquityVarianceSwap=, =EquityPairwiseVarianceSwap=, =EquityBasketVarianceSwap=, =CommodityVarianceSwap=, =CommodityPairwiseVarianceSwap=, =CommodityBasketVarianceSwap= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | none; see below |
+| ORE trade data node     | =FxVarianceSwapData=, =FxPairwiseVarianceSwapData=, =FxBasketVarianceSwapData=, =EquityVarianceSwapData=, =EquityPairwiseVarianceSwapData=, =EquityBasketVarianceSwapData=, =CommodityVarianceSwapData=, =CommodityBasketVarianceSwapData= |
+| ORE documentation       | =var_and_vol_derivatives.tex= |
+
 * Summary
 
 The family starts from the variance swap, which pays the realised
@@ -325,7 +340,7 @@ S&P 500. The trade has a vega notional of 138000 USD, a strike of
 0.19 and a variance reference of 0.19, and observes the index daily
 from 2020-11-26 to 2021-09-18:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EQ_VarianceOption">
   <TradeType>ScriptedTrade</TradeType>
   <Envelope>
@@ -358,7 +373,7 @@ from 2020-11-26 to 2021-09-18:
     <PayCcy type="currency">USD</PayCcy>
   </VarianceOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 The squared-payoff flag is true, so the trade is a variance option.
 The premium is zero and the premium date equals the first valuation

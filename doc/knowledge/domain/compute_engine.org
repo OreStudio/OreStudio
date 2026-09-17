@@ -345,3 +345,10 @@ P&L discrepancies, and respond to regulatory queries.
 population XML files constitute the full reproducible input set. ORE Studio
 must snapshot these at each analytics run and store them alongside the results
 for auditability.
+
+* See also
+
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — how a job travels through the grid: engine
+  registration, batch dispatch, worker execution, validation, and
+  output collection.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -13,6 +13,21 @@ family. It is the underlying of the FX barrier and exotic products.
 ORE models it with the trade type =FxOption=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Option |
+| Short name              | FX Option |
+| ORE Studio product code | =FxOption= |
+| Asset class             | =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxOptionData= |
+| ORE documentation       | =fxoption.tex= |
+
 * Summary
 
 An FX option gives the buyer the right, not the obligation, to
@@ -107,7 +122,7 @@ run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long European call:
 
-#+begin_example
+#+begin_src xml
 <FxOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -131,7 +146,7 @@ ORE's catalogue shows a long European call:
   <SoldCurrency>USD</SoldCurrency>
   <SoldAmount>1700000</SoldAmount>
 </FxOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxoption.tex][fxoption.tex]],
 listing =FX Option data=.

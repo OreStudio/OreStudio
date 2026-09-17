@@ -1,0 +1,259 @@
+:PROPERTIES:
+:ID: B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D
+:END:
+#+title: Trade Lifecycle
+#+description: The lifecycle a trade runs through: the states its operational status takes, the events that move between them, the activity type taxonomy that classifies each event, and how amendments produce versions.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:lifecycle:modeling:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+startup: inlineimages
+
+* Overview
+
+A trade's operational state follows a finite state machine. This document
+describes that machine: the states a trade can be in, the events that cause
+transitions between them, and the taxonomy of activity types used for P&L
+attribution and reporting.
+
+[[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade status FSM implementation]] covers how the machine is held
+in the database.
+
+* Trade Status
+
+The /trade status/ is the operational state of a trade at a given
+moment. It answers the question: /what state is this trade in right
+now?/
+
+Status drives whether a trade is included in risk and P&L (only =live=
+trades), what operations are permissible on it, and how it is filtered
+for reporting and reconciliation.
+
+It is one of three things a lifecycle discussion routinely conflates.
+[[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] covers the second, an event that happened to a trade,
+and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the third, what the trade is.
+
+* The Trade Lifecycle
+
+[[proj:doc/knowledge/domain/trade_status_lifecycle.png]]
+
+| State | Description | Initial |
+|-------+-------------+---------|
+| =draft= | Recorded, but no agreement has been struck. | Yes |
+| =live= | The agreement stands. | Yes |
+| =expired= | Contract ceased naturally: expired, matured, exercised. | No |
+| =cancelled= | Removed from the book. | No |
+
+There are two ways in. A trade booked against an agreement already
+struck enters at =live=. One recorded before any agreement exists —
+a requirement taken down over the phone, a quote being explored —
+enters at =draft=.
+
+No state is terminal. A trade may end in =expired= or =cancelled=, but
+both are reversible, because either may have been recorded in error.
+
+The diagram shows =live= as a composite state containing
+=unauthorised= and =authorised=, because that is where the distinction
+sits and a reader looking for it will look there. Those substates are
+not states of this machine, and the next section says what they are
+instead.
+
+| From | To | Event | Notes |
+|------+----+-------+-------|
+| (initial) | =draft= | Capture | Recorded before any agreement exists. |
+| (initial) | =live= | New | Booked against an agreement already struck. |
+| =draft= | =live= | Execute | The agreement is struck. |
+| =draft= | =cancelled= | Discard | The draft comes to nothing. |
+| =draft= | =draft= | Amend | The draft is refined. |
+| =live= | =expired= | Expire | The contract ceases naturally. |
+| =live= | =cancelled= | Cancel | The trade is removed from the book. |
+| =expired= | =live= | Unexpire | The expiry was recorded in error. |
+| =cancelled= | =live= | Uncancel | The cancellation was recorded in error. |
+| =expired=, =cancelled= | unchanged | Amend | The record is corrected without being revived. |
+
+Within =live=, amendment interacts with the authorisation flag rather
+than with the state:
+
+| From | To | Event | Notes |
+|------+----+-------+-------|
+| =unauthorised= | =authorised= | Authorise | Operations releases the trade. |
+| =authorised= | =unauthorised= | Un-authorise | The release is withdrawn, with a reason. |
+| =authorised= | =unauthorised= | Amend | The released terms no longer stand. |
+| =unauthorised= | =unauthorised= | Amend | Nothing to withdraw; only the version moves. |
+
+Three states, and a trade is in the first of them from the moment it
+is booked. There is no state between booking and liveness, because the
+agreement exists as soon as it is struck.
+
+** A draft is not yet a trade
+
+The distinction between =draft= and =live= is whether an agreement
+exists, and it is not the same as the distinction between
+=unauthorised= and =authorised=.
+
+An unauthorised trade is an agreement that Operations has not yet
+released. A draft is not an agreement at all. Neither contributes to
+risk and P&L, but they fail to for different reasons, and only one of
+them is something a counterparty could hold the firm to.
+
+A draft therefore carries no authorisation status. There is nothing to
+release until the agreement exists, which is why the composite in the
+diagram sits inside =live= and not around both.
+
+*** What blocks a draft
+
+A draft carries a [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][reason]] saying why it is not live, and the reason
+names who is responsible for unblocking it: waiting for allocation to
+a business, waiting for counterparty details, waiting for input from
+the requestor.
+
+Recording the responsible party rather than only the cause is what
+makes a trade exceptions report actionable. The report lists what is
+in a provisional state, how long it has been there, and who is looking
+at it.
+
+*** The provisional family
+
+Several situations look alike and are not, and reporting depends on
+telling them apart.
+
+| Situation | What it is | Contributes |
+|-----------+------------+-------------|
+| Draft or RFQ | Being explored; no agreement | No |
+| Pre-live or incomplete | An agreement exists but details are missing | No |
+| Pending | An agreement exists; the client will replace it with allocations | To risk only |
+| Hypothetical | A question, never intended to become a trade | No |
+
+The first two are both =draft= here, distinguished by their reason.
+The third is =live=: a pending trade flows to the trader's book so
+risk is managed from the start, while sending no confirmations and not
+settling, which is a matter for its confirmation status rather than
+its state.
+
+The fourth is not a state at all. A hypothetical is classified rather
+than staged, and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers it: it is a trade whose
+booking nature is =hypothetical=, and it never becomes anything else.
+
+** Amendment never moves the state
+
+Amend leaves =draft=, =expired= and =cancelled= unchanged. A draft
+being refined is still a draft; a trade that has ceased can still have
+its record corrected, and correcting it does not revive it. Reviving one is a different event, and the next section
+covers it.
+
+Within =live=, amendment moves the authorisation flag rather than the
+state. An amendment to an authorised trade returns it to
+=unauthorised=, because the terms Operations released are no longer
+the terms on the book and the decision has to be taken again. An
+amendment to an unauthorised trade changes nothing but the version,
+since there is no release to withdraw.
+
+The confirmation lifecycle behaves the same way, and for the same
+reason: a confirmable amendment returns a =confirmed= trade to
+=unconfirmed=. Both are agreements about terms that an amendment
+invalidates. [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] covers that side.
+
+What an amendment produces is a version. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers what
+a version is and how the internal and external versions move, and
+[[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] classifies which amendments are economic, which are
+confirmable, and which are real.
+
+A change that cannot be made in place is not an amendment. Cancelling
+and rebooking produces two trades, each with its own lifecycle.
+
+** Expire and cancel are reversible
+
+Neither is terminal, because either may have been recorded in error: a
+cancellation booked against the wrong trade, an expiry driven by a
+fixing later corrected.
+
+Unexpire and uncancel correct the record rather than revive an
+agreement, and a trade returning to =live= arrives =unauthorised=. The
+release it previously carried was a decision about a trade that was
+then taken off the book, so it does not survive the return.
+
+** Why fixings and coupon payments are not events here
+
+A contractual event such as a fixing or a coupon payment produces a
+new version of the trade, and so appears in the
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][reason for update]] enumeration, but it is not an event in this
+machine. The test is whether the event changes which state the trade
+is in. A fixing sets a rate on a trade that was =live= and remains
+=live=; a coupon payment discharges an obligation on a trade that
+stays =live= until its last one.
+
+Expiry passes that test and they do not. A contract that has expired
+no longer accrues, no longer resets, and no longer contributes, so
+=live= can no longer describe it.
+
+So the two vocabularies are different by construction. The lifecycle
+enumerates the transitions between states; the reason for update
+enumerates the causes of versions, of which state transitions are only
+one family. [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] holds the full taxonomy of causes.
+
+** The substates of live are a flag
+
+An operational authorisation decision is metadata, so it is held as a
+flag on the trade rather than as a state in this machine. A version
+produced by authorising would itself require authorisation, without
+end, so authorising states something /about/ a trade rather than
+changing it.
+
+The composite in the diagram places the distinction without modelling
+it. Two substates are drawn because two are what a reader needs in
+order to see where contribution comes from; the flag itself carries
+four values, whose transitions are set out in
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][the operational authorisation queue]].
+
+Drawing it inside =live= is deliberate. The flag is meaningful only
+while a trade is live: a cancelled trade's authorisation history
+remains on the record, but there is nothing left for it to release.
+
+** A trade carries three statuses
+
+This lifecycle is one of three, and the other two are not states of
+the trade but decisions and agreements about it.
+
+| Status | Question | Values |
+|--------+----------+--------|
+| =trade_status= | Where has this trade got to? | =live=, =expired=, =cancelled= |
+| =operational_authorisation_status= | Has Operations released it? | =unseen=, =held_over=, =authorised=, =denied= |
+| =confirmation_status= | What have we and the counterparty agreed? | =not_required=, =unconfirmed=, =queried=, =affirmed=, =confirmed= |
+
+Neither of the other two is a transition here.
+[[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] is metadata: a version produced by
+authorising would itself require authorisation, without end, so
+authorising states something /about/ a trade rather than changing it.
+Confirmation is an agreement with a counterparty, which
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]] covers, and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] decides whether a
+trade has one at all.
+
+Contribution follows from the combination rather than from any one of
+them. A trade contributes to risk and P&L when it is =live= and its
+operational authorisation flag reads =authorised=; an unauthorised
+live trade exists and contributes to nothing. That is why contribution is a derived predicate and not a
+state, a point [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] makes at length.
+
+| Trade | =trade_status= | authorisation | confirmation |
+|-------+----------------+---------------+--------------|
+| Client swap, just booked | =live= | =unseen= | =unconfirmed= |
+| Client swap, Ops released it, paperwork outstanding | =live= | =authorised= | =unconfirmed= |
+| Client swap, fully papered | =live= | =authorised= | =confirmed= |
+| Client swap, held pending a query | =live= | =held_over= | =unconfirmed= |
+| Desk transfer between our own books | =live= | =authorised= | =not_required= |
+| Matured client swap | =expired= | =authorised= | =confirmed= |
+
+* See also
+
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the control that releases a trade into the book.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — the screen a trade waits on.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events that create, change or end a trade.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what an amendment produces.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the second status a trade carries.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the two dimensions that decide where confirmation starts.
+- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the entities a trade is built from.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

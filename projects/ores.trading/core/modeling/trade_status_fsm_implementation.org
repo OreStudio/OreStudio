@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08
+:END:
+#+title: Trade Status FSM Implementation
+#+description: How the trade lifecycle is realised in the database: the seeded machine, the status column, the activity type table and transition enforcement.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:lifecycle:sql:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+The trade lifecycle is a domain concept: its states, transitions and activity
+types are described in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]]. This page records how that design is
+realised in the database, and nothing about why the design is what it is.
+
+The lifecycle runs on the generic state machine infrastructure in
+[[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]], which supplies =ores_dq_fsm_machines_tbl=,
+=ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=.
+
+* The seeded machine
+
+The trade status machine is seeded in =ores_dq_fsm_machines_tbl= under the name
+=trade_status=, with the four states and five transitions that
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] sets out.
+
+The =ores_trading_trades_tbl= carries a =status_id= column (soft foreign key to
+=ores_dq_fsm_states_tbl=) representing the trade's current status.
+
+* Activity types
+
+The full set of activity types is stored in =ores_trading_activity_types_tbl=
+(replaces the narrower =ores_trading_lifecycle_events_tbl=). Each activity type
+record includes:
+
+- =code=: unique identifier (e.g. =novation=, =rate_reset=).
+- =category=: one of =new_activity=, =lifecycle_event=, =misbooking=,
+  =valuation_change=, =cancellation=.
+- =requires_confirmation=: boolean.
+- =fsm_transition_id=: optional reference to the triggered FSM transition (null
+  for no-status-change activities).
+- =description=: human-readable description.
+
+* Transition enforcement
+
+Before a trade status transition is applied, the server validates it against the
+=ores_dq_fsm_transitions_tbl= to confirm the (from_state, to_state) pair is
+legal for the =trade_status= machine. Invalid transitions are rejected with an
+error response.
+
+* Related components
+
+| Component | File                                                                  | Purpose                                 |
+|-----------+-----------------------------------------------------------------------+-----------------------------------------|
+| ores.dq   | [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]               | FSM infrastructure (machines, states, transitions) |
+| ores.trading | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]       | Trade domain model and repository       |
+| ores.fpml | [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]             | FpML trade format parsing               |
+| sql       | =ores_dq_fsm_machines_tbl=                                            | FSM machine definitions                 |
+| sql       | =ores_dq_fsm_states_tbl=                                              | FSM state definitions                   |
+| sql       | =ores_dq_fsm_transitions_tbl=                                         | FSM transition rules                    |
+| sql       | =ores_trading_trades_tbl=                                             | Trade records with =status_id= column   |
+| sql       | =ores_trading_activity_types_tbl=                                     | Activity type reference data            |
+
+* See also
+
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states, transitions and activity types this realises.
+- [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] — the generic FSM infrastructure.

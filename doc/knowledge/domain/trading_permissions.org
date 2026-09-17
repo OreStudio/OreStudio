@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 33CCB50B-8697-49A1-8761-4DB873A93515
+:END:
+#+title: Trading Permissions
+#+description: Sketch: the standing constraints on what may be booked, where, and by whom — distinct from the per-trade decision that operational authorisation makes.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:controls:operations:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+#+begin_note
+*This is a sketch.* It names the theme and its dimensions so that
+neighbouring documents have somewhere to point, and records what
+already exists. It does not propose a model.
+#+end_note
+
+A *trading permission* is a standing rule about what may be booked. A
+cable book takes GBP/USD and nothing else; a desk is mandated for
+vanilla options and not exotics; the firm holds a licence covering
+some instruments and not others.
+
+The rule is evaluated when a trade is booked, and a booking that
+breaches it does not become a trade. That is what separates permissions
+from [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]], which is a decision a person takes
+about a trade that already exists.
+
+* How it differs from authorisation
+
+The two are easily conflated, because both answer "is this allowed",
+and both are operational concerns. They differ in every other respect.
+
+| | Trading permission | Operational authorisation |
+|-+--------------------+---------------------------|
+| *What it is* | A standing rule | A decision about one trade |
+| *Set by* | Risk, compliance, the desk's mandate | Operations, case by case |
+| *Evaluated* | When the trade is booked | After the trade exists |
+| *Scope* | A class of activity | A single trade |
+| *On failure* | The booking is refused | The trade sits unauthorised |
+| *Changes* | Rarely, by a deliberate act | Per trade, continuously |
+
+A permission that is absent stops a trade coming into existence. An
+authorisation that is absent leaves a trade in the book contributing to
+nothing, which [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]] covers.
+
+* The dimensions
+
+Three questions, and a permission constrains some combination of them.
+
+** What may be traded
+
+- A *product type*, from the catalogue in [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]].
+- A *product family* or an *asset class*, where the mandate is coarser
+  than a single product: vanilla options but not exotics, rates but
+  not credit. [[id:936ACDC4-830B-434E-82E7-A92276869869][Product family]] and [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]] supply those
+  classifications.
+- A specific *underlying* or *currency pair*: GBP/USD on a cable book.
+- A *counterparty*, where the firm is not permitted to face one at all.
+
+** Where it may be booked
+
+- A *book*, which is the finest and most common grain.
+- A *desk* or *business unit*, inherited by the books beneath it.
+- A *legal entity*, where a licence or a local regulation binds one
+  entity of the group and not another.
+- The *firm*, where the constraint is universal.
+
+The levels compose, and the narrowest applies. A book cannot widen
+what its entity permits.
+
+** Who is driving it
+
+A permission is usually not Operations' own rule, even though
+Operations enforces it.
+
+| Source | Typical constraint |
+|--------+--------------------|
+| Risk | Exposure to an asset class or underlying |
+| Compliance | Restricted lists, Chinese walls between desks |
+| Licensing | Instruments the entity is authorised to deal in |
+| The desk's mandate | What this desk exists to trade |
+
+Recording which of these a permission comes from matters, because it
+determines who may change it and what evidence a change requires.
+
+* What already exists
+
+Two pieces of this are modelled.
+
+[[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book currencies]] holds the allowed-currency set that constrains what
+may be booked into a book, which is the currency dimension at book
+grain.
+
+[[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] holds the fine-grained model by which
+books are permissioned and users grouped, including Chinese walls
+between desks. That is access control — who may see and act on a book —
+rather than a constraint on what the book may hold, and the two are
+worth distinguishing even though they share the word.
+
+Neither covers product type, product family, asset class or underlying,
+and nothing holds a firm-wide or entity-wide constraint.
+
+* Open questions
+
+- Whether a permission is a rule evaluated at booking or a
+  pre-computed set a book carries. The second answers "what may I
+  book here" without evaluation, at the cost of recomputing on every
+  change.
+- Whether a breach is always a refusal, or whether some permissions
+  produce a warning and a trade requiring escalation instead.
+- How a permission is evidenced when a regulator asks, given the
+  source matters as much as the rule.
+- Whether a permission is reference data on the product type and
+  counterparty, or an entity in its own right with its own lifecycle.
+  [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] raises the same question from its side.
+
+* Sources
+
+The theme is drawn from the internal analysis notes on authorisation,
+which record standing permissions alongside per-trade decisions
+without separating them. No external standard is cited.
+
+* See also
+
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the per-trade decision this is not.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — who may act on a book.
+- [[id:C5561A84-D060-4AB4-AB40-4ABC08875040][Book Currencies]] — the currency dimension, at book grain.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the hub for the book cluster.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

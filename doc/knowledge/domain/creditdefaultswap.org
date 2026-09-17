@@ -15,6 +15,21 @@ defaults. ORE models it with the trade type =CreditDefaultSwap=, with
 single-name and quanto forms. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Credit Default Swap |
+| Short name              | CDS |
+| ORE Studio product code | =CreditDefaultSwap= |
+| Asset class             | =credit= |
+| Family                  | Swap |
+| ORE trade data node     | =CreditDefaultSwapData= |
+| ORE documentation       | =creditdefaultswap.tex= |
+
 * Summary
 
 A credit default swap (CDS) is a bilateral contract on the credit of a
@@ -115,7 +130,7 @@ value them, run credit sensitivities, and feed XVA on the ORE engine.
 
 ORE's catalogue shows the single-name form with a credit curve:
 
-#+begin_example
+#+begin_src xml
 <CreditDefaultSwapData>
   <IssuerId>CPTY_A</IssuerId>
   <CreditCurveId>RED:008CA0|SNRFOR|USD|MR14</CreditCurveId>
@@ -130,7 +145,7 @@ ORE's catalogue shows the single-name form with a credit curve:
     ...
   </LegData>
 </CreditDefaultSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditdefaultswap.tex][creditdefaultswap.tex]],
 listing =CreditDefaultSwap Data= (leg detail abbreviated).

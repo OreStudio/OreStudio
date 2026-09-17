@@ -14,6 +14,21 @@ by two barrier levels on the equity spot. ORE models it with the trade
 type =EquityDoubleTouchOption=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Double Touch Option |
+| Short name              | Equity Double Touch Option |
+| ORE Studio product code | =EquityDoubleTouchOption= |
+| Asset class             | =equity= |
+| Family                  | Option |
+| ORE trade data node     | =EquityDoubleTouchOptionData= |
+| ORE documentation       | =eq_doubletouchoption.tex= |
+
 * Summary
 
 An equity double touch option has two continuously monitored barriers
@@ -128,7 +143,7 @@ touch options to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a double one-touch on the S&P 500 index that
 pays one million when the spot touches 3000 or 4500:
 
-#+begin_example
+#+begin_src xml
 <EquityDoubleTouchOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -154,7 +169,7 @@ pays one million when the spot touches 3000 or 4500:
     <Calendar>USD</Calendar>
     <EQIndex>EQ-RIC:.SPX</EQIndex>
 </EquityDoubleTouchOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]],
 listing =Equity Double Touch Option data=.

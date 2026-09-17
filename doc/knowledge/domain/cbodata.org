@@ -14,6 +14,21 @@ portfolio of corporate bonds or loans. ORE models it with the trade
 type =CBO=. The container node is =CBOData=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Collateral Bond Obligation |
+| Short name              | Collateral Bond Obligation |
+| ORE Studio product code | =CBO= |
+| Asset class             | =credit= |
+| Family                  | none; see below |
+| ORE trade data node     | =CBOData= |
+| ORE documentation       | =cbodata.tex= |
+
 * Summary
 
 A collateral bond obligation, also called a cashflow CDO, is a
@@ -221,7 +236,7 @@ trade invests 4 million in a junior note of the =Constellation=
 structure, with a senior fee of 1 percent, a subordinated fee of 2
 percent and an equity kicker of 0.25:
 
-#+begin_example
+#+begin_src xml
 <CBOData>
   <CBOInvestment>
     <TrancheName>JuniorNote</TrancheName>
@@ -248,7 +263,7 @@ percent and an equity kicker of 0.25:
     </ScheduleData>
   </CBOStructure>
 </CBOData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]],
 listing =CBO Data=. The source elides the contents of the three

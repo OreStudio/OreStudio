@@ -15,6 +15,21 @@ are contractual. ORE models it with the trade type
 =EquityAutoDeltaHedgedOption=. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Auto Delta Hedged Option |
+| Short name              | Equity Auto Delta Hedged Option |
+| ORE Studio product code | =EquityAutoDeltaHedgedOption= |
+| Asset class             | =equity= |
+| Family                  | Option |
+| ORE trade data node     | =EquityAutoDeltaHedgedOptionData= |
+| ORE documentation       | =equityautodeltahedgedoption.tex= |
+
 * Summary
 
 The trade type represents a structured product with one or more
@@ -114,7 +129,7 @@ options to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a batch of long European calls on HSBC, with the
 hedging volatility at 5 percent and no drift:
 
-#+begin_example
+#+begin_src xml
 <EquityAutoDeltaHedgedOptionData>
   <Volatility>0.05</Volatility>
   <DriftRate>0.00</DriftRate>
@@ -144,7 +159,7 @@ hedging volatility at 5 percent and no drift:
   </Underlyings>
   <ObservationStartDate>2020-11-11</ObservationStartDate>
 </EquityAutoDeltaHedgedOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]],
 listing =Equity Auto Delta Hedged Option data=, further batches

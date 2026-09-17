@@ -15,6 +15,21 @@ type and as a building block inside other products. ORE models it with
 the trade type =EquityOptionPosition=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Option Position |
+| Short name              | Equity Option Position |
+| ORE Studio product code | =EquityOptionPosition= |
+| Asset class             | =equity= |
+| Family                  | Position |
+| ORE trade data node     | =EquityOptionPositionData= |
+| ORE documentation       | =equityoptionposition.tex= |
+
 * Summary
 
 An equity option position holds one option underlying or several
@@ -116,7 +131,7 @@ positions to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a basket of two S&P 500 calls with strikes 3300
 and 3400, weighted equally:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EquityOptionPositionTrade">
   <TradeType>EquityOptionPosition</TradeType>
   <EquityOptionPositionData>
@@ -146,7 +161,7 @@ and 3400, weighted equally:
     </Underlying>
   </EquityOptionPositionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoptionposition.tex][equityoptionposition.tex]],
 listing =Equity Option position data=, second basket line elided.

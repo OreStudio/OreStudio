@@ -15,6 +15,21 @@ are supported. ORE models it with the trade type =EquityVarianceSwap=.
 This note records the domain grounding, as ORE documents it in its
 product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Variance Swap |
+| Short name              | Equity Variance Swap |
+| ORE Studio product code | =EquityVarianceSwap= |
+| Asset class             | =equity= |
+| Family                  | Swap |
+| ORE trade data node     | =EquityVarianceSwapData= |
+| ORE documentation       | =equityvarianceswap.tex= |
+
 * Summary
 
 An equity variance swap has a payoff that depends on the volatility of
@@ -124,7 +139,7 @@ swaps to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a long USD variance swap on the S&P 500 index,
 struck at 20 percent volatility:
 
-#+begin_example
+#+begin_src xml
 <EquityVarianceSwapData>
     <StartDate>2016-01-29</StartDate>
     <EndDate>2016-05-05</EndDate>
@@ -141,7 +156,7 @@ struck at 20 percent volatility:
     <MomentType>Variance</MomentType>
     <AddPastDividends>true</AddPastDividends>
 </EquityVarianceSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]],
 listing =Variance Swap data=. The source spells the container node

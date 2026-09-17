@@ -14,6 +14,21 @@ models it with the trade type =BondPosition=. The container node is
 =BondBasketData=. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Position |
+| Short name              | Bond Position |
+| ORE Studio product code | =BondPosition= |
+| Asset class             | =bond= |
+| Family                  | Position |
+| ORE trade data node     | none; the payload is not a per-type node |
+| ORE documentation       | =bondposition.tex= |
+
 * Summary
 
 A bond position represents a position in a weighted basket of
@@ -103,7 +118,7 @@ to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a basket of two US bonds, half each, with small
 bid-ask adjustments:
 
-#+begin_example
+#+begin_src xml
 <Trade id="BondPosition">
   <TradeType>BondPosition</TradeType>
   <Envelope>...</Envelope>
@@ -126,7 +141,7 @@ bid-ask adjustments:
     </Underlying>
   </BondBasketData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]],
 listing =Bond position data=.

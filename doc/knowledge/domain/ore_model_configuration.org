@@ -52,7 +52,7 @@ excluded as they are already handled elsewhere).
 Each file contains zero or more =Product= elements plus an optional
 =GlobalParameters= section:
 
-#+begin_example
+#+begin_src xml
 <PricingEngines>
   <Product type="Swap">
     <Model>DiscountedCashflows</Model>
@@ -64,7 +64,7 @@ Each file contains zero or more =Product= elements plus an optional
     <Parameter name="ContinueOnCalibrationError">true</Parameter>
   </GlobalParameters>
 </PricingEngines>
-#+end_example
+#+end_src
 
 Key fields per =Product=:
 
@@ -191,7 +191,7 @@ Optional global flags: =ComputeGamma=, =UseSpreadedTermStructures=,
 
 Contains zero or more =StressTest= elements, each with a unique =@id=:
 
-#+begin_example
+#+begin_src xml
 <StressTesting>
   <StressTest id="parallel_rates_up">
     <DiscountCurves>
@@ -209,7 +209,7 @@ Contains zero or more =StressTest= elements, each with a unique =@id=:
     </FxSpots>
   </StressTest>
 </StressTesting>
-#+end_example
+#+end_src
 
 Market shift sections mirror the sensitivity config but allow:
 - *Multi-tenor shift vectors*: non-uniform shifts (twist, butterfly).
@@ -291,7 +291,7 @@ regression models, and output file specifications.
 
 *** Schema
 
-#+begin_example
+#+begin_src xml
 <CounterpartyInformation>
   <Counterparties>
     <Counterparty>
@@ -303,7 +303,7 @@ regression models, and output file specifications.
     </Counterparty>
   </Counterparties>
 </CounterpartyInformation>
-#+end_example
+#+end_src
 
 This may overlap with existing =ores.refdata= counterparty entities; the
 regulatory risk weights could be additional attributes on the existing
@@ -318,7 +318,7 @@ regulatory risk weights could be additional attributes on the existing
 
 *** Schema
 
-#+begin_example
+#+begin_src xml
 <CollateralBalances>
   <CollateralBalance>
     <NettingSetId>CPTY_A</NettingSetId>
@@ -327,7 +327,7 @@ regulatory risk weights could be additional attributes on the existing
     <VariationMargin>0</VariationMargin>
   </CollateralBalance>
 </CollateralBalances>
-#+end_example
+#+end_src
 
 ** Script Library
 

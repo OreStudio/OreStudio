@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 886AAFB5-62F3-4AA3-B325-386665AFF926
+:END:
+#+title: Positions
+#+description: A deal is an event and a position is a state: what a position is, why it has no identity, the two sources of change, and what follows for the model.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:positions:modeling:
+#+created: 2026-09-13
+#+updated: 2026-09-13
+
+* Summary
+
+A deal is an event. A position is a state. A deal is a discrete,
+identified, versioned agreement struck at a point in time. A position
+is what the firm is left holding once every deal touching some
+dimension has been added up.
+
+Almost everything else here follows from that one distinction. A
+position has no identity, no counterparty, no version and no
+lifecycle, because it is derived rather than recorded.
+
+* The definition
+
+A position is a binding commitment to buy or sell a given amount of
+financial instruments at a given price. Cash is added up separately to
+make the cash position.
+
+That definition omits a trade date, a counterparty, a version, a
+confirmation and an authorisation status. Those are properties of
+deals. A position inherits its economics from the deals beneath it and
+nothing else.
+
+* How a position differs from a deal
+
+| | Deal | Position |
+|-+------+----------|
+| *Nature* | An event; a legal agreement | A state; an aggregate |
+| *Identity* | A unique deal id, mandatory even for components that make no sense alone | None; it is derived |
+| *Versioning* | Internal and external versions; every amend is tracked | None |
+| *Counterparty* | Always has one | None; it spans every counterparty in scope |
+| *Lifecycle* | New, amend, cancel, expiry, exercise, novation | None; it simply changes value |
+| *Confirmable* | Yes, when economics change | Never; nothing is confirmed at position level |
+| *Authorisable* | Yes, by Operations | No |
+| *Existence* | Persisted; the system of record | Computed; a view over the deals |
+| *Time* | Struck at a point in time | Always "as at" a time, and moves on its own |
+
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] covers the deal side: the four entities a trade is
+built from, and the relationships between them.
+
+* The two sources of change
+
+A deal changes for one reason only, which is an explicit amendment. A
+position changes for two.
+
+The first is the arrival of deals. The second is the passage of time,
+and it operates with no deal being touched at all.
+
+- Trades mature. Forward positions become cash positions as trades
+  reach their delivery date, and the calendar alone moves them.
+- The value date rolls. A nostro rollover converts posts of value
+  today into cash positions, and spot positions held at end of
+  business roll to a new value date on a tom/next basis. The position
+  moves bucket with no trade amended.
+- Market data moves, so the valuation changes continuously.
+
+* The aggregation is lossy by design
+
+A position discards what the deals carry: the counterparty, the time
+of striking, the trader, the structure the deal belonged to. That loss
+is the point, because a trader managing exposure does not need to know
+that a net short arose from forty client trades with thirty
+counterparties.
+
+The consequence for the model is that both views must remain
+available. Position level is the summary to work from, and deal level
+is the ground truth to fall back on when the summary raises a
+question. Drill-down has to reach deal level, and a position-level
+view that cannot be decomposed is not sufficient on its own.
+
+#+begin_note
+Positions also earn their place as a compute optimisation. With
+position support and a sensitivity table, a revaluation can be reduced
+to the instruments an input change actually affected, rather than
+revaluing the whole book.
+#+end_note
+
+* Positions cannot be confirmed, authorised or versioned
+
+No confirmation, authorisation, amendment or version exists at
+position level, and the reason is structural rather than accidental.
+There is no counterparty to agree with, no legal contract to confirm,
+and no discrete change to authorise. Every control in the system
+attaches to the deal.
+
+The corollary matters for controls: a position cannot be audited
+directly. The deals beneath it are audited and the aggregation is
+trusted. That is why drill-down to deal level, completeness checks
+over the book tree, and surfacing valuation errors at the aggregate
+all matter.
+
+* Where position management sits
+
+Three neighbouring disciplines are worth separating, because the word
+"position" is used loosely across them.
+
+| Discipline | What it is |
+|------------+------------|
+| *Risk moves* | Putting the risk in the book of the risk manager responsible for it |
+| *Position management* | Adding up the cash, discounting it, and giving an accurate view of settled and future cash |
+| *Risk management* | Risk ladders, bumping, Greeks |
+
+Position management is fundamentally about cash. It is not about
+Greeks, which is risk management, and it is not about where the risk
+sits, which is risk moves. Where "position" is used to mean "the risk
+I am running", that is the risk management sense borrowing the word.
+
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] covers the risk moves side: an
+intra-entity transfer moves risk between books without taking an
+external position.
+
+* Kinds of position
+
+The distinctions that recur are the ones that follow from time and
+from the dimension being aggregated.
+
+| Kind | What it aggregates |
+|------+--------------------|
+| Cash (nostro) position | Trades whose delivery date has passed; balances actually held |
+| Live (forward) position | Trades yet to mature; commitments still to be honoured |
+| Net position | The aggregate per currency |
+
+Positions are also cut by currency against currency pair, and by tenor
+bucket. Which cut is wanted depends on who is asking, so the dimension
+is a parameter of the view rather than a property of the position.
+
+* An open question: spots as positions
+
+Spot trades are most of the volume, and a spot carries almost nothing
+beyond its contribution to a balance: no optionality, no schedule, and
+next to no lifecycle. At sufficient volume the individual spot deal
+stops being interesting and only the aggregate matters, which raises
+the question of whether a spot is better modelled as a position
+contribution than as a full deal record.
+
+This is the deal and position distinction under pressure. It is
+recorded here as an open question rather than a decision, because
+treating a spot as anything other than a deal would remove the
+identity, versioning and audit trail that every control depends on.
+
+* Sources
+
+The definitions and distinctions on this page are drawn from internal
+analysis notes on positions, which in turn summarise requirements
+material. No external standard is cited.
+
+* See also
+
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the deal side, and the four entities a trade is built from.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] — risk moves, and what a booking contributes to.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

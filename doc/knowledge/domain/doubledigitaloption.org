@@ -15,6 +15,21 @@ commodity and interest-rate underlyings in any combination. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Double Digital Option |
+| Short name              | Double Digital Option |
+| ORE Studio product code | =DoubleDigitalOption= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | Option |
+| ORE trade data node     | =DoubleDigitalOptionData= |
+| ORE documentation       | =doubledigitaloption.tex= |
+
 * Summary
 
 The double digital is a binary option on two underlyings. Each
@@ -146,7 +161,7 @@ ORE's catalogue shows a double digital on EUR-USD and JPY-USD. The
 trade pays 12000000 USD when EUR-USD is above 1.1 and JPY-USD sits
 between 0.006 and 0.008 on the expiry date:
 
-#+begin_example
+#+begin_src xml
 <DoubleDigitalOptionData>
   <Expiry>2021-09-01</Expiry>
   <Settlement>2021-09-03</Settlement>
@@ -167,7 +182,7 @@ between 0.006 and 0.008 on the expiry date:
   </Underlying2>
   <PayCcy>USD</PayCcy>
 </DoubleDigitalOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]],
 listing =Double Digital Option data=. The catalogue also walks through

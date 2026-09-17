@@ -15,6 +15,21 @@ performing asset at the end. ORE offers it for FX, equity and
 commodity baskets. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Worst Of Basket Swap |
+| Short name              | Worst Of Basket Swap |
+| ORE Studio product code | =FxWorstOfBasketSwap=, =EquityWorstOfBasketSwap=, =CommodityWorstOfBasketSwap= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Swap |
+| ORE trade data node     | =FxWorstOfBasketSwapData=, =EquityWorstOfBasketSwapData=, =CommodityWorstOfBasketSwapData= |
+| ORE documentation       | =worstofbasketswap.tex= |
+
 * Summary
 
 The buyer of a worst of basket swap receives an initial fixed amount
@@ -196,7 +211,7 @@ Stoxx 50 and the S&P 500. The trade receives 4% coupons while the
 basket stays inside the trigger structure, and its knock-in level
 stands at 75% of the initial prices:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EQ_WorstOfBasketSwap">
   <TradeType>EquityWorstOfBasketSwap</TradeType>
   <Envelope>
@@ -256,7 +271,7 @@ stands at 75% of the initial prices:
     </FloatingFixingSchedule>
   </EquityWorstOfBasketSwapData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]],
 listing =EquityWorstOfBasketSwap data=. The catalogue also shows the

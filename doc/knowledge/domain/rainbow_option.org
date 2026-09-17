@@ -15,6 +15,21 @@ section with sixteen variations, each with its own payoff script.
 This note records the domain grounding, as ORE documents it in its
 product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Rainbow Options |
+| Short name              | Rainbow Options |
+| ORE Studio product code | =FxRainbowOption=, =EquityRainbowOption=, =CommodityRainbowOption= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxRainbowOptionData=, =EquityRainbowOptionData=, =CommodityRainbowOptionData= |
+| ORE documentation       | =rainbow_option.tex= |
+
 * Summary
 
 A rainbow option looks at several assets at once and pays off the
@@ -221,7 +236,7 @@ expiry and pays the better weighted level, but at least the strike of
 2000. The S&P index is quoted in USD, the Euro Stoxx index carries
 its EUR currency, and the pay currency is USD:
 
-#+begin_example
+#+begin_src xml
 <Trade id="BestOfAssetOrCashRainbowOption#1">
   <TradeType>EquityRainbowOption</TradeType>
   <Envelope>
@@ -256,7 +271,7 @@ its EUR currency, and the pay currency is USD:
     <Settlement>2020-02-20</Settlement>
   </EquityRainbowOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 ORE prices the payoff with the =BestOfAssetOrCashRainbowOption=
 script. The script starts the best price at the strike, scans the

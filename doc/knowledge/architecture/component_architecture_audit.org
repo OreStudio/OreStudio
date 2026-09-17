@@ -143,7 +143,7 @@ remove them.
 The automated tool covers the mechanical parts. Walk the rest by hand,
 in order.
 
-*** 1. Component shape
+*** Component shape
 
 The component is exactly one meta-model. A *simple component* owns its
 code directly (=CMakeLists.txt= at the root, =include/=, =src/=,
@@ -167,7 +167,7 @@ move cost nothing at the call sites because a part's CMake target and
 include prefix are already the fully-qualified name, so only the
 directory and its registration in =projects/CMakeLists.txt= changed.
 
-*** 2. Sub-component structure
+*** Sub-component structure
 
 Each part of a composite is one of the catalogue roles
 (=api=, =core=, =service=, and the specialist roles), with the
@@ -182,7 +182,7 @@ facet dirs appear in the same part in =include/= and =src/=. The
 [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] facet table and the component-only checks of
 [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] are the reference.
 
-*** 3. Folder morphology
+*** Folder morphology
 
 List the tree and compare against the signed-off catalogue above. A
 folder that is not in it is a finding. Decide one of three outcomes:
@@ -191,7 +191,7 @@ delete it, move its content into a signed-off folder, or sign it off
 are signed off through the facet catalogues, not through this table.
 Tool components keep their own trees as documented in their overviews.
 
-*** 4. Technical space of folders
+*** Technical space of folders
 
 Every folder belongs to a technical space, and folders from the wrong
 space are findings. =include/=, =src/=, =tests/= belong to C++;
@@ -202,7 +202,7 @@ populate content belongs to the SQL technical space, centralised under
 =create/= or =populate/= tree has drifted, as does any component with a
 Python =venv/=.
 
-*** 5. Temporary and leftover artefacts
+*** Temporary and leftover artefacts
 
 Scaffolding leaves placeholder artefacts behind (the scaffold's stub
 header and implementation, =*.puml= stubs, test stubs). None of them
@@ -215,7 +215,7 @@ find projects/ores.<name> -name '*stub*' -o -name '*.orig' \
   -o -name '*.rej' -o -name '.DS_Store' -o -name '__pycache__'
 #+end_src
 
-*** 6. Standard tests
+*** Standard tests
 
 Every part exposes its tests through a CMake test target, and the tests
 run green under =ctest=. The file and case conventions are in
@@ -225,7 +225,7 @@ needs tests. When codegen entities exist, per-entity integration tests
 are part of the standard output; a component that loses them in the
 generated tree is a codegen finding, not a component finding.
 
-*** 7. Comments
+*** Comments
 
 Hand-written code follows the =compass-code-review-comments= skill
 ([[proj:.claude/skills/compass-code-review-comments/SKILL.md][=compass-code-review-comments=]]): comments are rare, they explain why, and
@@ -236,7 +236,7 @@ the domain. Review the templates that generate the component's files
 the same way, as step 6 of [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]] does for the code
 itself.
 
-*** 8. File naming
+*** File naming
 
 File names are snake_case everywhere except the Qt client, whose files
 are CamelCase. A file name matches the type it holds, and the
@@ -245,7 +245,7 @@ headers are =.hpp=, and an aggregate header =ores.<comp>.hpp= exists
 where the component's entry points list says so. The naming rules of
 [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] are the reference.
 
-*** 9. Type naming
+*** Type naming
 
 Type names are snake_case in all C++ code except the Qt client, where
 they are CamelCase. Namespaces follow =ores::<group>[.<part>]::<facet>=.
@@ -255,14 +255,14 @@ Look for types whose name contradicts their home folder or their
 namespace: a misnamed type is a finding, and renaming it is trivial in
 a component at zero drift (regenerate, do not hand-edit).
 
-*** 10. Misplaced files and misnamed classes
+*** Misplaced files and misnamed classes
 
 Walk the tree with the shape in mind. A file lives where its concern
 lives: domain types in =api=, repositories in =core=, handlers in
 =service=. A class whose name, namespace, or folder disagree is a
 finding.
 
-*** 11. Component registries
+*** Component registries
 
 The system indexes components in three registries. Each one must show
 the component and its parts:
@@ -281,7 +281,7 @@ the component and its parts:
 
 A stale registry entry is a finding; fix it in the same pass.
 
-*** 12. Platform-specific code placement
+*** Platform-specific code placement
 
 Platform concerns have one home: =ores.platform=
 ([[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]). It owns the cross-platform OS abstractions:
@@ -304,7 +304,7 @@ the callers use it); when it has a home, route the caller through it.
 Both directions are mechanical; porting an existing abstraction's
 callers is a record-only finding when it spans many files.
 
-*** 13. Component documentation
+*** Component documentation
 
 Every simple component and every composite part carries a
 =modeling/component_overview.org= with the six required sections,
@@ -326,7 +326,7 @@ finding; the compute audit found the layer page crediting the core
 with the domain model while the core overview describes cluster
 management. Fix the stale prose in the same pass.
 
-*** 14. Diagrams
+*** Diagrams
 
 Every component overview has its =.puml= source and a rendered image
 committed next to it, and the overview's =Diagram= section points at
@@ -361,7 +361,7 @@ diagram is a finding. The trivial fix refreshes it through the two
 passes in order: re-run the automated capture, then redo the manual
 cleanup and verify the sentinel section survived.
 
-*** 15. Complexity measure
+*** Complexity measure
 
 The audit measures complexity; it does not fix it. The measure ranks
 components for the audit backlog and for later refactoring passes.

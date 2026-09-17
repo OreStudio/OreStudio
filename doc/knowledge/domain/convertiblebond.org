@@ -15,6 +15,21 @@ prespecified number of shares. ORE models it with the trade type
 note records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Convertible Bond |
+| Short name              | Convertible Bond |
+| ORE Studio product code | =ConvertibleBond= |
+| Asset class             | =bond= |
+| Family                  | Security |
+| ORE trade data node     | =ConvertibleBondData= |
+| ORE documentation       | =convertiblebond.tex= |
+
 * Summary
 
 A convertible bond pays like a bond and can be converted into a fixed
@@ -199,7 +214,7 @@ engine.
 ORE's catalogue shows a convertible bond whose terms are set up in
 reference data:
 
-#+begin_example
+#+begin_src xml
 <Trade id="ConvertibleBond">
   <TradeType>ConvertibleBond</TradeType>
   <Envelope>...</Envelope>
@@ -210,7 +225,7 @@ reference data:
     </BondData>
   </ConvertibleBondData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]],
 listing =Convertible bond set up using reference data=. The source

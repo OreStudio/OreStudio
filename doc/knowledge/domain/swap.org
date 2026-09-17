@@ -15,6 +15,21 @@ vanilla fixed-vs-floating, basis, OIS, BMA, and CMS structures. This
 note records the domain grounding for the whole family, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Swap |
+| Short name              | Swap |
+| ORE Studio product code | =Swap= |
+| Asset class             | =rates= |
+| Family                  | Swap |
+| ORE trade data node     | =SwapData= |
+| ORE documentation       | =swap.tex= |
+
 * Summary
 
 An interest rate swap (IRS) is a bilateral contract. It exchanges a
@@ -118,7 +133,7 @@ Studio keeps for its round-trip tests. The fixed leg is shown. The
 floating leg follows in the same file. Source:
 =assets/test_data/golden_dataset/Products/Example_Trades/IR_Swap_Vanilla.xml=.
 
-#+begin_example
+#+begin_src xml
 <Portfolio>
   <Trade id="Swap_20y">
     <TradeType>Swap</TradeType>
@@ -147,7 +162,7 @@ floating leg follows in the same file. Source:
           </Rules>
         </ScheduleData>
       </LegData>
-#+end_example
+#+end_src
 
 Native ORE example portfolios with swaps sit under
 =external/ore/examples/=. The Academy and AmericanMonteCarlo

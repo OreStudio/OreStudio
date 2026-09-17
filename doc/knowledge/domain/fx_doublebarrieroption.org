@@ -15,6 +15,21 @@ models it with the trade type =FxDoubleBarrierOption=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Double Barrier Option |
+| Short name              | FX Double Barrier Option |
+| ORE Studio product code | =FxDoubleBarrierOption= |
+| Asset class             | =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxDoubleBarrierOptionData= |
+| ORE documentation       | =fx_doublebarrieroption.tex= |
+
 * Summary
 
 An FX double barrier option exists while an FX spot condition between
@@ -105,7 +120,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows a long European call inside two knock-out
 levels:
 
-#+begin_example
+#+begin_src xml
 <FxDoubleBarrierOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -132,7 +147,7 @@ levels:
   <SoldCurrency>USD</SoldCurrency>
   <SoldAmount>1100000</SoldAmount>
 </FxDoubleBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]],
 listing =FX Double Barrier Option data= (optional elements omitted).

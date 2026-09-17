@@ -135,7 +135,7 @@ for the assumptions it was built on, and for the decisions still open.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, the deal topology and the versioning rule this prototype follows.
 - [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] — the story the prototype belongs to.
 - [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]] — the task that built it, and its assumptions.
-- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — the confirmation model that a structure version drives.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the confirmation model that a structure version drives.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the wider target-state screen design.
 - [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional aggregation methods it offers.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

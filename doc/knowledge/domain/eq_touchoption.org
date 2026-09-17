@@ -15,6 +15,21 @@ continuously. ORE models it with the trade type =EquityTouchOption=.
 This note records the domain grounding, as ORE documents it in its
 product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Touch Option |
+| Short name              | Equity Touch Option |
+| ORE Studio product code | =EquityTouchOption= |
+| Asset class             | =equity= |
+| Family                  | Option |
+| ORE trade data node     | =EquityTouchOptionData= |
+| ORE documentation       | =eq_touchoption.tex= |
+
 * Summary
 
 An equity touch option has a continuously monitored single barrier
@@ -125,7 +140,7 @@ them and run sensitivities on the ORE engine.
 ORE's catalogue shows an up-and-in touch on the S&P 500 index that
 pays one million when the spot reaches 3300:
 
-#+begin_example
+#+begin_src xml
 <EquityTouchOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -149,7 +164,7 @@ pays one million when the spot reaches 3300:
     <Calendar>US-NYSE</Calendar>
     <EQIndex>EQ-RIC:.SPX</EQIndex>
 </EquityTouchOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_touchoption.tex][eq_touchoption.tex]],
 listing =Equity Touch Option data=. The source ends the =EQIndex= line

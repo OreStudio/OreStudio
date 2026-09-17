@@ -15,6 +15,21 @@ second underlying. ORE prices it with American or European barrier
 monitoring. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | European Option Contingent on a Barrier |
+| Short name              | European Option Contingent on a Barrier |
+| ORE Studio product code | =EuropeanOptionBarrier= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | Option |
+| ORE trade data node     | =EuropeanOptionBarrierData= |
+| ORE documentation       | =europeanoptioncontingentonabarrier.tex= |
+
 * Summary
 
 The product pairs a vanilla European option with a knock-in or
@@ -168,7 +183,7 @@ ORE's catalogue shows a short call on the Euro Stoxx 50 with a
 continuous down-and-in FX barrier on EUR-USD. The trade is
 continuously monitored from 2019-12-11 to the expiry date:
 
-#+begin_example
+#+begin_src xml
 <Trade id="Equity_EuropeanOptionWithAmericanFxBarrier">
   <TradeType>EuropeanOptionBarrier</TradeType>
   <Envelope>
@@ -209,7 +224,7 @@ continuously monitored from 2019-12-11 to the expiry date:
     <PayCcy>USD</PayCcy>
   </EuropeanOptionBarrierData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]],
 listing =European Option Barrier data (continuous barrier)=. The call

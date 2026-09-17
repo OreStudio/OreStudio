@@ -14,6 +14,21 @@ collateral for cash. ORE models it with the trade type =BondRepo=. The
 container node is =BondRepoData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Repo |
+| Short name              | Bond Repo |
+| ORE Studio product code | =BondRepo= |
+| Asset class             | =bond= |
+| Family                  | Repo |
+| ORE trade data node     | =BondRepoData= |
+| ORE documentation       | =bondrepo.tex= |
+
 * Summary
 
 In a bond repo transaction one party receives a cash amount from
@@ -105,7 +120,7 @@ run sensitivities on the ORE engine.
 ORE's catalogue shows a three-month USD repo: the borrower posts a US
 Treasury and pays a fixed rate of 1.78 percent on the cash:
 
-#+begin_example
+#+begin_src xml
 <BondRepoData>
   <BondData>
     <SecurityId>ISIN:US912828X703</SecurityId>
@@ -143,7 +158,7 @@ Treasury and pays a fixed rate of 1.78 percent on the cash:
     </LegData>
   </RepoData>
 </BondRepoData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]],
 listing =Bond Repo Data=.

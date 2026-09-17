@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ID: A9E9D1EF-5879-4488-87C8-BDD914C3B502
+:END:
+#+title: Operational Authorisation
+#+description: The Operations control that releases a trade to risk and downstream: why it is metadata rather than trade data, the other authorisations it must be distinguished from, and how it differs from the agreement steps with a counterparty.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:controls:operations:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+*Operational authorisation* is the control by which Operations
+releases a trade to risk and downstream. It examines what the trader
+booked and decides whether it is correct, permitted and real.
+
+Several distinct controls are called authorisation, so each is
+qualified by who performs it: operational, credit, trader, market
+risk. The unqualified word has historically meant this one, which is
+precisely why it needs a prefix.
+
+Two properties make it behave unlike anything else that happens to a
+trade.
+
+It is *metadata rather than trade data*, so it moves no version and is
+not a state of the trade. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][The trade lifecycle]] is unaffected by it: a
+trade is =live= from the moment it is booked, and whether it
+contributes to risk and P&L follows from combining its state with this
+status rather than from either alone.
+
+It is *entirely internal*, so it must not be confused with the steps by
+which terms are agreed with a counterparty.
+
+* Why authorisation is metadata
+
+Authorisation cannot produce a version, and the reason is structural
+rather than a convenience: a version produced by authorising would
+itself require authorisation, and so on without end.
+
+So authorisation sits outside the versioning model. It is a statement
+/about/ a version rather than a change /to/ the trade.
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers what does move a version.
+
+The same rule holds for structures. Any change to a component
+increments the version of the structure that contains it, and
+authorisation is the stated exception.
+
+* Authorisation and the agreement steps
+
+Authorisation is internal. The steps by which terms are agreed are
+not, and conflating them is easy because the vocabulary is unstable
+across sources.
+
+| Step | Between | Establishes |
+|------+---------+-------------|
+| *Authorisation* | The trader and Operations | The trade is correct, permitted and real |
+| *Acknowledgment* | One counterparty to the other | A record of all the terms, sent and signed |
+| *Affirmation* | The two counterparties | Both sides agree the economic terms |
+| *Confirmation* | The two counterparties | The binding record memorialising the agreement |
+
+Authorisation is what lets a deal /reach/ the other three.
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] covers them.
+
+** Why the prefix
+
+Four controls share the word, and they differ in who performs them and
+what they establish.
+
+| Control | Performed by | Establishes |
+|---------+--------------+-------------|
+| *Operational authorisation* | Operations, the Middle Office | The booking is correct, permitted and real |
+| *Credit authorisation* | Credit | The counterparty has the line for it |
+| *Trader authorisation* | The desk | The desk stands behind it |
+| *Market risk authorisation* | Market Risk | The exposure is within limit |
+
+Without a prefix, "the trade is authorised" states nothing useful, and
+a system holding one status called =authorised= cannot say which of
+the four it means.
+
+** A note on "verification"
+
+The word is used for two different things and should be avoided as a
+state name.
+
+Some sources use it for the internal check, making it a synonym for
+authorisation. Others use it for a bilateral step, placing it between
+the firm and the counterparty. The CFTC's swap documentation rules
+define /acknowledgment/ and /confirmation/ and do not define
+verification at all, so no regulatory usage settles it.
+
+This corpus therefore names the internal control *authorisation* and
+the bilateral steps *acknowledgment*, *affirmation* and
+*confirmation*, and does not use "verification" for either.
+
+* Permissions are a different question
+
+Whether the firm may trade a kind of thing at all, whether a book may
+hold a given underlying, whether a desk's mandate covers a product:
+none of these is operational authorisation. They are *permissions*,
+and [[id:33CCB50B-8697-49A1-8761-4DB873A93515][trading permissions]] covers them.
+
+The notes call a standing permission a meta-authorisation, which
+suggests an authorisation covering many trades — the same kind of
+statement scaled up. It is not, and the difference is the rationale
+rather than the grain.
+
+An authorisation asks /is this particular trade correct and real/, and
+is answered by examining the trade. A permission asks /may we do this
+kind of thing at all/, and is answered before any trade exists, by
+whoever holds the mandate: risk, compliance, or a licence. Nothing
+about a trade can establish a permission, and nothing about a
+permission settles whether a trade was booked correctly.
+
+They also fail differently. A booking that breaches a permission never
+becomes a trade. A trade that lacks an authorisation is in the book,
+contributing to nothing.
+
+One consequence holds whichever name is used. A permission must not be
+re-transmitted with every trade, which would be both wasteful and
+misleading about what was actually decided.
+
+** The authoriser may be a system
+
+Authorisation attaches to a party, and that party need not be a
+person. A confirmation system acting as an internal party can hold the
+authorising role.
+
+What travels downstream with a trade is therefore not merely that it
+was authorised, but by whom and in what capacity.
+
+* Comparison with other systems
+
+** The four-eyes principle
+
+The control is an instance of a general one. Wikipedia describes the
+two-person rule, also called the four-eyes principle, as "a control
+mechanism designed to achieve a high level of security for especially
+critical material or operations", requiring two authorised individuals
+before a critical operation proceeds.
+
+Authorisation applies it to booking: the trader acts, and Operations
+checks. The separation is the control, which is why an authorisation
+by the booking trader defeats the purpose regardless of their
+seniority.
+
+** FpML
+
+FpML carries the concept but not at this granularity. Its
+[[https://www.fpml.org/coding-scheme/approval-type][approval type coding scheme]] defines a single value,
+=PreClearingCredit=, described as "an indication that pre-clearing
+credit has been granted".
+
+That is a credit line authorisation rather than a Middle Office one,
+and it is the only approval type the scheme enumerates. So the
+standard establishes that an approval is a thing a message can carry,
+attributable to a party, without supplying a vocabulary for the
+control described here. [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][FpML]] covers the standard more broadly.
+
+** Calypso and Murex
+
+Both platforms implement the same control as a workflow gate rather
+than as a flag, which is the arrangement this corpus arrives at
+independently in [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][the trade lifecycle]]: a trade occupies a state until
+an authorised role moves it on.
+
+Calypso's separation of trade, payment and message workflows is
+covered in [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]]. The relevant consequence here is
+that a trade's authorisation is a transition in the trade's own
+workflow and does not touch the others.
+
+The published material for both platforms describes workflow
+configuration rather than the control rationale, so these observations
+record shape rather than intent, and neither is cited to an edition.
+
+* Controls and audit
+
+The control exists to catch trades that are not what they appear to
+be. It sits alongside the other mechanisms guarding the same boundary,
+which [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers under what the mechanism costs.
+
+What must be captured:
+
+- Every action against the system, including login and logout.
+- Every amendment, with a comment, reviewed and approved.
+- Who authorised, and in what capacity, travelling downstream with the
+  trade.
+
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][The operational authorisation queue]] covers the screen this happens
+on, the lifecycle a decision moves through, and the reports that make
+the control auditable.
+
+* Open questions
+
+- Whether credit line and market risk authorisations are separate
+  kinds with their own queues, or the same control applied by
+  different roles.
+- Whether a permission is reference data on the product type and
+  counterparty, or an entity in its own right with its own lifecycle.
+  [[id:33CCB50B-8697-49A1-8761-4DB873A93515][Trading permissions]] carries the open questions on that side.
+- How an authorisation by a system party is distinguished from one by
+  a person, given both must travel downstream with a capacity.
+
+* Sources
+
+The control, its kinds, and the metadata property are drawn from
+internal analysis notes on authorisation, which summarise requirements
+material.
+
+The four-eyes principle is quoted from [[https://en.wikipedia.org/wiki/Four-eyes_principle][Wikipedia]], retrieved on 16
+September 2026. The CFTC definitions of acknowledgment and
+confirmation are read from 17 CFR 23.500, which defines neither
+verification nor authorisation.
+
+The FpML approval type values are read from the published coding
+scheme at fpml.org, retrieved on the same date. The FpML approval
+element's own structure was not reached, so nothing is claimed about
+which fields it carries.
+
+* See also
+
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — the Operations screen and the authorisation lifecycle.
+- [[id:33CCB50B-8697-49A1-8761-4DB873A93515][Trading Permissions]] — the standing rules about what may be booked, which this is not.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this control does not move.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the steps by which terms are agreed with a counterparty.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what does move a version, and why authorisation does not.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the controls that guard the same boundary.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

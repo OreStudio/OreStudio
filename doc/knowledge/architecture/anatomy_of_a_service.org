@@ -217,3 +217,7 @@ missing):
 - [[id:2B812EF1-A52B-41F5-AA41-F12C0DD25C45][Automate new service registration]] — the backlog to close the manual gaps above.
 - [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when in the startup sequence it is safe
   to mint tokens or warm caches, worked through IAM's party_cache.
+- [[id:18D8CB4F-E926-49E8-83C3-7C8418861B33][NATS certificates]] — generating the mTLS certificates a service
+  presents, their layout, and container deployment.
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]] — the payload and envelope a service sends, and
+  multi-protocol support.

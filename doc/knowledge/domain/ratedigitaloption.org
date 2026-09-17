@@ -15,6 +15,21 @@ ORE models it with the trade type =RateDigitalOption=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Rate Digital Option |
+| Short name              | Rate Digital Option |
+| ORE Studio product code | =RateDigitalOption= |
+| Asset class             | =rates= |
+| Family                  | Option |
+| ORE trade data node     | =RateDigitalOptionData= |
+| ORE documentation       | =ratedigitaloption.tex= |
+
 * Summary
 
 A rate digital option is a European cash-or-nothing option on an
@@ -104,7 +119,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows a long call digital on euro six-month Euribor.
 It pays 10000 euros if the fixing is above 2 percent:
 
-#+begin_example
+#+begin_src xml
 <RateDigitalOptionData>
       <OptionData>
         <LongShort>Long</LongShort>
@@ -120,7 +135,7 @@ It pays 10000 euros if the fixing is above 2 percent:
       <FixingDate>2027-06-18</FixingDate>
       <PaymentDate>2027-06-20</PaymentDate>
 </RateDigitalOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]],
 listing =Rate Digital Option data=.

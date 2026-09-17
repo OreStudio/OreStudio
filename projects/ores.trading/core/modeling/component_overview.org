@@ -69,5 +69,6 @@ component also ships synthetic-data generators for test and development use.
 
 - [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]] — protocol types and domain entities.
 - [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]] — NATS service entrypoint.
-- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — FSM design and state-transition rules.
+- [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states, transitions and activity types themselves.
 - [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.

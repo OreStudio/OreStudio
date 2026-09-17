@@ -14,6 +14,21 @@ exchange currencies now and reverse the exchange later. ORE models it
 with the trade type =FxSwap=. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Swap |
+| Short name              | FX Swap |
+| ORE Studio product code | =FxSwap= |
+| Asset class             | =fx= |
+| Family                  | Swap |
+| ORE trade data node     | =FxSwapData= |
+| ORE documentation       | =fxswap.tex= |
+
 * Summary
 
 An FX swap exchanges a set amount of one currency for another at the
@@ -100,7 +115,7 @@ swaps to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a euro-dollar swap:
 
-#+begin_example
+#+begin_src xml
 <FxSwapData>
   <NearDate>2018-09-01</NearDate>
   <NearBoughtCurrency>EUR</NearBoughtCurrency>
@@ -112,7 +127,7 @@ ORE's catalogue shows a euro-dollar swap:
   <FarSoldAmount>1000000</FarSoldAmount>
   <Settlement>Cash</Settlement>
 </FxSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxswap.tex][fxswap.tex]],
 listing =FX Swap data=.

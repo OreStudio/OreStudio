@@ -14,6 +14,21 @@ at a set strike. ORE models it with the trade type
 =IndexCreditDefaultSwapOption=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Index Credit Default Swap Option |
+| Short name              | Index CDS Option |
+| ORE Studio product code | =IndexCreditDefaultSwapOption= |
+| Asset class             | =credit= |
+| Family                  | Option |
+| ORE trade data node     | =IndexCreditDefaultSwapOptionData= |
+| ORE documentation       | =indexcdsoption.tex= |
+
 * Summary
 
 An index CDS option gives the right to buy or sell protection on a
@@ -113,7 +128,7 @@ options to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long European option on a 5Y index:
 
-#+begin_example
+#+begin_src xml
 <IndexCreditDefaultSwapOptionData>
   <IndexTerm>5Y</IndexTerm>
   <OptionData>
@@ -131,7 +146,7 @@ ORE's catalogue shows a long European option on a 5Y index:
   <Strike>1.063</Strike>
   <StrikeType>Price</StrikeType>
 </IndexCreditDefaultSwapOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]],
 listing =IndexCreditDefaultSwapOption Data= (underlying abbreviated).

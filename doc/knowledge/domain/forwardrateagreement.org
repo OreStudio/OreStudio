@@ -14,6 +14,21 @@ period. The lock is benchmarked to a reference IBOR index. ORE models
 it with the trade type =ForwardRateAgreement=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Forward Rate Agreement |
+| Short name              | FRA |
+| ORE Studio product code | =ForwardRateAgreement= |
+| Asset class             | =rates= |
+| Family                  | Forward |
+| ORE trade data node     | =ForwardRateAgreementData= |
+| ORE documentation       | =forwardrateagreement.tex= |
+
 * Summary
 
 A forward rate agreement sets a fixed forward rate against a
@@ -111,7 +126,7 @@ the ORE engine.
 ORE's catalogue shows a long FRA on euro six-month Euribor struck at
 0.1 percent:
 
-#+begin_example
+#+begin_src xml
 <ForwardRateAgreementData>
     <StartDate>20161028</StartDate>
     <EndDate>20351028</EndDate>
@@ -121,7 +136,7 @@ ORE's catalogue shows a long FRA on euro six-month Euribor struck at
     <Strike>0.001</Strike>
     <Notional>1000000000</Notional>
 </ForwardRateAgreementData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardrateagreement.tex][forwardrateagreement.tex]],
 listing =Forward Rate Agreement Data=.

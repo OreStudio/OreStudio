@@ -15,6 +15,21 @@ continuously. ORE models it with the trade type
 =EquityDoubleBarrierOption=. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Double Barrier Option |
+| Short name              | Equity Double Barrier Option |
+| ORE Studio product code | =EquityDoubleBarrierOption= |
+| Asset class             | =equity= |
+| Family                  | Option |
+| ORE trade data node     | =EquityDoubleBarrierOptionData= |
+| ORE documentation       | =eq_doublebarrieroption.tex= |
+
 * Summary
 
 An equity double barrier option is a path-dependent option whose
@@ -125,7 +140,7 @@ engine.
 ORE's catalogue shows a knock-out call on the S&P 500 index inside a
 corridor from 3000 to 3500:
 
-#+begin_example
+#+begin_src xml
 <EquityDoubleBarrierOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -156,7 +171,7 @@ corridor from 3000 to 3500:
     <Calendar>US-NYSE</Calendar>
     <EQIndex>EQ-RIC:.SPX</EQIndex>
 </EquityDoubleBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]],
 listing =Equity Double Barrier Option data=.

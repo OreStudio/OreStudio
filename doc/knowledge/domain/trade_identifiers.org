@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: E080E32B-5E53-4AB7-903F-145D070C045C
+:END:
+#+title: Trade identifiers
+#+description: UTI and USI: the regulatory identifiers a trade carries, who allocates them, and why a trade needs more than the firm's own id.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:identity:regulatory:
+#+created: 2026-09-13
+#+updated: 2026-09-13
+
+* Summary
+
+A firm's own trade id names a trade inside that firm. Two
+counterparties reporting the same trade to a repository need one
+identifier that both of them use, and a regulator needs to match the
+two reports against each other. UTI and USI are the codes that serve
+that purpose.
+
+These codes identify the trade, which is one of the three scopes in
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]]. They say nothing about what was
+traded, and [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][standard financial identifiers]] answer that separate
+question.
+
+* Why the firm's own id is not enough
+
+A trade id is allocated by the system that books the trade, so two
+firms on opposite sides of one trade allocate different ids. A trade
+repository receiving both reports cannot pair them without a value
+that both firms agree on beforehand.
+
+The identifier therefore has to be allocated once, by one of the two
+parties, and carried by both. Which party allocates it is itself a
+rule, because both firms allocating would reproduce the problem.
+
+* UTI
+
+ISO 23897 defines the Unique Trade Identifier, and the CPMI-IOSCO
+technical guidance on harmonisation sets the allocation rules the
+standard implements.
+
+A UTI is up to fifty-two characters. The first twenty are the Legal
+Entity Identifier of the entity that generated it, and the remainder
+is a value unique within that entity. Prefixing with the LEI makes the
+code globally unique without a central allocator, because each
+generating entity is already uniquely named.
+
+The guidance sets a waterfall determining which counterparty
+generates the UTI, so that exactly one of the two does. The waterfall
+runs through the clearing house, the trading venue, and then rules
+based on the counterparties' identifiers.
+
+* USI
+
+The Unique Swap Identifier is the earlier scheme, introduced under the
+United States Dodd-Frank reporting rules and overseen by the Commodity
+Futures Trading Commission. A USI combines a namespace derived from
+the registered entity that created it with a value unique within that
+namespace.
+
+USI solved the same matching problem within one jurisdiction. UTI
+generalised it, and the Commodity Futures Trading Commission's later
+rewrite moved United States reporting onto UTI, so USI now appears
+mainly on trades booked before that change.
+
+* What the model holds
+
+=ores_trading_trade_id_types_tbl= registers the schemes, and it
+currently seeds two values, =UTI= and =USI=.
+[[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][=trade_id_type=]] models that table.
+
+A trade carries its identifiers in
+[[id:6284BC22-3076-4E8A-8938-B50D12B169C0][=trade_identifier=]], which holds a scheme and a value per row, so one
+[[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] can carry a UTI and a USI at once. The firm's own trade id
+stays on the trade itself, because it is not one of these schemes.
+
+The LEI that prefixes a UTI names a legal entity, and
+[[id:C9B53884-25FA-4D13-AE8A-6469B1854474][=lei_entity=]] models the reference data behind it.
+
+* Sources
+
+The two schemes are described from the standard and the regulators'
+published rules: ISO 23897 and the CPMI-IOSCO technical guidance for
+UTI, and the Commodity Futures Trading Commission's reporting rules
+for USI. This page cites no edition or clause for any of them.
+
+* See also
+
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the codes that name a security, a party or a venue rather than a deal.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities; these codes identify the trade.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the lifecycle the identified trade runs through.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -15,6 +15,21 @@ best observed level during a window. ORE prices it on FX, equity and
 commodity underlyings. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Best Entry Option |
+| Short name              | Best Entry Option |
+| ORE Studio product code | =FxBestEntryOption=, =EquityBestEntryOption=, =CommodityBestEntryOption= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxBestEntryOptionData=, =EquityBestEntryOptionData=, =CommodityBestEntryOptionData= |
+| ORE documentation       | =bestentryoption.tex= |
+
 * Summary
 
 The product is an option on a single underlying. Its payoff depends
@@ -189,7 +204,7 @@ the multiplier 1. The trigger level of 0.95 sits just below the
 strike-date level, and the reset minimum of 0.85 floors the entry
 improvement:
 
-#+begin_example
+#+begin_src xml
 <EquityBestEntryOptionData>
   <LongShort>Long</LongShort>
   <Strike>0.85</Strike>
@@ -218,7 +233,7 @@ improvement:
   <Premium>100</Premium>
   <ExpiryDate>2021-11-20</ExpiryDate>
 </EquityBestEntryOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]],
 listing =Best Entry Option data (Equity Underlying)=. The premium of

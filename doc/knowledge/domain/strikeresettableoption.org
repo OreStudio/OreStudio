@@ -15,6 +15,21 @@ observation dates. ORE offers it for FX, equity and commodity
 underlyings. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Strike Resettable Option |
+| Short name              | Strike Resettable Option |
+| ORE Studio product code | =FxStrikeResettableOption=, =EquityStrikeResettableOption=, =CommodityStrikeResettableOption= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxStrikeResettableOptionData=, =EquityStrikeResettableOptionData=, =CommodityStrikeResettableOptionData= |
+| ORE documentation       | =strikeresettableoption.tex= |
+
 * Summary
 
 The option trades like a vanilla call or put on one underlying. A
@@ -133,7 +148,7 @@ options to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a put on the S&P 500 with a reset to a higher
 strike when the index trades above 4000:
 
-#+begin_example
+#+begin_src xml
 <EquityStrikeResettableOptionData>
   <LongShort>Long</LongShort>
   <OptionType>Put</OptionType>
@@ -161,7 +176,7 @@ strike when the index trades above 4000:
     </Dates>
   </ObservationDates>
 </EquityStrikeResettableOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]],
 listing =Strike Resettable Option data (Equity Underlying)=.

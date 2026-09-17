@@ -15,6 +15,21 @@ return or dividends. ORE models the family with the trade type
 =EquitySwap=. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Swap |
+| Short name              | Equity Swap |
+| ORE Studio product code | =EquitySwap= |
+| Asset class             | =equity= |
+| Family                  | Swap |
+| ORE trade data node     | =EquitySwapData= |
+| ORE documentation       | =equityswap.tex= |
+
 * Summary
 
 An equity swap has one leg of type =Equity= and one funding leg of
@@ -149,7 +164,7 @@ run sensitivities on the ORE engine.
 ORE's catalogue shows an equity swap with a resettable notional and FX
 indexing. The funding leg derives its notional from the equity leg:
 
-#+begin_example
+#+begin_src xml
 <EquitySwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -183,7 +198,7 @@ indexing. The funding leg derives its notional from the equity leg:
       ...
   </LegData>
 </EquitySwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]],
 listing =Equity Swap Data with notional reset and FX indexing=.

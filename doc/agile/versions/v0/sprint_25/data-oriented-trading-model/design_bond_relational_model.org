@@ -3,9 +3,9 @@
 :END:
 #+title: A relational data model for the bond family
 #+description: Bond is the pilot for the relational target of the trading analysis (dfe15809). This page inventories every bond-related type and subtype in the tree and proposes the entity-relationship model for the family, derived from the existing tables but in the clean DOP relational shape - atomised entities with primary and foreign keys, normalised, no object graph. Codegen of the types and SQL, the ores.ore mapping update and the ores.qt bridge are follow-up tasks.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
+#+type: design
+#+level: s2
+#+filetags: :design:trading:data_model:data_oriented_design:codegen:data_oriented_trading_model:sprint_25:v0:
 #+created: 2026-09-08
 #+updated: 2026-09-09
 
@@ -326,9 +326,9 @@ instrument owner the parent story draws. The issue's child rows are
 family tables keyed by =issue_id=, drawn beside the shared shapes:
 
 #+caption: The proposed relational model for the bond family
-[[proj:doc/knowledge/architecture/trading_bond_relational_model_er.png]]
+[[proj:doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_bond_relational_model_er.png]]
 
-Regenerate the PNG from =trading_bond_relational_model_er.puml=, the
+Regenerate the PNG from =design_bond_relational_model_er.puml=, the
 source beside this document, with the file's =compile-command=.
 
 The entities:

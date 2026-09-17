@@ -1,0 +1,113 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Trade lifecycle
+
+skinparam state {
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4A78A8
+    ArrowFontColor #1A1A1E
+    StartColor #4A78A8
+    EndColor #4A78A8
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+state "draft" as Draft #EDE7E0 ##[bold]8A7A6A
+
+Draft : Recorded; no agreement yet
+
+state "live" as Live {
+  state "unauthorised" as Unauthorised #F0E2D0 ##[bold]A87A4A
+  state "authorised" as Authorised #F0E2D0 ##[bold]A87A4A
+
+  Unauthorised : Exists; contributes to nothing
+  Authorised : Contributes to risk and P&L
+
+  [*] --> Unauthorised
+  Unauthorised --> Authorised : Authorise
+  Authorised --> Unauthorised : Un-authorise
+  Authorised --> Unauthorised : Amend
+  Unauthorised --> Unauthorised : Amend
+}
+
+state "expired" as Expired
+state "cancelled" as Cancelled
+
+Expired : Contract ceased naturally
+Cancelled : Removed from the book
+
+[*] --> Draft : Capture
+[*] --> Live : New
+Draft --> Live : Execute
+Draft --> Cancelled : Discard
+Draft --> Draft : Amend
+Live --> Expired : Expire
+Live --> Cancelled : Cancel
+Expired --> Live : Unexpire
+Cancelled --> Live : Uncancel
+Expired --> Expired : Amend
+Cancelled --> Cancelled : Amend
+
+note right of Live
+  Amending an authorised trade returns
+  it to unauthorised: the terms Ops
+  released are no longer the terms on
+  the book, so the decision must be
+  taken again. Amending an unauthorised
+  one changes nothing but the version.
+end note
+
+note bottom of Cancelled
+  The substates of live are shown to
+  place them, not to model them. They
+  are not states of this machine: the
+  trade carries an operational
+  authorisation flag, whose own
+  lifecycle has four values, and
+  contribution follows from combining
+  the two.
+end note
+
+note left of Expired
+  Expire and cancel are reversible.
+  Unexpire and uncancel correct a
+  record rather than revive an
+  agreement, so a trade returning to
+  live arrives unauthorised.
+end note
+
+note right of Draft
+  A draft is not yet an agreement, so
+  it contributes to nothing and has no
+  authorisation to hold. It carries a
+  reason saying what blocks it and who
+  is responsible for unblocking it.
+end note
+
+@enduml

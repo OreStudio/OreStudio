@@ -29,7 +29,7 @@ alphabet.
 
 * Reading order
 
-** 1. What a curve is, and how one is built
+** What a curve is, and how one is built
 
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — start
 here. Day-count conventions, discount factors, and bootstrapping from
@@ -37,7 +37,7 @@ deposits, FRAs, swaps and OIS. Everything downstream assumes this
 vocabulary, and the bootstrap is where the cluster's central fact appears:
 the curve is constructed from a small set of quotes rather than observed.
 
-** 2. What it is made of, and what fills the gaps
+** What it is made of, and what fills the gaps
 
 [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the tenor points that
 are genuinely quoted inputs, as against the continuum the curve pretends to
@@ -49,7 +49,7 @@ between pillars, and the local versus non-local method families. This
 follows pillars necessarily: interpolation is only a question once you know
 the curve is defined at finitely many points.
 
-** 3. Why there is more than one curve
+** Why there is more than one curve
 
 [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the
 history and the build order: one curve served both discounting and
@@ -63,7 +63,7 @@ curve per floating index tenor, and why curve identity is a discrete label
 rather than a continuous axis. That last point is the one most often got
 wrong when modelling curves as data.
 
-** 4. How the family is held
+** How the family is held
 
 [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Bundles]] —
 how a currency's curves compose above the level of a single curve.
@@ -89,8 +89,8 @@ when the question is trust rather than shape.
 
 * What this cluster does not cover
 
-Volatility surfaces are a separate cluster with their own structure note,
-even though both are term structures built from quoted pillars. The
+[[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] surfaces are a separate cluster with their own structure
+note, even though both are term structures built from quoted pillars. The
 resolution of a logical market data need into the physical identifiers a
 curve is built from belongs to
 [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and

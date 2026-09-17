@@ -1,0 +1,263 @@
+:PROPERTIES:
+:ID: 4DF84F09-5FCF-4DF0-B30D-B62073E53807
+:END:
+#+title: Regulatory Frameworks
+#+description: SIMM, FRTB, SA-CCR and the CVA approaches: what each computes, what vocabulary each imposes on risk, and which ORE implements.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:risk:regulatory:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+
+* Summary
+
+Several regulatory frameworks compute a capital or margin number from
+a portfolio, and each prescribes its own vocabulary for doing so. That
+vocabulary reaches the model directly: the classifications analysed in
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]] and the sensitivity names analysed in [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][the greeks]] are
+largely inherited from these frameworks rather than invented.
+
+The frameworks are prescriptive rather than descriptive. Their
+enumerations exist to index published tables of risk weights and
+correlations, so a framework's classification is fixed by the
+methodology document and cannot be adjusted for modelling
+convenience.
+
+| Framework | Computes | Imposes |
+|-----------+----------+---------|
+| ISDA SIMM | Initial margin on non-cleared derivatives | Risk classes, product classes, risk types |
+| FRTB, standardised | Market risk capital | Risk classes, and delta, vega and curvature explicitly |
+| FRTB, internal models | Market risk capital | Expected shortfall, liquidity horizons, desk-level approval |
+| SA-CCR | Counterparty credit risk exposure | Asset classes and hedging sets |
+| BA-CVA, SA-CVA | Capital for credit valuation adjustment risk | Risk factors and buckets |
+
+* CRIF
+
+The Common Risk Interchange Format is the record format these
+frameworks exchange sensitivities in. ORE documents it precisely: "A
+CRIF record is a row of the CRIF file outlined in the document: /ISDA
+SIMM Methodology, Risk Data Standards. Version 1.36: 1 February 2017./"
+
+One CRIF row carries a trade id, a trade type, netting set details, a
+product class, a risk type and an end date, together with
+framework-specific fields. The FRTB fields are =creditQuality=,
+=longShortInd=, =coveredBondInd=, =trancheThickness= and =bb_rw=.
+
+CRIF matters to the model beyond its role as a file format, because it
+shows how the frameworks themselves separate classification from
+qualification. The risk type names a class and a sensitivity; the
+additional fields carry the properties. That separation is the basis
+of the argument in [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][risk classes]] that a framework's apparent extra
+classes are properties.
+
+A CRIF record declares which framework produced it. ORE holds
+=RecordType { SIMM, FRTB, SACCR, Generic }= for that purpose, and
+=CapitalModel { Empty, SACCR, SACVA, FRTB }= for the capital model a
+row belongs to.
+
+* ISDA SIMM
+
+SIMM is ISDA's Standard Initial Margin Model. The ORE user guide names
+it in full and lists it as an analytic added in ORE v10, citing the
+"ISDA SIMM Methodology, version 2.5A".
+
+It computes initial margin on non-cleared over-the-counter
+derivatives. Its purpose is agreement rather than accuracy alone: a
+single published methodology means two counterparties to a trade
+compute the same margin figure, which removes a class of dispute that
+independent models would create.
+
+The calculation is sensitivity-based. Each party produces sensitivities
+in CRIF form, and the model applies published risk weights and
+correlations to them.
+
+** What SIMM imposes
+
+=ProductClass= carries =RatesFX=, =Credit=, =Equity= and =Commodity=
+as substantive values, with =Rates= and =FX= separately for the IM
+Schedule extension.
+
+=RiskClass= carries =InterestRate=, =CreditQualifying=,
+=CreditNonQualifying=, =Equity=, =Commodity= and =FX=.
+
+=RiskType= is the finest of the three, crossing a class with a greek
+and, on credit alone, a qualifying flag.
+
+The ordering of =RiskClass= is load-bearing. Its declaration warns
+that "the ordering here matters. It is used in indexing in to
+correlation matrices for the correlation between risk classes", which
+is why the enumeration behaves as an index rather than as a taxonomy.
+
+The IM Schedule is the alternative to the sensitivity-based
+calculation, computing margin from notional and maturity instead. It
+is why =ProductClass= carries =Rates= and =FX= separately and why
+=RiskType= carries =PV=.
+
+* FRTB
+
+FRTB is the Basel Fundamental Review of the Trading Book, the market
+risk capital framework.
+
+** The two approaches
+
+FRTB is not one calculation. It offers two, and the difference decides
+what a bank must be able to produce.
+
+| Approach | Who prescribes the model | What the bank must supply |
+|----------+--------------------------+---------------------------|
+| Standardised (SA) | The regulator, entirely | Sensitivities, in the prescribed classes |
+| Internal models (IMA) | The bank, subject to approval | An approved model, and the evidence it stays approved |
+
+Under the standardised approach the methodology is fixed: positions
+are mapped to prescribed risk classes, sensitivities are weighted with
+published risk weights and aggregated with published correlations.
+Under the internal models approach the bank uses its own model, and
+what the regulator prescribes instead is the set of tests the model
+and the desk must keep passing.
+
+The sections below describe the standardised approach, which is what
+reaches this corpus: it is the approach that consumes sensitivities in
+[[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][the prescribed buckets]], and so the approach whose vocabulary the
+model must be able to produce.
+
+*** What the internal models approach adds
+
+Three of its features matter here even though the approach itself does
+not.
+
+The measure changes. Value at risk is replaced by /expected
+shortfall/, computed over a set of /liquidity horizons/ rather than a
+single holding period, so a risk factor's assumed time to exit becomes
+a parameter of the capital number.
+
+Risk factors are partitioned by whether they can be modelled at all. A
+factor passing the risk factor eligibility test is /modellable/ and
+enters the expected shortfall calculation; one failing it is
+/non-modellable/ and is capitalised through a stress scenario instead.
+That partition is a property of observed market data rather than of
+the trade, which is why it belongs with
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirements]] rather than with any trade classification.
+
+Approval is granted per trading desk, not per bank. A desk that fails
+its profit and loss attribution test or its backtesting falls back to
+the standardised approach while the rest of the bank continues under
+its models. The consequence for the model is that a desk is a
+regulatory unit and not merely an organisational one: capital is
+computed, attributed and lost at that grain, so a desk identifier must
+be carried on a position rather than inferred from a book hierarchy.
+
+** The sensitivities-based method
+
+Its six risk classes are: general interest
+rate risk (=GIRR=), credit spread risk (=CSR=), equity (=EQ=),
+commodity (=COMM=) and FX, with credit spread divided three ways by
+securitisation status.
+
+FRTB names its greeks explicitly rather than by suffix, so its risk
+types read =GIRR_DELTA=, =GIRR_VEGA=, =GIRR_CURV= and so on. Curvature
+requires two scenarios rather than one number, which ORE holds as
+=CurvatureScenario { Empty, Up, Down }=.
+
+Two further charges sit outside the sensitivities-based method, remain
+within the standardised approach, and are not sensitivities at all. The default risk charge (=DRC=) is split the
+same three ways as credit spread. The residual risk add-on (=RRAO=)
+applies at one per cent or a tenth of a per cent.
+
+* SA-CCR
+
+SA-CCR is the standardised approach for counterparty credit risk,
+which computes exposure at default for derivative positions rather
+than a margin figure.
+
+It classifies positions into asset classes and then into hedging sets
+within them, which is a third way of grouping alongside SIMM's product
+classes and FRTB's risk classes. ORE carries SA-CCR risk types in the
+same enumeration as the other two, and =RiskType= marks =FX= and =PV=
+as shared with SIMM and the IM Schedule respectively.
+
+* The CVA approaches
+
+Credit valuation adjustment risk has two standardised treatments,
+which ORE lists among its recent analytics additions: the basic
+approach (=BA-CVA=) and the standardised approach (=SA-CVA=). ORE's
+=CapitalModel= enumeration carries =SACVA= alongside =SACCR= and
+=FRTB=.
+
+* Reporting regimes
+
+A second group of regimes shapes identity rather than risk. They
+prescribe which identifiers a trade and a security must carry, and
+appear in this corpus for that reason rather than for any
+classification they impose.
+
+| Regime | Requires |
+|--------+----------|
+| EMIR | Trade reporting to a repository, using the UTI |
+| Dodd-Frank, through the CFTC | Swap reporting, originally using the USI |
+| MiFID II | Transaction reporting, using the ISIN |
+
+[[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] covers UTI and USI;
+[[id:810AE48E-E180-42C6-B4F7-FA81826F3588][standard financial identifiers]] covers ISIN and its siblings.
+
+* What ORE implements
+
+The ORE user guide records SIMM as an analytic added in v10, and lists
+regulatory capital for counterparty credit risk and CVA risk, covering
+SA-CCR, BA-CVA and SA-CVA, among its recent additions. It also lists
+dynamic SIMM based on path-wise sensitivities computed with
+algorithmic differentiation.
+
+FRTB appears in the CRIF record types and risk types rather than in
+the user guide's analytics list.
+
+* Open questions
+
+- Whether ORE Studio needs to hold any of these classifications
+  directly, or only to map onto them when producing a CRIF file. The
+  second is sufficient for reporting and avoids adopting a vocabulary
+  that changes when a methodology version changes.
+- How a methodology version is recorded. SIMM's risk weights and
+  correlations change between versions, so a margin figure is
+  meaningless without the version that produced it, and nothing in
+  this corpus records one.
+- Whether the reporting regimes belong on this page at all. They
+  impose identity requirements rather than risk vocabulary, and share
+  little with the capital frameworks beyond being regulatory.
+
+* Sources
+
+ORE's enumerations and the CRIF description are read from
+=OREAnalytics/orea/simm/crifrecord.hpp= and
+=OREAnalytics/orea/simm/simmconfiguration.hpp=. The CRIF definition is
+quoted from the doc comment there, which cites the ISDA SIMM
+Methodology Risk Data Standards, version 1.36 of 1 February 2017.
+
+The analytics list and the expansion of SIMM are read from
+=Docs/UserGuide/userguide_intro.tex=, and the SIMM methodology version
+from =Docs/UserGuide/references.tex=.
+
+The two FRTB approaches, and the internal models features named above,
+are as described in Basel's /Minimum capital requirements for market
+risk/, the standard the framework is published as. No chapter is cited
+and the text was not read for this page, so the account is a summary
+from general knowledge rather than a verified reading; the division
+into a standardised and an internal models approach is not in doubt,
+but the detail should be checked against the standard before being
+relied on. The gap was pointed out by a LinkedIn post from QFI
+Bootcamps on FRTB SA versus IMA, which is a promotional article and is
+recorded here as the prompt rather than as an authority.
+
+The regulatory background — what each framework is for, which rules
+drive it, and how the reporting regimes relate — is not cited. ISDA's
+published FAQ was unreachable and no encyclopaedia article was
+available, so those statements rest on general knowledge rather than
+on a verified source and should be checked before being relied on.
+
+* See also
+
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the aggregation buckets these frameworks weight and correlate against.
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy these frameworks each cut differently.
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — what a product is sensitive to.
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the sensitivity names these frameworks prescribe.
+- [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, required by the reporting regimes.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -15,6 +15,21 @@ ORE models it with the trade type =FxDoubleTouchOption=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Double Touch Option |
+| Short name              | FX Double Touch Option |
+| ORE Studio product code | =FxDoubleTouchOption= |
+| Asset class             | =fx= |
+| Family                  | Option |
+| ORE trade data node     | =FxDoubleTouchOptionData= |
+| ORE documentation       | =fx_doubletouchoption.tex= |
+
 * Summary
 
 An FX double touch option combines two continuously monitored
@@ -115,7 +130,7 @@ touch options to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long double no-touch:
 
-#+begin_example
+#+begin_src xml
 <FxDoubleTouchOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -140,7 +155,7 @@ ORE's catalogue shows a long double no-touch:
   <FXIndex>FX-ECB-EUR-USD</FXIndex>
   <Calendar>TARGET</Calendar>
 </FxDoubleTouchOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]],
 listing =FX Double Touch Option data= (optional elements omitted).

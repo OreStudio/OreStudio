@@ -44,7 +44,7 @@ to the cash they committed.
 
 ** Five improvements (May 2026)
 
-*** 1. FX rate locking
+*** FX rate locking
 
 Each deposit or withdrawal fixes the exchange rate at the moment the
 cash movement occurs. Subsequent FX moves do not distort historical
@@ -52,14 +52,14 @@ cost basis. This is the correct approach for multi-currency
 portfolios: floating rates on historical transactions create phantom
 gains and losses that confuse users and auditors alike.
 
-*** 2. Timeframe alignment
+*** Timeframe alignment
 
 Portfolio PnL is scoped to the selected chart window (1 day, 1
 month, YTD, all-time, etc.). Earlier versions apparently showed
 all-time PnL regardless of the selected range, which made short-term
 views meaningless.
 
-*** 3. Dual portfolio charts
+*** Dual portfolio charts
 
 Two independent chart views:
 
@@ -72,7 +72,7 @@ Two independent chart views:
 The toggle gives retail users a concept that institutional systems
 take for granted: separating wealth evolution from investment alpha.
 
-*** 4. Sell-order calculation
+*** Sell-order calculation
 
 On sale, the app:
 
@@ -86,7 +86,7 @@ On sale, the app:
 The two-phase display (estimated → final) is honest UX that matches
 the operational reality of T+1/T+2 settlement.
 
-*** 5. Selectable cost basis methods
+*** Selectable cost basis methods
 
 Users can choose via account settings:
 

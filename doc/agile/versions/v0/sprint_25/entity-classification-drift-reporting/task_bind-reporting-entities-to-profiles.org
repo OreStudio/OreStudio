@@ -28,9 +28,9 @@ Survey every ores.reporting entity against the profile catalogue, rebind matches
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] |
-| Now          | Part 2 family 1 verified: build clean, regeneration byte-identical. |
-| Waiting on   | A build lock for ctest. Another worktree is running the full suite. |
-| Next         | Run ctest. Then part 3, the drift gate. |
+| Now          | Both commits landed. The drift gate is green. The database is current and all 23 services run. The legacy archetype references are gone. |
+| Waiting on   | The full =rat= ctest run. |
+| Next         | Report the =rat= result. Then the remaining findings as captures. |
 | Last touched | 2026-09-17                             |
 
 * Acceptance
@@ -312,14 +312,107 @@ created_at=, with no =valid_from=, =valid_to=, =version=, or audit members.
 Generating it would add seven columns to the table and change its primary
 key. That is a schema decision, not a codegen detail.
 
-The junction gap is small and closable: wrap the version and audit block in a
-flag, and branch the insert trigger on it. The =report_input_bundle= gap needs
-a whole immutable archetype.
+The junction gap is wider than one flag. Wrapping the version and audit block
+in a flag is necessary, and not sufficient: the generated junction also puts
+=tenant_id= in the primary key and in the exclusion constraint, and names the
+left and right indexes from the column names rather than the hand-chosen
+=..._config_idx=. Three template capabilities, not one.
 
 Nothing writes either junction table today. A repo-wide search finds only
 readers: =reporting_resolve_book_ids_fn=, the RLS policies, and the two
 hand-written scope queries in =risk_report_config_repository.cpp=. No INSERT
 exists in C++, SQL, or seed data. That is why the gap is not urgent.
+
+** Exceptions revisited, second pass (2026-09-17)
+
+Two claims from the first pass did not survive checking. The corrections
+change the recommendation for both families.
+
+*The immutable archetype is not new; it is orphaned.* The retired JSON-model
+pipeline had =sql_schema_non_temporal_create.mustache=, and three checked-in
+files still name it:
+
+| File                                                       | Owner    |
+|------------------------------------------------------------+----------|
+| =projects/ores.sql/create/workflow/workflow_workflow_instance_create.sql= | workflow |
+| =projects/ores.sql/create/workflow/workflow_workflow_step_create.sql=     | workflow |
+| =projects/ores.sql/create/database/database_database_infos_create.sql=    | database |
+
+The template does not exist. =projects/ores.codegen/generate_workflow_schema.sh=
+still points at =models/workflow/*_domain_entity.json= and =src/generator.py=,
+both retired. So the marker on those three files lies: nothing regenerates
+them. Neither =workflow= nor =database= is in =KNOWN_DRIFT_FREE=, so the gate
+never looks. This is a separate finding from the three exceptions, and it is
+the one a reader is most likely to be misled by.
+
+The generated shape in those files matches =report_input_bundles= closely:
+uuid =id=, =tenant_id=, a plain =created_at=, no temporal columns, and no
+partial-index predicate. One difference is instructive: =workflow_instance=
+uses =primary key (id)= while =report_input_bundles= uses =primary key
+(tenant_id, id)=.
+
+*The bundle is live; the junctions are not.* =report_input_bundle= is written
+today by =report_execution_handler.cpp= (the =assemble_bundle= step) through
+=report_input_bundle_repository::create=, and read by =find_by_instance_id=.
+Its hand-written surface is five files and two methods. The entity archetype
+generates a bitemporal, versioned, audited, eventing-enabled, history-enabled,
+paginated stack. Forcing the bundle through it would add seven columns to a
+live table, move the primary key, and emit far more code than the two methods
+that exist.
+
+The gap is therefore not a missing SQL branch. It is a lifecycle the archetype
+does not model: write once, never update, never delete, keep no history.
+
+*Revised recommendation.* Hold both families as recorded exceptions, and
+record the trigger to revisit each:
+
+- The two junctions: revisit when something first writes them. At that point
+  conform them to the conventional junction shape by hand and generate them,
+  or close the three template gaps. Order does not matter while no writer
+  exists, because the audit columns would stay empty either way.
+- =report_input_bundle=: revisit when a second write-once entity appears. One
+  entity does not justify a new archetype. The same rule the skill applies to
+  profiles applies here: a novel combination earns its own name only once a
+  second entity repeats it.
+
+The orphaned =sql_schema_non_temporal_create.mustache= output is a separate
+task. It belongs with the =ores.dq= artefact tier finding, not with this one.
+
+**The legacy archetype references are deleted (2026-09-17)**
+
+The archetype itself was already gone. The template is absent from
+=projects/ores.codegen/library/templates/=. Only its references remained.
+Three changes remove them.
+
+- =projects/ores.codegen/generate_workflow_schema.sh= is deleted. The script
+  called =src/generator.py= with =models/workflow/*_domain_entity.json=. Both
+  are absent. Its template is absent. Nothing could run it.
+- The three SQL files lost their false =AUTO-GENERATED= block. Only comment
+  lines were removed, so the DDL is unchanged and the recreated schema is
+  unaffected. The =database_info= file also lost a meaningless =*  Table=
+  title, an artifact of its empty entity title.
+- =ores_schema.puml= is regenerated, along with the =ores_schema.png= and
+  =ores_schema.cmapx= artifacts the same script renders. The three notes no
+  longer carry the stale text.
+
+=git grep= now finds zero references under =projects/=. The remaining hits
+are past-sprint org files, which are history and stay unchanged.
+
+*Two findings came out of this.*
+
+*The whole family of generator scripts is dead.* =src/generator.py= and
+=models/= are both absent, so every =generate_*.sh= script in
+=projects/ores.codegen/= calls a module that does not exist. A backlog story
+already scopes the cleanup: =Decommission legacy ores.codegen bash scripts=
+(=doc/agile/product_backlog/next/decommission_codegen_bash_scripts/story.org=,
+ID =1C659EB3-5227-46B6-8B5C-68E9F98C10D1=). It is in state BACKLOG with one
+unstarted task. This task deleted only the script the archetype referenced.
+
+*The ER diagram was six weeks stale.* Regenerating it changed 1786 lines. The
+last generation was 2026-08-07, so the diff is real drift across every
+component, not noise from this change. The repository convention is to
+regenerate and commit the diagram with SQL work, so this is overdue rather
+than wrong. It is one commit's worth of unrelated churn and can be split out.
 
 ** Step 7 finding: the generated registrars have no caller (2026-09-17)
 
@@ -415,15 +508,49 @@ Three checks passed.
 - *CMake source lists.* =regenerate_cmake_component_files.py --all --check=
   exits 0. Every =component_files.cmake= in the repository is current.
 
-*The drift check still exits 1, and the tree is correct.*
+*The component test target compiles; four of its tests need a running NATS.*
 
-=check_component_drift.py --component reporting= regenerates, then runs
-=git diff= with no pathspec. It therefore diffs the whole repository against
-=HEAD=, not the regenerated output against the checked-in files. An
-uncommitted working tree fails it by construction. The diff it prints here is
-this task's own change set, which is the subject of the commit that will
-follow. The check cannot pass before that commit exists. This is the
-line-115 finding recorded above, now confirmed by running it.
+=./compass.sh build test_ores.reporting.core.tests --preset
+linux-clang-debug-make= built and linked the target at 100 percent, then ran
+18 test cases. Four failed, all with the same message: =NATS connect failed:
+No server available for connection=. The other 14 passed.
+
+The failure is the environment, not the code under test. The four failures
+are the eventing integration tests, and no ORE Studio service was running for
+this worktree at the time. =compass services status= showed 23 of 23 units
+stopped, and the NATS broker for this worktree listens on port 21605 only
+while =nats-server-clever_dijkstra= is up. Starting the services fixed the
+cause; the ctest result recorded below is the run made after that start.
+
+Two services, =marketdata= and =synthetic=, failed to start for the same
+reason described next.
+
+*The database was twenty days stale. That was the root cause.*
+
+The first full =rat= run failed. Two targets did not pass:
+=ores.compute.core.tests= (7 of 13) and =ores.analytics.core.tests= (2 of 34).
+The compute failures read =column "version" of relation
+"ores_compute_app_version_platforms_tbl" does not exist=. The =rat= target
+aborted there, so it never reached a clean reporting result.
+
+=compass db status= gave the cause. The schema was built from commit
+=fdbdf2f98d-d= on 2026-08-28 and reported =drift: stale=, twenty days behind
+HEAD. =compass db recreate -y -k= rebuilt it in 16 minutes and 32 seconds.
+The status now reads =drift: current= and =built from: bcbcb8e380-d=, which is
+this task's own commit. The database therefore holds the new
+=risk_report_config= schema.
+
+After the recreate all 23 services started, including =marketdata= and
+=synthetic=. No service fails now. The two earlier failures were stale-schema
+symptoms, not defects in those components.
+
+*The drift check passes once the tree is committed.*
+
+Both claims above were confirmed by running the check twice more. Before the
+commit it exited 1, printing this task's own change set. After the commit it
+printed "No drift: regenerated output matches the checked-in tree" and exited
+0. =--all= over the =KNOWN_DRIFT_FREE= registry then exited 0 as well, which
+retires skill step 8 for this component.
 
 * Test Scenarios
 

@@ -18,12 +18,6 @@
  *
  */
 /**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_non_temporal_create.mustache
- * To modify, update the template and regenerate.
- *
- *  Table
- *
  * Stores the schema version, git commit, and build environment inserted at
  * database creation time. Used to correlate service behaviour with the
  * database schema in use. Contains exactly one row.

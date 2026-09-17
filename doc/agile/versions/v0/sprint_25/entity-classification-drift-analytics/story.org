@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-07
-#+environment:
+#+updated: 2026-09-17
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Bring ores.analytics to the state the compass-codegen-fix-drift skill defines: e
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | The bind task is closed. The story waits on the post-merge live system test. |
 | Waiting on    | Nothing.                               |
-| Next          | Claim the bind task.                   |
-| Last touched  | 2026-09-07                               |
+| Next          | Run the live system test after the bind merges. |
+| Last touched  | 2026-09-17                               |
 
 * Acceptance
 
@@ -34,7 +34,7 @@ Bring ores.analytics to the state the compass-codegen-fix-drift skill defines: e
 - Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around.
 - Full local build clean, schema drift current per =compass db status=, full ctest suite green after regeneration.
 - analytics-cpp joins the =KNOWN_DRIFT_FREE= registry in check_component_drift.py (skill step 8), and the compass-pr-raise skill's local codegen-drift check runs =--all= over the registry, so future PRs touching ores.analytics fail on any regeneration drift.
-- The superseded ad hoc task 'Apply safe drift to analytics-cpp' is marked ABANDONED, pointing here.
+- The ad hoc task 'Apply safe drift to analytics-cpp' is reconciled with this story. Amended 2026-09-17: it stays DONE, not ABANDONED. It completed through PR #1893 and delivered the profile assignment and the service flags this story inherited, so an ABANDONED stamp would misdescribe it. The reconciliation is recorded in both records instead.
 - The known starting-point wrinkles already recorded (service_find_by_uuid on pricing_model_config/pricing_model_product/pricing_model_product_parameter, service_find_by_code on pricing_model_config, service_find_prefix on pricing_engine_type) are resolved as part of reaching zero drift.
 - Done shape (2026-09-07 program decision): the bind task closes at the drift gate. The story closes only after the post-merge live system test: recreate the database, provision a tenant, and exercise this component's flows. Defects the test surfaces get follow-up tasks on this story. The compute/iam binds set this shape: their live system test caught a service-grant defect ctest cannot see.
 
@@ -42,9 +42,13 @@ Bring ores.analytics to the state the compass-codegen-fix-drift skill defines: e
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:09618E7F-552A-445E-907D-B9D7589E382B][Bind ores.analytics entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the analytics-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: set service_find_by_uuid on pricing_model_config, pricing_model_product, pricing_model_product_parameter; service_find_by_code on pricing_model_config; service_find_prefix on pricing_engine_type. |
+| [[id:09618E7F-552A-445E-907D-B9D7589E382B][Bind ores.analytics entities to profiles; verify zero-diff regen]] | DONE | 2026-09-17 | 2026-09-17 | Implement profile binding for the analytics-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: set service_find_by_uuid on pricing_model_config, pricing_model_product, pricing_model_product_parameter; service_find_by_code on pricing_model_config; service_find_prefix on pricing_engine_type. |
 
 * Decisions
+
+- 2026-09-17. The story was opened while its work was already on main. The analytics bind landed on 2026-09-11 under the codegen drift-clear task in a different environment, so this story and its bind task still read BACKLOG against a component that was already bound, already regenerating byte-identical, and already in the drift registry. Neither record was reconciled at the time. The lesson is that the registry and the backlog are two views of one fact, and joining the registry should close or amend the bind task in the same change.
+- 2026-09-17. The superseded-task acceptance line is amended rather than satisfied. It assumed the ad hoc task was still open. It was not: it had already completed through PR #1893, and marking a delivered task ABANDONED would have put a false statement in the record to satisfy a true-sounding one. The reconciliation is a cross-reference in both documents.
+- 2026-09-17. The remaining per-entity =:has_tenant_id:= was removed from all four entities. Both profiles already fix that feature to true, so the explicit line was redundant, and every other bound component carries the profile bind alone. The change is proven output-neutral by regeneration: no generated file moves.
 
 * Out of scope
 

@@ -26,11 +26,11 @@ Survey every ores.reporting entity against the profile catalogue, rebind matches
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] |
-| Now          | Acceptance met. The full =rat= run is green: 72 suites, 0 failures. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | The remaining findings as captures. |
+| Next         | Nothing. |
 | Last touched | 2026-09-17                             |
 
 * Acceptance
@@ -588,3 +588,45 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. The bind is complete and the drift gate holds.
+
+*What shipped.* Five commits on
+=feature/bind-reporting-entities-to-profiles=.
+
+- =report_definition= keeps =uuid-identified-lookup= and its explicit
+  =has_workspace_id: true= override. The override is deliberate.
+- =report_instance= keeps =fk-scoped-child= and gains
+  =parent_entity_singular: report_definition=.
+- =risk_report_config= was hand-written. It now has an org model at
+  =projects/ores.reporting/modeling/ores.reporting.risk_report_config.org=,
+  and codegen generates its API, core repository, and SQL.
+- The retired non-temporal SQL archetype is gone: the dead script deleted,
+  three false =AUTO-GENERATED= headers removed, and the ER diagram
+  regenerated.
+
+*Acceptance.* Five of the six clauses are met outright.
+
+- The survey covers every entity in the reporting catalogue entry.
+- Every matching entity regenerates with zero added diff.
+- The no-match entities are recorded with their feature values.
+- No new profile was needed.
+- The full =rat= suite is green: 72 suites, 0 failures, exit 0.
+
+The fourth clause, "every entity that carries a hand-written copy of a
+generated shape gets an org model", is met for =risk_report_config= alone.
+Three entities stay hand-written as recorded exceptions. The record names
+the archetype gap that blocks each one and a revisit trigger. This follows
+the skill's recorded-exception path. It is not a silent omission. See
+=* Notes=.
+
+*The drift gate.* reporting-cpp is in =KNOWN_DRIFT_FREE=.
+=check_component_drift.py --component reporting= exits 1 before a commit and
+0 after, where it prints "No drift: regenerated output matches the
+checked-in tree". =--all= over the registry exits 0. This retires skill
+step 8.
+
+*Environment.* The database was twenty days stale. The stale schema caused
+two suites to fail on a missing column. =compass db recreate -y -k= rebuilt
+it in 16m 32s. =db status= then reported =drift: current=. All 23 services
+start.

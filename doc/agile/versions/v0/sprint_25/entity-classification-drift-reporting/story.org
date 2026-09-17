@@ -23,9 +23,9 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Bind task started. Profile binds and the risk_report_config model are done. |
-| Waiting on    | Nothing.                               |
-| Next          | Verify the build and ctest, then run the drift gate. |
+| Now           | The bind task is DONE and the drift gate holds. All tasks in this story are DONE. |
+| Waiting on    | The merge, then the post-merge live system test. |
+| Next          | Merge the PR, then run the live system test. Close the story after that. |
 | Last touched  | 2026-09-17                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:789D58B7-5282-41E0-879E-F5052AB295C6][Bind ores.reporting entities to profiles; verify zero-diff regen]] | STARTED | 2026-09-17 | | Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected. |
+| [[id:789D58B7-5282-41E0-879E-F5052AB295C6][Bind ores.reporting entities to profiles; verify zero-diff regen]] | DONE | 2026-09-17 | 2026-09-17 | Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected. |
 
 * Decisions
 
@@ -63,6 +63,22 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
   lets the model edits regenerate into =ores.qt/reporting= and leaves the build
   alone. Step 2, a separate task, brings the templates to parity, wires the
   plugin, and deletes the hand-written copies.
+
+- *Two entities resolve to bespoke shapes, not to one profile (2026-09-17).*
+  Neither bind forced a profile onto an entity it does not fit.
+  =report_definition= keeps =uuid-identified-lookup= and its explicit
+  =has_workspace_id: true= override, because the product wants report
+  definitions to record the live workspace. =report_instance= keeps
+  =fk-scoped-child= and gains =parent_entity_singular: report_definition=,
+  so a report definition explorer can open an instance nested under it.
+  No new profile was needed.
+
+- *All story tasks are DONE; the story stays open (2026-09-17).* The bind
+  task closes at the drift gate, per the 2026-09-07 decision. The story
+  waits on the post-merge live system test. Three entities stay
+  hand-written as recorded exceptions in the bind task, each with the
+  archetype gap that blocks it and a named revisit trigger. That is the
+  recorded-exception path, not a silent omission.
 
 * Out of scope
 

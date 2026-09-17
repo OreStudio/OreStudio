@@ -29,7 +29,6 @@ It is cleared when the definition is suspended or archived.
 :schema:           public
 :product:          ores
 :component:        reporting
-:has_tenant_id:    true
 :has_workspace_id: true
 :profile:           uuid-identified-lookup
 :END:
@@ -213,7 +212,6 @@ std::nullopt
 :item_var:               definition
 :key_field:              name
 :key_widget:             nameEdit
-:has_uuid_primary_key:   true
 :get_request_class:      reporting::messaging::get_report_definitions_request
 :get_response_class:     reporting::messaging::get_report_definitions_response
 :get_message_type:       get_report_definitions_request

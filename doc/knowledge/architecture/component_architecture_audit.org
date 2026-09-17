@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :audit:component:architecture:
 #+created: 2026-09-06
-#+updated: 2026-09-06
+#+updated: 2026-09-17
 
 * Summary
 
@@ -280,6 +280,53 @@ the component and its parts:
   subject row, or a subject row without a handler, is a finding.
 
 A stale registry entry is a finding; fix it in the same pass.
+
+*** Model and profile hygiene
+
+An entity model bound to a profile states only what it decides for
+itself. The profile carries the rest, because the generator merges a
+profile's =* Assignments= as defaults. So an explicit property line
+whose value equals the profile's is dead weight. It repeats the default
+and it invites the two to drift apart. It is a finding; remove it.
+
+The comparison is mechanical. Read the model's =:profile:=, load that
+profile's assignments through the generator's own loader
+(=codegen.org_loader._load_profile_assignments=), and intersect the
+assigned feature names with the keys the model states explicitly.
+Reusing the generator's loader keeps the check in step with the merge
+the generator performs.
+
+Three cases follow from the comparison.
+
+- Equal value. Remove the line. The profile becomes the single source of
+  truth for that feature.
+- Different value. Keep the line. It is a deliberate override, and the
+  record says why.
+- Structural property. Keep it. Profiles hold variability features only,
+  so a property such as =parent_id_column= or =hierarchy_name_field= is
+  never in an assignment table.
+
+One caution applies. A profile writes each feature into its namespace,
+and not every consumer reads it there. =has_parent_id= is the recorded
+case. The profile files it under =sql=, while the templates and
+=core.py= read it at the entity root, so the explicit line is
+load-bearing. Removing it drops the entity's hierarchy function,
+repository method, handler and service. Treat a removal as
+output-neutral only after regeneration proves it.
+
+The proof is regeneration, as [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]] describes. Commit
+the model edits first, because the drift check diffs the whole tree.
+Then run =check_component_drift.py --component <slug>= for the
+component. A component outside the known-drift-free registry cannot be
+proven this way, so leave its models alone until it joins.
+
+The first pass ran on 2026-09-17. It removed 41 redundant lines across
+19 models in analytics, compute, iam, refdata, reporting and synthetic.
+Two lines stayed as overrides: =compute.result= sets
+=has_change_reason_cache= false against the profile's true, and
+=reporting.report_definition= sets =has_workspace_id= true against the
+profile's false. Four =has_parent_id= lines stayed because the caution
+above applies to them.
 
 *** Platform-specific code placement
 

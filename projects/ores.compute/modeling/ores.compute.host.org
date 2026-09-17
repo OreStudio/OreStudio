@@ -176,7 +176,6 @@ Accumulated work units successfully processed by this host.
 :collection_name:         hosts
 :item_var:                host
 :key_field:               external_id
-:has_uuid_primary_key:    true
 :get_request_class:       compute::messaging::get_hosts_request
 :get_response_class:      compute::messaging::get_hosts_response
 :get_message_type:        get_hosts_request
@@ -194,8 +193,6 @@ Accumulated work units successfully processed by this host.
 :icon:                    Desktop
 :changed_event_class:     compute::eventing::host_changed_event
 :changed_event_include:   ores.compute.api/eventing/host_changed_event.hpp
-:has_change_reason_cache: true
-:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

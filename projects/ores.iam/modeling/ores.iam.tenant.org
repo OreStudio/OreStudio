@@ -29,7 +29,6 @@ Tenants are identified by:
 :product:       ores
 :component:     iam
 :profile:       uuid-identified-lookup
-:has_tenant_id: true
 :END:
 
 * Columns
@@ -220,7 +219,6 @@ Tenant lifecycle status (FK to tenant_statuses).
 :collection_name:        tenants
 :item_var:               tenant
 :key_field:              code
-:has_uuid_primary_key:   true
 :get_request_class:      iam::messaging::get_tenants_request
 :get_response_class:     iam::messaging::get_tenants_response
 :get_message_type:       get_tenants_request

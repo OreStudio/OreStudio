@@ -106,7 +106,6 @@ Lifecycle status: open, processing, assimilating, or closed.
 :collection_name:         batches
 :item_var:                batch
 :key_field:               external_ref
-:has_uuid_primary_key:    true
 :get_request_class:       compute::messaging::get_batches_request
 :get_response_class:      compute::messaging::get_batches_response
 :get_message_type:        get_batches_request
@@ -124,8 +123,6 @@ Lifecycle status: open, processing, assimilating, or closed.
 :icon:                    TextBulletListSquare
 :changed_event_class:     compute::eventing::batch_changed_event
 :changed_event_include:   ores.compute.api/eventing/batch_changed_event.hpp
-:has_change_reason_cache: true
-:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

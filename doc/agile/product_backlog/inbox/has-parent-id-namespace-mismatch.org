@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4B656AD0-DA7B-41BE-998F-F6AF5E03B6C2
+:END:
+#+title: Codegen: has_parent_id lands in the sql namespace but is read at the entity root
+#+description: The profile merger files has_parent_id under sql, because that is what _FEATURE_NAMESPACE says. core.py and the mustache templates read it at the entity root instead. So a model that drops its explicit has_parent_id line loses its hierarchy function, repository method, handler and service on regeneration. Four models keep the line for this reason: business_unit, counterparty and party in refdata, and folder in synthetic. Regeneration over those four moved 24 and 8 generated files when the lines came out. Fix the namespace or the readers, then remove the four lines. Found while removing profile-redundant properties on 2026-09-17.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The profile merger files =has_parent_id= under =sql=, because that is
+what =_FEATURE_NAMESPACE= says. =core.py= and the mustache templates
+read it at the entity root instead. The two disagree, so a profile's
+assignment never reaches the readers.
+
+A model that drops its explicit =has_parent_id= line therefore loses its
+hierarchy function, repository method, handler and service on
+regeneration. Four models keep the line for this reason. They are
+=business_unit=, =counterparty= and =party= in refdata, and =folder= in
+synthetic.
+
+Fix the namespace or fix the readers, then remove the four lines.
+
+* Why
+
+This blocks the profile from being the single source of truth for
+=hierarchy= entities. The binding program exists so a model states only
+what it decides for itself, and this is the one feature where that does
+not hold today.
+
+It is also a trap. The line looks redundant to any mechanical survey,
+because the profile does assign the feature. Removing it is silent at
+the model level and shows up only as deleted generated code. Regeneration
+over the four models moved 24 and 8 generated files when the lines came
+out.
+
+* References
+
+- [[id:88ADF884-86BB-4561-B1A7-6B956010EBAD][Remove explicit model properties the bound profile already fixes]] — the task that found it, 2026-09-17.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][component architecture audit]] — the =Model and profile hygiene= section records the caution.
+- =projects/ores.codegen/src/codegen/org_loader.py= — =_FEATURE_NAMESPACE= and =_apply_profile=.
+- =projects/ores.codegen/src/codegen/core.py= — the two readers, at the entity root.
+
+* See also
+
+-

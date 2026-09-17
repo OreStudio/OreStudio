@@ -14,7 +14,9 @@
 A *sensitivity* is a partial derivative of value with respect to an
 input, almost always approximated numerically:
 
-122315\text{Greek} = \frac{PV(\text{input} + h) - PV(\text{input})}{h}122315
+\begin{equation}
+\text{Greek} = \frac{PV(\text{input} + h) - PV(\text{input})}{h}
+\end{equation}
 
 A *greek* is a named sensitivity, conventionally denoted by a greek
 letter.
@@ -59,7 +61,10 @@ order hierarchy follows from a Taylor expansion. Delta predicts where
 value will be after a move; if delta is itself changing, the
 prediction is wrong, and gamma corrects it:
 
-122315\Delta P\&L \approx (D_1 - D_0) \times \Delta + \tfrac{1}{2}(D_1 - D_0)^2 \times \Gamma122315
+\begin{equation}
+\Delta P\&L \approx (D_1 - D_0) \times \Delta
+      + \tfrac{1}{2}(D_1 - D_0)^2 \times \Gamma
+\end{equation}
 
 The expansion continues in principle and stops in practice at second
 order, for a reason of utility rather than mathematics: there are no

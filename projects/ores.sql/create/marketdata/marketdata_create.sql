@@ -18,9 +18,11 @@
  *
  */
 
--- Codegen market data entities (market_series must precede observations/fixings).
+-- Codegen market data entities (market_series must precede observations/fixings,
+-- and the asset-class junction references it).
 \ir ./marketdata_market_series_create.sql
 \ir ./marketdata_market_series_notify_trigger_create.sql
+\ir ./marketdata_market_series_asset_class_create.sql
 \ir ./marketdata_market_observations_create.sql
 \ir ./marketdata_market_observations_notify_trigger_create.sql
 \ir ./marketdata_observation_lineages_create.sql

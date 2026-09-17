@@ -26,9 +26,6 @@
 #include "ores.qt/ClientMarketSeriesModel.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.refdata.api/domain/asset_class_code.hpp"
-#include <QComboBox>
-#include <QFutureWatcher>
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
@@ -40,7 +37,6 @@ namespace ores::qt {
 /**
  * @brief MDI window listing all market series (yield curves, vol surfaces, etc.)
  *
- * Provides an asset class filter combo box on the toolbar.
  * Double-clicking or pressing "View Observations" opens the observation
  * time-series window for the selected series.
  */
@@ -88,8 +84,6 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
-    void onAssetClassFilterChanged(int index);
-    void onAssetClassesLoaded();
     void viewObservations();
     void viewChart();
 
@@ -97,16 +91,6 @@ private:
     void setupUi();
     void setupToolbar();
     void updateActionStates();
-    void applyAssetClassFilter();
-    void loadAssetClasses();
-    void populateAssetClassCombo(const std::vector<refdata::domain::asset_class_code>& classes);
-
-    struct AssetClassFetchResult {
-        bool success = true;
-        QString error_message;
-        QString error_details;
-        std::vector<refdata::domain::asset_class_code> asset_classes;
-    };
 
     QVBoxLayout* verticalLayout_;
     QTableView* tableView_;
@@ -116,11 +100,9 @@ private:
     QAction* reloadAction_;
     QAction* viewObsAction_;
     QAction* viewChartAction_;
-    QComboBox* assetClassCombo_;
 
     std::unique_ptr<ClientMarketSeriesModel> model_;
     QSortFilterProxyModel* proxyModel_;
-    QFutureWatcher<AssetClassFetchResult>* assetClassWatcher_;
     ClientManager* clientManager_;
     QString username_;
 };

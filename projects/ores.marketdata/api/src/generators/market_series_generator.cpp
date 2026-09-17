@@ -51,11 +51,6 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.asset_class = [idx] {
-        static constexpr std::string_view classes[] = {
-            "fx", "interest_rates", "credit", "equity", "commodity", "inflation", "bond"};
-        return std::string(classes[static_cast<std::size_t>(idx) % std::size(classes)]);
-    }();
     r.series_subclass = [idx] {
         static constexpr std::string_view subclasses[] = {"spot",
                                                           "forward",

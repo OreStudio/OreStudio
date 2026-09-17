@@ -65,8 +65,6 @@ QVariant ClientMarketSeriesModel::data(const QModelIndex& index, int role) const
                 return QString::fromStdString(s.metric);
             case Qualifier:
                 return QString::fromStdString(s.qualifier);
-            case AssetClass:
-                return QString::fromStdString(s.asset_class);
             case Subclass:
                 return QString::fromStdString(s.series_subclass);
             case Version:
@@ -94,8 +92,6 @@ ClientMarketSeriesModel::headerData(int section, Qt::Orientation orientation, in
             return "Metric";
         case Qualifier:
             return "Qualifier";
-        case AssetClass:
-            return "Asset Class";
         case Subclass:
             return "Subclass";
         case Version:

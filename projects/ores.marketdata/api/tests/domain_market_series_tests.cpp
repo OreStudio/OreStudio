@@ -38,7 +38,6 @@ market_series make_eur_discount_series() {
     s.series_type = "DISCOUNT";
     s.metric = "RATE";
     s.qualifier = "EUR";
-    s.asset_class = "interest_rates";
     s.series_subclass = "yield";
     s.modified_by = "system";
     s.performed_by = "system";
@@ -62,7 +61,6 @@ TEST_CASE("create_market_series_with_valid_fields", tags) {
     CHECK(sut.series_type == "DISCOUNT");
     CHECK(sut.metric == "RATE");
     CHECK(sut.qualifier == "EUR");
-    CHECK(sut.asset_class == "interest_rates");
     CHECK(sut.series_subclass == "yield");
 }
 
@@ -74,7 +72,6 @@ TEST_CASE("create_fx_spot_series", tags) {
     sut.series_type = "FX";
     sut.metric = "RATE";
     sut.qualifier = "EUR/USD";
-    sut.asset_class = "fx";
     sut.series_subclass = "spot";
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -85,7 +82,6 @@ TEST_CASE("create_fx_spot_series", tags) {
 
     CHECK(sut.series_type == "FX");
     CHECK(sut.qualifier == "EUR/USD");
-    CHECK(sut.asset_class == "fx");
     CHECK(sut.series_subclass == "spot");
 }
 
@@ -112,7 +108,6 @@ TEST_CASE("create_swaption_vol_series", tags) {
     sut.series_type = "SWAPTION";
     sut.metric = "RATE_LNVOL";
     sut.qualifier = "EUR";
-    sut.asset_class = "interest_rates";
     sut.series_subclass = "volatility";
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -122,7 +117,6 @@ TEST_CASE("create_swaption_vol_series", tags) {
     BOOST_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
 
     CHECK(sut.series_type == "SWAPTION");
-    CHECK(sut.asset_class == "interest_rates");
     CHECK(sut.series_subclass == "volatility");
 }
 
@@ -134,7 +128,6 @@ TEST_CASE("create_market_series_with_faker", tags) {
     sut.series_type = "MM";
     sut.metric = "RATE";
     sut.qualifier = std::string(faker::finance::currencyCode());
-    sut.asset_class = "interest_rates";
     sut.series_subclass = "yield";
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());

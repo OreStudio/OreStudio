@@ -150,15 +150,26 @@ begin
             -- else both required).
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
-                series_type, metric, qualifier, asset_class, series_subclass,
+                series_type, metric, qualifier, series_subclass,
                 derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
-                r.series_type, r.metric, r.qualifier, v_asset_class, v_series_subclass,
+                r.series_type, r.metric, r.qualifier, v_series_subclass,
                 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            );
+
+            insert into ores_marketdata_market_series_asset_classes_tbl (
+                tenant_id, market_series_id, asset_class_code, version,
+                modified_by, performed_by, change_reason_code, change_commentary,
+                valid_from, valid_to
+            ) values (
+                p_target_tenant_id, v_series_id, v_asset_class, 0,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name,
+                clock_timestamp(), ores_utility_infinity_timestamp_fn()
             );
         end if;
 

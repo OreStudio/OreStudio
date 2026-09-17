@@ -51,7 +51,6 @@ public:
         SeriesType,
         Metric,
         Qualifier,
-        AssetClass,
         Subclass,
         Version,
         ModifiedBy,

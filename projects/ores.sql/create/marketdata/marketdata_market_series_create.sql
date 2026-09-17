@@ -30,7 +30,10 @@
  * exclusion is appropriate.
  *
  * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
- * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ * series_subclass carries the coarse taxonomy for filtering, and the asset
+ * classes the series belongs to live in
+ * market_series_asset_classes -- a set rather than a column, because a
+ * pairwise correlation relates two classes at once.
  *
  * derivation_kind/derivation_config_id/derivation_config_version mark
  * whether this series is directly observed (the sentinel OBSERVED) or
@@ -50,7 +53,6 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "series_type" text not null,
     "metric" text not null,
     "qualifier" text not null,
-    "asset_class" text not null,
     "series_subclass" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
@@ -72,7 +74,6 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     check ("series_type" <> ''),
     check ("metric" <> ''),
     check ("qualifier" <> ''),
-    check ("asset_class" <> ''),
     check ("series_subclass" <> ''),
     check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0))
 );
@@ -102,9 +103,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate asset_class
-    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
 
     -- Validate series_subclass
     NEW.series_subclass := ores_refdata_validate_series_subclass_code_fn(NEW.tenant_id, NEW.series_subclass);

@@ -102,8 +102,8 @@ struct observation_lineage final {
 
     /**
      * @brief Tenor or compound surface identifier, matching the market_observation row's own
-     * point_id. Both are not null; the empty string is this column's default, and the only
-     * writer in the tree sets a real pillar.
+     * point_id. Both are not null; the empty string is this column's default, and the only writer
+     * in the tree sets a real pillar.
      */
     std::string point_id = "";
 

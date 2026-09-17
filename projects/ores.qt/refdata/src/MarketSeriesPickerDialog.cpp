@@ -45,9 +45,8 @@ namespace ores::qt {
 namespace {
 namespace md = ores::marketdata;
 
-/// The two refdata taxonomy tables the New Series form needs, fetched in one worker pass.
+/// The refdata taxonomy table the New Series form needs, fetched in one worker pass.
 struct Lookups {
-    std::vector<refdata::domain::asset_class_code> asset_classes;
     std::vector<refdata::domain::series_subclass_code> subclasses;
 };
 
@@ -125,14 +124,11 @@ QWidget* MarketSeriesPickerDialog::buildCreatePanel() {
     newMetricEdit_ = new QLineEdit(panel);
     newQualifierEdit_ = new QLineEdit(panel);
     newQualifierEdit_->setPlaceholderText(tr("Qualifier, e.g. USD/SOFR"));
-    // Both combos are filled from the refdata taxonomy tables once the dialog is up -- see
-    // loadLookups().
-    newAssetClassCombo_ = new QComboBox(panel);
+    // Filled from the refdata taxonomy table once the dialog is up -- see loadLookups().
     newSubclassCombo_ = new QComboBox(panel);
     row->addWidget(newSeriesTypeEdit_);
     row->addWidget(newMetricEdit_);
     row->addWidget(newQualifierEdit_);
-    row->addWidget(newAssetClassCombo_);
     row->addWidget(newSubclassCombo_);
     auto* createButton = new QPushButton(tr("Create && Select"), panel);
     connect(createButton, &QPushButton::clicked, this, &MarketSeriesPickerDialog::onCreateClicked);
@@ -152,13 +148,10 @@ void MarketSeriesPickerDialog::loadLookups() {
     QPointer<MarketSeriesPickerDialog> self = this;
     auto* cm = clientManager_;
     auto future = QtConcurrent::run([cm]() -> std::expected<Lookups, QString> {
-        auto classes = fetch_asset_class_codes(cm);
-        if (!classes)
-            return std::unexpected(classes.error());
         auto subclasses = fetch_series_subclass_codes(cm);
         if (!subclasses)
             return std::unexpected(subclasses.error());
-        return Lookups{std::move(*classes), std::move(*subclasses)};
+        return Lookups{std::move(*subclasses)};
     });
 
     using ResultType = std::expected<Lookups, QString>;
@@ -170,8 +163,7 @@ void MarketSeriesPickerDialog::loadLookups() {
             return;
         if (!result) {
             self->statusLabel_->setText(
-                self->tr("Failed to load the asset class and subclass lists: %1")
-                    .arg(result.error()));
+                self->tr("Failed to load the subclass list: %1").arg(result.error()));
             self->statusLabel_->setVisible(true);
             return;
         }
@@ -186,7 +178,6 @@ void MarketSeriesPickerDialog::loadLookups() {
             if (idx >= 0)
                 combo->setCurrentIndex(idx);
         };
-        fill(self->newAssetClassCombo_, result->asset_classes, "interest_rates");
         fill(self->newSubclassCombo_, result->subclasses, "yield");
     });
     watcher->setFuture(future);
@@ -305,10 +296,9 @@ void MarketSeriesPickerDialog::onCreateClicked() {
         statusLabel_->setVisible(true);
         return;
     }
-    const auto assetClass = newAssetClassCombo_->currentData().toString();
     const auto seriesSubclass = newSubclassCombo_->currentData().toString();
-    if (assetClass.isEmpty() || seriesSubclass.isEmpty()) {
-        statusLabel_->setText(tr("The asset class and subclass lists are not loaded yet."));
+    if (seriesSubclass.isEmpty()) {
+        statusLabel_->setText(tr("The subclass list is not loaded yet."));
         statusLabel_->setVisible(true);
         return;
     }
@@ -318,7 +308,6 @@ void MarketSeriesPickerDialog::onCreateClicked() {
     series.series_type = seriesType.toStdString();
     series.metric = metric.toStdString();
     series.qualifier = newQualifierEdit_->text().trimmed().toStdString();
-    series.asset_class = assetClass.toStdString();
     series.series_subclass = seriesSubclass.toStdString();
     series.derivation_kind = "OBSERVED";
 

@@ -22,9 +22,9 @@
  * Template: cpp_domain_type_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.marketdata.core/repository/market_series_mapper.hpp"
+#include "ores.marketdata.core/repository/market_series_asset_class_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/domain/market_series_asset_class_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -33,28 +33,15 @@ namespace ores::marketdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::market_series market_series_mapper::map(const market_series_entity& v) {
+domain::market_series_asset_class
+market_series_asset_class_mapper::map(const market_series_asset_class_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::market_series r;
+    domain::market_series_asset_class r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-
-    r.series_type = v.series_type;
-
-
-    r.metric = v.metric;
-
-
-    r.qualifier = v.qualifier;
-
-    r.series_subclass = v.series_subclass;
-    r.derivation_kind = v.derivation_kind;
-    r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
-    r.derivation_config_version = v.derivation_config_version;
+    r.tenant_id = v.tenant_id;
+    r.market_series_id = boost::lexical_cast<boost::uuids::uuid>(v.market_series_id.value());
+    r.asset_class_code = v.asset_class_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,28 +52,15 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
     return r;
 }
 
-market_series_entity market_series_mapper::map(const domain::market_series& v) {
+market_series_asset_class_entity
+market_series_asset_class_mapper::map(const domain::market_series_asset_class& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    market_series_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    market_series_asset_class_entity r;
+    r.market_series_id = boost::uuids::to_string(v.market_series_id);
+    r.tenant_id = v.tenant_id;
+    r.asset_class_code = v.asset_class_code;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-
-    r.series_type = v.series_type;
-
-
-    r.metric = v.metric;
-
-
-    r.qualifier = v.qualifier;
-
-    r.series_subclass = v.series_subclass;
-    r.derivation_kind = v.derivation_kind;
-    r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
-    r.derivation_config_version = v.derivation_config_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -96,15 +70,15 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
     return r;
 }
 
-std::vector<domain::market_series>
-market_series_mapper::map(const std::vector<market_series_entity>& v) {
-    return map_vector<market_series_entity, domain::market_series>(
+std::vector<domain::market_series_asset_class>
+market_series_asset_class_mapper::map(const std::vector<market_series_asset_class_entity>& v) {
+    return map_vector<market_series_asset_class_entity, domain::market_series_asset_class>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<market_series_entity>
-market_series_mapper::map(const std::vector<domain::market_series>& v) {
-    return map_vector<domain::market_series, market_series_entity>(
+std::vector<market_series_asset_class_entity>
+market_series_asset_class_mapper::map(const std::vector<domain::market_series_asset_class>& v) {
+    return map_vector<domain::market_series_asset_class, market_series_asset_class_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

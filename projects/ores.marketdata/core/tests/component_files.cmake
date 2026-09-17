@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "classification_series_classifier_tests.cpp"
     "main.cpp"
     "oresmd_oresmd_parser_tests.cpp"
     "oresmd_oresmd_projections_tests.cpp"

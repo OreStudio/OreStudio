@@ -22,8 +22,11 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/market_series_asset_class.hpp"
+#include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/fixing.hpp"
@@ -41,76 +44,31 @@
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
+#include <vector>
 
 namespace ores::marketdata::service {
 
 namespace {
 
-struct series_classification {
-    std::string asset_class;
-    std::string series_subclass;
-};
-
-// Maps ORE series_type → classification.
-series_classification classify_series_type(const std::string& series_type) {
-    static const std::map<std::string, series_classification> k_table = {
-        // FX
-        {"FX", {"fx", "spot"}},
-        {"FXFWD", {"fx", "forward"}},
-        {"FX_OPTION", {"fx", "volatility"}},
-        // Rates curves
-        {"DISCOUNT", {"interest_rates", "yield"}},
-        {"ZERO", {"interest_rates", "yield"}},
-        {"MM", {"interest_rates", "yield"}},
-        {"MM_FUTURE", {"interest_rates", "fra"}},
-        {"FRA", {"interest_rates", "fra"}},
-        {"IMM_FRA", {"interest_rates", "fra"}},
-        {"IR_SWAP", {"interest_rates", "yield"}},
-        // Rates spreads
-        {"BASIS_SWAP", {"interest_rates", "basis"}},
-        {"BMA_SWAP", {"interest_rates", "basis"}},
-        {"CC_BASIS_SWAP", {"interest_rates", "xccy"}},
-        {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy"}},
-        // Rates vols
-        {"SWAPTION", {"interest_rates", "volatility"}},
-        {"CAPFLOOR", {"interest_rates", "volatility"}},
-        // Credit
-        {"HAZARD_RATE", {"credit", "spread"}},
-        {"CDS", {"credit", "spread"}},
-        {"CDS_INDEX", {"credit", "index_credit"}},
-        {"INDEX_CDS_OPTION", {"credit", "index_credit"}},
-        {"RECOVERY_RATE", {"credit", "recovery"}},
-        // Equity
-        {"EQUITY", {"equity", "spot"}},
-        {"EQUITY_FWD", {"equity", "forward"}},
-        {"EQUITY_DIVIDEND", {"equity", "forward"}},
-        {"EQUITY_OPTION", {"equity", "volatility"}},
-        // Commodity
-        {"COMMODITY", {"commodity", "spot"}},
-        {"COMMODITY_FWD", {"commodity", "forward"}},
-        {"COMMODITY_OPTION", {"commodity", "volatility"}},
-        // Inflation
-        {"ZC_INFLATIONSWAP", {"inflation", "swap"}},
-        {"YY_INFLATIONSWAP", {"inflation", "swap"}},
-        {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
-        {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
-        {"SEASONALITY", {"inflation", "seasonality"}},
-        // Bond
-        {"BOND", {"bond", "price"}},
-        // Fixings (index series)
-        {"FIXING", {"interest_rates", "yield"}},
-    };
-
-    const auto it = k_table.find(series_type);
-    if (it != k_table.end())
-        return it->second;
-    throw std::invalid_argument("Unknown ORE series_type: " + series_type);
-}
-
 auto& import_helpers_lg() {
     using namespace ores::logging;
     static auto instance = make_logger("ores.marketdata.service.import_service");
     return instance;
+}
+
+// One junction row per asset class, carrying the series' own audit trail so
+// the two tables read as one change.
+domain::market_series_asset_class make_asset_class_row(const domain::market_series& series,
+                                                       const std::string& code) {
+    domain::market_series_asset_class row;
+    row.tenant_id = series.tenant_id.to_string();
+    row.market_series_id = series.id;
+    row.asset_class_code = code;
+    row.modified_by = series.modified_by;
+    row.performed_by = series.performed_by;
+    row.change_reason_code = series.change_reason_code;
+    row.change_commentary = series.change_commentary;
+    return row;
 }
 
 // Fetches every known currency pair from ores.refdata (paginated), for
@@ -166,6 +124,7 @@ import_service::import(const messaging::import_market_data_request& req) {
     messaging::import_market_data_response resp;
     boost::uuids::random_generator gen;
     repository::market_series_repository series_repo;
+    repository::market_series_asset_class_repository series_asset_class_repo(ctx_);
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
 
@@ -190,7 +149,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         }
 
         // Create a new series.
-        const auto cl = classify_series_type(series_type);
+        const auto cl = core::series_classifier::classify(series_type, metric, qualifier);
         domain::market_series s;
         s.id = gen();
         s.tenant_id = ctx_.tenant_id();
@@ -198,7 +157,6 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.series_type = series_type;
         s.metric = metric;
         s.qualifier = qualifier;
-        s.asset_class = cl.asset_class;
         s.series_subclass = cl.series_subclass;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();
@@ -206,6 +164,13 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::string(dq::domain::change_reason_constants::codes::external_data_import);
         s.change_commentary = "Imported from ORE market data file";
         series_repo.write(ctx_, s);
+
+        std::vector<domain::market_series_asset_class> classes;
+        classes.reserve(cl.asset_classes.size());
+        for (const auto& code : cl.asset_classes)
+            classes.push_back(make_asset_class_row(s, code));
+        if (!classes.empty())
+            series_asset_class_repo.write(classes);
 
         series_cache.emplace(key, s.id);
         ++resp.series_count;

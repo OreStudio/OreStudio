@@ -22,10 +22,12 @@
 #include "ores.marketdata.api/domain/ir_curve_tick.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -353,6 +355,7 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
 
         const std::string ore_key = series_type + "/" + metric + "/" + qualifier;
         repository::market_series_repository series_repo;
+        repository::market_series_asset_class_repository series_asset_class_repo(tenant_ctx);
         auto existing = series_repo.read_latest_by_type(
             tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));
         if (existing.empty()) {
@@ -365,13 +368,23 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
             series.series_type = series_type;
             series.metric = metric;
             series.qualifier = qualifier;
-            series.asset_class = asset_class;
             series.series_subclass = series_subclass;
             series.modified_by = ctx.service_account();
             series.performed_by = ctx.service_account();
             series.change_reason_code = "system.initial_load";
             series.change_commentary = ore_key + " synthetic feed auto-created";
             series_repo.write(tenant_ctx, series);
+
+            domain::market_series_asset_class series_class;
+            series_class.tenant_id = series.tenant_id.to_string();
+            series_class.market_series_id = series.id;
+            series_class.asset_class_code = asset_class;
+            series_class.modified_by = series.modified_by;
+            series_class.performed_by = series.performed_by;
+            series_class.change_reason_code = series.change_reason_code;
+            series_class.change_commentary = series.change_commentary;
+            series_asset_class_repo.write(series_class);
+
             existing.push_back(std::move(series));
         }
 

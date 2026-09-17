@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_entity.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_ENTITY_HPP
-#define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_ENTITY_HPP
+#ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_ASSET_CLASS_ENTITY_HPP
+#define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_ASSET_CLASS_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -36,30 +36,18 @@ namespace ores::marketdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a market series in the database.
+ * @brief Represents a market series asset class in the database.
+ *
+ * Junction table with composite primary key (market_series_id, asset_class_code, valid_from).
  */
-struct market_series_entity {
+struct market_series_asset_class_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_marketdata_market_series_tbl";
+    constexpr static const char* tablename = "ores_marketdata_market_series_asset_classes_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> market_series_id;
     std::string tenant_id;
+    std::string asset_class_code;
     int version = 0;
-    std::string party_id;
-
-
-    std::string series_type;
-
-
-    std::string metric;
-
-
-    std::string qualifier;
-
-    std::string series_subclass;
-    std::string derivation_kind = "OBSERVED";
-    std::string derivation_config_id;
-    int derivation_config_version = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -68,7 +56,7 @@ struct market_series_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const market_series_entity& v);
+std::ostream& operator<<(std::ostream& s, const market_series_asset_class_entity& v);
 
 }
 

@@ -39,7 +39,6 @@ render_market_series_fields(const domain::market_series& v) {
     fields.push_back({.name = "Series Type", .value = v.series_type});
     fields.push_back({.name = "Metric", .value = v.metric});
     fields.push_back({.name = "Qualifier", .value = v.qualifier});
-    fields.push_back({.name = "Asset Class", .value = v.asset_class});
     fields.push_back({.name = "Series Subclass", .value = v.series_subclass});
     fields.push_back({.name = "Derivation Kind", .value = v.derivation_kind});
     fields.push_back(

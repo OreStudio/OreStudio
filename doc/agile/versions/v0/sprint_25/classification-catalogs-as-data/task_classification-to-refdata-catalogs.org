@@ -116,7 +116,12 @@ What shipped:
 - =refdata.asset_class_code= holds the seven-class taxonomy. =rates= became =interest_rates= and =cross_asset= is gone. The fourteen =cross_asset= instrument codes moved onto their real classes. The create, drop and populate SQL changed, and the RLS policy script lists the new table.
 - =refdata.series_subclass_code= ships end to end. The set is the modeling org, the generated domain type with JSON and table IO, the generator, the table, the repository, the entity, the mapper, the service, the protocol, the handler, the registrar, the history field mapper, the Qt client model, the controller, the detail dialog, the MDI window, and an eventing integration test.
 - The =ores.marketdata= C++ enums =asset_class= and =series_subclass= are deleted. The domain types carry the code string.
-- The Qt market series grid and the refdata dialogs read labels from the catalog tables through the lookup fetcher.
+- The refdata dialogs read labels from the catalog tables through the
+  lookup fetcher. The market series grid does not:
+  =ClientMarketSeriesModel::data= returns the raw =asset_class= and
+  =series_subclass= codes, so the grid shows the code and not the catalog
+  =name=. Corrected on review; this bullet claimed the grid read labels,
+  and =ores.qt.mktdata= carries no lookup fetcher at all.
 - Market data validates its classification columns against the catalogs through trigger functions that raise SQLSTATE 23503. =market_series= validates both columns, =feed_bindings= validates =asset_class=, and =refdata.instrument_code= validates =asset_class= where it is set.
 
 Acceptance:

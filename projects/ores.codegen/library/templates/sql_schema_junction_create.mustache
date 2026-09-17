@@ -155,6 +155,11 @@ begin
 
 {{/nullable}}
 {{/junction.foreign_keys}}
+{{#junction.insert_trigger.validations}}
+    -- Validate {{column}}
+    new.{{column}} := {{validation_function}}({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.{{column}});
+
+{{/junction.insert_trigger.validations}}
     return new;
 end;
 $$ language plpgsql;

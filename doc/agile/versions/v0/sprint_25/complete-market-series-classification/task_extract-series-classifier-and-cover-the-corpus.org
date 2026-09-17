@@ -30,12 +30,12 @@ ORE examples carry classifies. Add a corpus-wide test that walks
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | The point model is done; the classifier extraction is next. |
-| Waiting on   | Nothing.                               |
-| Next         | Wire =series_classifier= into =import_service= and write the corpus test. |
-| Last touched | 2026-09-17                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The work is verified.         |
+| Next         | Nothing. |
+| Last touched | 2026-09-18                               |
 
 * Acceptance
 
@@ -129,9 +129,13 @@ coherent on its own.
 *Three plan corrections made while implementing Unit 2.*
 
 The plan claimed every subclass code the corpus needs already exists in
-=refdata_series_subclass_codes_populate.sql=. It does not. Two codes
-were added: =prepayment= for =CPR=, and =transition_probability= for
-=RATING=. The catalog held 15 codes; it holds 17 now.
+=refdata_series_subclass_codes_populate.sql=. It does not. Three codes
+were added: =prepayment= for =CPR=, =transition_probability= for
+=RATING=, and =index_fixing=, which the classifier emits for =FIXING=
+and the catalog did not carry. The catalog held 15 codes; it holds 18
+now. Three descriptions were amended in the same pass, =yield=,
+=capfloor= and =seasonality=, each of which claimed a scope broader than
+the code it described.
 
 Four of the eight unmapped types take a more accurate subclass than the
 plan recorded. The plan grouped =RATING=, =INDEX_CDS_TRANCHE= and =CPR=
@@ -161,13 +165,22 @@ accessor that lists the types it knows, and adding public API purely so
 a test can read it is the wrong trade.
 
 The test asserts the production path instead: every distinct key the
-corpus carries is put through =decompose_key= and then =try_classify=,
-and both must answer. That is the invariant that matters, because a key
-that decomposes but does not classify aborts the whole import file.
-Whether a registry type absent from the corpus is also absent from the
-classifier is left uncovered; the corpus carries 42 of the classifier's
-43 types, so the gap is narrow, and the deferred registry entries would
-close it.
+corpus carries must classify, read from the =series_type=, =metric= and
+=qualifier= the parser already split onto =market_datum=. That is the
+invariant that matters, because a key that parses but does not classify
+aborts the whole import file. The decomposed fields are used rather than
+a second =decompose_key= call, because the parser has already paid for
+that work. Whether a registry type absent from the corpus is also absent
+from the classifier is left uncovered; the corpus carries 42 of the
+classifier's 43 types, so the gap is narrow, and the deferred registry
+entries would close it.
+
+The walk is viable only because =decompose_key= folds an unrecognised
+series type into the qualifier instead of throwing, which its own
+comment records as deliberate: an unknown type must still round-trip.
+Without that, the eight unregistered types would abort their files at
+parse time and the corpus would silently shrink to the 35 registered
+ones, which is what a throwing registry would have done.
 
 *The junction org binds its profile under =* Flags=, not in front
 matter.* The first draft copied the four =ores.refdata= junctions, which
@@ -216,6 +229,46 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =FIXING= carries a rule the corpus test cannot reach, so nothing verifies it | =series_classifier.cpp= | Recorded | The corpus holds no =FIXING/= series key. The 246 =<Fixing...>= matches in =external/ore/examples= are all =FixingDays= and =FixingAmount= trade terms. The rule serves the fixing import path, and the =index_fixing= catalogue code exists for it, so it stays. It is the one rule the sweep proves nothing about. |
+| 2 | =CPR= classifies as =bond=, where the plan said =credit= | =series_classifier.cpp= | Accepted as a record gap | The subclass correction to =prepayment= is in =* Notes=; the class change from =credit= to =bond= is not. The corpus key is =CPR/RATE/ISIN:XS0983610930=, a bond identifier, so =bond= is the truer answer and the code stands. Only the record was short. |
 
 * Result
+
+The classifier is out of the import service and the corpus is covered.
+
+*Unit 1.* =series_classification= and the ORE-vocabulary table live in
+=ores.marketdata.core/classification/series_classifier.{hpp,cpp}=, which
+a test reaches with no database, NATS or import pipeline. The signature
+is the =market_series= natural key, =(series_type, metric, qualifier)=,
+because a correlation needs the qualifier. =import_service= keeps only
+its I/O work: build the key, classify, then write the series row and the
+junction rows.
+
+*Unit 2.* The vocabulary covers every series type the corpus carries.
+The eight that threw now classify, and the unit took the subclass
+catalog from 15 codes to 18 with three amended descriptions. The
+correlation rule and its operand prefixes are written down in
+=doc/knowledge/domain/asset_classes.org=, next to the ruling it serves.
+
+*Unit 3.* =classification_series_classifier_tests.cpp= walks
+=external/ore/examples= rather than a hand-written file list. It pushes
+every distinct corpus key through =try_classify= and asserts the failure
+list is empty. It passed in the green suite, so every key classifies.
+
+*The point model shipped ahead of this task*, as commit =002d24bb20=.
+=is_scalar= was three things wearing one name and is now gone: the
+=market_series= column is deleted, the registry flag is renamed
+=has_point_dimension=, and =default_point_for= answers the single point
+of a type whose keys carry none. =market_observation.point_id= is not
+null, so every observation names a point.
+
+*Verification.* The build is green at 100% with no errors and no
+warnings. The suite passes 73 of 73. =ores.marketdata.core.tests= passed
+697 assertions in 191 cases, the four corpus cases among them.
+
+*Not covered.* The registry has no entry for the eight types. Each
+distinct key of those types becomes its own series with one observation,
+because =decompose_key= folds an unrecognised type's whole remainder
+into the qualifier and carries no point. That is a modelling weakness
+rather than a correctness fault, and the follow-up task in this story
+covers it.

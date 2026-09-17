@@ -8,7 +8,7 @@
 #+filetags: :entity-classification-drift-redundancy:sprint_25:v0:
 #+owner: marco
 #+branch: feature/remove-profile-redundant-properties
-#+pr:
+#+pr: 2089
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2089][#2089]] | [codegen] Remove model properties the bound profile already fixes |
 
 * Review
 

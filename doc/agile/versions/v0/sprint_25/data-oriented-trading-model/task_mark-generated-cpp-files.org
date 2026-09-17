@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: FF378E87-BDF9-412A-A3CC-B58EC61296B4
+:END:
+#+title: Task: Mark generated C++ files as generated
+#+description: Generated C++ carries no marker where the generated SQL names its template, so nothing tells a reader that a file is codegen output and a generated file gets hand-edited.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/mark-generated-cpp-files
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generated C++ file says it is generated and names the template that produced it, as the generated SQL already does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- Every generated C++ header and implementation carries the AUTO-GENERATED marker naming its template.
+- The marker is emitted at the render seam, so no template needs editing and a new C++ template gets it for free.
+- The marker reaches no output that is not C++, even where the template carries the C++ licence.
+- The nine drift-free components regenerate clean, and the drift gate passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

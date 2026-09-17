@@ -100,6 +100,7 @@ component.
 | [[id:7B23DB0F-243D-4101-81C8-9AE01AB00FB2][Collapse the instrument identity into the trade]] | BACKLOG | | | A trade and its instrument point at each other through two nullable soft links with no referential integrity, where ORE has a single trade id; the third identity is why fields drift between the trade and the security. |
 | [[id:6FE5251D-C860-41F7-8F1E-9F5825F751FF][Document the product identity scheme]] | DONE | 2026-09-12 | 2026-09-16 | There is no document explaining the trade envelope against the product, the trade type catalogue is behind v17, and the product index links through a hardcoded host address. |
 | [[id:F628C22E-E488-43EF-8B0C-9C6FA5893E9A][Add a product short code to trade type]] | BACKLOG | | | Add a short mnemonic code to trade_type, mint one for each of the 119 product types, and correct the identifiers table on every product knowledge page. |
+| [[id:FF378E87-BDF9-412A-A3CC-B58EC61296B4][Mark generated C++ files as generated]] | STARTED | 2026-09-17 | | Generated C++ carries no marker where the generated SQL names its template, so nothing tells a reader that a file is codegen output and a generated file gets hand-edited. |
 
 * Decisions
 

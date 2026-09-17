@@ -32,11 +32,13 @@ The full template source. Edit here and re-tangle with
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{^has_domain_groups}}
 {{^has_identity_group}}
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/has_tenant_id}}
 {{/has_identity_group}}
+{{/has_domain_groups}}
 #include <string_view>
 
 namespace ores::{{component}}::domain {
@@ -49,6 +51,12 @@ namespace ores::{{component}}::domain {
 {{/description_lines}}
  */
 struct {{entity_singular}} final {
+{{#has_domain_groups}}
+{{#domain_groups}}
+    {{{type_qualified}}} {{member}};
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
 {{#has_identity_group}}
     {{identity_group_type}} identity;
 
@@ -146,6 +154,7 @@ struct {{entity_singular}} final {
      */
     std::chrono::system_clock::time_point recorded_at;
 {{/has_audit_group}}
+{{/has_domain_groups}}
 };
 
 /**

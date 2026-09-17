@@ -17,6 +17,11 @@ Temporal trade record. Each lifecycle event (New, Amendment, Novation,
 etc.) creates a new temporal row for the same trade id. The internal party
 is derived from book_id via books.party_id.
 
+Composed of five sub-structs to keep each reflected struct small and avoid
+MSVC C1202 (recursive template dependency context too complex) in rfl's
+O(n²) field-uniqueness check.  The JSON wire format is nested:
+{"identity":{...}, "parties":{...}, ...}.
+
 * Flags
 :PROPERTIES:
 :schema:           public
@@ -374,6 +379,22 @@ The =name= column carries the stem: the template renders it as
 :PROPERTIES:
 :subcomponent:    api
 :END:
+
+** Domain groups
+
+The reflected struct is split across five field groups to keep each one
+under the MSVC C1202 threshold, which rfl's field-uniqueness check trips
+on a struct this wide. The split is also the wire format: the JSON is
+nested as ={"identity":{...},"parties":{...},...}=, so the member order
+below is the order the wire carries.
+
+| member         | field_group                       |
+|----------------+-----------------------------------|
+| identity       | ores.trading.trade_identity       |
+| parties        | ores.trading.trade_parties        |
+| classification | ores.trading.trade_classification |
+| lifecycle      | ores.trading.trade_lifecycle      |
+| audit          | ores.trading.trade_audit          |
 
 ** Repository
 :PROPERTIES:

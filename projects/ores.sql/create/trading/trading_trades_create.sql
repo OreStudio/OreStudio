@@ -27,6 +27,11 @@
  * Temporal trade record. Each lifecycle event (New, Amendment, Novation,
  * etc.) creates a new temporal row for the same trade id. The internal party
  * is derived from book_id via books.party_id.
+ *
+ * Composed of five sub-structs to keep each reflected struct small and avoid
+ * MSVC C1202 (recursive template dependency context too complex) in rfl's
+ * O(n²) field-uniqueness check.  The JSON wire format is nested:
+ * {"identity":{...}, "parties":{...}, ...}.
  */
 
 create table if not exists "ores_trading_trades_tbl" (

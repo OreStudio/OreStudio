@@ -1419,6 +1419,20 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         if conv:
             for k, v in conv.properties.items():
                 cpp_out[k.lower()] = _parse_typed(v)
+        # Domain groups: the N-way generalisation of the
+        # domain_identity_group/domain_audit_group pair. An entity whose
+        # reflected struct must stay under the MSVC C1202 threshold splits
+        # its columns across several field groups, and two slots cannot
+        # express more than two. Each row names the member and the field
+        # group model supplying its type; row order is member order, which
+        # is also the wire order.
+        dg = _section(cpp_section, "Domain groups")
+        if dg and dg.tables:
+            rows = _parse_org_table_rows(dg)
+            de["domain_groups"] = [
+                {"member": r["member"], "field_group": r["field_group"]}
+                for r in rows if r.get("member") and r.get("field_group")
+            ]
         td = _section(cpp_section, "Table display")
         if td:
             cpp_out["table_display"] = _table_display(td)
@@ -1703,12 +1717,45 @@ def load_org_model(path: Path | str) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     model = org_document_to_model(doc)
+    _resolve_domain_group_fields(model, Path(path))
     errors = validate_model(model)
     if errors:
         raise ValueError(
             f"Validation errors in {path}:\n  " + "\n  ".join(errors)
         )
     return model
+
+
+def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
+    """Attach each domain group's field types to the entity.
+
+    A grouped entity reaches its columns through a group, so its own
+    ``columns`` list says nothing about them. Anything keyed on a
+    column's C++ type -- the table-display converter's choice between
+    streaming a value, wrapping an optional, or stringifying a uuid --
+    would otherwise see no type at all and emit code that does not
+    compile. Read each group's field group model, which sits beside this
+    one, and record the member-qualified name and type of every field.
+    """
+    de = (model or {}).get("domain_entity") or {}
+    groups = de.get("domain_groups") or []
+    if not groups:
+        return
+    resolved: list[dict[str, str]] = []
+    for group in groups:
+        fg_path = path.with_name(f"{group['field_group']}_field_group.org")
+        if not fg_path.exists():
+            raise ValueError(
+                f"{path}: domain group '{group['member']}' names field group "
+                f"'{group['field_group']}', but {fg_path.name} does not exist"
+            )
+        fg = load_org_field_group_model(fg_path).get("field_group", {})
+        for field in fg.get("fields", []) or []:
+            resolved.append({
+                "name": f"{group['member']}.{field['name']}",
+                "cpp_type": field.get("cpp_type", ""),
+            })
+    de["domain_group_fields"] = resolved
 
 
 def _fk_side_from_section(node: OrgNode) -> dict[str, Any]:

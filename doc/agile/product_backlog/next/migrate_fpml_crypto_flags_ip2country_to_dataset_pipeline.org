@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 44B275EC-DC37-4961-80EF-9D79D4C186FB
+:END:
+#+title: Migrate FPML, crypto, flags and ip2country onto the org dataset pipeline
+#+description: Bring the four remaining populate pipelines onto the ores.codegen.dataset archetypes now that the populate archetypes are generic.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:fpml:dataset:pipeline:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move the crypto, flags, ip2country and FPML populate SQL onto the
+org dataset pipeline, now that the ores.sql.populate archetypes are
+generic.
+
+Four datasets still come from the old pipeline:
+=sql_dataset_refdata.mustache=, =sql_populate_refdata.mustache=, and
+the bespoke =images_generate_sql.py= and =fpml_parser.py= generators.
+None of them reads a dataset model.
+
+* Why
+
+The generic pipeline has no consumers, so nothing exercises it. Every
+dataset name in the archetypes now comes from the dataset model
+itself ({{model_name}}, {{flags_dataset}}), which was proven by
+rendering a synthetic dataset end to end. Moving the four live
+datasets across gives the pipeline its real users back and lets the
+old templates and generators be deleted.
+
+* Work
+
+1. Give each dataset a =dataset_overview.org= with
+   =#+type: ores.codegen.dataset=, =#+name:=, =#+prefix:= and a
+   =:ores.sql.populate.enabled: true= drawer.
+2. Translate each =manifest.json= into the payload the archetypes read
+   (=catalogs.json=, =datasets.json=, =tags.json=,
+   =methodologies.json=, =dataset_dependencies.json=). The field names
+   differ: =subject_area= vs =subject_area_name=, =catalog= vs
+   =catalog_name=, =coding_scheme= vs =coding_scheme_code=,
+   =source_system= vs =source_system_id=, =license= vs
+   =license_info=, =artefact_type= vs =asset_type=.
+3. Add the missing archetypes: image artefacts (crypto icons, flags),
+   the ip2country artefact plus its TSV import, and FPML per-entity
+   refdata (22 entities, dataset plus artefact each) with coding
+   schemes.
+4. Delete the old templates, the four generators and the stale
+   =ores.codegen/models/= references once the new output is
+   byte-identical.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.sql.populate.*.org= —
+  the generic archetypes.
+- [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] — the task that
+  made the archetypes generic.
+
+* See also
+
+- [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]]

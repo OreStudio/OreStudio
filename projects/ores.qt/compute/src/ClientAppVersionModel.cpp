@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_qt_client_model.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.qt/ClientAppVersionModel.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"

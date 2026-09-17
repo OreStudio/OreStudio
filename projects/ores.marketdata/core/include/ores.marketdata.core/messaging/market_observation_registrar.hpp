@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_CORE_MESSAGING_MARKET_OBSERVATION_REGISTRAR_HPP
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_OBSERVATION_REGISTRAR_HPP
 

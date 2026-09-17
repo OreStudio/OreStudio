@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.compute.api/generators/app_version_platform_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include <boost/uuid/uuid_io.hpp>

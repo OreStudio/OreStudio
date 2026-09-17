@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_field_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_CORE_PRESENTATION_OBSERVATION_LINEAGE_HISTORY_FIELD_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_PRESENTATION_OBSERVATION_LINEAGE_HISTORY_FIELD_MAPPER_HPP
 

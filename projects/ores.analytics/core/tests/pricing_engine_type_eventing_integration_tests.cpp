@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_integration_test.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/eventing/pricing_engine_type_changed_event.hpp"

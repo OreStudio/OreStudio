@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_changed_event.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SYNTHETIC_API_EVENTING_FOLDER_CHANGED_EVENT_HPP
 #define ORES_SYNTHETIC_API_EVENTING_FOLDER_CHANGED_EVENT_HPP
 

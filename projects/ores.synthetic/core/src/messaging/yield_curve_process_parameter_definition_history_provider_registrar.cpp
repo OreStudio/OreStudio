@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_provider_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_history_provider_registrar.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.synthetic.core/presentation/yield_curve_process_parameter_definition_history_field_mapper.hpp"

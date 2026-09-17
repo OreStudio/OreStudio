@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_qt_controller.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.qt/PricingEngineTypeController.hpp"
 #include "ores.analytics.api/eventing/pricing_engine_type_changed_event.hpp"
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"

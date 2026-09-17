@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_registrar.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_handler.hpp"

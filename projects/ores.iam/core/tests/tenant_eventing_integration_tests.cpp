@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_integration_test.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.database/domain/context.hpp"
 // System-scoped entity (see the SQL flags): rows belong to the system
 // tenant, so the write context below is stamped system and needs the

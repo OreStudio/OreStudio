@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_COMPUTE_API_DOMAIN_WORKUNIT_TABLE_HPP
 #define ORES_COMPUTE_API_DOMAIN_WORKUNIT_TABLE_HPP
 

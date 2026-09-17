@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_event_cache.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
 #define ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
 

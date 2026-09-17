@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_qt_client_model.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_QT_CLIENT_IR_CURVE_GENERATION_CONFIG_MODEL_HPP
 #define ORES_QT_CLIENT_IR_CURVE_GENERATION_CONFIG_MODEL_HPP
 

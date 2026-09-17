@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_qt_controller.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.qt/AppController.hpp"
 #include "ores.compute.api/eventing/app_changed_event.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"

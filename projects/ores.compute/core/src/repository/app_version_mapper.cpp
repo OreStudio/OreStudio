@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.compute.core/repository/app_version_mapper.hpp"
 #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"

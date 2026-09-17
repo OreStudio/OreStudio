@@ -1130,6 +1130,20 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Series Subclass Codes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_series_subclass_codes_tbl enable row level security;
+
+create policy series_subclass_codes_tbl_tenant_isolation_policy
+on ores_refdata_series_subclass_codes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- IR Curve Bootstrap Configs (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ir_curve_bootstrap_configs_tbl enable row level security;

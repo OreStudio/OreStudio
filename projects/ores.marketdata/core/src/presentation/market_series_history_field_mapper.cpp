@@ -26,7 +26,6 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 
 namespace ores::marketdata::presentation {
 
@@ -40,8 +39,8 @@ render_market_series_fields(const domain::market_series& v) {
     fields.push_back({.name = "Series Type", .value = v.series_type});
     fields.push_back({.name = "Metric", .value = v.metric});
     fields.push_back({.name = "Qualifier", .value = v.qualifier});
-    fields.push_back({.name = "Asset Class", .value = rfl::enum_to_string(v.asset_class)});
-    fields.push_back({.name = "Series Subclass", .value = rfl::enum_to_string(v.series_subclass)});
+    fields.push_back({.name = "Asset Class", .value = v.asset_class});
+    fields.push_back({.name = "Series Subclass", .value = v.series_subclass});
     fields.push_back({.name = "Is Scalar", .value = v.is_scalar ? "true" : "false"});
     fields.push_back({.name = "Derivation Kind", .value = v.derivation_kind});
     fields.push_back(

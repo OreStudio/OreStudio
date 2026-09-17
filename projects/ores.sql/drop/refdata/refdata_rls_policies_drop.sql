@@ -153,6 +153,7 @@ drop policy if exists monetary_natures_tenant_isolation_policy on "ores_refdata_
 -- Tenor reference data
 drop policy if exists instrument_codes_tbl_tenant_isolation_policy on ores_refdata_instrument_codes_tbl;
 drop policy if exists asset_class_codes_tbl_tenant_isolation_policy on ores_refdata_asset_class_codes_tbl;
+drop policy if exists series_subclass_codes_tbl_tenant_isolation_policy on ores_refdata_series_subclass_codes_tbl;
 drop policy if exists tenor_anchors_tbl_tenant_isolation_policy on ores_refdata_tenor_anchors_tbl;
 drop policy if exists tenor_kinds_tbl_tenant_isolation_policy on ores_refdata_tenor_kinds_tbl;
 drop policy if exists tenor_units_tbl_tenant_isolation_policy on ores_refdata_tenor_units_tbl;

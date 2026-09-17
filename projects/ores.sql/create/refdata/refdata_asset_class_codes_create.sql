@@ -25,13 +25,12 @@
  * Asset Class Code Table
  *
  * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. Mirrors
- * ores::marketdata::domain::asset_class (a plain, non-persisted C++
- * enum used for market-series filtering) as a managed, persisted
- * refdata code table, so other entities (instrument_code, and
- * anything else needing to classify by asset class) can FK-validate
- * against it instead of duplicating a hardcoded string list. Managed by
- * the system tenant, like other shared code tables.
+ * series, instrument, or curve belongs to. This table is the single
+ * source of truth for the taxonomy. Code carries no parallel
+ * enumeration, because the list is runtime-managed and no compiled list
+ * can be exhaustive over it. Other entities (instrument_code,
+ * market_series, feed_binding) FK-validate against this table.
+ * Managed by the system tenant, like other shared code tables.
  */
 
 create table if not exists "ores_refdata_asset_class_codes_tbl" (

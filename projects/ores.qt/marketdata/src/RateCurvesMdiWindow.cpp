@@ -18,8 +18,6 @@
  *
  */
 #include "ores.qt/RateCurvesMdiWindow.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -153,16 +151,10 @@ void RateCurvesMdiWindow::reload() {
 
         self->rows_.clear();
         for (const auto& s : result.series) {
-            if (s.asset_class != md::asset_class::rates || s.is_scalar)
+            if (s.asset_class != "interest_rates" || s.is_scalar)
                 continue;
-            self->rows_.push_back({s.series_type,
-                                   s.metric,
-                                   s.qualifier,
-                                   s.series_subclass == md::series_subclass::yield ? "yield" :
-                                   s.series_subclass == md::series_subclass::basis ? "basis" :
-                                   s.series_subclass == md::series_subclass::fra   ? "fra" :
-                                   s.series_subclass == md::series_subclass::xccy  ? "xccy" :
-                                                                                     "other"});
+            self->rows_.push_back(
+                {s.series_type, s.metric, s.qualifier, s.series_subclass});
         }
 
         const bool empty = self->rows_.empty();

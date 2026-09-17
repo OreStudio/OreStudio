@@ -59,21 +59,21 @@ series_classification classify_series_type(const std::string& series_type) {
         {"FXFWD", {"fx", "forward", false}},
         {"FX_OPTION", {"fx", "volatility", false}},
         // Rates curves
-        {"DISCOUNT", {"rates", "yield", false}},
-        {"ZERO", {"rates", "yield", false}},
-        {"MM", {"rates", "yield", false}},
-        {"MM_FUTURE", {"rates", "fra", false}},
-        {"FRA", {"rates", "fra", false}},
-        {"IMM_FRA", {"rates", "fra", false}},
-        {"IR_SWAP", {"rates", "yield", false}},
+        {"DISCOUNT", {"interest_rates", "yield", false}},
+        {"ZERO", {"interest_rates", "yield", false}},
+        {"MM", {"interest_rates", "yield", false}},
+        {"MM_FUTURE", {"interest_rates", "fra", false}},
+        {"FRA", {"interest_rates", "fra", false}},
+        {"IMM_FRA", {"interest_rates", "fra", false}},
+        {"IR_SWAP", {"interest_rates", "yield", false}},
         // Rates spreads
-        {"BASIS_SWAP", {"rates", "basis", false}},
-        {"BMA_SWAP", {"rates", "basis", false}},
-        {"CC_BASIS_SWAP", {"rates", "xccy", false}},
-        {"CC_FIX_FLOAT_SWAP", {"rates", "xccy", false}},
+        {"BASIS_SWAP", {"interest_rates", "basis", false}},
+        {"BMA_SWAP", {"interest_rates", "basis", false}},
+        {"CC_BASIS_SWAP", {"interest_rates", "xccy", false}},
+        {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy", false}},
         // Rates vols
-        {"SWAPTION", {"rates", "volatility", false}},
-        {"CAPFLOOR", {"rates", "volatility", false}},
+        {"SWAPTION", {"interest_rates", "volatility", false}},
+        {"CAPFLOOR", {"interest_rates", "volatility", false}},
         // Credit
         {"HAZARD_RATE", {"credit", "spread", false}},
         {"CDS", {"credit", "spread", false}},
@@ -97,10 +97,8 @@ series_classification classify_series_type(const std::string& series_type) {
         {"SEASONALITY", {"inflation", "seasonality", false}},
         // Bond
         {"BOND", {"bond", "price", false}},
-        // Cross-asset
-        {"CORRELATION", {"cross_asset", "correlation", true}},
         // Fixings (index series)
-        {"FIXING", {"rates", "yield", true}},
+        {"FIXING", {"interest_rates", "yield", true}},
     };
 
     const auto it = k_table.find(series_type);
@@ -204,9 +202,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.series_type = series_type;
         s.metric = metric;
         s.qualifier = qualifier;
-        s.asset_class = rfl::string_to_enum<domain::asset_class>(cl.asset_class).value();
-        s.series_subclass =
-            rfl::string_to_enum<domain::series_subclass>(cl.series_subclass).value();
+        s.asset_class = cl.asset_class;
+        s.series_subclass = cl.series_subclass;
         s.is_scalar = cl.is_scalar;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();

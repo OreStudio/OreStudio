@@ -129,7 +129,10 @@
 \ir ./refdata_asset_class_codes_notify_trigger_drop.sql
 \ir ./refdata_asset_class_codes_drop.sql
 
--- Derivation kinds: after marketdata's market_series (which references it via validation function).
+-- Derivation kinds and series subclass codes: after marketdata's
+-- market_series (which references them via validation function).
+\ir ./refdata_series_subclass_codes_notify_trigger_drop.sql
+\ir ./refdata_series_subclass_codes_drop.sql
 \ir ./refdata_derivation_kinds_notify_trigger_drop.sql
 \ir ./refdata_derivation_kinds_drop.sql
 

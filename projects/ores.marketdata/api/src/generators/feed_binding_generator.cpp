@@ -50,6 +50,11 @@ domain::feed_binding generate_synthetic_feed_binding(utility::generation::genera
     r.party_id = ctx.generate_uuid();
     r.ore_key = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.source_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.asset_class = [idx] {
+        static constexpr std::string_view classes[] = {
+            "fx", "interest_rates", "credit", "equity", "commodity", "inflation", "bond"};
+        return std::string(classes[static_cast<std::size_t>(idx) % std::size(classes)]);
+    }();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

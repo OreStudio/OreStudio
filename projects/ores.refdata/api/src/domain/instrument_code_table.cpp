@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<instrument_code>& v) {
           << "Curve Role" << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ic : v) {
-        table << ic.code << ic.name << ic.description << ic.asset_class
+        table << ic.code << ic.name << ic.description << opt_str(ic.asset_class)
               << opt_str(ic.ore_trade_type) << ic.curve_role << ic.display_order << ic.modified_by
               << ic.version << fort::endr;
     }

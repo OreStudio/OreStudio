@@ -87,6 +87,9 @@ private slots:
 
 private:
     QWidget* buildCreatePanel();
+    /// Fills the New Series combos from the refdata taxonomy tables -- the database is the
+    /// list of legal codes, so neither combo is populated from a compiled-in list.
+    void loadLookups();
     void populateTable();
     static QString display_label(const marketdata::domain::market_series& s);
     /// Sets the inline status label to @p shortMessage (for in-context visibility) and pops a

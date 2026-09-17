@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 643DE9E2-B105-4463-95DC-29D7907C00A3
+:END:
+#+title: Task: Move classification into refdata catalogs
+#+description: Delete the ores.marketdata asset_class and series_subclass C++ enums, carry the codes as data end to end, and add the series_subclass_code refdata catalog the taxonomy needs.
+#+type: task
+#+level: s1
+#+filetags: :classification-catalogs-as-data:sprint_25:v0:
+#+owner: marco
+#+branch: feature/classification-to-refdata-catalogs
+#+pr: 2092
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:623FD704-50F8-4FA8-8EED-7E885797B48C][Classification catalogs as data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the database the ground truth for classification. The ores.marketdata asset_class and series_subclass C++ enums go away, consumers carry the code string, and both vocabularies live in refdata catalogs that the UI reads for labels.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:623FD704-50F8-4FA8-8EED-7E885797B48C][Classification catalogs as data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- refdata.asset_class_code holds the seven-class taxonomy from doc/knowledge/domain/asset_classes.org; instrument_code rows are reclassified off cross_asset and the populate script matches.
+- refdata.series_subclass_code ships end to end (table, SQL, domain, repository, service, protocol, registrar, history mapper, Qt client) and is populated.
+- No C++ enum in ores.marketdata mirrors either catalog; consumers carry the code string.
+- Qt reads asset class and subclass labels from the catalog tables, not from compiled-in names.
+- Full local build clean and the full ctest suite green.
+- Codegen drift is zero for ores.refdata and ores.marketdata: regeneration reproduces the checked-in output byte for byte.
+
+* Plan
+
+The catalog becomes the authority first; the code follows it.
+
+1. Refdata. Rewrite =asset_class_code= to the seven-class taxonomy in
+   =doc/knowledge/domain/asset_classes.org=: =rates= becomes
+   =interest_rates= and =cross_asset= goes. Reclassify the fourteen
+   =cross_asset= instrument codes onto their real classes. Update the create,
+   drop and populate SQL, and the RLS policy script that lists the new table.
+2. Refdata. Add =series_subclass_code= as a new entity org and generate its
+   full stack: domain type with JSON and table IO, generator, table, repository,
+   entity, mapper, service, protocol, handler, registrar, history field mapper,
+   and the eventing integration test.
+3. Marketdata. Delete the =asset_class= and =series_subclass= C++ enums. The
+   domain types carry the code string. Update the two entity orgs, the two
+   generators, the two mappers, the two history field mappers, the domain tests,
+   the feed ingest loop and the import service.
+4. Qt. Read the asset class and subclass labels from the catalog tables through
+   the lookup fetcher instead of compiled-in names. Add the series subclass
+   client model, controller, detail dialog and MDI window; register the new
+   lookup type in the refdata and mktdata windows that display it.
+5. Ripples. The synthetic IR curve feed, the iam tenant provisioner's asset
+   class literal, the DQ populate scripts and the mixin custom-type list in
+   =projects/modeling/cpp_custom_types.org=.
+6. Verification. Codegen drift for =ores.refdata= and =ores.marketdata= must
+   stay at zero, the full build must be clean, and the full ctest suite must be
+   green.
+
+The known follow-up, deliberately left out: the feed ingest loop still special
+cases FX. That defect gets its own task; this task only stops it depending on
+the deleted enum.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2092][#2092]] | [ores.refdata,ores.marketdata] Move classification into refdata catalogs |
+
+* Review
+
+Local review of the change set, before the PR was raised. Seven findings.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The change deletes the =CORRELATION= entry from the ORE vocabulary table, so importing a market data file that carries a =CORRELATION/RATE/...= series now throws =std::invalid_argument=. | =projects/ores.marketdata/core/src/service/import_service.cpp:107= | Accept -- deferred, and the most serious finding here | The deleted row was ={"CORRELATION", {"cross_asset", "correlation", true}}=, and =cross_asset= is gone. The corpus does carry such series, so this is a real behaviour change: =CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM= in =Input/market_20160205.txt=, =CORRELATION/RATE/EQ-RIC:.STOXX50E/EQ-RIC:.SPX/1Y/ATM= in =Performance/Input/marketdata.csv=, and more. It cannot be repaired by retargeting the row, because a pairwise correlation belongs to no single class; that is why =cross_asset= was dropped and why the taxonomy says a correlation series references two classes. The fix is the market data data-model decision, with the "make the remaining hard-coded classification sites into data" task. No test imports a correlation series, so the suite stays green either way. |
+| 2 | The DQ publish path still special cases =series_type = 'FX'= and =series_type = 'RATES'=. | =projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql= | Accept -- deferred | Only the literal ='rates'= moved to ='interest_rates'=. The branch itself is the same defect as the feed ingest special case, and it leaves the same way: make the mapping data. Recorded on the "make the remaining hard-coded classification sites into data" task. |
+| 3 | No migration script moves existing databases off =cross_asset=. | =projects/ores.sql= | Decline | Forward-only schema change, by direction: backwards compatibility is out of scope for this work. The populate scripts are idempotent, so a fresh provision picks up the seven-class taxonomy. |
+| 4 | The market series grid shows the raw code where it used to show a label. | =projects/ores.qt/mktdata/src/ClientMarketSeriesModel.cpp= | Accept -- intentional | The change deleted the last compiled-in label switch, which is the point of the story. Raw codes match every other grid in the codebase; a display-name column needs the catalog joined into the list response, which is a separate change. |
+| 5 | =asset_classes.org= spoke of the taxonomy as proposed and named the deleted enumeration as current. | =doc/knowledge/domain/asset_classes.org= | Accept -- fixed | Corrected to the past tense for the superseded enumeration and the present for the landed taxonomy. |
+| 6 | The inventory doc types the market series =subclass= as an enum. | =doc/knowledge/domain/ores_marketdata_infrastructure_inventory.org= | Accept -- fixed | Now =string=, a code from =refdata.series_subclass_code=, matching the =asset_class= row beside it. |
+| 7 | =misspell-fixer= reports a misspelling of =EXPLICIT= in three sprint 25 documents: =update-ore-to-v17/task_sync-ore-examples-and-xsd.org=, =update-ore-to-v17/task_generate_ore_reference_data_types.org= and =shell-command-codegen/task_generate-the-trading-command-units.org=. | =doc/agile/versions/v0/sprint_25/= | Decline | Pre-existing, and all three belong to other workstreams. None is touched by this change set, so fixing them here would widen the diff for no gain. |
+
+* Result
+
+DONE. The classification vocabularies are data, and no C++ enum mirrors them.
+
+What shipped:
+
+- =refdata.asset_class_code= holds the seven-class taxonomy. =rates= became =interest_rates= and =cross_asset= is gone. The fourteen =cross_asset= instrument codes moved onto their real classes. The create, drop and populate SQL changed, and the RLS policy script lists the new table.
+- =refdata.series_subclass_code= ships end to end. The set is the modeling org, the generated domain type with JSON and table IO, the generator, the table, the repository, the entity, the mapper, the service, the protocol, the handler, the registrar, the history field mapper, the Qt client model, the controller, the detail dialog, the MDI window, and an eventing integration test.
+- The =ores.marketdata= C++ enums =asset_class= and =series_subclass= are deleted. The domain types carry the code string.
+- The Qt market series grid and the refdata dialogs read labels from the catalog tables through the lookup fetcher.
+- Market data validates its classification columns against the catalogs through trigger functions that raise SQLSTATE 23503. =market_series= validates both columns, =feed_bindings= validates =asset_class=, and =refdata.instrument_code= validates =asset_class= where it is set.
+
+Acceptance:
+
+- Seven-class taxonomy, reclassified instrument codes and a matching populate script. Met. The populate script holds exactly the seven codes, and neither =rates= nor =cross_asset=.
+- =series_subclass_code= end to end and populated. Met.
+- No C++ enum mirrors either catalog. Met.
+- Qt reads labels from the tables. Met.
+- Full build clean and the full suite green. Met. The build finished with exit code 0, and the test run reported =100% tests passed, 0 tests failed out of 73= in 1082 seconds. =ores.refdata.core.tests= passed in 262 seconds, and every =ores.marketdata= suite passed.
+- Codegen drift zero for both components. Met. =check_component_drift.py --all= is clean, and =regenerate_cmake_component_files.py --all --check= reports every =component_files.cmake= up to date.
+
+Known debt, recorded and not fixed here:
+
+- The ORE vocabulary table in =import_service.cpp= lost its =CORRELATION= row, so an import that carries a correlation series now throws =std::invalid_argument=. The corpus does carry such series. This is the most serious review finding. It needs the market data data-model decision and not a retarget, because a pairwise correlation belongs to no single asset class.
+- The DQ publish path and the feed ingest loop still special case their series types. Both leave when the mapping becomes data, which is the work of the "make the remaining hard-coded classification sites into data" task.

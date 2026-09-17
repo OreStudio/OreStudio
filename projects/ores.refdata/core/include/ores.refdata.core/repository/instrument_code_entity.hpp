@@ -49,7 +49,7 @@ struct instrument_code_entity {
     std::string name;
 
     std::string description;
-    std::string asset_class;
+    std::optional<std::string> asset_class;
     std::optional<std::string> ore_trade_type;
     int display_order = 0;
     std::string curve_role = "NONE";

@@ -75,6 +75,7 @@
 #include "ores.refdata.core/messaging/purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
+#include "ores.refdata.core/messaging/series_subclass_code_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
@@ -153,6 +154,7 @@
 #include "ores.refdata.core/messaging/purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/series_subclass_code_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_history_provider_registrar.hpp"
@@ -249,6 +251,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_purpose_type_handlers(nats, ctx, verifier));
     append(register_regulatory_book_type_handlers(nats, ctx, verifier));
     append(register_rounding_type_handlers(nats, ctx, verifier));
+    append(register_series_subclass_code_handlers(nats, ctx, verifier));
     append(register_swap_convention_handlers(nats, ctx, verifier));
     append(register_tenor_handlers(nats, ctx, verifier));
     append(register_tenor_anchor_handlers(nats, ctx, verifier));
@@ -428,6 +431,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_purpose_type_history_provider(hist_registry);
         register_regulatory_book_type_history_provider(hist_registry);
         register_rounding_type_history_provider(hist_registry);
+        register_series_subclass_code_history_provider(hist_registry);
         register_swap_convention_history_provider(hist_registry);
         register_tenor_history_provider(hist_registry);
         register_tenor_anchor_history_provider(hist_registry);

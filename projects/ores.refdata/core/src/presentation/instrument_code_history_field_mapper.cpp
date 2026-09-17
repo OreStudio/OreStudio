@@ -36,7 +36,7 @@ render_instrument_code_fields(const domain::instrument_code& v) {
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
-    fields.push_back({.name = "Asset Class", .value = v.asset_class});
+    fields.push_back({.name = "Asset Class", .value = v.asset_class.value_or(std::string{})});
     fields.push_back({.name = "Ore Trade Type", .value = v.ore_trade_type.value_or(std::string{})});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     fields.push_back({.name = "Curve Role", .value = v.curve_role});

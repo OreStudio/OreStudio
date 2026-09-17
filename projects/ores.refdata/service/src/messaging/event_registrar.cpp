@@ -68,6 +68,7 @@
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/rounding_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/series_subclass_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
@@ -123,6 +124,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_portfolio_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_rounding_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_series_subclass_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_anchor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_tenor_convention_event_mapping(event_source, event_bus, nats));

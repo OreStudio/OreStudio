@@ -39,7 +39,7 @@ class ClientManager;
 class ImageCache;
 
 /**
- * @brief Lists the official market_series catalog entries for asset_class::rates -- the
+ * @brief Lists the official market_series catalog entries for the interest_rates asset class -- the
  * entry point for interest-rate curve analysis, independent of how each series is produced
  * (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow). Selecting a row opens
  * a CurveSnapshotMdiWindow for that series.

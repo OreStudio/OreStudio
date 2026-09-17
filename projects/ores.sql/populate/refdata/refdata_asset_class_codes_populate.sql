@@ -21,8 +21,8 @@
 /**
  * Asset Class Codes Population Script
  *
- * Populates the top-level asset class classification codes, mirroring
- * ores::marketdata::domain::asset_class.
+ * Populates the top-level asset class classification codes. This table is
+ * the source of truth for the taxonomy; no C++ enum mirrors it.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
@@ -37,8 +37,8 @@ values
     (ores_utility_system_tenant_id_fn(), 'fx', 0, 'FX',
      'Foreign exchange: instruments whose value derives from the exchange rate between two currencies. Covers FX spot, forwards, swaps, and vanilla/exotic options, along with the market data that prices them -- spot rates, forward points, and volatility surfaces quoted by currency pair. FX is unique among asset classes in that every trade inherently involves two currencies rather than one underlying, which is why FX risk shows up as a cross-cutting concern in every other asset class (a USD-denominated equity option still carries FX risk for a EUR-based book).',
      1, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
-    (ores_utility_system_tenant_id_fn(), 'rates', 0, 'Rates',
-     'Interest rate products: instruments whose value derives from the level or shape of a yield curve for a given currency and index (e.g. USD SOFR, EUR ESTR). Covers deposits, forward rate agreements, interest rate swaps and swaptions, caps/floors, and cross-currency swaps, together with the curve-construction market data -- discount factors, zero rates, and forward rates bootstrapped from quoted instruments at standard tenors. Rates is typically the first curve built in any pricing pipeline, since discounting and forward-rate projection for every other asset class ultimately depends on it.',
+    (ores_utility_system_tenant_id_fn(), 'interest_rates', 0, 'Interest Rate',
+     'Interest rate products: instruments whose value derives from the level or shape of a yield curve for a given currency and index (e.g. USD SOFR, EUR ESTR). Covers deposits, forward rate agreements, interest rate swaps and swaptions, caps/floors, and cross-currency swaps, together with the curve-construction market data -- discount factors, zero rates, and forward rates bootstrapped from quoted instruments at standard tenors. Interest rates is typically the first curve built in any pricing pipeline, since discounting and forward-rate projection for every other asset class ultimately depends on it.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
     (ores_utility_system_tenant_id_fn(), 'credit', 0, 'Credit',
      'Credit risk products: instruments whose value derives from the likelihood and severity of an issuer or reference entity defaulting on its obligations. Covers credit default swaps (single-name and index), credit-linked notes, and the underlying market data -- CDS spreads, hazard rate curves bootstrapped from those spreads, and assumed recovery rates. Credit curves are quoted per reference entity (or index series) and are combined with a rates curve to produce risky discount factors for defaultable cashflows.',
@@ -54,10 +54,7 @@ values
      6, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
     (ores_utility_system_tenant_id_fn(), 'bond', 0, 'Bond',
      'Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.',
-     7, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
-    (ores_utility_system_tenant_id_fn(), 'cross_asset', 0, 'Cross Asset',
-     'Cross-asset products: instruments and risk measures that genuinely span more than one of the other asset classes rather than sitting cleanly within a single one -- for example, a hybrid note whose payoff depends jointly on an equity index and an FX rate, or a correlation/quanto adjustment that couples an equity or commodity underlying denominated in a foreign currency back to the book''s base currency. This category exists for the small set of instruments and market data (cross-asset correlations, quanto adjustments) that a single-asset-class tag would misrepresent, not as a catch-all default.',
-     8, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes')
+     7, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

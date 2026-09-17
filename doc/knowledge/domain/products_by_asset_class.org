@@ -20,7 +20,7 @@ Seven of the sections below correspond to an [[id:7F5EBFBD-FB8C-4E79-B386-709810
 
 | Section | Asset class |
 |---------+--------+-------------|
-| Interest rate derivatives | [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][=rates=]] |
+| Interest rate derivatives | [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][=interest_rates=]] |
 | FX derivatives | [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][=fx=]] |
 | Inflation derivatives | [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][=inflation=]] |
 | Equity derivatives | [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][=equity=]] |

@@ -49,6 +49,7 @@
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata.api/messaging/series_subclass_code_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_anchor_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_kind_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
@@ -568,6 +569,19 @@ fetch_asset_class_codes(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->asset_classes);
+}
+
+std::expected<std::vector<refdata::domain::series_subclass_code>, QString>
+fetch_series_subclass_codes(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_series_subclass_codes_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->series_subclasses);
 }
 
 std::expected<std::vector<refdata::domain::curve_role>, QString>

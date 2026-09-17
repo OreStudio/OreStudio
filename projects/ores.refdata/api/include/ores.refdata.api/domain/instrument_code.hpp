@@ -53,8 +53,9 @@ namespace ores::refdata::domain {
  * oreTradeType string, where one exists, is preserved separately in
  * ore_trade_type (nullable — null only for DEPO) for future ORE
  * trade-file interop; it is not itself validated or FK'd anywhere, only
- * carried as a reference. Each row is tagged with the asset_class_code
- * it belongs to. Not scoped to any single consumer: the IR Curve
+ * carried as a reference. Each row that describes one instrument is
+ * tagged with the asset_class_code it belongs to; rows that do not are
+ * left untagged (see asset_class below). Not scoped to any single consumer: the IR Curve
  * Template (which consumes the DEPO/FRA/IRS rates entries for its
  * tenor roles) is the first consumer, but this catalogue exists
  * independently for any future feature needing to classify or enumerate
@@ -93,11 +94,16 @@ struct instrument_code final {
     std::string description;
 
     /**
-     * @brief Asset class this instrument code belongs to (references asset_class_code.code; column
-     * named asset_class, not asset_class_code, to avoid a C++ name lookup collision between the
-     * member and the asset_class_code domain type itself in generated Qt code).
+     * @brief Asset class this instrument code belongs to, when the product type has a fixed one
+     * (references asset_class_code.code; column named asset_class, not asset_class_code, to avoid a
+     * C++ name lookup collision between the member and the asset_class_code domain type itself in
+     * generated Qt code). Null where a product type has no class of its own. Two groups are null:
+     * sentinel and wrapper rows (NONE, FAILED, CASHPOS, COMPOSITE, SCRIPT), which describe
+     * something other than one instrument; and generic trade types (ASCOT, TRS, CFD, AUTOCALL,
+     * DBLDIG, EUROBAR, PERFOPT), which take the class of whatever underlying they reference. A
+     * trade of one of those types carries its class on the trade itself, not on the catalogue row.
      */
-    std::string asset_class;
+    std::optional<std::string> asset_class;
 
     /**
      * @brief Literal ORE oreTradeType string (external/ore/xsd/instruments.xsd) this code

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 623FD704-50F8-4FA8-8EED-7E885797B48C
+:END:
+#+title: Story: Classification catalogs as data
+#+description: Move the asset class and series subclass classification vocabularies out of C++ enums and into refdata catalogs that the database owns; delete the mirrored enums.
+#+type: story
+#+level: s2
+#+filetags: :refdata:marketdata:classification:sprint_25:v0:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The asset class and series subclass classification vocabularies become refdata catalogs that the database owns. The C++ enums that mirrored them are deleted. Every consumer reads the codes and their display names from the catalog tables. Code never duplicates a vocabulary that a table already holds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-17                               |
+
+* Acceptance
+
+- refdata.asset_class_code holds the seven-class taxonomy from the analysis (interest_rates, inflation, fx, equity, commodity, credit, bond); rates is renamed and cross_asset is gone.
+- A new refdata.series_subclass_code catalog exists end to end: table, create/drop/populate SQL, domain types, repository, service, protocol, registrar, history mapper, and Qt client.
+- The ores.marketdata C++ enums asset_class and series_subclass are deleted; consumers carry the code string and read labels from the catalog.
+- Foreign keys from market data, and from trading where it is ready, reference the catalogs.
+- Full local build clean and the full ctest suite green.
+- Codegen drift stays at zero for both components; entity regeneration reproduces the checked-in output byte for byte.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:643DE9E2-B105-4463-95DC-29D7907C00A3][Move classification into refdata catalogs]] | DONE | 2026-09-17 | 2026-09-17 | Delete the ores.marketdata asset_class and series_subclass C++ enums, carry the codes as data end to end, and add the series_subclass_code refdata catalog the taxonomy needs. |
+
+* Decisions
+
+- Classification is data, not code. The database owns the vocabularies. No C++ enum mirrors a catalog that a table already holds. This rejects the earlier compile-time exhaustiveness approach in favour of existence-based processing: the code carries the code string and reads labels from the table.
+- The taxonomy authority is =doc/knowledge/domain/asset_classes.org=, now a flat seven-class list. =rates= becomes =interest_rates=; =cross_asset= is dropped and its instruments are reclassified.
+- =series_subclass_code= lives in refdata, not in marketdata, because it is a shared vocabulary.
+
+* Out of scope
+
+- ores.trading classification changes. A separate workstream owns those, and the trading model is being reshaped at the same time.
+- The market data values themselves (quotes, fixings, curves). Only their classification is in scope.

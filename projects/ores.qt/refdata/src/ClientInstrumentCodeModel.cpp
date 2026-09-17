@@ -92,7 +92,7 @@ QVariant ClientInstrumentCodeModel::data(const QModelIndex& index, int role) con
             case Description:
                 return QString::fromStdString(code_.description);
             case AssetClass:
-                return QString::fromStdString(code_.asset_class);
+                return code_.asset_class ? QString::fromStdString(*code_.asset_class) : QString{};
             case OreTradeType:
                 return code_.ore_trade_type ? QString::fromStdString(*code_.ore_trade_type) :
                                               QString{};

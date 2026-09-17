@@ -47,11 +47,10 @@ auto& lg() {
 // DEPOSIT/SWAP publish onto the yield subclass; FRA onto fra -- the two curve_role values
 // curve_instrument_pricer treats as "point instrument" and "interval instrument" respectively
 // (see ir_curve_template_entry's own doc comment).
-ores::marketdata::domain::series_subclass subclass_for(const std::string& curve_role) {
-    using ores::marketdata::domain::series_subclass;
+std::string subclass_for(const std::string& curve_role) {
     if (curve_role == "FRA")
-        return series_subclass::fra;
-    return series_subclass::yield;
+        return "fra";
+    return "yield";
 }
 
 } // namespace
@@ -126,6 +125,8 @@ void ir_curve_feed::start() {
                 tick.series_type = series_type_;
                 tick.metric = metric_;
                 tick.qualifier = qualifier_;
+                tick.asset_class =
+                    std::string(ores::marketdata::domain::ir_curve_asset_class);
                 tick.subclass = subclass_for(e.curve_role);
                 tick.point_id = e.point_id;
                 tick.source_name = source_name_;

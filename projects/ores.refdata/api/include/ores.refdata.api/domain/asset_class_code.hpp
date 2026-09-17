@@ -33,17 +33,16 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Top-level asset class classification (fx, rates, credit, equity, commodity, inflation,
- * bond, cross_asset).
+ * @brief Top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation,
+ * bond).
  *
  * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. Mirrors
- * ores::marketdata::domain::asset_class (a plain, non-persisted C++
- * enum used for market-series filtering) as a managed, persisted
- * refdata code table, so other entities (instrument_code, and
- * anything else needing to classify by asset class) can FK-validate
- * against it instead of duplicating a hardcoded string list. Managed by
- * the system tenant, like other shared code tables.
+ * series, instrument, or curve belongs to. This table is the single
+ * source of truth for the taxonomy. Code carries no parallel
+ * enumeration, because the list is runtime-managed and no compiled list
+ * can be exhaustive over it. Other entities (instrument_code,
+ * market_series, feed_binding) FK-validate against this table.
+ * Managed by the system tenant, like other shared code tables.
  */
 struct asset_class_code final {
     /**
@@ -59,7 +58,7 @@ struct asset_class_code final {
     /**
      * @brief Unique asset class code.
      *
-     * Examples: 'fx', 'rates', 'credit', 'equity', 'commodity', 'inflation', 'bond', 'cross_asset'.
+     * Examples: 'fx', 'interest_rates', 'credit', 'equity', 'commodity', 'inflation', 'bond'.
      */
     std::string code;
 

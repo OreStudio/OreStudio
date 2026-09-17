@@ -22,7 +22,6 @@ parent_counterparty_id for group structures.
 :schema:               public
 :product:              ores
 :component:             refdata
-:has_parent_id:         true
 :parent_id_column:      parent_counterparty_id
 :hierarchy_name_field:  full_name
 :generate_touch_function: true

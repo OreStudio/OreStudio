@@ -218,7 +218,6 @@ table is the cross-facet index only.
 
 | Feature | Type | Default |
 |---------+------+---------|
-| =has_parent_id= | bool | false |
 | =system_scope= | bool | false |
 | =nullable_tenant_id= | bool | false |
 | =extra_checks= | collection<string> | ∅ |
@@ -298,11 +297,11 @@ the types the facets will generate, not a choice about how to project
 them — so each is a structural fact, not a configuration choice. They
 are listed here so they are never re-imported into the variability
 model; their home is the logical model. =has_tenant_id=,
-=has_workspace_id=, and =has_display_order= are genuine authored
-features — all read verbatim from frontmatter with no derivation from
-other facts — and so do *not* belong on this list;
+=has_workspace_id=, =has_parent_id=, and =has_display_order= are
+genuine authored features — all read verbatim from frontmatter with no
+derivation from other facts — and so do *not* belong on this list;
 =has_tenant_id=/=has_workspace_id= are documented on [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
-columns]]. See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] § "Distinguishing a feature from a computed
+columns]], and =has_parent_id= on [[id:F6ECC504-CBF4-4120-85D4-7B930C7BFBF0][has_parent_id]]. See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] § "Distinguishing a feature from a computed
 predicate" for the test applied here. =has_image_id= and
 =has_coding_scheme= are split-personality:
 for =domain_entity=/=table= models (the row below) they are genuinely

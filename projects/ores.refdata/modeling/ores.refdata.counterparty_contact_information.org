@@ -21,7 +21,7 @@ Settlement, Billing). Each counterparty can have one contact record per type.
 :schema:        public
 :product:       ores
 :component:     refdata
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :END:
 
 * Columns
@@ -338,7 +338,6 @@ std::string("https://example.com")
 :history_message_type:    get_counterparty_contact_information_history_request
 :settings_group:          CounterpartyContactInformationListWindow
 :window_title:            Counterparty Contact Information
-:has_pagination:          true
 :icon:                    PersonAccounts
 :END:
 

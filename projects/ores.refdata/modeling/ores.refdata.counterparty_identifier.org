@@ -22,7 +22,7 @@ multiple identifiers across different schemes.
 :schema:        public
 :product:       ores
 :component:     refdata
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :END:
 
 * Columns
@@ -214,7 +214,6 @@ std::string("Test identifier")
 :history_message_type:    get_counterparty_identifier_history_request
 :settings_group:          CounterpartyIdentifierListWindow
 :window_title:            Counterparty Identifiers
-:has_pagination:          true
 :icon:                    Key
 :END:
 

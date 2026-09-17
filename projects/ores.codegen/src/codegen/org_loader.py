@@ -50,7 +50,7 @@ _PROFILES_DIR = Path(__file__).resolve().parents[3] / "modeling"
 _FEATURE_NAMESPACE: dict[str, str] = {
     "has_tenant_id": "",
     "has_workspace_id": "",
-    "has_parent_id": "sql",
+    "has_parent_id": "",
     "system_scope": "sql",
     "nullable_tenant_id": "sql",
     "extra_checks": "sql",

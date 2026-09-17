@@ -32,7 +32,7 @@ topologies and never share an engine.
 :schema:        public
 :product:       ores
 :component:     refdata
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :END:
 
 * Columns
@@ -196,7 +196,6 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :collection_name:         crm_topology_configs
 :item_var:                config
 :key_field:                name
-:has_pagination:          true
 :has_export_macro:        true
 :get_request_class:       refdata::messaging::get_crm_topology_configs_request
 :get_response_class:      refdata::messaging::get_crm_topology_configs_response

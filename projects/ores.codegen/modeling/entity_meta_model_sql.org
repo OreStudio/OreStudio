@@ -2,13 +2,13 @@
 :ID: 729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27
 :END:
 #+title: Codegen entity meta-model — SQL
-#+description: The * SQL section of an entity model: table naming, the has_parent_id hierarchy knob, and the ores.sql.schema variability feature bundle (tenant-scoping policy, extra checks, tenant-scoping FK validations). Generates the bi-temporal table DDL, insert triggers, and notify triggers via the ores.sql.schema facet.
+#+description: The * SQL section of an entity model: table naming and the ores.sql.schema variability feature bundle (tenant-scoping policy, extra checks, tenant-scoping FK validations). Generates the bi-temporal table DDL, insert triggers, and notify triggers via the ores.sql.schema facet. Also the narrative home for the has_parent_id hierarchy block.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+startup: inlineimages
 #+created: 2026-07-17
-#+updated: 2026-07-31
+#+updated: 2026-09-17
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
 the =* SQL= section and the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] facet it feeds: bi-temporal
@@ -20,18 +20,20 @@ layered on top.
 This page splits its fields across two diagrams, per [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
 "The entity model file as a unified literate document":
 
-- *Structural* fields — always part of the entity's shape, never
-  toggled — drawn as a UML class diagram under [[*Flags][Flags]] below.
-  =:tablename:= is one: a required identity field with no default,
-  every entity needs exactly one value. =:parent_id_column:= and
-  =:hierarchy_name_field:= are also structural — they name *real
-  columns* — but only exist conditionally, once =:has_parent_id:= is
-  on; the UML diagram marks them =[0..1]= for that reason, and a note
-  on the diagram cross-references the UVL feature that gates them.
-- *Non-structural* — a single authored, optional [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] feature — drawn
-  as a UVL feature diagram under [[*Hierarchy: =has_parent_id=][Hierarchy]] below: =:has_parent_id:=
-  itself, the toggle that decides whether the two conditional
-  structural fields above exist at all.
+- *Structural* — always part of the entity's shape, never toggled —
+  drawn as a UML class diagram under [[*Flags][Flags]] below.
+  =:tablename:= is the one field of this section that qualifies: a
+  required identity field with no default, every entity needs exactly
+  one value.
+- *Non-structural* — the authored, optional [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][VMM]] features of the
+  =ores.sql.schema= bundle — drawn as a UVL feature diagram under
+  [[*Projection configuration (variability)][Projection configuration]] below.
+
+The =:has_parent_id:= hierarchy block is the exception. Its three
+properties are authored at the *entity root*, not in this section, so
+[[*Hierarchy: =has_parent_id=][Hierarchy]] below covers them here while
+[[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] models them
+with the other structural features.
 
 * Physical model mapping
 
@@ -82,35 +84,56 @@ this =Flags= sub-heading.
 
 * Hierarchy: =has_parent_id=
 
-Some entities form a tree via a self-referencing soft foreign key —
-a =book= belongs to a =portfolio=, a =counterparty= can have a parent
-=counterparty=. Setting =:has_parent_id: true= tells the [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]]
-facet to generate a recursive-CTE function that walks that tree, so
-consumers don't each hand-write their own recursive query.
+Some entities form a tree via a self-referencing soft foreign key.
+A =book= belongs to a =portfolio=, and a =counterparty= can have a
+parent =counterparty=. Setting =:has_parent_id: true= makes the
+[[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] facet
+generate a recursive-CTE function that walks that tree, so consumers
+don't each hand-write their own recursive query. The C++ facets gate
+their matching members on the same feature: =get_hierarchy= on the
+repository and the service, and the protocol and NATS-handler entries
+that reach them.
 
-Non-structural view — =:has_parent_id:=, the one feature on this page:
-
-[[proj:projects/ores.codegen/modeling/entity_meta_model_sql.svg]]
+All three properties sit in the entity's *root* =* Flags= drawer, beside
+=:has_tenant_id:= and =:has_workspace_id:=. =:has_parent_id:= is a
+structural feature, not one of this section's =ores.sql.schema= knobs;
+its bundle is [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]].
 
 | Property                | Required | Meaning                                                    |
 |--------------------------+----------+-----------------------------------------------------------|
-| =:has_parent_id:=        | no       | Turns the knob on.                                          |
+| =:has_parent_id:=        | no       | Turns the hierarchy block on.                               |
 | =:parent_id_column:=     | if set   | The self-referencing FK column name, e.g. =parent_party_id=. |
 | =:hierarchy_name_field:= | if set   | An existing column used as the display label in the tree.  |
 
-=counterparty= is one such self-referencing entity; its model sets
-all three properties together:
+The first property turns the block on and the other two name the
+columns the generated function reads. Set the first without the others
+and the function names empty columns, so author all three together.
+
+=counterparty= is one such self-referencing entity. Its model shows
+where each property lives. The feature and the two column names are in
+the root drawer; the table name is in this section:
 
 #+begin_src org
-,* SQL
-,** Flags
+,* Flags
 ,:PROPERTIES:
-,:tablename:            ores_refdata_counterparties_tbl
-,:has_parent_id:        true
+,:schema:               public
+,:product:              ores
+,:component:            refdata
+,:profile:              self-referencing-hierarchy
 ,:parent_id_column:     parent_counterparty_id
 ,:hierarchy_name_field: full_name
 ,:END:
+
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename: ores_refdata_counterparties_tbl
+,:END:
 #+end_src
+
+The bound [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]] profile
+assigns =:has_parent_id: true=, so the model does not state it. A model
+with no such profile writes the line itself, in that same root drawer.
 
 Generates a
 =<product>_<component>_<entity_plural>_hierarchy_fn(p_tenant_id, p_root_id, p_from_root)=
@@ -141,6 +164,10 @@ them changes the entity's logical shape, only the generated DDL,
 triggers, and rules. Full classification and cross-facet index: [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
 Studio Variability Model]] § "Bundle: ores.sql.schema" — this section is the
 narrative home for these knobs; that page indexes them.
+
+The bundle as a feature model:
+
+[[proj:projects/ores.codegen/modeling/entity_meta_model_sql.svg]]
 
 | Feature | Type | Default | Effect |
 |---------+------+---------+--------|
@@ -239,5 +266,5 @@ between each.
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the column declarations this section's DDL is built from.
 - [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] — the shared paste-block mechanism.
-- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for =:has_parent_id:= as a configuration point; =:tablename:= is structural (§ "Flags" above), not variability.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for the =ores.sql.schema= features above. =:tablename:= (§ "Flags") is structural, not variability. =:has_parent_id:= (§ "Hierarchy") is variability, but its bundle is structural.
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the =ores.sql.schema= bundle's classification and cross-facet index; this page is the narrative home for those knobs.

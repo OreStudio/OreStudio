@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 689F92F1-39F4-4956-B6CC-F105A3C1B2E9
+:END:
+#+title: Story: Fix the has_parent_id feature namespace so profile bindings take effect
+#+description: A profile assignment for has_parent_id lands in the entity's sql namespace, but every generator reader looks at the entity root. A profile-bound has_parent_id is therefore silently inert. Fix the routing, retire the explicit workaround lines, and rebind the eleven flat entities the defect had masked.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A model must state only what it decides for itself. The binding
+program exists so the bound profile supplies the rest. =has_parent_id=
+was the one feature where that did not hold. The profile merge filed
+the feature under the entity's =sql= namespace. Every reader looked at
+the entity root instead. So a profile's assignment never arrived, and
+each model that needed the feature repeated the line by hand.
+
+The silence hid a second fault. Fifteen entities bound the
+=self-referencing-hierarchy= profile, whose contract requires a
+=parent_id_column= and a =hierarchy_name_field=. Only four carried
+both. The defect alone protected the other eleven. Had the profile
+assignment ever reached the reader, those eleven would have generated
+a hierarchy function naming empty columns.
+
+This story moves the feature to the root namespace and repairs what
+the defect masked. A profile becomes the single source of truth for
+the hierarchy block, and no model can bind that profile without
+meeting its contract.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-17                             |
+
+* Acceptance
+
+- =_FEATURE_NAMESPACE= routes =has_parent_id= to the entity root, so a
+  profile assignment reaches the readers.
+- The four hierarchy models (=business_unit=, =counterparty=, =party=,
+  =folder=) drop their explicit =has_parent_id= line and still generate
+  their hierarchy function, repository method, service and handler.
+- Every model that turns the feature on names both =parent_id_column=
+  and =hierarchy_name_field=.
+- No model binds =self-referencing-hierarchy= without those two column
+  properties.
+- The eleven flat entities that bound it move to a profile that
+  describes them, and generate no hierarchy code.
+- Regeneration over the nine known-drift-free components produces no
+  diff.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E2929BA0-00ED-4AD6-BB20-AC9CB518B3FB][Route has_parent_id to the entity root and rebind the entities the defect masked]] | DONE | 2026-09-17 | 2026-09-17 | Move has_parent_id out of the sql namespace so a profile assignment reaches the readers, remove the four explicit workaround lines, and rebind the eleven flat entities that bound the hierarchy profile while the defect hid their missing parent columns. |
+
+* Decisions
+
+- 2026-09-17 (task E2929BA0): fix the namespace, not the readers. Every
+  reader looks at the entity root, so nothing read
+  =sql.has_parent_id=. Moving the feature to the root is the smaller
+  change, and it matches =has_tenant_id= and =has_workspace_id=, which
+  already live there. =doc_generate.py= corroborated the choice
+  independently: its =hierarchical-composite= shape preset already
+  grouped =has_parent_id= with the two tenancy features at the root.
+- 2026-09-17 (task E2929BA0): rebind the eleven to
+  =uuid-identified-lookup=, not =uuid-surrogate-lookup=. The tiebreaker
+  is the physical-space table. The profile they left and
+  =uuid-identified-lookup= both enable
+  =ores.cpp.eventing-integration-test=, and eleven generated
+  integration tests exist for those entities.
+  =uuid-surrogate-lookup= has no physical-space table at all, so that
+  binding would have deleted them. On feature assignments the two
+  profiles are interchangeable here, because =uuid-surrogate-lookup='s
+  two extra rows pin flags that already default to false. The fit holds
+  on the descriptive axis too. The reference entity is UUID-keyed,
+  tenant-scoped, parentless and natural-keyed, and ten of the eleven
+  declare a natural key of their own. Only =calendar_rule= has none, so
+  it alone stretches the profile.
+- 2026-09-17 (task E2929BA0): keep =parent_id_column= and
+  =hierarchy_name_field= in the root =* Flags= drawer. They are
+  structural, so no profile can carry them, and the readers already
+  look for them there. Two SQL-facet templates are the only readers, so
+  a later change could move them into =* SQL=, but that move must
+  change the reader paths too.
+- 2026-09-17 (task E2929BA0): =has_parent_id= belongs to the *Keys and
+  columns* bundle, not to =ores.sql.schema=. The templates that read it
+  reach beyond SQL into the C++, protocol and NATS facets. Its
+  narrative home stays on the [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]
+  page, beside the hierarchy block it gates. The feature index, the
+  feature catalogue and the UVL models now file it with the other
+  structural features.
+
+* Out of scope
+
+- =parent_id_column= and =hierarchy_name_field= stay in the root =* Flags=
+  drawer while only the SQL facet reads them. The task's Notes record
+  the tidy-up and the change it needs.
+- The scaffolder's =--entity-<knob>= vocabulary. A model authored with
+  =compass add entity_org= still cannot express the hierarchy block.
+- A loader guard that fails when the feature is on without both column
+  properties. It would have caught the eleven at the point of
+  regeneration instead of at the point of audit. Filed as a capture
+  rather than built here.

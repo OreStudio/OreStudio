@@ -22,7 +22,6 @@ Each unit belongs to a top-level legal entity (party).
 :schema:               public
 :product:              ores
 :component:            refdata
-:has_parent_id:        true
 :parent_id_column:     parent_business_unit_id
 :hierarchy_name_field: unit_name
 :profile:   self-referencing-hierarchy

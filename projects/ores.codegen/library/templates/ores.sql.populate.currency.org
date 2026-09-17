@@ -31,9 +31,9 @@ The full template source. Edit here and re-tangle with
  * Template: sql_currency_populate.mustache
  * To modify, update the template and regenerate.
  *
- * Data Quality Solvaris Currencies Artefact Population Script
+ * Data Quality {{model_name}} Currencies Artefact Population Script
  *
- * Populates the dq_currencies_artefact_tbl with Solvaris currency data.
+ * Populates the dq_currencies_artefact_tbl with {{model_name}} currencies data.
  * Source: country_currency.json dataset
  *
  * This script is idempotent.
@@ -87,7 +87,7 @@ begin
 
     raise notice 'Populating currencies for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 
-    -- Insert Solvaris currencies with flag image links
+    -- Insert {{model_name}} currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
@@ -127,7 +127,7 @@ end $$;
 -- =============================================================================
 
 \echo ''
-\echo '--- DQ Solvaris Currencies Summary ---'
+\echo '--- DQ {{model_name}} Currencies Summary ---'
 
 with currencies as (
     select c.monetary_nature
@@ -137,7 +137,7 @@ with currencies as (
       and d.domain_name = 'Reference Data'
       and d.valid_to = ores_utility_infinity_timestamp_fn()
 )
-select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
+select 'Total {{model_name}} Currencies' as metric, count(*) as count from currencies
 union all
 select 'Fiat Currencies', count(*) from currencies where monetary_nature = 'fiat'
 union all

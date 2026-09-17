@@ -34,10 +34,10 @@ The full template source. Edit here and re-tangle with
  */
 
 -- =============================================================================
--- Data Quality Slovaris Methodologies
+-- Data Quality {{model_name}} Methodologies
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Methodologies ---'
+\echo '--- Data Quality {{model_name}} Methodologies ---'
 
 {{#methodologies}}
 select ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),

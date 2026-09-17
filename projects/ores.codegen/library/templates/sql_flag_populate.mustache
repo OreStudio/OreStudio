@@ -17,20 +17,20 @@ begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
     from ores_dq_datasets_tbl
-    where name = 'Solvaris Country Flag Images'
-      and subject_area_name = 'Country Flags'
-      and domain_name = 'Reference Data'
+    where name = '{{flags_dataset.name}}'
+      and subject_area_name = '{{flags_dataset.subject_area_name}}'
+      and domain_name = '{{flags_dataset.domain_name}}'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: name="Solvaris Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
+        raise exception 'Dataset not found: name="{{flags_dataset.name}}", subject_area="{{flags_dataset.subject_area_name}}", domain="{{flags_dataset.domain_name}}"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
     delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating images for dataset: %', 'Solvaris Country Flag Images';
+    raise notice 'Populating images for dataset: %', '{{flags_dataset.name}}';
 
     -- Insert images
 {{#country_currency}}
@@ -53,8 +53,8 @@ end $$;
 select 'Data Quality Total Images' as entity, count(*) as count
 from ores_dq_images_artefact_tbl where dataset_id in (
     select id from ores_dq_datasets_tbl
-    where name = 'Solvaris Country Flag Images'
-      and subject_area_name = 'Country Flags'
-      and domain_name = 'Reference Data'
+    where name = '{{flags_dataset.name}}'
+      and subject_area_name = '{{flags_dataset.subject_area_name}}'
+      and domain_name = '{{flags_dataset.domain_name}}'
   )
 order by entity;

@@ -8,10 +8,10 @@
  */
 
 -- =============================================================================
--- Data Quality Slovaris Tags
+-- Data Quality {{model_name}} Tags
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Tags ---'
+\echo '--- Data Quality {{model_name}} Tags ---'
 
 {{#tags}}
 select ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),

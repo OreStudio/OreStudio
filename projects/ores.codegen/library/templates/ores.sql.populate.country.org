@@ -32,9 +32,9 @@ The full template source. Edit here and re-tangle with
  * Template: sql_country_populate.mustache
  * To modify, update the template and regenerate.
  *
- * Data Quality Solvaris Countries Artefact Population Script
+ * Data Quality {{model_name}} Countries Artefact Population Script
  *
- * Populates the dq_countries_artefact_tbl with Solvaris country data.
+ * Populates the dq_countries_artefact_tbl with {{model_name}} countries data.
  * Source: country_currency.json dataset
  *
  * This script is idempotent.
@@ -88,7 +88,7 @@ begin
 
     raise notice 'Populating countries for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 
-    -- Insert Solvaris countries with flag image links
+    -- Insert {{model_name}} countries with flag image links
     insert into ores_dq_countries_artefact_tbl (
         dataset_id, tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
@@ -121,9 +121,9 @@ end $$;
 -- =============================================================================
 
 \echo ''
-\echo '--- DQ Solvaris Countries Summary ---'
+\echo '--- DQ {{model_name}} Countries Summary ---'
 
-select 'Total Solvaris Countries' as metric, count(*) as count
+select 'Total {{model_name}} Countries' as metric, count(*) as count
 from ores_dq_countries_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.subject_area_name = 'Countries'

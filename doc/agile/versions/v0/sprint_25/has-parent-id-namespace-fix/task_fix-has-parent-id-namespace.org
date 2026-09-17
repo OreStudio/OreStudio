@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: E2929BA0-00ED-4AD6-BB20-AC9CB518B3FB
+:END:
+#+title: Task: Route has_parent_id to the entity root and rebind the entities the defect masked
+#+description: Move has_parent_id out of the sql namespace so a profile assignment reaches the readers, remove the four explicit workaround lines, and rebind the eleven flat entities that bound the hierarchy profile while the defect hid their missing parent columns.
+#+type: task
+#+level: s1
+#+filetags: :has-parent-id-namespace-fix:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-has-parent-id-namespace
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature namespace so profile bindings take effect]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Route =has_parent_id= to the entity root, where every reader looks for
+it, so a bound profile's assignment reaches the generator. Then retire
+the explicit workaround lines the defect forced, and repair the
+entities the defect masked.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature namespace so profile bindings take effect]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- =_FEATURE_NAMESPACE= maps =has_parent_id= to the empty namespace, that
+  is, the entity root.
+- The four hierarchy models (=business_unit=, =counterparty=, =party=,
+  =folder=) carry no explicit =has_parent_id= line and still generate
+  the hierarchy block.
+- The eleven flat entities bind =uuid-identified-lookup=, carry no
+  explicit =has_pagination=, and generate no hierarchy block.
+- Regeneration over the nine known-drift-free components produces no
+  diff.
+
+* Plan
+
+1. Locate every reader of the feature, in =core.py= and in the template
+   library, and record which namespace each one reads. Confirm that
+   nothing reads =sql.has_parent_id=.
+2. Change the one line in =_FEATURE_NAMESPACE= that routes the feature.
+3. Drop the four explicit =:has_parent_id: true= lines the profile now
+   supplies.
+4. Survey every model that binds =self-referencing-hierarchy= and check
+   each one against the profile's stated contract, the two column
+   properties.
+5. Pick the profile for the entities that fail that contract. Compare
+   the candidates on feature assignments and on the physical-space
+   table.
+6. Rebind those entities and drop their now-redundant
+   =:has_pagination:=.
+7. Prove the whole change is output-neutral by regenerating the nine
+   known-drift-free components and diffing.
+8. Correct the documents the defect had misled. The feature page, the
+   feature index, the variability model, and the two codegen meta-model
+   pages had all filed the feature under =ores.sql.schema=.
+
+
+* Notes
+
+*The reader inventory.* Every reader resolves to the entity root. In the
+template library, eighteen files read the key, most as bare
+={{#has_parent_id}}= inside a ={{#domain_entity}}= section, and the SQL
+facet's create template as ={{#domain_entity.has_parent_id}}=. In
+=core.py=, the hierarchy candidate test and the C++ uuid-include gate
+read =domain_entity['has_parent_id']=. =doc_generate.py= groups the
+feature with =has_tenant_id= and =has_workspace_id= at the root in its
+=hierarchical-composite= shape preset. Nothing anywhere reads
+=sql.has_parent_id=.
+
+*What the feature gates.* The SQL facet emits a recursive-CTE
+=hierarchy_fn= returning flat =(id, parent_id, name)= rows. The C++ side
+gates =repository::get_hierarchy=, =service::get_hierarchy=, and the
+protocol and NATS-handler entries that reach them.
+
+*The two column properties.* =:parent_id_column:= and
+=:hierarchy_name_field:= are read only by the two SQL-facet templates,
+yet every model authors them in the root =* Flags= drawer. Two readers
+and one authoring site disagree on the namespace. Moving them into
+=* SQL= would tidy that up, but the reader paths must change in the same
+edit. Not done here; the story records it as out of scope.
+
+*Why a guard would have helped.* The defect's shape is silence. A
+profile feature whose value no reader consults produces no error, and
+removing the workaround line produced deleted generated code with no
+model-level signal. A loader check that fails when =has_parent_id= is
+true and either column property is missing would convert that silence
+into a hard error at regeneration time. It would not have caught the
+namespace fault itself, but it would have caught the eleven masked
+entities the moment the namespace was fixed. Filed as a capture.
+
+*The physical-space tiebreaker.* =uuid-identified-lookup= and
+=self-referencing-hierarchy= both carry a =* Physical space= table
+enabling =ores.cpp.eventing-integration-test=.
+=uuid-surrogate-lookup= carries no such table at all, so rebinding the
+eleven to it would have dropped that facet and deleted eleven generated
+integration tests. This is what decided between two profiles whose
+feature assignments are otherwise interchangeable here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

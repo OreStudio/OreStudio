@@ -2,16 +2,28 @@
 :ID: 4B656AD0-DA7B-41BE-998F-F6AF5E03B6C2
 :END:
 #+title: Codegen: has_parent_id lands in the sql namespace but is read at the entity root
-#+description: The profile merger files has_parent_id under sql, because that is what _FEATURE_NAMESPACE says. core.py and the mustache templates read it at the entity root instead. So a model that drops its explicit has_parent_id line loses its hierarchy function, repository method, handler and service on regeneration. Four models keep the line for this reason: business_unit, counterparty and party in refdata, and folder in synthetic. Regeneration over those four moved 24 and 8 generated files when the lines came out. Fix the namespace or the readers, then remove the four lines. Found while removing profile-redundant properties on 2026-09-17.
+#+description: The profile merger filed has_parent_id under sql, because that is what _FEATURE_NAMESPACE said. core.py and the mustache templates read it at the entity root instead, so a model that dropped its explicit has_parent_id line lost its hierarchy function, repository method, handler and service on regeneration. Four models kept the line for this reason. Resolved 2026-09-17 by moving the feature to the entity root (task E2929BA0); the four lines came out and the eleven flat entities the defect had masked were rebound. Found while removing profile-redundant properties on 2026-09-17.
 #+type: capture
 #+level: cross
 #+filetags: 
 #+created: 2026-09-17
 #+updated: 2026-09-17
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
+
+*Resolved 2026-09-17.* The namespace was fixed rather than the readers,
+in [[id:E2929BA0-00ED-4AD6-BB20-AC9CB518B3FB][Route has_parent_id to
+the entity root and rebind the entities the defect masked]], under
+[[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature
+namespace so profile bindings take effect]]. The four explicit lines came
+out, and the eleven flat entities the defect had masked were rebound to a
+profile that describes them. The capture sits in =discarded= because the
+work became a story without being promoted through =compass capture
+promote=, so there is no promoted copy for it to point at.
+
+The original text follows.
 
 The profile merger files =has_parent_id= under =sql=, because that is
 what =_FEATURE_NAMESPACE= says. =core.py= and the mustache templates
@@ -24,7 +36,8 @@ regeneration. Four models keep the line for this reason. They are
 =business_unit=, =counterparty= and =party= in refdata, and =folder= in
 synthetic.
 
-Fix the namespace or fix the readers, then remove the four lines.
+The fix was to change the namespace, not the readers. The four lines
+are gone as of 2026-09-17.
 
 * Why
 

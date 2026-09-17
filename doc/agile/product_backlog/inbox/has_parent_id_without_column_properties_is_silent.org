@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: BB0C3B46-12F2-41CA-9DC4-809536407A33
+:END:
+#+title: Codegen: has_parent_id without its two column properties fails silently
+#+description: Turning has_parent_id on emits a recursive-CTE hierarchy function that names the entity's parent_id_column and hierarchy_name_field. If the model sets the feature without those two properties, the function is generated with empty column names and nothing fails. Eleven entities sat in exactly that state, hidden only by a separate namespace defect. A loader check that rejects the combination would turn the silence into a hard error at regeneration time.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:variability:guard:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When =has_parent_id= is true, the SQL facet generates a recursive-CTE
+=hierarchy_fn= whose body names the entity's =parent_id_column= and
+=hierarchy_name_field=. If the model sets the feature but not those two
+properties, the generator emits the function with empty column names.
+Nothing fails. Neither the loader nor any check inspects the
+combination.
+
+Add a check in =org_loader.py=, beside the profile merge: when the
+resolved entity has =has_parent_id= true and either column property is
+missing, raise. The check should run after =_apply_profile=, so a
+profile-supplied feature is covered too.
+
+* Why
+
+The failure mode is silence, and silence is the expensive part. The
+eleven entities described in
+[[id:4B656AD0-DA7B-41BE-998F-F6AF5E03B6C2][the namespace capture]] sat in
+exactly this state for as long as they did because no signal ever fired.
+A separate defect hid them, but had the namespace been correct from the
+start, those eleven would have generated hierarchy functions naming
+empty columns and no one would have been told.
+
+The profile documents the requirement in prose, in its Reference entity
+section, and that was not enough. A model can bind
+=self-referencing-hierarchy= and pass every existing check.
+
+The check converts a silent wrong output into a hard error at
+regeneration time, which is where the author can act on it.
+
+* References
+
+- [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]] — states the two-property requirement in its Reference entity section.
+- [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model — SQL]] § "Hierarchy: =has_parent_id=" — describes what the two properties name.
+- =projects/ores.codegen/src/codegen/org_loader.py= — =_apply_profile= and =_FEATURE_NAMESPACE=.
+
+* See also
+
+- [[id:4B656AD0-DA7B-41BE-998F-F6AF5E03B6C2][Codegen: has_parent_id lands in the sql namespace but is read at the entity root]] — the defect that masked this one.
+- [[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature namespace so profile bindings take effect]] — the story that fixed that defect and recorded this as out of scope.

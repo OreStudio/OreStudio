@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 5FFB587D-D85A-4B51-8C80-0F8D485754A7
+:END:
+#+title: Story: Migrate remaining ~100 entity models from JSON to org
+#+description: Complete the org-migration story: convert the remaining legacy JSON-format entity models to the literate .org entity-model format.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Complete the org-migration story: convert the remaining legacy JSON-format entity models to the literate .org entity-model format.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | BACKLOG | | | Task for: Migrate remaining ~100 entity models from JSON to org |
+
+* Decisions
+
+* Out of scope
+
+-

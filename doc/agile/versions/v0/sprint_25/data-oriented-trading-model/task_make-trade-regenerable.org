@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: FBE43DB4-AC3C-4589-8372-E2803C4C44E8
+:END:
+#+title: Task: Make the trade entity regenerable
+#+description: Regenerating trade clobbers 28 of its 30 outputs because the org grammar cannot express the five-group composition, the bespoke service and handler, the hand-added SQL indexes and temporal trigger, or the Qt estate.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/make-trade-regenerable
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerating the trade entity produces output byte-identical to the checked-in tree, so the architectural changes that follow can be made in the models rather than by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- The org grammar expresses the five-group nested domain composition, so trade.hpp regenerates with its sub-structs and its wire format unchanged.
+- The bespoke trade_service and trade_handler members are org-declared rather than hand-written.
+- The trade schema's temporal trigger and its seven non-unique indexes are expressed in the model.
+- The nine ores.qt Trade files regenerate without losing hand-evolved behaviour, or are recorded as a deliberate exception with the reason.
+- Regenerating trade twice is idempotent and leaves the tree clean; the full build and ctest stay green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

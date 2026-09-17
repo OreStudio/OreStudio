@@ -28,9 +28,9 @@ Survey every ores.reporting entity against the profile catalogue, rebind matches
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] |
-| Now          | Both commits landed. The drift gate is green. The database is current and all 23 services run. The legacy archetype references are gone. |
-| Waiting on   | The full =rat= ctest run. |
-| Next         | Report the =rat= result. Then the remaining findings as captures. |
+| Now          | Acceptance met. The full =rat= run is green: 72 suites, 0 failures. |
+| Waiting on   | Nothing. |
+| Next         | The remaining findings as captures. |
 | Last touched | 2026-09-17                             |
 
 * Acceptance
@@ -543,6 +543,18 @@ this task's own commit. The database therefore holds the new
 After the recreate all 23 services started, including =marketdata= and
 =synthetic=. No service fails now. The two earlier failures were stale-schema
 symptoms, not defects in those components.
+
+*The full suite is green. The acceptance is met.*
+
+=./compass.sh build rat --preset linux-clang-debug-make= ran 72 test suites
+and exited 0. It reports zero =failed:= lines, and 62 suites print "All tests
+passed". The acceptance clause "Full local build and ctest green after
+regeneration" is therefore satisfied.
+
+=ores.reporting.core.tests= passes all 18 test cases with 58 assertions in
+this run. The four eventing integration tests that failed on the stopped
+environment now pass. The two targets that failed on the stale database,
+=ores.compute.core.tests= and =ores.analytics.core.tests=, both pass.
 
 *The drift check passes once the tree is committed.*
 

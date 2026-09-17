@@ -66,6 +66,11 @@ add_compile_options(
     # built by this same toolchain against these same headers, so the ABI
     # mismatch the warning exists to catch cannot arise here.
     $<$<CXX_COMPILER_ID:MSVC>:/wd4251>
+    # C4275 is C4251's counterpart for base classes. The exception types
+    # exported by ores.platform derive from std::exception and
+    # boost::exception, which carry no dll-interface. Dropping the bases
+    # to silence it would cost every catch site its standard handling.
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4275>
     # /FS forces synchronous PDB writes so sccache can cache /Zi compilations.
     # Without it, parallel cl.exe invocations race on the shared .pdb file.
     $<$<CXX_COMPILER_ID:MSVC>:/FS>)

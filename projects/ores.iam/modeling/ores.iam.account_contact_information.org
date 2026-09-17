@@ -25,7 +25,7 @@ Operations/Settlement/Billing split).
 :schema:    public
 :product:   ores
 :component: iam
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :END:
 
 * Columns
@@ -337,7 +337,6 @@ predates the context-carrying form the auto-seeding blocks use.
 :history_message_type:    get_account_contact_information_history_request
 :has_explorer_api:        true
 :has_export_macro:        true
-:has_pagination:          true
 :parent_entity_singular:  account
 :parent_id_field:         account_id
 :parent_id_field_camel:   accountId

@@ -24,7 +24,7 @@ parent.level.
 :schema:        public
 :product:       ores
 :component:     refdata
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :END:
 
 * Columns
@@ -239,7 +239,6 @@ $$ language plpgsql;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:          ores.refdata.api/domain/business_unit_type.hpp
 :domain_class:            refdata::domain::business_unit_type
 :protocol_include:        ores.refdata.api/messaging/business_unit_type_protocol.hpp

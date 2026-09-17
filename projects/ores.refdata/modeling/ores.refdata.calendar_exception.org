@@ -33,7 +33,7 @@ data.
 :schema:    public
 :product:   ores
 :component: refdata
-:profile:   self-referencing-hierarchy
+:profile:   uuid-identified-lookup
 :seed_country_sentinel: true
 :END:
 
@@ -195,7 +195,6 @@ std::string("Test exception")
 :collection_name:             calendar_exceptions
 :item_var:                    exc
 :key_field:                   id
-:has_pagination:              true
 :has_export_macro:            true
 :get_request_class:           refdata::messaging::get_calendar_exceptions_request
 :get_response_class:          refdata::messaging::get_calendar_exceptions_response

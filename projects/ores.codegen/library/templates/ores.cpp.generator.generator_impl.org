@@ -163,6 +163,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
 {{#generator_expr}}
 {{#requires_unique_suffix}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}} + "-"
@@ -186,6 +187,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/requires_unique_suffix}}
 {{/is_plain_string}}
 {{/generator_expr}}
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
     r.{{#has_audit_group}}audit.{{/has_audit_group}}modified_by = modified_by;

@@ -2,14 +2,16 @@
 :ID: 35C549C4-A6C0-4037-84DF-63E677C8C61E
 :END:
 #+title: ores.shell.application
-#+name: shell.application
-#+full_name: ores.shell.application
 #+description: The shell host — process entry point, config parsing, REPL loop, script runner, and the command units that register against the menu.
 #+type: ores.codegen.component
+#+component_kind: adapter
 #+level: cross
 #+filetags: :shell:repl:application:component:
 #+created: 2026-09-16
 #+updated: 2026-09-16
+#+name: shell.application
+#+full_name: ores.shell.application
+#+brief: The interactive shell host and REPL loop
 
 * Diagram
 

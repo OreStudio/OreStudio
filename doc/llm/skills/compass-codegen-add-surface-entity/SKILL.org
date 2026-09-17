@@ -9,7 +9,7 @@
 #+level: s1
 #+filetags: :llm:skill:skills:claude_code:codegen:entity:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-09-16
 
 #+begin_export markdown
 ---
@@ -69,16 +69,24 @@ different surface: use
 
 * Codegen gap
 
-None of these four surfaces has a codegen profile, so the code in them is
-written by hand. That is a gap to close rather than a standing arrangement:
-generated structure is the target state for every surface
+The CLI, the HTTP API and the Wt web UI have no codegen profile, so the code
+in them is written by hand. That is a gap to close rather than a standing
+arrangement: generated structure is the target state for every surface
 ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]).
 
-When a surface is reached during entity work, raise a sprint story for its
-profile, link it to the entity task, and reference
+When one of those three surfaces is reached during entity work, raise a
+sprint story for its profile, link it to the entity task, and reference
 [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps"
 for what the profile must cover. Once the profile lands, regenerate the
 surface and discard the hand-written code.
+
+The shell left that list on 2026-09-16. The
+[[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] facet
+generates one command unit per entity into the =ores.shell.<domain>= adapter
+part, so an entity's shell verbs become a codegen run. The trading units are
+mid-migration: [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] retires the
+hand-written units one component at a time, and until it finishes the two
+flows coexist.
 
 * Recipes
 

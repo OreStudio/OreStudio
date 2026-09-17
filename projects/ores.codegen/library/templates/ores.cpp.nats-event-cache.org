@@ -67,8 +67,8 @@ default (=std::hash<Key>=).
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] | Consumer-side ={entity}_cache.hpp=: a =partitioned_cache= instantiation with a =load(tenant_id)= method calling the entity's =read_for_cache= RPC. |
-| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][ores.cpp.nats-event-cache.registrar_wiring]] | Consumer-side ={entity}_cache_registrar.hpp=: a =warm_and_subscribe_{entity}_cache()= free function doing startup warm-up and change-event-driven reload, for a hand-written consumer registrar to call. |
+| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] | Consumer-side entity-mirror cache class: a partitioned_cache instantiation warmed/reloaded via the entity's read_for_cache RPC. =nats-event-cache= facet. |
+| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][ores.cpp.nats-event-cache.registrar_wiring]] | Startup warm-up + change-event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet. |
 
 * See also
 

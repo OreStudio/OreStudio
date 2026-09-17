@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 605D4280-E1CC-431C-94BB-867B94C1B77C
 :ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.equity_digital_option_instrument
 #+description: Codegen entity model for the trading =equity_digital_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

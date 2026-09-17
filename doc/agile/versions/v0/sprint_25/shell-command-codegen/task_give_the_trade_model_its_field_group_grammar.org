@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 5BB7DD1E-1699-4249-97D3-F002E99D8B32
+:END:
+#+title: Task: Give the trade model its field-group grammar
+#+description: Teach the trade entity model to state which field group each column belongs to, and teach the shell-command generator to read it, so the trade command unit can be generated.
+#+type: task
+#+level: s1
+#+filetags: :shell-command-codegen:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=domain::trade= composes five groups: =identity=, =parties=, =classification=, =lifecycle= and =audit=. The shell-command generator derives =member_access= for the identity group only, so it writes flat members such as =v.book_id= and =v.trade_date=, and clang reports 20 errors of the form =no member named 'book_id' in 'ores::trading::domain::trade'=. The trade model records the grouping solely as dotted paths in its Table display section, and the Columns section carries no property the generator reads. =trade= is the only trading entity whose domain struct nests columns under groups beyond identity and audit, so the gap is invisible to every other unit. The model must state each column's group for =member_access= to be derivable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- The trade model states the field group of every column that lives in a group.
+- The generator derives member_access from that property, for every group and not only identity.
+- The trade command unit generates, builds and passes its tests.
+- The units that already generate are byte-identical after the generator change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The gap was measured on the =task_generate-the-trading-command-units= branch.
+Opting =ores.trading.trade= in and generating produced 20 clang errors, all
+of the form =no member named 'book_id' in 'ores::trading::domain::trade'=,
+then =too many errors emitted, stopping now [-ferror-limit]=. The three
+generated files were deleted and the model reverted, so nothing of that probe
+is on the branch.
+
+The declaration that fixes the shape is
+=projects/ores.trading/api/include/ores.trading.api/domain/trade.hpp:43-49=:
+
+#+begin_src cpp
+struct trade final {
+    trade_identity identity;
+    trade_parties parties;
+    trade_classification classification;
+    trade_lifecycle lifecycle;
+    trade_audit audit;
+};
+#+end_src
+
+The vector shape on the wire is not the blocker. =trade_protocol.hpp= holds
+=std::vector<ores::trading::domain::trade> trades;= in both
+=get_trades_response= and =save_trade_request=, and =save_trade_request= has
+the =from()= factory the template calls, so only the member paths are wrong.
+
+The grouping is recorded today only in the model's =** Table display= section,
+as dotted paths such as =classification.trade_type=:
+
+| column                    | header      |
+|---------------------------+-------------|
+| identity.id               | ID          |
+| lifecycle.trade_date      | Trade Date  |
+| classification.trade_type | Type        |
+| audit.modified_by         | Modified By |
+| identity.version          | Version     |
+
+That section also fixes a display order, so it is not the place to state a
+structural fact. The new property belongs on the column itself.
+
+=trade= is not the only entity with a nested domain struct, but it is the only
+one of the 37 the hand-written surface serves that nests beyond identity and
+audit. =bond_instrument= is identity plus a flat middle plus audit, and
+=trade_type= and =lifecycle_event= are fully flat. So the wider trading estate
+may hold more of these once the compound-key entities come into scope.
+
+=trades history --diff= is broken independently of this task. The unit calls
+=render_history_diff= for entity type =ores.trading.trade= and no provider is
+registered under that name, so the history service answers with a not-found
+error. The other six no-audit-group entities have providers.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

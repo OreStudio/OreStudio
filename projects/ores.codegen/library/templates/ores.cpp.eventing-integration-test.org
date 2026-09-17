@@ -60,7 +60,7 @@ presentation).
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:5365DC63-A9BF-4C19-9822-C5BA9B6F9A23][ores.cpp.eventing-integration-test.nats_integration_test]] | Write-then-observe-NATS-notification Catch2 test. =eventing-integration-test= profile. |
+| [[id:5365DC63-A9BF-4C19-9822-C5BA9B6F9A23][ores.cpp.eventing-integration-test.nats_integration_test]] | Write an entity via its repository, assert the resulting NATS entity-changed notification is observed. =eventing-integration-test= profile. |
 
 * See also
 

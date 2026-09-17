@@ -27,6 +27,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_args.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_feedback.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_token.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/history_diff_renderer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/ores.shell.app.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/pagination_context.hpp"

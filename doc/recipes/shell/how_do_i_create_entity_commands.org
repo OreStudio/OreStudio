@@ -2,14 +2,14 @@
 :ID: 083C1060-F952-4505-B066-FED5684CDD5D
 :END:
 #+title: How do I create shell commands for a new entity?
-#+description: Walk through list, add, history, and delete commands for a new entity in ores.shell.
+#+description: Opt an entity into the shell-command facet, generate its command unit, register it in the component aggregator, and refresh the part file lists.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:entity:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-09-16
 
-Command class layout, registration pattern, and file locations are in
+The unit shape, the two shapes and the file locations are in
 [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]]. The [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] skill drives this process.
 
 * Question
@@ -18,35 +18,76 @@ How do I add shell REPL commands for a new entity in =ores.shell=?
 
 * Answer
 
-*Phase 1 — list and add* (PR: =[shell] Add {entity} list and add commands=):
+Do not write the unit. Generate it.
 
-1. Create ={entity}_commands.hpp= in =include/ores.shell/app/commands/=
-   with the static class shape from [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]].
-2. Implement ={entity}_commands.cpp= in =src/app/commands/=: create
-   the submenu, register list and add operations.
-3. Call ={entity}_commands::register_commands(menu, session)= from
-   =src/app/application.cpp=.
-4. Build and smoke-test: start =ores.shell= and exercise ={entities} list=
-   and ={entities} add=.
+1. *Annotate the columns.* The add verb reads one positional per
+   user-supplied column. The =:supplied_by:= annotation on a column names its
+   source, and it has four values: =user=, =minted=, =session_party= and
+   =unset=. Most columns need no annotation, because =user= is the default,
+   and a uuid primary key already defaults to =minted=. Write the annotation
+   only where the default is wrong. A column the caller does not supply takes
+   =unset=; a column that holds the acting party takes =session_party=.
 
-*Phase 2 — history* (PR: =[shell] Add {entity} history command=):
+2. *Opt the entity in.* Add this entry to the top-level properties drawer of
+   the entity model, beside =:ID:=:
 
-1. Add =process_get_{entity}_history= handler.
-2. Register =history= subcommand in =register_commands=.
-3. Build and smoke-test.
+   #+begin_src org
+   :ores.cpp.shell-command.enabled: true
+   #+end_src
 
-*Phase 3 — recipe docs* (PR: =[doc] Add {entity} shell command recipes=):
+3. *Generate the unit.*
 
-1. Add =how_do_i_*.org= recipes under [[proj:doc/recipes/shell][=doc/recipes/shell/=]] (one per
-   operation).
+   #+begin_src sh
+   ./compass.sh codegen generate --model projects/ores.<component>/modeling/ores.<component>.<entity>.org --address ores.cpp.shell-command
+   #+end_src
+
+   Three files appear in the entity's adapter part: a header, an
+   implementation and a test. The archetype sets clang-format on the output.
+
+4. *Register the unit.* Open
+   =projects/ores.shell/application/src/app/commands/{component}/{component}_commands.cpp=
+   and add two lines, in alphabetical order with the others:
+
+   #+begin_src cpp
+   #include "ores.shell/app/commands/{component}/{entity}_commands.hpp"
+   #+end_src
+
+   #+begin_src cpp
+   {entity}_commands::register_commands(root_menu, session, pagination);
+   #+end_src
+
+   Delete the hand-written unit and its header for the entity in the same
+   change, so the submenu is not registered twice.
+
+5. *Refresh the part file lists.* The part declares =#+component_kind: adapter=,
+   so codegen owns its two file lists. The scan is a directory listing, and
+   only this script writes it:
+
+   #+begin_src sh
+   projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.shell.{component}
+   #+end_src
+
+6. *Build and test.*
+
+   #+begin_src sh
+   ./compass.sh build ores.shell.exe
+   ./compass.sh test run -- -R ores.shell
+   #+end_src
+
+   The generated test file pins the arity check, the malformed token that
+   names its field, and a valid token vector that reaches the transport. Read
+   it before the smoke test, so a failure there is a code failure and not a
+   surprise.
 
 * Tested by
 
 Start =ores.shell=, connect, and exercise each subcommand interactively
-against a local database.
+against a local database. Every entity's cases carry the
+={entity}_commands= prefix, so =ores.shell.{component}.tests --list-tests=
+gives a per-entity handle on a component's suite.
 
 * See also
 
-- [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — class layout, registration, file locations.
+- [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — class layout, the two shapes, file locations.
 - [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

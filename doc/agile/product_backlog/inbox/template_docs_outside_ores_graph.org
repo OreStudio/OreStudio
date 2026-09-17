@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 4FC465DC-A5E0-47E5-8B05-AAC55682226E
+:END:
+#+title: Legacy template docs sit outside the ores.* physical-space graph
+#+description: Eleven archetype-named template-library pages (doc_facet_org, doc_facet_group_org, doc_technical_space_org, doc_archetype_org, doc_profile_org, doc_feature_org, and five sql_* files) are typed knowledge, carry no facet keyword, and are named for the template they hold rather than by MASD address. The inventory generator globs ores-star-dot-org only, so it cannot see them, and their facets (ores.doc.template and the ores.sql facets) report zero archetypes. Migrate each to the ores DOT facet DOT archetype filename shape with the archetype type and the facet keyword, preserving its ID and its tangle block, so the catalogue lists them.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Eleven pages in =projects/ores.codegen/library/templates/= are titled
+=Archetype: ...= but are typed =#+type: knowledge= and carry no
+=#+facet:= keyword. They are also named for the template they hold
+(=doc_facet_org.org=) instead of by MASD address. The pages are
+=doc_facet_org=, =doc_facet_group_org=, =doc_technical_space_org=,
+=doc_archetype_org=, =doc_profile_org=, =doc_feature_org=, and five
+=sql_*= pages.
+
+The inventory generator at
+=projects/ores.codegen/scripts/regenerate_physical_space_inventories.py=
+globs =ores.*.org= only, so it never sees them. Every facet they belong to
+therefore reports zero archetypes in its generated table, even though the
+facet's own prose names the templates.
+
+Migrate each page to the =ores.<facet>.<archetype>.org= filename, set
+=#+type: archetype= and =#+facet: <facet>=, and keep the =:ID:= and the
+=#+begin_src mustache :tangle ...= block unchanged so the tangle target
+still resolves. Then regenerate the inventories.
+
+* Why
+
+The gap is invisible from the graph side: a facet page with no archetypes
+looks like a facet with no templates. It became visible on 2026-09-16 when
+the inventory regeneration replaced a hand-maintained four-row table on
+=ores.doc.template= with an empty generated one, and dropped two rows from
+=ores.doc.modeling= for =doc_profile_org= and =doc_feature_org=. Both pages
+recovered the rows into a section the generator does not own, but that is a
+patch, not a fix.
+
+The same mis-typing may reach further than these eleven pages, and the
+=ores.qt= facet showed a related symptom: its old table claimed 12
+archetypes while 9 pages exist.
+
+* References
+
+- =projects/ores.codegen/scripts/regenerate_physical_space_inventories.py= —
+  the generator that globs =ores.*.org=.
+- =doc/agile/versions/v0/sprint_25/shell-command-codegen/story.org= — the
+  wave whose inventory regeneration surfaced this.
+
+* See also
+
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

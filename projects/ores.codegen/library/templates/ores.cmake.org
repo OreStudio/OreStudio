@@ -41,7 +41,7 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] | 6 | Per-component CMake build files: root, src (kind-keyed), tests, modeling. |
+| [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] | 9 | Per-component CMake build files: root, src (kind-keyed), tests, modeling. |
 | [[id:88E4746E-DB9A-4BDB-8C7E-5F4571D3024D][ores.cmake.service]] | 1 | Service-component src CMakeLists variant. |
 
 * See also

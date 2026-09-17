@@ -18,5 +18,6 @@
 #
 set(files
     "app_command_args_tests.cpp"
+    "app_command_token_tests.cpp"
     "main.cpp"
 )

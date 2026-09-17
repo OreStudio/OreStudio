@@ -266,6 +266,30 @@ Variables for inter-service messaging archetypes.
 | =service_registry= | Name of the NATS service registry entry.                     | =ores.accounts=    |
 | =services=         | List of service definitions (loop section).                  | (list)             |
 
+* Shell command specifics
+
+Variables for the =ores.cpp.shell-command= archetypes, which project one
+entity onto one shell REPL command unit and its tests.
+
+| Variable                    | Description                                              | Example               |
+|-----------------------------+----------------------------------------------------------+-----------------------|
+| =user_supplied_count=       | Positionals the add verb reads, one per =user=-supplied column, before the change reason and the change commentary. | =3=   |
+| =add_positional_count=      | The add verb's full positional arity: =user_supplied_count= plus the change reason and the change commentary. | =5= |
+| =has_audit_group=           | True when the entity declares =:domain_audit_group:=, so the unit nests =audit.= and keeps a plain history verb. | =true= |
+| =has_bool_columns=          | True when a user-supplied column is a plain =bool=, so the unit emits its own =true=/=false= parser. | =true= |
+| =has_session_party_columns= | True when a column reads the acting party from the session, so the add verb can refuse an account with no default party. | =true= |
+| =delete_request_id_field=   | Request member the delete verb fills: the key column plus =s= for a text key, else =ids=. | =codes= |
+| =history_request_id_field=  | Request member the history verb fills.                   | =code=                |
+| =malformed_token_column=    | The first user-supplied column whose parse rejects a token: its =name=, =positional_index=, =token= and =error=. Absent when every column accepts any token. | (object) |
+| =is_user_supplied=          | Per column: the verb reads this member from a positional. | =true=               |
+| =is_minted=                 | Per column: the verb mints a fresh uuid.                 | =true=                |
+| =is_session_party=          | Per column: the verb reads the acting party from the session. | =true=           |
+| =is_enum=                   | Per column: a non-nullable enum, parsed with the type's own =_from_string=. | =true= |
+| =enum_short_name=           | Per enum column: the type name the unit's =namespace domain= alias leaves. | =product_type= |
+| =member_access=             | Per column: the member path on the domain struct, prefixed with =identity.= when the column is in the identity group. | =identity.tenant_id= |
+| =positional_index=          | Per user-supplied column: its zero-based position in the add verb's token vector. | =2=   |
+| =sample_token=              | Per user-supplied column: a token its own parse accepts, for the generated test's valid vector. | =swap=   |
+
 * CMake specifics
 
 | Variable   | Description                                     | Example                  |

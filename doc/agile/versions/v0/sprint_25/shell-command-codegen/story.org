@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A
+:END:
+#+title: Story: Generate shell command units per component
+#+description: Land the ores.cpp.shell-command facet and generate each component's shell command units into its own adapter part, retiring the hand-written units component by component. ores.trading goes first.
+#+type: story
+#+level: s2
+#+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
+#+created: 2026-09-16
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The shell's per-entity command units are hand-written and hand-wired, and the shell has no part to receive generated ones. The ores.cpp.shell-command facet now emits one command unit from one entity model. Land that facet, give ores.shell a part per domain area, and generate the trading units into ores.shell.trading, so adding an entity's shell verbs becomes a codegen run that touches no shared file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | The facet and the ores.shell.trading part are landed. Twenty-two trading units are generated into the part, the part is linked into the application, the superseded hand-written units are deleted, both documents are rewritten, and the build and the shell suites are green. Fifteen trading entities are excluded and named in the task Result, and each of the three that can be closed has its own task. |
+| Waiting on    | Nothing.                               |
+| Next          | Raise the PR. The =shell= drift gate passes, and every one of the 22 units regenerates clean from its own model and the committed templates. The live check through the shell is the one item left open, because it needs the service fleet and the shell builds its menus after login. The rates protocol migration, the trade field-group grammar, and the container add verbs follow in their own tasks. |
+| Last touched  | 2026-09-17                               |
+
+* Acceptance
+
+- The =ores.cpp.shell-command= facet is in the template library, and its two
+  archetypes write into the adapter part of the entity's own component.
+- =ores.shell= is a composite whose parts include =trading=, and the composite
+  root and the part file lists regenerate with no difference.
+- The trading command units in =projects/ores.shell/trading/= are codegen
+  output, the hand-written units are gone from the =application= part, and the
+  shell's trading surface answers as it did before.
+- The full preset build and the ctest suite are green. The units are verified
+  against their models by a direct per-entity regeneration, because no
+  component drift gate reaches an archetype that writes into another
+  component's tree.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:824C610A-E8A9-4BE2-B8A0-59527458E66B][Land the shell-command facet and the ores.shell.trading part]] | DONE | 2026-09-16 | 2026-09-16 | Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree. |
+| [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] | DONE | 2026-09-16 | 2026-09-16 | Opt the trading entities in, generate their command units into the new part, link the part into the application so the hand-written aggregator reaches them, delete the hand-written units the generated ones replace, and prove the surface with a build, the suites, and a live check through the shell. |
+| [[id:C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842][Migrate the rates instruments to the generated protocol]] | BACKLOG | | | Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 22. |
+| [[id:5BB7DD1E-1699-4249-97D3-F002E99D8B32][Give the trade model its field-group grammar]] | BACKLOG | | | Teach the trade entity model to state which field group each column belongs to, and teach the shell-command generator to read it, so the trade command unit can be generated. |
+| [[id:CADAD363-E952-448A-B19C-66025AEBE018][Generate container add verbs in the shell command facet]] | BACKLOG | | | The bond instrument add verb assembles a container across three services in one command: the issue, the instrument, and the engaged option or trs fact row. The facet renders one row from one entity model, so bond_instrument stays hand-written until the model and the facet can express the container. |
+
+* Decisions
+
+- *One part per domain area.* The generated unit lands in the part named after
+  the domain it projects, so only the adapter that owns the domain links the
+  domain's protocol types. This is the fractal naming rule in
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+- *The units replace, not join.* The hand-written unit for an entity is deleted
+  in the same change that generates its replacement, so the shell never carries
+  two units for one submenu.
+- *A column states who supplies its value* (2026-09-16). The add verb reads one
+  positional per user-supplied column, and the entity model did not say which
+  columns those were. =:supplied_by:= fills that gap. The four values are
+  =user=, =minted=, =session_party= and =unset=. =user= is the default and
+  consumes the next positional. A uuid primary key defaults to =minted=, since
+  the client owns the key of a row that does not exist yet; any other key
+  defaults to =user=, since a text key such as a code is the caller's to
+  choose. =session_party= reads the acting party from the session and fails
+  when the account has no default party. =unset= leaves the member at its
+  default. The generator turns the annotation into the ={{user_supplied_count}}=
+  arity and the ={{#is_*}}= sections, so the template never branches on a
+  supply source it does not expect. The tenant is not a column and takes no
+  annotation; the template names it and fills it from the session. The arity
+  counts the primary key's members once each, because the key dict mirrors its
+  first member at the top level for the consumers that read a single-column
+  key. Counting the mirror as well would count a single-column key twice, and
+  reading only the mirror would skip a compound key's later members; either
+  way the arity would disagree with the positionals the template reads.
+- *The trading component is never regenerated whole* (2026-09-16). =trade= and
+  =trading-cpp= sit outside =KNOWN_DRIFT_FREE= by the decision of 2026-09-06 in
+  [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]], which measured
+  37 clobbered outputs at bind and left the registry entry to an estate rework
+  story. The drift has grown since. A component-wide regeneration of
+  =trading-cpp= today rewrites 132 tracked files and materialises 44 untracked
+  ones, none of them this wave's. The hazard for this wave is bounded, because
+  the shell-command facet writes only into =projects/ores.shell/trading/= and
+  the =shell= entry is drift-free. The rule is therefore: generate trading units
+  one entity at a time, and never run
+  =check_component_drift.py --component trading-cpp= on this branch.
+- *The component aggregator stays hand-written* (2026-09-16). One aggregator per
+  component wires the units to the REPL host. It lives in the application part
+  and carries one include and one =register_commands= call per entity. A
+  generated aggregator needs a render-time list of the component's opted-in
+  entities, which is the pattern the generator already uses for
+  =_COMPONENT_FILES_TEMPLATES=, and the facet has no component-scoped archetype
+  for it today. The wiring cost is one line per entity, so the archetype is not
+  worth its complexity yet. The consequence for the part is that the
+  application links =ores.shell.<component>.lib=; a static library's =PRIVATE=
+  dependency still reaches the executables.
+- *A new facet regenerates the physical-space inventories* (2026-09-16). The
+  facet and archetype tables in the parent pages are generated from the
+  children's frontmatter, and a facet that is absent from its parent's table is
+  invisible to anything that reads the catalogue. Landing
+  =ores.cpp.shell-command= therefore includes
+  =regenerate_physical_space_inventories.py=. The same run cleared eighteen
+  pages that earlier waves had left stale.
+- *The drift gate for the units is a direct regeneration* (2026-09-17). The
+  acceptance criterion first read "the codegen drift gate covers the new
+  part". It cannot hold as written. =check_component_drift.py --component
+  shell= regenerates the composite root alone, and the units are outputs of
+  =ores.trading= entity models, so the =trading= gate is the one that would
+  reach them, and this branch forbids it. The criterion now states the gate
+  that exists: regenerate each opted-in entity at =ores.cpp.shell-command=
+  and confirm the tree is unchanged. A general check for an archetype that
+  writes into another component's tree needs its own task.
+- *A container entity stays hand-written* (2026-09-17). The facet renders one
+  row from one entity model, so it cannot express an add verb that builds the
+  =bond_issue=, the instrument, and the engaged fact row in one command.
+  =bond_instrument= is de-opted and its hand-written unit returns to the
+  application part. Task CADAD363 owns the facet change that would readmit it.
+
+* Out of scope
+
+- The other adapter components. =ores.qt= and the remaining domains keep their
+  hand-written units until their own tasks land.
+- Declaring the kind on the other adapter parts. =ores.shell= declares
+  =#+component_kind: adapter= on its parts, and =ores.qt= does not. The
+  =ores.qt= parts are not reachable from a catalogue slug, so the undeclared
+  kind is inert there today; it stops being inert the day =ores.qt= joins the
+  catalogue. Follow-up task.
+- The adapter part build files. An adapter part carries hand-authored CMake by
+  design. The =#+component_kind: adapter= declaration keeps codegen to the two
+  file lists, so a regeneration never writes over the link libraries. See
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].

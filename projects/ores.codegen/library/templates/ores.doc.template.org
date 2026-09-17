@@ -39,14 +39,25 @@ its own output survives rendering as literal mustache — the same
 trick this library uses one level up, applied recursively to its own
 scaffold.
 
+* The self-hosting scaffolds
+
+The four templates below are the oldest in the library. They predate the
+=ores.*= address convention, so their documents are named for the template
+they hold and carry =#+type: knowledge= rather than =#+type: archetype=.
+The inventory generator reads only =ores.*= pages, so it cannot list them
+and the generated =* Archetypes= table stays empty. The documents are:
+
+| Template | Document | Description |
+|----------+----------+-------------|
+| =doc_facet.org.mustache= | [[id:968358DF-06AD-4C5F-A01D-E8A2A9DBED29][doc_facet_org]] | This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, per-template section guidance. |
+| =doc_facet_group.org.mustache= | [[id:DED04B44-7D28-46F3-86BA-681182046038][doc_facet_group_org]] | This library's group doc scaffold: generated =* Facets= inventory note and shared-conventions section. |
+| =doc_technical_space.org.mustache= | [[id:D95EB7CE-E078-4599-B7F2-7A32B4A5B1C4][doc_technical_space_org]] | Technical-space node doc scaffold: lists the facets in the technical space, links up to the =ores= root. |
+| =doc_archetype.org.mustache= | [[id:EEFD9372-B7FD-4A69-A3D7-5F61697753D2][doc_archetype_org]] | Archetype doc scaffold: the per-template literate source page itself. |
+
 * Archetypes
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:968358DF-06AD-4C5F-A01D-E8A2A9DBED29][doc_facet.org.mustache]] | This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, per-template section guidance. |
-| [[id:DED04B44-7D28-46F3-86BA-681182046038][doc_facet_group.org.mustache]] | This library's group doc scaffold: generated =* Facets= inventory note and shared-conventions section. |
-| [[id:D95EB7CE-E078-4599-B7F2-7A32B4A5B1C4][doc_technical_space.org.mustache]] | Technical-space node doc scaffold: lists the facets in the technical space, links up to the =ores= root. |
-| [[id:EEFD9372-B7FD-4A69-A3D7-5F61697753D2][doc_archetype.org.mustache]] | Archetype doc scaffold: the per-template literate source page itself. |
 
 * See also
 

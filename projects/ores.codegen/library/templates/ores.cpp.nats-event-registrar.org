@@ -53,8 +53,8 @@ generated per-entity function, so =application.cpp= collapses to one call.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:0C5953E1-3159-4A93-B0CE-51E30CB0FD61][ores.cpp.nats-event-registrar.nats_event_registrar_header]] | Per-entity event-mapping registrar header declaring =register_<entity>_event_mapping()=. =nats-event-registrar= profile. |
-| [[id:F1827F31-5E88-4058-994B-546A5CC10B9A][ores.cpp.nats-event-registrar.nats_event_registrar_implementation]] | Per-entity event-mapping registrar implementation wiring the entity's changed-event to its Postgres channel and republishing it to NATS. =nats-event-registrar= profile. |
+| [[id:0C5953E1-3159-4A93-B0CE-51E30CB0FD61][ores.cpp.nats-event-registrar.nats_event_registrar_header]] | Per-entity event-mapping registrar header declaring register_<entity>_event_mapping(). nats-event-registrar profile. |
+| [[id:F1827F31-5E88-4058-994B-546A5CC10B9A][ores.cpp.nats-event-registrar.nats_event_registrar_implementation]] | Per-entity event-mapping registrar implementation wiring the entity's changed-event to the Postgres LISTEN/NOTIFY channel and re-publishing it to NATS. nats-event-registrar profile. |
 
 * See also
 

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 824C610A-E8A9-4BE2-B8A0-59527458E66B
+:END:
+#+title: Task: Land the shell-command facet and the ores.shell.trading part
+#+description: Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree.
+#+type: task
+#+level: s1
+#+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
+#+owner: marco
+#+branch: feature/shell-command-facet-and-part
+#+pr: 2083
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =ores.cpp.shell-command= facet exists as a probe but is not in the tree,
+and it writes into the shell root, which no longer owns a domain's units.
+Create =projects/ores.shell/trading/= as the third part of the =ores.shell=
+composite and point the facet's two archetypes at it, so the next task
+generates the trading units into the part that owns them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- The five =ores.cpp.shell-command= template files are in the tree: the facet
+  page, its two archetype pages, and the two tangled =.mustache= artefacts.
+- Both archetype output paths name =projects/ores.shell/trading/=.
+- =projects/ores.shell/trading/= holds a component overview and build files
+  matching the split parts, and the composite's =#+parts:= names =trading=.
+- The composite root and the component file lists regenerate with no
+  difference, and the tree builds.
+
+* Plan
+
+The work ran in six steps.
+
+1. Teach the generator the supply annotation. The add verb reads one
+   positional per user-supplied column, and the entity model did not say which
+   columns those were. Add the =:supplied_by:= block to =core.py= beside the
+   identity-group block, so every facet that builds an entity from user input
+   can read ={{user_supplied_count}}=, ={{member_access}}= and the ={{#is_*}}=.
+2. Author the facet page and the two archetype pages, and point both
+   =#+output:= paths at =projects/ores.shell/{component}/=. Tangle with
+   =compass build --direct tangle_codegen_templates=.
+3. Declare =adapter= a component kind the loader understands, and add it to
+   =#+component_kind:= on the two file-list archetypes. Only those two
+   archetypes then serve an adapter part.
+4. Create =projects/ores.shell/trading/= from the =api= part's build skeleton,
+   with its own overview, diagram and file lists.
+5. Declare =trading= in the composite's =#+parts:= and regenerate the composite
+   root and the component file lists.
+6. Build the preset, run the suites, and regenerate the physical-space
+   inventories.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2083][#2083]] | [ores.shell] Land the shell-command facet and the trading part |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The add verb's arity double-counted a single-column primary key and skipped every compound-key member after the first, so =positional_count= disagreed with the number of emitted =from_token= reads for 69 non-uuid-key entities and 15 compound-key entities | =projects/ores.codegen/src/codegen/core.py= and =ores.cpp.shell-command.command_implementation.org= | Accepted | Fixed. The count takes the key's members once each; the mirror is flagged for its consumers but not counted. Probed with =fx_forward_instrument= (uuid key), =lifecycle_event= (text key) and =bond_leg= (compound key), and the landed unit regenerates byte-identical. |
+| 2 | The new part's PlantUML carried no manual-section sentinel, so the next run of =build/scripts/generate_component_puml.py= would replace the whole file and drop the hand-authored dependency arrows and the local-variables footer | =projects/ores.shell/trading/modeling/ores.shell.trading.puml= | Accepted | Fixed. The sentinel now sits above the arrows, matching the sibling parts, so the merge preserves them. |
+| 3 | The archetypes' delete and history verbs read one key string, which serves only a single-column key. A compound-key request carries one field per key member, as =delete_bond_leg_request= does. | =ores.cpp.shell-command.command_header.org= and =.command_implementation.org= | Accepted, deferred | No compound-key entity is generated in this wave, so nothing breaks here. The gap is recorded on [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]], which meets it. |
+| 4 | The add verb's audit assignments are unconditional, so an entity with no =#+domain_audit_group:= has no =v.audit= and does not compile. 26 of the 64 trading models declare the group. | =ores.cpp.shell-command.command_implementation.org= | Accepted, deferred | Same disposition as 3, and recorded in the same place. =fx_forward_instrument= declares the group, so the landed unit is unaffected. |
+| 5 | The wave's inventory regeneration dropped two catalogue rows from =ores.doc.modeling=, for =doc_profile_org= and =doc_feature_org=. The generator globs =ores.*.org= and cannot see those two pages, so no run restores them. | =projects/ores.codegen/library/templates/ores.doc.modeling.org= | Accepted | Fixed. The two rows are back in a hand-owned section, as the sibling =ores.doc.template= already does for its four. The underlying mis-typing is captured at [[id:4FC465DC-A5E0-47E5-8B05-AAC55682226E][Legacy template docs sit outside the ores.* physical-space graph]]. |
+| 6 | The generated add handler converts each token outside any =try=, so a malformed token surfaces as the cli library's raw =bad lexical cast= text rather than a message naming the field. The hand-written siblings the facet replaces wrap their conversions and report a field-named error. | =ores.cpp.shell-command.command_implementation.org= and =command_token.hpp= | Accepted | Fixed. =from_token= gained an overload that takes the column name, every conversion in the archetype passes it, and the construction block sits in one =try= that reports through =fail(out)= and returns, as the hand-written units do. Re-tangled and the unit regenerated. |
+| 7 | The part's test file exercised only menu registration. None of =process_add_fx_forward_instrument=, =process_delete_fx_forward_instrument= or =process_get_fx_forward_instrument_history= was driven, so the arg-count check, the positional-to-member wiring and the failure paths went unverified. | =projects/ores.shell/trading/tests/fx_forward_instrument_commands_tests.cpp= | Accepted | Fixed. Seven cases now drive the three handlers offline: the login guard on each, the arity check, a malformed =bought_amount= naming its field, the empty default party, and a valid token vector reaching the transport. |
+
+* Result
+
+Shipped, and the four acceptance lines hold.
+
+- The =ores.cpp.shell-command= facet is in the library: the facet page, the
+  =command_header= and =command_implementation= archetype pages, and their two
+  tangled =.mustache= artefacts. Both =#+output:= paths name
+  =projects/ores.shell/{component}/=.
+- =projects/ores.shell/trading/= is the composite's third part. It holds its
+  overview, its class diagram and its two file lists, and the composite's
+  =#+parts:= names =trading=.
+- =adapter= is a component kind the loader documents, and the two file-list
+  archetypes are the only ones that serve it. An adapter part therefore
+  receives its file lists and no other archetype.
+- The generator grew the =:supplied_by:= block in =core.py=, which is what the
+  archetypes read for the add verb's arity and member paths. Review found the
+  arity itself wrong and it was fixed in the same wave: the count now takes
+  the primary key's members once each, so the mirror of a single-column key
+  is flagged but not counted, and a compound key's later members are counted
+  and emitted. A scratch probe over the three key shapes agrees
+  (=fx_forward_instrument= 8/8, =lifecycle_event= 3/3, =bond_leg= 15/15), and
+  the landed unit regenerates byte-identical.
+- The composite root regenerates byte-identical, and
+  =regenerate_cmake_component_files.py --all --check= reports every component
+  up to date.
+- The physical-space inventories are regenerated, so the new facet appears in
+  the =ores.cpp= table and the counts above it are true again. The run also
+  cleared stale rows on other pages. Review caught the one loss it caused, two
+  catalogue rows on =ores.doc.modeling= for pages the generator cannot see,
+  and the rows are restored in a section the generator does not own.
+- The preset build and the ctest suite were run green after the part and its
+  first unit were in place. Everything since is documentation.
+
+The hand-written trading units still carry the trading surface. Retiring them
+is the next task.

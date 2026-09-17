@@ -42,7 +42,7 @@ struct trade_type_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    ores::trading::domain::product_type product_type = ores::trading::domain::product_type::swap;
+    std::string product_type;
     bool has_options = false;
     bool has_extension = false;
     std::string modified_by;

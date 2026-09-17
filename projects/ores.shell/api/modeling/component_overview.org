@@ -2,14 +2,16 @@
 :ID: 9533D9D5-2928-4DC3-A39B-B48155B855EA
 :END:
 #+title: ores.shell.api
-#+name: shell.api
-#+full_name: ores.shell.api
 #+description: Shared shell plumbing — argument parsing, feedback stream state, pagination state, and the request helpers every command unit calls.
 #+type: ores.codegen.component
+#+component_kind: adapter
 #+level: cross
 #+filetags: :shell:repl:api:component:
 #+created: 2026-09-16
 #+updated: 2026-09-16
+#+name: shell.api
+#+full_name: ores.shell.api
+#+brief: Shared shell command plumbing
 
 * Diagram
 

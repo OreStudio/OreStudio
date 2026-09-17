@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 5DD8CE29-130E-4E4A-93C5-EF6E2800062A
 :ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.equity_swap_instrument
 #+description: Codegen entity model for the trading =equity_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

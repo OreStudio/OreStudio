@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: B053AA24-DC76-40E8-A399-8197BCB31849
+:END:
+#+title: No component drift gate covers an archetype that writes into another component
+#+description: check_component_drift.py regenerates only the models of the component it is given. The ores.cpp.shell-command facet routes an ores.trading entity model into projects/ores.shell/trading/, so no run of the shell component can reach those units and the trading component is the one the wave forbids. The 23 units were verified by hand instead, one entity at a time.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:component:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the drift gate cover generated output that lands outside the component
+whose models produce it. Two routes are open. The generator can record, per
+archetype, the component that owns each output path, so a run of the shell
+component regenerates every file under =projects/ores.shell/= no matter which
+model produced it. Or the registry can name the model sets a component's gate
+must cover, so =--component shell= regenerates the 23 trading entities that
+route into it, under a rule that writes only inside the shell tree.
+
+* Why
+
+The gate is the only mechanism that catches a model edited without a
+regeneration, and it works by regenerating a component and diffing the tree.
+An archetype whose output path points into a different component's tree breaks
+that assumption in both directions. The owning component's gate never touches
+the file, and the receiving component's gate has no model that produces it.
+
+The measured case is the trading command units. =check_component_drift.py
+--component shell= reports "Regenerating 1 models" and writes one file, the
+=ores.shell= composite root. The 23 units come from =ores.trading= entity
+models, so the run cannot reach them. Regenerating the =trading= component
+would reach them and 176 other files as well, none of them this wave's, which
+is why the wave forbids it. The units passed only because each of the 23 was
+regenerated from its own model by hand and the tree came back clean.
+
+This is a general hole, not a shell quirk. Any facet that writes into another
+component's tree has it, and the number of such facets grows with the adapter
+parts.
+
+* References
+
+- =projects/ores.codegen/scripts/check_component_drift.py= — the gate, its
+  =KNOWN_DRIFT_FREE= registry, and its untracked-file snapshot.
+- =projects/ores.codegen/scripts/regenerate_cmake_component_files.py= — the
+  sibling gap, a writer with no compass subcommand.
+- [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] — the task
+  that measured the hole and covered its own units by hand.
+
+* See also
+
+- [[id:BBBD07EF-09E0-4FF6-A282-28534429264C][check_component_drift.py corrupts a branch that is behind main]] — the
+  other hazard in the same script, which bounds what a wider gate may do.

@@ -44,14 +44,25 @@ branches on.
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:DB094CBB-5E9A-4EEB-9B3B-B48654734590][ores.doc.modeling.dataset]] | Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets. |
+| [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] | Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses. |
 | [[id:33B2DE63-DA3B-4455-A79A-EBCFAFCC726D][ores.doc.modeling.field_group]] | Codegen field-group model (=*_field_group.org= suffix drives loader dispatch); carries =#+brief=. |
 | [[id:631BD15D-F858-4E31-9FF0-506B82D2A6AC][ores.doc.modeling.junction]] | Codegen SQL join-table + C++ counterpart (=*_junction.org= suffix drives loader dispatch): Left/Right FK sides, Columns, SQL/C++ sections. |
 | [[id:990E0A18-1FC2-4FD8-8013-5A04306BA386][ores.doc.modeling.lookup_entity]] | Codegen batch-loaded reference table (=*_lookup_entity.org= suffix drives loader dispatch): minimal frontmatter, Primary key, Columns, optional Artefact indexes. |
-| [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] | Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses. |
-| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services with psql vars, IAM roles, and DML grant prefixes. One top-level section per service. |
-| [[id:DB094CBB-5E9A-4EEB-9B3B-B48654734590][ores.doc.modeling.dataset]] | Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets. |
-| [[id:511F04C5-2934-40D6-A464-8EDA810F4718][doc_profile.org.mustache]] | Named element-scope MASD profile (=variability_<slug>.org=): fixed variability-axis assignment table, anchored to a reference entity. |
-| [[id:878061F1-8784-4A68-A902-E88A206DAF37][doc_feature.org.mustache]] | Canonical detail page for one MASD feature (=variability_feature_<slug>.org=): identity, effect, structural consequence, used-by profiles. |
+| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services and fleet processes, each with two independent optional aspects -- DB access (psql var, IAM role, DML grant prefixes) and deployment (replicas, enabled, dependencies, extra CLI args). One top-level section per service. |
+
+* Scaffolds outside the inventory
+
+Two of this group's scaffolds predate the =ores.*= address convention, so
+their documents are named for the template they hold and carry
+=#+type: knowledge= rather than =#+type: archetype=. The inventory generator
+reads only =ores.*= pages, so it cannot list them and the table above omits
+them. The documents are:
+
+| Template | Document | Description |
+|----------+----------+-------------|
+| =doc_profile.org.mustache= | [[id:511F04C5-2934-40D6-A464-8EDA810F4718][doc_profile_org]] | Named element-scope MASD profile (=variability_<slug>.org=): fixed variability-axis assignment table, anchored to a reference entity. |
+| =doc_feature.org.mustache= | [[id:878061F1-8784-4A68-A902-E88A206DAF37][doc_feature_org]] | Canonical detail page for one MASD feature (=variability_feature_<slug>.org=): identity, effect, structural consequence, used-by profiles. |
 
 * See also
 

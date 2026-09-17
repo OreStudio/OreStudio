@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2BB5F81F-836F-4A10-AF9F-E202777B880A
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.trade_type
 #+description: Codegen entity model for the trading =trade_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -58,6 +59,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :type:     product_type_t
 :cpp_type: ores::trading::domain::product_type
+:is_enum:  true
 :nullable: false
 :default_value: ores::trading::domain::product_type::swap
 :END:

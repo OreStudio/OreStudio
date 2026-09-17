@@ -30,10 +30,14 @@ set(files
     "domain/report_type_json_io.cpp"
     "domain/report_type_table.cpp"
     "domain/report_type_table_io.cpp"
+    "domain/risk_report_config_json_io.cpp"
+    "domain/risk_report_config_table.cpp"
+    "domain/risk_report_config_table_io.cpp"
     "generators/concurrency_policy_generator.cpp"
     "generators/report_definition_generator.cpp"
     "generators/report_instance_generator.cpp"
     "generators/report_type_generator.cpp"
+    "generators/risk_report_config_generator.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -57,6 +61,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/report_type_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/report_type_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_definition_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_instance_changed_event.hpp"
@@ -66,6 +73,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_definition_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_instance_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_type_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/risk_report_config_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_definition_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_execution_protocol.hpp"

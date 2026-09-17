@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.reporting.api/domain/risk_report_config_table_io.hpp"
+#include "ores.reporting.api/domain/risk_report_config_table.hpp"
+#include <ostream>
 
-drop rule if exists ores_reporting_risk_report_configs_delete_rule on "ores_reporting_risk_report_configs_tbl";
-drop trigger if exists ores_reporting_risk_report_configs_insert_trg on "ores_reporting_risk_report_configs_tbl";
-drop function if exists ores_reporting_risk_report_configs_insert_fn;
-drop table if exists "ores_reporting_risk_report_configs_tbl";
+namespace ores::reporting::domain {
+
+namespace {
+
+void print_risk_report_config_table(std::ostream& s, const std::vector<risk_report_config>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<risk_report_config>& v) {
+    print_risk_report_config_table(s, v);
+    return s;
+}
+
+}

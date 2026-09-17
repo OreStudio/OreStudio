@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
-#define ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REPORTING_CORE_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/risk_report_config_entity.hpp"
-#include <vector>
 
 namespace ores::reporting::repository {
 
+/**
+ * @brief Maps risk_report_config domain entities to data storage layer and vice-versa.
+ */
 class ORES_REPORTING_CORE_EXPORT risk_report_config_mapper {
 private:
     inline static std::string_view logger_name =
@@ -41,8 +48,12 @@ private:
 
 public:
     static domain::risk_report_config map(const risk_report_config_entity& v);
+    static risk_report_config_entity map(const domain::risk_report_config& v);
+
     static std::vector<domain::risk_report_config>
     map(const std::vector<risk_report_config_entity>& v);
+    static std::vector<risk_report_config_entity>
+    map(const std::vector<domain::risk_report_config>& v);
 };
 
 }

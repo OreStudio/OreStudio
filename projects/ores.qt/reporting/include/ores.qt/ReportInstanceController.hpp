@@ -72,6 +72,7 @@ public:
     void reloadListWindow() override;
 
     void openAdd();
+    void openAddWithParent(boost::uuids::uuid definitionId);
     void openEdit(const reporting::domain::report_instance& instance);
     void openHistory(const reporting::domain::report_instance& instance);
 
@@ -93,7 +94,7 @@ private slots:
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
-    void showAddWindow();
+    void showAddWindow(boost::uuids::uuid definitionId = {});
     void showDetailWindow(const reporting::domain::report_instance& instance);
 
     /**

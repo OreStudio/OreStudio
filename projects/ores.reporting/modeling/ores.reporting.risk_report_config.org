@@ -1,0 +1,825 @@
+:PROPERTIES:
+:ID: 32FCDE76-1C5A-4AFC-8671-7468C0F024DB
+:END:
+#+title: ores.reporting.risk_report_config
+#+description: Codegen entity model for the reporting =risk_report_config= table. Drives the C++ domain class, entity, mapper, repository and the SQL schema from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: ORE-level parameters for a risk report definition.
+#+entity_singular: risk_report_config
+#+entity_plural: risk_report_configs
+#+entity_title: Risk Report Config
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+The ORE-level parameters for a risk report definition: base currency,
+observation model, analytics flags, XVA/VaR/SIMM settings and threading.
+
+Each row is owned by exactly one =report_definition= (1:1, enforced by the
+unique index on =report_definition_id=). Portfolio and book scope live in
+separate temporal junction tables; an empty set in either junction means
+"all visible to the tenant".
+
+Analytics flags use integer 0/1, not boolean, to match the project
+convention. =npv= and =cashflow= default to enabled; all others default off.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this configuration.
+
+** report_definition_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The report definition this configuration belongs to. Unique per tenant on
+active records, so a definition has at most one live configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Reporting base currency (ISO 4217 code) that all results are converted to.
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencyCode())
+#+end_src
+
+** observation_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  disable
+:default_value: "disable"
+:END:
+
+How the engine handles absent market data: =disable=, =none=, =move= or
+=defer=.
+
+#+begin_src cpp :name generator
+std::string("disable")
+#+end_src
+
+** n_threads
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:default_value: 1
+:END:
+
+Number of worker threads the risk engine may use.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 8)
+#+end_src
+
+** market_data_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  eod
+:default_value: "eod"
+:END:
+
+Market data convention: =live=, =eod= or =date=.
+
+#+begin_src cpp :name generator
+std::string("eod")
+#+end_src
+
+** market_data_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+As-of date (ISO 8601) used when =market_data_type= is =date=. An empty string
+is the not-set sentinel: the mapper writes NULL for it, which is what the
+CHECK requires while =market_data_type= stays =eod=.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** npv_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:default_value: 1
+:END:
+
+Enables the NPV analytic.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** cashflow_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:default_value: 1
+:END:
+
+Enables the cashflow analytic.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** curves_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables curve analytic output.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** sensitivity_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables sensitivity analytic output.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** simulation_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables Monte Carlo simulation output.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables XVA analytics. Gates the =xva_*= settings below.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** stress_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables stress test analytics.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** parametric_var_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables parametric VaR. Gates the =var_*= settings below.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** initial_margin_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables initial margin (SIMM) calculation. Gates the =simm_*= settings.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** pfe_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables potential future exposure output.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_quantile
+:PROPERTIES:
+:type:     numeric(5,4)
+:cpp_type: double
+:nullable: true
+:default_value: 0.95
+:END:
+
+XVA confidence quantile. NULL means "not set".
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.9, 0.99)
+#+end_src
+
+** xva_cva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+Enables the CVA adjustment within XVA.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_dva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the DVA adjustment within XVA.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_fva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the FVA adjustment within XVA.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_colva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the ColVA adjustment within XVA.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_dim_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Enables the DIM (dynamic initial margin) calculation within XVA.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+** xva_dim_quantile
+:PROPERTIES:
+:type:     numeric(5,4)
+:cpp_type: double
+:nullable: true
+:default_value: 0.99
+:END:
+
+DIM confidence quantile. NULL means "not set".
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.9, 0.99)
+#+end_src
+
+** xva_dim_horizon_calendar_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:default_value: 14
+:END:
+
+DIM horizon in calendar days. NULL means "not set".
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 30)
+#+end_src
+
+** xva_dim_regression_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:default_value: 0
+:END:
+
+Regression order for the DIM backtest, 1 to 3. NULL means "not set".
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+** var_quantiles
+:PROPERTIES:
+:type:     numeric(5,4)[]
+:cpp_type: std::vector<double>
+:nullable: true
+:sql_only: true
+:END:
+
+Confidence quantiles for the parametric VaR grid. NULL means "not set".
+
+The column stays in the schema but reaches no C++ layer. sqlgen cannot bind a
+Postgres array, so no entity member can carry it, and a member the mapper
+cannot persist is worse than no member at all. The field is currently unwired:
+nothing reads or writes it, in this model or in the hand-written code this
+model replaces. Remove =:sql_only:= and regenerate once sqlgen, or a
+replacement, can bind =numeric[]=.
+
+** var_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:default_value: "delta"
+:END:
+
+Parametric VaR method: =delta=, =delta_gamma_normal= or =monte_carlo=.
+NULL means "not set".
+
+#+begin_src cpp :name generator
+std::string("delta")
+#+end_src
+
+** simm_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+SIMM methodology version. NULL means "not set".
+
+#+begin_src cpp :name generator
+std::string("2.6")
+#+end_src
+
+** simm_calculation_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Currency the SIMM amount is expressed in. NULL means "not set".
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencyCode())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:    ores_reporting_risk_report_configs_tbl
+:index_prefix: risk_report_configs
+:END:
+
+** Checks
+
+Domain constraints beyond the standard temporal, natural-key and nil-uuid
+checks the template emits on its own.
+
+| expression |
+|------------|
+| "base_currency" <> '' |
+| "observation_model" in ('disable', 'none', 'move', 'defer') |
+| "n_threads" >= 1 |
+| "market_data_type" in ('live', 'eod', 'date') |
+| (market_data_type = 'date') = (market_data_date is not null) |
+| "npv_enabled" in (0, 1) |
+| "cashflow_enabled" in (0, 1) |
+| "curves_enabled" in (0, 1) |
+| "sensitivity_enabled" in (0, 1) |
+| "simulation_enabled" in (0, 1) |
+| "xva_enabled" in (0, 1) |
+| "stress_enabled" in (0, 1) |
+| "parametric_var_enabled" in (0, 1) |
+| "initial_margin_enabled" in (0, 1) |
+| "pfe_enabled" in (0, 1) |
+| "xva_cva_enabled" in (0, 1) |
+| "xva_dva_enabled" in (0, 1) |
+| "xva_fva_enabled" in (0, 1) |
+| "xva_colva_enabled" in (0, 1) |
+| "xva_dim_enabled" in (0, 1) |
+| "xva_dim_regression_order" is null or "xva_dim_regression_order" between 1 and 3 |
+| "var_method" is null or "var_method" in ('delta', 'delta_gamma_normal', 'monte_carlo') |
+
+* Foreign keys
+
+** report_definition_id
+:PROPERTIES:
+:table:         ores_reporting_report_definitions_tbl
+:target_column: id
+:parent_entity: report_definition
+:nullable:      false
+:error_message: Invalid report_definition_id: %. No active report definition found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: config
+:entity_plural_short:   configs
+:entity_singular_words: risk report config
+:entity_plural_words:   risk report configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <ostream>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rrc
+:END:
+
+** Table display
+
+| column                          | header             |
+|---------------------------------+--------------------|
+| report_definition_id            | Definition         |
+| base_currency                   | Base Currency      |
+| observation_model               | Observation Model  |
+| market_data_type                | Market Data        |
+| npv_enabled                     | NPV                |
+| cashflow_enabled                | Cashflow           |
+| xva_enabled                     | XVA                |
+| parametric_var_enabled          | Parametric VaR     |
+| initial_margin_enabled          | Initial Margin     |
+| modified_by                     | Modified By        |
+| version                         | Version            |
+
+** Paste blocks
+
+*** Additional class-member declarations
+
+**** find_by_definition_id
+:PROPERTIES:
+:ID: 5C9E4B31-7A2D-4E88-9F16-3D8B0A2C6E74
+:END:
+
+Reads the current configuration for a report definition. The execution
+handler needs the config before any CRUD surface exists for it, and the
+lookup keys on the natural key rather than on =get=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::risk_report_config>
+find_by_definition_id(context ctx, const std::string& definition_id);
+#+end_src
+
+**** resolve_book_ids
+:PROPERTIES:
+:ID: 8B41F6D2-3C57-4A9E-B0D8-6E2F91A4C753
+:END:
+
+Resolves the full set of book UUIDs in scope by calling
+=ores_reporting_resolve_book_ids_for_config_fn=, which checks explicit
+book scope, then portfolio scope with subtree expansion, then falls back
+to all tenant books. The fallback chain lives in SQL, so it cannot be
+templated.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<std::string> resolve_book_ids(context ctx, const std::string& config_id);
+#+end_src
+
+**** get_book_scope
+:PROPERTIES:
+:ID: 2F07AC85-6B19-42E3-8D5A-1C4E7B93F026
+:END:
+
+Returns the active book UUIDs explicitly scoped to a configuration. An
+empty vector means "all books within the selected portfolios".
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
+#+end_src
+
+**** get_portfolio_scope
+:PROPERTIES:
+:ID: 6D3B9E14-8C52-47AF-A9E6-0B7D5C21F843
+:END:
+
+Returns the active portfolio UUIDs explicitly scoped to a configuration.
+An empty vector means "all portfolios visible to the tenant".
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
+#+end_src
+
+*** Additional out-of-class implementations
+
+**** scope_entities
+:PROPERTIES:
+:ID: 4A7C02D9-5E13-4B6F-9C82-3A1F6D8B52E7
+:END:
+
+Lightweight row types for the two scope junction tables. Only the columns
+scope resolution needs are declared; the junction tables have no org model
+of their own.
+
+Must precede the methods that use them: paste blocks concatenate in
+sub-heading order.
+
+#+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+namespace {
+
+struct book_scope_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_reporting_risk_report_config_books_tbl";
+
+    std::string tenant_id;
+    std::string risk_report_config_id;
+    std::string book_id;
+    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+};
+
+struct portfolio_scope_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_reporting_risk_report_config_portfolios_tbl";
+
+    std::string tenant_id;
+    std::string risk_report_config_id;
+    std::string portfolio_id;
+    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+};
+
+}
+#+end_src
+
+**** find_by_definition_id
+:PROPERTIES:
+:ID: 7E24B81F-9D36-4A05-B17C-2F8E4A6D9031
+:END:
+
+#+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::risk_report_config>
+risk_report_config_repository::find_by_definition_id(context ctx,
+                                                     const std::string& definition_id) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
+                       where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
+                             "valid_to"_c == max.value());
+
+    auto results = execute_read_query<risk_report_config_entity, domain::risk_report_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return risk_report_config_mapper::map(entities); },
+        lg(),
+        "Finding risk_report_config by definition_id");
+
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+#+end_src
+
+**** resolve_book_ids
+:PROPERTIES:
+:ID: 1B8F3E60-2C47-4D9A-8E15-6F0B9C24A3D7
+:END:
+
+#+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<std::string>
+risk_report_config_repository::resolve_book_ids(context ctx, const std::string& config_id) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Resolving book IDs for config: " << config_id;
+
+    const auto tid = ctx.tenant_id().to_string();
+    const std::string sql =
+        "SELECT id::text FROM "
+        "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid) AS t(id)";
+
+    return execute_parameterized_string_query(
+        ctx, sql, {tid, config_id}, lg(), "Resolving book IDs for risk_report_config");
+}
+#+end_src
+
+**** get_book_scope
+:PROPERTIES:
+:ID: 3C5A97D4-8F21-4E63-A07B-9D4E2C81F560
+:END:
+
+#+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<std::string>
+risk_report_config_repository::get_book_scope(context ctx, const std::string& config_id) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_scope_entity>> |
+                       where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
+                             "valid_to"_c == max.value());
+
+    auto rows = execute_read_query<book_scope_entity, book_scope_entity>(
+        ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading book scope");
+
+    std::vector<std::string> book_ids;
+    book_ids.reserve(rows.size());
+    for (const auto& row : rows)
+        book_ids.push_back(row.book_id);
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << book_ids.size() << " book(s) in scope";
+    return book_ids;
+}
+#+end_src
+
+**** get_portfolio_scope
+:PROPERTIES:
+:ID: 6F0D28B5-4A93-4C17-B85E-7E1A3F60D294
+:END:
+
+#+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<std::string>
+risk_report_config_repository::get_portfolio_scope(context ctx, const std::string& config_id) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<portfolio_scope_entity>> |
+                       where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
+                             "valid_to"_c == max.value());
+
+    auto rows = execute_read_query<portfolio_scope_entity, portfolio_scope_entity>(
+        ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading portfolio scope");
+
+    std::vector<std::string> portfolio_ids;
+    portfolio_ids.reserve(rows.size());
+    for (const auto& row : rows)
+        portfolio_ids.push_back(row.portfolio_id);
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << portfolio_ids.size() << " portfolio(s) in scope";
+    return portfolio_ids;
+}
+#+end_src
+
+* Physical space
+
+The messaging, eventing and history surface is deliberately not generated
+yet. Nothing writes a risk report config today: the only consumer is
+=report_execution_handler=, which reads one through
+=find_by_definition_id= and never saves. Generating the surface would add a
+NATS handler, a sub-registrar, a history provider registrar, an event
+registrar and a service that no composition point calls.
+
+=ores.reporting/core/src/messaging/registrar.cpp= is a hand-written fan-out,
+not a per-entity registrar aggregator, so a generated registrar has nowhere
+to join. It builds each =*_handler= directly. Its siblings
+=report_definition=, =report_instance=, =report_type= and
+=concurrency_policy= already carry two orphaned families on main: the four
+=*_registrar= classes and the four =*_history_provider_registrar= classes.
+Nothing calls either family. The measurement and the repair are their own
+task; this model does not add a fifth orphan.
+
+The =*_event_registrar= family is composed, so it is not part of the finding.
+=ores.reporting/service/src/app/application.cpp= calls all four
+=register_*_event_mapping= functions.
+
+The data layer — domain, generator, entity, mapper, repository — plus the
+SQL schema is generated.
+
+| Address                          | Enabled |
+|----------------------------------+---------|
+| ores.cpp.service                 | false   |
+| ores.cpp.protocol                | false   |
+| ores.cpp.nats-handler            | false   |
+| ores.cpp.nats-sub-registrar      | false   |
+| ores.cpp.nats-event-registrar    | false   |
+| ores.cpp.nats-eventing           | false   |
+| ores.cpp.nats-event-cache        | false   |
+| ores.cpp.history-provider-registrar | false |
+| ores.cpp.presentation            | false   |
+| ores.cpp.eventing-integration-test | false |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+- [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] — executions of the definition this configures.

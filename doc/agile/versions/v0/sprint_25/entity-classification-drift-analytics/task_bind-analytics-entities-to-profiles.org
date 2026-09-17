@@ -52,9 +52,12 @@ of the two task records.
 
 The tidy removes the per-entity =:has_tenant_id:= the entity and its
 profile both set. Every other component bound so far carries the
-=:profile:= alone; =business_unit= is the one recorded exception, and
-it keeps an explicit feature for a documented reason this component
-does not share.
+=:profile:= alone; =business_unit= is the one recorded exception. It
+keeps the structural properties its hierarchy needs, which no profile
+assigns, and it keeps =:has_parent_id:= explicit because the generator
+reads that feature at the entity root while the profile writes it into
+the =sql= namespace. Analytics holds no hierarchy entity, so neither
+case arises here.
 
 The proof is the regeneration, not the reading. With the four models
 edited, regeneration changes no generated file: the diff is exactly

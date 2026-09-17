@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: BF395A0B-C738-43B7-B4FA-DB32988DCAE8
+:END:
+#+title: Task: Extract the series classifier and cover the whole ORE corpus
+#+description: Lift the ORE-vocabulary mapping out of import_service.cpp into a standalone series_classifier class that tests can reach without a database, NATS or the import pipeline. Complete the vocabulary so all 42 series types the ORE examples carry classify. Add a corpus-wide test that walks external/ore/examples and asserts every distinct series key classifies.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch: feature/extract-series-classifier-and-cover-the-corpus
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Lift the ORE-vocabulary mapping out of =import_service.cpp= into a
+=series_classifier= class that a test can reach with no database, NATS
+or import pipeline. Complete the vocabulary so every series type the
+ORE examples carry classifies. Add a corpus-wide test that walks
+=external/ore/examples= and asserts each distinct series key classifies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | The point model is done; the classifier extraction is next. |
+| Waiting on   | Nothing.                               |
+| Next         | Wire =series_classifier= into =import_service= and write the corpus test. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- =classify()= answers for all 42 distinct series types the corpus
+  carries, where the incoming helper throws on eight of them.
+- The classifier is a standalone class in =ores.marketdata.core=, not
+  an anonymous-namespace helper inside the import service.
+- The test walks the corpus rather than a hand-written file list.
+- A series type whose key has no point dimension stores no point, and
+  =market_series= no longer carries an =is_scalar= column that claims
+  otherwise.
+
+* Plan
+
+Three units, then the junction story task that follows.
+
+*Unit 1, the classifier.* Move =series_classification= and
+=classify_series_type= out of =import_service.cpp= into
+=ores.marketdata.core/classification/series_classifier.{hpp,cpp}=. The
+signature is the =market_series= natural key, =(series_type, metric,
+qualifier)=, because a correlation needs the qualifier and a test can
+build the triple without a parser. It lives in =ores.marketdata.core=
+and not beside =series_key_registry=, because the codes it emits are
+refdata taxonomy codes and =ores.ore.core= stays a reader of the ORE
+file format with no opinion about our taxonomy. This follows
+=oresmd_projections=, the other ORE-to-ours boundary.
+
+*Unit 2, the vocabulary.* Add the eight unmapped types. Seven are
+ordinary single-class series. =CORRELATION= takes its classes from the
+two operands in the qualifier, by the factor-class prefix ORE puts on
+them: =EQ-= equity, =FX-= fx, =COMM-= commodity, =<CCY>-CMS-=
+interest rates. An operand matching no rule contributes no class. The
+convention is written down in =doc/knowledge/domain/asset_classes.org=
+next to the ruling it serves.
+
+*Unit 3, the corpus test.* Walk =external/ore/examples= and assert
+=try_classify= answers for every distinct key, that the walk found a
+non-trivial corpus at all, and that every code the classifier emits
+exists in its populate SQL file. The user's scope ruling holds:
+classification only, no ORE-to-oresmd round trip.
+
+The walk's floor constants are anti-vacuity floors, not a census. The
+plan's counts (95 market data files, 42 types, 107,951 distinct keys)
+came from a survey that approximated the parser rather than running it,
+and a second approximation disagreed with the first, so none of them
+were trusted. The test reports the census it actually finds on every
+run, and the floors are raised to those measured values afterwards.
+
+The plan's correlation count is corrected by measurement. The corpus
+carries 18 distinct operands in 17 pairs, and /four/ pairs relate two
+different classes, not six: =EQ-RIC:.SPX= against =FX-GENERIC-USD-EUR=,
+both orderings of =FX-GENERIC-EUR-USD= against =EQ-RIC:.SPX= and
+=EQ-RIC:.STOXX50E=, and =USD-CMS-10Y= against =FX-ECB-USD-EUR=. Every
+one of the 18 operands matches a rule, so no operand in the corpus
+currently exercises the empty-class path.
+
+*The point model, folded in.* =is_scalar= was three things wearing one
+name: a parsing rule in the registry, a claim on the =market_series=
+row, and a one-string switch in the import service. It is a pure
+function of the series type, so it belongs on none of them. The column
+is deleted and the registry answers. The registry flag is renamed
+=has_point_dimension= and answers "do this type's keys carry a point",
+not "is this series scalar". =default_point_for(series_type)= gives
+the single point of a type whose keys have none: =SPOT= for FX, equity
+and commodity, the empty string for a recovery rate, rating or
+correlation, which have no tenor at all.
+=market_observation.point_id= is not null, so every observation names
+a point. A producer writes
+=d.point_id.value_or(default_point_for(t))=, which is correct in all
+four cases: a point is present, the type has no point dimension, the
+key is shorter than its type expects, or the type is unknown.
+
+* Notes
+
+*Unit 4 runs before Unit 1, not after.* The plan ordered them the other
+way and was inconsistent about it: Unit 1's description already ends
+"write the junction rows", which the junction cannot do until Unit 4 has
+created it. The live =import_service= writes a single =asset_class=
+column, and the classifier returns a collection that is legitimately
+empty for a correlation whose operands match no rule. Wiring Unit 1
+first would therefore need a guarded =front()= and an invented filler
+for the empty case, deleted again one unit later.
+
+Running Unit 4 first removes the interim entirely. With the junction in
+place but the old anonymous helper still classifying, that helper's
+single code is written as a one-element set, which is correct rather
+than transitional. Unit 1 then swaps the helper for the classifier and
+correlations begin yielding two classes. Every step in the sequence is
+coherent on its own.
+
+*Three plan corrections made while implementing Unit 2.*
+
+The plan claimed every subclass code the corpus needs already exists in
+=refdata_series_subclass_codes_populate.sql=. It does not. Two codes
+were added: =prepayment= for =CPR=, and =transition_probability= for
+=RATING=. The catalog held 15 codes; it holds 17 now.
+
+Four of the eight unmapped types take a more accurate subclass than the
+plan recorded. The plan grouped =RATING=, =INDEX_CDS_TRANCHE= and =CPR=
+under codes that describe something else: =index_credit= for a ratings
+transition, and =recovery= for a prepayment rate. The classifier maps
+them to =transition_probability=, =correlation= and =prepayment=
+instead.
+
+=SHAPE_PROFILE= maps to =seasonality=, not =forward=. ORE emits it with
+the =SHAPE_FACTOR= metric, which is a within-year shape rather than a
+forward price, and =seasonality= is the code that measures one.
+
+=GENERIC-MD= maps to =equity= / =volatility=. This one is imprecise and
+is recorded as such: the corpus keys carry =PRICE= in the qualifier,
+so the quoted value is an option price and not a volatility. The
+taxonomy has no code for an option price, and =price= is defined for
+bonds, so =volatility= is the closest true answer among the codes that
+exist.
+
+*The Unit 3 registry assertion is dropped, not narrowed.* The plan asked
+the corpus test to assert that every type the classifier names is
+present in =series_key_registry=. That assertion cannot hold: the
+registry has 35 types, the classifier 43, and the registry entries for
+the eight unmapped types are deferred by this same plan. The reverse
+direction is not checkable either, because the registry exposes no
+accessor that lists the types it knows, and adding public API purely so
+a test can read it is the wrong trade.
+
+The test asserts the production path instead: every distinct key the
+corpus carries is put through =decompose_key= and then =try_classify=,
+and both must answer. That is the invariant that matters, because a key
+that decomposes but does not classify aborts the whole import file.
+Whether a registry type absent from the corpus is also absent from the
+classifier is left uncovered; the corpus carries 42 of the classifier's
+43 types, so the gap is narrow, and the deferred registry entries would
+close it.
+
+*The junction org binds its profile under =* Flags=, not in front
+matter.* The first draft copied the four =ores.refdata= junctions, which
+carry =#+profile:= in front matter. That form does not work.
+=load_org_junction_model= reads front matter through a fixed allowlist
+(=product=, =schema=, =component=, =name=, =name_singular=,
+=name_title=, =name_singular_words=, =brief=, =has_tenant_id=) that does
+not include =profile=, so the line is dropped without a word. Only a
+=:profile:= property under the =* Flags= section is read, which is what
+=org_loader.py='s =_ensure_profile_binding= calls the single canonical
+binding point. The junction now matches =ores.iam.account_party_junction=
+instead: =#+has_tenant_id: true= in front matter alongside the =Flags=
+binding.
+
+Verified by loading the org and rendering the SQL template: the profile
+resolves to =tenant-scoped-junction=, =has_tenant_id= to true, and the
+rendered table carries its =tenant_id= column. The same probe over every
+junction in the tree shows five with the =Flags= form all resolving, and
+the four =ores.refdata= ones all silently unscoped, which is captured
+separately as =refdata-junction-profile-binding-ignored=.
+
+=<boost/uuid/uuid.hpp>= belongs in the domain includes, not the entity
+includes. The entity include list is filtered against
+=_ENTITY_HEADER_STANDARD_INCLUDES=, which contains that exact token, so
+listing it there is silently discarded while the domain header emits a
+=boost::uuids::uuid= member that needs it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

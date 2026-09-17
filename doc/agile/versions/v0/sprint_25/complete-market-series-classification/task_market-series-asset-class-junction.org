@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 1CBBD6A0-95F7-46E4-9DE9-AFDDA9FEB831
+:END:
+#+title: Task: Give a market series a set of asset classes
+#+description: Replace the single not-null market_series.asset_class column with an ores_marketdata_market_series_asset_classes_tbl junction, so a pairwise correlation can reference the two classes it relates. Update the classifier's consumers, the DQ publish path and the Qt market series grid, and confirm the refdata catalogue descriptions read correctly.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the single not-null =market_series.asset_class= column with a
+junction table, so a pairwise correlation can reference the two asset
+classes it relates. Update every consumer of the column, and confirm
+the refdata catalogue descriptions read correctly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- =ores_marketdata_market_series_asset_classes_tbl= exists and is
+  tenant-scoped, and a series carries any number of asset classes.
+- =market_series.asset_class= is gone: the column, its check row, its
+  generator, and every reader of it.
+- An import writes one junction row per class the classifier returns,
+  so a cross-class correlation writes two.
+- The Qt market series grid shows the catalogue =name=, not the raw
+  code, which closes the limitation the sibling task recorded.
+- Every =name= and =description= in the refdata catalogues this work
+  touched reads correctly.
+
+* Plan
+
+Unit 4 of the story plan, then Unit 5. Unit 4 runs before the sibling
+task's Unit 1, so that no step in the sequence needs a guarded
+=front()= or an invented filler for the empty class set.
+
+*Unit 4, the junction.* A new =ores.codegen.junction= org,
+=ores.marketdata.market_series_asset_class_junction=, modelled on
+=ores.iam.account_party_junction= for the uuid-keyed shape. Left is
+=market_series_id=, right is =asset_class_code=, both soft FKs. The
+profile binds under =* Flags=, not in front matter, because
+=load_org_junction_model= reads front matter through a fixed allowlist
+that does not include =profile=. Generate it, then drop =asset_class=
+from =market_series.org= and regenerate.
+
+Consumers to update: =import_service.cpp=, =feed_ingest_loop.cpp=, the
+DQ publish SQL, =ClientMarketSeriesModel=, =MarketSeriesMdiWindow=,
+=MarketSeriesPickerDialog=, and the domain tests.
+
+*Unit 5, the catalogues.* The populate SQL for the catalogues this
+work touched already carries =name= and =description= for every row.
+This unit reads them, confirms each reads correctly, and fixes any
+that do not.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

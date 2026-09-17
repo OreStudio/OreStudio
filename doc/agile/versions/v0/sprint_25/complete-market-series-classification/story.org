@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C
+:END:
+#+title: Story: Complete the market series classification
+#+description: Finish the classification rollout: lift the ORE-vocabulary mapping out of import_service into a testable class, cover every series type the ORE corpus carries, and let a market series belong to more than one asset class through a junction table.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every market-data series the ORE corpus carries imports without an
+unknown-type error. A test proves that, and it needs no database, no
+NATS and no import pipeline to run. A pairwise correlation records both
+of the asset classes it relates.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Extracting the classifier and correcting the point model. |
+| Waiting on    | Nothing.                               |
+| Next          | Finish the classifier extraction and the corpus test. |
+| Last touched  | 2026-09-17                               |
+
+* Acceptance
+
+- Every distinct series type in =external/ore/examples= classifies.
+- The classifier runs in a unit test with no service, database or network.
+- A market series carries a set of asset classes, so a correlation can
+  name the two it relates.
+- A series has a point only if its key has a point dimension. No stored
+  column claims otherwise.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BF395A0B-C738-43B7-B4FA-DB32988DCAE8][Extract the series classifier and cover the whole ORE corpus]] | STARTED | 2026-09-17 | | Lift the ORE-vocabulary mapping out of import_service.cpp into a standalone series_classifier class that tests can reach without a database, NATS or the import pipeline. Complete the vocabulary so all 42 series types the ORE examples carry classify. Add a corpus-wide test that walks external/ore/examples and asserts every distinct series key classifies. |
+| [[id:1CBBD6A0-95F7-46E4-9DE9-AFDDA9FEB831][Give a market series a set of asset classes]] | BACKLOG | | | Replace the single not-null market_series.asset_class column with an ores_marketdata_market_series_asset_classes_tbl junction, so a pairwise correlation can reference the two classes it relates. Update the classifier's consumers, the DQ publish path and the Qt market series grid, and confirm the refdata catalogue descriptions read correctly. |
+
+* Decisions
+
+* Out of scope
+
+-

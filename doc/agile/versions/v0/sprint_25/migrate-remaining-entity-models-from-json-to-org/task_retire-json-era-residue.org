@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: B7BE4D95-2C5F-4AC0-8845-90B083A45810
+:END:
+#+title: Task: Retire the JSON-era residue the org migration left behind
+#+description: Task for: Migrate remaining ~100 entity models from JSON to org
+#+type: task
+#+level: s1
+#+filetags: :migrate-remaining-entity-models-from-json-to-org:sprint_25:v0:
+#+owner: marco
+#+branch: feature/retire-json-era-residue
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Retire the residue the JSON-to-org migration left behind: delete the dead migration scripts, correct the stale skill and template guidance, and clear the dead references to the deleted models tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
+| Now          | Implementation complete, uncommitted until the work commit lands. |
+| Waiting on   | Nothing.                               |
+| Next          | Commit, then raise the PR.            |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- No script in the tree points at =projects/ores.codegen/models/=.
+- No skill source, recipe, or template org source tells the reader to
+  author a JSON entity model.
+- =compass build --direct skills= and =compass build --direct
+  tangle_codegen_templates= both run clean.
+
+* Plan
+
+1. Delete the five spent =migrate_*_to_org.py= converters.
+2. Repoint the three codegen skills and the three recipes at the org
+   model.
+3. Fix the template org sources, then re-tangle.
+4. Apply the same text by hand to the three committed generated populate
+   SQL files. Their dataset pipeline is no longer runnable, so the
+   template is the only source of truth.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Five converters deleted. Nothing in the tree imports them.
+
+Repointed at the org model: =compass-codegen-add-entity=,
+=compass-codegen-add-sql-schema=, =compass-codegen-add-qt-entity=,
+=how_do_i_create_a_new_entity=, =how_do_i_create_entity_schema=,
+=how_do_i_add_a_new_codegen_entity_model=, and two analysis references.
+The =--model= help text in =cli.py= no longer shows the deleted layout.
+
+Templates re-tangled. The four =.mustache= diffs are exactly the
+intended lines and nothing else. Three generated populate SQL files
+carry the same change by hand, and the slovaris =methodology.txt=
+payload now names its own directory.
+
+Left alone on purpose: the four uncalled =generate_*.sh= scripts still
+name =generator.py=. They call a file that does not exist. The
+=decommission_codegen_bash_scripts= capture in the backlog already owns
+them, so they are not this task's work.

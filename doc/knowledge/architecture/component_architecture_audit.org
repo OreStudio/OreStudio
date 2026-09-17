@@ -307,12 +307,19 @@ Three cases follow from the comparison.
   never in an assignment table.
 
 One caution applies. A profile writes each feature into its namespace,
-and not every consumer reads it there. =has_parent_id= is the recorded
-case. The profile files it under =sql=, while the templates and
-=core.py= read it at the entity root, so the explicit line is
-load-bearing. Removing it drops the entity's hierarchy function,
-repository method, handler and service. Treat a removal as
-output-neutral only after regeneration proves it.
+and not every consumer reads it there, so compare against the
+namespace the reader uses rather than the one the catalogue declares.
+
+=has_parent_id= was the recorded case, and it is fixed. The merge
+filed the feature under =sql= while the templates and =core.py= read
+it at the entity root, so the explicit line was load-bearing:
+removing it dropped the entity's hierarchy function, repository
+method, handler and service. [[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature
+namespace so profile bindings take effect]] moved the feature to the
+root namespace, where =has_tenant_id= and =has_workspace_id= already
+lived, and the lines came out.
+
+Treat a removal as output-neutral only after regeneration proves it.
 
 The proof is regeneration, as [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]] describes. Commit
 the model edits first, because the drift check diffs the whole tree.
@@ -325,8 +332,11 @@ The first pass ran on 2026-09-17. It removed 41 redundant lines across
 Two lines stayed as overrides: =compute.result= sets
 =has_change_reason_cache= false against the profile's true, and
 =reporting.report_definition= sets =has_workspace_id= true against the
-profile's false. Four =has_parent_id= lines stayed because the caution
-above applies to them.
+profile's false. Four =has_parent_id= lines stayed for the caution
+above; the follow-up story removed them once the namespace was fixed.
+The same defect had also masked eleven flat entities, which bound the
+hierarchy profile without the two column properties that profile
+requires. The story rebound those to =uuid-identified-lookup=.
 
 *** Platform-specific code placement
 

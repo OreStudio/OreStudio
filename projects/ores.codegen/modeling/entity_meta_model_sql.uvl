@@ -1,15 +1,33 @@
 namespace OresCodegenSql
 
-// UVL model of entity_meta_model_sql.org's non-structural variability.
-// Only has_parent_id itself is a genuine VMM feature (authored, read
-// through by the generator, toggling whether the hierarchy function is
-// emitted). Its two dependent properties, parent_id_column and
-// hierarchy_name_field, are structural -- they name real columns on the
-// entity -- and are drawn on the page's UML structural diagram instead,
-// not modeled here. Tablename is likewise structural (a required
-// identity field, not a toggle) and lives on that same UML diagram.
+// UVL model of the ores.sql.schema feature bundle, as documented in
+// entity_meta_model_sql.org. Authored on the model's * SQL section and
+// read through by the generator, never computed.
+//
+// Two parts of the bundle are one choice rather than independent
+// toggles. SystemScope and NullableTenantId each replace the standard
+// tenant mode, so at most one of them is ever set -- a constraint this
+// model does not encode. The Rls* visibility features apply only once
+// RlsTenantIsolation is on, which is why they hang beneath it.
+//
+// The has_parent_id hierarchy block is not modelled here. It is an
+// authored structural feature, and it lives with the other structural
+// features in entity_meta_model_keys_and_columns.uvl. Tablename is
+// structural too (a required identity field, not a toggle) and is drawn
+// on this page's UML diagram instead.
 
 features
-    Sql {abstract}
+    OresSqlSchema {abstract}
         optional
-            HasParentId
+            SystemScope
+            NullableTenantId
+            ExtraChecks
+            ExtraDeleteSets
+            FkCopyValidations
+            TextCodeValidations
+            PartyIdFromBookId
+            PartyIdFromSession
+            RlsTenantIsolation
+                optional
+                    RlsPartyIsolation
+                    RlsSystemTenantVisible

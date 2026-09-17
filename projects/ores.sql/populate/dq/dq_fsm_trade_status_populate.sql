@@ -21,15 +21,34 @@
 /**
  * Trade Status FSM Population Script
  *
- * Seeds the trade_status state machine with:
+ * Seeds the trade_status state machine as the Trade Lifecycle knowledge
+ * note defines it. That note is the authority: this script follows it and
+ * does not restate the reasoning.
+ *
  * - 1 machine: trade_status
- * - 4 states: new, live, expired, cancelled
- * - 5 transitions:
- *     initial_booking  (NULL -> new)
- *     confirm          (new  -> live)
- *     cancel_new       (new  -> cancelled)
- *     expire           (live -> expired)
- *     cancel_live      (live -> cancelled)
+ * - 4 states: draft, live, expired, cancelled
+ *     draft and live are both initial -- there are two ways in. A trade
+ *     booked against an agreement already struck enters at live; one
+ *     recorded before any agreement exists enters at draft.
+ *     No state is terminal: expired and cancelled are reversible, because
+ *     either may have been recorded in error.
+ * - 8 transitions:
+ *     capture   (NULL      -> draft)
+ *     new       (NULL      -> live)
+ *     execute   (draft     -> live)
+ *     discard   (draft     -> cancelled)
+ *     expire    (live      -> expired)
+ *     cancel    (live      -> cancelled)
+ *     unexpire  (expired   -> live)
+ *     uncancel  (cancelled -> live)
+ *
+ * Amend is not seeded. The note draws it as a self-loop on draft, expired
+ * and cancelled, and an amendment never changes the state; an activity that
+ * names no transition carries the prior status forward, which is that
+ * behaviour exactly.
+ *
+ * Confirmation is not seeded either. It is a separate machine with its own
+ * note, and a trade's confirmation status is not its lifecycle status.
  *
  * This script is idempotent: it skips insertion if the machine already exists.
  */
@@ -39,7 +58,7 @@
 do $$
 declare
     v_machine_id uuid;
-    v_state_new uuid;
+    v_state_draft uuid;
     v_state_live uuid;
     v_state_expired uuid;
     v_state_cancelled uuid;
@@ -68,7 +87,7 @@ begin
     ) values (
         v_machine_id, v_sys_tenant, 0,
         'trade_status',
-        'Operational status of a trade: new → live → expired / cancelled.',
+        'Where a trade has got to: draft or live, then expired or cancelled, both reversible.',
         current_user, 'system.initial_load', 'Seed trade_status FSM machine'
     );
 
@@ -77,7 +96,7 @@ begin
     -- -------------------------------------------------------------------------
     -- States
     -- -------------------------------------------------------------------------
-    v_state_new       := gen_random_uuid();
+    v_state_draft     := gen_random_uuid();
     v_state_live      := gen_random_uuid();
     v_state_expired   := gen_random_uuid();
     v_state_cancelled := gen_random_uuid();
@@ -87,51 +106,60 @@ begin
         machine_id, name, is_initial, is_terminal,
         modified_by, change_reason_code, change_commentary
     ) values
-        (v_state_new, v_sys_tenant, 0,
-         v_machine_id, 'new', 1, 0,
-         current_user, 'system.initial_load', 'Seed trade_status state: new'),
+        (v_state_draft, v_sys_tenant, 0,
+         v_machine_id, 'draft', 1, 0,
+         current_user, 'system.initial_load', 'Seed trade_status state: draft'),
         (v_state_live, v_sys_tenant, 0,
-         v_machine_id, 'live', 0, 0,
+         v_machine_id, 'live', 1, 0,
          current_user, 'system.initial_load', 'Seed trade_status state: live'),
         (v_state_expired, v_sys_tenant, 0,
-         v_machine_id, 'expired', 0, 1,
+         v_machine_id, 'expired', 0, 0,
          current_user, 'system.initial_load', 'Seed trade_status state: expired'),
         (v_state_cancelled, v_sys_tenant, 0,
-         v_machine_id, 'cancelled', 0, 1,
+         v_machine_id, 'cancelled', 0, 0,
          current_user, 'system.initial_load', 'Seed trade_status state: cancelled');
 
     raise debug 'Created 4 trade_status states.';
 
     -- -------------------------------------------------------------------------
-    -- Transitions (5 total)
+    -- Transitions (8 total)
     -- -------------------------------------------------------------------------
     insert into ores_dq_fsm_transitions_tbl (
         id, tenant_id, version,
         machine_id, from_state_id, to_state_id, name, guard_function,
         modified_by, change_reason_code, change_commentary
     ) values
-        -- Initial booking: no prior state (NULL from_state_id)
+        -- The two ways in.
         (gen_random_uuid(), v_sys_tenant, 0,
-         v_machine_id, null, v_state_new, 'initial_booking', null,
-         current_user, 'system.initial_load', 'NULL -> new'),
-        -- Confirm: new -> live (trade confirmed by counterparty)
+         v_machine_id, null, v_state_draft, 'capture', null,
+         current_user, 'system.initial_load', 'NULL -> draft'),
         (gen_random_uuid(), v_sys_tenant, 0,
-         v_machine_id, v_state_new, v_state_live, 'confirm', null,
-         current_user, 'system.initial_load', 'new -> live'),
-        -- Cancel new: new -> cancelled (cancel before confirmation)
+         v_machine_id, null, v_state_live, 'new', null,
+         current_user, 'system.initial_load', 'NULL -> live'),
+        -- Out of draft: the agreement is struck, or it never will be.
         (gen_random_uuid(), v_sys_tenant, 0,
-         v_machine_id, v_state_new, v_state_cancelled, 'cancel_new', null,
-         current_user, 'system.initial_load', 'new -> cancelled'),
-        -- Expire: live -> expired (trade reaches maturity)
+         v_machine_id, v_state_draft, v_state_live, 'execute', null,
+         current_user, 'system.initial_load', 'draft -> live'),
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_draft, v_state_cancelled, 'discard', null,
+         current_user, 'system.initial_load', 'draft -> cancelled'),
+        -- Out of live.
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_live, v_state_expired, 'expire', null,
          current_user, 'system.initial_load', 'live -> expired'),
-        -- Cancel live: live -> cancelled (early termination)
         (gen_random_uuid(), v_sys_tenant, 0,
-         v_machine_id, v_state_live, v_state_cancelled, 'cancel_live', null,
-         current_user, 'system.initial_load', 'live -> cancelled');
+         v_machine_id, v_state_live, v_state_cancelled, 'cancel', null,
+         current_user, 'system.initial_load', 'live -> cancelled'),
+        -- Neither ending is terminal: both correct a record, rather than
+        -- reviving an agreement.
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_expired, v_state_live, 'unexpire', null,
+         current_user, 'system.initial_load', 'expired -> live'),
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_cancelled, v_state_live, 'uncancel', null,
+         current_user, 'system.initial_load', 'cancelled -> live');
 
-    raise debug 'Created 5 trade_status transitions.';
+    raise debug 'Created 8 trade_status transitions.';
 end;
 $$;
 

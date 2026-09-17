@@ -120,6 +120,11 @@ returns trigger as $$
 declare
     current_version integer;
     v_book_portfolio_id uuid;
+    v_fsm_transition_id uuid;
+    v_from_state_id uuid;
+    v_to_state_id uuid;
+    v_transition_name text;
+    v_prior_status_id uuid;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -230,6 +235,48 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
+        select status_id into v_prior_status_id
+        from "ores_trading_trades_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        select fsm_transition_id into v_fsm_transition_id
+        from ores_trading_activity_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.activity_type_code
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_fsm_transition_id is null then
+            NEW.status_id = v_prior_status_id;
+        else
+            select from_state_id, to_state_id, name
+              into v_from_state_id, v_to_state_id, v_transition_name
+            from ores_dq_fsm_transitions_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and id = v_fsm_transition_id
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if not found then
+                raise exception 'Activity type % names FSM transition %, which does not exist.',
+                    NEW.activity_type_code, v_fsm_transition_id
+                    using errcode = '23503';
+            end if;
+
+            if v_from_state_id is null then
+                raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
+                    NEW.activity_type_code, v_transition_name, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            if v_prior_status_id is distinct from v_from_state_id then
+                raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
+                    NEW.activity_type_code, v_transition_name, v_from_state_id, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            NEW.status_id = v_to_state_id;
+        end if;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent
@@ -243,6 +290,34 @@ begin
           and valid_from < clock_timestamp();
     else
         NEW.version = 1;
+    select fsm_transition_id into v_fsm_transition_id
+    from ores_trading_activity_types_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and code = NEW.activity_type_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_fsm_transition_id is not null then
+        select from_state_id, to_state_id, name
+          into v_from_state_id, v_to_state_id, v_transition_name
+        from ores_dq_fsm_transitions_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and id = v_fsm_transition_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if not found then
+            raise exception 'Activity type % names FSM transition %, which does not exist.',
+                NEW.activity_type_code, v_fsm_transition_id
+                using errcode = '23503';
+        end if;
+
+        if v_from_state_id is not null then
+            raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
+                NEW.activity_type_code, v_transition_name, v_from_state_id
+                using errcode = '23514';
+        end if;
+
+        NEW.status_id = v_to_state_id;
+    end if;
     end if;
 
     NEW.valid_from = clock_timestamp();

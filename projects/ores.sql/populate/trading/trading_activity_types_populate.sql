@@ -36,11 +36,10 @@ do $$
 declare
     v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
     v_machine_id uuid;
-    v_tr_initial_booking uuid;
-    v_tr_confirm         uuid;
-    v_tr_cancel_new      uuid;
+    v_tr_new             uuid;
+    v_tr_discard         uuid;
     v_tr_expire          uuid;
-    v_tr_cancel_live     uuid;
+    v_tr_cancel          uuid;
 begin
     -- Look up the trade_status machine
     select id into v_machine_id
@@ -53,26 +52,22 @@ begin
         raise exception 'trade_status FSM machine not found. Run dq_fsm_trade_status_populate.sql first.';
     end if;
 
-    -- Look up transitions by name
-    select id into v_tr_initial_booking
+    -- Look up transitions by name. Only the state-changing activities name
+    -- one: an activity that carries no transition versions the trade and
+    -- leaves it where it was. Confirmation names none here -- it belongs to
+    -- the confirmation machine, not to the lifecycle.
+    select id into v_tr_new
     from ores_dq_fsm_transitions_tbl
     where tenant_id = v_sys_tenant
       and machine_id = v_machine_id
-      and name = 'initial_booking'
+      and name = 'new'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
-    select id into v_tr_confirm
+    select id into v_tr_discard
     from ores_dq_fsm_transitions_tbl
     where tenant_id = v_sys_tenant
       and machine_id = v_machine_id
-      and name = 'confirm'
-      and valid_to = ores_utility_infinity_timestamp_fn();
-
-    select id into v_tr_cancel_new
-    from ores_dq_fsm_transitions_tbl
-    where tenant_id = v_sys_tenant
-      and machine_id = v_machine_id
-      and name = 'cancel_new'
+      and name = 'discard'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_tr_expire
@@ -82,11 +77,11 @@ begin
       and name = 'expire'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
-    select id into v_tr_cancel_live
+    select id into v_tr_cancel
     from ores_dq_fsm_transitions_tbl
     where tenant_id = v_sys_tenant
       and machine_id = v_machine_id
-      and name = 'cancel_live'
+      and name = 'cancel'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- -------------------------------------------------------------------------
@@ -100,12 +95,12 @@ begin
         ('new_booking',
          v_sys_tenant, 0, 'new_activity', true,
          'Initial booking of a new trade.',
-         'New', v_tr_initial_booking,
+         'New', v_tr_new,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('new_internal_transfer',
          v_sys_tenant, 0, 'new_activity', false,
          'Internal transfer creating a new trade record.',
-         'New', v_tr_initial_booking,
+         'New', v_tr_new,
          current_user, 'system.initial_load', 'Seed activity types'),
 
         -- -------------------------------------------------------------------------
@@ -118,8 +113,8 @@ begin
          current_user, 'system.initial_load', 'Seed activity types'),
         ('confirmation',
          v_sys_tenant, 0, 'lifecycle_event', false,
-         'Trade confirmed by both counterparties; status transitions to live.',
-         null, v_tr_confirm,
+         'Trade confirmed by both counterparties. Confirmation is its own machine: this moves the confirmation status, not the lifecycle.',
+         null, null,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('novation',
          v_sys_tenant, 0, 'lifecycle_event', true,
@@ -134,7 +129,7 @@ begin
         ('full_termination',
          v_sys_tenant, 0, 'lifecycle_event', false,
          'Full early termination of a live trade.',
-         'FullTermination', v_tr_cancel_live,
+         'FullTermination', v_tr_cancel,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('maturity',
          v_sys_tenant, 0, 'lifecycle_event', false,
@@ -241,17 +236,17 @@ begin
         ('cancel',
          v_sys_tenant, 0, 'cancellation', false,
          'Cancellation of a new trade before confirmation.',
-         null, v_tr_cancel_new,
+         null, v_tr_discard,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('cancel_confirmed',
          v_sys_tenant, 0, 'cancellation', false,
          'Cancellation of a live (confirmed) trade.',
-         'FullTermination', v_tr_cancel_live,
+         'FullTermination', v_tr_cancel,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('void',
          v_sys_tenant, 0, 'cancellation', false,
          'Void of a trade that should never have been booked.',
-         null, v_tr_cancel_new,
+         null, v_tr_discard,
          current_user, 'system.initial_load', 'Seed activity types')
 
     on conflict (tenant_id, code)

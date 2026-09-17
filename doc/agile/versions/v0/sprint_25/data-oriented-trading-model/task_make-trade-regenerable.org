@@ -28,9 +28,9 @@ Regenerating the trade entity produces output byte-identical to the checked-in t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Two of five gap classes closed: the SQL schema and the N-way domain composition. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The service layer and the Qt estate, in a second PR. |
 | Last touched | 2026-09-17                               |
 
 * Acceptance

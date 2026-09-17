@@ -67,8 +67,12 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1, PR #2087. The review found no correctness issues and approved
+pending the full build.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No unit test for the new helpers; the drift gate checks stability, not correctness | =core.py= | Accept | Correct, and the reason matters: the gate stays green if the marker stops being emitted and the tree is regenerated to match. Seven tests added in =test_generated_marker.py=. |
+| 2 | =_emits_cpp= is defined after its caller | =core.py= | Accept | Moved above =render_template=. |
 
 * Result

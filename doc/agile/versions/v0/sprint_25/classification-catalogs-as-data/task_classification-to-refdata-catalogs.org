@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 643DE9E2-B105-4463-95DC-29D7907C00A3
+:END:
+#+title: Task: Move classification into refdata catalogs
+#+description: Delete the ores.marketdata asset_class and series_subclass C++ enums, carry the codes as data end to end, and add the series_subclass_code refdata catalog the taxonomy needs.
+#+type: task
+#+level: s1
+#+filetags: :classification-catalogs-as-data:sprint_25:v0:
+#+owner: marco
+#+branch: feature/classification-to-refdata-catalogs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:623FD704-50F8-4FA8-8EED-7E885797B48C][Classification catalogs as data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the database the ground truth for classification. The ores.marketdata asset_class and series_subclass C++ enums go away, consumers carry the code string, and both vocabularies live in refdata catalogs that the UI reads for labels.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:623FD704-50F8-4FA8-8EED-7E885797B48C][Classification catalogs as data]] |
+| Now          | The change set is written and lands as one PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the class checks, close the task, raise the PR. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- refdata.asset_class_code holds the seven-class taxonomy from doc/knowledge/domain/asset_classes.org; instrument_code rows are reclassified off cross_asset and the populate script matches.
+- refdata.series_subclass_code ships end to end (table, SQL, domain, repository, service, protocol, registrar, history mapper, Qt client) and is populated.
+- No C++ enum in ores.marketdata mirrors either catalog; consumers carry the code string.
+- Qt reads asset class and subclass labels from the catalog tables, not from compiled-in names.
+- Full local build clean and the full ctest suite green.
+- Codegen drift is zero for ores.refdata and ores.marketdata: regeneration reproduces the checked-in output byte for byte.
+
+* Plan
+
+The catalog becomes the authority first; the code follows it.
+
+1. Refdata. Rewrite =asset_class_code= to the seven-class taxonomy in
+   =doc/knowledge/domain/asset_classes.org=: =rates= becomes
+   =interest_rates= and =cross_asset= goes. Reclassify the fourteen
+   =cross_asset= instrument codes onto their real classes. Update the create,
+   drop and populate SQL, and the RLS policy script that lists the new table.
+2. Refdata. Add =series_subclass_code= as a new entity org and generate its
+   full stack: domain type with JSON and table IO, generator, table, repository,
+   entity, mapper, service, protocol, handler, registrar, history field mapper,
+   and the eventing integration test.
+3. Marketdata. Delete the =asset_class= and =series_subclass= C++ enums. The
+   domain types carry the code string. Update the two entity orgs, the two
+   generators, the two mappers, the two history field mappers, the domain tests,
+   the feed ingest loop and the import service.
+4. Qt. Read the asset class and subclass labels from the catalog tables through
+   the lookup fetcher instead of compiled-in names. Add the series subclass
+   client model, controller, detail dialog and MDI window; register the new
+   lookup type in the refdata and mktdata windows that display it.
+5. Ripples. The synthetic IR curve feed, the iam tenant provisioner's asset
+   class literal, the DQ populate scripts and the mixin custom-type list in
+   =projects/modeling/cpp_custom_types.org=.
+6. Verification. Codegen drift for =ores.refdata= and =ores.marketdata= must
+   stay at zero, the full build must be clean, and the full ctest suite must be
+   green.
+
+The known follow-up, deliberately left out: the feed ingest loop still special
+cases FX. That defect gets its own task; this task only stops it depending on
+the deleted enum.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

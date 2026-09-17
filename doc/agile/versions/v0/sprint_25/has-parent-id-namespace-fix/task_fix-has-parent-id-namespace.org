@@ -8,7 +8,7 @@
 #+filetags: :has-parent-id-namespace-fix:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-has-parent-id-namespace
-#+pr:
+#+pr: 2090
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2090][#2090]] | [codegen] Route has_parent_id to the entity root so profile bindings take effect |
 
 * Review
 

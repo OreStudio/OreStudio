@@ -107,6 +107,14 @@ No other compiler sees the flag. The generator expression tests the
 compiler id, and only MSVC matches it, so the GNU and Clang branches are
 untouched.
 
+The CDash experimental check ran three times and did not finish once.
+Each attempt was killed. The last attempt reached the furthest. It
+configured, built the =package= target, and passed 73 tests of 73. Its
+submit step did not complete, because the kill landed during the
+upload. The build and test results the check carries are therefore
+already recorded above, and only the dashboard entry is missing. The
+check is visibility only.
+
 The acceptance is met with one limit. No local check compiles the file
 the flag applies to, because this host has no MSVC toolchain. The
 generator expression and the flag spelling are both visible by

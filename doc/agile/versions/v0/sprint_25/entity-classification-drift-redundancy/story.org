@@ -2,7 +2,7 @@
 :ID: CFC41F33-DA7A-4D2A-88AA-70D65150DA6B
 :END:
 #+title: Story: Entity classification and drift baseline: redundant explicit properties
-#+description: Across every component bound to variability profiles, remove the explicit model properties the bound profile already fixes to the same value. Keep genuine overrides and the structural properties profiles deliberately omit. Prove every removal output-neutral by regeneration.
+#+description: Across the components bound to variability profiles in the known-drift-free registry, remove the explicit model properties the bound profile already fixes to the same value. Keep genuine overrides, the structural properties profiles deliberately omit, and has_parent_id, which the generator reads from a place the profile does not write. Prove every removal output-neutral by regeneration.
 #+type: story
 #+level: s2
 #+filetags: :sprint_25:v0:
@@ -15,31 +15,59 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A model that binds to a variability profile should state only what it
+decides for itself. Many models also restate properties the profile
+already fixes to the same value. The two copies can drift apart, and the
+profile stops being the single source of truth.
+
+This story removes that redundancy across the components in the drift
+gate's registry, keeps the genuine overrides, and proves every removal
+output-neutral by regeneration. It also adds the check to the component
+architecture audit, so later passes look for the same class of finding.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-17                               |
 
 * Acceptance
 
--
+- Every profiled model in the known-drift-free registry is surveyed for
+  explicit properties the bound profile also assigns.
+- Every redundant line is removed, and every override is kept with its
+  reason recorded.
+- Each affected component regenerates byte-identical output, proven by
+  =check_component_drift.py=.
+- The removal class joins the manual checklist of the component
+  architecture audit.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:88ADF884-86BB-4561-B1A7-6B956010EBAD][Remove explicit model properties the bound profile already fixes]] | STARTED | 2026-09-17 | | Survey every profiled entity model and remove the explicit property lines whose value the bound profile already fixes, across analytics, compute, dq, iam, refdata, reporting and synthetic. Keep the two recorded overrides (compute result has_change_reason_cache false, reporting report_definition has_workspace_id true) and the structural properties profiles deliberately omit. Prove each removal output-neutral by regenerating the component. |
+| [[id:88ADF884-86BB-4561-B1A7-6B956010EBAD][Remove explicit model properties the bound profile already fixes]] | DONE | 2026-09-17 | 2026-09-17 | Survey every profiled entity model in the known-drift-free registry and remove the explicit property lines whose value the bound profile already fixes, across analytics, compute, iam, refdata, reporting and synthetic. Keep the two recorded overrides (compute result has_change_reason_cache false, reporting report_definition has_workspace_id true), the structural properties profiles deliberately omit, and has_parent_id, which the generator reads from a place the profile does not write. Prove each removal output-neutral by regenerating the component. |
 
 * Decisions
 
+- Scope the sweep to =KNOWN_DRIFT_FREE=. An unregistered component cannot
+  be proven by the drift gate, so its redundancy waits.
+- =has_parent_id= stays explicit while the generator reads it at the
+  entity root and the profile writes it into the =sql= namespace. The
+  removal waits for a generator fix.
+- The check lives in the component architecture audit, not in the drift
+  gate. The drift gate proves a component's output is unchanged; the
+  audit asks whether the model states too much.
+
 * Out of scope
 
--
+- =dq= and =dq-cpp=. They carry the same redundancy but are not in
+  =KNOWN_DRIFT_FREE=, and regeneration there already drifts for an
+  unrelated template reason.
+- The generator fix for the =has_parent_id= namespace mismatch. The task
+  records it as a finding.

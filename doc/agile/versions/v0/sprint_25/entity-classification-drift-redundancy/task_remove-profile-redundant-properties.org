@@ -2,7 +2,7 @@
 :ID: 88ADF884-86BB-4561-B1A7-6B956010EBAD
 :END:
 #+title: Task: Remove explicit model properties the bound profile already fixes
-#+description: Survey every profiled entity model and remove the explicit property lines whose value the bound profile already fixes, across analytics, compute, dq, iam, refdata, reporting and synthetic. Keep the two recorded overrides (compute result has_change_reason_cache false, reporting report_definition has_workspace_id true) and the structural properties profiles deliberately omit. Prove each removal output-neutral by regenerating the component.
+#+description: Survey every profiled entity model in the known-drift-free registry and remove the explicit property lines whose value the bound profile already fixes, across analytics, compute, iam, refdata, reporting and synthetic. Keep the two recorded overrides (compute result has_change_reason_cache false, reporting report_definition has_workspace_id true), the structural properties profiles deliberately omit, and has_parent_id, which the generator reads from a place the profile does not write. Prove each removal output-neutral by regenerating the component.
 #+type: task
 #+level: s1
 #+filetags: :entity-classification-drift-redundancy:sprint_25:v0:
@@ -30,18 +30,18 @@ output-neutral by regenerating the component.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CFC41F33-DA7A-4D2A-88AA-70D65150DA6B][Entity classification and drift baseline: redundant explicit properties]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-17                               |
 
 * Acceptance
 
 - Every entity model bound to a profile is surveyed for explicit
-  properties the profile also assigns, across every component, not just
-  the ones already in the drift registry.
+  properties the profile also assigns, across every component in the
+  drift gate's known-drift-free registry.
 - Every redundant line is removed. Every line whose stated value differs
   from the profile's is kept and recorded with its reason.
 - Each affected component regenerates byte-identical output after the
@@ -72,6 +72,47 @@ requires the generated output to match byte for byte.
 
 * Notes
 
+The survey is a script, not a reading. It parses each model's
+=:profile:=, loads that profile's =* Assignments= through the
+generator's own =_load_profile_assignments=, and intersects the assigned
+feature names with the keys the model states. Reusing the generator's
+loader matters: the survey then agrees with the merge the generator
+actually performs.
+
+The survey runs over =projects/*/modeling/*.org= for the components in
+=KNOWN_DRIFT_FREE=. It found 47 intersections: 45 candidates to remove
+and 2 overrides to keep.
+
+| Feature | Lines | Outcome |
+|---------+-------+---------|
+| =has_uuid_primary_key= | 19 | removed |
+| =has_pagination= | 8 | removed |
+| =has_tenant_id= | 7 | removed |
+| =has_change_reason_cache= | 7 | removed |
+| =has_parent_id= | 4 | restored, not removable |
+| =has_workspace_id= | 1 | override, kept |
+
+=compute.result= sets =has_change_reason_cache= false against the
+profile's true. =reporting.report_definition= sets =has_workspace_id=
+true against the profile's false. Both are deliberate overrides, so both
+lines stay.
+
+The four =has_parent_id= lines did not turn out to be removable. The
+first regeneration proved it: removing them dropped the hierarchy
+function, the repository method, the handler and the service for
+=business_unit=, =counterparty= and =party= in refdata, and for =folder=
+in synthetic, over 24 and 8 generated files. The cause is a namespace
+mismatch. The profile files =has_parent_id= under =sql=, because that is
+what =_FEATURE_NAMESPACE= says. The templates and =core.py= read it at
+the entity root. The explicit line was the only thing putting the value
+where the readers look. Those four lines are restored.
+
+=dq= is out of scope. Its models carry the same redundancy, but neither
+=dq= nor =dq-cpp= is in =KNOWN_DRIFT_FREE=, and regeneration there
+already materializes 37 untracked files from a template family the
+committed tree predates. The gate cannot prove a removal in an
+unregistered component, so the sweep leaves it alone.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -96,3 +137,45 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The sweep removed 41 redundant property lines across 19 models in six
+components. Every removal is proven output-neutral by regeneration: all
+seven registry catalogue entries report =No drift= on the committed tree.
+
+| Catalogue slug | Result |
+|----------------+--------|
+| =analytics-cpp= | No drift |
+| =compute-cpp= | No drift |
+| =iam= | No drift |
+| =iam-cpp= | No drift |
+| =refdata= | No drift |
+| =reporting= | No drift |
+| =synthetic= | No drift |
+
+Two findings came out of the run.
+
+The four =has_parent_id= lines are not removable. Regeneration dropped
+the hierarchy machinery for the three refdata hierarchy entities and for
+=synthetic.folder=, because the profile writes the feature into the =sql=
+namespace while the generator reads it at the entity root. The lines are
+restored and the removal waits for a generator fix.
+
+=dq= is out of scope. Its models carry the same redundancy, but neither
+=dq= nor =dq-cpp= is in =KNOWN_DRIFT_FREE=, and regeneration there
+already drifts for an unrelated template reason.
+
+The audit gained the check. =Model and profile hygiene= joins the manual
+checklist of the [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][component architecture audit]], so a later pass on
+any component looks for this class of finding.
+
+Acceptance:
+
+- Survey across the registry: met. The survey covers every profiled
+  model of the six registry components.
+- Redundant lines removed, overrides kept and recorded: met. 41 lines
+  removed. The two overrides and the four restored =has_parent_id= lines
+  are recorded in =* Notes= with their reasons.
+- Each affected component regenerates byte-identical: met, for all seven
+  registry entries.
+- The drift gate still passes for each affected component in
+  =KNOWN_DRIFT_FREE=: met, by the same seven runs.

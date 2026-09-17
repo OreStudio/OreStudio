@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_qt_detail_dialog.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.qt/BadgeComboHelper.hpp"

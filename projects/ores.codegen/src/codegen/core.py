@@ -219,6 +219,39 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     return result
 
 
+def cpp_generated_marker(template_name):
+    """
+    Build the generated-file marker for a C++ output.
+
+    Mirrors the marker the SQL templates carry, so a reader of a
+    generated header or implementation can tell it is codegen output and
+    which template produced it.
+
+    Args:
+        template_name (str): Basename of the template being rendered
+
+    Returns:
+        str: Comment block naming the template
+    """
+    return (
+        "/**\n"
+        " * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY\n"
+        f" * Template: {template_name}\n"
+        " * To modify, update the template and regenerate.\n"
+        " */"
+    )
+
+
+def _emits_cpp(template_name):
+    """
+    Whether a template produces a C++ translation unit or header.
+
+    The marker is a C comment, so it must not reach a template whose
+    output is not C++ even if that template carries the C++ licence.
+    """
+    return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -237,7 +270,15 @@ def render_template(template_path, data):
     extended_data = data.copy()
     extended_data['generate_flag_svg'] = generate_flag_svg
 
+    template_name = os.path.basename(template_path)
+    if 'cpp_license' in extended_data and _emits_cpp(template_name):
+        extended_data['cpp_license'] = (
+            f"{extended_data['cpp_license']}\n"
+            f"{cpp_generated_marker(template_name)}"
+        )
+
     return pystache.render(template_content, extended_data)
+
 
 
 def get_template_mappings():

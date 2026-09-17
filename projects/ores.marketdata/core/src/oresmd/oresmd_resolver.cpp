@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: oresmd_resolver.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.marketdata.core/oresmd/oresmd_resolver.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
 #include <boost/throw_exception.hpp>

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_ENGINE_TYPE_MAPPER_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_ENGINE_TYPE_MAPPER_HPP
 

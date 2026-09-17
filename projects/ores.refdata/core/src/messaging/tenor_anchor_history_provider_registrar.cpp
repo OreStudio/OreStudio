@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_provider_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.refdata.core/presentation/tenor_anchor_history_field_mapper.hpp"

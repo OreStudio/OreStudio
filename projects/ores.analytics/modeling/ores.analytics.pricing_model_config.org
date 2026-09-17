@@ -136,7 +136,6 @@ std::string("standard")
 :item_var:               config
 :key_field:              name
 :key_widget:             nameEdit
-:has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_configs_request
 :get_response_class:     analytics::messaging::get_pricing_model_configs_response
 :get_message_type:       get_pricing_model_configs_request

@@ -249,8 +249,6 @@ std::string("federalreserve.gov")
 :collection_name:             calendar_events
 :item_var:                    evt
 :key_field:                   id
-:has_uuid_primary_key:        true
-:has_pagination:              true
 :has_export_macro:            true
 :get_request_class:           refdata::messaging::get_calendar_events_request
 :get_response_class:          refdata::messaging::get_calendar_events_response

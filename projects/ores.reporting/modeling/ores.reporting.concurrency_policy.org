@@ -24,7 +24,6 @@ for a report definition that already has a running instance.
 :schema:        public
 :product:       ores
 :component:     reporting
-:has_tenant_id:            true
 :system_tenant_validation: true
 :profile:                  simple-lookup
 :END:
@@ -141,7 +140,6 @@ faker::number::integer(1, 100)
 :collection_name:        policies
 :item_var:               policy
 :key_field:              code
-:has_uuid_primary_key:   false
 :get_request_class:      reporting::messaging::get_concurrency_policies_request
 :get_response_class:     reporting::messaging::get_concurrency_policies_response
 :get_message_type:       get_concurrency_policies_request

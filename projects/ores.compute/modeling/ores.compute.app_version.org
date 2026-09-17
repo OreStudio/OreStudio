@@ -143,7 +143,6 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 :collection_name:         app_versions
 :item_var:                app_version
 :key_field:               wrapper_version
-:has_uuid_primary_key:    true
 :get_request_class:       compute::messaging::get_app_versions_request
 :get_response_class:      compute::messaging::get_app_versions_response
 :get_message_type:        get_app_versions_request
@@ -161,8 +160,6 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 :icon:                    Code
 :changed_event_class:     compute::eventing::app_version_changed_event
 :changed_event_include:   ores.compute.api/eventing/app_version_changed_event.hpp
-:has_change_reason_cache: true
-:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

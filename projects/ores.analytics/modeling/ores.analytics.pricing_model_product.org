@@ -152,7 +152,6 @@ std::string("DiscountingSwapEngine")
 :item_var:               product
 :key_field:              pricing_engine_type_code
 :key_widget:             pricingEngineTypeCodeCombo
-:has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_products_request
 :get_response_class:     analytics::messaging::get_pricing_model_products_response
 :get_message_type:       get_pricing_model_products_request

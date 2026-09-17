@@ -27,7 +27,6 @@ begins. completed_at is NULL while running or in a terminal-before-start state.
 :schema:        public
 :product:       ores
 :component:     reporting
-:has_tenant_id: true
 :profile:           fk-scoped-child
 :END:
 
@@ -229,7 +228,6 @@ std::nullopt
 :item_var:               instance
 :key_field:              name
 :key_widget:             nameEdit
-:has_uuid_primary_key:   true
 :get_request_class:      reporting::messaging::get_report_instances_request
 :get_response_class:     reporting::messaging::get_report_instances_response
 :get_message_type:       get_report_instances_request

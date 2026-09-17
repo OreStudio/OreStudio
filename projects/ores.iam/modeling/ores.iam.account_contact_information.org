@@ -26,7 +26,6 @@ Operations/Settlement/Billing split).
 :product:   ores
 :component: iam
 :profile:   self-referencing-hierarchy
-:has_tenant_id:    true
 :END:
 
 * Columns
@@ -336,8 +335,6 @@ predates the context-carrying form the auto-seeding blocks use.
 :history_request_class:   iam::messaging::get_account_contact_information_history_request
 :history_response_class:  iam::messaging::get_account_contact_information_history_response
 :history_message_type:    get_account_contact_information_history_request
-:has_uuid_primary_key:    true
-:has_change_reason_cache: true
 :has_explorer_api:        true
 :has_export_macro:        true
 :has_pagination:          true

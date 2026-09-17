@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: CFC41F33-DA7A-4D2A-88AA-70D65150DA6B
+:END:
+#+title: Story: Entity classification and drift baseline: redundant explicit properties
+#+description: Across every component bound to variability profiles, remove the explicit model properties the bound profile already fixes to the same value. Keep genuine overrides and the structural properties profiles deliberately omit. Prove every removal output-neutral by regeneration.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-17                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:88ADF884-86BB-4561-B1A7-6B956010EBAD][Remove explicit model properties the bound profile already fixes]] | STARTED | 2026-09-17 | | Survey every profiled entity model and remove the explicit property lines whose value the bound profile already fixes, across analytics, compute, dq, iam, refdata, reporting and synthetic. Keep the two recorded overrides (compute result has_change_reason_cache false, reporting report_definition has_workspace_id true) and the structural properties profiles deliberately omit. Prove each removal output-neutral by regenerating the component. |
+
+* Decisions
+
+* Out of scope
+
+-

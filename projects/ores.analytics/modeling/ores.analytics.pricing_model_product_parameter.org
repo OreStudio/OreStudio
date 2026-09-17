@@ -167,7 +167,6 @@ std::string("0.03")
 :item_var:               parameter
 :key_field:              parameter_name
 :key_widget:             parameterNameEdit
-:has_uuid_primary_key:   true
 :get_request_class:      analytics::messaging::get_pricing_model_product_parameters_request
 :get_response_class:     analytics::messaging::get_pricing_model_product_parameters_response
 :get_message_type:       get_pricing_model_product_parameters_request

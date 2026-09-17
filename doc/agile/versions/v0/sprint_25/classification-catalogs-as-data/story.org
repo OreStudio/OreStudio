@@ -21,11 +21,11 @@ The asset class and series subclass classification vocabularies become refdata c
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The change set is written and lands as one PR. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the class checks, close the task, raise the PR. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-17                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ The asset class and series subclass classification vocabularies become refdata c
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:643DE9E2-B105-4463-95DC-29D7907C00A3][Move classification into refdata catalogs]] | STARTED | 2026-09-17 | | Delete the ores.marketdata asset_class and series_subclass C++ enums, carry the codes as data end to end, and add the series_subclass_code refdata catalog the taxonomy needs. |
+| [[id:643DE9E2-B105-4463-95DC-29D7907C00A3][Move classification into refdata catalogs]] | DONE | 2026-09-17 | 2026-09-17 | Delete the ores.marketdata asset_class and series_subclass C++ enums, carry the codes as data end to end, and add the series_subclass_code refdata catalog the taxonomy needs. |
 
 * Decisions
 

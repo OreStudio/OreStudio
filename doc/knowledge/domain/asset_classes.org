@@ -355,16 +355,15 @@ list rather than a class in it.
 
 ** Cross-asset is not a class
 
-ORE Studio currently holds =cross_asset= for market data that relates
-two classes, documented as "cross-asset correlations". The proposed
-taxonomy does not carry it, because a correlation between an equity
-index and an FX rate is not a third kind of thing: it is a relation
-between two classes.
+ORE Studio held =cross_asset= for market data that relates two classes,
+documented as "cross-asset correlations". The taxonomy does not carry
+it, because a correlation between an equity index and an FX rate is not
+a third kind of thing: it is a relation between two classes.
 
 A correlation series should therefore reference /two/ asset classes
 rather than one special value. That removes the only value in the
-current market data enumeration that has no counterpart in any
-external scheme, and removes the need to explain it.
+market data enumeration that has no counterpart in any external scheme,
+and removes the need to explain it.
 
 ** Bond stays
 
@@ -416,21 +415,20 @@ maps to several values in SIMM and FRTB because both carry a property the
 taxonomy does not; inflation maps inside interest rate for both; and bond has no
 risk counterpart because its sensitivity decomposes.
 
-*** What changes from the present enumeration
+*** What changed from the previous enumeration
 
-The current =ores::marketdata::api::domain::asset_class= holds eight
-values. Two change.
+The enumeration this replaced held eight values. Two changed.
 
-=cross_asset= is removed. A correlation between two classes is a relation
+=cross_asset= is gone. A correlation between two classes is a relation
 between them rather than a third kind of thing, so a correlation series
 references two classes. No external scheme surveyed here carries an equivalent
 value.
 
-=rates= is renamed =interest_rates=, in the enumeration and in the
-=ores_refdata_asset_class_codes= reference table that mirrors it. With
-=inflation= beside it, the bare word states less than the class holds.
+=rates= became =interest_rates=, in the =ores_refdata_asset_class_codes=
+table and everywhere the code carried the code. With =inflation= beside it,
+the bare word states less than the class holds.
 
-=inflation= keeps its present position. SIMM and FRTB place inflation inside
+=inflation= keeps its position. SIMM and FRTB place inflation inside
 interest rate when they charge it, which the correspondence above records as a
 projection those schemes apply. A consumer that reports inflation separately
 selects the class; one that does not leaves it out and reports the sensitivity

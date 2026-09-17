@@ -404,15 +404,6 @@ below is the order the wire carries.
 :entity_plural_words:   trades
 :END:
 
-** Domain includes
-
-#+begin_src cpp :name includes
-#include <chrono>
-#include <optional>
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#+end_src
-
 ** Conventions
 :PROPERTIES:
 :iterator_var: tr

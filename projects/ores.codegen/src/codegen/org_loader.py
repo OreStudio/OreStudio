@@ -1741,6 +1741,24 @@ def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
     groups = de.get("domain_groups") or []
     if not groups:
         return
+    # Three ways a grouped model can lose a field without saying so. The
+    # struct is the member list alone, so anything the groups do not cover
+    # is simply absent from it, and the two older mechanisms have no say
+    # once Domain groups is present.
+    for older in ("domain_identity_group", "domain_audit_group"):
+        if de.get(older):
+            raise ValueError(
+                f"{path}: declares Domain groups and {older}. Domain groups "
+                f"supersedes the identity/audit pair; state the group as a "
+                f"row of the table instead."
+            )
+    if ((de.get("cpp") or {}).get("includes") or {}).get("domain"):
+        raise ValueError(
+            f"{path}: declares Domain groups and a Domain includes block. A "
+            f"grouped struct reaches every field through a member, so the "
+            f"group headers are its only domain includes and the block would "
+            f"be dropped. Remove it."
+        )
     resolved: list[dict[str, str]] = []
     for group in groups:
         fg_path = path.with_name(f"{group['field_group']}_field_group.org")
@@ -1756,6 +1774,24 @@ def _resolve_domain_group_fields(model: dict[str, Any], path: Path) -> None:
                 "cpp_type": field.get("cpp_type", ""),
             })
     de["domain_group_fields"] = resolved
+    covered = {f["name"].split(".", 1)[1] for f in resolved}
+    declared = {c["name"] for c in de.get("columns", []) or []}
+    pk = de.get("primary_key") or {}
+    if pk.get("column"):
+        declared.add(pk["column"])
+    for col in pk.get("columns", []) or []:
+        # A compound key's entries spell the column as "column"; a single
+        # key's own dict spells it as "name".
+        name = col.get("name") or col.get("column")
+        if name:
+            declared.add(name)
+    missing = sorted(declared - covered)
+    if missing:
+        raise ValueError(
+            f"{path}: column(s) {', '.join(missing)} belong to no domain "
+            f"group. A grouped struct is its member list, so a column no "
+            f"group carries is absent from it."
+        )
 
 
 def _fk_side_from_section(node: OrgNode) -> dict[str, Any]:

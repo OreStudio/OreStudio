@@ -2526,10 +2526,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 parts = identity_group_value.split('.')
                 injected.append(f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"')
             # A domain-grouped entity reaches every column through a group,
-            # so the group headers are the only domain includes it needs.
+            # so the group headers are the only domain includes it needs. The
+            # loader refuses a model that declares both, so there is nothing
+            # here to discard.
             if domain_groups:
                 injected.extend(g['header'] for g in domain_groups)
-                existing_domain = []
             includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])

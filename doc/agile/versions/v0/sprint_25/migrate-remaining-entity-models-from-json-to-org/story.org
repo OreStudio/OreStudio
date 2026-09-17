@@ -43,3 +43,58 @@ Complete the org-migration story: convert the remaining legacy JSON-format entit
 * Out of scope
 
 -
+
+* Reframing — current context (2026-09-18)
+
+The title and the goal above record the state when the capture was
+written. The migration is complete. This section records what is true
+today, and it reframes the story.
+
+** The count of "~100 models" is stale
+
+- Zero JSON entity models remain. The =modeling/= directories hold 0
+  =.json= files and 450 =.org= files.
+- =projects/ores.codegen/models/= does not exist. The last deletion
+  was =3f03b1c433= on 2026-06-02.
+- Every =codegen_org_model_migration= task is DONE. Two were abandoned
+  on purpose: the =profiles.json= conversion to a literate
+  =facet_catalogue.org=, and the slovaris reference data.
+- 239 org models are live today: 174 =entity=, 34 =component=, 13
+  =junction=, 11 =module=, 7 =field_group=.
+
+The JSON that remains is dataset payload. The seeder datasets and the
+test corpora are live inputs to the codegen and to the tests. They are
+not models.
+
+** The migration left residue behind
+
+The migration deleted the models. Nothing deleted the artefacts that
+point at them. That is one defect class: a rename or a delete with no
+prune step.
+
+1. Four one-shot migration scripts still ship, and each one points at
+   the deleted tree: =migrate_component_to_org.py=,
+   =migrate_field_group_to_org.py=, =migrate_lookup_entity_to_org.py=,
+   and =migrate_junction_to_org.py=.
+2. Two skills tell the reader to author JSON models under
+   =projects/ores.codegen/models/{component}/=. The directory does not
+   exist, so the reader cannot follow the instruction:
+   =compass-codegen-add-entity= and =compass-codegen-add-sql-schema=.
+3. Five template org sources carry text from the generator.py era. All
+   136 =.mustache= templates are tangled from an org source, so the fix
+   belongs in the org file and never in the tangling output. Three
+   generated SQL headers name =generator.py= and
+   =models/slovaris/model.json=. One field-group header documents a
+   =_field_group.json= filename convention. One facet summary
+   attributes the dataset pipeline to =generator.py=.
+4. =projects/ores.compass/src/env_init.py= and three modeling docs
+   reference the deleted tree.
+5. The skills deployment kept output whose source was gone. 80
+   orphaned directories survived the =compass-= namespace rename,
+   because org-publish only writes. [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][The prune task]] fixed the
+   mechanism.
+
+** Reframed goal
+
+Retire the residue that the JSON-to-org migration left behind. Delete
+what nothing calls. Correct what still misleads a reader.

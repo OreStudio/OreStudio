@@ -68,8 +68,15 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1, PR #2091. The review found nothing blocking and raised four
+non-blocking observations.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A model-declared Domain includes block is discarded unconditionally | =core.py= | Accept | Live, not hypothetical: =trade.org= declared one. The loader now refuses the combination, and the dead block is gone -- regeneration stayed byte-identical, which proves it was dead. |
+| 2 | Nothing prevents declaring Domain groups and the identity/audit pair together | =org_loader.py= | Accept | Refused with a message saying which supersedes which. |
+| 3 | The docstring should be a terse comment above the code | =org_loader.py= | Decline | Every function in this module carries a docstring; matching the surrounding code is the house rule the comment skill states. Changing this one would make it the odd one out. |
+| 4 | "Zero deletions" in the PR body reads wrong against a diff with six | PR body | Accept | The six are the template's =clock_timestamp()= replacing a stale =current_timestamp=. Reworded to say no content is lost rather than no lines change. |
+| 5 | Not raised: a column in no group vanishes from the struct | =org_loader.py= | Added | The worst of the three silent losses, since it costs a field on the wire rather than a compile error. Guarded and tested. |
 
 * Result

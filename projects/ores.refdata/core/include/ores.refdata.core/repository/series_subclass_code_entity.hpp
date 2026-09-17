@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_entity.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_INSTRUMENT_CODE_ENTITY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_INSTRUMENT_CODE_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_SERIES_SUBCLASS_CODE_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_SERIES_SUBCLASS_CODE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -36,11 +36,11 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a instrument code in the database.
+ * @brief Represents a series subclass code in the database.
  */
-struct instrument_code_entity {
+struct series_subclass_code_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_refdata_instrument_codes_tbl";
+    constexpr static const char* tablename = "ores_refdata_series_subclass_codes_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
@@ -49,10 +49,7 @@ struct instrument_code_entity {
     std::string name;
 
     std::string description;
-    std::optional<std::string> asset_class;
-    std::optional<std::string> ore_trade_type;
     int display_order = 0;
-    std::string curve_role = "NONE";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -61,7 +58,7 @@ struct instrument_code_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const instrument_code_entity& v);
+std::ostream& operator<<(std::ostream& s, const series_subclass_code_entity& v);
 
 }
 

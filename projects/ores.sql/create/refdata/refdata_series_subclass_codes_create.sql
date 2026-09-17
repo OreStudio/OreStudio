@@ -22,18 +22,27 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Asset Class Code Table
+ * Series Subclass Code Table
  *
- * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. This table is the single
- * source of truth for the taxonomy. Code carries no parallel
- * enumeration, because the list is runtime-managed and no compiled list
- * can be exhaustive over it. Other entities (instrument_code,
- * market_series, feed_binding) FK-validate against this table.
- * Managed by the system tenant, like other shared code tables.
+ * Fine-grained classification of a market series within its asset class.
+ * market_series.series_subclass carries one of these codes, so a query
+ * can slice a tenant's series by shape ("all FX vol surfaces", "all
+ * discount curves") without parsing the ORE key.
+ *
+ * Most codes are shared across asset classes: spot covers both FX spot
+ * and equity spot, volatility covers FX options, swaptions and
+ * commodity options alike. The table therefore does not partition by
+ * asset_class_code; the pairing a producer actually emits is declared
+ * where the series is written.
+ *
+ * This table is the single source of truth for the taxonomy. Code carries
+ * no parallel enumeration, because the list is runtime-managed and no
+ * compiled list can be exhaustive over it. market_series and
+ * ir_curve_tick FK-validate against this table. Managed by the system
+ * tenant, like other shared code tables.
  */
 
-create table if not exists "ores_refdata_asset_class_codes_tbl" (
+create table if not exists "ores_refdata_series_subclass_codes_tbl" (
     "code" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -57,24 +66,24 @@ create table if not exists "ores_refdata_asset_class_codes_tbl" (
 );
 
 -- Unique name for active records
-create unique index if not exists asset_class_codes_name_uniq_idx
-on "ores_refdata_asset_class_codes_tbl" (tenant_id, name)
+create unique index if not exists series_subclass_codes_name_uniq_idx
+on "ores_refdata_series_subclass_codes_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists asset_class_codes_version_uniq_idx
-on "ores_refdata_asset_class_codes_tbl" (tenant_id, code, version)
+create unique index if not exists series_subclass_codes_version_uniq_idx
+on "ores_refdata_series_subclass_codes_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists asset_class_codes_code_uniq_idx
-on "ores_refdata_asset_class_codes_tbl" (tenant_id, code)
+create unique index if not exists series_subclass_codes_code_uniq_idx
+on "ores_refdata_series_subclass_codes_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists asset_class_codes_tenant_idx
-on "ores_refdata_asset_class_codes_tbl" (tenant_id)
+create index if not exists series_subclass_codes_tenant_idx
+on "ores_refdata_series_subclass_codes_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_refdata_asset_class_codes_insert_fn()
+create or replace function ores_refdata_series_subclass_codes_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -87,7 +96,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_refdata_asset_class_codes_tbl"
+    from "ores_refdata_series_subclass_codes_tbl"
     where tenant_id = NEW.tenant_id
       and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -105,7 +114,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_refdata_asset_class_codes_tbl"
+        update "ores_refdata_series_subclass_codes_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and code = NEW.code
@@ -124,13 +133,13 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_refdata_asset_class_codes_insert_trg
-before insert on "ores_refdata_asset_class_codes_tbl"
-for each row execute function ores_refdata_asset_class_codes_insert_fn();
+create or replace trigger ores_refdata_series_subclass_codes_insert_trg
+before insert on "ores_refdata_series_subclass_codes_tbl"
+for each row execute function ores_refdata_series_subclass_codes_insert_fn();
 
-create or replace rule ores_refdata_asset_class_codes_delete_rule as
-on delete to "ores_refdata_asset_class_codes_tbl" do instead (
-    update "ores_refdata_asset_class_codes_tbl"
+create or replace rule ores_refdata_series_subclass_codes_delete_rule as
+on delete to "ores_refdata_series_subclass_codes_tbl" do instead (
+    update "ores_refdata_series_subclass_codes_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
@@ -138,25 +147,25 @@ on delete to "ores_refdata_asset_class_codes_tbl" do instead (
 );
 
 -- =============================================================================
--- Validation function for asset_class_code
--- Validates that a code exists in the asset_class_codes table.
+-- Validation function for series_subclass_code
+-- Validates that a code exists in the series_subclass_codes table.
 -- Returns the validated value, or default if null/empty.
 -- Uses system tenant data (shared reference data).
 -- =============================================================================
-create or replace function ores_refdata_validate_asset_class_code_fn(
+create or replace function ores_refdata_validate_series_subclass_code_fn(
     p_tenant_id uuid,
     p_value text
 ) returns text as $$
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
-        raise exception 'Invalid asset_class_code: value cannot be null or empty'
+        raise exception 'Invalid series_subclass_code: value cannot be null or empty'
             using errcode = '23502';
     end if;
 
     -- Allow pass-through during bootstrap (no active rows for system tenant).
     if not exists (
-        select 1 from ores_refdata_asset_class_codes_tbl
+        select 1 from ores_refdata_series_subclass_codes_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -165,14 +174,14 @@ begin
 
     -- Validate against reference data
     if not exists (
-        select 1 from ores_refdata_asset_class_codes_tbl
+        select 1 from ores_refdata_series_subclass_codes_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid asset_class_code: %. Must be one of: %', p_value, (
+        raise exception 'Invalid series_subclass_code: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
-            from ores_refdata_asset_class_codes_tbl
+            from ores_refdata_series_subclass_codes_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';

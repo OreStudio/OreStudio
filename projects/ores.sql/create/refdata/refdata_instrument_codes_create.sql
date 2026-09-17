@@ -41,8 +41,9 @@
  * oreTradeType string, where one exists, is preserved separately in
  * ore_trade_type (nullable — null only for DEPO) for future ORE
  * trade-file interop; it is not itself validated or FK'd anywhere, only
- * carried as a reference. Each row is tagged with the asset_class_code
- * it belongs to. Not scoped to any single consumer: the IR Curve
+ * carried as a reference. Each row that describes one instrument is
+ * tagged with the asset_class_code it belongs to; rows that do not are
+ * left untagged (see asset_class below). Not scoped to any single consumer: the IR Curve
  * Template (which consumes the DEPO/FRA/IRS rates entries for its
  * tenor roles) is the first consumer, but this catalogue exists
  * independently for any future feature needing to classify or enumerate
@@ -56,7 +57,7 @@ create table if not exists "ores_refdata_instrument_codes_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
-    "asset_class" text not null,
+    "asset_class" text null,
     "ore_trade_type" text null,
     "display_order" integer not null default 0,
     "curve_role" text not null,
@@ -102,8 +103,10 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate asset_class
-    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
+    -- Validate asset_class (optional field -- skip validation when null)
+    if NEW.asset_class is not null then
+        NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
+    end if;
 
     -- Validate curve_role
     NEW.curve_role := ores_refdata_validate_curve_role_fn(NEW.tenant_id, NEW.curve_role);

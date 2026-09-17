@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_class.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REFDATA_API_DOMAIN_ASSET_CLASS_CODE_HPP
-#define ORES_REFDATA_API_DOMAIN_ASSET_CLASS_CODE_HPP
+#ifndef ORES_REFDATA_API_DOMAIN_SERIES_SUBCLASS_CODE_HPP
+#define ORES_REFDATA_API_DOMAIN_SERIES_SUBCLASS_CODE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
@@ -33,18 +33,27 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation,
- * bond).
+ * @brief Fine-grained market series subclass taxonomy (spot, forward, volatility, yield, basis,
+ * fra, xccy, spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation).
  *
- * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. This table is the single
- * source of truth for the taxonomy. Code carries no parallel
- * enumeration, because the list is runtime-managed and no compiled list
- * can be exhaustive over it. Other entities (instrument_code,
- * market_series, feed_binding) FK-validate against this table.
- * Managed by the system tenant, like other shared code tables.
+ * Fine-grained classification of a market series within its asset class.
+ * market_series.series_subclass carries one of these codes, so a query
+ * can slice a tenant's series by shape ("all FX vol surfaces", "all
+ * discount curves") without parsing the ORE key.
+ *
+ * Most codes are shared across asset classes: spot covers both FX spot
+ * and equity spot, volatility covers FX options, swaptions and
+ * commodity options alike. The table therefore does not partition by
+ * asset_class_code; the pairing a producer actually emits is declared
+ * where the series is written.
+ *
+ * This table is the single source of truth for the taxonomy. Code carries
+ * no parallel enumeration, because the list is runtime-managed and no
+ * compiled list can be exhaustive over it. market_series and
+ * ir_curve_tick FK-validate against this table. Managed by the system
+ * tenant, like other shared code tables.
  */
-struct asset_class_code final {
+struct series_subclass_code final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
@@ -56,19 +65,20 @@ struct asset_class_code final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique asset class code.
+     * @brief Unique series subclass code.
      *
-     * Examples: 'fx', 'interest_rates', 'credit', 'equity', 'commodity', 'inflation', 'bond'.
+     * Examples: 'spot', 'forward', 'volatility', 'yield', 'basis', 'fra', 'xccy', 'spread',
+     * 'index_credit', 'recovery', 'swap', 'capfloor', 'seasonality', 'price', 'correlation'.
      */
     std::string code;
 
     /**
-     * @brief Human-readable name for the asset class.
+     * @brief Human-readable name for the series subclass.
      */
     std::string name;
 
     /**
-     * @brief Detailed description of the asset class.
+     * @brief Detailed description of the series subclass.
      */
     std::string description;
 
@@ -78,7 +88,7 @@ struct asset_class_code final {
     int display_order = 0;
 
     /**
-     * @brief Username of the person who last modified this asset class code.
+     * @brief Username of the person who last modified this series subclass code.
      */
     std::string modified_by;
 
@@ -106,13 +116,13 @@ struct asset_class_code final {
 };
 
 /**
- * @brief Dispatch-key identifier for asset_class_code, e.g. for the
+ * @brief Dispatch-key identifier for series_subclass_code, e.g. for the
  * generic history-diff request and action registries. Single source
  * of truth: every call site spells entity_type_of(value) regardless
  * of which entity it holds.
  */
-[[nodiscard]] constexpr std::string_view entity_type_of(const asset_class_code&) {
-    return "ores.refdata.asset_class_code";
+[[nodiscard]] constexpr std::string_view entity_type_of(const series_subclass_code&) {
+    return "ores.refdata.series_subclass_code";
 }
 
 }

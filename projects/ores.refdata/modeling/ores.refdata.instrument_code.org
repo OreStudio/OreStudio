@@ -30,8 +30,9 @@ unique and typically under 10 characters. The literal ORE
 =oreTradeType= string, where one exists, is preserved separately in
 =ore_trade_type= (nullable — null only for =DEPO=) for future ORE
 trade-file interop; it is not itself validated or FK'd anywhere, only
-carried as a reference. Each row is tagged with the =asset_class_code=
-it belongs to. Not scoped to any single consumer: the IR Curve
+carried as a reference. Each row that describes one instrument is
+tagged with the =asset_class_code= it belongs to; rows that do not are
+left untagged (see =asset_class= below). Not scoped to any single consumer: the IR Curve
 Template (which consumes the =DEPO=/=FRA=/=IRS= rates entries for its
 tenor roles) is the first consumer, but this catalogue exists
 independently for any future feature needing to classify or enumerate
@@ -95,18 +96,24 @@ std::string(faker::lorem::sentence())
 ** asset_class
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
-:nullable: false
+:cpp_type: std::optional<std::string>
+:nullable: true
 :END:
 
-Asset class this instrument code belongs to (references
-=asset_class_code.code=; column named =asset_class=, not
-=asset_class_code=, to avoid a C++ name lookup collision between the
-member and the =asset_class_code= domain type itself in generated Qt
-code).
+Asset class this instrument code belongs to, when the product type has
+a fixed one (references =asset_class_code.code=; column named
+=asset_class=, not =asset_class_code=, to avoid a C++ name lookup
+collision between the member and the =asset_class_code= domain type
+itself in generated Qt code). Null where a product type has no class
+of its own. Two groups are null: sentinel and wrapper rows (=NONE=,
+=FAILED=, =CASHPOS=, =COMPOSITE=, =SCRIPT=), which describe something
+other than one instrument; and generic trade types (=ASCOT=, =TRS=,
+=CFD=, =AUTOCALL=, =DBLDIG=, =EUROBAR=, =PERFOPT=), which take the
+class of whatever underlying they reference. A trade of one of those
+types carries its class on the trade itself, not on the catalogue row.
 
 #+begin_src cpp :name generator
-std::string("rates")
+std::string("interest_rates")
 #+end_src
 
 ** ore_trade_type
@@ -270,7 +277,7 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 | code             | Code           | codeEdit        | line_edit     | true   | true        | Enter a short code (e.g. FRA)         |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 | name             | Name           | nameEdit        | line_edit     |        | true        | Enter full name                       |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 | description      | Description    | descriptionEdit | text_edit     |        | true        | Enter a description                   |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
-| asset_class      | Asset Class    | assetClassCombo | dynamic_combo |        | true        |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        | asset_class |
+| asset_class      | Asset Class    | assetClassCombo | dynamic_combo |        |             |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        | asset_class |
 | ore_trade_type   | ORE Trade Type | oreTradeTypeEdit | line_edit    |        |             | Enter the literal ORE oreTradeType (if any) |     |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |
 | curve_role       | Curve Role     | curveRoleCombo  | dynamic_combo |        | true        |                                        |              | refdata::domain::curve_role          | ores.qt/LookupFetcher.hpp  | fetch_curve_roles       | curveRoleWatcher      | code               | description          | display_order      | curve roles         | CurveRoleCombo          | curve_role  |
 | display_order    | Display Order  | displayOrderEdit | spin_box     |        | true        |                                        |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |             |

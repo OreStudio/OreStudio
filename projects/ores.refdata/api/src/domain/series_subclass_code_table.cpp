@@ -22,37 +22,23 @@
  * Template: cpp_domain_type_table.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.refdata.api/domain/instrument_code_table.hpp"
+#include "ores.refdata.api/domain/series_subclass_code_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::refdata::domain {
 
-namespace {
-template <typename T>
-std::string opt_str(const std::optional<T>& o) {
-    if (!o)
-        return {};
-    std::ostringstream s;
-    if constexpr (std::is_same_v<T, bool>)
-        s << std::boolalpha;
-    s << *o;
-    return s.str();
-}
-}
 
-std::string convert_to_table(const std::vector<instrument_code>& v) {
+std::string convert_to_table(const std::vector<series_subclass_code>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Asset Class" << "ORE Trade Type"
-          << "Curve Role" << "Display Order" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
+          << "Version" << fort::endr;
 
-    for ([[maybe_unused]] const auto& ic : v) {
-        table << ic.code << ic.name << ic.description << opt_str(ic.asset_class)
-              << opt_str(ic.ore_trade_type) << ic.curve_role << ic.display_order << ic.modified_by
-              << ic.version << fort::endr;
+    for ([[maybe_unused]] const auto& ssc : v) {
+        table << ssc.code << ssc.name << ssc.description << ssc.display_order << ssc.modified_by
+              << ssc.version << fort::endr;
     }
     return table.to_string();
 }

@@ -1,0 +1,143 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REFDATA_CORE_SERVICE_SERIES_SUBCLASS_CODE_SERVICE_HPP
+#define ORES_REFDATA_CORE_SERVICE_SERIES_SUBCLASS_CODE_SERVICE_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/series_subclass_code.hpp"
+#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/series_subclass_code_repository.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::refdata::service {
+
+/**
+ * @brief Service for managing series subclass codes.
+ *
+ * Provides a higher-level interface for series subclass code operations,
+ * wrapping the underlying repository.
+ */
+class ORES_REFDATA_CORE_EXPORT series_subclass_code_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.refdata.service.series_subclass_code_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a series_subclass_code_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
+    explicit series_subclass_code_service(context ctx);
+
+    /**
+     * @brief Lists series subclass codes with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of series subclass codes for the requested page.
+     */
+    std::vector<domain::series_subclass_code> list_series_subclasses(std::uint32_t offset,
+                                                                     std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active series subclass codes.
+     *
+     * @return Total number of active series subclass codes.
+     */
+    std::uint32_t count_series_subclasses();
+
+
+    /**
+     * @brief Retrieves a single series subclass code as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The series subclass code at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::series_subclass_code>
+    get_series_subclass_at_version(const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single series subclass code by its primary key.
+     *
+     * @return The series subclass code if found, std::nullopt otherwise.
+     */
+    std::optional<domain::series_subclass_code> get_series_subclass(const std::string& code);
+
+    /**
+     * @brief Saves a series subclass code (creates or updates).
+     *
+     * @param series_subclass The series subclass code to save.
+     * @throws std::exception on failure.
+     */
+    void save_series_subclass(const domain::series_subclass_code& series_subclass);
+
+    /**
+     * @brief Saves a batch of series subclass codes.
+     *
+     * @param series_subclasses The series subclass codes to save.
+     * @throws std::exception on failure.
+     */
+    void save_series_subclasses(const std::vector<domain::series_subclass_code>& series_subclasses);
+
+    /**
+     * @brief Deletes a series subclass code by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_series_subclass(const std::string& code);
+
+    /**
+     * @brief Deletes series subclass codes by their primary keys.
+     */
+    void delete_series_subclasses(const std::vector<std::string>& codes);
+
+    /**
+     * @brief Retrieves all historical versions of a series subclass code.
+     */
+    std::vector<domain::series_subclass_code> get_series_subclass_history(const std::string& code);
+
+private:
+    context ctx_;
+    repository::series_subclass_code_repository repo_;
+};
+
+}
+
+#endif

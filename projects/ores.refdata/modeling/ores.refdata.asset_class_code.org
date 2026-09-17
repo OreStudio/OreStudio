@@ -2,25 +2,24 @@
 :ID: 8F6EE5AE-8B49-4A4C-97F8-E0517BE53775
 :END:
 #+title: ores.refdata.asset_class_code
-#+description: Codegen entity model for the refdata asset_class_code table: top-level asset class classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset).
+#+description: Codegen entity model for the refdata asset_class_code table: the top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation, bond).
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: asset_class_code
 #+entity_plural: asset_class_codes
 #+entity_title: Asset Class Code
-#+brief: Top-level asset class classification (fx, rates, credit, equity, commodity, inflation, bond, cross_asset).
+#+brief: Top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation, bond).
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-09-17
 
 General-purpose classification of the top-level asset class a market
-series, instrument, or curve belongs to. Mirrors
-=ores::marketdata::domain::asset_class= (a plain, non-persisted C++
-enum used for market-series filtering) as a managed, persisted
-refdata code table, so other entities (=instrument_code=, and
-anything else needing to classify by asset class) can FK-validate
-against it instead of duplicating a hardcoded string list. Managed by
-the system tenant, like other shared code tables.
+series, instrument, or curve belongs to. This table is the single
+source of truth for the taxonomy. Code carries no parallel
+enumeration, because the list is runtime-managed and no compiled list
+can be exhaustive over it. Other entities (=instrument_code=,
+=market_series=, =feed_binding=) FK-validate against this table.
+Managed by the system tenant, like other shared code tables.
 
 * Flags
 :PROPERTIES:
@@ -41,8 +40,8 @@ the system tenant, like other shared code tables.
 
 Unique asset class code.
 
-Examples: 'fx', 'rates', 'credit', 'equity', 'commodity', 'inflation',
-'bond', 'cross_asset'.
+Examples: 'fx', 'interest_rates', 'credit', 'equity', 'commodity',
+'inflation', 'bond'.
 
 #+begin_src cpp :name generator
 std::string("AssetClassCode")
@@ -190,7 +189,7 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 
 | field         | label         | widget          | type      | is_key | is_required | placeholder                        |
 |---------------+---------------+-----------------+-----------+--------+-------------+--------------------------------------|
-| code          | Code          | codeEdit        | line_edit | true   | true        | Enter asset class code (e.g. rates) |
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter asset class code (e.g. interest_rates) |
 | name          | Name          | nameEdit        | line_edit |        | true        | Enter name                          |
 | description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description                 |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                                      |

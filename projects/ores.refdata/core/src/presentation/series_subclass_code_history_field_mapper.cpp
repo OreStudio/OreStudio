@@ -22,24 +22,21 @@
  * Template: cpp_history_field_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.refdata.core/presentation/instrument_code_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/series_subclass_code_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 
 namespace ores::refdata::presentation {
 
 std::vector<ores::diff::domain::field_value>
-render_instrument_code_fields(const domain::instrument_code& v) {
+render_series_subclass_code_fields(const domain::series_subclass_code& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
-    fields.push_back({.name = "Asset Class", .value = v.asset_class.value_or(std::string{})});
-    fields.push_back({.name = "Ore Trade Type", .value = v.ore_trade_type.value_or(std::string{})});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
-    fields.push_back({.name = "Curve Role", .value = v.curve_role});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -99,6 +99,7 @@ set(files
     "repository_regulatory_book_type_repository_tests.cpp"
     "repository_rounding_type_repository_tests.cpp"
     "rounding_type_eventing_integration_tests.cpp"
+    "series_subclass_code_eventing_integration_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"
     "tenor_anchor_eventing_integration_tests.cpp"

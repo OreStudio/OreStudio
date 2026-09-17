@@ -22,7 +22,7 @@
  * Template: cpp_domain_type_generator.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.refdata.api/generators/instrument_code_generator.hpp"
+#include "ores.refdata.api/generators/series_subclass_code_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -34,25 +34,22 @@ namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::instrument_code
-generate_synthetic_instrument_code(utility::generation::generation_context& ctx) {
+domain::series_subclass_code
+generate_synthetic_series_subclass_code(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
-    domain::instrument_code r;
+    domain::series_subclass_code r;
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string("InstrumentCode") + "-" + std::to_string(idx);
-    r.name = std::string(faker::word::adjective()) + " Instrument" + "-" + std::to_string(idx);
+    r.code = std::string("SeriesSubclassCode") + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " Subclass" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.asset_class = std::string("interest_rates");
-    r.ore_trade_type = std::string("ForwardRateAgreement");
     r.display_order = faker::number::integer(1, 100);
-    r.curve_role = std::string("NONE");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -61,12 +58,13 @@ generate_synthetic_instrument_code(utility::generation::generation_context& ctx)
     return r;
 }
 
-std::vector<domain::instrument_code>
-generate_synthetic_instrument_codes(std::size_t n, utility::generation::generation_context& ctx) {
-    std::vector<domain::instrument_code> r;
+std::vector<domain::series_subclass_code>
+generate_synthetic_series_subclass_codes(std::size_t n,
+                                         utility::generation::generation_context& ctx) {
+    std::vector<domain::series_subclass_code> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_instrument_code(ctx));
+        r.push_back(generate_synthetic_series_subclass_code(ctx));
     return r;
 }
 

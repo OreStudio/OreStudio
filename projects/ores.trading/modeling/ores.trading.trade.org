@@ -377,8 +377,134 @@ The =name= column carries the stem: the template renders it as
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:       api
+:has_batch_save:     true
+:list_filter_column: node_id
 :END:
+
+** Protocol includes
+
+The headers the messages below need beyond the entity's own. The payload
+and envelope types belong to the export item; the activity type and the
+instrument variant to their own messages.
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.trading.api/domain/activity_type.hpp"
+#include "ores.trading.api/domain/instrument_payload.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include <optional>
+#+end_src
+
+** Protocol messages
+
+The messages the generated set does not cover: the activity type
+catalogue, the instrument lookup for one trade, and the two portfolio
+export paths. A trade's export item carries the instrument as a payload
+rather than a variant, for the reflect-cpp reason its comment states.
+
+#+begin_src cpp :name protocol_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+struct get_activity_types_request {
+    using response_type = struct get_activity_types_response;
+    static constexpr std::string_view nats_subject = "trading.v1.activity_types.list";
+};
+
+struct get_activity_types_response {
+    std::vector<ores::trading::domain::activity_type> activity_types;
+};
+
+/**
+ * @brief One trade plus its resolved instrument data.
+ *
+ * The instrument is carried as a payload rather than as a trade_instrument
+ * variant. reflect-cpp cannot name the active alternative of that variant:
+ * untagged, the first alternative std::monostate parses from any payload and
+ * wins; tagged, rfl::AddTagsToVariants exceeds the fold limits on macOS and
+ * MSVC. See instrument_payload. The payload's type is empty when the trade has
+ * no linked instrument or the product_type is unrecognised.
+ *
+ * The envelope holds the trade-level data the product tables do not: the
+ * counterparty name, the netting set id, the portfolio id labels and the
+ * document's additional fields. It is absent when the trade has none.
+ */
+struct trade_export_item {
+    ores::trading::domain::trade trade;
+    ores::trading::domain::instrument_payload instrument;
+    std::optional<ores::trading::domain::trade_envelope_data> envelope;
+};
+
+/**
+ * @brief Paginated list of trades under a taxonomy node.
+ *
+ * @p node_id may be a book, portfolio, or business unit UUID; the server
+ * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
+ * An empty @p node_id lists all trades visible to the tenant.
+ *
+ * The response carries only trade metadata (no instrument data). To load
+ * the instrument for a specific trade, use get_trade_instrument_request.
+
+struct get_trade_instrument_request {
+    using response_type = struct get_trade_instrument_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";
+    std::string trade_id;
+};
+
+struct get_trade_instrument_response {
+    bool success = false;
+    std::string message;
+    ores::trading::domain::trade trade;
+    ores::trading::domain::trade_instrument instrument;
+};
+
+
+/**
+ * @brief Request to export all trades (and instruments) under a taxonomy node.
+ *
+ * @p node_id is resolved by the server to the book-id set just like
+ * get_trades_request; typical callers supply a portfolio id (to export the
+ * whole portfolio subtree) or a book id (to export a single book).
+ */
+struct export_portfolio_request {
+    using response_type = struct export_portfolio_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.portfolio.export";
+    std::string node_id;
+    int offset = 0;
+    int limit = 10000;
+};
+
+struct export_portfolio_response {
+    bool success = false;
+    std::string message;
+    std::vector<trade_export_item> items;
+};
+
+/**
+ * @brief Exports trades for the given book IDs to object storage.
+ *
+ * The handler resolves trade IDs via ores_trading_get_trade_ids_by_books_fn,
+ * loads full trade_export_items, serialises to MsgPack, compresses with gzip,
+ * and uploads to storage. Returns the storage key and trade count.
+ *
+ * Used by the report execution workflow to offload large trade data sets
+ * to storage instead of passing them through NATS.
+ */
+struct export_trades_to_storage_request {
+    using response_type = struct export_trades_to_storage_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
+
+    std::vector<std::string> book_ids;
+    std::string storage_bucket; ///< Target bucket (e.g. "report-data")
+    std::string storage_key;    ///< Target key (e.g. "{instance_id}/trades.msgpack")
+};
+
+struct export_trades_to_storage_response {
+    bool success = false;
+    std::string message;
+    int trade_count = 0;
+    std::string storage_key; ///< Echoed back for confirmation
+};
+#+end_src
 
 ** Domain groups
 

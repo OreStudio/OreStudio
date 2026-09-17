@@ -73,11 +73,20 @@ struct save_{{entity_singular}}_request {
     using response_type = struct save_{{entity_singular}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.save";
+{{#has_batch_save}}
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+
+    static save_{{entity_singular}}_request from(std::vector<ores::{{component}}::domain::{{entity_singular}}> v) {
+        return {.{{entity_plural_short}} = std::move(v)};
+    }
+{{/has_batch_save}}
+{{^has_batch_save}}
     ores::{{component}}::domain::{{entity_singular}} data;
 
     static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
         return {.data = std::move(v)};
     }
+{{/has_batch_save}}
 };
 
 struct save_{{entity_singular}}_response {
@@ -303,11 +312,20 @@ struct save_{{entity_singular}}_request {
     using response_type = struct save_{{entity_singular}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.save";
+{{#has_batch_save}}
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+
+    static save_{{entity_singular}}_request from(std::vector<ores::{{component}}::domain::{{entity_singular}}> v) {
+        return {.{{entity_plural_short}} = std::move(v)};
+    }
+{{/has_batch_save}}
+{{^has_batch_save}}
     ores::{{component}}::domain::{{entity_singular}} data;
 
     static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
         return {.data = std::move(v)};
     }
+{{/has_batch_save}}
 };
 
 struct save_{{entity_singular}}_response {

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 11C6A877-3F6C-497F-AA70-C3D137108DD3
+:END:
+#+title: Task: Suppress C4275 alongside C4251 in the global MSVC warning config
+#+description: Add /wd4275 next to the existing /wd4251 in projects/CMakeLists.txt, under the same MSVC generator expression, with a comment that states why. Run the code-class checks and raise one PR.
+#+type: task
+#+level: s1
+#+filetags: :ci-builds-red-windows-c4275-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch: feature/suppress-msvc-c4275-in-the-global-warning-config
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7EDB5054-9EED-45EC-A5E5-3D286D723A7C][Hotfix: Continuous Windows MSVC jobs red on C4275 in the exported exception classes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =/wd4275= to the MSVC warning configuration in
+=projects/CMakeLists.txt=, beside the existing =/wd4251=. The two jobs
+on the Continuous Windows workflow that use MSVC then compile
+=ores.platform= instead of stopping at =error C2220=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7EDB5054-9EED-45EC-A5E5-3D286D723A7C][Hotfix: Continuous Windows MSVC jobs red on C4275 in the exported exception classes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- =projects/CMakeLists.txt= carries =/wd4275= under the MSVC generator
+  expression, next to =/wd4251=.
+- A comment above the flag gives the reason, in the same voice as the
+  C4251 comment.
+- The configure step accepts the change, and the full build and test
+  suite pass on a preset that uses this file.
+- No other compiler sees the flag.
+
+* Plan
+
+The change is four lines in one file. The flag mirrors the =/wd4251=
+line immediately above it, so it goes under the same
+=$<$<CXX_COMPILER_ID:MSVC>:...>= generator expression and carries a
+comment of the same shape.
+
+The verification is the code class set for a =CMakeLists.txt= change:
+the full build and ctest on a preset, the roundtrip script, the drift
+checks, the compass test suite and the misspell pass.
+
+One limit is worth stating up front. This host has no MSVC, so no local
+check compiles the file the flag applies to. The generator expression
+and the flag spelling are what the change is, and both are visible by
+inspection. The real evidence is the MSVC job on the PR.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The suppression is global, so it disables C4275 for every exported class in the tree and not only for the two that fail today | =projects/CMakeLists.txt= | Accepted | Deliberate. The sibling C4251 suppression is global for the same reason, and that reason is a property of the tree rather than of one component. It also covers the other exported exception classes, which this build never reached because it stops at the first error. |
+| 2 | The change cannot be verified on this host, which has no MSVC toolchain | =projects/CMakeLists.txt= | Accepted | Recorded as a limitation in the PR body. The generator expression and the flag spelling are checkable by inspection, and the MSVC job on the PR is the real evidence. |
+| 3 | =misspell-fixer .= exits 1 over the tree | three =doc/agile= records | Declined | The three hits are the prose of earlier review rows that declined to correct the name of an example portfolio, which upstream spells that way. The token is not reproduced here, because writing it into this table made this task file a hit of its own. An isolated run over this change's files is now clean, which it was not before that correction. |
+
+* Result
+
+=projects/CMakeLists.txt= carries =/wd4275= directly below =/wd4251=,
+under the same =$<$<CXX_COMPILER_ID:MSVC>:...>= generator expression,
+with a comment above it that gives the reason. The change is five added
+lines in that one file.
+
+The configure step accepts the change. On the =linux-clang-debug-make=
+preset the full build reaches 100% and exits 0, and the test suite
+passes 73 tests of 73. The roundtrip check exits 0. The
+=component_files.cmake= drift check reports every file up to date. The
+codegen drift check regenerates the nine components in its registry and
+changes no generated file.
+
+No other compiler sees the flag. The generator expression tests the
+compiler id, and only MSVC matches it, so the GNU and Clang branches are
+untouched.
+
+The acceptance is met with one limit. No local check compiles the file
+the flag applies to, because this host has no MSVC toolchain. The
+generator expression and the flag spelling are both visible by
+inspection, and the MSVC job on the PR is the real evidence.

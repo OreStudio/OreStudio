@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 7EDB5054-9EED-45EC-A5E5-3D286D723A7C
+:END:
+#+title: Story: Hotfix: Continuous Windows MSVC jobs red on C4275 in the exported exception classes
+#+description: Continuous Windows is red on main. The two MSVC jobs stop with error C2220, which promotes warning C4275 to an error. The warning fires on the exported exception classes in ores.platform.filesystem, io_error and file_not_found, because they derive from std::exception and boost::exception, which carry no dll-interface. The two clang jobs on the same workflow fail for an unrelated reason, and that part stays red.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Continuous Windows is red on main, and it has been red since 2026-09-04.
+The workflow runs four jobs. Two use MSVC and two use clang. Each pair
+fails for its own reason, and this story covers the MSVC pair.
+
+The MSVC jobs stop in the compile of =ores.platform= with =error C2220=.
+That error is not a defect of its own. The compiler raises
+=warning C4275=, and =/WX= promotes the warning to an error. C4275
+reports that an exported class derives from a base class with no
+dll-interface. The exported classes here are
+=ores::platform::filesystem::io_error= and =file_not_found=, and their
+bases are =std::exception= and =boost::exception=.
+
+The project already suppresses the sibling warning C4251 on the same
+grounds, one line above where C4275 fires. This story extends that
+suppression.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-17                               |
+
+* Acceptance
+
+- The MSVC jobs reach their build and test steps instead of stopping at
+  C2220.
+- The suppression sits beside the existing C4251 suppression, under the
+  same MSVC generator expression, with a comment that gives the reason.
+- The clang jobs on the same workflow are unaffected by this change.
+- The code class checks pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:11C6A877-3F6C-497F-AA70-C3D137108DD3][Suppress C4275 alongside C4251 in the global MSVC warning config]] | DONE | 2026-09-17 | 2026-09-17 | Add /wd4275 next to the existing /wd4251 in projects/CMakeLists.txt, under the same MSVC generator expression, with a comment that states why. Run the code-class checks and raise one PR. |
+
+* Decisions
+
+- Suppress C4275 rather than redesign the exception classes. The reason
+  is the one already recorded against C4251. Every consumer is an
+  in-tree target built by this same toolchain against these headers, so
+  the ABI mismatch the warning exists to catch cannot arise here.
+  Deriving from =std::exception= is the right design for these types,
+  and dropping the base class to please the warning would make them
+  worse. The suppression and its comment sit beside the C4251 pair, so
+  the two read as one decision.
+- The change lands alone. The clang jobs on the same workflow fail for
+  an unrelated reason, and that reason has its own home.
+
+* Out of scope
+
+- The two clang Windows jobs, which stay red. They stop on
+  =LLVM ERROR: out of memory= while compiling the =add= verb of the
+  commodity and credit instrument command units. Those two verbs take
+  32 and 25 typed positional parameters, and =cli::Menu::Insert=
+  expands one template instantiation per argument. The 22 generated
+  trading units take a single =std::vector<std::string>=, so they do
+  not expand. Converting the two hand-written units by hand is not
+  worth the effort, because the port of the hand-crafted trading
+  instruments to codegen produces that shape on its own. That work is
+  [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]].

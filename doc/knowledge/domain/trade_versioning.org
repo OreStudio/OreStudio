@@ -216,6 +216,8 @@ event changes the P&L, the undo is not a mirror; it is a second event.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a trade moves through; an amendment leaves the state unchanged.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the taxonomy of causes, and which move a version.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what the external version is confirmed as of.

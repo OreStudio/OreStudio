@@ -99,6 +99,8 @@ What differs between trades is the price, the size and the parties.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 ** Trade forms whose economics are the issue's economics
 
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]]. The cash bond

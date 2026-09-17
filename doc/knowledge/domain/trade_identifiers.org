@@ -86,6 +86,8 @@ for USI. This page cites no edition or clause for any of them.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the codes that name a security, a party or a venue rather than a deal.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities; these codes identify the trade.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the lifecycle the identified trade runs through.

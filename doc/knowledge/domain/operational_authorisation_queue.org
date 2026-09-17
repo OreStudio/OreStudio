@@ -194,6 +194,8 @@ requirements material. No external standard is cited.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — what the control is and why it exists.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this lifecycle runs alongside.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the front-office screen this one checks the work of.

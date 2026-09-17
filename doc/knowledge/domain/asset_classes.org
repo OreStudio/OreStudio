@@ -474,6 +474,8 @@ The FpML asset class values registered here are read from
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the contract shape a product type takes, independent of its market.
 - [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the aggregation buckets SIMM and FRTB charge against, examined here and set aside.
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to, and why it is a second reference into this taxonomy.

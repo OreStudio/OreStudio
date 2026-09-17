@@ -226,6 +226,8 @@ doc comment on SIMM's =RiskClass=.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the third classification a product type carries, and the scheme-and-map treatment these buckets should receive.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy these buckets draw their vocabulary from, and do not constrain.
 - [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — what SIMM, FRTB and the others compute, and the CRIF record they exchange.

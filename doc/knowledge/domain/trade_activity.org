@@ -185,6 +185,8 @@ live.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states an activity may move a trade between.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what a version is, and which activities move which one.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — which activities require the counterparty to agree again.

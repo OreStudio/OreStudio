@@ -67,9 +67,14 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1, PR #2085.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 0 | CI: pages do not link their structure note | 16 knowledge pages | Accept | Superseded the review. Fixed by running =link_structure_notes.py=. |
+| 1 | Final-state arrows contradict "no state is terminal" | =trade_status_lifecycle.puml= | Accept | Correct, and the sibling confirmation diagram had none. Arrows dropped, PNG regenerated. |
+| 2 | Limitations undersells the SQL change: 9 rows, not a comment | PR description | Accept | The statement was wrong. Description corrected; codes checked for duplicates, none found. |
+| 3 | =Security= and =Container= families not in the taxonomy | =product_family.org= | Accept | =Security= added as a family. =Container= is a construction method by the page's own argument, so =CompositeTrade= now carries no family. |
 
 * Result
 

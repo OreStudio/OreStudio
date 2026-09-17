@@ -93,11 +93,21 @@ distribution.
 | Swaption | 2 | =Swaption=, =CommoditySwaption= |
 | Future | 1 | =BondFuture= |
 | Repo | 1 | =BondRepo= |
+| Security | 3 | =Bond=, =ConvertibleBond=, =CallableBond= |
 
 The distribution is itself informative. Options and swaps account for most of
 the catalogue, which is what makes the classification worth holding: a question
 about options spans fifty-two product types and five markets, and neither of
 the other classifications can express it.
+
+=Security= is the family that shows the survey is not a list of derivative
+shapes. A bond is a shape of contract in the same sense the others are, but it
+is an instrument held rather than an agreement struck, which is why it also
+carries an identity of its own in
+[[id:810AE48E-E180-42C6-B4F7-FA81826F3588][standard financial identifiers]].
+
+No family names a container. =CompositeTrade= is a construction method, as the
+next section argues, so it carries no family rather than a family of its own.
 
 The remaining product types do not fall into a shape by name, and the families
 above are a survey rather than a settled enumeration. Establishing the complete
@@ -172,6 +182,8 @@ classification.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the second classification a product type carries.
 - [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — published enumerations to be registered and mapped, not adopted.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the catalogue these classifications apply to.

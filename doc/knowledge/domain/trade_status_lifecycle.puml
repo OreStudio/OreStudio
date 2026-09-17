@@ -73,8 +73,6 @@ Expired --> Live : Unexpire
 Cancelled --> Live : Uncancel
 Expired --> Expired : Amend
 Cancelled --> Cancelled : Amend
-Expired --> [*]
-Cancelled --> [*]
 
 note right of Live
   Amending an authorised trade returns

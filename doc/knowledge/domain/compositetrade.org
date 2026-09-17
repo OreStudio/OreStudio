@@ -25,7 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Composite Trade |
 | ORE Studio product code | =CompositeTrade= |
 | Asset class             | inherited from the component subtrades |
-| Family                  | Container |
+| Family                  | none; a container rather than a shape, see [[id:936ACDC4-830B-434E-82E7-A92276869869][product family]] |
 | ORE trade data node     | =CompositeTradeData= |
 | ORE documentation       | =compositetrade.tex= |
 

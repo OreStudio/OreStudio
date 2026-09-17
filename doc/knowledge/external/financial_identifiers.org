@@ -207,6 +207,8 @@ instruments by their BBG ticker. Bloomberg also issues FIGIs
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; these codes identify the security issue.
 - [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a deal rather than a security.
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is, and why a re-opened tranche keeps its ISIN.

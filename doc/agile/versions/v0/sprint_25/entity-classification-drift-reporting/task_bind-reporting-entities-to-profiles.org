@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-reporting:
 #+owner: marco
 #+branch: feature/bind-reporting-entities-to-profiles
-#+pr:
+#+pr: 2094
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -579,7 +579,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2094][#2094]] | [reporting,codegen] Bind the reporting entities to profiles and generate risk_report_config |
 
 * Review
 

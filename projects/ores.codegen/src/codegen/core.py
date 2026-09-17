@@ -2308,7 +2308,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
                 # A declared SQL-only column is meant to reach no C++ layer,
-                # so the guard below does not apply to it.
+                # so it skips every remaining per-column step, the guard
+                # below included. Keep this continue last in the loop body:
+                # a step added after it is skipped here without a word.
                 col['sql_only'] = bool(col.get('sql_only', False))
                 if col['sql_only']:
                     continue

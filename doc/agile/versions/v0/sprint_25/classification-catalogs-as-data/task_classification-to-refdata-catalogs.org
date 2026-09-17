@@ -8,7 +8,7 @@
 #+filetags: :classification-catalogs-as-data:sprint_25:v0:
 #+owner: marco
 #+branch: feature/classification-to-refdata-catalogs
-#+pr:
+#+pr: 2092
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2092][#2092]] | [ores.refdata,ores.marketdata] Move classification into refdata catalogs |
 
 * Review
 

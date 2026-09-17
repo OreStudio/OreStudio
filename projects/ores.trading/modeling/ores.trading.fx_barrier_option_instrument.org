@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 18C9735A-9143-4E00-B2C6-6B432FB0DDCE
 :ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.fx_barrier_option_instrument
 #+description: Codegen entity model for the trading =fx_barrier_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

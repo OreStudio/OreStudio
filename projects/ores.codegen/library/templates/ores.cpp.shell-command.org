@@ -19,11 +19,12 @@ summary and the routing table to them.
 
 * Summary
 
-Two templates that project one entity onto one shell REPL command unit: a
-header declaring the unit class and a source holding its four handler
-bodies. The unit owns the =get=, =add=, =delete= and =history= verbs of one
-submenu, and registers that submenu on the root menu. The templates are
-opt-in and disabled by default.
+Three templates that project one entity onto one shell REPL command unit: a
+header declaring the unit class, a source holding its four handler bodies,
+and the test file that pins the unit's guards. The unit owns the =get=,
+=add=, =delete= and =history= verbs of one submenu, and registers that
+submenu on the root menu. The templates are opt-in and disabled by
+default.
 
 * The ores.cpp.shell-command facet
 
@@ -87,6 +88,7 @@ the template names it directly and fills it from the session.
 |-----------+-------------|
 | [[id:7CF22895-824F-45C4-85A1-A31C3CA78EFF][ores.cpp.shell-command.command_header]] | Shell REPL command unit header: submenu and process_* declarations for one entity. |
 | [[id:9409FEC6-FDF7-496D-BAA1-EEF027BB1D76][ores.cpp.shell-command.command_implementation]] | Shell REPL command unit implementation: the registration lambdas and the process_* bodies for one entity. |
+| [[id:B5C41D0E-7A93-4E6B-8F52-2D6C9A17E4B3][ores.cpp.shell-command.command_tests]] | Shell REPL command unit tests: one case per handler guard, the arity check, a malformed token, and a valid token vector that reaches the transport. |
 
 * See also
 

@@ -20,6 +20,7 @@
 #include "ores.trading.core/repository/trade_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
+#include <rfl/enums.hpp>
 
 namespace ores::trading::repository {
 
@@ -34,7 +35,8 @@ domain::trade_type trade_type_mapper::map(const trade_type_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description.value_or("");
-    r.product_type = v.product_type;
+    r.product_type =
+        rfl::string_to_enum<ores::trading::domain::product_type>(v.product_type).value();
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;
@@ -55,7 +57,7 @@ trade_type_entity trade_type_mapper::map(const domain::trade_type& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.product_type = v.product_type;
+    r.product_type = rfl::enum_to_string(v.product_type);
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;

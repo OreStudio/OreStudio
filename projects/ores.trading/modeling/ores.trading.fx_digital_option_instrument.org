@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 73DF3A6A-26ED-46E9-B965-CA1F9593EA17
 :ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.fx_digital_option_instrument
 #+description: Codegen entity model for the trading =fx_digital_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

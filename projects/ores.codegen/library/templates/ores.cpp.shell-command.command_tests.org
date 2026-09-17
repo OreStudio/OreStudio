@@ -1,0 +1,271 @@
+:PROPERTIES:
+:ID: B5C41D0E-7A93-4E6B-8F52-2D6C9A17E4B3
+:END:
+#+title: ores.cpp.shell-command.command_tests
+#+description: Shell REPL command unit tests: one case per handler guard, the arity check, a malformed token, and a valid token vector that reaches the transport.
+#+type: archetype
+#+output: projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp
+#+facet: ores.cpp.shell-command
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+The test file for one entity's shell command unit. Every case stops at a
+guard or at the transport boundary, so the file needs no server and no
+database. It links against Catch2 and the part's own library.
+
+Each case pins one thing the unit promises. The pagination callback is
+registered under the menu name. The add verb refuses a signed-out session
+before it reads a token. It reports the arity it expects. It names the
+field when a token will not convert. It refuses a session whose account
+has no default party when a column reads the acting party. The delete and
+history verbs each refuse a signed-out session. A valid token vector
+converts and reaches the transport.
+
+The shape-two units carry one more: the history verb rejects =--version=
+with no =--diff=. That check runs before the login guard, so the case
+needs no session.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Mustache incantations
+
+The valid token vector comes from ={{sample_token}}=, one per
+user-supplied column, injected by =core.py= from the column's own type. It
+satisfies the unit's parse, not the server's validation, because the case
+stops at the transport boundary.
+
+The malformed-token case reads ={{malformed_token_column}}=, which is
+absent when every column accepts any token. It carries the positional
+index to overwrite, the token to write there, and the message the unit
+must print. The ={{#has_session_party_columns}}= section emits the
+default-party case only when a column reads the acting party.
+
+Every case name starts with ={{entity_singular}}_commands=. A component's
+test files link into one binary, so without the prefix two entities in the
+same component declare each case name twice. Catch2 rejects the duplicate,
+and =ctest= does not always surface the rejection, so the prefix is what
+keeps the component's suite both startable and honest.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_shell_command_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_shell_command_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
+#include "ores.shell/app/pagination_context.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <cli/cli.h>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+using ores::nats::service::nats_client;
+using ores::shell::app::command_feedback;
+using ores::shell::app::pagination_context;
+using ores::shell::app::commands::{{entity_singular}}_commands;
+using namespace ores::logging;
+
+namespace {
+
+const std::string_view test_suite("ores.shell.{{component}}.tests");
+const std::string tags("[commands]");
+
+const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+
+void log_in(nats_client& session, const std::string& party_id) {
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    info.default_party_id = party_id;
+    session.set_auth(std::move(info));
+}
+
+// The positionals the add verb reads: one per user-supplied column, then the
+// change reason and the change commentary.
+std::vector<std::string> add_tokens() {
+    return {
+{{#primary_key.columns}}
+{{#is_user_supplied}}
+        "{{sample_token}}",
+{{/is_user_supplied}}
+{{/primary_key.columns}}
+{{#columns}}
+{{#is_user_supplied}}
+        "{{sample_token}}",
+{{/is_user_supplied}}
+{{/columns}}
+        "reason",
+        "commentary"};
+}
+
+}
+
+TEST_CASE("{{entity_singular}}_commands_register_commands_registers_the_pagination_callback",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    cli::Menu root_menu("root");
+    nats_client session;
+    pagination_context pagination;
+
+    {{entity_singular}}_commands::register_commands(root_menu, session, pagination);
+
+    BOOST_LOG_SEV(lg, debug) << "Looking up the pagination callback for {{entity_plural}}.";
+    CHECK(pagination.get_list_callback("{{entity_plural}}") != nullptr);
+}
+
+TEST_CASE("{{entity_singular}}_commands_process_add_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("{{entity_singular}}_commands_process_add_reports_the_expected_argument_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, {"sample"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a short argument list: " << out.str();
+    CHECK(out.str().find("Expected {{add_positional_count}} arguments, got 1.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+{{#malformed_token_column}}
+
+TEST_CASE("{{entity_singular}}_commands_process_add_names_the_field_of_a_malformed_token",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    auto tokens = add_tokens();
+    tokens[{{positional_index}}] = "{{token}}";
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, tokens);
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a malformed {{name}}: " << out.str();
+    CHECK(out.str().find("{{error}}") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+{{/malformed_token_column}}
+{{#has_session_party_columns}}
+
+TEST_CASE("{{entity_singular}}_commands_process_add_rejects_a_session_with_no_default_party",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, "");
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an account with no default party: " << out.str();
+    CHECK(out.str().find("no default party") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+{{/has_session_party_columns}}
+
+TEST_CASE("{{entity_singular}}_commands_process_add_sends_a_valid_token_vector_to_the_server",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session, valid_party_id);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("{{entity_singular}}_commands_process_delete_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_delete_{{entity_singular}}(out, session, "missing-key");
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("{{entity_singular}}_commands_process_history_requires_a_logged_in_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+{{#has_audit_group}}
+    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(out, session,
+                                                                         "missing-key");
+{{/has_audit_group}}
+{{^has_audit_group}}
+    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
+        out, session, {"missing-key"});
+{{/has_audit_group}}
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+{{^has_audit_group}}
+
+TEST_CASE("{{entity_singular}}_commands_process_history_rejects_a_version_without_diff", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
+        out, session, {"missing-key", "--version", "2"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a version with no diff: " << out.str();
+    CHECK(out.str().find("--version is only supported together with --diff.") !=
+          std::string::npos);
+    CHECK(command_feedback::failed());
+}
+{{/has_audit_group}}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]].
+- Sibling archetypes: [[id:7CF22895-824F-45C4-85A1-A31C3CA78EFF][ores.cpp.shell-command.command_header]] and [[id:9409FEC6-FDF7-496D-BAA1-EEF027BB1D76][ores.cpp.shell-command.command_implementation]].
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — the variables this template reads.

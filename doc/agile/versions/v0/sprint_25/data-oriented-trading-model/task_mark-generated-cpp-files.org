@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/mark-generated-cpp-files
-#+pr:
+#+pr: 2087
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2087][#2087]] | [codegen] Mark generated C++ files as generated |
 
 * Review
 

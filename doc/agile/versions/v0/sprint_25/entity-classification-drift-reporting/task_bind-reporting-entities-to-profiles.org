@@ -585,13 +585,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =sql_only= =continue= is the last statement in the column loop, so it silently decides the fate of any step added after it. | =projects/ores.codegen/src/codegen/core.py= | Accept | The skip is correct: an SQL-only column reaches no C++ layer. The comment now says so and states that the =continue= stays last. |
+| 2 | The new guard test is not wired into an automated runner. Nothing in CI runs =projects/ores.codegen/tests=. | =projects/ores.codegen/tests/test_entity_struct_column_coverage.py= | Decline | Pre-existing and repo-wide: the 38 tests in that directory share the gap. It needs its own change. The drift gate enforces the generated output today. |
+| 3 | The index rename leaves the old index in place on a database that is upgraded, not recreated. | =projects/ores.sql/create/reporting/reporting_risk_report_configs_create.sql= | Decline | Recorded in this task. =compass db recreate= is the documented route, and the drop script drops the table with its indexes. |
+| 4 | =ores.qt/reporting= is regenerated, but no =CMakeLists.txt= builds it, so the Qt output is not compiled or tested. | =projects/ores.qt/reporting/src/ReportInstanceController.cpp= | Decline | Deliberate. Step 1 of the two-step plan in the story. Carried as a testing limitation. |
+| 5 | =codegen-drift.yml= runs on pull requests for the paths this change touches, so the "CI runs no PR gate" premise is wrong here. | =.github/workflows/codegen-drift.yml= | Decline | Process finding, not a code defect. Out of scope for this change. The same two checks run locally instead. |
+| 6 | =misspell-fixer .= reports three files. | =doc/agile/versions/v0/sprint_25/shell-command-codegen/task_generate-the-trading-command-units.org= (+2) | Decline | All three quote the upstream identifier =LOAD_PROFILE_1_EXPLICT= inside Review tables that record the decision not to correct it. No file this change touches. |
+| 7 | The ={{^sql_only}}= guards were written into the tangle output, not the =org= template sources, so =compass build --direct codegen_templates= stripped them and both =.mustache= files stopped being reproducible. | =projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org= | Accept | Fixed. The guards now live in the =org= sources, and the re-tangle reproduces both =.mustache= files byte for byte. The codegen-drift check found this, not a reading of the diff. |
 
 * Result
 
 Done. The bind is complete and the drift gate holds.
 
-*What shipped.* Five commits on
+*What shipped.* Eight commits on
 =feature/bind-reporting-entities-to-profiles=.
 
 - =report_definition= keeps =uuid-identified-lookup= and its explicit
@@ -604,6 +610,10 @@ Done. The bind is complete and the drift gate holds.
 - The retired non-temporal SQL archetype is gone: the dead script deleted,
   three false =AUTO-GENERATED= headers removed, and the ER diagram
   regenerated.
+- The =sql_only= guards on the domain class and generator templates moved
+  from the tangle output into the =org= sources they are tangled from. Both
+  =.mustache= files are reproducible again from =compass build --direct
+  codegen_templates=. See the Review table, finding 7.
 
 *Acceptance.* Five of the six clauses are met outright.
 
@@ -611,7 +621,7 @@ Done. The bind is complete and the drift gate holds.
 - Every matching entity regenerates with zero added diff.
 - The no-match entities are recorded with their feature values.
 - No new profile was needed.
-- The full =rat= suite is green: 72 suites, 0 failures, exit 0.
+- The full =rat= suite is green: 73 suites, 0 failures.
 
 The fourth clause, "every entity that carries a hand-written copy of a
 generated shape gets an org model", is met for =risk_report_config= alone.
@@ -630,3 +640,19 @@ step 8.
 two suites to fail on a missing column. =compass db recreate -y -k= rebuilt
 it in 16m 32s. =db status= then reported =drift: current=. All 23 services
 start.
+
+The rebase onto =origin/main= made the database stale a second time. Main's
+nine commits added =ores_refdata_series_subclass_codes_tbl= and
+retaxonomised the asset classes, and the database predated both.
+=ores.refdata.core.tests= and =ores.marketdata.core.tests= failed on the
+missing relation, and on =asset_class_code: interest_rates=. These are
+stale-schema symptoms, not defects in this change: the branch touches no
+refdata or marketdata file. A second =compass db recreate -y -k= cleared
+both. Both suites now pass: =ores.refdata.core.tests= in 263.78s and
+=ores.marketdata.core.tests= in 4.25s.
+
+The suite ran as =ctest -I= index-range chunks, not one run. Three other
+worktrees were building and testing on this host at the same time, and the
+memory guard stopped each long background run. The chunks cover tests 1 to
+73 with no gap and no repeat: 1-15, 16-30, 31-40, 41-44, 45-60, 61-73.
+Every chunk reported "100% tests passed".

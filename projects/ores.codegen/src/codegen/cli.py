@@ -37,7 +37,7 @@ def main() -> None:
         "--model",
         required=True,
         metavar="PATH",
-        help="Path to the model file (e.g. models/refdata/currency_entity.json)",
+        help="Path to the model file (e.g. projects/ores.refdata/modeling/ores.refdata.currency.org)",
     )
     gen_p.add_argument(
         "--address",

@@ -40,7 +40,7 @@ This document describes the methodology for generating multiple artefact files u
 CATALOGS ARTEFACT GENERATION:
 
 1. SOURCE MODEL DATA
-   File: projects/ores.codegen/models/slovaris/catalogs.json
+   File: projects/ores.seeder/datasets/slovaris/catalogs.json
    Method: JSON structured data containing catalog information
    Format: { "name": "Slovaris", "description": "Imaginary world...", "owner": "Testing Team" }
 
@@ -71,7 +71,7 @@ based on the template and data configurations in the codegen project.
 COUNTRY CURRENCY ARTEFACT GENERATION:
 
 1. SOURCE MODEL DATA
-   File: projects/ores.codegen/models/slovaris/country_currency.json
+   File: projects/ores.seeder/datasets/slovaris/country_currency.json
    Method: JSON structured data containing currency information for countries
    Format: { "country_code": "US", "currency_code": "USD", "currency_name": "US Dollar", "symbol": "$" }
 
@@ -102,7 +102,7 @@ based on the template and data configurations in the codegen project.
 DATASETS ARTEFACT GENERATION:
 
 1. SOURCE MODEL DATA
-   File: projects/ores.codegen/models/slovaris/datasets.json
+   File: projects/ores.seeder/datasets/slovaris/datasets.json
    Method: JSON structured data containing dataset information
    Format: { "name": "Dataset Name", "description": "Dataset Description", "catalog_id": "Catalog ID" }
 

@@ -383,14 +383,10 @@ Reference material: not part of the argument above, consulted as needed.
 ** Model files — the logical element
 
 Each model file is ORE Studio's equivalent of a MASD /logical element/ —
-the entity that projects into physical artefacts via the generator. Two
-authoring routes exist:
+the entity that projects into physical artefacts via the generator. One
+authoring route exists:
 
-- *JSON route* (legacy): =*_table.json=, =*_domain_entity.json=, etc. in
-  =projects/ores.codegen/models/<component>/=. The model file is a data
-  bag consumed directly by the Mustache renderer.
-
-- *Org-mode route* (current, preferred): =*.org= files in
+- *Org-mode route*: =*.org= files in
   =projects/<component>/modeling/= declaring =#+type: ores.codegen.*=
   in their frontmatter. The generator discovers these via the component
   manifest. This route keeps the entity definition, its prose documentation,

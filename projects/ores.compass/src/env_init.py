@@ -8,8 +8,8 @@ build/scripts/init-environment.sh; behaviour is preserved:
 - --enable-logging / --disable-logging toggle test logging without touching
   any other variable.
 - The NATS domain service list is read from the authored service registry
-  (projects/ores.codegen/models/services/ores_services_service_registry.json),
-  the same source that generates projects/ores.sql/service_vars.sh.
+  (projects/modeling/service_registry.org), the same source that generates
+  projects/ores.sql/service_vars.sh.
 
 Dependencies: python3, openssl.  NATS cert generation is handled by the
 nats_certs module (compass nats certs); NATS config + store setup is handled

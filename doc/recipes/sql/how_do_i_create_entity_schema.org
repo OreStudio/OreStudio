@@ -19,9 +19,10 @@ How do I create the SQL schema for a new entity in ORE Studio?
 
 * Answer
 
-1. Create a JSON model under =projects/ores.codegen/models/{component}/=
-   using =*_domain_entity.json= (UUID PK) or =*_junction.json=
-   (composite text PK) naming.
+1. Confirm the org model under =projects/ores.<component>/modeling/=
+   carries =#+type: ores.codegen.entity= (UUID PK) or
+   =ores.codegen.junction= (composite text PK). Scaffold it with
+   =compass add entity_org= if it does not exist yet.
 
 2. Generate the SQL schema file (written directly to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
 

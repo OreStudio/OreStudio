@@ -78,7 +78,7 @@ don't care whether) already exists."
 
 ** The four use cases, with concrete examples
 
-*** 1. Interactive create (Qt "Add") — the bug case
+*** Interactive create (Qt "Add") — the bug case
 
 The Qt client's generated =onSaveClicked()= sends a domain object
 whose =version= field is default-constructed (=0=) for a brand-new
@@ -95,7 +95,7 @@ loss bug, not a theoretical one. This is the only one of the four use
 cases where =found = true= represents a genuine error condition that
 should be rejected, not an accepted upsert.
 
-*** 2. DQ→refdata publish (batch republish) — intentional upsert
+*** DQ→refdata publish (batch republish) — intentional upsert
 
 =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=
 hardcodes =version = 0= on every insert it performs, regardless of
@@ -125,7 +125,7 @@ there, without the caller having fetched (or cared about) the current
 version first. Tightening the trigger without also giving this flow
 an alternative path would break every entity's DQ publish pipeline.
 
-*** 3. Synthetic data generation — convenience, historically buggy
+*** Synthetic data generation — convenience, historically buggy
 
 Generated domain-object generators
 (=projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache=)
@@ -143,7 +143,7 @@ r.version = 1]]. That bug is itself evidence of how easy it is to get
 this sentinel wrong in either direction when its meaning isn't
 written down anywhere.
 
-*** 4. Revert-to-historical-version — deliberate, explicit reset
+*** Revert-to-historical-version — deliberate, explicit reset
 
 =CurrencyPairController::onRevertVersion= (and the equivalent
 =SystemSettingController::onRevertSystemSetting= and siblings for

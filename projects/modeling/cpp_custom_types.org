@@ -54,11 +54,9 @@ carries clang-format's order whatever order the model lists them in.
 | Type | Header |
 |------+--------|
 | =cron_expression= | ="ores.scheduler.api/domain/cron_expression.hpp"= |
-| =domain::asset_class= | ="ores.marketdata.api/domain/asset_class.hpp"= |
 | =domain::binding_mode= | ="ores.synthetic.api/domain/binding_mode.hpp"= |
 | =domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
 | =domain::scope= | ="ores.synthetic.api/domain/scope.hpp"= |
-| =domain::series_subclass= | ="ores.marketdata.api/domain/series_subclass.hpp"= |
 | =ores::trading::domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
 | =std::chrono::year_month_day= | =<chrono>= |
 | =utility::uuid::tenant_id= | ="ores.utility/uuid/tenant_id.hpp"= |

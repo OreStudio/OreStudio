@@ -45,7 +45,7 @@ current record per =(tenant, series_type, metric, qualifier)=).
 | =series_type= | string              | ORE key segment 1 (e.g. =FX=, =DISCOUNT=, =SWAPTION=). |
 | =metric=      | string              | ORE key segment 2 (e.g. =RATE=, =RATE_LNVOL=). |
 | =qualifier=   | string              | ORE key segment 3 onwards (e.g. =EUR/USD=, =EUR=). |
-| =asset_class= | enum                | Coarse class: =fx=, =rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=, =cross_asset=. |
+| =asset_class= | string              | Coarse class, a code from =refdata.asset_class_code=: =fx=, =interest_rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=. |
 | =subclass=    | enum                | Fine class: =yield=, =spot=, =forward=, =volatility=, =basis=, =xccy=, etc. |
 | =is_scalar=   | bool                | True when the series has no tenor/surface dimension (FX spot, equity spot). Observations for scalar series always have =point_id= null. |
 | =recorded_at= | timestamp           | Transaction time (inserted). |

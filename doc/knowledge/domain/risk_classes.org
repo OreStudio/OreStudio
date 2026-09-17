@@ -164,9 +164,10 @@ has to be treated as an additional, single tenor bucket in IRCurve".
 
 SIMM therefore treats inflation as a point on the interest rate curve
 rather than as a market beside it. That is the sharpest statement of
-the inflation question found in any of the surveyed material, and it
-argues for placing inflation beneath interest rate rather than next to
-it.
+the inflation question found in any of the surveyed material.
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] reads it as a projection SIMM applies when it
+charges the exposure, not as a parent-child relation in the taxonomy,
+which holds inflation beside interest rate.
 
 
 * Prior art
@@ -227,9 +228,10 @@ has to be treated as an additional, single tenor bucket in IRCurve".
 
 SIMM therefore treats inflation as a point on the interest rate curve
 rather than as a market beside it. That is the sharpest statement of
-the inflation question found in any of the surveyed material, and it
-argues for placing inflation beneath interest rate rather than next to
-it.
+the inflation question found in any of the surveyed material.
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] reads it as a projection SIMM applies when it
+charges the exposure, not as a parent-child relation in the taxonomy,
+which holds inflation beside interest rate.
 
 ** FRTB
 

@@ -23,7 +23,6 @@ global parameters have it NULL with parameter_scope = 'global'.
 :product:       ores
 :component:     analytics
 :profile:       uuid-identified-lookup
-:has_tenant_id: true
 :END:
 
 * Columns

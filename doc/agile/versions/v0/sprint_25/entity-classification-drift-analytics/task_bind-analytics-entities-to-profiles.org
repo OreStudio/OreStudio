@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-analytics:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bind-analytics-entities-to-profiles
+#+pr: 2088
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-09-07
-#+environment:
+#+updated: 2026-09-17
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9ABCB932-9501-4519-BECA-A30A93646770][Entity classification and drift baseline: ores.analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Survey every ores.analytics entity against the profile catalogue, rebind matches
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9ABCB932-9501-4519-BECA-A30A93646770][Entity classification and drift baseline: ores.analytics]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-17                               |
 
 * Acceptance
 
@@ -43,11 +43,60 @@ Survey every ores.analytics entity against the profile catalogue, rebind matches
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The bind was already on main when this task was picked up. It landed
+on 2026-09-11 under a different task in a different environment, and
+neither this task nor its story was reconciled afterwards, so both
+still read BACKLOG. The survey below records what was found. What
+remained to do was the tidy, the survey record, and the reconciliation
+of the two task records.
+
+The tidy removes the per-entity =:has_tenant_id:= the entity and its
+profile both set. Every other component bound so far carries the
+=:profile:= alone; =business_unit= is the one recorded exception, and
+it keeps an explicit feature for a documented reason this component
+does not share.
+
+The proof is the regeneration, not the reading. With the four models
+edited, regeneration changes no generated file: the diff is exactly
+the four model orgs and nothing else, and no untracked file appears.
+The pre-edit baseline was empty, so zero additional diff holds.
+
+The build and the ctest suite are run after this commit by the user,
+who is driving builds in this session.
 
 * Notes
+
+Survey of =projects/ores.analytics/modeling=, the modeling directory
+of the =analytics-cpp= catalogue entry. One entry covers the whole
+directory, so the survey runs once.
+
+| File | Metatype | Disposition |
+|------+----------+-------------|
+| =ores.analytics.pricing_engine_type.org= | entity | bound =simple-lookup= |
+| =ores.analytics.pricing_model_config.org= | entity | bound =uuid-identified-lookup= |
+| =ores.analytics.pricing_model_product.org= | entity | bound =uuid-identified-lookup= |
+| =ores.analytics.pricing_model_product_parameter.org= | entity | bound =uuid-identified-lookup= |
+| =ores.analytics.module.org= | module | excluded, structurally not an entity |
+| =component_overview.org= | component | excluded, structurally not an entity |
+
+No entity is a no-match and none needs an exception. All four resolved
+to a profile, and both profiles used carry a Physical-space table, so
+the eventing integration tests are enabled for all four.
+
+The composite component =ores.analytics= holds four parts. Only =api=,
+=core= and =service= are codegen surfaces that carry entities; =quant=
+is a hand-written quantitative library with no entity models, and
+nothing in it is codegen-eligible.
+
+The three recorded starting-point wrinkles were already resolved
+before this task started, and regenerating at the head of this branch
+confirms it: =service_find_prefix= on =pricing_engine_type=,
+=service_find_by_uuid= on the other three, and
+=service_find_by_code_column: name= on =pricing_model_config=.
+
+=system_tenant_validation= is a variability feature that no profile
+assigns, so =pricing_engine_type= keeps it explicitly. That is the
+correct shape, not a leftover.
 
 * Test Scenarios
 
@@ -64,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2088][#2088]] | [analytics,agile] Drop the redundant tenant flag and close the analytics bind |
 
 * Review
 
@@ -73,3 +122,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The survey found the bind already done. All four analytics entities
+carried a =:profile:= on main when this task started, and the
+regeneration confirmed every one of them byte-identical to the
+checked-in tree.
+
+What this task changed is small and deliberate. It removed the
+per-entity =:has_tenant_id: true= from the four models, because both
+profiles already fix that feature to true and the explicit line was
+redundant. It recorded the survey and its disposition per file. It
+reconciled the superseded ad hoc task, which stays DONE because it
+delivered the work through PR #1893.
+
+The proof of the tidy is the regeneration. With the four models
+edited, regeneration moved no generated file. The diff was the four
+model orgs and nothing else, and no untracked file appeared. The
+pre-edit baseline was empty, so zero additional diff holds.
+
+=check_component_drift.py --component analytics-cpp= reports no drift
+on the committed tree.
+
+Acceptance:
+
+- Survey of every entity in the analytics-cpp catalogue entry: met.
+  The table in =* Notes= covers all six modeling files.
+- Zero additional diff on regeneration: met, by the argument above.
+- The three recorded service flag wrinkles: met. They were already
+  resolved on main, and the regeneration confirms it.
+- No-match entities recorded with their values: not applicable. No
+  entity is a no-match, so nothing was dropped.
+- Full local build and ctest green: the user runs both after this
+  commit. This result does not claim a build or test outcome that
+  this session did not observe.

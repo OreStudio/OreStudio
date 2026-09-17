@@ -12,7 +12,7 @@
 #+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
 #+blocked_since:
 #+created: 2026-05-31
-#+updated: 2026-06-12
+#+updated: 2026-09-17
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -65,6 +65,8 @@ projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --address 
 ** 6. Commit + push + raise PR
 
 * Notes
+
+This task overlaps in scope with the story [[id:9ABCB932-9501-4519-BECA-A30A93646770][Entity classification and drift baseline: ores.analytics]], which took over the remaining analytics drift work. That story's acceptance asks for this task to be marked ABANDONED. It stays DONE instead, because it was not abandoned: it delivered the profile assignment and the service flags through PR #1893, and the survey in the later task found that work already on main.
 
 * PRs
 

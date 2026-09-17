@@ -22,11 +22,11 @@
  * Template: cpp_qt_client_model.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.qt/ClientInstrumentCodeModel.hpp"
+#include "ores.qt/ClientSeriesSubclassCodeModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
+#include "ores.refdata.api/messaging/series_subclass_code_protocol.hpp"
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -34,92 +34,87 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-std::string instrument_code_key_extractor(const refdata::domain::instrument_code& e) {
+std::string series_subclass_code_key_extractor(const refdata::domain::series_subclass_code& e) {
     return e.code;
 }
 }
 
-ClientInstrumentCodeModel::ClientInstrumentCodeModel(ClientManager* clientManager, QObject* parent)
+ClientSeriesSubclassCodeModel::ClientSeriesSubclassCodeModel(ClientManager* clientManager,
+                                                             QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
     , watcher_(new QFutureWatcher<FetchResult>(this))
-    , recencyTracker_(instrument_code_key_extractor)
+    , recencyTracker_(series_subclass_code_key_extractor)
     , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &ClientInstrumentCodeModel::onCodesLoaded);
+            &ClientSeriesSubclassCodeModel::onCodesLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
             this,
-            &ClientInstrumentCodeModel::onPulseStateChanged);
+            &ClientSeriesSubclassCodeModel::onPulseStateChanged);
     connect(pulseManager_,
             &RecencyPulseManager::pulsing_complete,
             this,
-            &ClientInstrumentCodeModel::onPulsingComplete);
+            &ClientSeriesSubclassCodeModel::onPulsingComplete);
 }
 
-int ClientInstrumentCodeModel::rowCount(const QModelIndex& parent) const {
+int ClientSeriesSubclassCodeModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(codes_.size());
+    return static_cast<int>(subclasses_.size());
 }
 
-int ClientInstrumentCodeModel::columnCount(const QModelIndex& parent) const {
+int ClientSeriesSubclassCodeModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant ClientInstrumentCodeModel::data(const QModelIndex& index, int role) const {
+QVariant ClientSeriesSubclassCodeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= codes_.size())
+    if (row >= subclasses_.size())
         return {};
 
-    const auto& code_ = codes_[row];
+    const auto& subclass = subclasses_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case Code:
-                return QString::fromStdString(code_.code);
+                return QString::fromStdString(subclass.code);
             case Name:
-                return QString::fromStdString(code_.name);
+                return QString::fromStdString(subclass.name);
             case Description:
-                return QString::fromStdString(code_.description);
-            case AssetClass:
-                return code_.asset_class ? QString::fromStdString(*code_.asset_class) : QString{};
-            case OreTradeType:
-                return code_.ore_trade_type ? QString::fromStdString(*code_.ore_trade_type) :
-                                              QString{};
-            case CurveRole:
-                return QString::fromStdString(code_.curve_role);
+                return QString::fromStdString(subclass.description);
             case DisplayOrder:
-                return static_cast<qlonglong>(code_.display_order);
+                return static_cast<qlonglong>(subclass.display_order);
             case Version:
-                return static_cast<qlonglong>(code_.version);
+                return static_cast<qlonglong>(subclass.version);
             case ModifiedBy:
-                return QString::fromStdString(code_.modified_by);
+                return QString::fromStdString(subclass.modified_by);
             case RecordedAt:
-                return relative_time_helper::format(code_.recorded_at);
+                return relative_time_helper::format(subclass.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(code_.code);
+        return recency_foreground_color(subclass.code);
     }
 
     return {};
 }
 
-QVariant
-ClientInstrumentCodeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ClientSeriesSubclassCodeModel::headerData(int section,
+                                                   Qt::Orientation orientation,
+                                                   int role) const {
     if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
 
@@ -137,12 +132,6 @@ ClientInstrumentCodeModel::headerData(int section, Qt::Orientation orientation, 
             return tr("Name");
         case Description:
             return tr("Description");
-        case AssetClass:
-            return tr("Asset Class");
-        case OreTradeType:
-            return tr("ORE Trade Type");
-        case CurveRole:
-            return tr("Curve Role");
         case DisplayOrder:
             return tr("Display Order");
         case Version:
@@ -156,7 +145,7 @@ ClientInstrumentCodeModel::headerData(int section, Qt::Orientation orientation, 
     }
 }
 
-void ClientInstrumentCodeModel::refresh() {
+void ClientSeriesSubclassCodeModel::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
@@ -165,24 +154,24 @@ void ClientInstrumentCodeModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh instrument code model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh series subclass code model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    if (!codes_.empty()) {
+    if (!subclasses_.empty()) {
         beginResetModel();
-        codes_.clear();
+        subclasses_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_codes(0, page_size_);
+    fetch_subclasses(0, page_size_);
 }
 
-void ClientInstrumentCodeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+void ClientSeriesSubclassCodeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -195,36 +184,36 @@ void ClientInstrumentCodeModel::load_page(std::uint32_t offset, std::uint32_t li
         return;
     }
 
-    if (!codes_.empty()) {
+    if (!subclasses_.empty()) {
         beginResetModel();
-        codes_.clear();
+        subclasses_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_codes(offset, limit);
+    fetch_subclasses(offset, limit);
 }
 
-void ClientInstrumentCodeModel::fetch_codes(std::uint32_t offset, std::uint32_t limit) {
+void ClientSeriesSubclassCodeModel::fetch_subclasses(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
-    QPointer<ClientInstrumentCodeModel> self = this;
+    QPointer<ClientSeriesSubclassCodeModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Making instrument codes request with offset=" << offset
+                    << "Making series subclass codes request with offset=" << offset
                     << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .codes = {},
+                            .subclasses = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                refdata::messaging::get_instrument_codes_request request;
+                refdata::messaging::get_series_subclass_codes_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -234,7 +223,7 @@ void ClientInstrumentCodeModel::fetch_codes(std::uint32_t offset, std::uint32_t 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .codes = {},
+                            .subclasses = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -250,64 +239,64 @@ void ClientInstrumentCodeModel::fetch_codes(std::uint32_t offset, std::uint32_t 
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
-                            .codes = {},
+                            .subclasses = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->instruments.size()
-                    << " instrument codes, total available: " << result->total_available_count;
+                    << "Fetched " << result->series_subclasses.size()
+                    << " series subclass codes, total available: " << result->total_available_count;
                 return {.success = true,
-                        .codes = std::move(result->instruments),
+                        .subclasses = std::move(result->series_subclasses),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },
-            "instrument codes");
+            "series subclass codes");
     });
 
     watcher_->setFuture(future);
 }
 
-void ClientInstrumentCodeModel::onCodesLoaded() {
+void ClientSeriesSubclassCodeModel::onCodesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
 
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error)
-            << "Failed to fetch instrument codes: " << result.error_message.toStdString();
+            << "Failed to fetch series subclass codes: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result.codes.size());
+    const int new_count = static_cast<int>(result.subclasses.size());
 
     if (new_count > 0) {
         beginResetModel();
-        codes_ = std::move(result.codes);
+        subclasses_ = std::move(result.subclasses);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(codes_);
+        const bool has_recent = recencyTracker_.update(subclasses_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " instrument codes newer than last reload";
+                                       << " series subclass codes newer than last reload";
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " instrument codes."
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " series subclass codes."
                               << " Total available: " << total_available_count_;
 
     emit dataLoaded();
 }
 
-void ClientInstrumentCodeModel::set_page_size(std::uint32_t size) {
+void ClientSeriesSubclassCodeModel::set_page_size(std::uint32_t size) {
     if (size == 0 || size > 1000) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
                                   << ". Must be between 1 and 1000. Using default: 100";
@@ -318,29 +307,29 @@ void ClientInstrumentCodeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::instrument_code* ClientInstrumentCodeModel::getCode(int row) const {
+const refdata::domain::series_subclass_code* ClientSeriesSubclassCodeModel::getCode(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= codes_.size())
+    if (idx >= subclasses_.size())
         return nullptr;
-    return &codes_[idx];
+    return &subclasses_[idx];
 }
 
 
-QVariant ClientInstrumentCodeModel::recency_foreground_color(const std::string& code) const {
+QVariant ClientSeriesSubclassCodeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
     return {};
 }
 
-void ClientInstrumentCodeModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!codes_.empty()) {
+void ClientSeriesSubclassCodeModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!subclasses_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
-void ClientInstrumentCodeModel::onPulsingComplete() {
+void ClientSeriesSubclassCodeModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
 }

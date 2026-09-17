@@ -65,6 +65,7 @@
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
+#include "ores.qt/SeriesSubclassCodeController.hpp"
 #include "ores.qt/SwapConventionController.hpp"
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.qt/TenorController.hpp"
@@ -708,6 +709,15 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            this);
     connectControllerSignals(assetClassCodeController_.get());
 
+    seriesSubclassCodeController_ =
+        std::make_unique<SeriesSubclassCodeController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
+    connectControllerSignals(seriesSubclassCodeController_.get());
+
     curveRoleController_ = std::make_unique<CurveRoleController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
                                                                  ctx_.client_manager,
@@ -1002,6 +1012,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (instrumentCodeController_)
                 instrumentCodeController_->showListWindow();
         });
+        auto* actSeriesSubclassCodes =
+            menuClassifications->addAction(ico(Icon::Tag), tr("&Series Subclass Codes"));
+        connect(actSeriesSubclassCodes, &QAction::triggered, this, [this]() {
+            if (seriesSubclassCodeController_)
+                seriesSubclassCodeController_->showListWindow();
+        });
 
         // Currency Codes submenu (Monetary Natures + Rounding Types).
         // Entries alphabetical.
@@ -1182,6 +1198,7 @@ void RefdataPlugin::on_logout() {
     irCurveBootstrapConfigController_.reset();
     instrumentCodeController_.reset();
     curveRoleController_.reset();
+    seriesSubclassCodeController_.reset();
     assetClassCodeController_.reset();
     tenorResolutionAlgorithmController_.reset();
     tenorUnitController_.reset();

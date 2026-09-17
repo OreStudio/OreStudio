@@ -23,7 +23,7 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
+#include "ores.refdata.api/messaging/asset_class_code_protocol.hpp"
 #include <QHeaderView>
 #include <QLabel>
 #include <QPointer>
@@ -267,8 +267,7 @@ void MarketSeriesMdiWindow::loadAssetClasses() {
             [&]() -> AssetClassFetchResult {
                 if (!self || !self->clientManager_)
                     return {};
-                refdata::messaging::get_asset_classes_request req;
-                req.coding_scheme_code = "ORE_ASSET_CLASS";
+                refdata::messaging::get_asset_class_codes_request req;
                 auto result = self->clientManager_->process_authenticated_request(std::move(req));
                 if (!result)
                     return {};
@@ -288,14 +287,15 @@ void MarketSeriesMdiWindow::onAssetClassesLoaded() {
 }
 
 void MarketSeriesMdiWindow::populateAssetClassCombo(
-    const std::vector<refdata::domain::asset_class_info>& classes) {
+    const std::vector<refdata::domain::asset_class_code>& classes) {
     const QString current = assetClassCombo_->currentData().toString();
 
     assetClassCombo_->clear();
     assetClassCombo_->addItem(tr("All"), QString{});
+    // The list column holds the code, so the code is what filtering matches on.
     for (const auto& ac : classes) {
-        const auto label = QString::fromStdString(ac.description);
-        assetClassCombo_->addItem(label, label);
+        assetClassCombo_->addItem(QString::fromStdString(ac.name),
+                                  QString::fromStdString(ac.code));
     }
 
     // Restore previous selection if it still exists.

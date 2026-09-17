@@ -44,6 +44,7 @@
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/domain/series_subclass_code.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
 #include "ores.refdata.api/domain/tenor_kind.hpp"
@@ -540,6 +541,16 @@ fetch_badge_severities(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::asset_class_code>, QString>
 fetch_asset_class_codes(ClientManager* cm);
+
+/**
+ * @brief Fetches all series subclass codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by the market series picker's subclass combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::series_subclass_code>, QString>
+fetch_series_subclass_codes(ClientManager* cm);
 
 /**
  * @brief Fetches all curve roles from the server.

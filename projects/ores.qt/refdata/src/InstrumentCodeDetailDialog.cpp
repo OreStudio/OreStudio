@@ -188,7 +188,10 @@ void InstrumentCodeDetailDialog::populateAssetClassCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        [this]() { return QString::fromStdString(code__.asset_class); },
+        [this]() {
+            const auto& _opt = code__.asset_class;
+            return _opt ? QString::fromStdString(*_opt) : QString{};
+        },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load asset class codes: %1").arg(error));
         },
@@ -226,7 +229,8 @@ void InstrumentCodeDetailDialog::updateUiFromCode() {
     ui_->nameEdit->setText(QString::fromStdString(code__.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(code__.description));
     {
-        const auto val = QString::fromStdString(code__.asset_class);
+        const auto val =
+            code__.asset_class ? QString::fromStdString(*code__.asset_class) : QString{};
         const int idx = ui_->assetClassCombo->findData(val);
         if (idx >= 0)
             ui_->assetClassCombo->setCurrentIndex(idx);
@@ -258,7 +262,12 @@ void InstrumentCodeDetailDialog::updateCodeFromUi() {
     }
     code__.name = ui_->nameEdit->text().trimmed().toStdString();
     code__.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    code__.asset_class = ui_->assetClassCombo->currentText().toStdString();
+    {
+        const auto asset_class_str =
+            ui_->assetClassCombo->currentData().toString().trimmed().toStdString();
+        code__.asset_class =
+            asset_class_str.empty() ? std::nullopt : std::optional{asset_class_str};
+    }
     {
         const auto ore_trade_type_str = ui_->oreTradeTypeEdit->text().trimmed().toStdString();
         code__.ore_trade_type = ore_trade_type_str.empty() ?
@@ -288,11 +297,9 @@ void InstrumentCodeDetailDialog::updateSaveButtonState() {
 bool InstrumentCodeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
-    const bool asset_class_selected = ui_->assetClassCombo->currentIndex() >= 0;
     const bool curve_role_selected = ui_->curveRoleCombo->currentIndex() >= 0;
 
-    return true && !code_val.isEmpty() && !name_val.isEmpty() && asset_class_selected &&
-           curve_role_selected;
+    return true && !code_val.isEmpty() && !name_val.isEmpty() && curve_role_selected;
 }
 
 void InstrumentCodeDetailDialog::onSaveClicked() {

@@ -29,70 +29,6 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-QString asset_class_label(marketdata::domain::asset_class ac) {
-    using namespace marketdata::domain;
-    switch (ac) {
-        case asset_class::fx:
-            return "FX";
-        case asset_class::rates:
-            return "Rates";
-        case asset_class::credit:
-            return "Credit";
-        case asset_class::equity:
-            return "Equity";
-        case asset_class::commodity:
-            return "Commodity";
-        case asset_class::inflation:
-            return "Inflation";
-        case asset_class::bond:
-            return "Bond";
-        case asset_class::cross_asset:
-            return "Cross Asset";
-    }
-    return "Unknown";
-}
-
-QString subclass_label(marketdata::domain::series_subclass sc) {
-    using namespace marketdata::domain;
-    switch (sc) {
-        case series_subclass::spot:
-            return "Spot";
-        case series_subclass::forward:
-            return "Forward";
-        case series_subclass::volatility:
-            return "Volatility";
-        case series_subclass::yield:
-            return "Yield";
-        case series_subclass::basis:
-            return "Basis";
-        case series_subclass::fra:
-            return "FRA";
-        case series_subclass::xccy:
-            return "X-Ccy";
-        case series_subclass::spread:
-            return "Spread";
-        case series_subclass::index_credit:
-            return "Credit Index";
-        case series_subclass::recovery:
-            return "Recovery";
-        case series_subclass::swap:
-            return "Swap";
-        case series_subclass::capfloor:
-            return "Cap/Floor";
-        case series_subclass::seasonality:
-            return "Seasonality";
-        case series_subclass::price:
-            return "Price";
-        case series_subclass::correlation:
-            return "Correlation";
-    }
-    return "Unknown";
-}
-
-} // namespace
-
 ClientMarketSeriesModel::ClientMarketSeriesModel(ClientManager* clientManager, QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
@@ -130,9 +66,9 @@ QVariant ClientMarketSeriesModel::data(const QModelIndex& index, int role) const
             case Qualifier:
                 return QString::fromStdString(s.qualifier);
             case AssetClass:
-                return asset_class_label(s.asset_class);
+                return QString::fromStdString(s.asset_class);
             case Subclass:
-                return subclass_label(s.series_subclass);
+                return QString::fromStdString(s.series_subclass);
             case IsScalar:
                 return s.is_scalar ? "Yes" : "No";
             case Version:

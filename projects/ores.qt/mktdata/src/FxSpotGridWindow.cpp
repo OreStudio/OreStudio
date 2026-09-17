@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/FxSpotGridWindow.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -355,7 +354,7 @@ void FxSpotGridWindow::reload() {
             return r;
         }
         for (auto& b : resp->feed_bindings)
-            if (b.enabled && b.asset_class == marketdata::domain::asset_class::fx)
+            if (b.enabled && b.asset_class == "fx")
                 r.bindings.push_back(std::move(b));
         r.success = true;
         return r;

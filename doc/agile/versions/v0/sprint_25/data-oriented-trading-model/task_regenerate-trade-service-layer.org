@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 577C2F64-3394-44A0-9AD9-FBD61143B8CA
+:END:
+#+title: Task: Regenerate the trade service layer and Qt estate
+#+description: The handler, service, repository, mapper, protocol and the nine Qt Trade files still live only in the tree, so regenerating trade clobbers them. The protocol diverges from the generated shape rather than extending it.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/regenerate-trade-service-layer
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerating the trade entity produces the whole estate, so the identity collapse can be made in the model rather than by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- The protocol adopts the generated shapes, keeping a vector-valued save and moving versions to history.
+- The bespoke handler, service, repository and mapper members are org-declared through the implements mechanism rather than hand-written.
+- The nine ores.qt Trade files regenerate, or are recorded as a deliberate exception with the reason.
+- Regenerating trade is idempotent and leaves the tree clean; the full build and ctest stay green against a live environment.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

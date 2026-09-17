@@ -54,8 +54,10 @@ class {{entity_singular}}_handler {
 public:
     {{entity_singular}}_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier{{#handler_ctor_param}},
+        {{{handler_ctor_param}}}{{/handler_ctor_param}})
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
+          {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
@@ -164,7 +166,12 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
+{{#has_batch_save}}
+                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}}{{#save_extra_args}}, {{save_extra_args}}{{/save_extra_args}});
+{{/has_batch_save}}
+{{^has_batch_save}}
                 svc.save_{{entity_singular_short}}(req->data);
+{{/has_batch_save}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,
@@ -436,8 +443,10 @@ class {{name_singular}}_handler {
 public:
     {{name_singular}}_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier{{#handler_ctor_param}},
+        {{{handler_ctor_param}}}{{/handler_ctor_param}})
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
+          {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
 
 {{#left.list_by}}
     void list_by_{{left.column_short}}(ores::nats::message msg) {
@@ -679,8 +688,10 @@ class {{entity_singular}}_handler {
 public:
     {{entity_singular}}_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier{{#handler_ctor_param}},
+        {{{handler_ctor_param}}}{{/handler_ctor_param}})
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
+          {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
@@ -747,7 +758,12 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
+{{#has_batch_save}}
+                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}}{{#save_extra_args}}, {{save_extra_args}}{{/save_extra_args}});
+{{/has_batch_save}}
+{{^has_batch_save}}
                 svc.save_{{entity_singular_short}}(req->data);
+{{/has_batch_save}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,

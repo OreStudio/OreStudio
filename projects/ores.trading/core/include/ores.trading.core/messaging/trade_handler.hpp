@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_MESSAGING_TRADE_HANDLER_HPP
-#define ORES_TRADING_MESSAGING_TRADE_HANDLER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_HANDLER_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
@@ -90,7 +95,10 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_TRADING_CORE_EXPORT trade_handler {
+/**
+ * @brief NATS message handler for trade operations.
+ */
+class trade_handler {
 public:
     trade_handler(ores::nats::service::client& nats,
                   ores::database::context ctx,
@@ -101,7 +109,317 @@ public:
         , verifier_(std::move(verifier))
         , http_base_url_(std::move(http_base_url)) {}
 
+    void list(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::trade_service svc(req_ctx);
+        get_trades_response resp;
+        if (auto req = decode<get_trades_request>(msg)) {
+            try {
+                // Note: has_as_of_lookup is not currently supported in
+                // combination with list_filter_column -- the at_timepoint
+                // service method filters by primary key, not by
+                // node_id, so req->as_of is intentionally
+                // ignored here. Wire this up (with a filter argument that
+                // matches list_filter_column's semantics) if/when this
+                // facet is rolled out to an entity that needs both.
+                resp.trades = svc.list_trades(req->node_id);
+                resp.total_available_count = static_cast<int>(resp.trades.size());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        const auto transitions = fetch_fsm_transitions(extract_bearer(msg));
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trades:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::trade_service svc(req_ctx);
+        if (auto req = decode<save_trade_request>(msg)) {
+            try {
+                svc.save_trades(req->trades, transitions);
+                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_trade_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_trade_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::trade_service svc(req_ctx);
+        if (auto req = decode<get_trade_history_request>(msg)) {
+            try {
+                auto hist = svc.get_trade_history(req->id);
+                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_trade_history_response{.history = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, get_trade_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trades:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::trade_service svc(req_ctx);
+        if (auto req = decode<delete_trade_request>(msg)) {
+            try {
+                svc.delete_trades(req->ids);
+                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_trade_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, delete_trade_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void list_activity_types(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        // Activity types are system-level configuration; look them up under
+        // the system tenant so all tenants see the same standard set.
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::activity_type_service svc(sys_ctx);
+        get_activity_types_response resp;
+        try {
+            resp.activity_types = svc.list_types();
+        } catch (...) {
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::trade_service svc(ctx);
+        if (auto req = decode<get_trade_history_request>(msg)) {
+            try {
+                auto versions = svc.get_trade_history(req->id);
+                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_trade_history_response{.success = true, .versions = std::move(versions)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, get_trade_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        }
+    }
+
+    void instrument(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::trade_service svc(ctx);
+        get_trade_instrument_response resp;
+        try {
+            if (auto req = decode<get_trade_instrument_request>(msg)) {
+                auto trade_opt = svc.find_trade(req->trade_id);
+                if (!trade_opt) {
+                    resp.success = false;
+                    resp.message = "Trade not found: " + req->trade_id;
+                } else {
+                    std::vector<trade_export_item> items{{.trade = std::move(*trade_opt)}};
+                    populate_instruments_for_trades(ctx, items);
+                    resp.trade = std::move(items[0].trade);
+                    resp.instrument = decode_instrument(items[0].instrument);
+                    resp.success = true;
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void export_portfolio(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_portfolio_response resp;
+        try {
+            if (auto req = decode<export_portfolio_request>(msg)) {
+                service::trade_service svc(ctx);
+                const auto offset = static_cast<std::uint32_t>(req->offset);
+                const auto limit = static_cast<std::uint32_t>(req->limit);
+
+                std::optional<boost::uuids::uuid> node;
+                if (!req->node_id.empty()) {
+                    boost::uuids::string_generator gen;
+                    node = gen(req->node_id);
+                }
+                auto trades = svc.list_trades_by_node(offset, limit, node);
+                resp.items.reserve(trades.size());
+                for (auto& t : trades)
+                    resp.items.push_back({.trade = std::move(t)});
+                populate_instruments_for_trades(ctx, resp.items);
+                resp.success = true;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void export_trades_to_storage(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_trades_to_storage_response resp;
+        try {
+            auto req = decode<export_trades_to_storage_request>(msg);
+            if (!req || req->book_ids.empty()) {
+                resp.message = "Invalid request or empty book_ids.";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            // Fetch trades for all requested books in pages and batch-populate instruments.
+            service::trade_service svc(ctx);
+            std::vector<trade_export_item> all_items;
+            constexpr std::uint32_t page_size = 1000;
+            for (const auto& bid : req->book_ids) {
+                try {
+                    boost::uuids::string_generator gen;
+                    const auto book_node = std::optional<boost::uuids::uuid>(gen(bid));
+                    std::uint32_t offset = 0;
+                    while (true) {
+                        auto trades = svc.list_trades_by_node(offset, page_size, book_node);
+                        const auto n = static_cast<std::uint32_t>(trades.size());
+                        if (n == 0)
+                            break;
+                        std::vector<trade_export_item> page;
+                        page.reserve(n);
+                        for (auto& t : trades)
+                            page.push_back({.trade = std::move(t)});
+                        populate_instruments_for_trades(ctx, page);
+                        all_items.insert(all_items.end(),
+                                         std::make_move_iterator(page.begin()),
+                                         std::make_move_iterator(page.end()));
+                        offset += n;
+                        if (n < page_size)
+                            break;
+                    }
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(trade_handler_lg(), warn)
+                        << "export_trades_to_storage: book " << bid << " failed: " << e.what();
+                }
+            }
+
+            // Serialise to MsgPack and upload to storage.
+            const auto blob = rfl::msgpack::write(all_items);
+            ores::storage::net::storage_transfer transfer(http_base_url_);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+
+            resp.success = true;
+            resp.trade_count = static_cast<int>(all_items.size());
+            resp.storage_key = req->storage_key;
+            resp.message = "Exported " + std::to_string(all_items.size()) + " trades to storage.";
+
+            BOOST_LOG_SEV(trade_handler_lg(), info)
+                << "export_trades_to_storage: exported " << all_items.size() << " trades, "
+                << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
+                << req->storage_key;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
 private:
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     template <typename Ctx>
     static void populate_instruments_for_trades(const Ctx& ctx,
                                                 std::vector<trade_export_item>& items) {
@@ -433,285 +751,6 @@ private:
         }
     }
 
-public:
-    void list_activity_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        // Activity types are system-level configuration; look them up under
-        // the system tenant so all tenants see the same standard set.
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::activity_type_service svc(sys_ctx);
-        get_activity_types_response resp;
-        try {
-            resp.activity_types = svc.list_types();
-        } catch (...) {
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::trade_service svc(ctx);
-        get_trades_response resp;
-        try {
-            if (auto req = decode<get_trades_request>(msg)) {
-                const auto offset = static_cast<std::uint32_t>(req->offset);
-                const auto limit = static_cast<std::uint32_t>(req->limit);
-                std::optional<boost::uuids::uuid> node;
-                if (!req->node_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    node = gen(req->node_id);
-                }
-                auto trades = svc.list_trades_by_node(offset, limit, node);
-                resp.trades = std::move(trades);
-                resp.total_available_count = static_cast<int>(svc.count_trades_by_node(node));
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
-            resp.trades.clear();
-            resp.total_available_count = 0;
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::trades:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::trade_service svc(ctx);
-        if (auto req = decode<save_trade_request>(msg)) {
-            try {
-                const auto transitions = fetch_fsm_transitions(extract_bearer(msg));
-                svc.save_trades(req->trades, transitions);
-                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_trade_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_trade_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::trades:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::trade_service svc(ctx);
-        if (auto req = decode<delete_trade_request>(msg)) {
-            try {
-                for (const auto& id : req->ids)
-                    svc.remove_trade(id);
-                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_trade_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_trade_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::trade_service svc(ctx);
-        if (auto req = decode<get_trade_history_request>(msg)) {
-            try {
-                auto versions = svc.get_trade_history(req->id);
-                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_trade_history_response{.success = true, .versions = std::move(versions)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, get_trade_history_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void instrument(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::trade_service svc(ctx);
-        get_trade_instrument_response resp;
-        try {
-            if (auto req = decode<get_trade_instrument_request>(msg)) {
-                auto trade_opt = svc.find_trade(req->trade_id);
-                if (!trade_opt) {
-                    resp.success = false;
-                    resp.message = "Trade not found: " + req->trade_id;
-                } else {
-                    std::vector<trade_export_item> items{{.trade = std::move(*trade_opt)}};
-                    populate_instruments_for_trades(ctx, items);
-                    resp.trade = std::move(items[0].trade);
-                    resp.instrument = decode_instrument(items[0].instrument);
-                    resp.success = true;
-                }
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void export_portfolio(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        export_portfolio_response resp;
-        try {
-            if (auto req = decode<export_portfolio_request>(msg)) {
-                service::trade_service svc(ctx);
-                const auto offset = static_cast<std::uint32_t>(req->offset);
-                const auto limit = static_cast<std::uint32_t>(req->limit);
-
-                std::optional<boost::uuids::uuid> node;
-                if (!req->node_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    node = gen(req->node_id);
-                }
-                auto trades = svc.list_trades_by_node(offset, limit, node);
-                resp.items.reserve(trades.size());
-                for (auto& t : trades)
-                    resp.items.push_back({.trade = std::move(t)});
-                populate_instruments_for_trades(ctx, resp.items);
-                resp.success = true;
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void export_trades_to_storage(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        export_trades_to_storage_response resp;
-        try {
-            auto req = decode<export_trades_to_storage_request>(msg);
-            if (!req || req->book_ids.empty()) {
-                resp.message = "Invalid request or empty book_ids.";
-                reply(nats_, msg, resp);
-                return;
-            }
-
-            // Fetch trades for all requested books in pages and batch-populate instruments.
-            service::trade_service svc(ctx);
-            std::vector<trade_export_item> all_items;
-            constexpr std::uint32_t page_size = 1000;
-            for (const auto& bid : req->book_ids) {
-                try {
-                    boost::uuids::string_generator gen;
-                    const auto book_node = std::optional<boost::uuids::uuid>(gen(bid));
-                    std::uint32_t offset = 0;
-                    while (true) {
-                        auto trades = svc.list_trades_by_node(offset, page_size, book_node);
-                        const auto n = static_cast<std::uint32_t>(trades.size());
-                        if (n == 0)
-                            break;
-                        std::vector<trade_export_item> page;
-                        page.reserve(n);
-                        for (auto& t : trades)
-                            page.push_back({.trade = std::move(t)});
-                        populate_instruments_for_trades(ctx, page);
-                        all_items.insert(all_items.end(),
-                                         std::make_move_iterator(page.begin()),
-                                         std::make_move_iterator(page.end()));
-                        offset += n;
-                        if (n < page_size)
-                            break;
-                    }
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(trade_handler_lg(), warn)
-                        << "export_trades_to_storage: book " << bid << " failed: " << e.what();
-                }
-            }
-
-            // Serialise to MsgPack and upload to storage.
-            const auto blob = rfl::msgpack::write(all_items);
-            ores::storage::net::storage_transfer transfer(http_base_url_);
-            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
-
-            resp.success = true;
-            resp.trade_count = static_cast<int>(all_items.size());
-            resp.storage_key = req->storage_key;
-            resp.message = "Exported " + std::to_string(all_items.size()) + " trades to storage.";
-
-            BOOST_LOG_SEV(trade_handler_lg(), info)
-                << "export_trades_to_storage: exported " << all_items.size() << " trades, "
-                << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
-                << req->storage_key;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.message = e.what();
-        }
-        reply(nats_, msg, resp);
-    }
-
-private:
     /**
      * @brief Fetches all FSM transitions from the DQ service via NATS.
      *
@@ -784,9 +823,6 @@ private:
     inline static service::fsm_transition_map s_cache_;
     inline static std::chrono::steady_clock::time_point s_cache_fetched_{};
 
-    ores::nats::service::client& nats_;
-    ores::database::context ctx_;
-    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::string http_base_url_;
 };
 

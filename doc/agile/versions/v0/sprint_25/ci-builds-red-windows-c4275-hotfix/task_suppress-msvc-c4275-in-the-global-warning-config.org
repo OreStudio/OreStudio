@@ -8,7 +8,7 @@
 #+filetags: :ci-builds-red-windows-c4275-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: feature/suppress-msvc-c4275-in-the-global-warning-config
-#+pr:
+#+pr: 2086
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2086][#2086]] | [build] Disable C4275 for MSVC |
 
 * Review
 

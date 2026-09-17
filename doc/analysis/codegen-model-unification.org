@@ -45,7 +45,7 @@ filename suffixes:
 |        2 | =*_table.org=                            | =table=         | =load_org_table_model()= | ={"table": {...}}=         |
 |        3 | =*_junction.org=                        | =junction=      | (table-family loader)    | ={"junction": {...}}=      |
 |        4 | =*_field_group.org=                     | =field_group=   |                          |                            |
-|        5 | =*_lookup_entity.org= / =*_entity.json=  | =schema=        |                          |                            |
+|        5 | =*_lookup_entity.org=                   | =schema=        |                          |                            |
 |        6 | service_registry, component, enum, data | (various)       |                          |                            |
 
 The first matching rule wins. A file named =ores.refdata.party_status.org=

@@ -75,9 +75,6 @@ this component, add a =modeling_dir= entry to the component's
 #+begin_src python
 "<component>-cpp": Component(
     name="<component>-cpp",
-    models_dir="projects/ores.codegen/models/<component>",
-    entity_glob="*_domain_entity.json",
-    exclude_suffix=None,
     modeling_dir="projects/ores.<component>/modeling",
 ),
 #+end_src
@@ -92,9 +89,8 @@ to add another entity.
     --component <component>-cpp --address ores.cpp
 #+end_src
 
-Codegen unions matches from the legacy JSON glob and the new
-=modeling_dir= (org files whose =#+type:= says
-=ores.codegen.entity=).
+Codegen discovers models through =modeling_dir= alone: org files whose
+=#+type:= says =ores.codegen.entity=.
 
 * Script
 

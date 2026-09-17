@@ -25,7 +25,7 @@
  * Data Quality Solvaris Currencies Artefact Population Script
  *
  * Populates the dq_currencies_artefact_tbl with Solvaris currency data.
- * Source: country_currency.json model
+ * Source: country_currency.json dataset
  *
  * This script is idempotent.
  */

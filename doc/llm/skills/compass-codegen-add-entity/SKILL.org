@@ -26,12 +26,13 @@ orchestrates the sub-skills in dependency order via =TaskCreate= tasks.
 
 * How to use this skill
 
-** Step 1 — Confirm or create the JSON model
+** Step 1 — Confirm or create the org model
 
-Confirm a model file exists in
-=projects/ores.codegen/models/{component}/{entity}_domain_entity.json=
-(or =*_junction.json= for association tables). If it does not exist,
-create it before proceeding. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
+Confirm a model file exists under =projects/ores.<component>/modeling/=
+with =#+type: ores.codegen.entity= (or =ores.codegen.junction= for
+association tables). If it does not exist, scaffold it with
+=compass add entity_org ...= before proceeding. See
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
 
 ** Step 2 — Create one task per layer
 

@@ -311,16 +311,16 @@ input from different sources:
 The *authored route* is the common case: domain entities, lookup tables,
 junctions, and components are maintained by hand in literate org-mode, because
 the model carries intent other readers need (descriptions, custom-method prose,
-generator expressions). The [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] tracks moving the entire
-authored set off legacy JSON.
+generator expressions). The [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] moved the entire
+authored set off legacy JSON; no JSON model remains in the tree.
 
 The *automated route* applies when the model is merely derived. The canonical
 example is the [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram]]: a parse stage reads the generated SQL DDL
 and produces an intermediate JSON model; a render stage feeds it to a Mustache
 archetype and emits =ores_schema.puml=. That intermediate model is regenerated
 every run, carries nothing a human edits, and lives under =build/output/= so it
-stays out of the input tree. =projects/ores.codegen/models/= holds authored
-input only.
+stays out of the authored tree. Only the org models under
+=projects/ores.<group>/modeling/= are authored input.
 
 ** Address resolution: the physical-space graph and element-scope binding
 

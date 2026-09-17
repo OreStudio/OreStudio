@@ -52,8 +52,7 @@ The full template source. Edit here and re-tangle with
 
     MODEL TYPE
     ----------
-    field_group  (org #+type: field_group, or legacy filename suffix
-                  _field_group.json)
+    field_group  (org #+type: field_group)
 
     ADDRESS
     -------

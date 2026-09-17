@@ -280,12 +280,93 @@ ISO 8601 date: YYYY-MM-DD.
 std::string("2026-01-15")
 #+end_src
 
+* Foreign keys
+
+The soft references a trade carries. =book_id= and =portfolio_id= are
+not listed here: their validation is part of the book derivation, which
+the SQL section's "Party id from book id" declares.
+
+** successor_trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:error_message: Invalid successor_trade_id: %. Trade must exist for tenant.
+:nullable:      true
+:END:
+
+The trade this one was replaced by, on a cancel and rebook.
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:error_message: Invalid counterparty_id: %. Counterparty must exist for tenant.
+:nullable:      true
+:END:
+
+Absent on an internal trade, which faces no counterparty.
+
+** status_id
+:PROPERTIES:
+:table:         ores_dq_fsm_states_tbl
+:error_message: Invalid status_id: %. FSM state must exist.
+:use_system_tenant: true
+:END:
+
+The state the trade occupies in its lifecycle machine.
+
+* Insert trigger
+
+** Validations
+
+Each code column is resolved against its catalogue, so a trade cannot
+be booked against a type or class that does not exist. =asset_class= is
+optional, and the generated guard skips the call when it is null.
+
+| column             | validation_function                    |
+|--------------------+----------------------------------------|
+| asset_class        | ores_refdata_validate_asset_class_fn   |
+| trade_type         | ores_trading_validate_trade_type_fn    |
+| activity_type_code | ores_trading_validate_activity_type_fn |
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trades_tbl
 :END:
+
+** Party id from book id
+:PROPERTIES:
+:book_table:                ores_refdata_books_tbl
+:book_error_message:        Invalid book_id: %. Book must exist for tenant.
+:portfolio_table:           ores_refdata_portfolios_tbl
+:portfolio_error_message:   Invalid portfolio_id: %. Portfolio must exist for tenant.
+:cross_check_error_message: portfolio_id % does not match book parent_portfolio_id %.
+:END:
+
+A trade states its book, and the book already knows which party owns it
+and which portfolio contains it. The insert trigger therefore derives
+=party_id= from the book rather than trusting the caller, and rejects a
+=portfolio_id= that disagrees with the book's parent.
+
+** Indexes
+
+The six lookups the trade blotter and the risk feeds issue against the
+current slice. Each is partial on =valid_to=, so the index covers the
+live row only; =trades_instrument_idx= and =trades_asset_class_idx= add
+a not-null predicate because both columns are optional and a null entry
+would never be sought.
+
+The =name= column carries the stem: the template renders it as
+=<index_name_prefix>_<name>_idx=, so =book= becomes =trades_book_idx=.
+
+| name        | columns                                | unique | current_only | where_extra               |
+|-------------+----------------------------------------+--------+--------------+---------------------------|
+| book        | tenant_id, book_id                     | false  | true         |                           |
+| portfolio   | tenant_id, portfolio_id                | false  | true         |                           |
+| netting_set | tenant_id, netting_set_id              | false  | true         |                           |
+| trade_type  | tenant_id, trade_type                  | false  | true         |                           |
+| instrument  | tenant_id, product_type, instrument_id | false  | true         | instrument_id is not null |
+| asset_class | tenant_id, asset_class                 | false  | true         | asset_class is not null   |
 
 * C++
 

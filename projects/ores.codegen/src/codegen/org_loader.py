@@ -1274,6 +1274,16 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 {"column": r["column"], "is_nullable": _parse_typed(r.get("nullable", "false"))}
                 for r in rows if r.get("column")
             ]
+        # party_id_from_book_id is a struct feature: the insert trigger
+        # derives party_id and the book's parent portfolio from book_id and
+        # then cross-checks the stated portfolio against it. The struct
+        # supplies the two table names and the three messages the block
+        # raises, which a Flags property cannot carry.
+        book_section = _section(sql_section, "Party id from book id")
+        if book_section and book_section.properties:
+            de.setdefault("sql", {})["party_id_from_book_id"] = {
+                k.lower(): v for k, v in book_section.properties.items()
+            }
         indexes_section = _section(sql_section, "Indexes")
         if indexes_section and indexes_section.tables:
             rows = _parse_org_table_rows(indexes_section)

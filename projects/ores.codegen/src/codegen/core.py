@@ -2331,6 +2331,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['audit_group_qualified'] = (
                 f"{parts[0]}::{parts[1]}::domain::{parts[2]}"
             )
+        # N-way composition. Where the identity/audit pair names at most two
+        # groups, domain_groups names as many as the entity needs, and the
+        # member list replaces the struct body entirely: every column is
+        # reached through one of the groups, so none is emitted flat.
+        domain_groups = domain_entity.get('domain_groups') or []
+        for group in domain_groups:
+            parts = group['field_group'].split('.')
+            if len(parts) != 3:
+                raise ValueError(
+                    f"domain group '{group['member']}' must name a 3-part "
+                    f"dotted field group (e.g. 'ores.trading.trade_identity'), "
+                    f"got: '{group['field_group']}' ({len(parts)} parts)"
+                )
+            # A group from the entity's own component is named unqualified,
+            # matching how the identity slot has always rendered it; only a
+            # group from another component needs the full namespace.
+            group['type_qualified'] = (
+                parts[2] if parts[1] == domain_entity.get('component')
+                else f"{parts[0]}::{parts[1]}::domain::{parts[2]}"
+            )
+            group['header'] = f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"'
+        domain_entity['has_domain_groups'] = bool(domain_groups)
         for col in domain_entity.get('columns', []):
             col['is_identity_group_column'] = (
                 has_identity_group and col.get('group', '') == 'identity'
@@ -2492,7 +2514,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['add_positional_count'] = user_supplied_count + 2
         # Auto-inject identity/audit group headers into cpp.includes.domain so
         # models only need to list their own direct (non-group-field) includes.
-        if has_identity_group or has_audit_group:
+        if has_identity_group or has_audit_group or domain_groups:
             cpp = domain_entity.setdefault('cpp', {})
             includes_dict = cpp.setdefault('includes', {})
             existing_domain = list(includes_dict.get('domain', []))
@@ -2503,6 +2525,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if has_identity_group:
                 parts = identity_group_value.split('.')
                 injected.append(f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"')
+            # A domain-grouped entity reaches every column through a group,
+            # so the group headers are the only domain includes it needs. The
+            # loader refuses a model that declares both, so there is nothing
+            # here to discard.
+            if domain_groups:
+                injected.extend(g['header'] for g in domain_groups)
             includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
@@ -2706,6 +2734,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         optional_columns.add(col['name'])
                     if _render_cpp_type == 'bool':
                         bool_columns.add(col['name'])
+            # A grouped entity's table display names its columns through
+            # the member (e.g. "lifecycle.trade_date"), so classify those
+            # paths from the field-group types the loader resolved.
+            for field in domain_entity.get('domain_group_fields', []) or []:
+                _field_cpp_type = (field.get('cpp_type') or '').strip()
+                if (
+                    'boost::uuids::uuid' in _field_cpp_type
+                    and not _field_cpp_type.startswith('std::optional<')
+                ):
+                    uuid_columns.add(field['name'])
+                if _field_cpp_type.startswith('std::optional<'):
+                    optional_columns.add(field['name'])
+                if _field_cpp_type == 'bool':
+                    bool_columns.add(field['name'])
             _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns, bool_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in domain_entity:

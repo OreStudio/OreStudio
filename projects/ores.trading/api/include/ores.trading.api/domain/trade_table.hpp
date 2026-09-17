@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_TABLE_HPP
-#define ORES_TRADING_DOMAIN_TRADE_TABLE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_TABLE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_TABLE_HPP
 
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/export.hpp"

@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_HPP
-#define ORES_TRADING_DOMAIN_TRADE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_HPP
 
 #include "ores.trading.api/domain/trade_audit.hpp"
 #include "ores.trading.api/domain/trade_classification.hpp"
 #include "ores.trading.api/domain/trade_identity.hpp"
 #include "ores.trading.api/domain/trade_lifecycle.hpp"
 #include "ores.trading.api/domain/trade_parties.hpp"
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -47,6 +53,16 @@ struct trade final {
     trade_lifecycle lifecycle;
     trade_audit audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for trade, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const trade&) {
+    return "ores.trading.trade";
+}
 
 }
 

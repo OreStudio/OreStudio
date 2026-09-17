@@ -60,8 +60,8 @@ blueprint for the actual seeding work in later tasks of that story.
 
 * Design principle: integrate, don't invent a world
 
-Unlike [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] (a fully self-contained fictional universe), Acme
-Bank is *not* meant to be an isolated world. It must fit into the
+Acme Bank is *not* meant to be an isolated, self-contained
+world. It must fit into the
 system's existing real-world reference data — specifically the GLEIF
 LEI/counterparty universe already imported for tenants like Barclays
 Plc — so that "provision GLEIF counterparties, then provision Acme"
@@ -332,7 +332,6 @@ tasks under the parent story, not part of this analysis task.
 - [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — current RBAC model, referenced in the gaps above.
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the provisioning pattern to replicate for Acme Bank.
 - [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — the =prime_origin= refactor that business-unit/portfolio/book seeding is deferred behind.
-- [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] — contrast case: a self-contained fictional world, deliberately *not* the pattern Acme follows.
 - [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] — the backlog capture behind =external/facestudio=.
 - [[id:8C53F763-1DB4-4287-AB72-7471E1A7DE29][Add a sample set of gravatars for profiles]] — existing backlog capture covering the account-picture gap identified here; should probably be superseded/merged into the follow-up task.
 - [[id:4835C149-5A02-4454-93E4-3D3CAD96F1CF][acme_corporation]] — the actual source-data dataset implementing this analysis (parties/LEIs, business units, portfolios, books, staff accounts).

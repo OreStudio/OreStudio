@@ -47,8 +47,8 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     dataset_bundle sut;
     sut.version = 1;
     sut.id = boost::uuids::random_generator()();
-    sut.code = "slovaris";
-    sut.name = "Slovaris Bundle";
+    sut.code = "crypto";
+    sut.name = "Crypto Bundle";
     sut.description = "Synthetic reference data for development and testing";
     sut.modified_by = "admin";
     sut.change_reason_code = "system.new";
@@ -58,8 +58,8 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Dataset bundle: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.code == "slovaris");
-    CHECK(sut.name == "Slovaris Bundle");
+    CHECK(sut.code == "crypto");
+    CHECK(sut.name == "Crypto Bundle");
     CHECK(sut.description == "Synthetic reference data for development and testing");
     CHECK(sut.modified_by == "admin");
     CHECK(sut.change_reason_code == "system.new");

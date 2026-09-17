@@ -63,12 +63,9 @@ Corporation, the mail-order supplier of absurdly over-engineered
 products in Looney Tunes' /Road Runner/ cartoons, now a byword for
 any generic placeholder business. Reusing it here signals plainly, to
 anyone browsing the data, that Acme Corporation is a synthetic
-reference/demo entity, not a real institution — the same signal
-=slovaris=, ORE Studio's other synthetic dataset, sends for its own
-domain. But the resemblance stops there. =Slovaris= is a fully
-self-contained fictional universe, deliberately isolated from the
-system's real reference data. Acme Corporation takes the opposite
-approach: it is designed to integrate. Its four legal entities carry
+reference/demo entity, not a real institution. Acme Corporation is
+designed to integrate with the system's real reference data rather
+than to stand apart from it. Its four legal entities carry
 LEIs that are fake but well-formed — real, checksum-valid (ISO 17442
 / mod-97) 20-character codes built on GLEIF's reserved =9695=
 pre-LOU test prefix, which GLEIF explicitly sets aside for

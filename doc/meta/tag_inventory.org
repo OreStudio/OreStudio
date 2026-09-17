@@ -312,7 +312,7 @@ follow a naming pattern and are validated by pattern, not by lookup:
 - *Housekeeping suffix*: =<sprint_slug>_housekeeping= (e.g.
   =sprint_03_housekeeping=).
 
-The generator at =projects/ores.codegen/generate_doc.sh= derives these
+The generator behind =compass add= derives these
 automatically from =--parent-dir= and injects them into =#+filetags:=. A tag
 matching =^[a-z][a-z0-9_.-]*$= that is not in the structural tables above is
 assumed to be a slug or component-name tag and passes lint validation. Dots are

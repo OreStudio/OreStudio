@@ -56,7 +56,6 @@ projects/ores.sql/
     variability/              Feature flag defaults
     iso/                      ISO 3166/4217 data
     flags/                    Country flag icons
-    solvaris/                 Extended currency metadata
     fpml/                     Financial products reference data
     crypto/                   Cryptocurrency data
     lei/                      GLEIF LEI legal entities
@@ -197,7 +196,6 @@ Source          What                                Artefact Table
 Flag Icons      Country flag SVGs                   ores_dq_images_artefact_tbl
 ISO 3166        Countries                           ores_dq_countries_artefact_tbl
 ISO 4217        Currencies                          ores_dq_currencies_artefact_tbl
-Solvaris        Extended currency metadata           (merged into currencies artefact)
 FPML            Financial products reference data   ores_dq_*_artefact_tbl (many)
 Crypto          Cryptocurrency data                 (merged into currencies artefact)
 GLEIF LEI       Legal Entity Identifiers            ores_dq_lei_*_artefact_tbl

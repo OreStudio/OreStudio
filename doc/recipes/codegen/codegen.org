@@ -17,8 +17,8 @@ lives.
 
 * Scaffolding documents (via codegen)
 
-These recipes drive =generate_doc.sh= — the codegen-side wrapper
-that produces documents. They also appear in [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation
+These recipes drive =compass add= — the front end to the document
+generator. They also appear in [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation
 recipes]] under "Authoring documents".
 
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — generic flow for every doctype.

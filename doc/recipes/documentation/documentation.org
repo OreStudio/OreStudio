@@ -12,7 +12,7 @@
 Recipes for working with the documentation /as a graph/ — finding
 docs, following links, and writing new ones that satisfy the
 contract. Authoring recipes physically live under
-[[proj:doc/recipes/codegen][=recipes/codegen/=]] because they drive =generate_doc.sh=, but
+[[proj:doc/recipes/codegen][=recipes/codegen/=]] because they drive =compass add=, but
 appear here too since they're how you /create/ doc-graph entries.
 For the codegen scripts that generate /code/ (not docs) see the
 [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] topic.

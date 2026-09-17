@@ -15,8 +15,7 @@ procedures. For the conceptual overview of how runbooks fit with
 instructions, recipes, skills, functions, settings, and memory, see
 [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]].
 
-To create a new runbook: =compass add runbook= or
-=projects/ores.codegen/generate_doc.sh --type runbook=. List
+To create a new runbook: =compass add runbook=. List
 all runbooks with =compass list --type runbook=.
 
 * Catalogue

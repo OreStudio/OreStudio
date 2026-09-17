@@ -74,8 +74,8 @@ Modify [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/
 Manual verification by generating a document of the new type:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type investigation --slug sample_investigation \
+compass add investigation \
+  --slug sample_investigation \
   --parent-dir doc/investigations \
   --title "Sample Investigation" \
   --description "Testing the new investigation document type."

@@ -13,24 +13,43 @@
 #+blocked_since:
 #+created: 2026-09-18
 #+updated: 2026-09-18
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Delete the ores.codegen bash wrappers that no longer work, and repoint the documentation at the live entry points. Three *_schema.sh scripts call src/generator.py, which does not exist. The generate_doc.sh script is superseded by compass add. The four dataset wrappers that still work stay.
+Delete the ores.codegen bash wrappers, remove the slovaris dataset
+outright, and repoint the documentation at the live entry points.
+
+Nine wrappers are gone: three *_schema.sh scripts called
+src/generator.py, which does not exist; generate_doc.sh is superseded
+by compass add; and the six dataset wrappers
+(generate_crypto_refdata.sh, generate_dq_schema.sh,
+generate_flags_refdata.sh, generate_fpml_refdata.sh,
+generate_ip2country_refdata.sh, generate_solvaris_refdata.sh) all
+read projects/ores.codegen/models/, which no longer exists.
+
+Slovaris leaves the tree as well. It was an experiment that did not
+work: it was the only ores.codegen.dataset consumer, so the dataset
+populate pipeline had no other user, and its generated SQL was the
+sole reason several archetypes carried hardcoded slovaris strings.
+
+The populate archetypes now take every name from the dataset model
+itself ({{model_name}}, {{flags_dataset}}, ...), so the pipeline is
+reusable. Migrating crypto, flags, ip2country and FPML onto it is the
+follow-on story, not this task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; awaiting commit and PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Commit, open PR, close task.                  |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -38,21 +57,50 @@ Delete the ores.codegen bash wrappers that no longer work, and repoint the docum
 - No script under projects/ores.codegen/ calls src/generator.py.
 - No live doc tells the reader to run generate_doc.sh.
 - No live doc tells the reader to run a deleted schema script.
+- No file under projects/ores.seeder/datasets/slovaris/ or
+  projects/ores.sql/populate/solvaris/ remains.
+- No live file references slovaris or solvaris outside the
+  historical record under doc/agile/versions/.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Confirm each deleted wrapper is already broken or superseded. The
+   *_schema.sh scripts call a missing src/generator.py. The six dataset
+   wrappers read the deleted models/ tree. generate_doc.sh is
+   superseded by compass add.
+2. Delete the nine wrappers, the slovaris seeder dataset, and the
+   solvaris populate output.
+3. Repair the consumers: the catalogues master include, the DQ bundle
+   populate pair, and the codegen data-scope test.
+4. De-hardcode the nine ores.sql.populate archetypes so every dataset
+   name comes from the model. Re-tangle the mustache sources.
+5. Sweep generate_doc.sh out of every live doc, recipe, runbook and
+   component overview.
+6. Sweep slovaris out of the live tree: the two ores.dq models, the
+   hand-written publication header and test fixtures, the codegen
+   source comments, the seeder prose, the SQL modelling docs, and the
+   user-guide chapter.
+7. Verify by rendering a synthetic dataset end to end and checking the
+   output for hardcoded names.
 
 * Notes
 
-* Test Scenarios
+- The ores.dq generated artefacts (dataset_bundle.hpp,
+  dataset_bundle_member.hpp, the two dq create SQL files, and
+  ores_schema.puml) still carry the old slovaris doc comments. The
+  models are fixed; the generated copies are stale. Regenerating
+  ores.dq now is destructive: the current cpp_nats_handler template
+  (2026-09-04) no longer emits the unpaginated dataset_bundle_members
+  list operation, while the hand-written registrar.cpp:347 and
+  DataLibrarianWindow.cpp:844 still subscribe to and build that
+  request. Regeneration drops the request struct, the response struct
+  and the handler method, and the build breaks. ores.dq needs a
+  regeneration pass that also updates those two hand-written callers.
+- doc/agile/product_backlog/next/decommission_codegen_bash_scripts/
+  is superseded by this task. It is left in place: sprint_19/sprint.org
+  id-links its story, so deleting it would break that link.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=, run
-through the QA Validation Runner panel) that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -71,3 +119,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered across commits on feature/decommission-codegen-bash-scripts.
+
+- Nine wrappers deleted; slovaris dataset and solvaris populate output
+  deleted; catalogues include and DQ bundle populate pair repaired.
+- Nine ores.sql.populate archetypes de-hardcoded to {{model_name}};
+  verified by rendering a synthetic demo dataset to a scratch directory
+  — nine outputs, zero hardcoded names.
+- generate_doc.sh swept from fourteen live docs; the backlog index
+  generator now points at compass add capture.
+- slovaris swept from the live tree; codegen tests pass.

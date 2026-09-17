@@ -35,12 +35,6 @@ BEGIN
     -- --- Dataset Bundles ---
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'solvaris',
-        'Solvaris',
-        'Synthetic reference data for development and testing - an isolated fantasy world with its own countries, currencies, and reference data.'
-    );
-
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'base',
         'Base System',
         'Industry-standard reference data (ISO + FpML) for production use. Includes country codes, currency codes, and financial market standards.'

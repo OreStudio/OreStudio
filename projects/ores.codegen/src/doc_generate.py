@@ -394,7 +394,7 @@ def parse_args(argv=None):
                                   f"default of false if no --shape is given).")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
-                             "(e.g. slovaris). Drives the output path "
+                             "(e.g. acme_corporation). Drives the output path "
                              "(projects/ores.seeder/datasets/<name>/) and "
                              "the #+dataset_name: keyword.")
     parser.add_argument("--dataset-version", default="1.0",
@@ -487,7 +487,7 @@ def main(argv=None):
     if args.type == "dataset_overview":
         args.dataset = fill_required(
             "dataset", args.dataset,
-            prompt_label="Dataset name (e.g. slovaris)")
+            prompt_label="Dataset name (e.g. acme_corporation)")
         if not args.parent_dir:
             args.parent_dir = f"projects/ores.seeder/datasets/{args.dataset}"
         if not args.slug:

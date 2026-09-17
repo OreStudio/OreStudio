@@ -85,6 +85,7 @@ struct {{entity_singular}} final {
 {{/has_identity_group}}
 {{#columns}}
 {{^is_identity_group_column}}
+{{^sql_only}}
     /**
      * @brief {{{description}}}
 {{#detail}}
@@ -94,6 +95,7 @@ struct {{entity_singular}} final {
      */
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
+{{/sql_only}}
 {{/is_identity_group_column}}
 {{/columns}}
 {{#has_audit_group}}

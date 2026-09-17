@@ -20,7 +20,6 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_IR_CURVE_TICK_HPP
 #define ORES_MARKETDATA_API_DOMAIN_IR_CURVE_TICK_HPP
 
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -69,10 +68,20 @@ struct ir_curve_tick final {
     std::string qualifier;
 
     /**
+     * @brief Asset class this point belongs to, as a code from refdata.asset_class_code.
+     *
+     * Travels on the wire because the ingest side must write a market_series row for a
+     * series it has never seen, and an ORE series_type ("RATES") is not an asset class
+     * code ("interest_rates") — inferring one from the other is a naming coincidence,
+     * not a rule. The producer knows what it is publishing.
+     */
+    std::string asset_class;
+
+    /**
      * @brief Fine-grained subclass for this point's instrument role (yield for Deposit/Swap,
      * fra for FRA — see ores.refdata.curve_role).
      */
-    series_subclass subclass = series_subclass::yield;
+    std::string subclass = "yield";
 
     /**
      * @brief Tenor label identifying this point on the curve (references tenor.code, e.g. "3M",

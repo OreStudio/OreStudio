@@ -25,7 +25,6 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 #define ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 
-#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
@@ -101,16 +100,17 @@ struct feed_binding final {
     std::string source_name;
 
     /**
-     * @brief Coarse asset class taxonomy of the series being bound (FX, RATES, CREDIT, EQUITY,
-     * COMMODITY, INFLATION, BOND, CROSS_ASSET), so FX-only and IR-only consumers of the binding
-     * list (e.g. the FX Spot grid) can filter to the kind they actually expect. Set client-side at
-     * bind time from the config being bound; soft FK to refdata.asset_class_code (same taxonomy
-     * already used by market_series.asset_class), not a hard FK. Defaults to fx (all pre-existing
-     * bindings are FX today) so any write path that doesn't set it explicitly -- e.g. the generic
-     * Feed Bindings admin dialog, which has no field for it -- gets a safe value instead of an
-     * uninitialized one.
+     * @brief Asset class of the series being bound, as a code from refdata.asset_class_code
+     * (referenced asset_class_code.code), validated by ores_refdata_validate_asset_class_code_fn.
+     * Set client-side at bind time from the config being bound; consumers of the binding list
+     * filter on it.
+     *
+     * Carried as the code itself rather than a compiled enum: the taxonomy is runtime-managed, so
+     * no compiled list can be exhaustive over it, and the table is the single source of truth.
+     * There is no default -- an unset class must fail at the database boundary rather than silently
+     * claim to be FX.
      */
-    domain::asset_class asset_class = domain::asset_class::fx;
+    std::string asset_class;
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

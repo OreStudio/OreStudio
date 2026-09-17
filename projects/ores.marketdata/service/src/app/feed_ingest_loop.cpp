@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
@@ -38,7 +37,6 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
-#include <rfl/enums.hpp>
 #include <set>
 #include <stdexcept>
 #include <string_view>
@@ -99,8 +97,8 @@ feed_ingest_loop::~feed_ingest_loop() {
 void feed_ingest_loop::start() {
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '"
                               << unified_wildcard_subject << "'";
-    ir_sub_ = nats_.subscribe(unified_wildcard_subject,
-                              [this](ores::nats::message msg) { on_tick(msg); });
+    tick_sub_ = nats_.subscribe(unified_wildcard_subject,
+                                [this](ores::nats::message msg) { on_tick(msg); });
     refresh();
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
@@ -110,171 +108,155 @@ void feed_ingest_loop::refresh() {
     repository::feed_binding_repository repo;
     const auto bindings = repo.read_latest_all_tenants(ctx_);
 
-    std::lock_guard lock(mu_);
-
-    // Build the set of subscription keys that should be active: one per
-    // (source_name, tenant, party, workspace). The same source_name can
-    // appear in many bindings -- every party consumes the shared stream.
-    std::set<feed_ingest_loop::subscription_key> wanted;
+    std::map<std::string, std::vector<domain::feed_binding>> wanted;
     for (const auto& b : bindings) {
         if (!b.enabled)
             continue;
-        if (b.asset_class != domain::asset_class::fx) {
-            // ir_curve ticks are self-describing and need no binding; a
-            // non-FX binding would subscribe to the wrong payload type.
-            BOOST_LOG_SEV(lg(), warn)
-                << "Skipping non-FX feed binding for '" << b.source_name << "'";
-            continue;
+        wanted[b.source_name].push_back(b);
+    }
+
+    std::lock_guard lock(mu_);
+    bindings_by_source_ = std::move(wanted);
+    unbound_warned_.clear();
+
+    // Keep a stats entry per bound consumer, so a binding that never ticks is
+    // still visible in INGEST STATUS. Entries whose binding went away are
+    // dropped.
+    std::map<feed_ingest_loop::binding_key, std::shared_ptr<feed_stats>> kept;
+    for (const auto& [source_name, source_bindings] : bindings_by_source_) {
+        for (const auto& b : source_bindings) {
+            feed_ingest_loop::binding_key key{b.source_name,
+                                              b.tenant_id.to_string(),
+                                              boost::uuids::to_string(b.party_id),
+                                              boost::uuids::to_string(b.workspace_id)};
+            const auto it = fx_stats_.find(key);
+            auto& st = kept[key];
+            st = (it != fx_stats_.end()) ? it->second : std::make_shared<feed_stats>();
+            if (st->series_identity.empty()) {
+                st->series_identity = b.ore_key;
+                st->nats_subject = ores::marketdata::domain::synthetic_tick_subject(
+                    ores::marketdata::domain::fx_spot_kind_token, source_name);
+                st->publish_subject = ore_key_to_publish_subject(key.tenant_id,
+                                                                 key.workspace_id,
+                                                                 key.party_id,
+                                                                 b.ore_key);
+            }
         }
-        wanted.insert(feed_ingest_loop::subscription_key{b.source_name,
-                                                         b.tenant_id.to_string(),
-                                                         boost::uuids::to_string(b.party_id),
-                                                         boost::uuids::to_string(b.workspace_id)});
     }
+    fx_stats_ = std::move(kept);
 
-    // Unsubscribe anything no longer wanted
-    std::vector<feed_ingest_loop::subscription_key> to_remove;
-    for (const auto& [key, _] : subs_)
-        if (!wanted.contains(key))
-            to_remove.push_back(key);
-    for (const auto& k : to_remove)
-        unsubscribe_binding_locked(k);
-
-    // Subscribe anything new
-    for (const auto& b : bindings) {
-        if (!b.enabled || b.asset_class != domain::asset_class::fx)
-            continue;
-        const feed_ingest_loop::subscription_key key{b.source_name,
-                                                     b.tenant_id.to_string(),
-                                                     boost::uuids::to_string(b.party_id),
-                                                     boost::uuids::to_string(b.workspace_id)};
-        if (!subs_.contains(key))
-            subscribe_binding_locked(key, b.ore_key);
-    }
-
-    bound_sources_.clear();
-    for (const auto& k : wanted)
-        bound_sources_.insert(k.source_name);
-
-    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << subs_.size() << " active subscription(s)";
+    BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << bindings_by_source_.size()
+                              << " bound source(s)";
 }
 
-// Called only from refresh(), which holds mu_.
-void feed_ingest_loop::subscribe_binding_locked(const subscription_key& key,
-                                                const std::string& ore_key) {
-    const std::string producer_subject = ores::marketdata::domain::synthetic_tick_subject(
-        ores::marketdata::domain::fx_spot_kind_token, key.source_name);
-    const std::string source_name = key.source_name;
-    const std::string publish_subject =
-        ore_key_to_publish_subject(key.tenant_id, key.workspace_id, key.party_id, ore_key);
-    const std::string ore_key_copy = ore_key;
+void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::string& source_name) {
+    auto tick = ores::nats::default_wire_codec().decode<domain::fx_spot_tick>(msg.data);
+    if (!tick) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to decode fx_spot_tick: " << tick.error().what();
+        return;
+    }
 
-    BOOST_LOG_SEV(lg(), info) << "INGEST SUBSCRIBE: source='" << key.source_name << "' tenant='"
-                              << key.tenant_id << "' party='" << key.party_id << "' workspace='"
-                              << key.workspace_id << "' listening on '" << producer_subject
-                              << "' → republishing on '" << publish_subject << "'";
-
-    auto st = std::make_shared<feed_stats>();
-    st->series_identity = ore_key;
-    st->nats_subject = producer_subject;
-    st->publish_subject = publish_subject;
-    fx_stats_.emplace(key, st); // mu_ already held by caller (refresh)
-
-    const auto party_uuid = boost::lexical_cast<boost::uuids::uuid>(key.party_id);
-    const auto tenant_id = ores::utility::uuid::tenant_id::from_string(key.tenant_id).value();
-
-    // Plain subscribe (fan-out) rather than queue_subscribe: this service
-    // runs as a single instance. If horizontal scaling is ever needed,
-    // switch to queue_subscribe("ores.marketdata.service") to avoid
-    // duplicate observations and duplicate republish.
-    auto sub = nats_.subscribe(
-        producer_subject,
-        [this, ore_key_copy, publish_subject, source_name, st, party_uuid, tenant_id](
-            ores::nats::message msg) {
-            auto tick = ores::nats::default_wire_codec().decode<domain::fx_spot_tick>(msg.data);
-            if (!tick) {
+    std::vector<domain::feed_binding> bindings;
+    {
+        std::lock_guard lock(mu_);
+        const auto it = bindings_by_source_.find(source_name);
+        if (it == bindings_by_source_.end()) {
+            if (unbound_warned_.insert(source_name).second)
                 BOOST_LOG_SEV(lg(), warn)
-                    << "Failed to decode fx_spot_tick: " << tick.error().what();
-                return;
-            }
+                    << "Dropping tick for unbound source '" << source_name
+                    << "' - no enabled feed_binding";
+            return;
+        }
+        bindings = it->second;
+    }
 
-            const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
-            const auto prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
+    for (const auto& b : bindings) {
+        const feed_ingest_loop::binding_key key{b.source_name,
+                                                b.tenant_id.to_string(),
+                                                boost::uuids::to_string(b.party_id),
+                                                boost::uuids::to_string(b.workspace_id)};
+        const std::string publish_subject = ore_key_to_publish_subject(
+            key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
+
+        const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
+        std::uint64_t prev_count = 0;
+        {
+            std::lock_guard lock(mu_);
+            auto& st = fx_stats_[key];
+            if (!st) {
+                st = std::make_shared<feed_stats>();
+                st->series_identity = b.ore_key;
+                st->nats_subject = ores::marketdata::domain::synthetic_tick_subject(
+                    ores::marketdata::domain::fx_spot_kind_token, source_name);
+                st->publish_subject = publish_subject;
+            }
+            prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
             st->last_tick_rep.store(now_rep, std::memory_order_relaxed);
+        }
 
-            if (prev_count == 0) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "INGEST FIRST TICK: source='" << ore_key_copy << "' subject='"
-                    << publish_subject << "' mid=" << tick->mid;
-            }
+        if (prev_count == 0) {
+            BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << b.ore_key
+                                      << "' subject='" << publish_subject << "' mid=" << tick->mid;
+        }
 
-            // Persist the observation; the republish below is gated on this
-            // write, so the republished stream cannot diverge from the
-            // observations table.
-            bool persisted = false;
+        // Persist the observation; the republish below is gated on this
+        // write, so the republished stream cannot diverge from the
+        // observations table.
+        bool persisted = false;
+        try {
+            const auto kp = parse_ore_key(b.ore_key);
+            // Scalar FX spot series: no curve coordinate, and the subclass is
+            // spot by construction of the fx_spot producer kind.
+            persisted = persist_tick_observation(ctx_,
+                                                 b.tenant_id,
+                                                 b.party_id,
+                                                 kp.series_type,
+                                                 kp.metric,
+                                                 kp.qualifier,
+                                                 b.asset_class,
+                                                 "spot",
+                                                 true,
+                                                 tick->datetime,
+                                                 std::to_string(tick->mid),
+                                                 source_name,
+                                                 "SPOT");
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to persist observation for " << b.ore_key << ": " << e.what();
+        }
+
+        // Offer the tick to the CRM as a candidate driver update,
+        // tenant-wide -- every party in the tenant with a matching
+        // driver edge gets it, not just the party that owns this
+        // feed_binding; see crm_ingest_bridge's own class doc for why.
+        // A no-op if no party in this tenant has a CRM configured, or
+        // the pair isn't a driver edge of any of them. With per-party
+        // bindings of the same source the offer is made once per party;
+        // that is harmless -- the bridge update only sets the in-memory
+        // driver quote to the same value. Currency driver pairs are
+        // FX-shaped, so the bridge is an fx_spot concern only.
+        if (crm_bridge_) {
             try {
-                const auto kp = parse_ore_key(ore_key_copy);
-                // Scalar FX spot series: no curve coordinate.
-                persisted = persist_tick_observation(ctx_,
-                                                     tenant_id,
-                                                     party_uuid,
-                                                     kp.series_type,
-                                                     kp.metric,
-                                                     kp.qualifier,
-                                                     std::nullopt,
-                                                     true,
-                                                     tick->datetime,
-                                                     std::to_string(tick->mid),
-                                                     source_name,
-                                                     "SPOT");
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to persist observation for " << ore_key_copy << ": " << e.what();
-            }
-
-            // Offer the tick to the CRM as a candidate driver update,
-            // tenant-wide -- every party in the tenant with a matching
-            // driver edge gets it, not just the party that owns this
-            // feed_binding; see crm_ingest_bridge's own class doc for why.
-            // A no-op if no party in this tenant has a CRM configured, or
-            // the pair isn't a driver edge of any of them. With per-party
-            // subscriptions the offer is made once per party binding of the
-            // same source; that is harmless -- the bridge update only sets
-            // the in-memory driver quote to the same value. Currency driver
-            // pairs are FX-shaped, so the bridge is an fx_spot concern only.
-            if (crm_bridge_) {
-                try {
-                    const auto kp = parse_ore_key(ore_key_copy);
-                    if (kp.series_type == "FX" && kp.metric == "RATE") {
-                        const auto slash = kp.qualifier.find('/');
-                        if (slash != std::string::npos) {
-                            crm_bridge_->update(tenant_id.to_string(),
-                                                kp.qualifier.substr(0, slash),
-                                                kp.qualifier.substr(slash + 1),
-                                                tick->mid,
-                                                tick->datetime);
-                        }
+                const auto kp = parse_ore_key(b.ore_key);
+                if (kp.series_type == "FX" && kp.metric == "RATE") {
+                    const auto slash = kp.qualifier.find('/');
+                    if (slash != std::string::npos) {
+                        crm_bridge_->update(b.tenant_id.to_string(),
+                                            kp.qualifier.substr(0, slash),
+                                            kp.qualifier.substr(slash + 1),
+                                            tick->mid,
+                                            tick->datetime);
                     }
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "CRM update failed for " << ore_key_copy << ": " << e.what();
                 }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "CRM update failed for " << b.ore_key << ": " << e.what();
             }
+        }
 
-            if (persisted)
-                nats_.js_publish(publish_subject, msg.data);
-        });
-
-    subs_.emplace(key, std::move(sub));
-}
-
-// Called only from refresh(), which holds mu_.
-void feed_ingest_loop::unsubscribe_binding_locked(const subscription_key& key) {
-    BOOST_LOG_SEV(lg(), info) << "INGEST UNSUBSCRIBE: source='" << key.source_name << "' tenant='"
-                              << key.tenant_id << "' party='" << key.party_id << "' workspace='"
-                              << key.workspace_id << "'";
-    subs_.erase(key);
-    fx_stats_.erase(key); // mu_ already held by caller (refresh)
+        if (persisted)
+            nats_.js_publish(publish_subject, msg.data);
+    }
 }
 
 void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
@@ -291,15 +273,9 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
 
     if (kind == ores::marketdata::domain::ir_curve_kind_token)
         ingest_ir_curve(msg);
-    else if (kind == ores::marketdata::domain::fx_spot_kind_token) {
-        // The per-party binding subscriptions ingest fx_spot ticks; the
-        // wildcard only sees the unbound ones.
-        const std::string source(source_name);
-        std::lock_guard lock(mu_);
-        if (!bound_sources_.contains(source) && unbound_warned_.insert(source).second)
-            BOOST_LOG_SEV(lg(), warn)
-                << "Dropping tick for unbound source '" << source << "' — no enabled feed_binding";
-    } else
+    else if (kind == ores::marketdata::domain::fx_spot_kind_token)
+        ingest_bound_tick(msg, std::string(source_name));
+    else
         BOOST_LOG_SEV(lg(), warn) << "Unknown tick kind '" << kind << "' on subject '"
                                   << msg.subject << "'";
 }
@@ -351,6 +327,7 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
                                                     tick->series_type,
                                                     tick->metric,
                                                     tick->qualifier,
+                                                    tick->asset_class,
                                                     tick->subclass,
                                                     is_scalar,
                                                     tick->datetime,
@@ -368,7 +345,8 @@ bool feed_ingest_loop::persist_tick_observation(
     const std::string& series_type,
     const std::string& metric,
     const std::string& qualifier,
-    std::optional<domain::series_subclass> series_subclass,
+    const std::string& asset_class,
+    const std::string& series_subclass,
     bool is_scalar,
     std::chrono::system_clock::time_point datetime,
     const std::string& value,
@@ -387,13 +365,6 @@ bool feed_ingest_loop::persist_tick_observation(
         if (existing.empty()) {
             BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << ore_key;
 
-            // One derivation for every kind: the lowercased series_type is the
-            // asset-class enum name (FX → fx, RATES → rates).
-            std::string ac_str = series_type;
-            std::transform(ac_str.begin(), ac_str.end(), ac_str.begin(), [](unsigned char c) {
-                return static_cast<char>(std::tolower(c));
-            });
-
             domain::market_series series;
             series.id = uuid_gen();
             series.tenant_id = tenant_ctx.tenant_id();
@@ -401,11 +372,8 @@ bool feed_ingest_loop::persist_tick_observation(
             series.series_type = series_type;
             series.metric = metric;
             series.qualifier = qualifier;
-            series.asset_class =
-                rfl::string_to_enum<domain::asset_class>(ac_str).value_or(domain::asset_class::fx);
-            series.series_subclass = series_subclass.value_or(
-                rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(
-                    domain::series_subclass::spot));
+            series.asset_class = asset_class;
+            series.series_subclass = series_subclass;
             series.is_scalar = is_scalar;
             series.modified_by = ctx.service_account();
             series.performed_by = ctx.service_account();

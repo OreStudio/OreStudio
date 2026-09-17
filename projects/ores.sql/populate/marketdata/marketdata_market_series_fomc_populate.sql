@@ -65,7 +65,7 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'RATES', 'YIELD', 'USD/SOFR-FOMC',
-        'rates', 'yield', false,
+        'interest_rates', 'yield', false,
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Raw FOMC-dated OIS grid: the synthetic feed''s tick target for the FOMC segment'
@@ -76,7 +76,7 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'YieldCurve', 'DISCOUNT', 'USD/SOFR-FOMC',
-        'rates', 'yield', false,
+        'interest_rates', 'yield', false,
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Bootstrapped USD SOFR curve (FOMC segment): republish output, stamped IR_CURVE_BOOTSTRAP on first republish'

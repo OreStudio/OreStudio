@@ -203,6 +203,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:write',  'Create and modify asset class codes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::asset_class_codes:delete', 'Delete asset class codes');
 
+    -- Series subclass code permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::series_subclass_codes:read',   'View series subclass codes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::series_subclass_codes:write',  'Create and modify series subclass codes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::series_subclass_codes:delete', 'Delete series subclass codes');
+
     -- Instrument code permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::instrument_codes:read',   'View instrument codes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::instrument_codes:write',  'Create and modify instrument codes');

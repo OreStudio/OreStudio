@@ -22,7 +22,7 @@
  * Badge Definitions Artefact Population Script
  *
  * Populates the dq_badge_definitions_artefact_tbl staging table. Mirrors the
- * same 57 definitions seeded directly into ores_dq_badge_definitions_tbl
+ * same 56 definitions seeded directly into ores_dq_badge_definitions_tbl
  * (for the system tenant itself) by dq_badge_system_populate.sql -- kept in
  * sync by hand (extracted programmatically from that file when first
  * written); this script is what makes those rows publishable to other
@@ -102,13 +102,12 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tier_frontier', 0, 'Frontier', 'Currency from a frontier market with limited convertibility.', '#eab308', '#ffffff', 'warning', 'badge bg-warning', 48),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tier_historical', 0, 'Historical', 'Currency no longer in active use.', '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 49),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_fx', 0, 'FX', 'Foreign exchange asset class.', '#3b82f6', '#ffffff', 'info', 'badge bg-info', 50),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_rates', 0, 'Rates', 'Interest rates asset class.', '#14b8a6', '#ffffff', 'info', 'badge bg-info', 51),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_interest_rates', 0, 'Interest Rate', 'Interest rates asset class.', '#14b8a6', '#ffffff', 'info', 'badge bg-info', 51),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_credit', 0, 'Credit', 'Credit asset class.', '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 52),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_equity', 0, 'Equity', 'Equity asset class.', '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 53),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_commodity', 0, 'Commodity AC', 'Commodity asset class.', '#f97316', '#ffffff', 'warning', 'badge bg-warning', 54),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_inflation', 0, 'Inflation', 'Inflation asset class.', '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 55),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_bond', 0, 'Bond', 'Bond asset class.', '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class_cross_asset', 0, 'Cross Asset', 'Cross-asset asset class.', '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type_funding', 0, 'Funding', 'Book used for funding purposes.', '#3b82f6', '#ffffff', 'info', 'badge bg-info', 65),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type_remittance_target', 0, 'Remittance Target', 'Book that receives remitted balances.', '#14b8a6', '#ffffff', 'info', 'badge bg-info', 66),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type_reserve', 0, 'Reserve', 'Book holding reserve balances.', '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 67),

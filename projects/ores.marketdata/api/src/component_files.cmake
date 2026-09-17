@@ -44,7 +44,6 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/asset_class.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding_table.hpp"
@@ -74,7 +73,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/observation_lineage_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/oresmd_enums.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/oresmd_uri.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/series_subclass.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/tick_subjects.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/eventing/market_fixing_changed_event.hpp"

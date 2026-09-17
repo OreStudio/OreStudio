@@ -25,8 +25,6 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 #define ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -97,15 +95,26 @@ struct market_series final {
     std::string qualifier;
 
     /**
-     * @brief Coarse asset class taxonomy: FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
-     * CROSS_ASSET.
+     * @brief Asset class this series belongs to, as a code from refdata.asset_class_code
+     * (referenced asset_class_code.code; column named asset_class, not asset_class_code, for the
+     * same C++ name lookup reason as instrument_code.asset_class). Validated by
+     * ores_refdata_validate_asset_class_code_fn, the codebase's cross-table reference mechanism.
+     *
+     * Carried as the code itself rather than a compiled enum: the taxonomy is runtime-managed, so
+     * no compiled list can be exhaustive over it, and the table is the single source of truth.
+     * There is no default -- an unset class must fail at the database boundary rather than silently
+     * claim to be FX, which is the defect this column previously had.
      */
-    domain::asset_class asset_class = domain::asset_class::fx;
+    std::string asset_class;
 
     /**
-     * @brief Subclass within the asset class (e.g. SPOT, VOLATILITY, YIELD, SPREAD).
+     * @brief Subclass within the asset class, as a code from refdata.series_subclass_code
+     * (referenced series_subclass_code.code). Validated by
+     * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism as
+     * asset_class above, and carried as the code itself for the same reason: the taxonomy is
+     * runtime-managed.
      */
-    domain::series_subclass series_subclass = domain::series_subclass::spot;
+    std::string series_subclass;
 
     /**
      * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),

@@ -143,8 +143,10 @@
 \ir ../refdata/refdata_curve_roles_populate.sql
 \ir ../refdata/refdata_instrument_codes_populate.sql
 
--- Derivation kinds: before marketdata's market_series (FK via validation function).
+-- Derivation kinds and series subclass codes: before marketdata's
+-- market_series (FK via validation function).
 \ir ../refdata/refdata_derivation_kinds_populate.sql
+\ir ../refdata/refdata_series_subclass_codes_populate.sql
 
 \ir ../refdata/refdata_business_unit_types_populate.sql
 \ir ../refdata/refdata_system_business_centre_populate.sql

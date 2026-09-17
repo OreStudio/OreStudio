@@ -54,6 +54,17 @@ inline constexpr std::string_view fx_spot_kind_token = "fx_spot";
 inline constexpr std::string_view ir_curve_kind_token = "ir_curve";
 
 /**
+ * @brief The asset class a producer of this kind declares, as a code from
+ * refdata.asset_class_code.
+ *
+ * The pairing is a property of the producer kind, not of a series: every
+ * ir_curve feed publishes interest-rate curves, whatever its source_name or
+ * its config. fx_spot has no counterpart here because an fx_spot tick's
+ * identity, asset class included, comes from its feed_binding row.
+ */
+inline constexpr std::string_view ir_curve_asset_class = "interest_rates";
+
+/**
  * @brief Build the producer subject for a source_name: synthetic.v1.tick.<kind>.<source_name>.
  */
 inline std::string synthetic_tick_subject(std::string_view kind, std::string_view source_name) {

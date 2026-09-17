@@ -412,14 +412,14 @@ BEGIN
     -- Asset class: a purely descriptive classification, not a status --
     -- deliberately NOT green/amber/red (RAG is reserved for genuine
     -- health/outcome/caution semantics; see ux_language.org rule 3), same
-    -- reasoning as currency_pair_classification above. Eight dedicated,
-    -- clearly separated hues so all eight remain visually distinguishable
+    -- reasoning as currency_pair_classification above. Seven dedicated,
+    -- clearly separated hues so all seven remain visually distinguishable
     -- side by side in an instrument_code list.
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class_fx', 'FX', 'Foreign exchange asset class.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 50);
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'asset_class_rates', 'Rates', 'Interest rates asset class.',
+        'asset_class_interest_rates', 'Interest Rate', 'Interest rates asset class.',
         '#14b8a6', '#ffffff', 'info', 'badge bg-info', 51);
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class_credit', 'Credit', 'Credit asset class.',
@@ -436,9 +436,6 @@ BEGIN
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class_bond', 'Bond', 'Bond asset class.',
         '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56);
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'asset_class_cross_asset', 'Cross Asset', 'Cross-asset asset class.',
-        '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57);
 
     -- Book purpose type, business unit type, contact type, ledger feed
     -- type, leg type, purpose type, rounding type, tenor anchor: all
@@ -652,7 +649,7 @@ BEGIN
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'Asset Class',
-        'Top-level product classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset), shown on instrument_code and asset_class_code.', 30);
+        'Top-level product classification codes (fx, interest_rates, credit, equity, commodity, inflation, bond), shown on instrument_code and asset_class_code.', 30);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_purpose_type', 'Book Purpose Type',
@@ -981,7 +978,7 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'fx', 'asset_class_fx');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'asset_class', 'rates', 'asset_class_rates');
+        'asset_class', 'interest_rates', 'asset_class_interest_rates');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'credit', 'asset_class_credit');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -992,8 +989,6 @@ BEGIN
         'asset_class', 'inflation', 'asset_class_inflation');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'bond', 'asset_class_bond');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'asset_class', 'cross_asset', 'asset_class_cross_asset');
 
     -- calendar_type: shown on calendar's Type column.
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

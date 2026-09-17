@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
@@ -40,37 +40,41 @@
 #include <string_view>
 #include <thread>
 #include <tuple>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
 /**
- * @brief The single ingest loop: per-party subscriptions for bound FX feeds, one
- * wildcard subscription for self-describing IR curves.
+ * @brief The single ingest loop: one wildcard subscription over the unified tick
+ * subject scheme, dispatching on the subject's kind token only.
  *
- * FX: on refresh() every enabled feed_binding with asset_class = fx gets its own
- * subscription on "synthetic.v1.tick.fx_spot.<source_name>" (the kind-token
- * scheme of ores.marketdata.api/domain/tick_subjects.hpp), keyed by the full
- * (source_name, tenant, party, workspace) identity of the binding. One producer
- * channel fans out to every party that consumes it (JetStream delivers a copy
- * per subscription), and each party materializes its own observations and
- * republish stream from the shared tick. Each arriving fx_spot_tick is:
- *   1. Persisted as a market_observation under the subscription's party.
- *   2. Re-published verbatim on the per-party subject
+ * Every tick arrives on "synthetic.v1.tick.<kind>.<source_name>" (see
+ * ores.marketdata.api/domain/tick_subjects.hpp), so the kind is a property of the
+ * subject and not of the payload. Nothing here branches on asset class: the loop
+ * ingests whatever the producer published, and the asset class is data it reads
+ * or is handed.
+ *
+ * fx_spot: the tick carries no series identity, so a feed_binding supplies it.
+ * refresh() rebuilds a cache of enabled bindings keyed by source_name -- one
+ * producer channel fans out to every (tenant, party, workspace) that consumes
+ * it, and each consumer materializes its own observations and republish stream
+ * from the shared tick. For every cached binding of the tick's source:
+ *   1. The tick is persisted as a market_observation under that binding's party.
+ *   2. It is re-published verbatim on the per-party subject
  *      "marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key_subject>",
  *      which is the stream fx_spot_subscription and the chart consume.
+ * A tick whose source has no enabled binding is dropped with a one-time warn.
  *
- * IR: ir_curve_tick is fully self-describing (tenant, party, series identity and
- * point_id all travel on the wire); no binding is involved. A wildcard
- * subscription (synthetic.v1.tick.>) feeds the ir_curve branch, which persists
- * one observation per point_id and republishes per party like FX. fx_spot ticks
- * also arrive on the wildcard but are ignored there; unbound fx_spot sources
- * get a one-time warn.
+ * ir_curve: ir_curve_tick is fully self-describing (tenant, party, series
+ * identity and point_id all travel on the wire); no binding is involved. One
+ * observation is persisted per point_id and republished per party like FX.
  *
  * Republish is gated on a successful persist, so the republished stream cannot
  * diverge from the observations table.
  *
- * refresh() re-reads the bindings table and rebuilds the subscription set. It is
- * called by the feed_binding NATS notify trigger handler on every change.
+ * refresh() re-reads the bindings table and swaps the cache in. It is called by
+ * the feed_binding NATS notify trigger handler on every change, and once at
+ * start().
  */
 class ORES_MARKETDATA_SERVICE_EXPORT feed_ingest_loop {
 private:
@@ -96,12 +100,16 @@ public:
 private:
     void on_tick(const ores::nats::message& msg);
     void ingest_ir_curve(const ores::nats::message& msg);
+    /// Persists and republishes one fx_spot tick for every enabled binding of
+    /// its source. Holds mu_ for the cache lookup only.
+    void ingest_bound_tick(ores::nats::message msg, const std::string& source_name);
     /// Shared persistence for both tick kinds: resolve the market_series by its
     /// series identity, auto-creating it when missing, then write the
     /// observation row. Returns true when the observation was persisted, so
     /// callers can gate side effects (republish) on a durable write.
-    /// asset_class is derived from the lowercased series_type; series_subclass
-    /// falls back to that same derivation when no wire value exists.
+    /// asset_class and series_subclass are supplied by the caller -- the binding
+    /// for a bound tick, the wire payload for a self-describing one. Nothing is
+    /// inferred from the series_type.
     bool persist_tick_observation(
         const ores::database::context& ctx,
         ores::utility::uuid::tenant_id tenant_id,
@@ -109,32 +117,28 @@ private:
         const std::string& series_type,
         const std::string& metric,
         const std::string& qualifier,
-        std::optional<ores::marketdata::domain::series_subclass> series_subclass,
+        const std::string& asset_class,
+        const std::string& series_subclass,
         bool is_scalar,
         std::chrono::system_clock::time_point datetime,
         const std::string& value,
         const std::string& source,
         const std::string& point_id);
 
-    // Identity of one FX ingest subscription: one per (source_name, tenant,
-    // party, workspace). A single producer channel feeds many parties; each
-    // gets its own subscription so it materializes its own observations and
-    // republish stream from the shared tick.
-    struct subscription_key {
+    // Identity of one bound consumer: one per (source_name, tenant, party,
+    // workspace). A single producer channel feeds many parties; each gets its
+    // own observations and republish stream from the shared tick.
+    struct binding_key {
         std::string source_name;
         std::string tenant_id;
         std::string party_id;
         std::string workspace_id;
 
-        bool operator<(const subscription_key& other) const {
+        bool operator<(const binding_key& other) const {
             return std::tie(source_name, tenant_id, party_id, workspace_id) <
                    std::tie(other.source_name, other.tenant_id, other.party_id, other.workspace_id);
         }
     };
-
-    // Both called only from refresh(), which holds mu_.
-    void subscribe_binding_locked(const subscription_key& key, const std::string& ore_key);
-    void unsubscribe_binding_locked(const subscription_key& key);
 
     void status_loop();
     void log_status() const;
@@ -152,17 +156,15 @@ private:
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     mutable std::mutex mu_;
-    /// Wildcard subscription feeding the ir_curve branch; fx_spot ticks it also
-    /// receives are ignored by on_tick.
-    std::optional<ores::nats::service::subscription> ir_sub_;
-    std::map<subscription_key, ores::nats::service::subscription> subs_;
-    std::map<subscription_key, std::shared_ptr<feed_stats>> fx_stats_;
+    /// The only subscription this loop makes; every kind arrives through it.
+    std::optional<ores::nats::service::subscription> tick_sub_;
+    /// Enabled bindings by source_name, rebuilt by refresh(). A source with no
+    /// entry is not consumed by anyone.
+    std::map<std::string, std::vector<ores::marketdata::domain::feed_binding>> bindings_by_source_;
+    std::map<binding_key, std::shared_ptr<feed_stats>> fx_stats_;
     /// Per-(kind token, source_name) stats for IR: the source comes from the
     /// wire, not from any binding.
     std::map<std::pair<std::string, std::string>, std::shared_ptr<feed_stats>> ir_stats_;
-    /// Source names with at least one enabled FX binding; used to warn about
-    /// fx_spot ticks on the wildcard for unbound sources.
-    std::set<std::string> bound_sources_;
     std::set<std::string> unbound_warned_;
 
     static constexpr std::chrono::minutes status_interval_{1};

@@ -95,55 +95,52 @@ Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 
 ** asset_class
 :PROPERTIES:
-:type:          text
-:cpp_type:      domain::asset_class
-:is_enum:       true
-:nullable:      false
-:default_value: fx
+:type:     text
+:cpp_type: std::string
+:nullable: false
 :END:
 
-Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
-=INFLATION=, =BOND=, =CROSS_ASSET=.
+Asset class this series belongs to, as a code from
+=refdata.asset_class_code= (referenced =asset_class_code.code=; column
+named =asset_class=, not =asset_class_code=, for the same C++ name
+lookup reason as =instrument_code.asset_class=). Validated by
+=ores_refdata_validate_asset_class_code_fn=, the codebase's
+cross-table reference mechanism.
+
+Carried as the code itself rather than a compiled enum: the taxonomy is
+runtime-managed, so no compiled list can be exhaustive over it, and the
+table is the single source of truth. There is no default -- an unset
+class must fail at the database boundary rather than silently claim to
+be FX, which is the defect this column previously had.
 
 #+begin_src cpp :name generator
-// Cycled deterministically (not left uninitialized) -- an unset enum here
-// previously fed rfl::enum_to_string() a garbage value, flagged by the
-// nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
-// task_fix_market_series_generator_uninitialized_enums).
 [idx]{
-    static constexpr domain::asset_class classes[] = {
-        domain::asset_class::fx,        domain::asset_class::rates,
-        domain::asset_class::credit,    domain::asset_class::equity,
-        domain::asset_class::commodity, domain::asset_class::inflation,
-        domain::asset_class::bond,      domain::asset_class::cross_asset};
-    return classes[static_cast<std::size_t>(idx) % std::size(classes)];
+    static constexpr std::string_view classes[] = {
+        "fx", "interest_rates", "credit", "equity", "commodity", "inflation", "bond"};
+    return std::string(classes[static_cast<std::size_t>(idx) % std::size(classes)]);
 }()
 #+end_src
 
 ** series_subclass
 :PROPERTIES:
-:type:          text
-:cpp_type:      domain::series_subclass
-:is_enum:       true
-:nullable:      false
-:default_value: spot
+:type:     text
+:cpp_type: std::string
+:nullable: false
 :END:
 
-Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).
+Subclass within the asset class, as a code from
+=refdata.series_subclass_code= (referenced =series_subclass_code.code=).
+Validated by =ores_refdata_validate_series_subclass_code_fn=, the same
+cross-table reference mechanism as =asset_class= above, and carried as
+the code itself for the same reason: the taxonomy is runtime-managed.
 
 #+begin_src cpp :name generator
-// Cycled deterministically -- see the asset_class generator above for why.
 [idx]{
-    static constexpr domain::series_subclass subclasses[] = {
-        domain::series_subclass::spot,         domain::series_subclass::forward,
-        domain::series_subclass::volatility,   domain::series_subclass::yield,
-        domain::series_subclass::basis,        domain::series_subclass::fra,
-        domain::series_subclass::xccy,         domain::series_subclass::spread,
-        domain::series_subclass::index_credit, domain::series_subclass::recovery,
-        domain::series_subclass::swap,         domain::series_subclass::capfloor,
-        domain::series_subclass::seasonality,  domain::series_subclass::price,
-        domain::series_subclass::correlation};
-    return subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)];
+    static constexpr std::string_view subclasses[] = {
+        "spot",    "forward", "volatility", "yield",       "basis",
+        "fra",     "xccy",    "spread",     "index_credit", "recovery",
+        "swap",    "capfloor", "seasonality", "price",     "correlation"};
+    return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
 }()
 #+end_src
 
@@ -234,10 +231,11 @@ The derivation config's version this series was produced under -- =0=
 * Insert trigger
 ** Validations
 
-| column          | validation_function                        |
-|-----------------+---------------------------------------------|
-| asset_class     | ores_refdata_validate_asset_class_code_fn  |
-| derivation_kind | ores_refdata_validate_derivation_kind_fn   |
+| column          | validation_function                           |
+|-----------------+------------------------------------------------|
+| asset_class     | ores_refdata_validate_asset_class_code_fn     |
+| series_subclass | ores_refdata_validate_series_subclass_code_fn |
+| derivation_kind | ores_refdata_validate_derivation_kind_fn      |
 
 * C++
 
@@ -311,8 +309,6 @@ market_series_repository::read_latest_by_type(context ctx, const std::string& se
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <chrono>

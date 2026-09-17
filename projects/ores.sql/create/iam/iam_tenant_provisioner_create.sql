@@ -443,6 +443,22 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % asset class codes', v_copied_count;
 
+    -- Series subclass codes (e.g. spot, yield, fra)
+    insert into ores_refdata_series_subclass_codes_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_series_subclass_codes_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % series subclass codes', v_copied_count;
+
     -- Instrument codes (e.g. DEPO, FRA, IRS)
     insert into ores_refdata_instrument_codes_tbl (
         code, tenant_id, version, name, description, asset_class, ore_trade_type, curve_role, display_order,

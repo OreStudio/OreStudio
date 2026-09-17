@@ -22,7 +22,7 @@
  * Badge Mappings Artefact Population Script
  *
  * Populates the dq_badge_mappings_artefact_tbl staging table. Mirrors the
- * same 109 mappings seeded directly into ores_dq_badge_mappings_tbl (for
+ * same 108 mappings seeded directly into ores_dq_badge_mappings_tbl (for
  * the system tenant itself) by dq_badge_system_populate.sql -- kept in sync
  * by hand (extracted programmatically from that file when first written);
  * this script is what makes those rows publishable to other tenants.
@@ -155,13 +155,12 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'crm_enabled', 'true', 'active', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'crm_enabled', 'false', 'inactive', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'fx', 'asset_class_fx', 0),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'rates', 'asset_class_rates', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'interest_rates', 'asset_class_interest_rates', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'credit', 'asset_class_credit', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'equity', 'asset_class_equity', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'commodity', 'asset_class_commodity', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'inflation', 'asset_class_inflation', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'bond', 'asset_class_bond', 0),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 'cross_asset', 'asset_class_cross_asset', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type', 'Funding', 'book_purpose_type_funding', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type', 'RemittanceTarget', 'book_purpose_type_remittance_target', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type', 'Reserve', 'book_purpose_type_reserve', 0),

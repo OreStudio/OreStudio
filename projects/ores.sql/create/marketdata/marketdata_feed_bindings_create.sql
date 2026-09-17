@@ -108,6 +108,9 @@ begin
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
+    -- Validate asset_class
+    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

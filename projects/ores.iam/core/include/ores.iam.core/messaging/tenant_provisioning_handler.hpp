@@ -1001,7 +1001,7 @@ private:
             binding.id = uuid_gen();
             binding.ore_key = ore_key;
             binding.source_name = source_name;
-            binding.asset_class = marketdata::domain::asset_class::fx;
+            binding.asset_class = "fx";
             binding.enabled = true;
             binding.party_id = sg(party_id_str);
             binding.change_reason_code = "system.new_record";

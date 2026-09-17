@@ -103,11 +103,32 @@
                 (while (re-search-forward "\\(^#\\+options:.*\\)\\btoc:t\\b" nil t)
                   (replace-match "\\1toc:nil"))))))
 
+;; org-publish only writes: it never removes output whose source was renamed
+;; or deleted.  Prune after a successful publish, never before, so a failed
+;; publish cannot empty the deployed tree.
+(defun ores/prune-stale-skills ()
+  "Delete deployed skill output whose org source is gone."
+  (let ((deployed "./.claude/skills/")
+        (sources "./doc/llm/skills/"))
+    (dolist (entry (directory-files deployed t "\\`[^.]"))
+      (let* ((name (file-name-nondirectory entry))
+             (source (expand-file-name
+                      (if (file-directory-p entry)
+                          (concat name "/SKILL.org")
+                        (concat (file-name-sans-extension name) ".org"))
+                      sources)))
+        (unless (file-exists-p source)
+          (if (file-directory-p entry)
+              (delete-directory entry t)
+            (delete-file entry))
+          (message "Pruned stale skill output: %s" name))))))
+
 ;; Generate the site output
 ;; Wrap publishing in error handler to avoid backtraces
 (condition-case err
     (progn
       (org-publish-all t)
+      (ores/prune-stale-skills)
       (message "Build complete!"))
   (error
    (message "Build failed: %s" (error-message-string err))))

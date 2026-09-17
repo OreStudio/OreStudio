@@ -2,7 +2,7 @@
 :ID: 689F92F1-39F4-4956-B6CC-F105A3C1B2E9
 :END:
 #+title: Story: Fix the has_parent_id feature namespace so profile bindings take effect
-#+description: A profile assignment for has_parent_id lands in the entity's sql namespace, but every generator reader looks at the entity root. A profile-bound has_parent_id is therefore silently inert. Fix the routing, retire the explicit workaround lines, and rebind the one entity whose profile does not describe it.
+#+description: A profile assignment for has_parent_id lands in the entity's sql namespace, but every generator reader looks at the entity root. A profile-bound has_parent_id is therefore silently inert. Fix the routing, retire the explicit workaround lines, and rebind the eleven flat entities the defect had masked.
 #+type: story
 #+level: s2
 #+filetags: :sprint_25:v0:
@@ -38,12 +38,12 @@ meeting its contract.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-17                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-17                             |
 
 * Acceptance
 
@@ -65,7 +65,7 @@ meeting its contract.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E2929BA0-00ED-4AD6-BB20-AC9CB518B3FB][Route has_parent_id to the entity root and rebind the entities the defect masked]] | STARTED | 2026-09-17 | | Move has_parent_id out of the sql namespace so a profile assignment reaches the readers, remove the four explicit workaround lines, and rebind the eleven flat entities that bound the hierarchy profile while the defect hid their missing parent columns. |
+| [[id:E2929BA0-00ED-4AD6-BB20-AC9CB518B3FB][Route has_parent_id to the entity root and rebind the entities the defect masked]] | DONE | 2026-09-17 | 2026-09-17 | Move has_parent_id out of the sql namespace so a profile assignment reaches the readers, remove the four explicit workaround lines, and rebind the eleven flat entities that bound the hierarchy profile while the defect hid their missing parent columns. |
 
 * Decisions
 
@@ -85,11 +85,11 @@ meeting its contract.
   =uuid-surrogate-lookup= has no physical-space table at all, so that
   binding would have deleted them. On feature assignments the two
   profiles are interchangeable here, because =uuid-surrogate-lookup='s
-  two extra rows pin flags that already default to false. The fit is
-  imperfect on one axis and worth recording: the reference entity of
-  =uuid-identified-lookup= has a natural key, and none of the eleven
-  does. No profile describes a flat, relationship-free, UUID-keyed
-  entity, so one of the two had to stretch.
+  two extra rows pin flags that already default to false. The fit holds
+  on the descriptive axis too. The reference entity is UUID-keyed,
+  tenant-scoped, parentless and natural-keyed, and ten of the eleven
+  declare a natural key of their own. Only =calendar_rule= has none, so
+  it alone stretches the profile.
 - 2026-09-17 (task E2929BA0): keep =parent_id_column= and
   =hierarchy_name_field= in the root =* Flags= drawer. They are
   structural, so no profile can carry them, and the readers already

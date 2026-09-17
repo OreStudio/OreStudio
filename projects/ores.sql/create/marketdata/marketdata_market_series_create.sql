@@ -52,7 +52,6 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "qualifier" text not null,
     "asset_class" text not null,
     "series_subclass" text not null,
-    "is_scalar" boolean not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
     "derivation_config_version" integer not null default 0,

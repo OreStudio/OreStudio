@@ -89,8 +89,8 @@ struct market_series final {
     std::string metric;
 
     /**
-     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR,
-     * EUR-EURIBOR-3M, or an empty string for scalars).
+     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR, EUR-CHF,
+     * EUR-EURIBOR-3M).
      */
     std::string qualifier;
 
@@ -115,12 +115,6 @@ struct market_series final {
      * runtime-managed.
      */
     std::string series_subclass;
-
-    /**
-     * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),
-     * false when it is curve/surface/matrix data.
-     */
-    bool is_scalar = false;
 
     /**
      * @brief References derivation_kind.code -- whether this series is directly observed (the

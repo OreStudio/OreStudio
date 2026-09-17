@@ -53,7 +53,6 @@ public:
         Qualifier,
         AssetClass,
         Subclass,
-        IsScalar,
         Version,
         ModifiedBy,
         RecordedAt,

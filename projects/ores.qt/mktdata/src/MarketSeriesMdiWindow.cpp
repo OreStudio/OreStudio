@@ -185,15 +185,15 @@ void MarketSeriesMdiWindow::updateActionStates() {
         tableView_->selectionModel() && tableView_->selectionModel()->hasSelection();
     viewObsAction_->setEnabled(hasSelection);
 
-    // The live chart is meaningful only for FX spot series (scalar, FX series
-    // type). Other series types are not yet handled by the chart window.
+    // The live chart is meaningful only for FX spot series. Other series types
+    // are not yet handled by the chart window.
     bool isFxSpot = false;
     if (hasSelection) {
         const auto selection = tableView_->selectionModel()->selectedRows();
         if (!selection.isEmpty()) {
             const auto sourceIndex = proxyModel_->mapToSource(selection.first());
             if (const auto* s = model_->getSeries(sourceIndex.row()))
-                isFxSpot = s->is_scalar && s->series_type == "FX";
+                isFxSpot = s->series_type == "FX";
         }
     }
     viewChartAction_->setEnabled(isFxSpot);

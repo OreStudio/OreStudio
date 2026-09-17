@@ -75,7 +75,7 @@ Key architectural invariants established by this stack:
   bi-temporal (insert trigger closes previous row, opens a fresh one).
 - All NATS operations are request-reply — no push/fan-out subjects exist for market
   data today.
-- FX spot uses =is_scalar=true= on its series; observation =point_id= is always =null=.
+- FX spot observations all carry =point_id= =SPOT=, the default its series type names.
 - The full ORE key =FX/RATE/EUR/USD= decomposes to =series_type="FX"=, =metric="RATE"=,
   =qualifier="EUR/USD"=.
 

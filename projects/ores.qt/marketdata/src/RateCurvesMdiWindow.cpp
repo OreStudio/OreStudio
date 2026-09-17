@@ -19,6 +19,7 @@
  */
 #include "ores.qt/RateCurvesMdiWindow.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -151,7 +152,10 @@ void RateCurvesMdiWindow::reload() {
 
         self->rows_.clear();
         for (const auto& s : result.series) {
-            if (s.asset_class != "interest_rates" || s.is_scalar)
+            // A curve is only a curve if its keys carry a point dimension; the
+            // rates fixings and single-point series belong elsewhere.
+            if (s.asset_class != "interest_rates" ||
+                !ores::ore::market::has_point_dimension(s.series_type))
                 continue;
             self->rows_.push_back({s.series_type, s.metric, s.qualifier, s.series_subclass});
         }

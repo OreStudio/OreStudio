@@ -69,8 +69,6 @@ QVariant ClientMarketSeriesModel::data(const QModelIndex& index, int role) const
                 return QString::fromStdString(s.asset_class);
             case Subclass:
                 return QString::fromStdString(s.series_subclass);
-            case IsScalar:
-                return s.is_scalar ? "Yes" : "No";
             case Version:
                 return s.version;
             case ModifiedBy:
@@ -100,8 +98,6 @@ ClientMarketSeriesModel::headerData(int section, Qt::Orientation orientation, in
             return "Asset Class";
         case Subclass:
             return "Subclass";
-        case IsScalar:
-            return "Scalar";
         case Version:
             return "Ver";
         case ModifiedBy:

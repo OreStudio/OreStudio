@@ -320,7 +320,6 @@ void MarketSeriesPickerDialog::onCreateClicked() {
     series.qualifier = newQualifierEdit_->text().trimmed().toStdString();
     series.asset_class = assetClass.toStdString();
     series.series_subclass = seriesSubclass.toStdString();
-    series.is_scalar = false;
     series.derivation_kind = "OBSERVED";
 
     const auto request = md::messaging::save_market_series_request::from(series);

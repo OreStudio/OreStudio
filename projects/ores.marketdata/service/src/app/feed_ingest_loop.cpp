@@ -29,6 +29,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -202,8 +203,9 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
         bool persisted = false;
         try {
             const auto kp = parse_ore_key(b.ore_key);
-            // Scalar FX spot series: no curve coordinate, and the subclass is
-            // spot by construction of the fx_spot producer kind.
+            // The subclass is spot by construction of the fx_spot producer
+            // kind. The point is left to the series type's own answer, which
+            // is SPOT for FX.
             persisted = persist_tick_observation(ctx_,
                                                  b.tenant_id,
                                                  b.party_id,
@@ -212,11 +214,10 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                                                  kp.qualifier,
                                                  b.asset_class,
                                                  "spot",
-                                                 true,
                                                  tick->datetime,
                                                  std::to_string(tick->mid),
                                                  source_name,
-                                                 "SPOT");
+                                                 {});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to persist observation for " << b.ore_key << ": " << e.what();
@@ -316,8 +317,6 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
                                   << "' subject='" << msg.subject << "' value=" << tick->value;
     }
 
-    // Curve series: one observation per point_id, not a scalar line.
-    const bool is_scalar = false;
     const bool persisted = persist_tick_observation(ctx_,
                                                     tick->tenant_id,
                                                     tick->party_id,
@@ -326,7 +325,6 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
                                                     tick->qualifier,
                                                     tick->asset_class,
                                                     tick->subclass,
-                                                    is_scalar,
                                                     tick->datetime,
                                                     std::to_string(tick->value),
                                                     tick->source_name,
@@ -343,7 +341,6 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
                                                 const std::string& qualifier,
                                                 const std::string& asset_class,
                                                 const std::string& series_subclass,
-                                                bool is_scalar,
                                                 std::chrono::system_clock::time_point datetime,
                                                 const std::string& value,
                                                 const std::string& source,
@@ -370,7 +367,6 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
             series.qualifier = qualifier;
             series.asset_class = asset_class;
             series.series_subclass = series_subclass;
-            series.is_scalar = is_scalar;
             series.modified_by = ctx.service_account();
             series.performed_by = ctx.service_account();
             series.change_reason_code = "system.initial_load";
@@ -387,7 +383,9 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.observation_datetime = datetime;
         obs.value = value;
         obs.source = source;
-        obs.point_id = point_id;
+        // A producer that names no point takes the series type's own answer.
+        obs.point_id =
+            point_id.empty() ? ores::ore::market::default_point_for(series_type) : point_id;
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

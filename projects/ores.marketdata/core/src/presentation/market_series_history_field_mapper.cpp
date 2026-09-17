@@ -41,7 +41,6 @@ render_market_series_fields(const domain::market_series& v) {
     fields.push_back({.name = "Qualifier", .value = v.qualifier});
     fields.push_back({.name = "Asset Class", .value = v.asset_class});
     fields.push_back({.name = "Series Subclass", .value = v.series_subclass});
-    fields.push_back({.name = "Is Scalar", .value = v.is_scalar ? "true" : "false"});
     fields.push_back({.name = "Derivation Kind", .value = v.derivation_kind});
     fields.push_back(
         {.name = "Derivation Config ID", .value = boost::uuids::to_string(v.derivation_config_id)});

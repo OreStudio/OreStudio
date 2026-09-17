@@ -69,8 +69,8 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +series_id : string
-                +observation_date : string
-                +point_id : optional<string>
+                +observation_datetime : string
+                +point_id : string
                 +value : string
                 +source : optional<string>
             }
@@ -89,7 +89,6 @@ namespace ores #F2F2F2 {
                 +qualifier : string
                 +asset_class : string
                 +series_subclass : string
-                +is_scalar : bool
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string

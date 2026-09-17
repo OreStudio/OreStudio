@@ -59,9 +59,10 @@ struct decomposed_key {
     /**
      * @brief Point identifier within the series (tenor, surface coordinate).
      *
-     * Null for scalar series (e.g. FX spot, equity spot, recovery rate) and
-     * for unknown types (safe fallback — qualifier absorbs all remaining
-     * segments).
+     * Null when the key carries no point of its own: a type without a point
+     * dimension, a key shorter than its type's qualifier depth, or an unknown
+     * type. Storage fills that gap from default_point_for() rather than
+     * inventing a coordinate here, so the key still reconstructs verbatim.
      *
      * Examples: "2Y", "25Y/10Y/ATM", "1Y/6M/0/0/0.025".
      */
@@ -90,6 +91,36 @@ ORES_ORE_CORE_EXPORT decomposed_key decompose_key(const std::string& key);
  * is never stored separately from the decomposed fields.
  */
 ORES_ORE_CORE_EXPORT std::string reconstruct_key(const decomposed_key& dk);
+
+/**
+ * @brief Reports whether an ORE series type has a tenor or surface dimension.
+ *
+ * A type without one carries no point_id, so decompose_key folds its whole
+ * remainder into the qualifier and a consumer has nothing to read a point
+ * from. This is a fact about the key's shape rather than about any taxonomy,
+ * which is why it is answered here and not by a classifier.
+ *
+ * @param series_type ORE key type.
+ * @return True if the type is registered and its keys carry a point; false
+ *         for types the registry does not know, which is the safe answer
+ *         because their keys are folded into the qualifier too.
+ */
+ORES_ORE_CORE_EXPORT bool has_point_dimension(const std::string& series_type);
+
+/**
+ * @brief The point recorded for an observation whose key carries none.
+ *
+ * Every observation stores a point, so a series whose keys have no point of
+ * their own needs one name for its single point. FX spot is the case that
+ * matters: the point is a real tenor, SPOT, and that is what the table holds.
+ * Types whose single point is not a tenor at all answer with an empty string,
+ * which is the honest "no coordinate" value rather than an invented tenor.
+ *
+ * @param series_type ORE key type.
+ * @return The type's default point, or an empty string when it has none or
+ *         the registry does not know the type.
+ */
+ORES_ORE_CORE_EXPORT std::string default_point_for(const std::string& series_type);
 
 }
 

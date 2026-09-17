@@ -57,7 +57,7 @@ void check_decomposition(const test_case& tc) {
 
 } // namespace
 
-TEST_CASE("decompose_fx_scalar", tags) {
+TEST_CASE("decompose_fx_without_point", tags) {
     check_decomposition({"FX/RATE/EUR/CHF", "FX", "RATE", "EUR/CHF", std::nullopt});
 }
 
@@ -125,7 +125,7 @@ TEST_CASE("decompose_hazard_rate", tags) {
         {"HAZARD_RATE/RATE/CPTY_A/SR/USD/5Y", "HAZARD_RATE", "RATE", "CPTY_A/SR/USD", "5Y"});
 }
 
-TEST_CASE("decompose_recovery_rate_scalar", tags) {
+TEST_CASE("decompose_recovery_rate_without_point", tags) {
     check_decomposition({"RECOVERY_RATE/RATE/CPTY_A/SR/USD",
                          "RECOVERY_RATE",
                          "RATE",
@@ -133,7 +133,7 @@ TEST_CASE("decompose_recovery_rate_scalar", tags) {
                          std::nullopt});
 }
 
-TEST_CASE("decompose_equity_spot_scalar", tags) {
+TEST_CASE("decompose_equity_spot_without_point", tags) {
     check_decomposition({"EQUITY/PRICE/SP5", "EQUITY", "PRICE", "SP5", std::nullopt});
 }
 
@@ -141,7 +141,7 @@ TEST_CASE("decompose_equity_forward", tags) {
     check_decomposition({"EQUITY_FWD/PRICE/SP5/1Y", "EQUITY_FWD", "PRICE", "SP5", "1Y"});
 }
 
-TEST_CASE("decompose_commodity_scalar", tags) {
+TEST_CASE("decompose_commodity_without_point", tags) {
     check_decomposition({"COMMODITY/PRICE/GOLD", "COMMODITY", "PRICE", "GOLD", std::nullopt});
 }
 
@@ -150,12 +150,46 @@ TEST_CASE("decompose_zc_inflation_swap", tags) {
         {"ZC_INFLATIONSWAP/RATE/UKRPI/2Y", "ZC_INFLATIONSWAP", "RATE", "UKRPI", "2Y"});
 }
 
-TEST_CASE("decompose_correlation_scalar", tags) {
+TEST_CASE("decompose_correlation_operands_only", tags) {
     check_decomposition({"CORRELATION/RATE/EUR-EURIBOR-6M/EUR-EURIBOR-3M",
                          "CORRELATION",
                          "RATE",
                          "EUR-EURIBOR-6M/EUR-EURIBOR-3M",
                          std::nullopt});
+}
+
+TEST_CASE("decompose_correlation_surface_point", tags) {
+    // The two operands hold fixed positions, so the expiry/strike after them is
+    // the point. Treating it as part of the qualifier would make every surface
+    // coordinate its own single-observation series.
+    check_decomposition({"CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM",
+                         "CORRELATION",
+                         "RATE",
+                         "EUR-CMS-10Y/EUR-CMS-2Y",
+                         "1Y/ATM"});
+}
+
+TEST_CASE("has_point_dimension_answers_per_type", tags) {
+    using ores::ore::market::has_point_dimension;
+    CHECK_FALSE(has_point_dimension("FX"));
+    CHECK_FALSE(has_point_dimension("EQUITY"));
+    CHECK_FALSE(has_point_dimension("COMMODITY"));
+    CHECK_FALSE(has_point_dimension("RECOVERY_RATE"));
+    CHECK(has_point_dimension("DISCOUNT"));
+    CHECK(has_point_dimension("SWAPTION"));
+    CHECK(has_point_dimension("CORRELATION"));
+    CHECK_FALSE(has_point_dimension("NOT_A_REGISTERED_TYPE"));
+}
+
+TEST_CASE("default_point_is_spot_only_where_spot_is_a_tenor", tags) {
+    using ores::ore::market::default_point_for;
+    CHECK(default_point_for("FX") == "SPOT");
+    CHECK(default_point_for("EQUITY") == "SPOT");
+    CHECK(default_point_for("COMMODITY") == "SPOT");
+    CHECK(default_point_for("DISCOUNT").empty());
+    CHECK(default_point_for("RECOVERY_RATE").empty());
+    CHECK(default_point_for("CORRELATION").empty());
+    CHECK(default_point_for("NOT_A_REGISTERED_TYPE").empty());
 }
 
 TEST_CASE("decompose_unknown_type_fallback", tags) {
@@ -208,6 +242,7 @@ TEST_CASE("roundtrip_all_known_types", tags) {
         "SEASONALITY/RATE/UKRPI/JAN",
         "BOND/PRICE/GOVT/SNRFOR/10Y",
         "CORRELATION/RATE/EUR-EURIBOR-6M/EUR-EURIBOR-3M",
+        "CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM",
     };
 
     for (const auto& key : keys)

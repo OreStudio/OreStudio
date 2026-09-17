@@ -320,10 +320,11 @@ such cell.
   string with no distinction between "the pair" and "the tenor" for a
   forward (=EURUSD1M= packs both into one token, same weakness as RIC's
   =F= suffix, just with different characters).
-- *ORE quote key*: FX spot is a scalar series with no =point_id=
-  segment; the FX forward row's =1M= is a genuine =point_id= — forward
-  points form a term structure per currency pair, and ORE's schema has a
-  dedicated dimension for that, unlike RIC or Bloomberg. Shortcoming:
+- *ORE quote key*: FX spot's key carries no point dimension — the key
+  stops at the currency pair — while the FX forward row's =1M= is a
+  genuine point coordinate, since forward points form a term structure
+  per currency pair and ORE's schema has a dedicated dimension for that,
+  unlike RIC or Bloomberg. Shortcoming:
   this uniformity is bought by having a separate top-level =TYPE=
   (=FX= vs =FXFWD=) for spot vs. forward rather than one type with a
   tenor dimension that is merely absent for spot — spot and forward are
@@ -833,7 +834,7 @@ that every row in this document's comparison tables above draws from.
 | =series_type= (=TYPE=) | Asset class and curve family | =FX=, =DISCOUNT=, =SWAPTION=, =CAPFLOOR= |
 | =metric= (=SUBTYPE=) | What is being quoted | =RATE=, =RATE_LNVOL=, =PRICE=, =SPREAD= |
 | =qualifier= (=dim1=, =dim2=, ...) | One or more series-specific dimensions (CCY, CCY pair, index tenor, entity, seniority, ...) — the count varies by type | =EUR/USD=, =USD/2D/3M=, =VOD/SR/EUR= |
-| =point_id= (last =dimN=) | Tenor or surface coordinate (absent for scalar series) | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
+| =point_id= (last =dimN=) | Tenor or surface coordinate where the type has one; a type with no such dimension carries no point in its key, and storage records the type's single default point instead | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
 
 * Pros, cons, and limitations
 

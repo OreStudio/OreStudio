@@ -41,7 +41,7 @@ insert into ores_refdata_series_subclass_codes_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), 'spot', 0, 'Spot',
-     'Price of the underlying for immediate or near-immediate delivery: an FX rate, an equity price, a commodity price. Scalar -- the series has no tenor dimension, so every observation on it carries a null point_id. FX spot is the canonical case (FX/RATE/EUR/USD), and it is the series that the forward and option series in the same book ultimately reference.',
+     'Price of the underlying for immediate or near-immediate delivery: an FX rate, an equity price, a commodity price. The series has no tenor dimension of its own, so each observation names the single point SPOT. FX spot is the canonical case (FX/RATE/EUR/USD), and it is the series that the forward and option series in the same book ultimately reference.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'forward', 0, 'Forward',
      'Price or rate for delivery on a future date. Covers FX forwards and forward points, equity forwards and dividend curves, and commodity forward curves. Unlike spot, a forward series is a curve: each observation names its tenor in point_id, and the value is only meaningful together with that tenor.',

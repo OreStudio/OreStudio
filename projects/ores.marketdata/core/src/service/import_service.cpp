@@ -29,6 +29,7 @@
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
+#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
@@ -48,57 +49,56 @@ namespace {
 struct series_classification {
     std::string asset_class;
     std::string series_subclass;
-    bool is_scalar;
 };
 
 // Maps ORE series_type → classification.
 series_classification classify_series_type(const std::string& series_type) {
     static const std::map<std::string, series_classification> k_table = {
         // FX
-        {"FX", {"fx", "spot", true}},
-        {"FXFWD", {"fx", "forward", false}},
-        {"FX_OPTION", {"fx", "volatility", false}},
+        {"FX", {"fx", "spot"}},
+        {"FXFWD", {"fx", "forward"}},
+        {"FX_OPTION", {"fx", "volatility"}},
         // Rates curves
-        {"DISCOUNT", {"interest_rates", "yield", false}},
-        {"ZERO", {"interest_rates", "yield", false}},
-        {"MM", {"interest_rates", "yield", false}},
-        {"MM_FUTURE", {"interest_rates", "fra", false}},
-        {"FRA", {"interest_rates", "fra", false}},
-        {"IMM_FRA", {"interest_rates", "fra", false}},
-        {"IR_SWAP", {"interest_rates", "yield", false}},
+        {"DISCOUNT", {"interest_rates", "yield"}},
+        {"ZERO", {"interest_rates", "yield"}},
+        {"MM", {"interest_rates", "yield"}},
+        {"MM_FUTURE", {"interest_rates", "fra"}},
+        {"FRA", {"interest_rates", "fra"}},
+        {"IMM_FRA", {"interest_rates", "fra"}},
+        {"IR_SWAP", {"interest_rates", "yield"}},
         // Rates spreads
-        {"BASIS_SWAP", {"interest_rates", "basis", false}},
-        {"BMA_SWAP", {"interest_rates", "basis", false}},
-        {"CC_BASIS_SWAP", {"interest_rates", "xccy", false}},
-        {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy", false}},
+        {"BASIS_SWAP", {"interest_rates", "basis"}},
+        {"BMA_SWAP", {"interest_rates", "basis"}},
+        {"CC_BASIS_SWAP", {"interest_rates", "xccy"}},
+        {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy"}},
         // Rates vols
-        {"SWAPTION", {"interest_rates", "volatility", false}},
-        {"CAPFLOOR", {"interest_rates", "volatility", false}},
+        {"SWAPTION", {"interest_rates", "volatility"}},
+        {"CAPFLOOR", {"interest_rates", "volatility"}},
         // Credit
-        {"HAZARD_RATE", {"credit", "spread", false}},
-        {"CDS", {"credit", "spread", false}},
-        {"CDS_INDEX", {"credit", "index_credit", false}},
-        {"INDEX_CDS_OPTION", {"credit", "index_credit", false}},
-        {"RECOVERY_RATE", {"credit", "recovery", true}},
+        {"HAZARD_RATE", {"credit", "spread"}},
+        {"CDS", {"credit", "spread"}},
+        {"CDS_INDEX", {"credit", "index_credit"}},
+        {"INDEX_CDS_OPTION", {"credit", "index_credit"}},
+        {"RECOVERY_RATE", {"credit", "recovery"}},
         // Equity
-        {"EQUITY", {"equity", "spot", true}},
-        {"EQUITY_FWD", {"equity", "forward", false}},
-        {"EQUITY_DIVIDEND", {"equity", "forward", false}},
-        {"EQUITY_OPTION", {"equity", "volatility", false}},
+        {"EQUITY", {"equity", "spot"}},
+        {"EQUITY_FWD", {"equity", "forward"}},
+        {"EQUITY_DIVIDEND", {"equity", "forward"}},
+        {"EQUITY_OPTION", {"equity", "volatility"}},
         // Commodity
-        {"COMMODITY", {"commodity", "spot", true}},
-        {"COMMODITY_FWD", {"commodity", "forward", false}},
-        {"COMMODITY_OPTION", {"commodity", "volatility", false}},
+        {"COMMODITY", {"commodity", "spot"}},
+        {"COMMODITY_FWD", {"commodity", "forward"}},
+        {"COMMODITY_OPTION", {"commodity", "volatility"}},
         // Inflation
-        {"ZC_INFLATIONSWAP", {"inflation", "swap", false}},
-        {"YY_INFLATIONSWAP", {"inflation", "swap", false}},
-        {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
-        {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
-        {"SEASONALITY", {"inflation", "seasonality", false}},
+        {"ZC_INFLATIONSWAP", {"inflation", "swap"}},
+        {"YY_INFLATIONSWAP", {"inflation", "swap"}},
+        {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
+        {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
+        {"SEASONALITY", {"inflation", "seasonality"}},
         // Bond
-        {"BOND", {"bond", "price", false}},
+        {"BOND", {"bond", "price"}},
         // Fixings (index series)
-        {"FIXING", {"interest_rates", "yield", true}},
+        {"FIXING", {"interest_rates", "yield"}},
     };
 
     const auto it = k_table.find(series_type);
@@ -169,17 +169,13 @@ import_service::import(const messaging::import_market_data_request& req) {
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
 
-    // Cache: (series_type, metric, qualifier) → (series.id, is_scalar)
+    // Cache: (series_type, metric, qualifier) → series id.
     using SeriesKey = std::tuple<std::string, std::string, std::string>;
-    struct series_info {
-        boost::uuids::uuid id;
-        bool is_scalar;
-    };
-    std::map<SeriesKey, series_info> series_cache;
+    std::map<SeriesKey, boost::uuids::uuid> series_cache;
 
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
-                                     const std::string& qualifier) -> series_info {
+                                     const std::string& qualifier) -> boost::uuids::uuid {
         const auto key = std::make_tuple(series_type, metric, qualifier);
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
@@ -188,9 +184,9 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Look up existing series in DB.
         const auto existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {
-            const series_info info{existing.front().id, existing.front().is_scalar};
-            series_cache.emplace(key, info);
-            return info;
+            const auto id = existing.front().id;
+            series_cache.emplace(key, id);
+            return id;
         }
 
         // Create a new series.
@@ -204,7 +200,6 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.qualifier = qualifier;
         s.asset_class = cl.asset_class;
         s.series_subclass = cl.series_subclass;
-        s.is_scalar = cl.is_scalar;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();
         s.change_reason_code =
@@ -212,10 +207,9 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.change_commentary = "Imported from ORE market data file";
         series_repo.write(ctx_, s);
 
-        const series_info info{s.id, s.is_scalar};
-        series_cache.emplace(key, info);
+        series_cache.emplace(key, s.id);
         ++resp.series_count;
-        return info;
+        return s.id;
     };
 
     const auto on_duplicate = req.duplicates_are_errors ?
@@ -286,13 +280,12 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.id = gen();
                 obs.tenant_id = ctx_.tenant_id();
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                obs.series_id = series.id;
+                obs.series_id = series;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                // Scalar series (FX spot, equity spot, ...) have no tenor/surface
-                // coordinate; point_id defaults to "SPOT" for those. Non-scalar
-                // series with a missing point_id (malformed/unrecognised key)
-                // keep the empty default rather than being mislabelled as spot.
-                obs.point_id = d.point_id.value_or(series.is_scalar ? "SPOT" : "");
+                // A key that carries no point of its own takes the series
+                // type's answer for its single point.
+                obs.point_id =
+                    d.point_id.value_or(ores::ore::market::default_point_for(d.series_type));
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
@@ -322,7 +315,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 fix.id = gen();
                 fix.tenant_id = ctx_.tenant_id();
                 fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                fix.series_id = series.id;
+                fix.series_id = series;
                 fix.fixing_date = f.date;
                 fix.source = req.source;
                 fix.value = f.value;

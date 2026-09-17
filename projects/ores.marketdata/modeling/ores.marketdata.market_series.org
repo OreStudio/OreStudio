@@ -91,7 +91,7 @@ Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
 :END:
 
 Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
-=EUR-EURIBOR-3M=, or an empty string for scalars).
+=EUR-CHF=, =EUR-EURIBOR-3M=).
 
 ** asset_class
 :PROPERTIES:
@@ -143,17 +143,6 @@ the code itself for the same reason: the taxonomy is runtime-managed.
     return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
 }()
 #+end_src
-
-** is_scalar
-:PROPERTIES:
-:type:          boolean
-:cpp_type:      bool
-:nullable:      false
-:default_value: false
-:END:
-
-True when the series has no point dimension (e.g. an FX spot rate or a single
-fixing), false when it is curve/surface/matrix data.
 
 ** derivation_kind
 :PROPERTIES:

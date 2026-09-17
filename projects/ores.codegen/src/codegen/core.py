@@ -242,6 +242,16 @@ def cpp_generated_marker(template_name):
     )
 
 
+def _emits_cpp(template_name):
+    """
+    Whether a template produces a C++ translation unit or header.
+
+    The marker is a C comment, so it must not reach a template whose
+    output is not C++ even if that template carries the C++ licence.
+    """
+    return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -269,15 +279,6 @@ def render_template(template_path, data):
 
     return pystache.render(template_content, extended_data)
 
-
-def _emits_cpp(template_name):
-    """
-    Whether a template produces a C++ translation unit or header.
-
-    The marker is a C comment, so it must not reach a template whose
-    output is not C++ even if that template carries the C++ licence.
-    """
-    return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
 
 
 def get_template_mappings():

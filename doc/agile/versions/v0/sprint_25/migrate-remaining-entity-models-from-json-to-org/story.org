@@ -38,6 +38,7 @@ Complete the org-migration story: convert the remaining legacy JSON-format entit
 |------+-------+-------+-----+-------------|
 | [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
 | [[id:B7BE4D95-2C5F-4AC0-8845-90B083A45810][Retire the JSON-era residue the org migration left behind]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] | BACKLOG | | | Task for: Migrate remaining ~100 entity models from JSON to org |
 
 * Decisions
 

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: F0805EE8-579E-45DC-B7B2-D5D9D81C0D3D
+:END:
+#+title: Story: Remove the Qt UI and its codegen
+#+description: Delete ores.qt and ores.wt.service, the ores.cpp.qt codegen facet, and everything that exists only to serve them.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The UI is moving to TypeScript. The Qt and Wt clients are to go, together with the codegen facet that renders the Qt client, the variability features that configure it, and the build dependency on Qt6 that exists only for its sake.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B0BD4C47-93F7-4F64-AB42-5261006088CB][Scaffold story: Remove the Qt UI and its codegen]] | STARTED | 2026-09-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6E160D13-A5A9-4BFC-968A-16EA58320A33][Remove the Qt UI codegen facet]] | BACKLOG | | | Initial task for: Remove the Qt UI and its codegen |
+
+* Decisions
+
+* Out of scope
+
+-

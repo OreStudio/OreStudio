@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :seed-codegen-methodology-hotfix:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/seed-codegen-methodology-hotfix
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
 #+updated: 2026-09-18
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98E44999-1CA1-4C50-AEDA-AF2B2E42496E][Restore the code generation methodology the slovaris removal took]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Database recreation completes on main again, and every seed script that names th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:98E44999-1CA1-4C50-AEDA-AF2B2E42496E][Restore the code generation methodology the slovaris removal took]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -71,3 +71,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=OreStudio Code Generation Methodology= is seeded again, in
+=dq_methodology_populate.sql= alongside the other general methodologies.
+
+The row was defined in =solvaris_methodology_populate.sql= and was
+deleted with the slovaris dataset in =4059ea5cd8=. It was never slovaris
+data: =acme_dataset_populate.sql= and ten refdata and synthetic seed
+scripts name it too, so every database recreation since has failed at
+=acme_dataset_populate.sql:433=.
+
+Its name, description and logic reference are the original. The
+implementation details are not: the original walked a reader through
+=run_generator.sh= and =models/slovaris=, both deleted by the same
+commit, so restoring that text would have undone the cleanup it was
+doing. The replacement describes the live pipeline.
+
+Acceptance met. =compass db recreate --yes --kill= completes in 49
+seconds where it previously failed; fifteen methodologies are seeded
+including this one; and the thirty-four acme datasets that name it
+resolve against it.

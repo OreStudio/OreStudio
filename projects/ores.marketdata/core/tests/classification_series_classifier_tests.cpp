@@ -22,28 +22,35 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/series_key_shape_seed.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <iterator>
 #include <map>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 
 /**
  * @file classification_series_classifier_tests.cpp
- * @brief Walks the whole ORE example corpus and asserts that every market data
- * series it carries classifies, then sweeps the classifier's own vocabulary.
+ * @brief Walks the whole ORE example corpus and asserts that every series it
+ * carries classifies, then sweeps the classifier's own vocabulary.
  *
  * The corpus is walked rather than listed: the sibling roundtrip test names 52
  * files by hand and covers under two thirds of what is there. A corpus whose
  * walk silently finds nothing must fail rather than pass, so the walk asserts a
  * floor on what it found.
  *
- * The walk cannot reach every type. A fixing is not a market datum, so FIXING
- * is covered by the vocabulary sweep and by the correlation cases, which assert
- * the rule directly rather than through the corpus.
+ * The census counts the union of the two readers, because both feed an import.
+ * The file name decides which reader a file feeds, as it does for an import:
+ * import_service takes market data and fixings as two separately named
+ * payloads, and this corpus names its fixing payloads `fixings*`. A fixing is
+ * not a market datum, and import_service composes its series as
+ * FIXING/RATE/<index name>, which is the key this walk gives it too. A file
+ * that is neither, which is most of the corpus, parses into nothing.
  *
  * Classification only. The ORE-to-oresmd round trip is a separate concern.
  */
@@ -56,15 +63,27 @@ using ores::marketdata::core::series_classifier;
 const std::string tags("[marketdata][classification][corpus]");
 
 /**
- * Anti-vacuity floors, set below the census measured over the corpus when this
- * test was written: 107,951 distinct keys, 42 series types, 95 files carrying
- * market data. A walk that silently stops finding files must fail rather than
- * pass; a walk that finds a little less than the last run should not. Raise
- * these only to the values a run actually measured.
+ * Anti-vacuity floors, set under the census a run measured over the corpus:
+ * 108,105 distinct keys across 42 series types, from 107,947 market data keys
+ * in 91 files and 158 fixing keys in 54 files, out of 3,528 walked, none
+ * unreadable. A walk that silently stops finding files must fail rather than
+ * pass, and a walk that finds a little less than the last run must not.
  */
-constexpr std::size_t min_distinct_keys = 90000;
+constexpr std::size_t min_distinct_keys = 100000;
 constexpr std::size_t min_distinct_types = 40;
-constexpr std::size_t min_parsed_files = 85;
+constexpr std::size_t min_parsed_files = 130;
+
+/// The eight types this task added to the shape table. A registry without
+/// them is the grammar the compiled table carried, which is what the census
+/// of distinct series is compared against.
+const std::set<std::string> k_added_types{"BOND_OPTION",
+                                          "CPR",
+                                          "FIXING",
+                                          "GENERIC-MD",
+                                          "INDEX_CDS_TRANCHE",
+                                          "OI_FUTURE",
+                                          "RATING",
+                                          "SHAPE_PROFILE"};
 
 /// One distinct market data key, split as the parser split it.
 struct corpus_entry {
@@ -74,57 +93,131 @@ struct corpus_entry {
     std::string qualifier;
 };
 
+/// One file under the corpus, read once. The read error is kept rather than
+/// thrown, because a file that cannot be read is a finding the census reports
+/// instead of a failure that stops the walk.
+struct corpus_file {
+    std::string path;
+    std::string content;
+    std::string read_error;
+};
+
 struct corpus_survey {
-    /// Keyed by the verbatim key, so a key repeated across files collapses.
+    /// Every distinct series the two readers produce, keyed by the verbatim
+    /// market data key or, for a fixing, the key the import composes for it.
+    /// A key both readers reach collapses into one entry.
     std::map<std::string, corpus_entry> entries;
-    std::set<std::string> parsed_files;
+    /// The files each reader took, and the distinct keys each supplied, so the
+    /// census can say which of the two it counted.
+    std::set<std::string> market_data_files;
+    std::set<std::string> fixing_files;
+    std::set<std::string> market_data_keys;
+    std::set<std::string> fixing_keys;
     /// Files the walk reached, could not read, and the first such error.
     /// Without these a walk that reads nothing reports the same empty census
     /// as a corpus that carries nothing.
     std::size_t files_seen = 0;
     std::size_t unreadable_files = 0;
     std::string first_read_error;
+
+    /// Distinct series, which is the market_series natural key and so the
+    /// number of rows an import of this corpus would write.
+    std::size_t distinct_series() const {
+        std::set<std::tuple<std::string, std::string, std::string>> series;
+        for (const auto& [key, entry] : entries)
+            series.insert({entry.series_type, entry.metric, entry.qualifier});
+        return series.size();
+    }
 };
 
-/// One walk of the corpus, shared by every case in this file.
-const corpus_survey& survey() {
-    static const auto result = [] {
-        corpus_survey s;
+/// Every regular file under the corpus. Read once per process: the walk runs
+/// once per registry, and reading 3,500 files twice buys no new information.
+const std::vector<corpus_file>& corpus_files() {
+    static const auto files = [] {
+        std::vector<corpus_file> result;
         const auto root = ores::testing::project_root::resolve("external/ore/examples");
 
         for (const auto& dir_entry : std::filesystem::recursive_directory_iterator(root)) {
             if (!dir_entry.is_regular_file())
                 continue;
-            ++s.files_seen;
 
             const auto path = dir_entry.path();
-            std::string content;
             try {
-                content = ores::platform::filesystem::file::read_content(path);
+                result.push_back(
+                    {path.string(), ores::platform::filesystem::file::read_content(path), {}});
             } catch (const std::exception& ex) {
-                ++s.unreadable_files;
-                if (s.first_read_error.empty())
-                    s.first_read_error = path.string() + ": " + ex.what();
-                continue;
-            }
-
-            // Outside the try: a seed that cannot be read is a broken test,
-            // not a file that fails to parse, and inside the catch below it
-            // would be swallowed once per corpus file.
-            const auto& registry = ores::testing::seed_registry();
-            std::istringstream in{content};
-            try {
-                for (const auto& d : ores::ore::market::parse_market_data(in, registry)) {
-                    s.entries[d.key] = corpus_entry{d.key, d.series_type, d.metric, d.qualifier};
-                    s.parsed_files.insert(path.string());
-                }
-            } catch (const std::invalid_argument&) {
-                // Most of the corpus is XML trades, and a fixing file is not a
-                // market data file. Neither parses, and neither is a finding.
+                result.push_back({path.string(), {}, ex.what()});
             }
         }
-        return s;
+        return result;
     }();
+    return files;
+}
+
+/// A fixing payload is one the corpus names as fixings, because the name is
+/// the only thing that says which reader a file feeds. import_service never
+/// asks either reader to guess: market data and fixings arrive as two
+/// separately named payloads. Handing every file the market data reader
+/// rejects to the fixing reader instead would take the corpus's exposure
+/// reports for fixings, since parse_fixings checks the date and stores the
+/// two fields after it without reading them.
+bool is_fixing_payload(const std::string& path) {
+    return std::filesystem::path(path).filename().string().rfind("fixings", 0) == 0;
+}
+
+/// One pass of the corpus under a given key grammar.
+corpus_survey walk_with(const ores::ore::market::series_key_registry& registry) {
+    corpus_survey s;
+    s.files_seen = corpus_files().size();
+
+    for (const auto& file : corpus_files()) {
+        if (!file.read_error.empty()) {
+            ++s.unreadable_files;
+            if (s.first_read_error.empty())
+                s.first_read_error = file.path + ": " + file.read_error;
+            continue;
+        }
+
+        std::set<std::string> from_this_file;
+        if (is_fixing_payload(file.path)) {
+            // A fixing series is the one import_service builds for it, so the
+            // census counts series and not file lines.
+            std::istringstream fixings{file.content};
+            try {
+                for (const auto& f : ores::ore::market::parse_fixings(fixings)) {
+                    const auto key = "FIXING/RATE/" + f.qualifier;
+                    s.entries[key] = corpus_entry{key, "FIXING", "RATE", f.qualifier};
+                    from_this_file.insert(key);
+                }
+            } catch (const std::invalid_argument&) {
+                // Named as fixings, but not readable as them.
+            }
+            s.fixing_keys.insert(from_this_file.begin(), from_this_file.end());
+            if (!from_this_file.empty())
+                s.fixing_files.insert(file.path);
+            continue;
+        }
+
+        std::istringstream market_data{file.content};
+        try {
+            for (const auto& d : ores::ore::market::parse_market_data(market_data, registry)) {
+                s.entries[d.key] = corpus_entry{d.key, d.series_type, d.metric, d.qualifier};
+                from_this_file.insert(d.key);
+            }
+        } catch (const std::invalid_argument&) {
+            // An XML trade, a script, a manifest: most of the corpus.
+        }
+        s.market_data_keys.insert(from_this_file.begin(), from_this_file.end());
+        if (!from_this_file.empty())
+            s.market_data_files.insert(file.path);
+    }
+    return s;
+}
+
+/// The walk every case in this file shares, under the grammar the shape table
+/// carries.
+const corpus_survey& survey() {
+    static const auto result = walk_with(ores::testing::seed_registry());
     return result;
 }
 
@@ -149,13 +242,17 @@ void check_code_is_in_catalogue(const std::string& code, const std::string& rel_
 
 TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
     const auto& entries = survey().entries;
+    const auto parsed_files = survey().market_data_files.size() + survey().fixing_files.size();
 
     // Reported on a passing run too, so the census is visible to whoever
     // tightens the floors above.
     std::ostringstream census;
-    census << "corpus census: " << entries.size() << " distinct keys, " << distinct_types().size()
-           << " series types, " << survey().parsed_files.size() << " parsed files of "
-           << survey().files_seen << " seen, " << survey().unreadable_files << " unreadable";
+    census << "corpus census: " << entries.size() << " distinct series keys ("
+           << distinct_types().size() << " types) from " << survey().market_data_keys.size()
+           << " market data keys in " << survey().market_data_files.size() << " files and "
+           << survey().fixing_keys.size() << " fixing keys in " << survey().fixing_files.size()
+           << " files, of " << survey().files_seen << " seen, " << survey().unreadable_files
+           << " unreadable";
     // Named only when the walk found nothing. A healthy walk parses the XML
     // majority into nothing by design, and those messages would drown the
     // census; an empty walk is the case where one of them is the answer.
@@ -163,7 +260,7 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
         census << "; first read error: " << survey().first_read_error;
     WARN(census.str());
     REQUIRE(entries.size() >= min_distinct_keys);
-    REQUIRE(survey().parsed_files.size() >= min_parsed_files);
+    REQUIRE(parsed_files >= min_parsed_files);
 
     std::vector<std::string> unclassified;
     for (const auto& [key, entry] : entries) {
@@ -195,6 +292,36 @@ TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
     CHECK(unknown.empty());
 }
 
+TEST_CASE("the_classifier_and_the_key_registry_name_the_same_series_types", tags) {
+    const auto from_classifier = series_classifier::known_series_types();
+    const auto from_registry = ores::testing::seed_registry().known_series_types();
+
+    // Reported separately in each direction, because which table gained a type
+    // is what says where the row is missing. The two must agree: a type with a
+    // shape row and no classification row aborts an import, and a type with a
+    // classification row and no shape row folds every key into its qualifier.
+    std::vector<std::string> classifier_only;
+    std::vector<std::string> registry_only;
+    std::set_difference(from_classifier.begin(),
+                        from_classifier.end(),
+                        from_registry.begin(),
+                        from_registry.end(),
+                        std::back_inserter(classifier_only));
+    std::set_difference(from_registry.begin(),
+                        from_registry.end(),
+                        from_classifier.begin(),
+                        from_classifier.end(),
+                        std::back_inserter(registry_only));
+
+    for (const auto& type : classifier_only)
+        INFO("classifiable but with no shape row: " << type);
+    for (const auto& type : registry_only)
+        INFO("shape row but not classifiable: " << type);
+
+    CHECK(classifier_only.empty());
+    CHECK(registry_only.empty());
+}
+
 TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue", tags) {
     std::set<std::string> asset_classes;
     std::set<std::string> subclasses;
@@ -204,11 +331,10 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
         subclasses.insert(c.series_subclass);
     };
 
-    // Swept over the vocabulary rather than over the corpus, because FIXING is
-    // a fixing and not a market datum: the walk never reaches it, and an
-    // index_fixing row missing from the catalogue would otherwise go unnoticed
-    // until an import wrote one and the insert failed. The metric is ignored
-    // for every type but the two handled below.
+    // Swept over the vocabulary rather than over the corpus, because a code
+    // only an unused rule emits would otherwise go unnoticed until an import
+    // wrote a row and the insert failed. The metric is ignored for every type
+    // but the two handled below.
     for (const auto& type : series_classifier::known_series_types()) {
         if (type == "CORRELATION" || type == "GENERIC-MD")
             continue;
@@ -267,4 +393,22 @@ TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", ta
     REQUIRE(rates != by_operands.end());
     REQUIRE(rates->second.asset_classes.size() == 1);
     CHECK(rates->second.asset_classes.front() == "interest_rates");
+}
+
+TEST_CASE("the_eight_added_rows_collapse_the_census_of_distinct_series", tags) {
+    // The grammar the compiled table carried: every row the shape table holds
+    // today, less the eight this task added. A key of one of those types folded
+    // its whole remainder into the qualifier, so each distinct key became a
+    // series of its own.
+    auto before = ores::testing::seed_shapes();
+    std::erase_if(before,
+                  [](const auto& shape) { return k_added_types.count(shape.series_type) > 0; });
+    REQUIRE(before.size() + k_added_types.size() == ores::testing::seed_shapes().size());
+
+    const ores::ore::market::series_key_registry compiled{before};
+    const auto after = survey().distinct_series();
+    const auto prior = walk_with(compiled).distinct_series();
+
+    WARN("distinct series: " << prior << " before the eight rows, " << after << " after");
+    CHECK(after < prior);
 }

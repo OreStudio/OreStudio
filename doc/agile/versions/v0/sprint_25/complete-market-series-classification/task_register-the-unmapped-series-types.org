@@ -33,9 +33,9 @@ one series with many points instead of many single-observation series.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Unit 3 done: the registry is the only grammar, the compiled table is gone, all green. |
+| Now          | Unit 4 done: the corpus walk runs through both readers, the classifier and the registry agree, all green. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit 4: the corpus walk built from the seed, the table-against-seed check, and the classifier equality check. |
+| Next         | Unit 5: the classification table becomes data (task 219). |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -360,6 +360,137 @@ market data rather than a seed that could not be read. The seed is built
 outside that =catch= now, and the census reports files seen and files
 unreadable, so a walk that reads nothing cannot print the same line as a
 corpus that carries nothing.
+
+** Unit 4 evidence
+
+Three cases carry the unit, and the suite that holds them is green.
+
+=the_classifier_and_the_key_registry_name_the_same_series_types= takes
+the type set from =series_classifier::known_series_types()= and from
+=seed_registry().known_series_types()=, and reports each direction
+separately, because which table gained a type is what says where the
+row is missing. Both answer 43 types, so the two cannot drift apart
+without a red test: a type with a shape row and no classification row
+aborts an import, and a type with a classification row and no shape row
+folds every key into its qualifier.
+
+=the_eight_added_rows_collapse_the_census_of_distinct_series= rebuilds
+the grammar the compiled table carried, by dropping the eight new rows
+from the seed, and walks the corpus under each. It reports =distinct
+series: 1612 before the eight rows, 1117 after=: 495 of 1,612 series
+go, a drop of 31 per cent. That is the acceptance's material drop,
+printed by the run and recorded here. The fixing entries are typed
+=("FIXING", "RATE", <index name>)= by construction rather than
+decomposed, exactly as =import_service= composes them, so the drop is
+driven by the market data side, which is where the eight rows act.
+
+=every_distinct_series_key_in_the_ore_corpus_classifies= now walks
+through both readers, as the Notes required.
+
+** What the census counts
+
+The Notes recorded that the two earlier counts disagreed: a manual
+survey reported 107,947 distinct keys across 41 types in 91 files, and
+the C++ test comment claimed 107,951 across 42 in 95. The census is the
+union of the two readers, and it reads:
+
+| Reader                  | Distinct keys | Types | Files |
+|-------------------------+---------------+-------+-------|
+| =parse_market_data=     |       107,947 |    41 |    91 |
+| =parse_fixings=         |           158 |     1 |    54 |
+| Union, as the test counts it |   108,105 |    42 |   145 |
+
+The two earlier figures were each right about their own scope, and
+neither was the union. The survey's 107,947 across 41 in 91 files is
+the market data reader alone. The union adds 158 fixing keys over 54
+files, and its forty-second type is =FIXING=, which no market data file
+carries: the market data side holds 35 of the original types plus 6 of
+the 8 this task added, and the fixing side contributes one type.
+
+=GENERIC-MD= is the added type that looked like the forty-second and is
+not one. It appears nowhere in the corpus except as the fixing id of
+four rows in two =fixings.csv= files, which address the datum they fix
+by its whole key:
+
+#+begin_src
+2024-12-02,GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C,2862.2941176471
+#+end_src
+
+=import_service= composes =FIXING/RATE/<id>= for every row of a fixing
+payload whatever its id names, so the walk gives those rows the same
+key the import gives them and they count as =FIXING=. The shape row for
+=GENERIC-MD= is therefore not reached by this corpus at all. Its
+classification rule is still covered, by the catalogue sweep in
+=every_classification_code_the_classifier_can_emit_exists_in_its_catalogue=,
+which classifies every type the classifier names, probes included.
+
+** The file name decides which reader a file feeds
+
+The first cut of this test offered every file to the market data reader
+and handed each rejection to the fixing reader. That is not what an
+import does, and it inflated the fixing census fourteen-fold.
+
+=import_service= takes market data and fixings as two separately named
+payloads, =req.market_data_content= and =req.fixings_content=, and
+never asks either reader to guess a file's kind. The corpus names its
+fixing payloads =fixings*=, so the walk does the same.
+
+Without that rule the fixing reader took 68 files for 2,246 keys, where
+the corpus holds 54 files and 158. The excess was not fixing data. The
+corpus's exposure reports are =date,EPE,ENE= tables, and
+=parse_fixings= checks the date and stores the two fields after it
+without reading them, so
+
+#+begin_src
+2016-02-05,99230.3007,0.0000
+#+end_src
+
+entered the census as a series whose qualifier is =99230.3007=. The six
+=xvacg-exposure.csv= files alone supplied 2,033 of the 2,246 keys.
+Naming the payload as the corpus and the import both name it is what
+keeps them out. A walk that counts them is not measuring fixings, and
+its floors would have been set from the inflated figure.
+
+** The fixing taxonomy, which this unit can now see
+
+Reading the fixing payloads puts the =FIXING= rule in front of the
+corpus for the first time. That closes finding 1 of the sibling task's
+review, which recorded the rule as the one the sweep proved nothing
+about and declined to remove it on the strength of the =index_fixing=
+catalogue code alone. The rule is now reached, by 158 distinct index
+names, and they do not agree with it. Every fixing classifies as
+=interest_rates= and =index_fixing=, while the names break down:
+
+| Prefix                      | Names | Class the name carries |
+|-----------------------------+-------+------------------------|
+| =COMM-=                     |    25 | commodity              |
+| =EQ-=                       |     8 | equity                 |
+| =FX-=                       |     7 | fx                     |
+| =BOND-ISIN:=                |     2 | bond                   |
+| =GENERIC-MD=                |     2 | equity                 |
+| rates and inflation indices |   114 | interest_rates         |
+
+So about 44 of the 158 name a class the rule does not give them. This
+is a taxonomy gap and not a fault this task introduces: the rule
+predates it, and the corpus could not contradict it before, because no
+test read a fixing. It is recorded rather than changed here, because
+Unit 5 turns the classification table into data, and a fixing rule that
+reads the index family is a row in that table.
+
+** Left open
+
+SHAPE_PROFILE and GENERIC-MD are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=, which also lacks
+the per-type qualifier and point table. That document is not in this
+task's acceptance and not in this unit's row of the Work-units table,
+and task 235 owns the point model's documentation. It stays open.
+
+** The suite
+
+=ores.marketdata.core.tests= is green: 193 cases, no failure, 28.83
+seconds, read back from the run's own results file. This unit changes
+one test file and no other target, so =ores.ore.core.tests= is not
+re-run; Unit 3's run of it stands.
 
 * Test Scenarios
 

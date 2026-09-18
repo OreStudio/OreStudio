@@ -158,7 +158,7 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 | modified_by   | Modified By   |
 | version       | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/purpose_type.hpp
 :domain_class:           refdata::domain::purpose_type
@@ -183,7 +183,7 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :icon:                   Flag
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header        | type      | width | is_badge | badge_key    |
 |--------------+---------------+---------------+-----------+-------+----------+--------------|

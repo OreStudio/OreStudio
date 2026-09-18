@@ -201,7 +201,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 | modified_by        | Modified By   |
 | version            | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/party_id_scheme.hpp
 :domain_class:           refdata::domain::party_id_scheme
@@ -237,7 +237,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 | display_order       | Display Order  | displayOrderEdit     | spin_box  |        |             |                                  |
 | max_cardinality     | Max Cardinality| maxCardinalityEdit   | spin_box  |        |             |                                  |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header        | type      | width |
 |------------------+--------------------+---------------+-----------+-------|

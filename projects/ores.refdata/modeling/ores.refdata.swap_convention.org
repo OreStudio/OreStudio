@@ -187,7 +187,7 @@ std::nullopt
 | modified_by              | Modified By |
 | version                  | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         swap_conventions
 :item_var:                sc
@@ -225,7 +225,7 @@ std::nullopt
 | float_frequency          | Float Frequency          | floatFrequencyEdit        | line_edit |        |             | e.g. Semiannual        |
 | sub_periods_coupon_type  | Sub-Periods Coupon Type  | subPeriodsCouponTypeEdit  | line_edit |        |             | e.g. Compounding       |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name             | field                    | header      | type      | width |
 |-----------------------+--------------------------+-------------+-----------+-------|

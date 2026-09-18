@@ -6,8 +6,8 @@ The graph is one org document per node, named for its MASD address:
 
     ores            (root)              -> * Technical spaces
       ores.cpp      (technical_space)   -> * Facets
-        ores.cpp.qt (facet)            -> * Archetypes
-          ores.cpp.qt.controller_header (archetype, leaf)
+        ores.cpp.repository (facet)    -> * Archetypes
+          ores.cpp.repository.mapper_header (archetype, leaf)
 
 Each parent's child table is GENERATED from the children's frontmatter —
 never hand-edited. Parent links are the frontmatter keywords set at scaffold

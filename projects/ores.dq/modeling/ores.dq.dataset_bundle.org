@@ -138,7 +138,7 @@ std::string(faker::lorem::sentence())
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/dataset_bundle.hpp
 :domain_class:           dq::domain::dataset_bundle
@@ -166,7 +166,7 @@ std::string(faker::lorem::sentence())
 :has_pagination:         true
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

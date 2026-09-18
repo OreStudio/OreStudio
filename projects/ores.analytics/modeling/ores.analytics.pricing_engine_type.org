@@ -107,7 +107,7 @@ std::string("NONE")
 :iterator_var: pet
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.analytics.api/domain/pricing_engine_type.hpp
 :domain_class:           analytics::domain::pricing_engine_type
@@ -140,7 +140,7 @@ std::string("NONE")
 | description          | Description          | descriptionEdit            | text_edit     |        |             | Enter a human-readable description                            |                               |                     |                      |                          |                           |                  |                     |                   |                |                        |              |
 | instrument_type_code | Instrument Type     | instrumentTypeCodeCombo    | dynamic_combo |        |             | Select an instrument type (or leave blank for none)           | refdata::domain::instrument_code | code                | ores.qt/LookupFetcher.hpp | fetch_instrument_codes   | instrumentTypeCodeWatcher | code             | description         | display_order     | instrument types | InstrumentTypeCodeCombo |              |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header          | type      | width |
 |--------------------+----------------------+-----------------+-----------+-------|

@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: B900C531-535D-48CA-97E7-02CCE556A70B
-:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.observation_lineage
 #+description: Codegen entity model for the marketdata observation_lineage table; per-observation provenance for a derived (non-OBSERVED) market_observation generation.

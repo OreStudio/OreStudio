@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 5D9A3C6E-1F4B-4A8D-B7C2-6E0D3A9F5B1C
-:ores.cpp.qt.enabled: true
 :END:
 #+title: ores.refdata.crm_enabled_derived_pair
 #+description: Codegen entity model for the refdata crm_enabled_derived_pair table; a curated derived (non-edge) currency pair a consumer may request from the CRM.
@@ -202,7 +201,7 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 :iterator_var: p
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/crm_enabled_derived_pair.hpp
 :domain_class:            refdata::domain::crm_enabled_derived_pair
@@ -239,7 +238,7 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 | quote_currency_code  | Quote   | quoteCcyCombo   | flagged_combo |    | true        |                         |                       | currency    | fetch_currency_codes         | ores.qt/LookupFetcher.hpp   | false              |                                        |                       |                    |                        |                    |                                         |                         |
 | enabled              | Enabled | enabledCheckBox | check_box |        |             |                       |             |                      |                             |                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header       | type      | width | is_badge | badge_key   | hidden_by_default |
 |--------------------+----------------------+--------------+-----------+-------+----------+-------------+--------------------|
@@ -251,7 +250,7 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 | ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |                    |
 | RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |                    |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Base/quote currencies each get their own flag icon, matching
 CurrencyPair's per-column (not composited) treatment when the pair

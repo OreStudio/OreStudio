@@ -153,7 +153,7 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/contact_type.hpp
 :domain_class:                refdata::domain::contact_type
@@ -191,7 +191,7 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 | description   | Description   | descriptionEdit   | line_edit |        |             | Short description            |
 | display_order | Display Order | displayOrderEdit  | spin_box  |        |             |                              |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width | is_badge | badge_key    |
 |--------------+---------------+-------------+-----------+-------+----------+--------------|

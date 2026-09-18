@@ -141,7 +141,7 @@ std::string(faker::person::fullName())
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/catalog.hpp
 :domain_class:           dq::domain::catalog
@@ -177,7 +177,7 @@ std::string(faker::person::fullName())
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description               |
 | owner       | Owner       | ownerEdit       | line_edit |        |             | Enter the owning team or person   |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

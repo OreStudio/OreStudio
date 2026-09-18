@@ -211,7 +211,7 @@ Tenant lifecycle status (FK to tenant_statuses).
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.iam.api/domain/tenant.hpp
 :domain_class:           iam::domain::tenant
@@ -246,7 +246,7 @@ Tenant lifecycle status (FK to tenant_statuses).
 | hostname | Hostname | hostnameEdit | line_edit |        |             | Enter hostname     |
 | status   | Status   | statusEdit   | line_edit |        |             | Enter status       |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name  | field       | header      | type      | width |
 |------------+-------------+-------------+-----------+-------|

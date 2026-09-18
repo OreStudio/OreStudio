@@ -1,9 +1,6 @@
 :PROPERTIES:
 :ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
-:ores.cpp.qt.detail_dialog_header.enabled: false
-:ores.cpp.qt.detail_dialog_impl.enabled: false
-:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.dq.lei_relationship
 #+description: Codegen entity model for the dq =lei_relationship= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -241,7 +238,7 @@ std::string(faker::word::noun())
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.dq.api/domain/lei_relationship.hpp
 :domain_class:                dq::domain::lei_relationship
@@ -259,7 +256,7 @@ std::string(faker::word::noun())
 :icon:                         Table
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field                            | header     | type   | width |
 |-------------+----------------------------------+------------+--------+-------|
@@ -276,15 +273,9 @@ explicitly terminal, not published anywhere. GLEIF LEI
 corporate-hierarchy data is queried directly from the artefact table;
 a same-component main table would be an orphan nobody designed for.
 
-Qt UI deliberately disabled (see Physical space below): same rationale
+Qt UI deliberately disabled: same rationale
 as =lei_entity= -- the generated read-only Explorer list window
 queried the (correctly nonexistent) main table and errored on open.
-
-* Physical space
-
-| Address     | Enabled |
-|-------------+---------|
-| ores.cpp.qt | false   |
 
 * See also
 

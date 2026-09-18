@@ -135,7 +135,7 @@ faker::number::integer(1, 100)
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/badge_severity.hpp
 :domain_class:           dq::domain::badge_severity
@@ -162,7 +162,7 @@ faker::number::integer(1, 100)
 :has_change_reason_cache: true
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

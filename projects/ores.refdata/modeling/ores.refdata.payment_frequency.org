@@ -219,7 +219,7 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 | modified_by      | Modified By     |
 | version          | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/payment_frequency.hpp
 :domain_class:           refdata::domain::payment_frequency
@@ -256,7 +256,7 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 | period_multiplier | Period Multiplier | periodMultiplierEdit | spin_box    |        |             |                                |              |                                 |                             |                    |                     |                    |                      |                    |               |                        |             |
 | display_order     | Display Order     | displayOrderEdit   | spin_box      |        | true        |                                |              |                                 |                             |                    |                     |                    |                      |                    |               |                        |             |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field             | header            | type      | width | is_badge | badge_key  |
 |------------------+-------------------+--------------------+-----------+-------+----------+-------------|

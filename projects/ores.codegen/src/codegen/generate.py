@@ -113,6 +113,17 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
+# The TypeScript UI metadata facet projects the presentation drawer's
+# column table. A model with no such table has no presentation metadata to
+# project, and an empty declaration would state that the entity has no
+# columns -- which is false for the market-data and staging entities that
+# deliberately carry no UI drawer at all. Six more entities get a drawer
+# from their bound profile, with flags but no table, and are equally
+# nothing to project.
+_UI_META_FACETS = frozenset({
+    "ores.ts.ui",
+})
+
 
 def _hosted_subcomponents(component_org: Path) -> list[str]:
     """Return the sub-component projects hosted directly under an org's root.
@@ -224,6 +235,14 @@ def resolve_targets(
     gen_facets = resolve_generation_set(supported, target)
 
     model_data = load_model(model_path)
+    if model_type in ("domain_entity", "junction"):
+        ent = model_data.get(model_type) or {}
+        if not ((ent.get("presentation") or {}).get("columns")):
+            # Hard gate, like the messaging and history-provider gates
+            # below: an explicit :ores.ts.ui.enabled: override must not
+            # re-admit a facet the model has no input for.
+            gen_facets = {f for f in gen_facets
+                          if f not in _UI_META_FACETS}
     if model_type == "junction":
         junction = model_data.get("junction", {})
         left = (junction.get("left") or {}).get("list_by")
@@ -339,7 +358,7 @@ def _generate_single(
         graph = load_graph(base_dir / "library" / "templates")
         if not address_supports_model_type(address, model_type, graph):
             # The address can never generate this model type (e.g. a
-            # junction model against ores.cpp.qt) — auto-discovered
+            # junction model against ores.cpp.repository) — auto-discovered
             # --component runs hit this constantly and it is not a
             # failure, so it stays silent (DEBUG). An explicit
             # single-entity invocation naming an incompatible pair is a
@@ -376,35 +395,10 @@ def _generate_single(
     dataset_prefix = dataset.get("prefix") or dataset.get("name")
     dataset_dir = model_path.parent
 
-    # A junction or domain_entity with no ** Qt drawer is incompatible with
-    # ores.cpp.qt (see generate_from_model's own fail-fast for the same
-    # condition). Under an explicit --address ores.cpp.qt request that
-    # incompatibility is the whole point of the run and must still error.
-    # But under the default, address-less "full supported set" run it used
-    # to abort the ENTIRE generate the moment it reached the first Qt unit
-    # in iteration order -- silently starving every facet ordered after Qt
-    # (repository, service, SQL, ...) of ever being generated for that
-    # entity, and for domain_entity there was no fail-fast at all, so a
-    # missing Qt drawer instead rendered broken Qt output (empty #include,
-    # empty class names) that nothing caught until compile time. Skip just
-    # the Qt units instead, so the rest of the supported set still
-    # generates and no broken Qt files get written.
-    is_junction_no_qt = model_type == "junction" and not model_data.get("junction", {}).get("qt")
-    is_domain_entity_no_qt = (
-        model_type == "domain_entity" and not model_data.get("domain_entity", {}).get("qt"))
-    model_incompatible_with_qt = is_junction_no_qt or is_domain_entity_no_qt
-    qt_address_requested = bool(address) and address.startswith("ores.cpp.qt")
-
     written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
         output_path = project_root / unit["output"]
-        is_qt_template = template_name.startswith("cpp_qt_") or template_name.startswith("qt_")
-        if model_incompatible_with_qt and is_qt_template and not qt_address_requested:
-            log.info(
-                "%s: skipping %s -- %s has no ** Qt drawer",
-                model_path.name, template_name, model_type)
-            continue
         if dry_run:
             print(str(output_path))
             continue
@@ -450,9 +444,8 @@ def _generate_single(
                 target_output=output_path.name,
             )
             if result:
-                # generate_from_model already logged why (e.g. a junction
-                # missing the ** Qt drawer its address requires) -- abort
-                # rather than hand a nonexistent path to clang_format_files
+                # generate_from_model already logged why -- abort rather
+                # than hand a nonexistent path to clang_format_files
                 # below, which would crash on a file-not-found instead of
                 # surfacing the real cause.
                 return result

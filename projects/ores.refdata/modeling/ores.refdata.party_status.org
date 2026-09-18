@@ -154,7 +154,7 @@ drop function if exists ores_refdata_validate_party_status_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/party_status.hpp
 :domain_class:           refdata::domain::party_status
@@ -188,7 +188,7 @@ drop function if exists ores_refdata_validate_party_status_fn;
 | description   | Description   | descriptionEdit  | text_edit |        | true        | Enter a description  |
 | display_order | Display Order | displayOrderEdit | spin_box  |        |             |                      |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

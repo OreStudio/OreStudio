@@ -203,7 +203,7 @@ std::nullopt
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.reporting/domain/report_definition.hpp
 :domain_class:           reporting::domain::report_definition
@@ -239,7 +239,7 @@ std::nullopt
 | schedule_expression | Schedule (cron)    | scheduleExpressionEdit | line_edit |        | true        | e.g. 0 6 * * 1               |
 | concurrency_policy  | Concurrency Policy | concurrencyPolicyEdit  | line_edit |        | true        | e.g. skip                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field               | header      | type   | width |
 |--------------------+---------------------+-------------+--------+-------|

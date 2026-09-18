@@ -39,8 +39,8 @@ from typing import Any
 # catalogued profiles (projects/modeling/variability_<slug>.org). Its
 # Assignments table -- Feature | Value -- is the single source of truth for
 # the feature defaults it supplies; nothing here duplicates that data.
-# Which of the entity dict's three namespaces (root / sql / qt) a feature
-# belongs to is fixed by the feature catalogue itself
+# Which of the entity dict's three namespaces (root / sql / presentation) a
+# feature belongs to is fixed by the feature catalogue itself
 # (projects/modeling/variability_features.org's grouping).
 
 _PROFILES_DIR = Path(__file__).resolve().parents[3] / "modeling"
@@ -62,18 +62,18 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "rls_tenant_isolation": "sql",
     "rls_party_isolation": "sql",
     "rls_system_tenant_visible": "sql",
-    "has_pagination": "qt",
-    "has_uuid_primary_key": "qt",
-    "has_change_reason_cache": "qt",
-    "has_explorer_api": "qt",
-    "parent_entity_singular": "qt",
-    "has_csv_xml_io": "qt",
-    "has_export_macro": "qt",
-    "has_version_navigation": "qt",
-    "has_readonly_paginated_list": "qt",
-    "has_parent_scoped_list": "qt",
-    "parent_key_field": "qt",
-    "parent_key_param": "qt",
+    "has_pagination": "presentation",
+    "has_uuid_primary_key": "presentation",
+    "has_change_reason_cache": "presentation",
+    "has_explorer_api": "presentation",
+    "parent_entity_singular": "presentation",
+    "has_csv_xml_io": "presentation",
+    "has_export_macro": "presentation",
+    "has_version_navigation": "presentation",
+    "has_readonly_paginated_list": "presentation",
+    "has_parent_scoped_list": "presentation",
+    "parent_key_field": "presentation",
+    "parent_key_param": "presentation",
 }
 
 _LINK_RE = re.compile(r"\[\[id:[0-9A-Fa-f-]+\]\[([^\]]+)\]\]")
@@ -341,11 +341,11 @@ def _profile_namespace_defaults(
     slugs: str | list[str] | None, namespace: str,
 ) -> dict[str, Any]:
     """The subset of a profile list's Assignments that belongs to one
-    namespace (``""``/``"sql"``/``"qt"``), as a plain dict -- used to seed a
-    facet's raw properties *before* that facet derives any computed flag
-    from them (e.g. ``ores.cpp.qt``'s ``has_toolbar`` from
-    ``has_version_navigation``), so the derivation sees the profile's
-    values rather than their absence."""
+    namespace (``""``/``"sql"``/``"presentation"``), as a plain dict -- used
+    to seed a facet's raw properties *before* that facet derives any computed
+    flag from them (e.g. the presentation drawer's ``has_toolbar`` from
+    ``has_version_navigation``), so the derivation sees the profile's values
+    rather than their absence."""
     out: dict[str, Any] = {}
     sources: dict[str, str] = {}
     for slug in _parse_profile_list(slugs):
@@ -362,8 +362,8 @@ def _profile_namespace_defaults(
 
 def _apply_profile(de: dict[str, Any]) -> None:
     """If de['profile'] names one or more catalogued profiles, merge their
-    Assignments as defaults into de (root / sql / qt namespaces per
-    feature), in list order. An already-explicit value at the entity level
+    Assignments as defaults into de (root / sql / presentation namespaces
+    per feature), in list order. An already-explicit value at the entity level
     always wins -- a profile supplies defaults, it never overrides what the
     model author wrote. Two profiles bound together that disagree on the
     same feature raise rather than silently picking one -- see
@@ -371,10 +371,10 @@ def _apply_profile(de: dict[str, Any]) -> None:
 
     This is the final safety-net pass over the whole ``de`` dict; namespaces
     whose facet derives computed flags from these features (currently
-    ``qt``) must also seed those defaults *before* that facet's own parsing
-    via :func:`_profile_namespace_defaults`, since by the time this runs the
-    derivation has already happened and setdefault here is too late to
-    affect it."""
+    ``presentation``) must also seed those defaults *before* that facet's own
+    parsing via :func:`_profile_namespace_defaults`, since by the time this
+    runs the derivation has already happened and setdefault here is too late
+    to affect it."""
     slugs = _parse_profile_list(de.get("profile"))
     if not slugs:
         return
@@ -1005,6 +1005,42 @@ def _entity_org_by_table(projects_dir: Path) -> dict[str, dict[str, Any]]:
     return out
 
 
+@lru_cache(maxsize=None)
+def _collection_name_by_entity(projects_dir: Path) -> dict[str, str]:
+    """Map every entity's ``#+entity_singular:`` to its ``:collection_name:``.
+
+    Raw-text scan (no org parse), cached per process, the same shape and for
+    the same reason as ``_entity_org_by_table`` above. A detail field's
+    ``combo_domain_type`` names the domain type its options come from (e.g.
+    ``refdata::domain::book_status``); the TypeScript lookup source needs the
+    collection that type lists from, which only the target entity's own
+    presentation drawer states.
+    """
+    out: dict[str, str] = {}
+    for org in sorted(projects_dir.glob("*/modeling/*.org")):
+        text = org.read_text(encoding="utf-8", errors="replace")
+        sm = re.search(r"^#\+entity_singular:\s*(\S+)", text, re.M)
+        if not sm:
+            continue
+        cm = re.search(r"^:collection_name:\s*(\S+)\s*$", text, re.M)
+        if cm:
+            out[sm.group(1)] = cm.group(1)
+    return out
+
+
+def collection_name_for_domain_type(projects_dir: Path,
+                                    combo_domain_type: str) -> str | None:
+    """The collection a ``refdata::domain::book_status`` combo lists from.
+
+    Resolved one hop: the domain type's last ``::`` segment is the target
+    entity's singular, and that entity's presentation drawer names its
+    collection. Returns None when the hop does not resolve, and the caller
+    omits the lookup rather than emitting a source it cannot name.
+    """
+    entity = (combo_domain_type or "").rsplit("::", 1)[-1]
+    return _collection_name_by_entity(projects_dir).get(entity)
+
+
 def _table_display(node: OrgNode) -> list[dict[str, str]]:
     if not node.tables:
         return []
@@ -1035,8 +1071,8 @@ def _detail_fields(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
-def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
-    """Convert the Qt 'Columns (Qt model)' table into the dict list shape."""
+def _presentation_columns(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the drawer's 'Columns' table into the dict list shape."""
     if not node.tables:
         return []
     out: list[dict[str, Any]] = []
@@ -1066,23 +1102,17 @@ def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
-def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
-    """Convert the Qt 'Icon columns (Qt model)' table into the dict list shape.
+def _presentation_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the drawer's 'Icon columns' table into the dict list shape.
 
-    Each row is one Qt::DecorationRole column: `column` (the Column enum
-    value), `accessor` (a function taking ImageCache& then 1-2 row fields,
-    e.g. currency_flag_icon), `field1` (always), `field2` (optional — a
-    second row field for a composited two-field icon, e.g. a currency pair).
-    `has_field2` is computed so the template can conditionally emit the
-    second argument without any templating logic beyond section presence.
+    `column` is the Column enum value of a column that renders an icon,
+    and both projections read it to mark that column's style. The
+    `accessor`, `field1` and `field2` cells record how the icon was built
+    for the retired Qt view and have no reader now.
 
-    `is_pair` marks a *visually* wide (roughly 2:1) composited icon that
-    needs the view's iconSize widened past the single-flag default —
-    defaults to true when field2 is set (the two-field case, e.g.
-    currency_pair's own base_currency/quote_currency), but must be set
-    explicitly for a single-field accessor that still produces a pair icon
-    internally (e.g. currency_flag_icon_from_pair_code splitting one
-    "BASE/QUOTE" field) — has_field2 alone can't detect that case.
+    `is_pair` marks a *visually* wide (roughly 2:1) composited icon. It
+    defaults to true when `field2` is set, and a single-field accessor that
+    still produces a pair icon internally must set it explicitly.
     """
     if not node.tables:
         return []
@@ -1098,8 +1128,8 @@ def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
-def _qt_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
-    """Convert the Qt 'Setting-gated actions' table into the dict list shape.
+def _presentation_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the drawer's 'Setting-gated actions' table into the dict list shape.
 
     Each row names one existing QAction* member (`action`, without the
     trailing underscore) whose visibility is gated by a boolean system
@@ -1114,8 +1144,8 @@ def _qt_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
     ]
 
 
-def _qt_related_entity_shortcuts(node: OrgNode) -> list[dict[str, Any]]:
-    """Convert the Qt 'Related entity shortcuts' table into the dict list shape.
+def _presentation_related_entity_shortcuts(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the drawer's 'Related entity shortcuts' table into the dict list shape.
 
     Each row is a toolbar shortcut to a related entity's own list window —
     e.g. currency's Rounding Type / Monetary Nature / Market Tier combos each
@@ -1452,11 +1482,11 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         if cpp_out:
             de["cpp"] = cpp_out
 
-        # Qt UI bindings.
-        qt = _section(cpp_section, "Qt")
-        if qt:
-            de["qt"] = _parse_qt_drawer(
-                qt, _profile_namespace_defaults(de.get("profile"), "qt")
+        # Presentation bindings.
+        drawer = _section(cpp_section, "Presentation")
+        if drawer:
+            de["presentation"] = _parse_presentation_drawer(
+                drawer, _profile_namespace_defaults(de.get("profile"), "presentation")
             )
 
         # Custom repository methods (the literate fragment mechanism).
@@ -1479,37 +1509,37 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     return {"domain_entity": de}
 
 
-def _parse_qt_drawer(
-    qt: OrgNode, profile_defaults: dict[str, Any] | None = None
+def _parse_presentation_drawer(
+    drawer: OrgNode, profile_defaults: dict[str, Any] | None = None
 ) -> dict[str, Any]:
-    """Parse a ``** Qt`` drawer (properties + Detail fields / Columns (Qt
-    model) / Icon columns / Setting-gated actions / Related entity
-    shortcuts sub-sections) into the ``qt`` sub-dict the ``ores.cpp.qt``
-    mustache templates consume. Shared by :func:`org_document_to_model`
+    """Parse a ``** Presentation`` drawer (properties + Detail fields /
+    Columns / Icon columns / Setting-gated actions / Related entity
+    shortcuts sub-sections) into the ``presentation`` sub-dict a consuming
+    facet renders from. Shared by :func:`org_document_to_model`
     (domain_entity) and :func:`load_org_junction_model` (junction) — the
     drawer shape and every derived flag below is identical for both.
 
-    ``profile_defaults`` (a bound entity's profile's qt-namespace
+    ``profile_defaults`` (a bound entity's profile's presentation-namespace
     Assignments, if any) is seeded in *before* any derivation below runs --
     e.g. ``has_toolbar``'s derivation from ``has_version_navigation`` must
     see the profile-supplied value, not its absence. An explicit drawer
     property still wins over it either way."""
-    qt_out: dict[str, Any] = {}
-    for k, v in qt.properties.items():
-        qt_out[k.lower()] = _parse_typed(v)
+    presentation_out: dict[str, Any] = {}
+    for k, v in drawer.properties.items():
+        presentation_out[k.lower()] = _parse_typed(v)
     if profile_defaults:
         for k, v in profile_defaults.items():
-            qt_out.setdefault(k, v)
-    df = _section(qt, "Detail fields")
+            presentation_out.setdefault(k, v)
+    df = _section(drawer, "Detail fields")
     if df:
-        qt_out["detail_fields"] = _detail_fields(df)
+        presentation_out["detail_fields"] = _detail_fields(df)
         # static_combo fields declare their fixed option set as a
         # comma-separated :combo_values: string (e.g. "Active,
         # Inactive,Closed") — parsed here into the {label, value}
         # dicts the template iterates. label == value; if a field
         # ever needs them to differ, extend this to accept
         # "label:value" pairs.
-        for f in qt_out["detail_fields"]:
+        for f in presentation_out["detail_fields"]:
             raw = f.get('combo_values')
             if f.get('type') == 'static_combo' and isinstance(raw, str) and raw:
                 f['combo_values'] = [
@@ -1521,48 +1551,48 @@ def _parse_qt_drawer(
         # badge_key values that core.py's is_flagged_combo /
         # is_static_combo handling defaults in, which runs after
         # this module.
-    qc = _section(qt, "Columns (Qt model)")
+    qc = _section(drawer, "Columns")
     if qc:
-        qt_out["columns"] = _qt_columns(qc)
+        presentation_out["columns"] = _presentation_columns(qc)
         # Preview columns for the generic import dialog (has_csv_xml_io):
         # excludes audit/system fields that are meaningless before a
         # record is imported (its own version/modified_by/recorded_at
         # belong to the never-yet-saved row, not the source file).
         #
         # Opt-in, not opt-out: a column only appears in the import
-        # preview if its row in "Columns (Qt model)" sets
+        # preview if its row in "Columns" sets
         # :import_preview: true explicitly. An exclude-list keyed on
         # generic properties (is_timestamp, audit field names) was
         # tried first and silently over-included fields the entity
         # author never intended to preview (caught in PR #1445
         # review — currency's hand-migrated dialog only shows 5 of
         # its 14 columns, not the ~11 an opt-out list would keep).
-        qt_out["import_preview_columns"] = [
-            c for c in qt_out["columns"] if c.get("import_preview")
+        presentation_out["import_preview_columns"] = [
+            c for c in presentation_out["columns"] if c.get("import_preview")
         ]
-    ic = _section(qt, "Icon columns (Qt model)")
+    ic = _section(drawer, "Icon columns")
     if ic:
-        qt_out["icon_columns"] = _qt_icon_columns(ic)
-        qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
+        presentation_out["icon_columns"] = _presentation_icon_columns(ic)
+        presentation_out["has_icon_columns"] = bool(presentation_out["icon_columns"])
         # Any pair (roughly 2:1) composited icon needs the view's
         # iconSize widened past Qt's default square box — see
         # currency_pair_icon_size() in FlagIconHelper.hpp — or it
         # renders squished.
-        qt_out["has_pair_icon_column"] = any(
-            entry.get("is_pair") for entry in qt_out["icon_columns"]
+        presentation_out["has_pair_icon_column"] = any(
+            entry.get("is_pair") for entry in presentation_out["icon_columns"]
         )
-    sga = _section(qt, "Setting-gated actions")
+    sga = _section(drawer, "Setting-gated actions")
     if sga:
-        qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
-        qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
+        presentation_out["setting_gated_actions"] = _presentation_setting_gated_actions(sga)
+        presentation_out["has_setting_gated_actions"] = bool(presentation_out["setting_gated_actions"])
     # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
     # facet) — a detail dialog opts into a "Generate" toolbar button that fills
     # its fields from it by naming the QAction member "generateAction" in the
     # Setting-gated actions table above (member declaration + visibility gating
     # both come from that table already; this only decides whether the click
     # handler and its generator call get generated).
-    qt_out["has_generate_action"] = any(
-        a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
+    presentation_out["has_generate_action"] = any(
+        a.get("action") == "generateAction" for a in presentation_out.get("setting_gated_actions", [])
     )
     # A detail dialog needs a QToolBar iff it hosts version-nav
     # actions, the Generate action (both add QAction rows to it),
@@ -1571,21 +1601,21 @@ def _parse_qt_drawer(
     # its own, like calendar's "Regenerate up to <year>") --
     # an explicit :has_toolbar: true in the drawer must survive
     # this derivation, not be silently overwritten by it.
-    qt_out["has_toolbar"] = bool(
-        qt_out.get("has_toolbar")
-        or qt_out.get("has_version_navigation")
-        or qt_out["has_generate_action"]
+    presentation_out["has_toolbar"] = bool(
+        presentation_out.get("has_toolbar")
+        or presentation_out.get("has_version_navigation")
+        or presentation_out["has_generate_action"]
     )
-    res = _section(qt, "Related entity shortcuts")
+    res = _section(drawer, "Related entity shortcuts")
     if res:
-        qt_out["related_entity_shortcuts"] = _qt_related_entity_shortcuts(res)
-        qt_out["has_related_entity_shortcuts"] = bool(qt_out["related_entity_shortcuts"])
+        presentation_out["related_entity_shortcuts"] = _presentation_related_entity_shortcuts(res)
+        presentation_out["has_related_entity_shortcuts"] = bool(presentation_out["related_entity_shortcuts"])
     # has_flag_icon is derived, not a separately-authored property:
     # an entity has the single-column image_id-keyed flag mechanism
     # iff it declared which column shows it. Any manually-set
     # :has_flag_icon: in the .org file is ignored/overwritten here —
     # it was always redundant with :flag_icon_column: being present.
-    qt_out["has_flag_icon"] = bool(qt_out.get("flag_icon_column"))
+    presentation_out["has_flag_icon"] = bool(presentation_out.get("flag_icon_column"))
     # has_key_flag_icon gates ONLY the detail dialog's inline
     # leading-icon-on-a-line-edit display (keyFlagField()/
     # keyFlagIcon(), via set_line_edit_flag_icon() —
@@ -1600,19 +1630,19 @@ def _parse_qt_drawer(
     # flag_accessor when has_flag_icon is set and neither was given
     # explicitly, so existing has_flag_icon entities (Country,
     # Currency) are unaffected.
-    if not qt_out.get("key_flag_field") and qt_out.get("flag_inline_widget"):
-        qt_out["key_flag_field"] = qt_out["flag_inline_widget"]
-    if not qt_out.get("key_flag_accessor") and qt_out.get("flag_accessor"):
-        qt_out["key_flag_accessor"] = qt_out["flag_accessor"]
-    qt_out["has_key_flag_icon"] = bool(qt_out.get("key_flag_field"))
+    if not presentation_out.get("key_flag_field") and presentation_out.get("flag_inline_widget"):
+        presentation_out["key_flag_field"] = presentation_out["flag_inline_widget"]
+    if not presentation_out.get("key_flag_accessor") and presentation_out.get("flag_accessor"):
+        presentation_out["key_flag_accessor"] = presentation_out["flag_accessor"]
+    presentation_out["has_key_flag_icon"] = bool(presentation_out.get("key_flag_field"))
     # Any list view showing a flag at all (own image_id-backed
     # column, or a derived icon_columns entry) must set an explicit
     # iconSize rather than rely on Qt's implicit per-style default —
     # see single_flag_icon_size()/currency_pair_icon_size() in
     # FlagIconHelper.hpp: two views relying on the implicit default
     # aren't guaranteed to render the same flag at the same size.
-    qt_out["has_any_flag_icon"] = (
-        qt_out["has_flag_icon"] or qt_out.get("has_icon_columns", False)
+    presentation_out["has_any_flag_icon"] = (
+        presentation_out["has_flag_icon"] or presentation_out.get("has_icon_columns", False)
     )
     # Whether an ImageCache reference needs threading through the
     # controller/window/detail-dialog layers at all — true for either
@@ -1624,24 +1654,24 @@ def _parse_qt_drawer(
     # Whether any dynamic-combo detail field decorates its items with
     # flag icons (e.g. a currency combo) via FlagIconHelper —
     # gates the include and the ImageCache wiring below.
-    qt_out["has_combo_flag_source"] = any(
-        f.get("flag_source") for f in qt_out.get("detail_fields", [])
+    presentation_out["has_combo_flag_source"] = any(
+        f.get("flag_source") for f in presentation_out.get("detail_fields", [])
     )
     # Whether any dynamic-combo detail field uses the
     # populateDynamicCombo<Entity> helper (fetch/sort/tooltip/
     # placeholder/restore-selection, piloted on currency's
     # rounding_type/monetary_nature/market_tier combos) — gates
     # the DynamicComboSetup.hpp/LookupFetcher.hpp includes.
-    qt_out["has_dynamic_combo_helper_fields"] = any(
-        f.get("combo_domain_type") for f in qt_out.get("detail_fields", [])
+    presentation_out["has_dynamic_combo_helper_fields"] = any(
+        f.get("combo_domain_type") for f in presentation_out.get("detail_fields", [])
     )
-    qt_out["needs_image_cache"] = (
-        qt_out["has_flag_icon"]
-        or qt_out["has_key_flag_icon"]
-        or qt_out.get("has_icon_columns", False)
-        or qt_out["has_combo_flag_source"]
+    presentation_out["needs_image_cache"] = (
+        presentation_out["has_flag_icon"]
+        or presentation_out["has_key_flag_icon"]
+        or presentation_out.get("has_icon_columns", False)
+        or presentation_out["has_combo_flag_source"]
     )
-    return qt_out
+    return presentation_out
 
 
 # --------------------------------------------------------------------------
@@ -1939,19 +1969,20 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         if td:
             cpp_out["table_display"] = _table_display(td)
 
-        # Qt UI bindings, parsed identically to a domain_entity's ** Qt
-        # drawer (see _parse_qt_drawer) -- but a junction's own fields
+        # Presentation bindings, parsed identically to a domain_entity's
+        # ** Presentation drawer (see _parse_presentation_drawer) -- but a
+        # junction's own fields
         # (name_singular/name/... , repository.name_short/...) use
         # different key names than domain_entity's (entity_singular/
-        # entity_plural/..., repository.entity_plural_short/...), so the
-        # ores.cpp.qt templates (written once, against the domain_entity
-        # shape only) need those keys aliased onto j directly. Only done
-        # when a Qt drawer is actually present -- a junction with no Qt
-        # facet stays exactly as before.
-        qt_section = _section(cpp_section, "Qt")
-        if qt_section:
-            j["qt"] = _parse_qt_drawer(
-                qt_section, _profile_namespace_defaults(j.get("profile"), "qt")
+        # entity_plural/..., repository.entity_plural_short/...), so a
+        # consuming facet written against the domain_entity shape needs
+        # those keys aliased onto j directly. Only done when a presentation
+        # drawer is actually present -- a junction without one stays
+        # exactly as before.
+        drawer = _section(cpp_section, "Presentation")
+        if drawer:
+            j["presentation"] = _parse_presentation_drawer(
+                drawer, _profile_namespace_defaults(j.get("profile"), "presentation")
             )
             name_singular = j.get("name_singular", "unknown")
             words = name_singular.split("_")
@@ -2346,7 +2377,7 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
 
     Lookup entities share the bi-temporal DDL shape with table models
     but route through codegen's "schema" model_type (JSON root key
-    ``entity``). The org file preserves all C++/Qt/protocol scalar
+    ``entity``). The org file preserves all C++/protocol scalar
     metadata (``entity_singular_upper``, ``entity_title``,
     ``component_include``, ...) in the frontmatter so future profiles
     don't need the JSON re-introduced."""
@@ -2917,9 +2948,8 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # build-file archetype serves it and only the file lists are generated.
     c["kind"] = fm.get("component_kind", "flat")
     # Part order is declared rather than derived. Dependency order is not
-    # alphabetical -- ores.qt needs headless and api ahead of the plugins
-    # that link them -- so the model states the order and the template
-    # renders it.
+    # alphabetical -- ores.shell's `api trading application modeling` is one
+    # such -- so the model states the order and the template renders it.
     parts = fm.get("parts", "").split()
     c["parts"] = [{"part": name, "last": i == len(parts) - 1}
                   for i, name in enumerate(parts)]

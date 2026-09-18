@@ -168,7 +168,7 @@ Accumulated work units successfully processed by this host.
 | modified_by   | Modified By   |
 | recorded_at   | Recorded At   |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/host.hpp
 :domain_class:            compute::domain::host
@@ -195,7 +195,7 @@ Accumulated work units successfully processed by this host.
 :changed_event_include:   ores.compute.api/eventing/host_changed_event.hpp
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field         | header         | type      | width | tooltip_field | data_paste                           |
 |-------------+---------------+----------------+-----------+-------+---------------+-------------------------------------|

@@ -176,7 +176,7 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 | modified_by       | Modified By       |
 | recorded_at       | Recorded At       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/workunit.hpp
 :domain_class:            compute::domain::workunit
@@ -203,7 +203,7 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 :changed_event_include:   ores.compute.api/eventing/workunit_changed_event.hpp
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field             | header         | type   | width |
 |------------------+-------------------+----------------+--------+-------|

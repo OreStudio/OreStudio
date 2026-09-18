@@ -54,12 +54,12 @@ def test_a_colliding_earlier_column_does_not_hide_a_later_real_one():
     """The first occurrence of a name is not the only one that counts.
 
     Scanning one joined string and boundary-checking only its leftmost
-    hit dropped the header here: asset_class_id comes first, fails the
-    check, and the genuine asset_class column after it was never seen.
+    hit dropped the header here: product_type_id comes first, fails the
+    check, and the genuine product_type column after it was never seen.
     """
-    headers = _headers_for_types(["domain::asset_class_id",
-                                  "domain::asset_class"])
-    assert headers == ['"ores.marketdata.api/domain/asset_class.hpp"']
+    headers = _headers_for_types(["domain::product_type_id",
+                                  "domain::product_type"])
+    assert headers == ['"ores.trading.api/domain/product_type.hpp"']
 
 
 def test_a_different_namespace_is_a_different_type():

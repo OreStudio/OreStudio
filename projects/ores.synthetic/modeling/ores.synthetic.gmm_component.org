@@ -207,7 +207,7 @@ faker::number::decimal(0.0, 1.0)
 | modified_by     | Modified By |
 | version         | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/gmm_component.hpp
 :domain_class:            synthetic::domain::gmm_component
@@ -245,7 +245,7 @@ faker::number::decimal(0.0, 1.0)
 | stdev           | Std Dev         | stdevEdit          | line_edit |      | true        | Enter standard deviation        |
 | weight          | Weight          | weightEdit         | line_edit |      | true        | Enter weight                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field           | header          | type      | width |
 |----------------+-----------------+-----------------+-----------+-------|

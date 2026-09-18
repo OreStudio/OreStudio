@@ -224,9 +224,9 @@ generation footprint.
 
 Examples: =--address ores.sql.schema= generates SQL DDL only;
 =--address ores.cpp= generates every C++ facet (domain, generator,
-repository, service, protocol, ...); =--address ores.cpp.qt= generates
-just the Qt facet; omitting =--address= generates an entity's full
-supported set.
+repository, service, protocol, ...); =--address ores.cpp.repository=
+generates just the repository facet; omitting =--address= generates
+an entity's full supported set.
 
 ** Component registry
 

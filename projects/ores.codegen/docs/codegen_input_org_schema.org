@@ -13,7 +13,8 @@ This document is the authoritative schema reference for all org-mode files that
 feed into [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].  It covers three layers:
 
 - *Entity-model types* — org files that describe a single logical entity and
-  drive code generation across multiple technical spaces (C++, SQL, Qt).
+  drive code generation across multiple technical spaces (C++, SQL,
+  TypeScript).
 - *Generator-config types* — org files that configure the generator itself
   (profiles, components, modelines).
 
@@ -25,7 +26,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 
 | Type | Compass type | Count | Primary output |
 |------+--------------+-------+----------------|
-| =ores.codegen.entity= | =entity_org= | ~83 | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.entity= | =entity_org= | ~83 | C++ domain class + SQL table + TypeScript UI |
 | =ores.codegen.lookup_entity= | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
 | =ores.codegen.field_group= | =field_group= | ~11 | C++ struct fragment composed into entities |
 | =ores.codegen.table= (retired) | — | 0 | Superseded by =ores.codegen.entity=; every table model was migrated and the type removed from the generator |
@@ -46,8 +47,8 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 
 ** ores.codegen.entity
 
-Full-fidelity entity: drives C++ (domain class, mapper, repo, service, Qt widgets)
-and SQL (table DDL, triggers, constraints).  The largest doc type (~83 files).
+Full-fidelity entity: drives C++ (domain class, mapper, repo, service),
+SQL (table DDL, triggers, constraints) and TypeScript (UI metadata).  The largest doc type (~83 files).
 
 *** Frontmatter keywords
 
@@ -78,16 +79,16 @@ and SQL (table DDL, triggers, constraints).  The largest doc type (~83 files).
   ** Entity includes       — #+begin_src cpp :name includes (opt)
   ** Conventions           — PROPERTIES: iterator_var
   ** Table display         — | column | header | table
-  ** Qt                    — PROPERTIES: many (domain_class, protocol_include, …)
+  ** Presentation          — PROPERTIES: many (key_field, collection_name, …)
      *** Detail fields     — | field | label | widget | type | is_key | view_group (opt) | … | table
-     *** Columns (Qt model)— | enum_name | field | header | type | width | table
+     *** Columns           — | enum_name | field | header | type | width | table
   ** Custom repository methods — freeform
 * See also                 — org-roam links
 #+end_example
 
 *** view_group (Detail fields)
 
-An optional cell on each =Detail fields= row naming which Qt
+An optional cell on each =Detail fields= row naming which
 detail-dialog tab that field belongs to. Fields sharing the same
 =view_group= value land in the same tab, in the order they appear in
 the table; tabs themselves appear in first-appearance order across the
@@ -98,7 +99,7 @@ entity's model has no effect on any other entity's generated dialog.
 
 Named generically (not e.g. =tab=) since it models "which projection
 of the entity a field belongs to" rather than committing to tabs
-specifically — the Qt detail dialog is its only consumer today.
+specifically — the detail dialog is its only consumer today.
 
 *** ORE Studio MASD stereotypes
 
@@ -162,13 +163,14 @@ keep each =rfl::Literal= below the MSVC C1202 complexity threshold.
 
 ** ores.codegen.table (retired)
 
-Was an SQL-only reference-data table with no C++ or Qt generation. Every
+Was an SQL-only reference-data table with no C++ or presentation layer. Every
 =*_table.org= model was migrated into its =ores.codegen.entity= counterpart
 (the =* Validation function= / =* Insert trigger= sections moved across
 unchanged) and the type's dispatch removed from =get_model_type()=/
 =load_model()= — see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]].
-SQL-only entities (no C++/Qt layer, e.g. =currency=) are expressed as an
-=ores.codegen.entity= with no =** Qt= section rather than a distinct type.
+SQL-only entities (no C++/UI layer, e.g. =currency=) are expressed as an
+=ores.codegen.entity= with no =** Presentation= section rather than a
+distinct type.
 
 ** ores.codegen.junction
 

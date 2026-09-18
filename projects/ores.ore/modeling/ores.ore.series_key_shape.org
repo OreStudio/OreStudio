@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 8316E5A7-9BDA-4C88-856C-C933290F7396
-:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.ore.series_key_shape
 #+description: The ORE market data key grammar, per series type: how many key segments identify the series, whether the type carries a point of its own, and the point to record when a key carries none.

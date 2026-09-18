@@ -125,7 +125,7 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 :iterator_var: a
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/tenor_anchor.hpp
 :domain_class:           refdata::domain::tenor_anchor
@@ -158,7 +158,7 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 | description   | Description   | descriptionEdit | text_edit |        |             | Enter a description          |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                               |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header        | type      | width | is_badge | badge_key    |
 |--------------+---------------+---------------+-----------+-------+----------+--------------|

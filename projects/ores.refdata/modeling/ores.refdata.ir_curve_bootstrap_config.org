@@ -1,10 +1,5 @@
 :PROPERTIES:
 :ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
-:ores.cpp.qt.detail_dialog_header.enabled: false
-:ores.cpp.qt.detail_dialog_impl.enabled: false
-:ores.cpp.qt.detail_dialog_ui.enabled: false
-:ores.cpp.qt.controller_header.enabled: false
-:ores.cpp.qt.controller_impl.enabled: false
 :END:
 #+title: ores.refdata.ir_curve_bootstrap_config
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.
@@ -344,7 +339,7 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/ir_curve_bootstrap_config.hpp
 :domain_class:            refdata::domain::ir_curve_bootstrap_config
@@ -408,7 +403,7 @@ minimal (plain =line_edit= throughout), not a real editing UX.
 | day_count_convention      | Day Count Convention | dayCountConventionEdit | line_edit | | true |         |
 | split_tenor_code          | Split Tenor Code     | splitTenorCodeEdit | line_edit |  | true  |             |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name                | field                    | header                | type      | width | is_badge | badge_key |
 |---------------------------+--------------------------+-----------------------+-----------+-------+----------+-----------|

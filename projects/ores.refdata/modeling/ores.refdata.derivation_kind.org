@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 6FA21D8B-F95A-47BE-BD16-26048798A164
-:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.refdata.derivation_kind
 #+description: Reference data table classifying how a published market_series was produced -- directly observed, or derived by a named mechanism (curve bootstrap, CRM triangulation, ...).

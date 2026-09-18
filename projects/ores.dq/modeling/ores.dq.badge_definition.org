@@ -201,7 +201,7 @@ faker::number::integer(1, 100)
 | modified_by       | Modified By |
 | version           | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/badge_definition.hpp
 :domain_class:           dq::domain::badge_definition
@@ -241,7 +241,7 @@ faker::number::integer(1, 100)
 | severity_code      | Severity     | severityCodeCombo      | dynamic_combo |        | true        |                         |              | dq::domain::badge_severity | ores.qt/LookupFetcher.hpp        | fetch_badge_severities  | severityCodeWatcher    | code               | description          | display_order      | badge severities   | SeverityCodeCombo     |           |
 | display_order      | Order        | displayOrderEdit       | spin_box      |        | true        |                         |              |                             |                                    |                         |                         |                    |                      |                    |                    |                        |           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field             | header      | type      | width | self_colour |
 |------------------+-------------------+-------------+-----------+-------+-------------|

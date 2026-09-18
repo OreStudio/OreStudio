@@ -159,7 +159,7 @@ false
 | modified_by        | Modified By     |
 | version            | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         ibor_index_conventions
 :item_var:                ic
@@ -195,7 +195,7 @@ false
 | business_day_convention | Business Day Convention | businessDayConventionEdit | line_edit |        | true        | e.g. ModifiedFollowing |
 | end_of_month            | End Of Month            | endOfMonthEdit            | check_box |        |             |                        |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header          | type      | width |
 |------------------+--------------------+-----------------+-----------+-------|

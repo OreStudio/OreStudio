@@ -127,7 +127,7 @@ std::string("standard")
 :iterator_var: pmc
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.analytics.api/domain/pricing_model_config.hpp
 :domain_class:           analytics::domain::pricing_model_config
@@ -161,7 +161,7 @@ std::string("standard")
 | config_variant | Variant     | configVariantEdit | line_edit |        |             | Optional variant tag (e.g. standard, amc, dg)             |
 | description    | Description | descriptionEdit   | text_edit |        |             | Enter a description of this pricing model configuration   |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name     | field          | header      | type      | width |
 |---------------+----------------+-------------+-----------+-------|

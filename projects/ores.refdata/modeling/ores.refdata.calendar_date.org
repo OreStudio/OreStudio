@@ -1,8 +1,5 @@
 :PROPERTIES:
 :ID: 1DC67FAD-7543-4E63-A91D-9EE878A2EE8D
-:ores.cpp.qt.detail_dialog_header.enabled: false
-:ores.cpp.qt.detail_dialog_impl.enabled: false
-:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.refdata.calendar_date
 #+description: Codegen junction model for calendar_dates -- the materialised, DQ-published output of instantiating a calendar template's rules/exceptions over a date range.
@@ -165,7 +162,7 @@ std::string("quantlib_computed")
 | modified_by      | Modified By  |
 | version          | Version      |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/calendar_date.hpp
 :domain_class:                refdata::domain::calendar_date
@@ -189,7 +186,7 @@ std::string("quantlib_computed")
 :icon:                        Table
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field           | header       | type    | width |
 |--------------+-----------------+--------------+---------+-------|

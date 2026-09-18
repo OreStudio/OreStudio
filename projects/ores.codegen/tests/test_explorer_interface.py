@@ -1,4 +1,4 @@
-"""Tests for the qt.explorer_interface knob gate.
+"""Tests for the presentation.explorer_interface knob gate.
 
 Run::
 
@@ -16,25 +16,25 @@ from codegen.core import validate_explorer_interface  # noqa: E402
 
 
 def test_explorer_interface_unset_is_a_noop():
-    domain_entity = {'qt': {}}
+    domain_entity = {'presentation': {}}
     validate_explorer_interface(domain_entity)
-    assert 'explorer_interface' not in domain_entity['qt']
+    assert 'explorer_interface' not in domain_entity['presentation']
 
 
 def test_explorer_interface_allowed_with_has_explorer_api():
     domain_entity = {
-        'qt': {'explorer_interface': 'IBusinessUnitBrowser', 'has_explorer_api': True}
+        'presentation': {'explorer_interface': 'IBusinessUnitBrowser', 'has_explorer_api': True}
     }
     validate_explorer_interface(domain_entity)
-    assert domain_entity['qt']['explorer_interface'] == 'IBusinessUnitBrowser'
+    assert domain_entity['presentation']['explorer_interface'] == 'IBusinessUnitBrowser'
 
 
 def test_explorer_interface_rejected_without_has_explorer_api():
     domain_entity = {
         'entity_singular': 'widget',
-        'qt': {'explorer_interface': 'IWidgetBrowser'},
+        'presentation': {'explorer_interface': 'IWidgetBrowser'},
     }
     with pytest.raises(
-        ValueError, match="widget: qt.explorer_interface requires qt.has_explorer_api"
+        ValueError, match="widget: presentation.explorer_interface requires presentation.has_explorer_api"
     ):
         validate_explorer_interface(domain_entity)

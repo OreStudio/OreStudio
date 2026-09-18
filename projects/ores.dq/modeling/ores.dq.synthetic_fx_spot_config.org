@@ -277,13 +277,7 @@ model exists to describe the DQ import/staging shape only; a
 No Qt UI: this is a DQ-side staging view onto data that isn't
 authoritative here (see above) -- an editable window in =ores.dq= would
 be a second, confusing, edit-capable copy of import data whose real home
-is =ores.synthetic=. See the Physical space table below.
-
-* Physical space
-
-| Address      | Enabled |
-|--------------+---------|
-| ores.cpp.qt  | false   |
+is =ores.synthetic=.
 
 * See also
 

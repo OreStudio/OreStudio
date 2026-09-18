@@ -364,7 +364,7 @@ std::nullopt
 | modified_by         | Modified By  |
 | version             | Version      |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/fx_spot_generation_config.hpp
 :domain_class:            synthetic::domain::fx_spot_generation_config
@@ -407,7 +407,7 @@ std::nullopt
 | vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
 | vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |
 
-*** Columns (Qt model)
+*** Columns
 
 =formatter= is optional: a free function =formatter(field) -> QString=
 called instead of the type's built-in renderer — for a column whose raw
@@ -434,7 +434,7 @@ the formatter function needs, if any.
 | ModifiedBy         | modified_by         | Modified By         | string    | 120   |                   |                                |
 | RecordedAt         | recorded_at         | Recorded At         | timestamp | 150   |                   |                                |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Base and quote currency each get their own flag icon, same as any other
 single-currency cell (e.g. Currency's own code column) — no compositing

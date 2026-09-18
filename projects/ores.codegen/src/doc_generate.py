@@ -64,32 +64,32 @@ TYPE_TO_TEMPLATE = {
 
 # entity_org --shape presets: knob bundles sampled from a known-good
 # reference entity for each named domain_entity shape (see task EE237306 /
-# Codegen entity meta-model -- keys and columns / C++ Qt). Reconnaissance
+# Codegen entity meta-model -- keys and columns). Reconnaissance
 # picks per the task's Plan table, not a final catalogue -- refine as more
 # entities are commissioned through this scaffold.
 ENTITY_ORG_KNOBS = (
     "has_tenant_id", "has_workspace_id", "has_parent_id",
-    "has_foreign_keys", "has_insert_trigger_validations", "has_qt",
-    "qt_has_uuid_primary_key", "qt_has_change_reason_cache",
-    "qt_has_explorer_api", "qt_has_pagination", "qt_has_csv_xml_io",
-    "qt_has_export_macro", "qt_has_version_navigation",
-    "qt_has_parent_scoping",
+    "has_foreign_keys", "has_insert_trigger_validations", "has_presentation",
+    "presentation_has_uuid_primary_key", "presentation_has_change_reason_cache",
+    "presentation_has_explorer_api", "presentation_has_pagination", "presentation_has_csv_xml_io",
+    "presentation_has_export_macro", "presentation_has_version_navigation",
+    "presentation_has_parent_scoping",
 )
 
 ENTITY_ORG_SHAPE_PRESETS = {
-    # ores.refdata.country.org: text natural key, no hierarchy, minimal Qt.
+    # ores.refdata.country.org: text natural key, no hierarchy, few knobs.
     "simple-text-key": {
         "has_tenant_id": True, "has_insert_trigger_validations": True,
-        "has_qt": True, "qt_has_change_reason_cache": True,
-        "qt_has_pagination": True,
+        "has_presentation": True, "presentation_has_change_reason_cache": True,
+        "presentation_has_pagination": True,
     },
     # ores.refdata.book.org: soft-FK scoped under a parent entity.
     "fk-scoped": {
         "has_tenant_id": True, "has_workspace_id": True,
         "has_foreign_keys": True, "has_insert_trigger_validations": True,
-        "has_qt": True, "qt_has_uuid_primary_key": True,
-        "qt_has_explorer_api": True, "qt_has_export_macro": True,
-        "qt_has_parent_scoping": True,
+        "has_presentation": True, "presentation_has_uuid_primary_key": True,
+        "presentation_has_explorer_api": True, "presentation_has_export_macro": True,
+        "presentation_has_parent_scoping": True,
     },
     # ores.refdata.counterparty.org (the richer of party.org's two
     # exemplars): self-referencing hierarchy, foreign keys, insert-trigger
@@ -97,20 +97,21 @@ ENTITY_ORG_SHAPE_PRESETS = {
     "hierarchical-composite": {
         "has_tenant_id": True, "has_parent_id": True,
         "has_foreign_keys": True, "has_insert_trigger_validations": True,
-        "has_qt": True, "qt_has_uuid_primary_key": True,
-        "qt_has_change_reason_cache": True,
+        "has_presentation": True, "presentation_has_uuid_primary_key": True,
+        "presentation_has_change_reason_cache": True,
     },
     # ores.refdata.currency.org: every optional knob exercised at least once.
     "richest": {
         "has_tenant_id": True, "has_insert_trigger_validations": True,
-        "has_qt": True, "qt_has_change_reason_cache": True,
-        "qt_has_csv_xml_io": True, "qt_has_version_navigation": True,
+        "has_presentation": True, "presentation_has_change_reason_cache": True,
+        "presentation_has_csv_xml_io": True, "presentation_has_version_navigation": True,
     },
-    # ores.marketdata.market_observation.org: TimescaleDB hypertable, no Qt,
-    # no soft-FK section (its party_id/series_id references are documented
+    # ores.marketdata.market_observation.org: TimescaleDB hypertable, no
+    # presentation drawer, no soft-FK section (its party_id/series_id
+    # references are documented
     # as plain Natural keys, not a Foreign keys section).
     "timeseries": {
-        "has_tenant_id": True, "has_qt": False,
+        "has_tenant_id": True, "has_presentation": False,
     },
 }
 
@@ -380,8 +381,9 @@ def parse_args(argv=None):
                         choices=[""] + list(ENTITY_ORG_SHAPE_PRESETS),
                         help="For --type entity_org: a named domain_entity "
                              "shape (see Codegen entity meta-model -- keys "
-                             "and columns / C++ Qt) whose knob combination "
-                             "pre-populates the scaffold's Flags/SQL/Qt "
+                             "and columns) whose knob combination "
+                             "pre-populates the scaffold's Flags/SQL/"
+                             "presentation "
                              "sections, sampled from a known-good reference "
                              "entity. Individual --entity-* flags below "
                              "override any preset value.")
@@ -793,7 +795,8 @@ def main(argv=None):
         out_file = out_dir / "service_registry.org"
     elif args.type in ("facet", "technical_space", "archetype"):
         # Physical-space graph nodes are flat files named for their address:
-        # the slug IS the address (ores.cpp / ores.cpp.qt / ores.cpp.qt.controller).
+        # the slug IS the address (ores.cpp / ores.cpp.repository /
+        # ores.cpp.repository.entity_header).
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "facet_group":

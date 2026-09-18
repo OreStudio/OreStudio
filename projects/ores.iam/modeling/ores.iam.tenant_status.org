@@ -154,7 +154,7 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.iam.api/domain/tenant_status.hpp
 :domain_class:           iam::domain::tenant_status
@@ -187,7 +187,7 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 | name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

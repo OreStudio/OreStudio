@@ -312,7 +312,7 @@ entity versioning" architecture doc, "Multi-level composition".
 | modified_by     | Modified By |
 | version         | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :has_pagination:          true
 :domain_include:          ores.refdata.api/domain/portfolio.hpp
@@ -358,7 +358,7 @@ codegen entity has an entity-picker combo widget yet.
 | aggregation_ccy | Aggregation Currency  | aggregationCcyEdit      | flagged_combo  |        |             |                              | currency    |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
 | description     | Description           | descriptionEdit         | text_edit      |        |             | Enter description (optional) |             |                    |             |                             |                             |                      |                      |                   |                      |                   |                |                      |                           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field           | header        | type      | width | is_badge | badge_key  |
 |----------------+-----------------+---------------+-----------+-------+----------+------------|
@@ -371,7 +371,7 @@ codegen entity has an entity-picker combo widget yet.
 | ModifiedBy     | modified_by     | Modified By   | string    | 120   |          |            |
 | RecordedAt     | recorded_at     | Recorded At   | timestamp | 150   |          |            |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 | column         | accessor            | field1          | field2 |
 |----------------+----------------------+-----------------+--------|

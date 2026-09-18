@@ -215,7 +215,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :iterator_var: fb
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :has_pagination:          true
 :domain_include:          ores.marketdata.api/domain/feed_binding.hpp
@@ -252,7 +252,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 | source_name | Source Name | sourceEdit  | line_edit |        | true        | Enter source name |
 | enabled     | Enabled     | enabledEdit | check_box |        |             |                   |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name  | field       | header      | type    | width |
 |------------+-------------+-------------+---------+-------|

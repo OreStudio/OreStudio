@@ -155,7 +155,7 @@ faker::number::integer(1, 100)
 | modified_by   | Modified By   |
 | version       | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/regulatory_book_type.hpp
 :domain_class:           refdata::domain::regulatory_book_type
@@ -181,7 +181,7 @@ faker::number::integer(1, 100)
 :has_export_macro:       true
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header        | type      | width |
 |--------------+---------------+---------------+-----------+-------|

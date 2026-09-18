@@ -334,7 +334,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 | modified_by        | Modified By     |
 | version            | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/currency.hpp
 :domain_class:                refdata::domain::currency
@@ -402,7 +402,7 @@ in the UI yet; out of scope for this sync, tracked separately).
 | rounding_type      | Rounding Type       | roundingTypeCombo         | dynamic_combo |        |             |                                  |          |          | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp   | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types         | RoundingTypeCombo    |                        | Rounding    | Rounding method applied to amounts in this currency (e.g. round to closest). |
 | rounding_precision | Rounding Precision  | roundingPrecisionSpinBox  | spin_box      |        |             |                                  | 0        | 10       |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        | Rounding    | Number of decimal places amounts in this currency are rounded to. |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field              | header          | type      | width | import_preview | is_badge | badge_key            | hidden_by_default | tooltip |
 |--------------------+--------------------+-----------------+-----------+-------+----------------+----------+-----------------------+--------------------+---------|

@@ -1,9 +1,6 @@
 :PROPERTIES:
 :ID: C9B53884-25FA-4D13-AE8A-6469B1854474
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
-:ores.cpp.qt.detail_dialog_header.enabled: false
-:ores.cpp.qt.detail_dialog_impl.enabled: false
-:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.dq.lei_entity
 #+description: Codegen entity model for the dq =lei_entity= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -382,7 +379,7 @@ std::string(faker::word::noun())
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.dq.api/domain/lei_entity.hpp
 :domain_class:                dq::domain::lei_entity
@@ -400,7 +397,7 @@ std::string(faker::word::noun())
 :icon:                         Table
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name  | field                | header      | type   | width |
 |------------+----------------------+-------------+--------+-------|
@@ -421,18 +418,12 @@ rows (=lei_counterparties=, =lei_parties=) publish this same artefact
 data onward, but to =ores.refdata='s own tables, not a
 =ores.dq=-owned one.
 
-Qt UI deliberately disabled (see Physical space below): the generated
+Qt UI deliberately disabled: the generated
 read-only Explorer list window queried the (correctly nonexistent)
 main table and errored on open. Its data has no working Qt read path
 of its own -- it powers the GLEIF counterparty picker, a different UI
 surface -- so there is no browsing screen to commission until that
 path exists.
-
-* Physical space
-
-| Address     | Enabled |
-|-------------+---------|
-| ores.cpp.qt | false   |
 
 * See also
 

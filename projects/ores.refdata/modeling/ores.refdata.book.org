@@ -348,7 +348,7 @@ std::string("WRLD")
 | modified_by          | Modified By         |
 | version              | Version             |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :has_pagination:          true
 :domain_include:          ores.refdata.api/domain/book.hpp
@@ -392,7 +392,7 @@ std::string("WRLD")
 | is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |                   |                    |                              |                                        |                             |                               |                                      |                           |                   |                      |                   |                        |                           |                       |
 | rates_centre_code    | Rates Centre          | ratesCentreCodeCombo    | flagged_combo |        |             |                               | business_centre   | false              | fetch_business_centre_codes | | ores.qt/LookupFetcher.hpp  |                               |                                      |                           |                   |                      |                   |                        |                           |                       |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header               | type      | width | is_badge | badge_key            | formatter | formatter_include |
 |--------------------+----------------------+----------------------+-----------+-------+----------+-----------------------+-----------+--------------------|
@@ -407,7 +407,7 @@ std::string("WRLD")
 | ModifiedBy         | modified_by          | Modified By          | string    | 120   |          |                       |           |                    |
 | RecordedAt         | recorded_at          | Recorded At          | timestamp | 150   |          |                       |           |                    |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Ledger currency gets its own flag icon, same as any other
 single-currency cell (e.g. Currency's own code column) — no

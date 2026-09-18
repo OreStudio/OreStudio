@@ -151,7 +151,7 @@ Ordinal position for dropdown/list display.
 | modified_by  | Modified By  |
 | version      | Version      |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/day_count_fraction_type.hpp
 :domain_class:                refdata::domain::day_count_fraction_type
@@ -189,7 +189,7 @@ Ordinal position for dropdown/list display.
 | description   | Description   | descriptionEdit   | line_edit |        |             | Short description            |
 | display_order | Display Order | displayOrderEdit  | spin_box  |        |             |                              |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name     | field         | header        | type      | width |
 |---------------+---------------+---------------+-----------+-------|

@@ -154,7 +154,7 @@ drop function if exists ores_refdata_validate_rounding_type_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/rounding_type.hpp
 :domain_class:           refdata::domain::rounding_type
@@ -182,7 +182,7 @@ drop function if exists ores_refdata_validate_rounding_type_fn;
 :icon:                   Tag
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width | is_badge | badge_key     |
 |--------------+---------------+-------------+-----------+-------+----------+---------------|

@@ -279,7 +279,7 @@ entirely.
 | modified_by    | Modified By   |
 | version        | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/market_data_generation_config.hpp
 :domain_class:            synthetic::domain::market_data_generation_config
@@ -315,7 +315,7 @@ entirely.
 | description | Description | descriptionEdit | line_edit |        |             | Enter description     |
 | enabled     | Enabled     | enabledCheck    | check_box |        |             |                       |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field        | header       | type      | width | formatter        | formatter_include              |
 |-------------+--------------+--------------+-----------+-------+-------------------+---------------------------------|

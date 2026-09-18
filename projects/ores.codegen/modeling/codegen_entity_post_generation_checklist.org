@@ -57,7 +57,7 @@ entity.
 
 ** Qt plugin: menu/window wiring
 
-A newly-generated entity's Qt ensemble ([[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]: MDI window, detail
+A newly-generated entity's Qt ensemble (=ores.cpp.qt=: MDI window, detail
 dialog, controller, client model) needs its window instantiated and
 its menu entry added by the owning component's Qt plugin (e.g.
 =RefdataPlugin=, =DqPlugin=) — this wiring is plugin-specific

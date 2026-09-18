@@ -103,7 +103,7 @@ own-tenant scoped.
 | modified_by | Modified By |
 | recorded_at | Recorded At |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/app.hpp
 :domain_class:            compute::domain::app
@@ -130,7 +130,7 @@ own-tenant scoped.
 :changed_event_include:   ores.compute.api/eventing/app_changed_event.hpp
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type   | width |
 |-------------+-------------+-------------+--------+-------|

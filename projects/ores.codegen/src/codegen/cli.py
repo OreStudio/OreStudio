@@ -43,7 +43,7 @@ def main() -> None:
         "--address",
         required=True,
         metavar="ADDRESS",
-        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt).",
+        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.repository).",
     )
     gen_p.add_argument(
         "--dry-run",
@@ -72,7 +72,7 @@ def main() -> None:
         "--address",
         required=True,
         metavar="ADDRESS",
-        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt).",
+        help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.repository).",
     )
     regen_p.add_argument(
         "--entity",

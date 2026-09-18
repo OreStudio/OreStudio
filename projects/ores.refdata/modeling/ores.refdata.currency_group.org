@@ -156,7 +156,7 @@ drop function if exists ores_refdata_validate_currency_group_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/currency_group.hpp
 :domain_class:           refdata::domain::currency_group
@@ -184,7 +184,7 @@ drop function if exists ores_refdata_validate_currency_group_fn;
 :icon:                   Chart
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

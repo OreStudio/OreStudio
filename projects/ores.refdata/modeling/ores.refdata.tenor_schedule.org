@@ -247,7 +247,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 | modified_by       | Modified By   |
 | version           | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/tenor_schedule.hpp
 :domain_class:           refdata::domain::tenor_schedule
@@ -285,7 +285,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 | diary_entry_type  | Diary Entry Type | diaryEntryTypeEdit  | line_edit |        |             | Event-lookup diary entry type        |
 | display_order     | Display Order    | displayOrderEdit    | spin_box  |        | true        |                                      |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name       | field            | header            | type      | width |
 |-----------------+------------------+-------------------+-----------+-------|

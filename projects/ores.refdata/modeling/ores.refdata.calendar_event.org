@@ -241,7 +241,7 @@ std::string("federalreserve.gov")
 | modified_by      | Modified By   |
 | version          | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/calendar_event.hpp
 :domain_class:                refdata::domain::calendar_event
@@ -282,7 +282,7 @@ std::string("federalreserve.gov")
 | description       | Description   | descriptionEdit    | text_edit |        |             |           | Optional note             |                       |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
 | source            | Source        | sourceEdit          | line_edit |        |             |           | Provenance, e.g. federalreserve.gov |                |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field             | header        | type   | width | hidden_by_default |
 |----------------+-------------------+---------------+--------+-------+--------------------|

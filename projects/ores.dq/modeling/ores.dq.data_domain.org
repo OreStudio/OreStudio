@@ -121,7 +121,7 @@ std::string(faker::lorem::sentence())
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/data_domain.hpp
 :domain_class:           dq::domain::data_domain
@@ -156,7 +156,7 @@ std::string(faker::lorem::sentence())
 | name        | Name        | nameEdit        | line_edit | true   | true        | Enter data domain name  |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

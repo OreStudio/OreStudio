@@ -45,7 +45,7 @@ proceeded:
 
 | Former asset | Now lives at |
 |---------------+---------------------------------------------------|
-| Detail dialog =.ui= | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] (=ores.cpp.qt.detail_dialog_ui=) — grouped with the rest of the Qt ensemble it complements |
+| Detail dialog =.ui= | =ores.cpp.qt= (=ores.cpp.qt.detail_dialog_ui=) — grouped with the rest of the Qt ensemble it complements |
 | PlantUML ER    | [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] (=ores.plantuml.er=) |
 | Shell service vars | [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] (=ores.shell.service=) |
 

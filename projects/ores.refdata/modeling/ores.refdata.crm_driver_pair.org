@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 7A2E4B91-3C5D-4F6A-9B1E-2D8F0A6C4E7B
-:ores.cpp.qt.enabled: true
 :END:
 #+title: ores.refdata.crm_driver_pair
 #+description: Codegen entity model for the refdata crm_driver_pair table; a directly-quoted currency pair (topology edge) owned by a crm_topology_config.
@@ -203,7 +202,7 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :iterator_var: p
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/crm_driver_pair.hpp
 :domain_class:            refdata::domain::crm_driver_pair
@@ -240,7 +239,7 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 | quote_currency_code  | Quote   | quoteCcyCombo   | flagged_combo |    | true        |                         |                     | currency    | fetch_currency_codes         | ores.qt/LookupFetcher.hpp   | false              |                                        |                       |                    |                        |                    |                                 |                         |
 | enabled              | Enabled | enabledCheckBox | check_box |        |             |                     |             |                      |                             |                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header       | type      | width | is_badge | badge_key   | hidden_by_default |
 |--------------------+----------------------+--------------+-----------+-------+----------+-------------+--------------------|
@@ -252,7 +251,7 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 | ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |                    |
 | RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |                    |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Base/quote currencies each get their own flag icon, matching
 CurrencyPair's per-column (not composited) treatment when the pair

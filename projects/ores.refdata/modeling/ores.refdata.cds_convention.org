@@ -226,7 +226,7 @@ std::nullopt
 | modified_by        | Modified By |
 | version            | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         cds_conventions
 :item_var:                cc
@@ -267,7 +267,7 @@ std::nullopt
 | settles_accrual                | Settles Accrual         | settlesAccrualEdit             | check_box |        |             |                     |
 | pays_at_default_time           | Pays At Default Time    | paysAtDefaultTimeEdit          | check_box |        |             |                     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header      | type      | width |
 |------------------+--------------------+-------------+-----------+-------|

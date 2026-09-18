@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: 0DC6D0CB-D420-49B6-8751-43598610FEA4
+:END:
+#+title: Task: Repurpose the presentation drawer into an ores.ts.ui facet
+#+description: Rename the entity models' Qt drawer to Presentation, delete the Qt templates, and add an ores.ts.ui facet that emits one TypeScript metadata file per entity from the same org models the C++ headers use.
+#+type: task
+#+level: s1
+#+filetags: :retire_qt_and_emit_ui_metadata_to_typescript:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-ts-ui-metadata
+#+pr: 2105
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-19
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt and emit the UI metadata to TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The entity models describe their screens once. Codegen turns that description into TypeScript metadata, so the TypeScript UI reads the same model the C++ side does. No Qt template survives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt and emit the UI metadata to TypeScript]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- Every entity model names its drawer Presentation.
+- The ores.ts.ui facet emits one file per entity in the nine registered components.
+- The drift check reports no drift and no untracked file.
+- npx tsc --noEmit passes over the emitted files.
+
+* Plan
+
+Three commits on one branch, in this order.
+
+** Rename the drawer
+
+The level-2 heading =** Qt= becomes =** Presentation= in every entity
+model; =*** Columns (Qt model)= becomes =*** Columns= and
+=*** Icon columns (Qt model)= becomes =*** Icon columns=. The rename is
+mechanical: the org parser keys off heading level, so the level-3
+=*** Columns= does not collide with the level-1 =* Columns= section
+that holds the SQL schema, and both are read by different functions.
+The four models carrying =:ores.cpp.qt.*.enabled:= properties drop them,
+because the facet they gate is gone. =org_loader.py= renames
+=_parse_qt_drawer= and its helpers and moves the twelve variability
+features from the =qt= namespace to =presentation=; =core.py= renames
+its local =qt= bindings.
+
+** Delete the Qt templates
+
+=ores.cpp.qt.org=, its nine archetype orgs, and the nine tangled
+=.mustache= files go, with the facet's row in =ores.cpp.org= and the Qt
+scaffolding in =generate.py=. The tangle derives its file list from the
+directory, so it needs no edit. =physical_space.py='s worked example
+repoints at a facet that survives.
+
+** Add the facet
+
+=ores.ts.ui= is a facet over =domain_entity junction=, with one
+archetype =ores.ts.ui.ui_meta= that writes
+=projects/ores.typescript/src/{component}/ui/{entity}_ui.ts=.
+=load_graph= finds it by scanning =library/templates/ores.*.org=, so
+nothing else registers it. The contract
+=projects/ores.typescript/src/ui-contract.ts= is hand-written from the
+request's §3.3; it is the only hand-written TypeScript in the change.
+
+The projection is =ui_meta_projection= in =core.py=. Every member comes
+from the drawer's tables or the model's own tables; a member the request
+does not name is not emitted, and a member with no model source is
+omitted rather than invented. =generate.py= withholds the facets for a
+domain entity or junction whose drawer has no =*** Columns= table.
+
+** The derivations that are not mechanical
+
+- =style= follows the request's §3.5 table, re-derived from the model's
+  flags rather than read from the drawer's =column_style= cell.
+- =lookup.collection= resolves one hop, from the =combo_domain_type= to
+  the target entity's own =collection_name=.
+- =displayField= is the first of =name=, =<entity_singular>_name=,
+  =key_field= that the columns carry. The request does not state this
+  derivation; it is inferred from its worked example.
+
+* Notes
+
+- =ores.presentation= names two different things: the drawer on the
+  entity model, and the variability namespace the twelve presentation
+  features live in. Neither is =ores.cpp.presentation=, the unrelated
+  codegen facet for server-side rendering.
+- The generated =style= and the C++ projection disagree on UUID and
+  timestamp columns: =core.py='s C++ derivation falls through to
+  =text_left= while §3.5 asks for =mono_left=. Followed §3.5, as the
+  request is explicit that the generator follows it.
+- =numeric_code= emits =text_left=. The request's worked example shows
+  =mono_left= for that one row although it types the column =string= and
+  its own §3.5 table maps a string to =text_left=. The other seven rows
+  agree with the table, so the row reads as a slip.
+- The request's example emits =maxLength: 2= for =alpha2_code=. No length
+  exists anywhere in the models, so nothing is emitted.
+- Keys are emitted, not translated: =<entityCamel>.fld<Pascal(field)>=,
+  =<entityCamel>.col<Pascal(enum_name)>=, =<entityCamel>.<camel(field)>Ph=,
+  =<entityCamel>.type.<value>=. The English, Portuguese and French
+  catalogues live in Volga.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2105][#2105]] | [codegen] Repurpose the presentation drawer into an ores.ts.ui facet |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The twelve variability feature docs and the grouping page still name the deleted =ores.cpp.qt= bundle. | =projects/modeling/variability_feature_*.org=, =variability_features.org= | Fixed | Bundle label renamed to =ores.presentation=, the namespace the features moved to. |
+| 2 | The drawer's schema page still calls the outgoing table "Columns (Qt model)". | =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org= | Fixed | Renamed to =*** Columns=; the Qt suffix named a consumer that no longer exists. |
+| 3 | The file-level conventions table documents the dead =:ores.cpp.qt.enabled:= frontmatter keyword. | =projects/ores.codegen/modeling/entity_meta_model_file_level_conventions.org= | Fixed | Row deleted; the facet it gated is gone. |
+| 4 | =_UI_AUDIT_HIDDEN= is an alias of =_UI_AUDIT_COLUMNS= with no other use. | =projects/ores.codegen/src/codegen/core.py= | Fixed | Alias dropped; =_ui_columns= reads =_UI_AUDIT_COLUMNS= directly. |
+| 5 | Deleting the =ores.cpp.qt= node left dangling =[[id:]]= links in six pages. | =applied_masd.org=, =assets_facet.org=, =qt_facet.org=, =technical_spaces_other.org=, =history_diff_architecture.org=, the regenerate-the-Qt-UI-layer recipe | Fixed | Links replaced with the literal address; no reference to the retired UUID survives. |
+| 6 | Reader-less derived values survive in the drawer and in =core.py=: =column_style=, =column_index=, =has_badge_columns=, =hidden_columns=, =metadata_start_row=, =compute_view_groups=, =has_toolbar=, and the =Icon columns (Qt model)= comment on that block. | =projects/ores.codegen/src/codegen/org_loader.py=, =core.py=, the 109 entity models | Declined | The drawer is the model's authored record of presentation, and the same list gates the Qt-only properties the rename deliberately left in place. Removing them is a cleanup across 109 files, not part of a rename. |
+| 7 | Qt prose survives in the model bodies and the codegen pages: the =** Qt:= sections, the two =(Qt model)= strings, the Qt-projection bundle section in =variability_model.org=, the =C++ Qt= row of the metatype table, and the Qt wording in the Qt recipes. | =projects/*/modeling/*.org=, =projects/modeling/variability_model.org=, =projects/ores.codegen/modeling/org_entity_meta_model.org=, =doc/recipes/= | Declined | Deferred to PR 2, which removes the trees and the Qt vocabulary together. |
+| 8 | The emitted template points at a hand-written =<entity>_field_groups.ts= that does not exist. | =projects/ores.codegen/library/templates/ts_ui.ts.mustache= | Declined | The request leaves the grouping file manual; it is the overlay the emitted metadata feeds. |
+| 9 | =displayField= can emit an empty string for an entity whose columns carry none of the candidate names. | =projects/ores.codegen/src/codegen/core.py= | Declined | No model source names one for those entities. The alternative is to fail the generation of a whole component over a member the request does not specify. |
+| 10 | =misspell-fixer .= exits 1. | (repository root) | Declined | The exit code comes from the prefilter list, not from a hit. All ten matches are outside the change: six =EXPLICT= strings in sprint_25 task docs that are present at =origin/main=, and four files under =projects/ores.typescript/node_modules/=. |
+| 11 | The =ores.ts= technical-space row still says its facets "the wire payloads the ores.qt UI consumes". | =projects/ores.codegen/library/templates/ores.org=, =ores.ts.org= | Fixed | Both descriptions now name the presentation metadata beside the wire payloads. |
+| 12 | The =ores.cpp= technical-space description lists "Qt UI" among its facets. | =projects/ores.codegen/library/templates/ores.cpp.org=, =ores.org= | Fixed | The Qt UI phrase is gone from both descriptions. |
+| 13 | Deleting the =* Physical space= section left prose pointing at it in four =ores.dq= models. | =ores.dq.lei_entity.org=, =ores.dq.lei_relationship.org=, =ores.dq.report_definition.org=, =ores.dq.synthetic_fx_spot_config.org= | Fixed | The dangling pointer is gone from each. The rationale each sentence gives does not rest on the table. The fourth file is one the reviewer did not name. |
+| 14 | The deleted =test_qt_detail_fields_default.py= was the only guard on the key-is-name auto-default, which the projection reads. | =projects/ores.codegen/tests/test_ui_meta_projection.py= | Fixed | Two cases drive =generate_from_model= on an entity with no detail-field table, which no existing case did. Both fail when =key_is_name= is forced false. |
+| 15 | The =--shape= help string renders "Flags/SQL/ presentation sections". | =projects/ores.codegen/src/doc_generate.py= | Fixed | The stray space is gone. |
+
+* Result
+
+PR 1 of the story, on =feature/codegen-ts-ui-metadata=. The drawer is
+renamed, the Qt templates are gone, and =ores.ts.ui= emits the metadata.
+
+- All 109 entity models name their drawer =** Presentation=, and no
+  =(Qt model)= heading survives in the models or in =library/templates/=
+  — only in the agile backlog and history, which the change does not
+  touch. The nine tangled =cpp_qt_*.mustache= files are gone with their
+  facet.
+- The rename did not reach the prose that cites the retired address: ten
+  =** Qt: …= subsections in five entity models, the codegen pages that
+  describe the facet, and three model files that name =ores.cpp.qt= in
+  passing. PR 2 removes them with the trees.
+- =ores.ts.ui= emits 90 =*_ui.ts= modules: refdata 63, synthetic 7,
+  compute 6, iam 5, analytics 4, reporting 4, marketdata 1. A model whose
+  drawer carries no column table emits nothing.
+- =projects/ores.typescript/src/ui-contract.ts= holds the emitted shape,
+  hand-written from the request's §3.3.
+
+Acceptance, each met:
+
+- Every entity model names its drawer Presentation.
+- The facet emits one file per entity in the nine registered components,
+  90 of them.
+- The drift check reports no drift and materializes no untracked file.
+- =npx tsc --noEmit= passes over the emitted files under the existing
+  =strict= and =noUncheckedIndexedAccess=.
+
+Checks run, for the classes the diff falls into (docs, ci, python tooling,
+and the catch-all for the emitted TypeScript):
+
+| Check                                        | Result                             |
+|----------------------------------------------+------------------------------------|
+| Site build                                   | Build succeeded                    |
+| Full build, =linux-clang-debug-make=         | clean                              |
+| ctest, =linux-clang-debug-make=              | 73 of 73 passed                    |
+| Roundtrip, =ore_domain_roundtrip_check.py=   | clean                              |
+| cmake-sources drift, =--all --check=         | All component_files.cmake up to date |
+| codegen drift, =check_component_drift.py --all= | no drift, no untracked file     |
+| Model drift, =check_model_drift.py --summary= | no model drift, 2 known exceptions |
+| Compass suite                                | 166 passed, 1 skipped              |
+| Codegen suite                                | 253 passed                         |
+| =npx tsc --noEmit=                           | clean                              |
+
+The change touches no C++ source, so the build and the test suite run
+against a compiled tree this branch does not alter.
+
+
+=misspell-fixer .= exits 1. The exit code comes from the prefilter list, not
+from a hit: all ten matches sit outside the change.

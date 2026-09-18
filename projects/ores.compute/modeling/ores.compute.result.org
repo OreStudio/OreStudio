@@ -245,7 +245,7 @@ them.
 | modified_by   | Modified By   |
 | recorded_at   | Recorded At   |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/result.hpp
 :domain_class:            compute::domain::result
@@ -273,7 +273,7 @@ them.
 :has_change_reason_cache: false
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field        | header      | type      | width |
 |-------------+--------------+-------------+-----------+-------|

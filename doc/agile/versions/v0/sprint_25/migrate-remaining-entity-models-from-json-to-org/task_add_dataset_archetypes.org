@@ -8,7 +8,7 @@
 #+filetags: :migrate-remaining-entity-models-from-json-to-org:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-dataset-archetypes
-#+pr:
+#+pr: 2100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
@@ -209,7 +209,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2100][#2100]] | [codegen,sql] Add the image and ip2country dataset archetypes |
 
 * Review
 

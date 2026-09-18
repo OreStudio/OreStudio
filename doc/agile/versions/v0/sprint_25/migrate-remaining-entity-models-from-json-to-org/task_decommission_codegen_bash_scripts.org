@@ -47,9 +47,9 @@ follow-on story, not this task.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Implementation complete; awaiting commit and PR. |
-| Waiting on   | Nothing.                               |
-| Next         | Commit, open PR, close task.                  |
+| Now          | PR #2093 open; review round 1 addressed. |
+| Waiting on   | Re-review and merge.                   |
+| Next         | Merge once CI is green and the reviewer approves. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -116,7 +116,7 @@ follow-on story, not this task.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | `sut.description` still held the old slovaris text on a bundle renamed to "crypto" | `projects/ores.dq/api/tests/domain_dataset_bundle_tests.cpp` | Accepted | Set to "Base System plus cryptocurrency reference data", matching the live `crypto` row in `dq_dataset_bundle_populate.sql`. Cosmetic only: the field is free text and the CHECK mirrors the assignment. |
 
 * Result
 

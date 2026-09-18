@@ -132,6 +132,19 @@ does not get a second one.
   from the old FPML pipeline. No =#+facet:=, =#+output:= or
   =#+data_source:=. They are the closest existing source for the FPML
   archetype; read them before writing a new one.
+- ISO, 2026-09-18. ISO is the one dataset with no source data file. Its
+  country and currency rows were entered by hand from the standards, so
+  its methodology documents hand entry rather than a download. Its
+  generator moved from =src/= to =external/iso/=, which gives a dataset
+  directory that holds its manifest, its methodology and the script
+  that reads them. An update is now a manifest edit and one command.
+  The generator had gone stale: it emitted =set schema 'ores'= and
+  =metadata.dq_*= calls, which no committed populate file still uses.
+  It also wrote its master include to =iso.sql=, but the file that
+  =catalogues_populate.sql= includes is =iso_populate.sql=. The same
+  staleness affects the crypto, flags, ip2country and lei generators,
+  which the four-dataset migration has to settle before it can claim
+  that a regeneration reproduces what is committed.
 - Reading, 2026-09-18. What the committed populate SQL says:
   - *Nothing consumes the nine archetypes.* No dataset model carries
     =#+type: ores.codegen.dataset= outside agile docs, and no payload

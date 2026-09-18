@@ -94,7 +94,7 @@ sequenced target state. It covers ORE-format import and export and
 CSV import and export, per the task scope. It made no schema or code
 change.
 
-** 1. Inventory: entities, identifier fields, and oresmd today
+** Inventory: entities, identifier fields, and oresmd today
 
 Every entity that identifies market data, its identifier fields, and
 how it connects to oresmd today. SQL shapes live under
@@ -132,9 +132,9 @@ Refdata catalogs that back oresmd's enums:
 | bootstrap pillars | =refdata_ir_curve_bootstrap_pillars_tbl= | pillar grid: tenors, =curve_role_code= |
 | CRM configs | =refdata_crm_topology_configs_tbl=, =refdata_crm_driver_pairs_tbl=, =refdata_crm_enabled_derived_pairs_tbl= | FX driver and derived pairs |
 
-** 2. Consumers across the three lenses
+** Consumers across the three lenses
 
-*** 2.1 Market simulator: =ores.synthetic= service and the ingest side
+*** Market simulator: =ores.synthetic= service and the ingest side
 
 - =feed_controller.hpp= (=ores.synthetic/service/src/feed_controller.hpp=):
   auto-creates =feed_binding= rows with =ore_key= (=:380-406=);
@@ -182,7 +182,7 @@ Refdata catalogs that back oresmd's enums:
 - =curve_republish_resolver.cpp=: bootstrap configs to republished
   derived curves.
 
-*** 2.2 Qt UIs
+*** Qt UIs
 
 - =ores.qt/mktdata=: =MarketSeriesMdiWindow= (list, filter by
   =series_type=, create series via =MarketDataController=),
@@ -204,7 +204,7 @@ Refdata catalogs that back oresmd's enums:
 - =ores.qt/refdata=: =MarketSeriesPickerDialog= (picks series for
   bootstrap configs by components).
 
-*** 2.3 =ores.shell=
+*** =ores.shell=
 
 The story says the shell has no market data surface. That is wrong.
 The shell has three market data surfaces, all ORE-shaped, and zero
@@ -228,7 +228,7 @@ oresmd URIs. New commands: =marketdata list series= showing URIs,
 control by URI. Every command output that names market data prints
 the oresmd URI, never the ORE key.
 
-** 3. Import and export to ORE format and CSV
+** Import and export to ORE format and CSV
 
 The boundary formats, per the task scope:
 
@@ -264,9 +264,9 @@ enter the system only at the import boundary; the system stores
 oresmd URIs. CSV exports keep ORE keys only at the file edge, as a
 projection. Nothing ORE-shaped is stored.
 
-** 4. The key question: fields vs a URI string
+** The key question: fields vs a URI string
 
-*** 4.1 Framework
+*** Framework
 
 1. Identity is the meaning of a row. Two writable representations of
    the same identity in one row drift.
@@ -288,7 +288,7 @@ projection. Nothing ORE-shaped is stored.
    copies. They stay: joins, RLS, hypertable size, and rename freedom
    depend on them.
 
-*** 4.2 Decision per entity
+*** Decision per entity
 
 | Entity | Decision | Rationale |
 |--------+----------+-----------|
@@ -306,7 +306,7 @@ projection. Nothing ORE-shaped is stored.
 | bootstrap configs | Keep =output_series_id= and =source_series_id= FKs. Drop =curve_family_role=: the role lives in the output series URI. | The series rows carry identity. |
 | CRM configs | Driver and derived pairs reference FX series identity (URI or series relationship). | The pairs name FX market data. |
 
-*** 4.3 The hybrid ruling
+*** The hybrid ruling
 
 Rejected everywhere. The working assumption is confirmed: two
 writable copies of identity drift.
@@ -322,7 +322,7 @@ queries that exist today match the whole identity, not one component.
 The =series_type= filter in the Qt models is a coarse prefix; with a
 URI it becomes a prefix match on the scheme path (=oresmd://fx/...=).
 
-*** 4.4 Canonical form
+*** Canonical form
 
 Equality lookup needs a canonical form: one string per identifier.
 =oresmd_parser::to_uri= already provides one
@@ -351,7 +351,7 @@ The plan pins down the rest in step 0:
 - Percent-encoding: boost::urls encodes and decodes. The stored
   string is the encoded canonical form. Matching uses the same form.
 
-** 5. The projection boundary
+** The projection boundary
 
 - Forward projections (=to_quote_key=, =to_curve_key=,
   =to_index_name=) stay. They become boundary-only conversion:
@@ -376,7 +376,7 @@ The plan pins down the rest in step 0:
   (=fx_quote_convention_checker=) stays. It swaps the identifier's
   pair at parse time. Same function, new target.
 
-** 6. Impact of the hard cutover
+** Impact of the hard cutover
 
 The cutover touches, with no backwards compatibility:
 
@@ -406,7 +406,7 @@ The cutover touches, with no backwards compatibility:
 8. Boundaries: ORE text import translates at the edge; CSV export
    projects at the file edge; nothing ORE-shaped is stored.
 
-** 7. Target state: sequenced
+** Target state: sequenced
 
 - Step 0, prerequisite: the inverse projection (ORE key to oresmd
   identifier) in =ores.marketdata.core/oresmd=, tested against the

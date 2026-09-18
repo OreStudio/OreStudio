@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-marketdata:
 #+owner: marco
-#+branch:
+#+branch: feature/bind-marketdata-entities-to-profiles
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-09-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:649C97F1-EB47-4CA8-A3AE-AA7D78FCD46D][Entity classification and drift baseline: ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Survey every ores.marketdata entity against the profile catalogue, rebind matche
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:649C97F1-EB47-4CA8-A3AE-AA7D78FCD46D][Entity classification and drift baseline: ores.marketdata]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:memory:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-06-11
+#+updated: 2026-09-17
 
 Project-scope persistent memory for LLM sessions. /This is where any
 LLM working on ORE Studio should write things that future sessions
@@ -123,6 +123,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:D2733820-85A1-49E5-8F1E-214D1A511A75][Don't use cat/--help after compass show/recipe]] — act on what it says directly; if something is missing, file a capture.
 - [[id:975C94B2-06AC-4073-B187-ED4779FCAC7B][Close task bookkeeping when raising the PR, not after review]] — do the task close-out as part of =compass-pr-raise=, before pushing; no separate close-task commit tacked onto the end of the review round.
 - [[id:B4E38241-6AD1-4859-9610-033CC39C0AF4][Use ores.platform for cross-platform functionality]] — always use ores.platform for getenv and any other cross-platform functionality it supports, rather than the native approach.
+- [[id:177EDB1C-6241-45AA-81B1-46C4B9D6329D][Do not number org headings]] — org numbers sections itself on export; a typed number renders after org's own as =4.1. 1. What is already settled=.
 
 ** User
 

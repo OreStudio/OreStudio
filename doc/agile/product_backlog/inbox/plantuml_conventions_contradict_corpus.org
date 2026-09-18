@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: E1C80732-4E67-40FD-BCFC-ACC4ADC20F66
+:END:
+#+title: PlantUML conventions doc contradicts the diagram corpus
+#+description: The class diagram conventions document prescribes notes, legends, {field} prefixes, a struct keyword and test-suite namespaces that almost no diagram in the repository uses, so following it produces a diagram unlike every other one.
+#+type: capture
+#+level: cross
+#+filetags: :plantuml:diagrams:conventions:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The class diagram conventions document prescribes presentation rules
+that the diagram corpus does not use. A diagram written to the document
+looks unlike every other diagram in the repository.
+
+Measured on 2026-09-17, over the 97 =.puml= files under =projects/= and
+=doc/= that declare classes:
+
+| Construct                      | Prescribed | Files using it |
+|--------------------------------+------------+----------------|
+| ={field}= prefix on fields     | yes        | 0              |
+| =note top of <name>= per class | yes        | 2              |
+| =legend=                       | implied    | 1              |
+| =<<test suite>>= namespace     | yes        | 0              |
+| bare =struct= keyword          | implied    | 0              |
+| =set namespaceSeparator ::=    | yes        | 91             |
+
+90 of the 97 class diagrams carry no note of any form. The 7 that carry
+one are the three codegen meta-model diagrams, the compute, refdata and
+history component diagrams, and =trade_modeling.puml=. None places a
+note on every class.
+
+The single =legend= is =ores.marketdata.puml=, written from the document
+this week.
+
+The one note-heavy diagram is =ores_schema.puml= with 225 notes. It is
+generated, so it says nothing about how a person authors a diagram.
+
+* Why
+
+I found this while writing the market data model diagram. I followed the
+conventions document. The first render was unusable: the notes spread
+across the canvas, stretched the namespace boxes, and pushed the
+=refdata= and =tests= namespaces past PlantUML's 4096px default limit,
+where it clipped them without a warning. Rewriting in the corpus idiom,
+with nested namespaces and no notes, produced a legible diagram.
+
+The document is right about the skeleton. The GPL header, the
+compile-command Local Variables block, and =set namespaceSeparator ::=
+are all corpus practice. The divergence is in the presentation rules.
+
+Two of the divergences are defects, not style differences:
+
+1. Bare =struct= is a syntax error in the pinned PlantUML version. The
+   colour table implies a struct kind that the tool rejects. The working
+   form is =class Foo <<struct>>=, which is what the corpus uses.
+2. ={field}= appears nowhere in the repository, so the disambiguation it
+   exists for has never been needed.
+
+The document is load-bearing. The component architecture audit checks
+diagrams against it, and the =compass-doc-add-class-diagram= skill
+drives authoring from it. So an author who follows the process produces
+the one diagram that does not match the rest.
+
+The decision is open. Either the document drops the rules the corpus
+never adopted, or the corpus is regenerated to match the document. The
+first costs one document edit. The second costs 97 diagrams, and it
+would bury each one in notes of the kind that made the market data
+diagram unreadable.
+
+* References
+
+- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — the document that diverges.
+- =projects/ores.marketdata/modeling/ores.marketdata.puml= — the only diagram written to it.
+- =projects/ores.sql/modeling/ores_schema.puml= — the generated, note-heavy exception.
+- [[id:F942BEFA-F1E2-42CD-995F-5F253F20B8CC][Task: Design: the market data data model on oresmd]] — where the diagram was written.
+
+* See also
+
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][compass-doc-add-class-diagram]] — the skill that drives authoring from the conventions document.

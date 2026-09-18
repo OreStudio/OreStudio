@@ -382,7 +382,7 @@ def parse_args(argv=None):
                         help="For --type entity_org: a named domain_entity "
                              "shape (see Codegen entity meta-model -- keys "
                              "and columns) whose knob combination "
-                             "pre-populates the scaffold's Flags/SQL/ "
+                             "pre-populates the scaffold's Flags/SQL/"
                              "presentation "
                              "sections, sampled from a known-good reference "
                              "entity. Individual --entity-* flags below "

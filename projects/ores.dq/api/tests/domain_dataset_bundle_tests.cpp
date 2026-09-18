@@ -49,7 +49,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.code = "crypto";
     sut.name = "Crypto Bundle";
-    sut.description = "Synthetic reference data for development and testing";
+    sut.description = "Base System plus cryptocurrency reference data";
     sut.modified_by = "admin";
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Initial creation";
@@ -60,7 +60,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.code == "crypto");
     CHECK(sut.name == "Crypto Bundle");
-    CHECK(sut.description == "Synthetic reference data for development and testing");
+    CHECK(sut.description == "Base System plus cryptocurrency reference data");
     CHECK(sut.modified_by == "admin");
     CHECK(sut.change_reason_code == "system.new");
     CHECK(sut.change_commentary == "Initial creation");

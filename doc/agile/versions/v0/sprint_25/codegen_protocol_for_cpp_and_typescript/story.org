@@ -27,9 +27,9 @@ The story then adds a TypeScript target space. The same org renders TypeScript i
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Both phases are built and verified locally. Phase 1 is committed; Phase 2 is ready to commit. |
-| Waiting on    | The PR and CI.                         |
-| Next          | Open the PR, then project the domain types the other five protocols need. |
+| Now           | Both phases are built, verified and committed; the PR is open. |
+| Waiting on    | CI and the merge.                      |
+| Next          | Merge, then remove ores.qt and ores.wt and their codegen facets. The coverage gap below then resumes. |
 | Last touched  | 2026-09-18                               |
 
 * Acceptance
@@ -110,9 +110,32 @@ The story then adds a TypeScript target space. The same org renders TypeScript i
   its subdirectories explicitly, so a project with no C++ build is invisible to the
   build tree until something adds it on purpose.
 
+* Coverage gap
+
+IAM carries 138 protocol messages across seven message families. Thirty reach
+TypeScript when this story merges. The remaining 108 fall into two groups, and
+the two need different work.
+
+*Entity-driven messages (42).* =tenant=, =tenant_type=, =account_type=,
+=tenant_status= and =account_contact_information= are driven by entity org
+models that already exist, and C++ generates their protocol headers today.
+TypeScript does not, because =ores.ts.protocol= admits =operation= models only
+and its template has no entity branch. Closing this group needs an
+=ores.ts.domain= facet, mirroring =ores.cpp.domain=, plus an entity branch in
+the TypeScript protocol template. Nothing new needs modelling.
+
+*Domain-referencing messages (66).* =account=, =authorization=, =account_party=,
+=session= and =account_history= reference eight =ores::iam::domain::= types.
+Seven of the eight are hand-written C++ with no org model: =account=, =role=,
+=permission=, =session=, =login_info=, =account_version= and
+=session_statistics=. Together they are 917 lines across six headers. Codegen
+has nothing to project, so closing this group means porting those types to org
+models first, the same job this story did for the eleven protocol headers.
+
 * Out of scope
 
 - The other hand-written protocol headers in the repository. This story covers IAM alone.
+- The two groups above, deferred to their own task.
 - C++ behaviour changes. The port holds the bytes steady, apart from the banner.
 - Qt UI code. The story generates the TypeScript the UI consumes; the UI migration is
   separate work.

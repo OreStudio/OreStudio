@@ -8,7 +8,7 @@
 #+filetags: :seed-codegen-methodology-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/seed-codegen-methodology-hotfix
-#+pr:
+#+pr: 2099
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2099][#2099]] | [sql] Restore the code generation methodology the slovaris removal took |
 
 * Review
 

@@ -83,8 +83,9 @@ void series_subclass_code_service::save_series_subclasses(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << series_subclasses.size() << " series subclass codes";
     auto ts = series_subclasses;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

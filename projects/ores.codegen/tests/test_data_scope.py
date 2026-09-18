@@ -107,6 +107,7 @@ def make_image_dataset(tmp_path, items, svgs, data_dir="icons"):
             "name": "Demo Images",
             "subject_area": "Demo Subject Area",
             "domain": "Reference Data",
+            "methodology": "Demo Source",
             "artefact_type": "images",
         }],
     }
@@ -201,6 +202,7 @@ def make_ip2country_manifest(tmp_path, data_file="ip2country-v4-u32.tsv"):
             "name": "IP to Country IPv4 Ranges",
             "subject_area": "IP Address to Country maps",
             "domain": "Reference Data",
+            "methodology": "iptoasn.com",
             "artefact_type": "ip2country",
         }],
     }
@@ -244,3 +246,59 @@ def test_resolve_targets_wires_the_ip2country_artefact_to_the_manifest(tmp_path)
     units, _, _ = resolve_targets(doc, CODEGEN_BASE, address="ores.sql.populate")
     by_output = {Path(u["output"]).name: u for u in units}
     assert by_output["demo_artefact_populate.sql"]["data_source"] == "manifest.json"
+
+
+def test_image_artefact_escapes_the_values_the_template_quotes(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ci", "Flag of Cote d'Ivoire")], svgs={"ci": "<svg/>"})
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["datasets"][0]["name"] = "Cote d'Ivoire Flags"
+    artefact = _build_image_artefact(
+        json.loads((dataset_dir / "images.json").read_text()),
+        manifest, dataset_dir / "manifest.json")
+
+    # The template supplies the surrounding quotes, so an apostrophe has to
+    # double rather than close the literal early.
+    assert artefact["items"][0]["description"] == "Flag of Cote d''Ivoire"
+    assert artefact["dataset"]["name"] == "Cote d''Ivoire Flags"
+
+
+def test_image_artefact_reads_the_source_its_dataset_names(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg id='named'/>"})
+    other = dataset_dir / "other"
+    other.mkdir()
+    (other / "ad.svg").write_text("<svg id='first'/>", encoding="utf-8")
+
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    # Both sources carry a data_dir and the one listed first is not the one the
+    # dataset names, so the link has to decide, not the order.
+    manifest["sources"].insert(0, {"name": "Other Source", "data_dir": "other"})
+    artefact = _build_image_artefact(
+        json.loads((dataset_dir / "images.json").read_text()),
+        manifest, dataset_dir / "manifest.json")
+
+    assert artefact["items"][0]["svg"] == "<svg id='named'/>"
+
+
+def test_image_artefact_rejects_a_dataset_naming_no_source(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["datasets"][0]["methodology"] = "Absent Source"
+    with pytest.raises(ValueError, match="Absent Source"):
+        _build_image_artefact(
+            json.loads((dataset_dir / "images.json").read_text()),
+            manifest, dataset_dir / "manifest.json")
+
+
+def test_ip2country_artefact_escapes_the_values_the_template_quotes(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["datasets"][0]["name"] = "Ranges d'Ivoire"
+    manifest["sources"][0]["data_file"] = "ranges d'Ivoire.tsv"
+
+    artefact = _build_ip2country_artefact(manifest, manifest_path)
+
+    assert artefact["dataset"]["name"] == "Ranges d''Ivoire"
+    assert artefact["data_file"] == "external/ip2country/ranges d''Ivoire.tsv"

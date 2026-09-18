@@ -1525,12 +1525,40 @@ def _manifest_dataset(manifest: dict, artefact_type: str) -> dict | None:
     return None
 
 
+def _sql_literal(value) -> str:
+    """A value as the body of a single-quoted SQL string literal.
+
+    The templates supply the surrounding quotes, so a value carrying an
+    apostrophe would close the literal early and the generated SQL would not
+    parse. Doubling the quote is SQL's own escape. The ip2country template's
+    psql ``\\set`` default takes the same escape.
+    """
+    return str(value).replace("'", "''")
+
+
+def _manifest_source(manifest: dict, dataset: dict) -> dict | None:
+    """The manifest source a dataset names as its methodology.
+
+    A dataset links to the source it was built from by name, so that link
+    identifies the right source. Taking the first source that happens to carry
+    the key a builder needs resolves to the wrong one as soon as a manifest
+    lists two, which ``external/crypto`` does.
+    """
+    for source in manifest.get('sources', []):
+        if source.get('name') == dataset.get('methodology'):
+            return source
+    return None
+
+
 def _dataset_names(dataset: dict) -> dict:
-    """A manifest dataset's names in the forms the archetypes read."""
+    """A manifest dataset's names in the forms the archetypes read.
+
+    Escaped, because both readers embed them in single-quoted SQL literals.
+    """
     return {
-        'name': dataset['name'],
-        'subject_area_name': dataset['subject_area'],
-        'domain_name': dataset['domain'],
+        'name': _sql_literal(dataset['name']),
+        'subject_area_name': _sql_literal(dataset['subject_area']),
+        'domain_name': _sql_literal(dataset['domain']),
     }
 
 
@@ -1554,18 +1582,20 @@ def _build_image_artefact(items, manifest: dict, manifest_path) -> dict | None:
     image, in the order the payload lists them. The SVG documents stay in the
     source tree and are read from it here, because the generated script inlines
     them and so cannot read them at run time. The manifest names their
-    directory through its source's ``data_dir``, relative to the manifest
-    itself. Returns None when the manifest declares no image dataset, so a
-    manifest without images renders no artefact.
+    directory through the ``data_dir`` of the source the dataset claims as its
+    methodology, relative to the manifest itself. Returns None when the
+    manifest declares no image dataset, so a manifest without images renders
+    no artefact.
     """
     dataset = _manifest_dataset(manifest, IMAGE_ARTEFACT_TYPE)
     if dataset is None:
         return None
-    source = next((s for s in manifest.get('sources', []) if s.get('data_dir')), None)
-    if source is None:
+    source = _manifest_source(manifest, dataset)
+    if source is None or not source.get('data_dir'):
         raise ValueError(
             f"Dataset '{dataset.get('name')}' declares an image artefact but "
-            "the manifest has no source with a data_dir")
+            f"no source with a data_dir matches its methodology "
+            f"'{dataset.get('methodology')}'")
     source_dir = Path(manifest_path).resolve().parent / source['data_dir']
     if not source_dir.is_dir():
         raise FileNotFoundError(
@@ -1579,8 +1609,8 @@ def _build_image_artefact(items, manifest: dict, manifest_path) -> dict | None:
                 f"Image artefact SVG not found: {svg_path} "
                 f"(listed by dataset '{dataset.get('name')}')")
         built.append({
-            'key': item['key'],
-            'description': item['description'],
+            'key': _sql_literal(item['key']),
+            'description': _sql_literal(item['description']),
             'svg': svg_path.read_text(encoding='utf-8').strip(),
         })
     return {
@@ -1601,17 +1631,18 @@ def _build_ip2country_artefact(manifest: dict, manifest_path) -> dict | None:
     dataset = _manifest_dataset(manifest, IP2COUNTRY_ARTEFACT_TYPE)
     if dataset is None:
         return None
-    source = next((s for s in manifest.get('sources', []) if s.get('data_file')), None)
-    if source is None:
+    source = _manifest_source(manifest, dataset)
+    if source is None or not source.get('data_file'):
         raise ValueError(
             f"Dataset '{dataset.get('name')}' declares an ip2country artefact "
-            "but the manifest has no source with a data_file")
+            f"but no source with a data_file matches its methodology "
+            f"'{dataset.get('methodology')}'")
     repo_root = _repo_root_from(manifest_path)
     manifest_dir = Path(manifest_path).resolve().parent
     data_file = (manifest_dir / source['data_file']).relative_to(repo_root).as_posix()
     return {
         'dataset': _dataset_names(dataset),
-        'data_file': data_file,
+        'data_file': _sql_literal(data_file),
     }
 
 

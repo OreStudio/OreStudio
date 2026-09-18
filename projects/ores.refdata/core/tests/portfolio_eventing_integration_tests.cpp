@@ -155,7 +155,7 @@ TEST_CASE("write_portfolio_publishes_nats_changed_event", tags) {
     // this process's synthetic-currency counter has moved past the
     // X-0 code the portfolio generator hardcodes -- so stamp
     // it explicitly, mirroring write_synthetic_pairs' pattern.
-    auto aggregation_ccy = generate_synthetic_currency(ctx);
+    auto aggregation_ccy = ores::refdata::generators::generate_synthetic_currency(ctx);
     aggregation_ccy.iso_code = "X-0";
     currency_repository ccy_repo;
     ccy_repo.write(party_ctx, {aggregation_ccy});

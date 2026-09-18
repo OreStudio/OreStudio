@@ -137,9 +137,8 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
 
     // Reported on a passing run too, so the census is visible to whoever
     // tightens the floors above.
-    WARN("corpus census: " << entries.size() << " distinct keys, "
-                           << distinct_types().size() << " series types, "
-                           << survey().parsed_files.size() << " parsed files");
+    WARN("corpus census: " << entries.size() << " distinct keys, " << distinct_types().size()
+                           << " series types, " << survey().parsed_files.size() << " parsed files");
     REQUIRE(entries.size() >= min_distinct_keys);
     REQUIRE(survey().parsed_files.size() >= min_parsed_files);
 
@@ -193,10 +192,10 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
         record(series_classifier::classify(type, "PROBE", "PROBE"));
     }
 
-    record(series_classifier::classify("CORRELATION", "RATE",
-                                       "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM"));
-    record(series_classifier::classify("GENERIC-MD", "EQUITY_OPTION",
-                                       "PRICE/RIC:.SPX/USD/2025-10-03/3300/C"));
+    record(series_classifier::classify(
+        "CORRELATION", "RATE", "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM"));
+    record(series_classifier::classify(
+        "GENERIC-MD", "EQUITY_OPTION", "PRICE/RIC:.SPX/USD/2025-10-03/3300/C"));
 
     REQUIRE(!asset_classes.empty());
     REQUIRE(!subclasses.empty());

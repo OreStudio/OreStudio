@@ -92,9 +92,8 @@ public:
      * The form a corpus sweep uses: an unrecognised series is a finding to
      * report, not an exception to abort the walk with.
      */
-    [[nodiscard]] static std::optional<series_classification>
-    try_classify(const std::string& series_type, const std::string& metric,
-                 const std::string& qualifier);
+    [[nodiscard]] static std::optional<series_classification> try_classify(
+        const std::string& series_type, const std::string& metric, const std::string& qualifier);
 
     /**
      * @brief Every ORE series type the vocabulary has a rule for, sorted.

@@ -159,9 +159,9 @@ series_classification series_classifier::classify(const std::string& series_type
     return *result;
 }
 
-std::optional<series_classification>
-series_classifier::try_classify(const std::string& series_type, const std::string& metric,
-                                const std::string& qualifier) {
+std::optional<series_classification> series_classifier::try_classify(const std::string& series_type,
+                                                                     const std::string& metric,
+                                                                     const std::string& qualifier) {
     if (series_type == "CORRELATION")
         return series_classification{correlation_asset_classes(qualifier), "correlation"};
 

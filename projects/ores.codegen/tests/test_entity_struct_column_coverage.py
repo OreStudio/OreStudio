@@ -103,10 +103,16 @@ An array column.
 """)
 
 
-def test_a_nullable_enum_is_refused(tmp_path):
-    """is_enum needs a non-nullable column; nothing else claims a nullable one."""
-    with pytest.raises(ValueError, match="reaches no member"):
-        _generate(tmp_path, extra="""
+def test_a_nullable_enum_reaches_the_struct_as_an_optional(tmp_path):
+    """is_enum wants a non-nullable column, but render_is_enum claims the rest.
+
+    The template pairs render_is_enum with an is_enum inversion, so a
+    nullable enum lands as std::optional<std::string> rather than being
+    dropped. trade's product_type is nullable for exactly this reason: an
+    unset product type has to reach the column as NULL, because the
+    Postgres enum has no member to spell it.
+    """
+    entity = _generate(tmp_path, extra="""
 ** status
 :PROPERTIES:
 :type:     text
@@ -117,6 +123,7 @@ def test_a_nullable_enum_is_refused(tmp_path):
 
 A nullable enum column.
 """)
+    assert "std::optional<std::string> status;" in entity
 
 
 def test_sql_only_declares_the_omission(tmp_path):

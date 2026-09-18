@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/regenerate-trade-service-layer
-#+pr:
+#+pr: 2096
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2096][#2096]] | [codegen] Generate the trade service layer |
 
 * Review
 

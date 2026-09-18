@@ -103,8 +103,9 @@ void business_unit_service::save_business_units(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
     auto ts = business_units;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

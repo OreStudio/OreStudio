@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_TRADE_REPOSITORY_HPP
-#define ORES_TRADING_REPOSITORY_TRADE_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_REPOSITORY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_TRADE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -48,33 +54,76 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes trades to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::trade& v);
     void write(context ctx, const std::vector<domain::trade>& v);
-
-    std::vector<domain::trade> read_latest(context ctx);
-    std::vector<domain::trade> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
-    std::vector<domain::trade> read_latest(context ctx, const std::string& id);
-    std::vector<domain::trade> read_all(context ctx, const std::string& id);
-
-    std::uint32_t count_latest(context ctx);
+    /**@}*/
 
     /**
-     * @brief List trades under a taxonomy node.
-     *
-     * @p node_id may be a book, portfolio, or business unit id; the database
-     * expands it to the book-id set and the query joins against it. An empty
-     * @p node_id lists all active trades in the tenant.
+     * @brief Reads latest trades, possibly filtered by primary key.
      */
-    std::vector<domain::trade> read_latest_for_node(context ctx,
-                                                    std::uint32_t offset,
-                                                    std::uint32_t limit,
-                                                    std::optional<boost::uuids::uuid> node_id);
+    /**@{*/
+    std::vector<domain::trade> read_latest(context ctx);
+    std::vector<domain::trade> read_latest(context ctx, const std::string& id);
+    /**@}*/
 
-    std::uint32_t count_latest_for_node(context ctx, std::optional<boost::uuids::uuid> node_id);
+    /**
+     * @brief Reads all trades, possibly filtered by primary key.
+     */
+    std::vector<domain::trade> read_all(context ctx, const std::string& id);
 
+    /**
+     * @brief Reads a single trade as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::trade>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+
+    /**
+     * @brief Reads latest trades with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::trade> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active trades.
+     * @param ctx Repository context with database connection
+     * @return Total number of active trades
+     */
+    std::uint32_t get_total_trade_count(context ctx);
+
+    /**
+     * @brief Deletes a trade by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes trades by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::trade> read_latest_for_node_id(context ctx,
+                                                       std::uint32_t offset,
+                                                       std::uint32_t limit,
+                                                       const std::string& node_id);
+
+    std::uint32_t count_latest_for_node_id(context ctx, const std::string& node_id);
 };
 
 }

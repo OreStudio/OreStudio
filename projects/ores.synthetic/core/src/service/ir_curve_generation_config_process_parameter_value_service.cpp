@@ -97,8 +97,9 @@ void ir_curve_generation_config_process_parameter_value_service::save_process_pa
     BOOST_LOG_SEV(lg(), debug) << "Saving " << process_parameter_values.size()
                                << " IR curve generation config process parameter values";
     auto ts = process_parameter_values;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -92,8 +92,9 @@ void workunit_service::save_workunits(const std::vector<domain::workunit>& worku
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << workunits.size() << " workunits";
     auto ts = workunits;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

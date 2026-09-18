@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_EVENTING_TRADE_CHANGED_EVENT_HPP
-#define ORES_TRADING_EVENTING_TRADE_CHANGED_EVENT_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_changed_event.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_EVENTING_TRADE_CHANGED_EVENT_HPP
+#define ORES_TRADING_API_EVENTING_TRADE_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -30,8 +35,8 @@ namespace ores::trading::eventing {
 /**
  * @brief Domain event indicating that trade data has changed.
  *
- * Published when any trade entity is created, updated, or deleted.
- * Subscribers use the timestamp to query for changes since that point.
+ * Published when any trade entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct trade_changed_event final {
     /**
@@ -40,7 +45,7 @@ struct trade_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief UUIDs of trades that changed (as strings).
+     * @brief Changed trade UUIDs (as strings).
      */
     std::vector<std::string> trade_ids;
 

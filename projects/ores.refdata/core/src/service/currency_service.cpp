@@ -94,8 +94,9 @@ void currency_service::save_currencies(const std::vector<domain::currency>& curr
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << currencies.size() << " currencies";
     auto ts = currencies;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

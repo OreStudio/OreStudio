@@ -86,8 +86,9 @@ void ibor_index_convention_service::save_ibor_index_conventions(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ibor_index_conventions.size()
                                << " IBOR index conventions";
     auto ts = ibor_index_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

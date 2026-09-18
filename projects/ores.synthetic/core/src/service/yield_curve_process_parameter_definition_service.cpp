@@ -91,8 +91,9 @@ void yield_curve_process_parameter_definition_service::save_parameter_definition
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parameter_definitions.size()
                                << " yield curve process parameter definitions";
     auto ts = parameter_definitions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

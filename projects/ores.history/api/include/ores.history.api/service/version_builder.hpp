@@ -29,16 +29,49 @@
 namespace ores::history::service {
 
 /**
- * @brief The shape every domain version type must have to feed
- * build_entity_history_versions: a modified_by actor and a
- * recorded_at timestamp, alongside whatever domain fields its
- * render function reads.
+ * @brief A domain version type carrying its audit stamps flat: a
+ * modified_by actor and a recorded_at timestamp, alongside whatever
+ * domain fields its render function reads.
  */
 template <typename T>
-concept history_version_source = requires(const T& v) {
+concept flat_history_version_source = requires(const T& v) {
     { v.modified_by } -> std::convertible_to<std::string>;
     { v.recorded_at } -> std::convertible_to<std::chrono::system_clock::time_point>;
 };
+
+/**
+ * @brief An entity whose audit stamps are reached through an audit
+ * member rather than sitting flat on the struct.
+ *
+ * A domain struct wide enough to trip rfl's field-uniqueness check is
+ * split across field groups, and its stamps then live on the audit
+ * group. Such an entity carries the same two values and is just as
+ * good a source; only the path to them differs.
+ */
+template <typename T>
+concept grouped_history_version_source = requires(const T& v) {
+    { v.audit.modified_by } -> std::convertible_to<std::string>;
+    { v.audit.recorded_at } -> std::convertible_to<std::chrono::system_clock::time_point>;
+};
+
+/**
+ * @brief What build_entity_history_versions needs: an actor and a
+ * timestamp, reached by either path.
+ */
+template <typename T>
+concept history_version_source =
+    flat_history_version_source<T> || grouped_history_version_source<T>;
+
+/**
+ * @brief The audit stamps of one version, whichever shape carries them.
+ */
+template <history_version_source T>
+[[nodiscard]] constexpr decltype(auto) history_audit_of(const T& v) {
+    if constexpr (grouped_history_version_source<T>)
+        return (v.audit);
+    else
+        return (v);
+}
 
 /**
  * @brief Builds the entity_history_version list a history_provider
@@ -71,8 +104,9 @@ build_entity_history_versions(const std::vector<T>& versions, RenderFn render) {
     for (std::size_t i = 0; i < version_count; ++i) {
         messaging::entity_history_version ehv;
         ehv.version = static_cast<int>(version_count - i);
-        ehv.modified_by = versions[i].modified_by;
-        ehv.recorded_at = versions[i].recorded_at;
+        const auto& audit = history_audit_of(versions[i]);
+        ehv.modified_by = audit.modified_by;
+        ehv.recorded_at = audit.recorded_at;
         if (i + 1 < version_count)
             ehv.changes = ores::diff::engine::compute(fields[i + 1], fields[i]);
         ehv.fields = std::move(fields[i]);

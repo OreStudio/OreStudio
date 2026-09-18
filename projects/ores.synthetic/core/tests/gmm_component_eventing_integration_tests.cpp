@@ -39,8 +39,8 @@
 #include "ores.synthetic.api/generators/gmm_component_generator.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/service/gmm_component_service.hpp"
-// Soft-FK parent seeding (ores_synthetic_fx_spot_generation_configs_tbl): the parent's own
-// generator and repository live in the same component as the child.
+// Soft-FK parent seeding (ores_synthetic_fx_spot_generation_configs_tbl): the parent may live in
+// another component, so its own component names the headers.
 #include "ores.synthetic.api/generators/fx_spot_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 // Grand-parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent's own

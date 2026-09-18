@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
-#define ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
+#define ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/instrument_payload.hpp"
@@ -26,12 +31,65 @@
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include <cstdint>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::trading::messaging {
+
+struct get_trades_request {
+    using response_type = struct get_trades_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    std::string node_id;
+};
+
+struct get_trades_response {
+    std::vector<ores::trading::domain::trade> trades;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+struct save_trade_request {
+    using response_type = struct save_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.save";
+    std::vector<ores::trading::domain::trade> trades;
+
+    static save_trade_request from(std::vector<ores::trading::domain::trade> v) {
+        return {.trades = std::move(v)};
+    }
+};
+
+struct save_trade_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_trade_request {
+    using response_type = struct delete_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_trade_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_trade_history_request {
+    using response_type = struct get_trade_history_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.history";
+    std::string id;
+};
+
+struct get_trade_history_response {
+    std::vector<ores::trading::domain::trade> history;
+    bool success = false;
+    std::string message;
+};
 
 struct get_activity_types_request {
     using response_type = struct get_activity_types_response;
@@ -62,31 +120,6 @@ struct trade_export_item {
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };
 
-/**
- * @brief Paginated list of trades under a taxonomy node.
- *
- * @p node_id may be a book, portfolio, or business unit UUID; the server
- * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
- * An empty @p node_id lists all trades visible to the tenant.
- *
- * The response carries only trade metadata (no instrument data). To load
- * the instrument for a specific trade, use get_trade_instrument_request.
- */
-struct get_trades_request {
-    using response_type = struct get_trades_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.list";
-    int offset = 0;
-    int limit = 100;
-    std::string node_id;
-};
-
-struct get_trades_response {
-    bool success = true;
-    std::string message;
-    std::vector<ores::trading::domain::trade> trades;
-    int total_available_count = 0;
-};
-
 struct get_trade_instrument_request {
     using response_type = struct get_trade_instrument_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";
@@ -100,45 +133,6 @@ struct get_trade_instrument_response {
     ores::trading::domain::trade_instrument instrument;
 };
 
-struct save_trade_request {
-    using response_type = struct save_trade_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.save";
-    std::vector<ores::trading::domain::trade> trades;
-
-    static save_trade_request from(std::vector<ores::trading::domain::trade> trades) {
-        return {.trades = std::move(trades)};
-    }
-};
-
-struct save_trade_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_trade_request {
-    using response_type = struct delete_trade_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.delete";
-    std::vector<std::string> ids;
-};
-
-struct delete_trade_response {
-    bool success = false;
-    std::string message;
-};
-
-struct get_trade_history_request {
-    using response_type = struct get_trade_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.history";
-    std::string id;
-};
-
-struct get_trade_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::trading::domain::trade> versions;
-};
-
-// ---- Portfolio export ----
 
 /**
  * @brief Request to export all trades (and instruments) under a taxonomy node.
@@ -176,17 +170,19 @@ struct export_trades_to_storage_request {
     static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
 
     std::vector<std::string> book_ids;
-    std::string storage_bucket; ///< Target bucket (e.g. "report-data")
-    std::string storage_key;    ///< Target key (e.g. "{instance_id}/trades.msgpack")
+    // Target bucket, such as "report-data".
+    std::string storage_bucket;
+    // Target key, such as "{instance_id}/trades.msgpack".
+    std::string storage_key;
 };
 
 struct export_trades_to_storage_response {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string storage_key; ///< Echoed back for confirmation
+    // Echoed back from the request so the caller can confirm the target.
+    std::string storage_key;
 };
-
 }
 
 #endif

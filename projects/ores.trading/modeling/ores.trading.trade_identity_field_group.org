@@ -40,6 +40,14 @@ uniquely identify the trade record within a tenant.
 
 Tenant identifier for multi-tenancy isolation.
 
+** workspace_id
+:PROPERTIES:
+:cpp_type:      boost::uuids::uuid
+:default_value: utility::uuid::live_workspace_id()
+:END:
+
+Workspace this record belongs to. Defaults to the Live workspace sentinel.
+
 ** id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid

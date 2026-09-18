@@ -159,8 +159,9 @@ void counterparty_contact_information_service::save_counterparty_contact_informa
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_contact_informations.size()
                                << " counterparty contact informations";
     auto ts = counterparty_contact_informations;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

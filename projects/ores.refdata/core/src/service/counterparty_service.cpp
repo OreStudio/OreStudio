@@ -100,8 +100,9 @@ void counterparty_service::save_counterparties(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
     auto ts = counterparties;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

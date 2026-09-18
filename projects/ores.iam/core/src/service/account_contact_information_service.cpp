@@ -110,8 +110,9 @@ void account_contact_information_service::save_account_contact_informations(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << account_contact_informations.size()
                                << " account contact informations";
     auto ts = account_contact_informations;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

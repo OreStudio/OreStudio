@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 577C2F64-3394-44A0-9AD9-FBD61143B8CA
+:END:
+#+title: Task: Regenerate the trade service layer and Qt estate
+#+description: The handler, service, repository, mapper, protocol and the nine Qt Trade files still live only in the tree, so regenerating trade clobbers them. The protocol diverges from the generated shape rather than extending it.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/regenerate-trade-service-layer
+#+pr: 2096
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerating the trade entity produces the whole estate, so the identity collapse can be made in the model rather than by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- The protocol adopts the generated shapes, keeping a vector-valued save and moving versions to history.
+- The bespoke handler, service, repository and mapper members are org-declared through the implements mechanism rather than hand-written.
+- The nine ores.qt Trade files regenerate, or are recorded as a deliberate exception with the reason.
+- Regenerating trade is idempotent and leaves the tree clean; the full build and ctest stay green against a live environment.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2096][#2096]] | [codegen] Generate the trade service layer |
+
+* Review
+
+Round 1, PR #2096.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Service stamped the whole struct, not each domain group, so no group was audited | ores.cpp.service.service_impl.org | Accept | Template now emits one stamp per group; the batch loop was also missing its braces |
+| 2 | Mapper dropped execution_timestamp in both directions | ores.cpp.repository.mapper_impl.org | Accept | The mapper had no branch for a string domain field against a timestamp column. Added the conversion: str() out, emplace in |
+| 3 | Generator emitted an unseeded status_id and an activity code that does not exist | ores.trading.trade.org | Accept | Emits new_booking and a nil status for the trigger to resolve |
+| 4 | Mapper wrote a default-constructed enum instead of NULL | ores.cpp.repository.mapper_impl.org | Accept | To-entity enum branch maps the default value to nullopt |
+| 5 | No activity type named capture, execute, unexpire or uncancel, so draft was unreachable and both endings were terminal | trading_activity_types_populate.sql | Accept | Added draft_capture, execution, maturity_reversal and cancellation_reversal; verified all eight transitions now reachable |
+| 6 | status_id was validated before the trigger resolved it, so every write failed | ores.trading.trade.org | Accept | The FK now carries skip_check: the transition resolution is what validates the status |
+| 7 | FSM resolution duplicated across the two trigger branches | ores.trading.trade.org | Accept | Extracted ores_trading_resolve_trade_transition_fn; the branches keep only their guards |
+| 8 | Amend branch re-reads a row the version select already read | trading_trades_create.sql | Decline | The row is already locked, so this is one extra index probe. Removing it needs the shared version-select template to take entity-specific columns, which is more grammar than the saving justifies |
+| 9 | _plan_required_seeds set no parent_component_include/core and the docstring still claimed cross-component parents were skipped | core.py | Accept | Seed items now carry their own component; a cross-component grandparent was getting the parent's headers |
+| 10 | Dead trade_status_service::resolve_status and trade_handler::fetch_fsm_transitions | trade_status_service.*, ores.trading.trade.org | Accept | Both deleted; the trigger owns status resolution now |
+| 11 | End-of-line ///< comments violate the comment placement rule | ores.trading.trade.org | Accept | Moved above the members they document |
+
+Working the round surfaced five further defects, none of them raised by
+the reviewer and none catchable by any existing test, because nothing in
+the estate wrote a trade. Four of the five only appeared once the
+eventing test was switched back on.
+
+| # | Finding | File | Notes |
+|---+---------+------+-------|
+| A | trade_identity_field_group.org never declared workspace_id, yet the committed header carried it: the header was ahead of its model | ores.trading.trade_identity_field_group.org | Declared it. Regenerating the group from its own model had been dropping the field |
+| B | The seeder gave a party only to a direct parent. An ancestor deeper in the chain -- the portfolio a book hangs off -- was written with a generated party_id and rejected | core.py, nats_integration_test.org | Seed items carry requires_party and the ancestor loop seeds a party the same way |
+| C | portfolio_id was cross-checked against the book's parent rather than derived from it, so a generic seeder could not satisfy the invariant | domain_entity_create.org, ores.trading.trade.org | The trigger now derives portfolio_id alongside party_id. Both are settled by the book, so neither is the caller's to send |
+| D | The round-trip test amended with the booking activity, which names a machine-starting transition and is illegal on a row that already has a state | nats_integration_test.org, ores.trading.trade.org | The model declares amend_activity_code and the test uses it |
+| E | The trade derives party_id from its book, but the seeder gave the book a fresh party, so the written row was owned by a party the session could not see and every read returned nothing | core.py, nats_integration_test.org | The book now carries the session party |
+
+* Result
+
+The trade estate is generated from the model. The protocol adopts the
+generated shapes, keeping the vector-valued save and moving versions to
+history. The handler, service, repository and mapper members that used
+to be hand-written are org-declared through the paste-block mechanism,
+so regenerating trade no longer clobbers them.
+
+Trade is the first entity to carry domain groups, which drove most of
+the codegen work: a member prefix resolved per field rather than a
+=identity.= literal, cross-component seeding, and a trigger that derives
+what the book settles and guards what the state machine owns.
+
+Acceptance on the nine =ores.qt= Trade files is met by the second
+branch of the bullet, not the first. They are a recorded exception here:
+regenerating them is a separate change with its own review surface, and
+folding it in would have put a Qt rewrite inside a PR whose subject is
+the service layer. Four hand-written Qt files also read
+=execution_timestamp= as a string, which is why the domain type stayed a
+string rather than becoming a time point. That work is tracked as its
+own task.
+
+The full build and ctest are green against a live environment: 73 of 73
+with a database recreated from the merged tree and all 23 services up.
+The codegen drift gate is clean across the nine registered components,
+and the codegen suite is 208 of 208.
+
+Two rounds of review. The first raised five blocking findings and five
+smaller items; all are recorded in =* Review= with their decisions. The
+round that fixed them found five further defects that no existing test
+could have caught, because nothing in the estate wrote a trade. Turning
+the generated eventing test back on is what found them, and it is the
+one durable lesson here: the test was disabled after a single error
+message, and that decision is what let the first four findings through.

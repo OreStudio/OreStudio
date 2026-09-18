@@ -79,8 +79,9 @@ void host_service::save_hosts(const std::vector<domain::host>& hosts) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << hosts.size() << " compute hosts";
     auto ts = hosts;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

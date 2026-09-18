@@ -93,8 +93,9 @@ void pricing_model_product_service::save_products(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << products.size() << " pricing model products";
     auto ts = products;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

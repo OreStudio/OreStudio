@@ -80,8 +80,9 @@ void currency_group_service::save_groups(const std::vector<domain::currency_grou
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << groups.size() << " currency groups";
     auto ts = groups;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

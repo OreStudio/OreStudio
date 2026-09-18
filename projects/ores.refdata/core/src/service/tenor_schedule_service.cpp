@@ -108,8 +108,9 @@ void tenor_schedule_service::save_schedules(const std::vector<domain::tenor_sche
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << schedules.size() << " tenor schedules";
     auto ts = schedules;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

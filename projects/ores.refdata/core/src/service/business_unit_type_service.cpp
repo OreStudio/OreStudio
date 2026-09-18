@@ -81,8 +81,9 @@ void business_unit_type_service::save_types(const std::vector<domain::business_u
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " business unit types";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

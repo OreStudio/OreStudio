@@ -23,7 +23,10 @@ questions of it, and they move at different rates.
 A trade carries two version numbers.
 
 - The /internal version/ moves on every recorded change to the trade. It
-  is the audit trail. It answers "what did we hold, and when".
+  is the audit trail. It answers "what did we hold, and when". It is the
+  =version= column every generated entity carries, so the rules in
+  [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][optimistic concurrency versioning]] govern who may move it and what a
+  writer must claim to be allowed to.
 - The /external version/ moves only when the terms the customer has
   agreed to change. It is the commercial record. It answers "what has
   the customer agreed to".
@@ -221,4 +224,5 @@ event changes the P&L, the undo is not a mirror; it is a second event.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a trade moves through; an amendment leaves the state unchanged.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the taxonomy of causes, and which move a version.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what the external version is confirmed as of.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning]] — how the internal version is assigned and guarded, and what a writer must send.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

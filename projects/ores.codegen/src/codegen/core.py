@@ -1518,9 +1518,10 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     the seeded entity will be patched into; ``path`` is the set of tables
     already on the current chain (cycle guard for self-referential
     hierarchies). Skipped like the direct-parent resolution: nullable
-    FKs, unresolvable tables (no modeling org), parties (the direct
-    parent's party branch is the single party-seeding mechanism) and
-    cross-component parents.
+    FKs, unresolvable tables (no modeling org) and parties (the direct
+    parent's party branch is the single party-seeding mechanism). An
+    ancestor in another component is seeded like any other; each item
+    carries its own component so the test includes the right headers.
     """
     items = []
     for mfk in mfks:
@@ -1529,8 +1530,6 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
         if not grandparent or not grandparent['entity_singular']:
             continue
         if grandparent['entity_singular'] == 'party':
-            continue
-        if grandparent['component'] != component:
             continue
         if mfk.get('table') in path:
             continue
@@ -1544,6 +1543,21 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             'table': mfk['table'],
             'parent_var': parent_var,
             'parent_entity_singular': grandparent['entity_singular'],
+            'parent_component': grandparent['component'],
+            'parent_component_include': f"{grandparent['component']}.api",
+            'parent_component_core': f"{grandparent['component']}.core",
+            'parent_has_identity_group': grandparent.get('has_identity_group'),
+            # An ancestor may itself carry a mandatory party_id FK (a
+            # portfolio seeded as a book's parent, say). Production sets
+            # that from the session, so the test has to seed a party for
+            # it exactly as the direct-parent branch does, or the
+            # ancestor's own insert fails its party check before the
+            # entity under test is ever written.
+            'requires_party': any(
+                not m.get('nullable')
+                and (org_by_table.get(m.get('table')) or {}).get(
+                    'entity_singular') == 'party'
+                for m in grandparent.get('mandatory_fks') or []),
             'parent_generator_facet_name': (
                 grandparent['generator_facet_name'] or 'generators'),
             'target_column': mfk.get('target_column'),
@@ -2158,6 +2172,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'columns' in domain_entity:
             _mark_last_item(domain_entity['columns'])
             _format_columns_for_doxygen(domain_entity['columns'])
+            # What the domain member's type actually is. For most entities it
+            # is the column's own cpp_type, which the domain class template
+            # emits verbatim. A domain-grouped entity reaches the member
+            # through a field group instead, so the group's declaration is the
+            # ground truth and the column's cpp_type describes only the
+            # database row -- the two genuinely differ, and the mapper exists
+            # to convert between them.
+            _domain_type_of = {
+                f['name'].split('.', 1)[1]: (f.get('cpp_type') or '').strip()
+                for f in domain_entity.get('domain_group_fields', []) or []
+            }
             # Add type flags and iterator_var for protocol serialization
             for col in domain_entity['columns']:
                 # image_id is rendered into SQL via the has_image_id flag (so it
@@ -2260,7 +2285,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # override gets a plain std::string field, not
                 # std::optional<std::string> — the render_* flags must match
                 # that same ground truth, not the derived nullable flags.
-                _render_cpp_type = (col.get('cpp_type') or '').strip()
+                _render_cpp_type = _domain_type_of.get(
+                    col.get('name'), (col.get('cpp_type') or '').strip()
+                )
+                col['render_cpp_type'] = _render_cpp_type
                 col['render_is_string'] = _render_cpp_type == 'std::string'
                 col['render_is_optional_string'] = _render_cpp_type == 'std::optional<std::string>'
                 col['render_is_bool'] = _render_cpp_type == 'bool'
@@ -2399,10 +2427,37 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             group['header'] = f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"'
         domain_entity['has_domain_groups'] = bool(domain_groups)
-        for col in domain_entity.get('columns', []):
+        # Which member a column is reached through, as a prefix a template
+        # can paste in front of the column name. The two-slot path reaches
+        # its identity columns through "identity."; a domain-grouped entity
+        # reaches every column through whichever member carries it. A column
+        # on neither path is flat and takes no prefix.
+        _member_of = {}
+        for field in domain_entity.get('domain_group_fields', []) or []:
+            member, _, name = field['name'].partition('.')
+            _member_of[name] = f"{member}."
+
+        def _set_group_prefix(col):
+            name = col.get('name') or col.get('column')
             col['is_identity_group_column'] = (
                 has_identity_group and col.get('group', '') == 'identity'
             )
+            col['group_prefix'] = _member_of.get(
+                name, 'identity.' if col['is_identity_group_column'] else ''
+            )
+
+        for col in domain_entity.get('columns', []):
+            _set_group_prefix(col)
+        # The scaffolding and audit fields are emitted outside the columns
+        # loop, so they need the prefix of whichever member carries them.
+        # Find it by the field each set is guaranteed to hold rather than by
+        # the member's name, which is the model author's to choose.
+        domain_entity['scaffold_prefix'] = _member_of.get(
+            'version', 'identity.' if has_identity_group else ''
+        )
+        domain_entity['audit_prefix'] = _member_of.get(
+            'recorded_at', 'audit.' if has_audit_group else ''
+        )
         # Primary-key columns live in a separate 'primary_key' dict, not in
         # 'columns' (see org_loader._parse_columns), so they need the same
         # flag set independently -- otherwise repository-layer helpers like
@@ -2410,9 +2465,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # identity-grouped domain struct no longer has.
         pk_dict = domain_entity.get('primary_key', {})
         for col in [pk_dict] + list(pk_dict.get('columns', [])):
-            col['is_identity_group_column'] = (
-                has_identity_group and col.get('group', '') == 'identity'
-            )
+            _set_group_prefix(col)
         # Who supplies each field's value, for facets that build an entity
         # from user input (the shell command units). A column states it with
         # :supplied_by:, and the default is "user" -- a positional argument.
@@ -2437,9 +2490,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # the column came from the plain list or the primary-key dict
             # (see _natural_key_node_to_dict: it renames 'name' to 'column').
             name = col.get('name') or col.get('column') or ''
-            col['member_access'] = (
-                'identity.' if col['is_identity_group_column'] else ''
-            ) + name
+            col['member_access'] = (col.get('group_prefix') or '') + name
             return col['is_user_supplied']
         user_supplied_count = 0
         for col in domain_entity.get('columns', []):
@@ -2899,24 +2950,35 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # each FK's :table: to the parent entity's model metadata -- RAW
         # load_model() output, not this enrichment -- so the template can
         # emit per-FK seeding code. Skipped for: nullable FKs (their
-        # generators emit nullopt, which the trigger's check skips), tables
-        # with no modeling org (cross-component or non-codegen tables), and
-        # cross-component parents (the template's includes assume a
-        # same-component parent).
+        # generators emit nullopt, which the trigger's check skips) and
+        # tables with no modeling org (non-codegen tables). A parent in
+        # another component is seeded like any other -- the include path it
+        # needs is carried on the FK.
         fks = domain_entity.get('foreign_keys') or []
         if fks:
             from .org_loader import _entity_org_by_table
             org_by_table = _entity_org_by_table(_projects_dir_from(model_path))
+            # An FK names a column, and on a grouped entity that column is
+            # reached through its member like any other.
+            _prefix_by_column = {
+                c['name']: c.get('group_prefix') or ''
+                for c in domain_entity.get('columns', []) or []
+            }
             for fk in fks:
+                fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
                 if fk.get('nullable'):
                     continue
                 parent = _parent_entity_info(
                     (org_by_table.get(fk.get('table')) or {}).get('org'))
                 if not parent or not parent['entity_singular']:
                     continue
-                if parent['component'] != domain_entity.get('component'):
-                    continue
                 fk['parent_entity_singular'] = parent['entity_singular']
+                # A parent in another component is seeded the same way; only
+                # the include path differs, so it is carried per FK rather
+                # than taken from the child's own component.
+                fk['parent_component'] = parent['component']
+                fk['parent_component_include'] = f"{parent['component']}.api"
+                fk['parent_component_core'] = f"{parent['component']}.core"
                 fk['parent_generator_facet_name'] = (
                     parent['generator_facet_name'] or 'generators')
                 fk['parent_is_party'] = parent['entity_singular'] == 'party'
@@ -2933,6 +2995,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # seeds a party too, so the parent's own insert passes its
                 # trigger. The party table is resolved via the same table
                 # scan (its entity_singular is 'party').
+                # When the entity derives its own party from this parent
+                # (party_id_from_book_id names the parent's table), the
+                # parent must carry the session party rather than a fresh
+                # one: the derived party is what the row ends up owned by,
+                # and a row owned by a party the session cannot see is
+                # invisible to the very session that wrote it.
+                _book = ((domain_entity.get('sql') or {}).get(
+                    'party_id_from_book_id') or {}).get('book_table')
+                fk['parent_supplies_party'] = bool(
+                    _book and fk.get('table') == _book)
                 fk['parent_requires_party'] = any(
                     not mfk.get('nullable')
                     and (org_by_table.get(mfk.get('table')) or {}).get(
@@ -2961,8 +3033,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name') == fk.get('column')
                     and c.get('is_identity_group_column', False)
                     for c in domain_entity.get('columns', []) or [])
+            # The amending activity is declared by column name; resolve it
+            # to the member path the test must assign through, which for a
+            # grouped entity sits inside one of the groups.
+            amend = domain_entity.get('amend_activity')
+            if amend:
+                amend['group_prefix'] = next(
+                    (c.get('group_prefix', '') or ''
+                     for c in domain_entity.get('columns', []) or []
+                     if c.get('name') == amend.get('column')),
+                    '')
             domain_entity['seed_party'] = any(
                 fk.get('parent_is_party') or fk.get('parent_requires_party')
+                or any(item.get('requires_party')
+                       for item in fk.get('parent_required_fks') or [])
                 for fk in fks)
             domain_entity['seed_parent_country_sentinel'] = any(
                 fk.get('parent_seed_country_sentinel') for fk in fks)
@@ -3191,8 +3275,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'{c["column"]}: " << {c["column"]}' for c in pk_columns
             )
             pk['value_log_fields'] = '"' + ' << " '.join(
-                f'{c["column"]}: " << v.'
-                + ('identity.' if c.get('is_identity_group_column') else '')
+                f'{c["column"]}: " << v.' + (c.get('group_prefix') or '')
                 + c["column"]
                 for c in pk_columns
             )

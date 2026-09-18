@@ -26,6 +26,21 @@ std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{ent
     return repo_.read_latest(ctx_, offset, limit);
 }
 
+{{#list_filter_column}}
+std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}(
+    std::uint32_t offset, std::uint32_t limit, const std::string& {{list_filter_column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{list_filter_column}}"
+        << " offset=" << offset << ", limit=" << limit;
+    return repo_.read_latest_for_{{list_filter_column}}(ctx_, offset, limit, {{list_filter_column}});
+}
+
+std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}(
+    const std::string& {{list_filter_column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting {{entity_plural_words}} by {{list_filter_column}}";
+    return repo_.count_latest_for_{{list_filter_column}}(ctx_, {{list_filter_column}});
+}
+
+{{/list_filter_column}}
 std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count";
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
@@ -144,13 +159,20 @@ std::vector<domain::{{entity_singular}}>
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.columns}}
 {{^is_int}}
-    if (v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
+    if (v.{{{group_prefix}}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
         throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/is_int}}
 {{/primary_key.columns}}
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
+{{#has_domain_groups}}
+{{#domain_groups}}
+    stamp(t.{{member}}, ctx_);
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
     stamp(t, ctx_);
+{{/has_domain_groups}}
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 }
@@ -160,7 +182,7 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
 {{^is_int}}
-        if (e.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
+        if (e.{{{group_prefix}}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
             throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/is_int}}
 {{/primary_key.columns}}
@@ -168,8 +190,16 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
     auto ts = {{entity_plural_short}};
-    for (auto& e : ts)
+    for (auto& e : ts) {
+{{#has_domain_groups}}
+{{#domain_groups}}
+        stamp(e.{{member}}, ctx_);
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
         stamp(e, ctx_);
+{{/has_domain_groups}}
+    }
     repo_.write(ctx_, ts);
 }
 

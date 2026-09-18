@@ -80,8 +80,9 @@ void tenor_anchor_service::save_anchors(const std::vector<domain::tenor_anchor>&
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << anchors.size() << " tenor anchors";
     auto ts = anchors;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -21,8 +21,9 @@
 
 =ores.trading.core= is the primary component for trade booking and lifecycle
 management in ORE Studio. It implements the domain model for financial trades
-and instruments (rates, FX, equity, credit, scripted), a four-state FSM
-(new → live → expired/cancelled) enforced via =ores.dq= infrastructure, and a
+and instruments (rates, FX, equity, credit, scripted), the trade status FSM
+(see [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] for its states and transitions) enforced via =ores.dq=
+infrastructure, and a
 full persistence layer with temporal versioning and amendment history. Business
 logic is exposed as NATS message handlers in the 0x5000–0x5FFF range. The
 component also ships synthetic-data generators for test and development use.

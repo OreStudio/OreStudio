@@ -27,8 +27,7 @@ O(n²) field-uniqueness check.  The JSON wire format is nested:
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:          trading-record
 :END:
 
 * Columns
@@ -54,7 +53,7 @@ Surrogate key for the trade record.
 Internal party owning this trade (denormalized from book_id).
 
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+ctx.generate_uuid()
 #+end_src
 
 ** external_id
@@ -149,13 +148,18 @@ std::nullopt
 :PROPERTIES:
 :type:     product_type_t
 :cpp_type: std::string
+:is_enum:  true
 :nullable: true
 :END:
 
 ORE product type discriminator.
 
+The column is text in the database and an enumeration in the domain
+struct, so the generated sample states the enumerator: the generator
+builds the struct, not the row.
+
 #+begin_src cpp :name generator
-std::string("Swap")
+domain::product_type::swap
 #+end_src
 
 ** instrument_id
@@ -209,7 +213,7 @@ std::string("NS-001")
 Activity type code (soft FK to ores_trading_activity_types_tbl).
 
 #+begin_src cpp :name generator
-std::string("New")
+std::string("new_booking")
 #+end_src
 
 ** status_id
@@ -221,8 +225,13 @@ std::string("New")
 
 Current FSM state (soft FK to ores_dq_fsm_states_tbl).
 
+The generated sample leaves it nil. A trade's status is the target of a
+guarded transition, so the insert trigger resolves it from the activity;
+a random uuid names no seeded state and is rejected before the trigger
+ever reaches the transition that would have set it.
+
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+boost::uuids::uuid{}
 #+end_src
 
 ** trade_date
@@ -287,9 +296,35 @@ std::string("2026-01-15")
 
 * Foreign keys
 
-The soft references a trade carries. =book_id= and =portfolio_id= are
-not listed here: their validation is part of the book derivation, which
-the SQL section's "Party id from book id" declares.
+The soft references a trade carries.
+
+** book_id
+:PROPERTIES:
+:table:         ores_refdata_books_tbl
+:parent_entity: book
+:skip_check:    true
+:nullable:      false
+:error_message: Invalid book_id: %. Book must exist for tenant.
+:END:
+
+The book a trade is booked into. =skip_check= suppresses the inline
+check, because the SQL section's "Party id from book id" already
+validates the book on its way to deriving the party from it. The entry
+is still needed: it is what tells the eventing test to seed a book
+before it writes a trade.
+
+** portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:skip_check:    true
+:nullable:      false
+:error_message: Invalid portfolio_id: %. Portfolio must exist for tenant.
+:END:
+
+Declared for the same reason, and resolved in the same place: the
+derivation above sets it from the book's parent portfolio, so whatever
+the caller sent is replaced before any check could run.
 
 ** successor_trade_id
 :PROPERTIES:
@@ -314,9 +349,14 @@ Absent on an internal trade, which faces no counterparty.
 :table:         ores_dq_fsm_states_tbl
 :error_message: Invalid status_id: %. FSM state must exist.
 :use_system_tenant: true
+:skip_check:    true
 :END:
 
-The state the trade occupies in its lifecycle machine.
+The state the trade occupies in its lifecycle machine. =skip_check=
+because the status is not the caller's to supply: the transition
+resolution below assigns it from the transition's target state, which
+is a seeded state by construction. Checking the caller's value first
+would reject every write before the trigger could correct it.
 
 * Insert trigger
 
@@ -341,17 +381,105 @@ optional, and the generated guard skips the call when it is null.
 
 ** Party id from book id
 :PROPERTIES:
-:book_table:                ores_refdata_books_tbl
-:book_error_message:        Invalid book_id: %. Book must exist for tenant.
-:portfolio_table:           ores_refdata_portfolios_tbl
-:portfolio_error_message:   Invalid portfolio_id: %. Portfolio must exist for tenant.
-:cross_check_error_message: portfolio_id % does not match book parent_portfolio_id %.
+:book_table:         ores_refdata_books_tbl
+:book_error_message: Invalid book_id: %. Book must exist for tenant.
 :END:
 
 A trade states its book, and the book already knows which party owns it
-and which portfolio contains it. The insert trigger therefore derives
-=party_id= from the book rather than trusting the caller, and rejects a
-=portfolio_id= that disagrees with the book's parent.
+and which portfolio contains it. Neither is therefore the caller's to
+supply: the insert trigger derives =party_id= and =portfolio_id= from
+the book and ignores whatever was sent for them.
+
+Both are derived the same way because both are determined the same way.
+A value the book fully decides cannot disagree with the book without the
+caller being wrong, so asking a caller to send it can only introduce an
+error that the derivation removes.
+
+** Status transition
+:PROPERTIES:
+:amend_activity_column: activity_type_code
+:amend_activity_code:   amendment
+:END:
+
+=amend_activity_code= names the activity a rewrite of an existing trade
+carries. A trade cannot be rewritten under =new_booking=: that activity
+names a transition which starts the machine, and the row already has a
+state. The generated round-trip test uses this to amend the row it has
+just booked.
+
+A trade's status is not a value the caller supplies: it is the target of a
+guarded transition. The activity names the event, reference data maps the
+event to a transition in the =trade_status= machine, and the transition
+states which status it may be taken from. An activity that maps to no
+transition versions the trade and leaves it where it was, which is why a
+fixing on a live trade stays live.
+
+The guard lives in the insert trigger rather than in a service because
+every path that writes a version passes through it, and because the
+version select above locks the superseding row: reading the prior status
+under that lock is what stops two concurrent amendments from both
+believing their transition is legal.
+
+#+begin_src sql :name status_transition_declarations :implements B9428A09-3610-4CAD-A200-E6CDE53B7C8D
+    v_transition record;
+    v_prior_status_id uuid;
+#+end_src
+
+Both branches resolve the transition through
+=ores_trading_resolve_trade_transition_fn=, which does the lookup and
+refuses an activity naming a transition that no longer exists. What
+differs between them is the guard, and that is what stays here.
+
+The booking case. The machine has not started, so the transition must be
+one that starts it: a transition stating a =from_state_id= is an event
+that presumes a history this trade does not have.
+
+#+begin_src sql :name status_transition_on_insert :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
+    v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+
+    if v_transition.has_transition then
+        if v_transition.from_state_id is not null then
+            raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
+                NEW.activity_type_code, v_transition.transition_name, v_transition.from_state_id
+                using errcode = '23514';
+        end if;
+
+        NEW.status_id = v_transition.to_state_id;
+    end if;
+#+end_src
+
+The amendment case. The prior row is locked by the version select above,
+so the status read here cannot race another writer.
+
+#+begin_src sql :name status_transition_on_amend :implements 59F4313F-B119-44D8-8E4E-05AE8B18DE95
+        select status_id into v_prior_status_id
+        from "ores_trading_trades_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+
+        if not v_transition.has_transition then
+            NEW.status_id = v_prior_status_id;
+        else
+            if v_transition.from_state_id is null then
+                raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
+                    NEW.activity_type_code, v_transition.transition_name, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            if v_prior_status_id is distinct from v_transition.from_state_id then
+                raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
+                    NEW.activity_type_code, v_transition.transition_name,
+                    v_transition.from_state_id, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            NEW.status_id = v_transition.to_state_id;
+        end if;
+
+#+end_src
 
 ** Indexes
 
@@ -377,8 +505,841 @@ The =name= column carries the stem: the template renders it as
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:       api
+:has_batch_save:     true
+:list_filter_column: node_id
+:handler_ctor_param: std::string http_base_url = {}
+:handler_ctor_init:  http_base_url_(std::move(http_base_url))
 :END:
+
+** Repository methods
+
+A trade's node-scoped listing is not a column filter: the node may be a
+book, a portfolio or a business unit, so the database resolves it to a
+book-id set first and the read runs against that set. An empty node
+covers the whole tenant, which is why the unfiltered listing needs no
+separate call.
+
+#+begin_src cpp :name repository_declarations :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::trade> read_latest_for_node_id(context ctx,
+                                                    std::uint32_t offset,
+                                                    std::uint32_t limit,
+                                                    const std::string& node_id);
+
+    std::uint32_t count_latest_for_node_id(context ctx, const std::string& node_id);
+#+end_src
+
+#+begin_src cpp :name repository_methods :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+namespace {
+
+using context = ores::database::context;
+
+std::vector<std::string> fetch_book_ids(context ctx,
+                                        const std::string& fn,
+                                        const std::string& tid,
+                                        const std::string& id,
+                                        logging::logger_t& lg,
+                                        const std::string& desc) {
+    const std::string sql = "SELECT id::text FROM " + fn + "($1::uuid, $2::uuid) AS t(id)";
+    return execute_parameterized_string_query(ctx, sql, {tid, id}, lg, desc);
+}
+
+std::vector<domain::trade> read_trades_for_books(context ctx,
+                                                 const std::vector<std::string>& book_ids,
+                                                 const std::string& tid,
+                                                 const std::string& wid,
+                                                 std::uint32_t offset,
+                                                 std::uint32_t limit,
+                                                 logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    std::vector<domain::trade> result;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::read<std::vector<trade_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                                 "valid_to"_c == max && "book_id"_c == bid) |
+                           order_by("id"_c);
+        auto batch = execute_read_query<trade_entity, domain::trade>(
+            ctx,
+            query,
+            [](const auto& entities) { return trade_mapper::map(entities); },
+            lg,
+            "Reading trades for book");
+        result.insert(result.end(),
+                      std::make_move_iterator(batch.begin()),
+                      std::make_move_iterator(batch.end()));
+    }
+
+    std::ranges::sort(result, {}, [](const auto& t) { return t.identity.id; });
+
+    if (offset >= result.size())
+        return {};
+    const auto end = std::min(static_cast<std::size_t>(offset + limit), result.size());
+    return std::vector<domain::trade>(result.begin() + offset, result.begin() + end);
+}
+
+std::uint32_t count_trades_for_books(context ctx,
+                                     const std::vector<std::string>& book_ids,
+                                     const std::string& tid,
+                                     const std::string& wid,
+                                     logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    struct count_result {
+        long long count;
+    };
+    std::uint32_t total = 0;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::select_from<trade_entity>(sqlgen::count().as<"count">()) |
+                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                                 "valid_to"_c == max && "book_id"_c == bid) |
+                           sqlgen::to<count_result>;
+        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+        ensure_success(r, lg);
+        total += static_cast<std::uint32_t>(r->count);
+    }
+    return total;
+}
+
+}
+
+
+
+std::vector<domain::trade>
+trade_repository::read_latest_for_node_id(context ctx,
+                                       std::uint32_t offset,
+                                       std::uint32_t limit,
+                                       const std::string& node_id) {
+
+    if (node_id.empty())
+        return read_latest(ctx, offset, limit);
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto& nid = node_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading trades for node: " << nid;
+    const auto book_ids = fetch_book_ids(ctx,
+                                         "ores_trading_get_book_ids_for_node_fn",
+                                         tid,
+                                         nid,
+                                         lg(),
+                                         "Fetching book IDs for node subtree");
+    return read_trades_for_books(ctx, book_ids, tid, wid, offset, limit, lg());
+}
+
+std::uint32_t trade_repository::count_latest_for_node_id(context ctx,
+                                                      const std::string& node_id) {
+
+    if (node_id.empty())
+        return get_total_trade_count(ctx);
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto& nid = node_id;
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades for node: " << nid;
+    const auto book_ids = fetch_book_ids(ctx,
+                                         "ores_trading_get_book_ids_for_node_fn",
+                                         tid,
+                                         nid,
+                                         lg(),
+                                         "Fetching book IDs for node subtree");
+    return count_trades_for_books(ctx, book_ids, tid, wid, lg());
+}
+
+#+end_src
+
+** Handler includes
+
+The instrument services the export path resolves through, the storage
+and msgpack headers the storage export needs, and the FSM protocol the
+save path reads its transitions from.
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/service/activity_type_service.hpp"
+#include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/cap_floor_instrument_service.hpp"
+#include "ores.trading.core/service/commodity_instrument_service.hpp"
+#include "ores.trading.core/service/composite_instrument_service.hpp"
+#include "ores.trading.core/service/credit_instrument_service.hpp"
+#include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_forward_instrument_service.hpp"
+#include "ores.trading.core/service/equity_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_position_instrument_service.hpp"
+#include "ores.trading.core/service/equity_swap_instrument_service.hpp"
+#include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/fra_instrument_service.hpp"
+#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
+#include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rpa_instrument_service.hpp"
+#include "ores.trading.core/service/scripted_instrument_service.hpp"
+#include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/trade_envelope_reader.hpp"
+#include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <chrono>
+#include <rfl/msgpack.hpp>
+#include <unordered_map>
+#+end_src
+
+** Handler private members
+
+=populate_instruments_for_trades= resolves a page of trades to their
+instrument payloads in two phases: bucket the instrument ids by product
+type, then read each product's table in one batch.
+
+#+begin_src cpp :name handler_private :implements A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
+    template <typename Ctx>
+    static void populate_instruments_for_trades(const Ctx& ctx,
+                                                std::vector<trade_export_item>& items) {
+        using ores::trading::domain::product_type;
+        using ores::trading::domain::trade_instrument;
+        using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::composite_instrument_data;
+
+        // Phase 1: bucket instrument IDs by (product_type, trade_type)
+        std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
+            fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids,
+            infl_ids, rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids,
+            fxvar_ids, eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids,
+            eq_dig_ids, eq_acc_ids, eq_pos_ids;
+
+        for (const auto& item : items) {
+            const auto& t = item.trade;
+            if (!t.classification.instrument_id ||
+                t.classification.product_type == product_type::unknown)
+                continue;
+            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
+            const auto& ttc = t.classification.trade_type;
+            switch (t.classification.product_type) {
+                case product_type::bond:
+                    bond_ids.push_back(id);
+                    break;
+                case product_type::credit:
+                    credit_ids.push_back(id);
+                    break;
+                case product_type::commodity:
+                    commodity_ids.push_back(id);
+                    break;
+                case product_type::scripted:
+                    scripted_ids.push_back(id);
+                    break;
+                case product_type::composite:
+                    composite_ids.push_back(id);
+                    break;
+                case product_type::swap:
+                    if (ttc == "ForwardRateAgreement")
+                        fra_ids.push_back(id);
+                    else if (ttc == "Swap" || ttc == "CrossCurrencySwap" || ttc == "FlexiSwap")
+                        vswap_ids.push_back(id);
+                    else if (ttc == "CapFloor")
+                        capfloor_ids.push_back(id);
+                    else if (ttc == "Swaption")
+                        swaption_ids.push_back(id);
+                    else if (ttc == "BalanceGuaranteedSwap")
+                        bgs_ids.push_back(id);
+                    else if (ttc == "CallableSwap")
+                        callable_ids.push_back(id);
+                    else if (ttc == "KnockOutSwap")
+                        koswap_ids.push_back(id);
+                    else if (ttc == "InflationSwap")
+                        infl_ids.push_back(id);
+                    else if (ttc == "RiskParticipationAgreement")
+                        rpa_ids.push_back(id);
+                    break;
+                case product_type::fx:
+                    if (ttc == "FxForward" || ttc == "FxSwap")
+                        fxfwd_ids.push_back(id);
+                    else if (ttc == "FxOption")
+                        fxopt_ids.push_back(id);
+                    else if (ttc == "FxBarrierOption" || ttc == "FxGenericBarrierOption" ||
+                             ttc == "FxDoubleBarrierOption" || ttc == "FxEuropeanBarrierOption" ||
+                             ttc == "FxKIKOBarrierOption")
+                        fxbar_ids.push_back(id);
+                    else if (ttc == "FxDigitalOption" || ttc == "FxDigitalBarrierOption" ||
+                             ttc == "FxTouchOption" || ttc == "FxDoubleTouchOption")
+                        fxdig_ids.push_back(id);
+                    else if (ttc == "FxAverageForward" || ttc == "FxTaRF")
+                        fxasn_ids.push_back(id);
+                    else if (ttc == "FxAccumulator")
+                        fxacc_ids.push_back(id);
+                    else if (ttc == "FxVarianceSwap")
+                        fxvar_ids.push_back(id);
+                    break;
+                case product_type::equity:
+                    if (ttc == "EquityOption" || ttc == "EquityCliquetOption" ||
+                        ttc == "EquityOutperformanceOption")
+                        eq_opt_ids.push_back(id);
+                    else if (ttc == "EquityForward")
+                        eq_fwd_ids.push_back(id);
+                    else if (ttc == "EquitySwap" || ttc == "EquityWorstOfBasketSwap")
+                        eq_swp_ids.push_back(id);
+                    else if (ttc == "EquityVarianceSwap")
+                        eq_var_ids.push_back(id);
+                    else if (ttc == "EquityBarrierOption" || ttc == "EquityDoubleBarrierOption" ||
+                             ttc == "EquityEuropeanBarrierOption")
+                        eq_bar_ids.push_back(id);
+                    else if (ttc == "EquityAsianOption")
+                        eq_asn_ids.push_back(id);
+                    else if (ttc == "EquityDigitalOption" || ttc == "EquityTouchOption")
+                        eq_dig_ids.push_back(id);
+                    else if (ttc == "EquityAccumulator" || ttc == "EquityTaRF")
+                        eq_acc_ids.push_back(id);
+                    else if (ttc == "EquityPosition")
+                        eq_pos_ids.push_back(id);
+                    break;
+                case product_type::unknown:
+                    break;
+            }
+        }
+
+        // Phase 2: batch-fetch legs (one call covers all swap types)
+        std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg>> legs_map;
+        {
+            std::vector<std::string> all_swap;
+            for (auto* v : {&fra_ids,
+                            &vswap_ids,
+                            &capfloor_ids,
+                            &swaption_ids,
+                            &bgs_ids,
+                            &callable_ids,
+                            &koswap_ids,
+                            &infl_ids,
+                            &rpa_ids})
+                all_swap.insert(all_swap.end(), v->begin(), v->end());
+            if (!all_swap.empty()) {
+                service::fra_instrument_service fra_svc(ctx);
+                for (auto& leg : fra_svc.get_swap_legs_batch(all_swap))
+                    legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
+                        std::move(leg));
+            }
+        }
+        std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
+            comp_legs_map;
+        if (!composite_ids.empty()) {
+            service::composite_instrument_service comp_svc(ctx);
+            for (auto& leg : comp_svc.get_legs_batch(composite_ids))
+                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
+                    std::move(leg));
+        }
+
+        // Phase 3: batch-fetch instruments, build lookup map
+        std::unordered_map<std::string, trade_instrument> imap;
+
+        auto take_legs = [&](const std::string& id) {
+            auto it = legs_map.find(id);
+            return it != legs_map.end() ? std::move(it->second) :
+                                          std::vector<ores::trading::domain::swap_leg>{};
+        };
+
+        // Single-table types (credit, commodity, scripted).
+        auto add_flat = [&](auto&& results) {
+            for (auto& v : results)
+                imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
+        };
+
+        if (!bond_ids.empty()) {
+            service::bond_instrument_reader reader(ctx);
+            for (auto& [id, data] : reader.read_instruments(bond_ids))
+                imap[id] = std::move(data);
+        }
+        if (!credit_ids.empty()) {
+            service::credit_instrument_service svc(ctx);
+            add_flat(svc.get_credit_instruments(credit_ids));
+        }
+        if (!commodity_ids.empty()) {
+            service::commodity_instrument_service svc(ctx);
+            add_flat(svc.get_commodity_instruments(commodity_ids));
+        }
+        if (!scripted_ids.empty()) {
+            service::scripted_instrument_service svc(ctx);
+            add_flat(svc.get_scripted_instruments(scripted_ids));
+        }
+        if (!composite_ids.empty()) {
+            service::composite_instrument_service svc(ctx);
+            for (auto& v : svc.get_composite_instruments(composite_ids)) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                composite_instrument_data data;
+                data.instrument = std::move(v);
+                auto it = comp_legs_map.find(id);
+                if (it != comp_legs_map.end())
+                    data.legs = std::move(it->second);
+                imap[id] = std::move(data);
+            }
+        }
+
+        // Rates / swap types (9 sub-types, all share swap_legs table)
+        auto add_swap = [&](auto&& results) {
+            for (auto& v : results) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                swap_instrument_data data;
+                data.instrument = std::move(v);
+                data.legs = take_legs(id);
+                imap[id] = std::move(data);
+            }
+        };
+        if (!fra_ids.empty()) {
+            service::fra_instrument_service svc(ctx);
+            add_swap(svc.get_fra_instruments(fra_ids));
+        }
+        if (!vswap_ids.empty()) {
+            service::vanilla_swap_instrument_service svc(ctx);
+            add_swap(svc.get_vanilla_swap_instruments(vswap_ids));
+        }
+        if (!capfloor_ids.empty()) {
+            service::cap_floor_instrument_service svc(ctx);
+            add_swap(svc.get_cap_floor_instruments(capfloor_ids));
+        }
+        if (!swaption_ids.empty()) {
+            service::swaption_instrument_service svc(ctx);
+            add_swap(svc.get_swaption_instruments(swaption_ids));
+        }
+        if (!bgs_ids.empty()) {
+            service::balance_guaranteed_swap_instrument_service svc(ctx);
+            add_swap(svc.get_balance_guaranteed_swap_instruments(bgs_ids));
+        }
+        if (!callable_ids.empty()) {
+            service::callable_swap_instrument_service svc(ctx);
+            add_swap(svc.get_callable_swap_instruments(callable_ids));
+        }
+        if (!koswap_ids.empty()) {
+            service::knock_out_swap_instrument_service svc(ctx);
+            add_swap(svc.get_knock_out_swap_instruments(koswap_ids));
+        }
+        if (!infl_ids.empty()) {
+            service::inflation_swap_instrument_service svc(ctx);
+            add_swap(svc.get_inflation_swap_instruments(infl_ids));
+        }
+        if (!rpa_ids.empty()) {
+            service::rpa_instrument_service svc(ctx);
+            add_swap(svc.get_rpa_instruments(rpa_ids));
+        }
+
+        // FX types
+        auto add_fx = [&](auto&& results) {
+            for (auto& v : results)
+                imap[boost::uuids::to_string(v.identity.instrument_id)] =
+                    ores::trading::domain::fx_instrument_variant{std::move(v)};
+        };
+        if (!fxfwd_ids.empty()) {
+            service::fx_forward_instrument_service svc(ctx);
+            add_fx(svc.get_fx_forward_instruments(fxfwd_ids));
+        }
+        if (!fxopt_ids.empty()) {
+            service::fx_vanilla_option_instrument_service svc(ctx);
+            add_fx(svc.get_fx_vanilla_option_instruments(fxopt_ids));
+        }
+        if (!fxbar_ids.empty()) {
+            service::fx_barrier_option_instrument_service svc(ctx);
+            add_fx(svc.get_fx_barrier_option_instruments(fxbar_ids));
+        }
+        if (!fxdig_ids.empty()) {
+            service::fx_digital_option_instrument_service svc(ctx);
+            add_fx(svc.get_fx_digital_option_instruments(fxdig_ids));
+        }
+        if (!fxasn_ids.empty()) {
+            service::fx_asian_forward_instrument_service svc(ctx);
+            add_fx(svc.get_fx_asian_forward_instruments(fxasn_ids));
+        }
+        if (!fxacc_ids.empty()) {
+            service::fx_accumulator_instrument_service svc(ctx);
+            add_fx(svc.get_fx_accumulator_instruments(fxacc_ids));
+        }
+        if (!fxvar_ids.empty()) {
+            service::fx_variance_swap_instrument_service svc(ctx);
+            add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
+        }
+
+        // Equity types
+        auto add_eq = [&](auto&& results) {
+            for (auto& v : results)
+                imap[boost::uuids::to_string(v.identity.instrument_id)] =
+                    ores::trading::domain::equity_instrument_variant{std::move(v)};
+        };
+        if (!eq_opt_ids.empty()) {
+            service::equity_option_instrument_service svc(ctx);
+            add_eq(svc.get_equity_option_instruments(eq_opt_ids));
+        }
+        if (!eq_fwd_ids.empty()) {
+            service::equity_forward_instrument_service svc(ctx);
+            add_eq(svc.get_equity_forward_instruments(eq_fwd_ids));
+        }
+        if (!eq_swp_ids.empty()) {
+            service::equity_swap_instrument_service svc(ctx);
+            add_eq(svc.get_equity_swap_instruments(eq_swp_ids));
+        }
+        if (!eq_var_ids.empty()) {
+            service::equity_variance_swap_instrument_service svc(ctx);
+            add_eq(svc.get_equity_variance_swap_instruments(eq_var_ids));
+        }
+        if (!eq_bar_ids.empty()) {
+            service::equity_barrier_option_instrument_service svc(ctx);
+            add_eq(svc.get_equity_barrier_option_instruments(eq_bar_ids));
+        }
+        if (!eq_asn_ids.empty()) {
+            service::equity_asian_option_instrument_service svc(ctx);
+            add_eq(svc.get_equity_asian_option_instruments(eq_asn_ids));
+        }
+        if (!eq_dig_ids.empty()) {
+            service::equity_digital_option_instrument_service svc(ctx);
+            add_eq(svc.get_equity_digital_option_instruments(eq_dig_ids));
+        }
+        if (!eq_acc_ids.empty()) {
+            service::equity_accumulator_instrument_service svc(ctx);
+            add_eq(svc.get_equity_accumulator_instruments(eq_acc_ids));
+        }
+        if (!eq_pos_ids.empty()) {
+            service::equity_position_instrument_service svc(ctx);
+            add_eq(svc.get_equity_position_instruments(eq_pos_ids));
+        }
+
+        // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
+        for (auto& item : items) {
+            const auto& t = item.trade;
+            if (!t.classification.instrument_id ||
+                t.classification.product_type == product_type::unknown)
+                continue;
+            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
+            if (auto it = imap.find(id); it != imap.end())
+                item.instrument = encode_instrument(it->second);
+        }
+
+        // Phase 5: fill the trade-level envelope, which is keyed by the
+        // trade rather than the instrument and so crosses product types.
+        std::vector<std::string> trade_ids;
+        trade_ids.reserve(items.size());
+        for (const auto& item : items)
+            trade_ids.push_back(boost::uuids::to_string(item.trade.identity.id));
+
+        service::trade_envelope_reader envelope_reader(ctx);
+        auto envelopes = envelope_reader.read_envelopes(trade_ids);
+        for (auto& item : items) {
+            const auto id = boost::uuids::to_string(item.trade.identity.id);
+            if (auto it = envelopes.find(id); it != envelopes.end())
+                item.envelope = std::move(it->second);
+        }
+    }
+
+    /**
+     * @brief Fetches all FSM transitions from the DQ service via NATS.
+     *
+     * Results are cached process-wide for 5 minutes; FSM transitions are
+     * system-level reference data that change only on schema migrations.
+     * The cache avoids an extra NATS round-trip per trade when the ore import
+     * handler sends one save_trade message per trade.
+     * Throws std::runtime_error on failure; callers must handle or propagate.
+     */
+    // Extract the raw JWT from an incoming message, preferring the delegated
+    // header so the original end-user context propagates to downstream calls.
+    static std::string extract_bearer(const ores::nats::message& msg) {
+        using namespace ores::nats::headers;
+        for (auto hdr : {delegated_authorization, authorization}) {
+            const auto it = msg.headers.find(std::string(hdr));
+            if (it != msg.headers.end() && it->second.starts_with(bearer_prefix))
+                return std::string(it->second.substr(bearer_prefix.size()));
+        }
+        return {};
+    }
+
+    std::string http_base_url_;
+#+end_src
+
+** Handler methods
+
+The subjects the generated set does not cover: the activity type
+catalogue, a trade's history, its instrument, and the two portfolio
+export paths.
+
+#+begin_src cpp :name handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void list_activity_types(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        // Activity types are system-level configuration; look them up under
+        // the system tenant so all tenants see the same standard set.
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::activity_type_service svc(sys_ctx);
+        get_activity_types_response resp;
+        try {
+            resp.activity_types = svc.list_types();
+        } catch (...) {
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void instrument(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::trade_service svc(ctx);
+        get_trade_instrument_response resp;
+        try {
+            if (auto req = decode<get_trade_instrument_request>(msg)) {
+                auto trade_opt = svc.get_trade(req->trade_id);
+                if (!trade_opt) {
+                    resp.success = false;
+                    resp.message = "Trade not found: " + req->trade_id;
+                } else {
+                    std::vector<trade_export_item> items{{.trade = std::move(*trade_opt)}};
+                    populate_instruments_for_trades(ctx, items);
+                    resp.trade = std::move(items[0].trade);
+                    resp.instrument = decode_instrument(items[0].instrument);
+                    resp.success = true;
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void export_portfolio(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_portfolio_response resp;
+        try {
+            if (auto req = decode<export_portfolio_request>(msg)) {
+                service::trade_service svc(ctx);
+                const auto offset = static_cast<std::uint32_t>(req->offset);
+                const auto limit = static_cast<std::uint32_t>(req->limit);
+
+                auto trades = svc.list_trades(offset, limit, req->node_id);
+                resp.items.reserve(trades.size());
+                for (auto& t : trades)
+                    resp.items.push_back({.trade = std::move(t)});
+                populate_instruments_for_trades(ctx, resp.items);
+                resp.success = true;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void export_trades_to_storage(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_trades_to_storage_response resp;
+        try {
+            auto req = decode<export_trades_to_storage_request>(msg);
+            if (!req || req->book_ids.empty()) {
+                resp.message = "Invalid request or empty book_ids.";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            // Fetch trades for all requested books in pages and batch-populate instruments.
+            service::trade_service svc(ctx);
+            std::vector<trade_export_item> all_items;
+            constexpr std::uint32_t page_size = 1000;
+            for (const auto& bid : req->book_ids) {
+                try {
+                    std::uint32_t offset = 0;
+                    while (true) {
+                        auto trades = svc.list_trades(offset, page_size, bid);
+                        const auto n = static_cast<std::uint32_t>(trades.size());
+                        if (n == 0)
+                            break;
+                        std::vector<trade_export_item> page;
+                        page.reserve(n);
+                        for (auto& t : trades)
+                            page.push_back({.trade = std::move(t)});
+                        populate_instruments_for_trades(ctx, page);
+                        all_items.insert(all_items.end(),
+                                         std::make_move_iterator(page.begin()),
+                                         std::make_move_iterator(page.end()));
+                        offset += n;
+                        if (n < page_size)
+                            break;
+                    }
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(trade_handler_lg(), warn)
+                        << "export_trades_to_storage: book " << bid << " failed: " << e.what();
+                }
+            }
+
+            // Serialise to MsgPack and upload to storage.
+            const auto blob = rfl::msgpack::write(all_items);
+            ores::storage::net::storage_transfer transfer(http_base_url_);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+
+            resp.success = true;
+            resp.trade_count = static_cast<int>(all_items.size());
+            resp.storage_key = req->storage_key;
+            resp.message = "Exported " + std::to_string(all_items.size()) + " trades to storage.";
+
+            BOOST_LOG_SEV(trade_handler_lg(), info)
+                << "export_trades_to_storage: exported " << all_items.size() << " trades, "
+                << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
+                << req->storage_key;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+#+end_src
+
+** Protocol includes
+
+The headers the messages below need beyond the entity's own. The payload
+and envelope types belong to the export item; the activity type and the
+instrument variant to their own messages.
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.trading.api/domain/activity_type.hpp"
+#include "ores.trading.api/domain/instrument_payload.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include <optional>
+#+end_src
+
+** Protocol messages
+
+The messages the generated set does not cover: the activity type
+catalogue, the instrument lookup for one trade, and the two portfolio
+export paths. A trade's export item carries the instrument as a payload
+rather than a variant, for the reflect-cpp reason its comment states.
+
+#+begin_src cpp :name protocol_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+struct get_activity_types_request {
+    using response_type = struct get_activity_types_response;
+    static constexpr std::string_view nats_subject = "trading.v1.activity_types.list";
+};
+
+struct get_activity_types_response {
+    std::vector<ores::trading::domain::activity_type> activity_types;
+};
+
+/**
+ * @brief One trade plus its resolved instrument data.
+ *
+ * The instrument is carried as a payload rather than as a trade_instrument
+ * variant. reflect-cpp cannot name the active alternative of that variant:
+ * untagged, the first alternative std::monostate parses from any payload and
+ * wins; tagged, rfl::AddTagsToVariants exceeds the fold limits on macOS and
+ * MSVC. See instrument_payload. The payload's type is empty when the trade has
+ * no linked instrument or the product_type is unrecognised.
+ *
+ * The envelope holds the trade-level data the product tables do not: the
+ * counterparty name, the netting set id, the portfolio id labels and the
+ * document's additional fields. It is absent when the trade has none.
+ */
+struct trade_export_item {
+    ores::trading::domain::trade trade;
+    ores::trading::domain::instrument_payload instrument;
+    std::optional<ores::trading::domain::trade_envelope_data> envelope;
+};
+
+struct get_trade_instrument_request {
+    using response_type = struct get_trade_instrument_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";
+    std::string trade_id;
+};
+
+struct get_trade_instrument_response {
+    bool success = false;
+    std::string message;
+    ores::trading::domain::trade trade;
+    ores::trading::domain::trade_instrument instrument;
+};
+
+
+/**
+ * @brief Request to export all trades (and instruments) under a taxonomy node.
+ *
+ * @p node_id is resolved by the server to the book-id set just like
+ * get_trades_request; typical callers supply a portfolio id (to export the
+ * whole portfolio subtree) or a book id (to export a single book).
+ */
+struct export_portfolio_request {
+    using response_type = struct export_portfolio_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.portfolio.export";
+    std::string node_id;
+    int offset = 0;
+    int limit = 10000;
+};
+
+struct export_portfolio_response {
+    bool success = false;
+    std::string message;
+    std::vector<trade_export_item> items;
+};
+
+/**
+ * @brief Exports trades for the given book IDs to object storage.
+ *
+ * The handler resolves trade IDs via ores_trading_get_trade_ids_by_books_fn,
+ * loads full trade_export_items, serialises to MsgPack, compresses with gzip,
+ * and uploads to storage. Returns the storage key and trade count.
+ *
+ * Used by the report execution workflow to offload large trade data sets
+ * to storage instead of passing them through NATS.
+ */
+struct export_trades_to_storage_request {
+    using response_type = struct export_trades_to_storage_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
+
+    std::vector<std::string> book_ids;
+    // Target bucket, such as "report-data".
+    std::string storage_bucket;
+    // Target key, such as "{instance_id}/trades.msgpack".
+    std::string storage_key;
+};
+
+struct export_trades_to_storage_response {
+    bool success = false;
+    std::string message;
+    int trade_count = 0;
+    // Echoed back from the request so the caller can confirm the target.
+    std::string storage_key;
+};
+#+end_src
 
 ** Domain groups
 

@@ -84,8 +84,9 @@ void yield_curve_process_type_service::save_process_types(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << process_types.size() << " yield curve process types";
     auto ts = process_types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

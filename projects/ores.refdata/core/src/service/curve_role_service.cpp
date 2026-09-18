@@ -80,8 +80,9 @@ void curve_role_service::save_roles(const std::vector<domain::curve_role>& roles
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " curve roles";
     auto ts = roles;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

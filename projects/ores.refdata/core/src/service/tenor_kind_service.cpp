@@ -80,8 +80,9 @@ void tenor_kind_service::save_kinds(const std::vector<domain::tenor_kind>& kinds
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " tenor kinds";
     auto ts = kinds;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

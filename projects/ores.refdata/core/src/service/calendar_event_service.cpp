@@ -130,8 +130,9 @@ void calendar_event_service::save_calendar_events(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_events.size() << " calendar events";
     auto ts = calendar_events;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

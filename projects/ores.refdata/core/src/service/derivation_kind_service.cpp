@@ -80,8 +80,9 @@ void derivation_kind_service::save_kinds(const std::vector<domain::derivation_ki
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " derivation kinds";
     auto ts = kinds;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

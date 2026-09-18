@@ -80,8 +80,9 @@ void rounding_type_service::save_types(const std::vector<domain::rounding_type>&
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " rounding types";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

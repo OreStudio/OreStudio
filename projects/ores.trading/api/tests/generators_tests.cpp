@@ -226,7 +226,7 @@ TEST_CASE("trade_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade id: " << sut.identity.id;
 
-    CHECK(sut.identity.version == 1);
+    CHECK(sut.identity.version == 0);
     CHECK(!sut.identity.id.is_nil());
     CHECK(!sut.audit.modified_by.empty());
     CHECK(!sut.audit.performed_by.empty());
@@ -242,7 +242,7 @@ TEST_CASE("trade_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.identity.id.is_nil());
-        CHECK(item.identity.version == 1);
+        CHECK(item.identity.version == 0);
     }
 }
 

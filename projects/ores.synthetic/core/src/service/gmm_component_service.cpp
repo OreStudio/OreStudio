@@ -82,8 +82,9 @@ void gmm_component_service::save_gmm_components(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << gmm_components.size() << " GMM components";
     auto ts = gmm_components;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

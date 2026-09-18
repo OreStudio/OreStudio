@@ -81,8 +81,9 @@ void business_centre_service::save_centres(const std::vector<domain::business_ce
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << centres.size() << " business centres";
     auto ts = centres;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

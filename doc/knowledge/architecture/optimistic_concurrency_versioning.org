@@ -29,6 +29,52 @@ silently overwriting the unrelated existing row]] instead of being
 rejected — and the same gap exists, latent, for every other
 codegen'd entity in the system, not just =currency_pair=.
 
+* The contract a caller must honour
+
+The rest of this document argues that the sentinel is overloaded. That
+argument is easier to follow, and the overload easier to avoid, once
+the rules a caller actually has to follow are stated on their own.
+
+A row's =version= is owned by the database, not by the caller. The
+insert trigger assigns it: a key that does not yet exist takes version
+1, and every subsequent write of that key takes the current version
+plus one. Nothing a caller sends changes which number the new row
+receives.
+
+What a caller sends is therefore not a value but a claim about what it
+believes the current version to be, and the trigger's only use for it
+is to reject the write when the claim is wrong. Three cases follow.
+
+- *Updating a row read earlier.* Send the version that was read. If
+  another writer has since superseded that row, the versions disagree
+  and the write is rejected with =P0002=. This is the mechanism doing
+  the single job it exists for.
+- *Creating a key that does not exist.* Any version is accepted,
+  because the comparison sits inside the =if found= branch and a new
+  key never reaches it. The value is moot rather than special.
+- *Writing a key that may or may not exist, and wanting the write to
+  land regardless.* Send 0, which skips the comparison.
+
+The third case is the sentinel, and the reason it is a problem is that
+it is indistinguishable from the second. A caller that sends 0 meaning
+"this key is new" gets the same treatment as one meaning "overwrite
+whatever is there", which is how a Currency Pair came to overwrite an
+unrelated row rather than being rejected.
+
+** What a synthetic generator must send
+
+A generated domain object is written repeatedly against the same
+synthetic key, so its generator emits =version = 0=: the caller cannot
+track version state between runs, and the write must land each time.
+
+A generator that emits 1 instead is not merely conservative, it is
+wrong. The first write succeeds, the second succeeds because the row
+is then at version 1, and the third fails with =Version conflict:
+expected version 1, but current version is 2=. The template was
+corrected to emit 0; the generated files that still carry the
+hardcoded 1 are enumerated in
+[[id:32B11CDE-02D7-48D7-8F64-1311B2F5FD06][the bulk-regenerate capture]].
+
 * Detail
 
 ** The mechanism, as it exists today
@@ -251,6 +297,8 @@ remove.
 
 * See also
 
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the domain that reads this column as its internal
+  version, and the second, commercial version it carries alongside.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
   model (=valid_from=/=valid_to=/infinity sentinel) this document's
   =version= mechanism layers on top of.

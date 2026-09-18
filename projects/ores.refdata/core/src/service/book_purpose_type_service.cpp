@@ -81,8 +81,9 @@ void book_purpose_type_service::save_types(const std::vector<domain::book_purpos
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " book purpose types";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

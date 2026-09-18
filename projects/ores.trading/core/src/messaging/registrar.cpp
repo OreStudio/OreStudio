@@ -31,6 +31,7 @@
 #include "ores.trading.core/messaging/trade_envelope_portfolio_id_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_envelope_portfolio_id_registrar.hpp"
 #include "ores.trading.core/messaging/trade_envelope_registrar.hpp"
+#include "ores.trading.core/messaging/trade_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
@@ -96,6 +97,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_trade_envelope_history_provider(hist_registry);
     register_trade_envelope_portfolio_id_history_provider(hist_registry);
     register_trade_envelope_additional_field_history_provider(hist_registry);
+    register_trade_history_provider(hist_registry);
     register_trade_type_history_provider(hist_registry);
     subs.push_back(ores::history::messaging::register_history_handlers(
         nats, hist_registry, "trading", queue_group, ctx, verifier));

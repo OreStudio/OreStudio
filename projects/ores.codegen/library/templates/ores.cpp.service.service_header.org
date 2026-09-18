@@ -93,6 +93,25 @@ public:
      */
     std::uint32_t count_{{entity_plural_short}}();
 
+{{#list_filter_column}}
+    /**
+     * @brief Lists a page of {{entity_plural_words}} under one {{list_filter_column}}.
+     *
+     * An empty {{list_filter_column}} covers every {{entity_singular_words}} the
+     * tenant can see, so the caller need not special-case the unfiltered
+     * listing.
+     */
+    std::vector<domain::{{entity_singular}}>
+    list_{{entity_plural_short}}(std::uint32_t offset, std::uint32_t limit,
+        const std::string& {{list_filter_column}});
+
+    /**
+     * @brief Counts the {{entity_plural_words}} under one {{list_filter_column}},
+     * for the pager the page itself cannot supply.
+     */
+    std::uint32_t count_{{entity_plural_short}}(const std::string& {{list_filter_column}});
+
+{{/list_filter_column}}
 {{#has_as_of_lookup}}
     /**
      * @brief Lists {{entity_plural_words}} as they stood at a specific

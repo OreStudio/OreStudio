@@ -52,12 +52,12 @@
 // generator facet, hence the fully-qualified refdata paths.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_portfolios_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_portfolios_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -191,7 +191,7 @@ TEST_CASE("write_book_publishes_nats_changed_event", tags) {
     // seed it before the parent write or the parent insert is rejected.
     // Distinct name from the entity-level currency seed block: both are
     // in scope when the entity also carries the seed_currency flag.
-    auto parent_ccy = generate_synthetic_currency(ctx);
+    auto parent_ccy = ores::refdata::generators::generate_synthetic_currency(ctx);
     parent_ccy.iso_code = "X-0";
     currency_repository parent_ccy_repo;
     parent_ccy_repo.write(party_ctx, {parent_ccy});

@@ -80,8 +80,9 @@ void currency_pair_service::save_pairs(const std::vector<domain::currency_pair>&
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << pairs.size() << " currency pairs";
     auto ts = pairs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

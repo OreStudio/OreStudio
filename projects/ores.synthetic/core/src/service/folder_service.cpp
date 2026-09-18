@@ -81,8 +81,9 @@ void folder_service::save_folders(const std::vector<domain::folder>& folders) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << folders.size() << " folders";
     auto ts = folders;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -83,8 +83,9 @@ void ois_convention_service::save_ois_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ois_conventions.size() << " OIS conventions";
     auto ts = ois_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

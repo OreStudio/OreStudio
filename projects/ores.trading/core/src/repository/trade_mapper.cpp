@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/trade_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
@@ -44,21 +49,15 @@ domain::trade trade_mapper::map(const trade_entity& v) {
         v.successor_trade_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.successor_trade_id)) :
             std::nullopt;
+    r.classification.trade_type = v.trade_type;
     r.parties.counterparty_id =
         v.counterparty_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) :
             std::nullopt;
-    r.classification.trade_type = v.trade_type;
-    if (v.product_type) {
-        auto pt = domain::product_type_from_string(*v.product_type);
-        if (!pt) {
-            throw std::logic_error("Invalid product_type in trade entity: '" + *v.product_type +
-                                   "'");
-        }
-        r.classification.product_type = *pt;
-    } else {
-        r.classification.product_type = domain::product_type::unknown;
-    }
+    r.classification.product_type = v.product_type.has_value() ?
+                                        rfl::string_to_enum<domain::product_type>(*v.product_type)
+                                            .value_or(domain::product_type{}) :
+                                        domain::product_type{};
     r.classification.instrument_id =
         v.instrument_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.instrument_id)) :
@@ -68,7 +67,9 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.classification.activity_type_code = v.activity_type_code;
     r.classification.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
     r.lifecycle.trade_date = v.trade_date;
-    r.lifecycle.execution_timestamp = v.execution_timestamp;
+    r.lifecycle.execution_timestamp = v.execution_timestamp.has_value() ?
+                                          std::optional(v.execution_timestamp->str()) :
+                                          std::nullopt;
     r.lifecycle.effective_date = v.effective_date;
     r.lifecycle.termination_date = v.termination_date;
     r.audit.modified_by = v.modified_by;
@@ -98,14 +99,14 @@ trade_entity trade_mapper::map(const domain::trade& v) {
         v.parties.successor_trade_id.has_value() ?
             std::optional(boost::uuids::to_string(*v.parties.successor_trade_id)) :
             std::nullopt;
+    r.trade_type = v.classification.trade_type;
     r.counterparty_id = v.parties.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.parties.counterparty_id)) :
                             std::nullopt;
-    r.trade_type = v.classification.trade_type;
     r.product_type =
-        (v.classification.product_type == domain::product_type::unknown) ?
+        v.classification.product_type == domain::product_type{} ?
             std::nullopt :
-            std::optional(std::string(domain::to_string(v.classification.product_type)));
+            std::optional(std::string(rfl::enum_to_string(v.classification.product_type)));
     r.instrument_id = v.classification.instrument_id.has_value() ?
                           std::optional(boost::uuids::to_string(*v.classification.instrument_id)) :
                           std::nullopt;
@@ -114,7 +115,10 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.activity_type_code = v.classification.activity_type_code;
     r.status_id = boost::uuids::to_string(v.classification.status_id);
     r.trade_date = v.lifecycle.trade_date;
-    r.execution_timestamp = v.lifecycle.execution_timestamp;
+    if (v.lifecycle.execution_timestamp.has_value())
+        r.execution_timestamp.emplace(*v.lifecycle.execution_timestamp);
+    else
+        r.execution_timestamp = std::nullopt;
     r.effective_date = v.lifecycle.effective_date;
     r.termination_date = v.lifecycle.termination_date;
     r.modified_by = v.audit.modified_by;

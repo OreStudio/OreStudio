@@ -157,3 +157,62 @@ comment on function ores_trading_get_book_ids_for_node_fn(uuid, uuid) is
 'Resolves a node_id (book, portfolio, or business unit) to the set of book
  UUIDs in scope. For books returns the book itself; for portfolios and
  business units expands to the subtree. Unknown ids return an empty set.';
+
+-- =============================================================================
+-- Trade Lifecycle Transition Resolver
+-- =============================================================================
+
+-- Resolves an activity type code to the transition it names in the
+-- trade_status machine.
+--
+-- The trades insert trigger calls this from both of its branches: booking a
+-- trade and versioning one. Both need the same three facts about the
+-- transition and both must refuse an activity whose transition has been
+-- deleted from under it, so the lookup and that check live here rather than
+-- twice in the trigger.
+--
+-- An activity that names no transition returns has_transition false. Such an
+-- activity versions the trade and leaves its status where it was, which is why
+-- a fixing on a live trade stays live.
+create or replace function ores_trading_resolve_trade_transition_fn(
+    p_activity_code text,
+    out has_transition boolean,
+    out from_state_id uuid,
+    out to_state_id uuid,
+    out transition_name text
+) as $$
+declare
+    v_transition_id uuid;
+begin
+    select fsm_transition_id into v_transition_id
+    from ores_trading_activity_types_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and code = p_activity_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_transition_id is null then
+        has_transition := false;
+        return;
+    end if;
+
+    select t.from_state_id, t.to_state_id, t.name
+      into from_state_id, to_state_id, transition_name
+    from ores_dq_fsm_transitions_tbl t
+    where t.tenant_id = ores_utility_system_tenant_id_fn()
+      and t.id = v_transition_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        raise exception 'Activity type % names FSM transition %, which does not exist.',
+            p_activity_code, v_transition_id
+            using errcode = '23503';
+    end if;
+
+    has_transition := true;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+comment on function ores_trading_resolve_trade_transition_fn(text) is
+'Resolves an activity type code to its transition in the trade_status machine.
+ Returns has_transition false when the activity names none. Raises 23503 when
+ it names a transition that no longer exists.';

@@ -46,12 +46,12 @@
 // hence the fully-qualified refdata paths.
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_calendars_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_calendars_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/calendar_generator.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_diary_entry_types_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_diary_entry_types_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/diary_entry_type_generator.hpp"
 #include "ores.refdata.core/repository/diary_entry_type_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"

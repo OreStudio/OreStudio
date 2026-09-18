@@ -83,8 +83,9 @@ void fra_convention_service::save_fra_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << fra_conventions.size() << " FRA conventions";
     auto ts = fra_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

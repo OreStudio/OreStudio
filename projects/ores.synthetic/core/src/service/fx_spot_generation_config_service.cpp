@@ -86,8 +86,9 @@ void fx_spot_generation_config_service::save_fx_spot_generation_configs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_spot_generation_configs.size()
                                << " FX spot generation configs";
     auto ts = fx_spot_generation_configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

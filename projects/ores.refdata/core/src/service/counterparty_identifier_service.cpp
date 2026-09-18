@@ -150,8 +150,9 @@ void counterparty_identifier_service::save_counterparty_identifiers(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_identifiers.size()
                                << " counterparty identifiers";
     auto ts = counterparty_identifiers;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

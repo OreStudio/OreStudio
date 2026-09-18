@@ -82,8 +82,9 @@ void report_definition_service::save_definitions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " report definitions";
     auto ts = definitions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -83,8 +83,9 @@ void cds_convention_service::save_cds_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << cds_conventions.size() << " CDS conventions";
     auto ts = cds_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -79,8 +79,9 @@ void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << tenors.size() << " tenors";
     auto ts = tenors;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

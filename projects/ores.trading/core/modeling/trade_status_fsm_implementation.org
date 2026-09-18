@@ -22,8 +22,19 @@ The lifecycle runs on the generic state machine infrastructure in
 * The seeded machine
 
 The trade status machine is seeded in =ores_dq_fsm_machines_tbl= under the name
-=trade_status=, with the four states and five transitions that
-[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] sets out.
+=trade_status=. Its states and transitions are the ones
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]] sets out; that note is the authority and this page does
+not restate them. =dq_fsm_trade_status_populate.sql= seeds them and cites the
+same note.
+
+Two properties of the note are easy to lose in seed data, so the script states
+them where it sets them: =draft= and =live= are both initial, because there are
+two ways in; and no state is terminal, because =expired= and =cancelled= are
+both reversible.
+
+Confirmation is not part of this machine. A trade's confirmation status is its
+own lifecycle, described in [[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]], and the activity that confirms a
+trade names no transition here.
 
 The =ores_trading_trades_tbl= carries a =status_id= column (soft foreign key to
 =ores_dq_fsm_states_tbl=) representing the trade's current status.
@@ -44,10 +55,21 @@ record includes:
 
 * Transition enforcement
 
-Before a trade status transition is applied, the server validates it against the
-=ores_dq_fsm_transitions_tbl= to confirm the (from_state, to_state) pair is
-legal for the =trade_status= machine. Invalid transitions are rejected with an
-error response.
+The insert trigger on =ores_trading_trades_tbl= resolves and guards the
+transition. The activity names the event; =ores_trading_activity_types_tbl=
+maps it to a transition, or to none; and the trigger requires the trade's
+current status to match the transition's =from_state_id= before setting
+=status_id= to its =to_state_id=. An illegal transition raises =23514=.
+
+The trigger is the enforcement point rather than a service for two reasons.
+Every path that writes a version passes through it, so a bulk import or a
+correction cannot bypass the guard. And the version select immediately above
+locks the superseding row, so reading the prior status under that lock is what
+stops two concurrent amendments from both finding their transition legal.
+
+An activity that names no transition carries the prior status forward. That is
+how the note's Amend self-loops are realised, and why a fixing leaves a live
+trade live.
 
 * Related components
 

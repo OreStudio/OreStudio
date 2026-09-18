@@ -17,16 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_TRADE_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_TRADE_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_TRADE_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include "sqlgen/Timestamp.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
 
 namespace ores::trading::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a trade in the database.
@@ -53,15 +60,15 @@ struct trade_entity {
     std::string activity_type_code;
     std::string status_id;
     std::optional<std::string> trade_date;
-    std::optional<std::string> execution_timestamp;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> execution_timestamp;
     std::optional<std::string> effective_date;
     std::optional<std::string> termination_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const trade_entity& v);

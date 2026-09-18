@@ -102,6 +102,7 @@ component.
 | [[id:F628C22E-E488-43EF-8B0C-9C6FA5893E9A][Add a product short code to trade type]] | BACKLOG | | | Add a short mnemonic code to trade_type, mint one for each of the 119 product types, and correct the identifiers table on every product knowledge page. |
 | [[id:FF378E87-BDF9-412A-A3CC-B58EC61296B4][Mark generated C++ files as generated]] | DONE | 2026-09-17 | 2026-09-17 | Generated C++ carries no marker where the generated SQL names its template, so nothing tells a reader that a file is codegen output and a generated file gets hand-edited. |
 | [[id:FBE43DB4-AC3C-4589-8372-E2803C4C44E8][Make the trade entity regenerable]] | STARTED | 2026-09-17 | | Regenerating trade clobbers 28 of its 30 outputs because the org grammar cannot express the five-group composition, the bespoke service and handler, the hand-added SQL indexes and temporal trigger, or the Qt estate. |
+| [[id:577C2F64-3394-44A0-9AD9-FBD61143B8CA][Regenerate the trade service layer and Qt estate]] | DONE | 2026-09-17 | 2026-09-18 | The handler, service, repository, mapper, protocol and the nine Qt Trade files still live only in the tree, so regenerating trade clobbers them. The protocol diverges from the generated shape rather than extending it. |
 
 * Decisions
 

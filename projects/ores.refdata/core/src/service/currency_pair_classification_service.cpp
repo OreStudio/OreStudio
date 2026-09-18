@@ -86,8 +86,9 @@ void currency_pair_classification_service::save_classifications(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << classifications.size()
                                << " currency pair classifications";
     auto ts = classifications;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

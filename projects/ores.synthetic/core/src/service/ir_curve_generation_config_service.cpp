@@ -86,8 +86,9 @@ void ir_curve_generation_config_service::save_ir_curve_generation_configs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_generation_configs.size()
                                << " IR curve generation configs";
     auto ts = ir_curve_generation_configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -83,8 +83,9 @@ void deposit_convention_service::save_deposit_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << deposit_conventions.size() << " deposit conventions";
     auto ts = deposit_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

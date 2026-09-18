@@ -101,8 +101,9 @@ void pricing_model_config_service::save_configs(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " pricing model configurations";
     auto ts = configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

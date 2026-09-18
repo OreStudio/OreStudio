@@ -1,10 +1,12 @@
 """
-Tests for the bare-stash PreToolUse hook.
+Tests for the bare-stash PreToolUse hook, and for compass obeying the
+same rule in the git commands it runs itself.
 
 Run with:  python -m pytest projects/ores.compass/tests/test_deny_bare_stash_hook.py -v
 No live database required.
 """
 
+import ast
 import io
 import json
 import sys
@@ -81,3 +83,37 @@ def test_other_tools_are_ignored(monkeypatch):
 def test_malformed_payload_does_not_crash(monkeypatch):
     monkeypatch.setattr(sys, "stdin", io.StringIO("not json"))
     assert hook.main() == 0
+
+
+COMPASS = Path(__file__).resolve().parents[1] / "src" / "compass.py"
+
+
+def _compass_stash_commands():
+    """Every `git stash ...` command compass runs, rebuilt from its source.
+
+    A hook sees only the commands an agent types, so a subprocess spawned
+    inside compass is invisible to it. The same rule is asserted here
+    against compass's own source, using the hook's `denied` as the judge
+    so the two cannot drift apart. Non-literal arguments become "X".
+    """
+    tree = ast.parse(COMPASS.read_text(encoding="utf-8"))
+    commands = []
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "run"
+                and node.args
+                and isinstance(node.args[0], ast.List)):
+            continue
+        words = [e.value if isinstance(e, ast.Constant) else "X"
+                 for e in node.args[0].elts]
+        if words[:2] == ["git", "stash"]:
+            commands.append(" ".join(str(w) for w in words))
+    return commands
+
+
+def test_compass_does_not_run_a_denied_stash(monkeypatch):
+    commands = _compass_stash_commands()
+    assert commands, "found no `git stash` invocation in compass.py to check"
+    denied = [c for c in commands if hook.denied(c)]
+    assert not denied, f"compass runs {denied}, which the hook denies"

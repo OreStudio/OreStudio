@@ -26,6 +26,7 @@ set(files
     "messaging/ore_import_handler.cpp"
     "messaging/registrar.cpp"
     "messaging/report_package_handler.cpp"
+    "messaging/series_key_shape_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -41,5 +42,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/ore_import_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/report_package_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/series_key_shape_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/ores.ore.service.hpp"
 )

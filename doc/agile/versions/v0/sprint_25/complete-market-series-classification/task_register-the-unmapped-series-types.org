@@ -2,51 +2,231 @@
 :ID: 65572B8E-55B8-4988-AE63-A25EBAFD65CD
 :END:
 #+title: Task: Register the unmapped series types in the key registry
-#+description: Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation.
+#+description: Move the ORE series key shape out of C++ source and into a managed table, so the qualifier depth, the point dimension and the default point of a series type become data a user can extend. Covers the eight types the corpus carries but the table does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without a row a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation.
 #+type: task
 #+level: s1
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/register-the-unmapped-series-types
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
-#+updated: 2026-09-17
-#+environment:
+#+updated: 2026-09-18
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know, so each type's keys split into one series with many points instead of many single-observation series.
+Make the ORE series key shape data. The qualifier depth, the point
+dimension and the default point of every series type move from a
+compiled table into one a user can manage, and the reader receives that
+table instead of reaching for it. Each of the eight types the corpus
+carries but the table does not know gains a row, so its keys split into
+one series with many points instead of many single-observation series.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Not yet started.                       |
+| Now          | Unit 1 done: the entity, its schema, and the 43-row seed, all green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-17                               |
+| Next         | Unit 2: make =series_key_registry= a value built from the rows. |
+| Last touched | 2026-09-18                               |
 
 * Acceptance
 
-- The registry carries an entry for each of OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING, with its qualifier depth and point dimension read off the corpus.
-- Every distinct key of those types decomposes into a qualifier and a point, so its observations share one series.
-- A test asserts the classifier's type set and the registry's type set are equal, so the two tables cannot drift.
-- The corpus census of distinct series is materially lower after the change, and the drop is recorded.
+- The key shape of every ORE series type lives in a table, seeded
+  from the corpus and managed like any other catalogue: the qualifier
+  depth, the point dimension, and the point to record when a key
+  carries none.
+- The table holds a row for each of OI_FUTURE, SHAPE_PROFILE,
+  BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING.
+- Every distinct key of those types decomposes into a qualifier and a
+  point, so its observations share one series.
+- =ores.ore.core= receives the shape table. It never reads the database
+  itself, so its tests run with no database, no NATS and no pipeline.
+- An empty table throws, and the message names the table and says it is
+  unseeded. A row that claims a point dimension and also carries a
+  default point is rejected, both in the constructor and by a table
+  constraint.
+- =known_series_types()= answers from the supplied rows, so no list of
+  type names is compiled into the reader.
+- A test asserts that the classifier's type set and the table's type
+  set are equal, so the two cannot drift.
+- The corpus census of distinct series is materially lower after the
+  change, and the drop is recorded.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The mechanism changed after the design discussion. The shape of an ORE
+key was to stay a compiled table, with eight rows added. It becomes
+managed data instead, and this task records that rescope. The outcome
+does not change: the eight types must decompose properly.
+
+** Why the shape becomes data
+
+The shape table says how a key splits. That is ORE's grammar, so it
+belongs to =ores.ore=, and nothing in the component prevents it. Every
+component that owns an entity model owns a schema, and =ores.ore.core=
+already links =ores.database.lib=. A compiled table also cannot serve
+the case that matters: when ORE adds a type, or a user brings one of
+their own, the answer must be an inserted row, not a rebuild.
+
+** Two tables, two owners
+
+The shape table belongs to =ores.ore=, because it describes the ORE
+file format, which ORE defines and we only read. The classification
+table belongs to =ores.marketdata=, because it maps a type to refdata
+asset class codes, which are our taxonomy. The two facts change for
+different reasons. This also means the promise "a user can add their
+own types" holds only once the classification table is data too, which
+is task 219. Until then a new row imports only if both tables carry it,
+and the shape row without a classification row makes the classifier
+throw and aborts the file. That pulls 219 into this work.
+
+** The reader takes the table
+
+=series_key_registry= stops being free functions over a static map and
+becomes a value built from rows.
+
+#+begin_src cpp
+struct series_key_shape {
+    std::string series_type;
+    unsigned int qualifier_depth;
+    bool has_point_dimension;
+    std::string default_point;
+};
+
+class ORES_ORE_CORE_EXPORT series_key_registry final {
+public:
+    explicit series_key_registry(std::vector<series_key_shape> shapes);
+    decomposed_key decompose(const std::string& key) const;
+    bool has_point_dimension(const std::string& series_type) const;
+    std::string default_point_for(const std::string& series_type) const;
+    std::vector<std::string> known_series_types() const;
+};
+#+end_src
+
+=reconstruct_key= stays free. It joins strings and needs no table, so
+the serializer does not change.
+
+The constructor throws when the rows are empty, and the message names
+the table. It also rejects a row that claims a point dimension and
+carries a default point. A table constraint carries the same two
+checks, so an illegal state cannot be stored either.
+
+** An unknown type still folds
+
+An empty table throws. A type with no row is a different case. Its key
+folds into the qualifier and loses nothing, because the key still
+reconstructs verbatim. A file carrying a type nobody catalogued must
+not take an import down, because ORE adds types over time and this
+corpus already carries two that ORE's own catalogue does not document.
+The alarm lives in the corpus test instead, which fails whenever the
+corpus carries a type with no row.
+
+** How the rows arrive
+
+A repository reads the table once at the start of each import, builds
+the registry, and passes it down by const reference. That is one read
+per batch rather than per key, and no process-wide cache to invalidate
+when a row changes. The component already injects this way, since
+=import_service= takes a =context=.
+
+** The call sites are shallow
+
+=decompose_key= has one production caller, =market_data_parser.cpp=.
+=default_point_for= has two, in =import_service.cpp= and
+=feed_ingest_loop.cpp=. =has_point_dimension= is used only by tests
+today. The generated =market_observation.hpp= mentions
+=default_point_for= in a comment and does not call it.
+
+** Work units
+
+| Unit | What it delivers |
+|------+------------------|
+| The entity and its seed | =ores.ore.series_key_shape=, its schema, and a populate script holding all forty-three rows |
+| The registry becomes a value | The class above, its checks, and its unit test on a fixture |
+| Migrate the call sites | The parser signature and the two =default_point_for= sites |
+| Tests | The corpus walk built from the seed, the table-against-seed check, and the classifier equality check |
+| The classification table | Task 219, without which an added row still aborts the file |
+
+Each unit ends in a build and a test run. The seed carries the values
+the corpus analysis already derived, so the analysis is not repeated.
 
 * Notes
+
+The eight new rows, with the corpus evidence behind each. The depth is
+the number of segments after the metric that identify the series; the
+rest is the point.
+
+| Type | Depth | Point dimension | Default point | Corpus evidence |
+|------+-------+-----------------+---------------+-----------------|
+| OI_FUTURE | 1 | yes | | 104 distinct keys, one series. Depth 2 gives 89 series of one point |
+| SHAPE_PROFILE | 1 | yes | | 171 keys, two series of 75 and 96 points |
+| BOND_OPTION | 1 | yes | | 154 keys, one series. Same shape as SWAPTION |
+| RATING | 1 | yes | | 64 keys, one series. An eight by eight transition matrix |
+| INDEX_CDS_TRANCHE | 1 | yes | | 8 keys, one series |
+| GENERIC-MD | 1 | yes | | A wrapper, so the inner metric names the series |
+| CPR | 1 | no | | One ISIN, no surface |
+| FIXING | 1 | no | | A synthetic key the import builds for an index fixing |
+
+The remaining thirty-five rows are the compiled table as it stands,
+with the comment above each entry as its description.
+
+The corpus walk reported 107,947 distinct keys across 41 types in 91
+files. The C++ test comment claims 107,951 across 42 in 95, so the two
+disagree. The =compass test run= warning is the authority, and this
+work must reconcile the count.
+
+SHAPE_PROFILE and GENERIC-MD are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=. That document
+also needs the per-type qualifier and point table.
+
+A multi-facet component does not wire its root modelling directory into
+CMake. =ores.trading= holds 65 entity orgs and no root
+=CMakeLists.txt=; =ores.marketdata= and =ores.ore= now hold entity orgs
+there on the same terms. Only single-facet components such as
+=ores.database= build a component-level diagram, and
+=cmake_component_modeling.mustache= has no renderer. The generated
+=ores.ore.puml= and its diagram targets therefore stay uncommitted, as
+=ores.marketdata='s did. Wiring the root modelling directory for
+multi-facet components is a separate decision.
+
+** Unit 1 evidence
+
+The seed reproduces the compiled table exactly. A mechanical compare of
+every =type, qualifier_depth, has_point_dimension, default_point= tuple
+across =series_key_registry.cpp= and the populate script reports 35
+rows matching with no mismatch and no omission, plus the eight new
+types. So the thirty-five known types keep their current shape.
+
+The entity regenerates byte-identical, and the cmake source lists are
+already in step. The ore component is not in the drift registry, so its
+gate stays the per-component check.
+
+The =ores.ore.core.tests= suite needed the database lifecycle listener
+in its =main.cpp=, which it never had. It is the only core facet that
+touches the database and lacked one; without it no test tenant is
+provisioned and the eventing test dies on an empty tenant id. With the
+listener in place the suite is 521 of 521 green. It takes 501 seconds
+because the timeout listener's watchdog joins on a one-second sleep per
+test case, so every case costs a second; =refdata.core= pays the same
+toll for its 241 cases.
+
+The entity carries the registrars that codegen emits, and nothing calls
+them. =ores.ore= has no aggregate =messaging/registrar.hpp=, unlike the
+fifteen components that expose a CRUD surface. This is not a broken
+convention. Every aggregate registrar is hand-written and selective:
+=ores.marketdata= hand-wires =market_series= and =market_fixing= and
+calls a generated sub-registrar only for =market_observation=. No
+consumer needs the surface yet, because Unit 2 reads the rows in
+process. Wire the registrar when a client must manage the table.
 
 * Test Scenarios
 

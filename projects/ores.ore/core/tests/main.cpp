@@ -16,13 +16,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/database_lifecycle_listener.hpp"
 #include "ores.testing/logging_listener.hpp"
+#include "ores.testing/test_timeout_listener.hpp"
 #include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <openssl/crypto.h>
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT(void) {

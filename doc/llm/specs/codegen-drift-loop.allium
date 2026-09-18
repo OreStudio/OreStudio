@@ -31,9 +31,10 @@
 --     services regenerate from the model's keys; the model is never
 --     fitted around a hand-crafted protocol
 --   - The convergence gate: a component regenerates with zero diffs
---     and joins the CI drift check's --components coverage
---   - The CI drift gate: regenerate every covered component on each
---     PR and fail on any diff
+--     and joins the drift check's KNOWN_DRIFT_FREE registry
+--   - The CI drift gate: regenerate every covered component on a PR
+--     that touches a model or the codegen library, and fail on any
+--     diff
 --   - The drift check's own evolution: a gap in the check (a drift
 --     type it misses, or a checking approach that can be improved)
 --     is recorded and the tooling updated -- a component reaches
@@ -55,9 +56,10 @@ config {
     --   Default regeneration address: ores.cpp -- the technical space
     --     covering the C++ domain, repository, service, generator and
     --     eventing-integration-test (NATS test generation) facets.
-    --   CI coverage grows per component: refdata, reporting and
-    --     marketdata today; every component joins once it regenerates
-    --     to zero diffs (ComponentConverges).
+    --   CI coverage grows per component: a component joins the
+    --     check's KNOWN_DRIFT_FREE registry once it regenerates to
+    --     zero diffs (ComponentConverges). The registry is the list;
+    --     this comment is not.
     regeneration_address: String = "ores.cpp"
 }
 
@@ -608,7 +610,7 @@ rule DriftGateFails {
 
 -- A drift-free component regenerates with zero diffs: this is the
 -- loop's convergence condition -- the same check the CI gate enforces
--- on every covered component, every PR.
+-- on every covered component, on a modeling or codegen PR.
 invariant DriftFreeComponentsRegenerateClean {
     for c in Components where c.status = drift_free:
         GenerationEngine.regenerate_all(c, config.regeneration_address).count = 0
@@ -784,7 +786,7 @@ surface CodegenDriftLoop {
 }
 
 actor CI {
-    identified_by: "the GitHub Actions pr.yml workflow"
+    identified_by: "the GitHub Actions codegen-drift.yml workflow"
 }
 
 surface CIDriftGate {
@@ -826,11 +828,11 @@ surface CIDriftGate {
 --     to drift_free and ci_covered after a regeneration completes
 --     with zero open diffs on a fully classified, current-format
 --     component -- the same bar the per-component drift stories
---     state, and the reason the pr.yml codegen-drift job's
---     --components grows over time.
+--     state, and the reason the codegen-drift.yml workflow's
+--     KNOWN_DRIFT_FREE registry grows over time.
 --   Q5 rerunning: the loop re-enters at RegenerationRequested any
 --     time -- a model edit, a template improvement, or the CI gate
---     re-audits the fleet on every PR.
+--     re-audits the fleet on a modeling or codegen PR.
 --   Q6 the check itself: the drift check is not fixed -- when it
 --     misses a drift type or its approach can be improved, the
 --     engineer records the gap (DriftCheckGap), the tooling is

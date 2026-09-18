@@ -55,15 +55,40 @@ the org dataset pipeline]].
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Image family done: the archetype, its enrichment, the manifest provenance and the flag retirement are committed. |
+| Now          | Image and ip2country families committed, both reading their own payloads rather than the manifest. |
 | Waiting on   | Nothing.                               |
-| Next         | The ip2country family, then FPML.      |
+| Next         | FPML: the per-entity table spec.       |
 | Last touched | 2026-09-18                               |
 
 The bar is semantic equivalence, not byte-identical output: the same rows
 with the same values, however the SQL is written. The user set this bar,
 and it is what makes the six metadata-core archetypes usable at all, since
 they emit a different SQL shape from the committed files.
+
+* Where an archetype's data comes from
+
+The first cut of the image and ip2country archetypes named
+=manifest.json= as their =#+data_source:=, which made a metadata document
+double as the artefact payload. The user rejected that: the manifest
+describes the dataset, and it must not carry the dataset's rows. It is
+also why =source_dir= and =description_template= appeared in the crypto
+and flags manifests, duplicating =sources[].data_dir= and putting
+presentation in metadata. Both fields are removed.
+
+An archetype's =#+data_source:= now names every payload it reads, and a
+dataset's directory holds its model and its payloads together, which the
+live =acme_corporation= dataset and the retired =slovaris= one both show.
+The manifest is therefore a sibling the archetype can simply name. The
+image archetype names =images.json= for its ={"key", "description"}=
+entries and =manifest.json= for the dataset identity and the SVG
+directory, which it takes from the source's existing =data_dir=. The
+ip2country archetype still names only the manifest, because its artefact
+data is the TSV and the generated script loads that itself at run time.
+
+Two rules follow for the datasets that move next. Artefact data belongs in
+a payload file beside the model, never in the manifest. And a value that
+already has a home, such as the upstream directory in =sources[].data_dir=,
+does not get a second one.
 
 * Acceptance
 

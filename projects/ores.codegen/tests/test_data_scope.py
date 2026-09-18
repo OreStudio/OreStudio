@@ -73,10 +73,10 @@ def test_resolve_targets_threads_data_source_and_master_name(tmp_path):
     assert model_data["dataset"]["prefix"] == "demo"
 
     by_output = {Path(u["output"]).name: u for u in units}
-    # The facet opt-in (drawer :ores.sql.populate.enabled:) enables all 9
-    # archetypes; each carries its dataset-relative payload.
+    # The facet opt-in (drawer :ores.sql.populate.enabled:) enables every
+    # archetype in the facet; each carries its dataset-relative payload.
     assert by_output["demo_catalog_populate.sql"]["data_source"] == "catalogs.json"
-    assert by_output["demo_flag_populate.sql"]["data_source"] == "country_currency.json"
+    assert by_output["demo_currency_populate.sql"]["data_source"] == "country_currency.json"
     # The master include is the standardised {prefix}_populate.sql, sourced
     # from the batch manifest.
     assert "demo_populate.sql" in by_output

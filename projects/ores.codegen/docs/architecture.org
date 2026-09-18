@@ -202,7 +202,7 @@ the C++ portion.
 |--------------------------+--------------------------------------------------------------------------|
 | =model.json=             | =sql_batch_execute.mustache=                                             |
 | =catalogs.json=          | =sql_catalog_populate.mustache=                                          |
-| =country_currency.json=  | =sql_flag_populate.mustache=, =sql_currency_populate.mustache=, =sql_country_populate.mustache= |
+| =country_currency.json=  | =sql_currency_populate.mustache=, =sql_country_populate.mustache= |
 | =datasets.json=          | =sql_dataset_populate.mustache=, =sql_dataset_dependency_populate.mustache= |
 | =methodologies.json=     | =sql_methodology_populate.mustache=                                      |
 | =tags.json=              | =sql_tag_populate.mustache=                                              |

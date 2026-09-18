@@ -6,7 +6,6 @@ import functools
 import json
 import re
 import os
-import random
 from pathlib import Path
 from typing import Any
 import pystache
@@ -302,7 +301,6 @@ def render_template(template_path, data):
 
     # Add utility functions to the data context
     extended_data = data.copy()
-    extended_data['generate_flag_svg'] = generate_flag_svg
 
     template_name = os.path.basename(template_path)
     for licence_key, emits in (
@@ -329,8 +327,7 @@ def get_template_mappings():
     return {
         "model.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
-        "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache", "sql_country_populate.mustache"],
-        "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
+        "country_currency.json": ["sql_currency_populate.mustache", "sql_country_populate.mustache"],
         "datasets.json": ["sql_dataset_populate.mustache", "sql_dataset_dependency_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"],
         "tags.json": ["sql_tag_populate.mustache"]
@@ -2051,15 +2048,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if image_artefact is not None:
             data['image_artefact'] = image_artefact
 
-    # Special processing for country_currency model to generate SVG flags
-    if model_key in ['country_currency', 'country_currency_flags']:
-        # Process each country currency to generate SVG flag data
+    # Special processing for country_currency model to fill in currency defaults
+    if model_key == 'country_currency':
         processed_data = []
         for i, item in enumerate(data[model_key]):
-            # Create a copy of the item and add the generated SVG
             processed_item = item.copy()
-            processed_item['generated_svg'] = generate_flag_svg(item.get('country_code', ''))
-            
+
             # Select a default from the pool based on the item index for diversity
             pool_index = i % len(CURRENCY_DEFAULTS_POOL)
             defaults = CURRENCY_DEFAULTS_POOL[pool_index]
@@ -4451,70 +4445,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Calculate and show relative path
         relative_path = get_relative_path(output_path.resolve(), git_path)
         print(f"Generated {relative_path}")
-
-
-def generate_flag_svg(country_code_num):
-    """
-    Generate a deterministic SVG flag based on a country code number.
-
-    Args:
-        country_code_num (int or str): A number representing the country code
-
-    Returns:
-        str: SVG string for the flag
-    """
-    # Convert to integer if it's a string
-    if isinstance(country_code_num, str):
-        # Convert string like "AL" to a number for deterministic generation
-        num = 0
-        for char in country_code_num.upper():
-            num = num * 100 + ord(char)  # Use ASCII values to create a unique number
-    else:
-        num = int(country_code_num)
-
-    # Use the number to deterministically generate colors and patterns
-    # Set seed to ensure deterministic output for the same input
-    random.seed(num)
-
-    # Generate random but deterministic colors based on the seed
-    r1, g1, b1 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-    r2, g2, b2 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-    r3, g3, b3 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-
-    # Choose a flag pattern based on the number
-    pattern_choice = num % 4
-
-    if pattern_choice == 0:
-        # Horizontal stripes
-        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
-  <rect width="640" height="160" y="0" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
-  <rect width="640" height="160" y="160" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
-  <rect width="640" height="160" y="320" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
-</svg>'''
-    elif pattern_choice == 1:
-        # Vertical stripes
-        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
-  <rect width="213.33" height="480" x="0" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
-  <rect width="213.33" height="480" x="213.33" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
-  <rect width="213.34" height="480" x="426.66" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
-</svg>'''
-    elif pattern_choice == 2:
-        # Diagonal pattern
-        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
-  <rect width="640" height="480" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
-  <polygon points="0,0 200,0 640,480 440,480" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
-  <polygon points="440,0 640,0 640,200 600,240 560,280 520,320 480,360 440,400 400,440 400,480 240,480 240,440 200,400 160,360 120,320 80,280 40,240 0,200 0,0" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
-</svg>'''
-    else:
-        # Central emblem pattern
-        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
-  <rect width="640" height="480" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
-  <circle cx="320" cy="240" r="80" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
-  <rect x="280" y="160" width="80" height="160" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
-  <rect x="240" y="200" width="160" height="80" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
-</svg>'''
-
-    return svg
 
 
 def _resolve_file_references(model_data, model_dir, global_data):

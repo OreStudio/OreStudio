@@ -8,7 +8,7 @@
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
 #+branch: feature/extract-series-classifier-and-cover-the-corpus
-#+pr:
+#+pr: 2095
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -223,7 +223,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2095][#2095]] | [marketdata] Extract the series classifier and give a series its asset classes |
 
 * Review
 

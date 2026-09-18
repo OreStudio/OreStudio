@@ -283,9 +283,10 @@ def test_load_graph_parses_live_nodes():
     assert "ores.cpp" in g.ts_facets
     assert "ores.sql" in g.ts_facets
     assert g.ts_facets["ores.cpp"], "ores.cpp should list facets"
-    assert g.facet_archetypes.get("ores.cpp.qt"), "ores.cpp.qt should own archetypes"
+    assert g.facet_archetypes.get("ores.cpp.repository"), \
+        "ores.cpp.repository should own archetypes"
     # every archetype carries the data codegen needs
-    for arch in g.facet_archetypes["ores.cpp.qt"]:
+    for arch in g.facet_archetypes["ores.cpp.repository"]:
         assert arch["template"].endswith(".mustache")
         assert arch["output"]
 

@@ -5,8 +5,8 @@ The codegen physical space is a graph of org documents under
 
     ores                          (root)
       ores.cpp                    (technical space)
-        ores.cpp.qt               (facet)
-          ores.cpp.qt.controller_header   (archetype, a leaf)
+        ores.cpp.repository       (facet)
+          ores.cpp.repository.mapper_header  (archetype, a leaf)
 
 This module loads that graph from the doc frontmatter and computes, for a
 given entity and an optional ``--address`` filter, the set of archetypes to
@@ -231,8 +231,8 @@ def address_supports_model_type(address: str | None, model_type: str,
     out of. A facet with no ``#+model_types:`` declared admits every type.
 
     Used to distinguish a genuine model-type/address incompatibility (e.g.
-    a ``junction`` model against ``ores.cpp.qt``, which no facet under that
-    address ever generates) from an ordinary empty intersection caused by
+    a ``junction`` model against ``ores.cpp.repository``, which no facet
+    under that address ever generates) from an empty intersection caused by
     disablement — the two must be handled differently by callers (see
     :func:`codegen.generate._generate_single`).
     """

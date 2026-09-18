@@ -57,7 +57,7 @@ def test_implementation_and_header_both_marked(tmp_path):
 
 def test_non_cpp_output_is_not_marked(tmp_path):
     """A template may carry the C++ licence and still not emit C++."""
-    out = _render(tmp_path, "cpp_qt_detail_dialog.ui.mustache")
+    out = _render(tmp_path, "cpp_widget.ui.mustache")
     assert MARKER not in out
     assert LICENCE in out
 

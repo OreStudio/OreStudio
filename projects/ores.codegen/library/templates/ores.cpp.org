@@ -54,7 +54,6 @@ do not edit by hand.
 | [[id:F1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6][ores.cpp.oresmd]] | 8 | oresmd quote-type codegen: enums, identifier/requirement structs, parser, projections, resolver, and tests. |
 | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] | 2 | Server-side rendering of a domain type for display: history field mapper. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |
-| [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] | 9 | Qt UI: windows, dialogs, controllers, client models. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
 | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 12 | Service-application C++ scaffold: application, host, config options/parser, main. |

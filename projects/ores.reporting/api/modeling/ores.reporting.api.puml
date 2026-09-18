@@ -119,7 +119,6 @@ namespace ores #F2F2F2 {
                 +xva_dim_quantile : double
                 +xva_dim_horizon_calendar_days : int
                 +xva_dim_regression_order : int
-                +var_quantiles : vector<double>
                 +var_method : string
                 +simm_version : string
                 +simm_calculation_currency : string

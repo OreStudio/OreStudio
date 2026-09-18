@@ -47,6 +47,12 @@ _ENTITY_STRUCT_FLAGS = (
     'is_nullable_numeric',
     'is_already_optional',
     'is_enum',
+    # A nullable enum clears is_enum but still reaches the struct: the
+    # template pairs render_is_enum with an is_enum inversion to emit
+    # std::optional<std::string>. Without this entry the guard refuses a
+    # shape the template carries -- trade's product_type, which is
+    # nullable precisely so an unset type maps to NULL.
+    'render_is_enum',
     'is_simple',
 )
 

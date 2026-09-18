@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 314A293B-452A-4BB6-B7FA-88B0DD8E0AE2
+:END:
+#+title: Task: Scaffold story: Generate protocol messages from one model into C++ and TypeScript
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :codegen_protocol_for_cpp_and_typescript:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-protocol-for-cpp-and-typescript
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Land the story, its tasks and the sprint wiring as one small pull request. The repository
+gains the plan for the two phases. No code, template or model file changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- The story sits under sprint 25 and the sprint =* Stories= table lists it.
+- The story carries the goal, the acceptance criteria, the decisions and the out-of-scope list.
+- Both tasks carry a goal and acceptance bullets. No placeholder text remains.
+- No code, template or model file changes.
+
+* Plan
+
+Scaffold only. =compass story new= wrote the story, the scaffold task and the first
+implementation task, and wired all three into sprint 25. The remaining work is prose and
+the pull request.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: FA160AE1-CB9A-410F-A8B0-31FBF2247962
+:END:
+#+title: Story: Generate protocol messages from one model into C++ and TypeScript
+#+description: Add an ores.codegen.operation model type so the hand-written IAM protocol headers generate from org with zero byte differences, then add a TypeScript target space so the TypeScript UI consumes the same model.
+#+type: story
+#+level: s2
+#+filetags: :codegen:protocol:typescript:iam:sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The IAM component hand-writes eleven protocol headers. Each header declares request and response structs, a NATS subject, and a response alias. ores.codegen cannot express these messages today, because the entity model covers CRUD shapes only.
+
+This story adds an ores.codegen.operation model type. One org file holds every message of one protocol header. The C++ template renders that org into the same bytes the hand-written header holds today.
+
+The story then adds a TypeScript target space. The same org renders TypeScript interfaces. The ores.qt UI is moving to TypeScript, and it needs every message.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+- An ores.codegen.operation org loads and renders through the codegen CLI.
+- The ores.cpp.protocol facet admits the operation model type.
+- All eleven hand-written IAM protocol headers generate from org with zero byte differences, apart from the auto-generated banner.
+- A TypeScript target space generates the login protocol types.
+- The generated TypeScript compiles under tsc --strict.
+- CI passes and the site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:314A293B-452A-4BB6-B7FA-88B0DD8E0AE2][Scaffold story: Generate protocol messages from one model into C++ and TypeScript]] | STARTED | 2026-09-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:033C4C69-A8D2-45C4-B351-5A3059B02E04][Add the ores.codegen.operation model type and port the IAM protocol headers]] | BACKLOG | | | Phase 1: add the operation model type to ores.codegen and port the eleven hand-written IAM protocol headers to org with zero byte differences. |
+
+* Decisions
+
+- *The generated headers gain the AUTO-GENERATED banner.* =render_template= stamps that
+  banner into every =*.hpp.mustache= output that carries =cpp_license=. Suppressing it for
+  these eleven headers needs a special case in =_emits_cpp=, which costs more than the
+  five banner lines it removes.
+- *The org names the response on the request node.* Pairing is many-to-one:
+  =switch_party_request= reuses =select_party_response=. A nested =*** request= /
+  =*** response= shape cannot express that, so the request node carries a =:response:= key
+  and plain structs stay flat siblings.
+- *TypeScript field names stay snake_case.* The C++ member names are the rfl::json keys.
+  The wire format therefore fixes the TypeScript property names, and a camelCase rename in
+  the generated interfaces would break decoding.
+- *The operation model type sits beside the existing model types.* =load_model= already
+  dispatches on =#+type:=, so the new type needs one map entry and one loader function.
+
+* Out of scope
+
+- The other hand-written protocol headers in the repository. This story covers IAM alone.
+- C++ behaviour changes. The port holds the bytes steady, apart from the banner.
+- Qt UI code. The story generates the TypeScript the UI consumes; the UI migration is
+  separate work.
+- The HTTP and shell transport shapes.

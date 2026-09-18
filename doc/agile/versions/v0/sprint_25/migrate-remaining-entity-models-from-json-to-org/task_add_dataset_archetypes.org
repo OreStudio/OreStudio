@@ -55,7 +55,7 @@ the org dataset pipeline]].
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Image and ip2country families committed, both reading their own payloads rather than the manifest. The ISO generator sits beside its dataset, and mustache no longer HTML-escapes values into generated files. |
+| Now          | Awaiting the merge of PR #2100, which carries the image and ip2country families, the generator's multi-payload support, and the ISO generator beside its dataset. The review round closed the SQL-quoting gap in both artefact templates and made source selection follow the dataset's methodology link. |
 | Waiting on   | Nothing.                               |
 | Next         | FPML: the per-entity table spec.       |
 | Last touched | 2026-09-18                               |
@@ -219,5 +219,32 @@ via its "Verifies task" field.
 | 2 | The payload loop rebinds =model_key=, which already names the model above it. | =projects/ores.codegen/src/codegen/core.py= | Declined | The first key of =payload_paths= is the model itself, and the outer binding has no reader after the loop. A rename would be churn for no behaviour. |
 | 3 | =EXPLICT= in five sprint 25 task docs. | =doc/agile/versions/v0/sprint_25/= | Declined | Present on =origin/main=, in files this branch does not touch. Left to their owners. |
 | 4 | =test_a_colliding_earlier_column_does_not_hide_a_later_real_one= fails. | =projects/ores.codegen/tests/test_custom_type_headers.py= | Declined | Reproduces on =origin/main= in a clean worktree, with nothing from this branch applied. It is not this branch's defect. |
+| 5 | The image template embeds =key= and =description= in a single-quoted SQL literal, and the ip2country template embeds its dataset names and data file the same way. An apostrophe closes the literal early, which is exactly what the legacy =images_generate_sql.py= doubled away. | =core.py= | Accepted | The templates write the surrounding quotes, so the builders now double the apostrophe. Probed psql first: =\set f 'a''b'= yields =a'b=, so the =\set= default takes the same escape. |
+| 6 | Both artefact builders take the first manifest source carrying the key they need, not the source the dataset names as its methodology. =external/crypto= lists two sources with a =data_dir=, so only their order keeps the choice right. | =core.py= | Accepted | Selection is now =dataset.methodology= matching =source.name=, which every manifest in the tree sets. A dataset that names no source raises rather than guessing. The crypto and ip2country test fixtures gained the =methodology= they were missing. |
+| 7 | =model_key= is rebound by the payload loop in =generate_from_model=. | =core.py= | Declined | Repeat of row 2, which the round already settled. |
 
 * Result
+
+Partial, and the task stays open. The image and ip2country artefact
+families are in, with the generator support they need, and the ISO
+generator now sits beside its dataset. Landed in
+[[https://github.com/OreStudio/OreStudio/pull/2100][PR #2100]].
+
+- An =image_artefact= archetype that reads =images.json= for its entries
+  and inlines the SVG each entry names.
+- An =ip2country= archetype that inserts the ranges and leaves the
+  generated script to load its own TSV at run time.
+- Multi-payload archetypes. A =#+data_source:= may name several files, and
+  the generator validates each one and passes the extras as additional
+  model paths.
+- The escaping defect, fixed at the root in =render_template=, so no value
+  reaches a generated file as an HTML entity.
+- SQL quote escaping in both artefact templates, so an apostrophe in a
+  description reaches the database as an apostrophe.
+- Source selection by the dataset's =methodology= link, not by the order a
+  manifest happens to list its sources.
+- Origin, nature and treatment on the four manifests, plus =as_of_date= on
+  FPML and =methodology_file= on ISO.
+
+The FPML per-entity archetype from the acceptance list is not built. That
+is the next step, and it is why this task is still STARTED.

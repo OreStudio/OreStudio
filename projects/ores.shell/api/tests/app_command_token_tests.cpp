@@ -73,8 +73,7 @@ TEST_CASE("from_token_leaves_an_optional_unset_on_the_absent_token", tags) {
 
     CHECK_FALSE(from_token<std::optional<int>>("-").has_value());
     CHECK_FALSE(from_token<std::optional<std::string>>("-").has_value());
-    CHECK_FALSE(
-        from_token<std::optional<boost::uuids::uuid>>("-").has_value());
+    CHECK_FALSE(from_token<std::optional<boost::uuids::uuid>>("-").has_value());
 }
 
 TEST_CASE("from_token_fills_an_optional_from_a_present_token", tags) {

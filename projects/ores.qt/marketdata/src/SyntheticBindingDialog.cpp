@@ -139,8 +139,7 @@ void SyntheticBindingDialog::loadConfigs() {
         if (!fx_resp)
             return {.ok = false};
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
-            configs.push_back(
-                {"FX", cfg.ore_key, cfg.source_name, "fx"});
+            configs.push_back({"FX", cfg.ore_key, cfg.source_name, "fx"});
 
         // IR is additive to the pre-existing FX-only flow: if the IR service is
         // unavailable, log and keep going with the FX rows already fetched rather than
@@ -161,8 +160,7 @@ void SyntheticBindingDialog::loadConfigs() {
                 // this must match that exactly, not just the bare qualifier.
                 const auto qualifier = cfg.currency_code + "/" + index_display_suffix(cfg);
                 const auto ore_key = "RATES/YIELD/" + qualifier;
-                configs.push_back(
-                    {"IR", ore_key, cfg.source_name, "interest_rates"});
+                configs.push_back({"IR", ore_key, cfg.source_name, "interest_rates"});
             }
         }
 

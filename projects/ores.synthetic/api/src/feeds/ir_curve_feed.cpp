@@ -125,8 +125,7 @@ void ir_curve_feed::start() {
                 tick.series_type = series_type_;
                 tick.metric = metric_;
                 tick.qualifier = qualifier_;
-                tick.asset_class =
-                    std::string(ores::marketdata::domain::ir_curve_asset_class);
+                tick.asset_class = std::string(ores::marketdata::domain::ir_curve_asset_class);
                 tick.subclass = subclass_for(e.curve_role);
                 tick.point_id = e.point_id;
                 tick.source_name = source_name_;

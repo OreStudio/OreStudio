@@ -9,7 +9,7 @@
 #+level: s1
 #+filetags: :llm:skill:skills:claude_code:codegen:drift:
 #+created: 2026-09-04
-#+updated: 2026-09-07
+#+updated: 2026-09-18
 
 #+begin_export markdown
 ---
@@ -130,13 +130,14 @@ the work.
    family unwired and unrecorded.
 
 8. *Extend the drift gate last.* Add the component to the
-   =KNOWN_DRIFT_FREE= registry in check_component_drift.py. The
-   pr.yml-era CI job that regenerated components on every PR was
-   deleted; the gate is the compass-pr-raise skill's local codegen-drift
-   check, which runs =check_component_drift.py --all= over that
-   registry. The gate lands only on a component at verified zero
-   drift: it enforces the method, it does not replace it. Run =--all=
-   once more before the PR that lands the gate.
+   =KNOWN_DRIFT_FREE= registry in check_component_drift.py. Two things
+   then run =check_component_drift.py --all= over that registry: the
+   =codegen-drift.yml= workflow, which gates a PR on
+   =projects/*/modeling/**= and =projects/ores.codegen/**=, and the
+   compass-pr-raise skill's local codegen-drift check. The gate lands
+   only on a component at verified zero drift: it enforces the method,
+   it does not replace it. Run =--all= once more before the PR that
+   lands the gate.
 
 ** Exception: an entity too complex to code-generate
 

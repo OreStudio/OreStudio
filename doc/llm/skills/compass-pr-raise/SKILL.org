@@ -9,7 +9,7 @@
 #+level: s1
 #+filetags: :llm:skill:pr:github:claude:review:
 #+created: 2026-06-07
-#+updated: 2026-08-11
+#+updated: 2026-09-18
 
 #+begin_export markdown
 ---
@@ -39,7 +39,12 @@ lifecycle is ordered this way.
 
 1. *MANDATORY — classify the change and run only the matching checks
    locally first, and do not skip this even under time pressure*. CI
-   runs no PR gate (the =pr.yml= workflow was deleted), so this step is
+   gates a PR on drift and lint alone. Four path-filtered workflows
+   run on =pull_request=: =codegen-drift.yml=, =doc-lint.yml=,
+   =shell-script-drift.yml=, and =template-drift.yml=. Each one fires
+   only on its own paths, and none of them builds or tests: the
+   workflows that compile the C++ and run ctest (=continuous-*.yml=,
+   =nightly-*.yml=) run on a schedule, not on a PR. So this step is
    the *only* thing that catches a broken build before review, and the
    PR description is the only record that it happened.
 
@@ -64,12 +69,14 @@ lifecycle is ordered this way.
    change that matches no bucket still gets the full build.
 
    The =projects/*/modeling/*= paths under docs carry a codegen-drift
-   exception: the retired =pr.yml= codegen-drift job ran
-   unconditionally, because a model-only edit classifies as docs and
-   would otherwise skip the check that catches forgotten regeneration.
-   A change touching the modeling paths also runs the codegen drift
-   checks (=compass build --direct codegen_templates= then
-   =check_component_drift.py=).
+   exception — to this table's default, not to CI: =codegen-drift.yml=
+   does gate them on a PR. The exception exists because a model-only
+   edit classifies as docs, and the docs class on its own runs no
+   codegen check. A change touching the modeling paths therefore also
+   runs the codegen drift checks (=compass build --direct
+   codegen_templates= then =check_component_drift.py=). Run them
+   locally even though CI repeats them: the gate only reports after a
+   reviewer is already looking.
 
    The checks:
 

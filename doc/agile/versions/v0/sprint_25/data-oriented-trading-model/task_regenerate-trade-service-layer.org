@@ -26,11 +26,11 @@ Regenerating the trade entity produces the whole estate, so the identity collaps
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-17                               |
 
 * Acceptance
@@ -97,3 +97,36 @@ eventing test was switched back on.
 | E | The trade derives party_id from its book, but the seeder gave the book a fresh party, so the written row was owned by a party the session could not see and every read returned nothing | core.py, nats_integration_test.org | The book now carries the session party |
 
 * Result
+
+The trade estate is generated from the model. The protocol adopts the
+generated shapes, keeping the vector-valued save and moving versions to
+history. The handler, service, repository and mapper members that used
+to be hand-written are org-declared through the paste-block mechanism,
+so regenerating trade no longer clobbers them.
+
+Trade is the first entity to carry domain groups, which drove most of
+the codegen work: a member prefix resolved per field rather than a
+=identity.= literal, cross-component seeding, and a trigger that derives
+what the book settles and guards what the state machine owns.
+
+Acceptance on the nine =ores.qt= Trade files is met by the second
+branch of the bullet, not the first. They are a recorded exception here:
+regenerating them is a separate change with its own review surface, and
+folding it in would have put a Qt rewrite inside a PR whose subject is
+the service layer. Four hand-written Qt files also read
+=execution_timestamp= as a string, which is why the domain type stayed a
+string rather than becoming a time point. That work is tracked as its
+own task.
+
+The full build and ctest are green against a live environment: 73 of 73
+with a database recreated from the merged tree and all 23 services up.
+The codegen drift gate is clean across the nine registered components,
+and the codegen suite is 208 of 208.
+
+Two rounds of review. The first raised five blocking findings and five
+smaller items; all are recorded in =* Review= with their decisions. The
+round that fixed them found five further defects that no existing test
+could have caught, because nothing in the estate wrote a trade. Turning
+the generated eventing test back on is what found them, and it is the
+one durable lesson here: the test was disabled after a single error
+message, and that decision is what let the first four findings through.

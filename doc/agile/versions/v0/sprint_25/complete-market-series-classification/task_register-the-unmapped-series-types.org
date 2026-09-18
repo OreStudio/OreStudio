@@ -8,7 +8,7 @@
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
 #+branch: feature/register-the-unmapped-series-types
-#+pr:
+#+pr: 2102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
@@ -741,7 +741,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2102][#2102]] | [ores.ore,ores.marketdata] Make the series vocabulary data |
 
 * Review
 

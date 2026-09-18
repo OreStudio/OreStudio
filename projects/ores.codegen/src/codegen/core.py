@@ -1510,6 +1510,61 @@ def _projects_dir_from(model_path: Path) -> Path:
     return Path(model_path).resolve().parent
 
 
+IMAGE_ARTEFACT_TYPE = 'images'
+
+
+def _repo_root_from(model_path) -> Path:
+    """The repository root that owns the given model.
+
+    Dataset payloads address their source files with repository-relative
+    paths, so the root is found by the ``.git`` marker rather than by the
+    ``projects/`` convention, which only entity models follow.
+    """
+    for parent in Path(model_path).resolve().parents:
+        if (parent / '.git').exists():
+            return parent
+    return _projects_dir_from(model_path).parent
+
+
+def _build_image_artefact(manifest: dict, model_path) -> dict | None:
+    """The image artefact a manifest declares, with its SVGs read from disk.
+
+    Selects the manifest dataset whose ``artefact_type`` is ``images`` and
+    reads every ``.svg`` under its ``source_dir``, relative to the repository
+    root. The dataset names are translated to the ``_name`` forms the
+    archetypes read. Returns None when the manifest declares no image dataset,
+    so a manifest payload without images renders no artefact.
+    """
+    repo_root = _repo_root_from(model_path)
+    for dataset in manifest.get('datasets', []):
+        if dataset.get('artefact_type') != IMAGE_ARTEFACT_TYPE:
+            continue
+        source_dir = repo_root / dataset['source_dir']
+        if not source_dir.is_dir():
+            raise FileNotFoundError(
+                f"Image artefact source directory not found: {source_dir} "
+                f"(declared by dataset '{dataset.get('name')}')")
+        description_template = dataset.get('description_template', 'Image for {key}')
+        items = []
+        for svg_path in sorted(source_dir.glob('*.svg')):
+            key = svg_path.stem
+            items.append({
+                'key': key,
+                'description': description_template.format(key=key),
+                'svg': svg_path.read_text(encoding='utf-8').strip(),
+            })
+        return {
+            'dataset': {
+                'name': dataset['name'],
+                'subject_area_name': dataset['subject_area'],
+                'domain_name': dataset['domain'],
+            },
+            'items': items,
+            'count': len(items),
+        }
+    return None
+
+
 @functools.lru_cache(maxsize=None)
 def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     """Raw model metadata of a soft-FK parent entity (no enrichment).
@@ -1989,6 +2044,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if model_key == 'manifest' and isinstance(data[model_key], dict):
         if 'methodologies' in data[model_key]:
             data['methodologies'] = data[model_key]['methodologies']
+
+    # For manifest.json, read the image artefacts the dataset declares
+    if model_key == 'manifest' and isinstance(data[model_key], dict):
+        image_artefact = _build_image_artefact(data[model_key], model_path)
+        if image_artefact is not None:
+            data['image_artefact'] = image_artefact
 
     # Special processing for country_currency model to generate SVG flags
     if model_key in ['country_currency', 'country_currency_flags']:

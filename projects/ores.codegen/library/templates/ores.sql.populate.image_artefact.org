@@ -18,12 +18,14 @@ inlines one SVG document per ={{key}}=, read from the dataset's =source_dir=.
 The payload is the dataset's own =manifest.json=. The enrichment in
 =codegen/core.py= selects the manifest dataset whose =artefact_type= is
 =images=, reads every =.svg= file under its =source_dir=, and exposes them as
-={{image_artefact.items}}=. The SVG files stay the single source of truth; no
-transform of them is checked in.
+={{image_artefact.items}}=. It also translates the manifest's =subject_area=
+and =domain= to the =subject_area_name= and =domain_name= forms used here.
+The SVG files stay the single source of truth; no transform of them is
+checked in.
 
 The template resolves the dataset row by =(name, subject_area_name,
-domain_name)= rather than by =code=, because those three are the manifest's
-own fields and the code is not part of the composite the table enforces.
+domain_name)= rather than by =code=, because those three name the row the
+table enforces uniqueness on.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

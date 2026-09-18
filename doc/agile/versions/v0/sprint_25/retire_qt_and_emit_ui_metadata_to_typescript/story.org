@@ -39,6 +39,7 @@ The Qt client leaves the repository. Its metadata does not. The entity models ke
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0DC6D0CB-D420-49B6-8751-43598610FEA4][Repurpose the presentation drawer into an ores.ts.ui facet]] | DONE | 2026-09-19 | 2026-09-19 | Rename the entity models' Qt drawer to Presentation, delete the Qt templates, and add an ores.ts.ui facet that emits one TypeScript metadata file per entity from the same org models the C++ headers use. |
+| [[id:E18B217F-DEE4-46BE-BE07-10F86AF727A1][Remove the ores.qt and ores.wt trees]] | STARTED | 2026-09-19 | | Task for: Retire Qt and emit the UI metadata to TypeScript |
 
 * Decisions
 

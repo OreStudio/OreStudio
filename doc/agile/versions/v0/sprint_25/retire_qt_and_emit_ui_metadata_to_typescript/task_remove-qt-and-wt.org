@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: E18B217F-DEE4-46BE-BE07-10F86AF727A1
+:END:
+#+title: Task: Remove the ores.qt and ores.wt trees
+#+description: Task for: Retire Qt and emit the UI metadata to TypeScript
+#+type: task
+#+level: s1
+#+filetags: :retire_qt_and_emit_ui_metadata_to_typescript:sprint_25:v0:
+#+owner: marco
+#+branch: feature/remove-qt-and-wt
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt and emit the UI metadata to TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete the ores.qt and ores.wt.service trees and every reference that names them, so the build, CI and the compass client stand without Qt.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6C5EE3F6-0DE6-48C2-9325-21D818C7FD6B][Retire Qt and emit the UI metadata to TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- The ores.qt and ores.wt.service trees are gone.
+- A full build configures and passes with no Qt present.
+- CI installs no Qt and every job passes.
+- compass env init writes no ores.qt.client certificate.
+- Regenerating every model produces no drift.
+- No Qt vocabulary survives in the modelling pages, the recipes or the skills.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

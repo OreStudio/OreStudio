@@ -3428,8 +3428,11 @@ def _capture_commit(out_file, title, note, co_author):
         return res.returncode
 
     backlog = PROJECT_ROOT / "doc" / "agile" / "product_backlog"
+    # Every bucket regenerate_backlog_indexes.py writes belongs here too, or
+    # the commit leaves that index regenerated but unstaged, and the next
+    # branch switch carries the dirty file along.
     paths = [out_file] + [backlog / f"{b}.org"
-                          for b in ("inbox", "next", "deferred")]
+                          for b in ("inbox", "next", "deferred", "discarded")]
     rels = [str(p.relative_to(PROJECT_ROOT)) for p in paths if p.exists()]
 
     subject = f"[agile] Capture: {title}"

@@ -38,10 +38,27 @@ Complete the org-migration story: convert the remaining legacy JSON-format entit
 |------+-------+-------+-----+-------------|
 | [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
 | [[id:B7BE4D95-2C5F-4AC0-8845-90B083A45810][Retire the JSON-era residue the org migration left behind]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
-| [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] | DONE | 2026-09-18 | 2026-09-18 | Task for: Migrate remaining ~100 entity models from JSON to org |
 | [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]] | BACKLOG | | | Image artefacts, the ip2country artefact plus TSV import, and FPML per-entity refdata, so crypto/flags/ip2country/FPML can move onto the org dataset pipeline. |
 
 * Decisions
+
+- The =ores.sql.populate= archetypes are the single dataset-populate
+  pipeline. Crypto, flags, ip2country and FPML move onto it; their
+  bespoke generators are deleted once the new output is byte-identical.
+  The archetypes take every dataset name from the dataset model itself,
+  so no dataset needs a hardcoded template.
+- Slovaris is abandoned, not migrated. It was an experiment that did not
+  work, and it was the only reason several archetypes carried hardcoded
+  names. Its sprint 22 story and task stay in the discarded bucket,
+  marked ABANDONED, so the id-link from =sprint_19/sprint.org= still
+  resolves.
+- =ores.dq= must not be regenerated until its two hand-written callers
+  are updated. The current =cpp_nats_handler= template no longer emits
+  the unpaginated =dataset_bundle_members= list operation, but
+  =registrar.cpp= and =DataLibrarianWindow.cpp= still use it. Five
+  generated =ores.dq= artefacts therefore still carry slovaris doc
+  comments until that pass happens.
 
 * Out of scope
 

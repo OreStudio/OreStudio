@@ -45,11 +45,11 @@ follow-on story, not this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | PR #2093 open; review round 1 addressed. |
-| Waiting on   | Re-review and merge.                   |
-| Next         | Merge once CI is green and the reviewer approves. |
+| Now          | Nothing.                               |
+| Waiting on   | Merge of PR #2093.                     |
+| Next         | Nothing. The follow-on is [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]]. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -120,13 +120,32 @@ follow-on story, not this task.
 
 * Result
 
-Delivered across commits on feature/decommission-codegen-bash-scripts.
+Delivered on feature/decommission-codegen-bash-scripts, PR #2093.
 
-- Nine wrappers deleted; slovaris dataset and solvaris populate output
-  deleted; catalogues include and DQ bundle populate pair repaired.
-- Nine ores.sql.populate archetypes de-hardcoded to {{model_name}};
-  verified by rendering a synthetic demo dataset to a scratch directory
-  — nine outputs, zero hardcoded names.
-- generate_doc.sh swept from fourteen live docs; the backlog index
-  generator now points at compass add capture.
-- slovaris swept from the live tree; codegen tests pass.
+- Nine wrappers deleted. Three called a missing src/generator.py; the
+  six dataset wrappers read the deleted projects/ores.codegen/models/
+  tree; generate_doc.sh is superseded by compass add.
+- Slovaris removed from the live tree: the seeder dataset, the solvaris
+  populate output, and the references in the two ores.dq models, the
+  hand-written publication header, the test fixtures, the codegen
+  source comments, and the documentation.
+- Consumers repaired: the catalogues master include, the DQ bundle
+  populate pair, and the codegen data-scope test — the last rewritten
+  fixture-independent so it no longer depends on a shipped dataset.
+- Nine ores.sql.populate archetypes de-hardcoded so every dataset name
+  comes from the model. Verified by rendering a synthetic dataset end
+  to end: nine outputs, zero hardcoded names.
+- Acceptance met in full: no script calls src/generator.py, no live doc
+  names a deleted script, no slovaris file remains, and no live
+  reference survives outside the historical record under
+  doc/agile/versions/.
+
+Verification: full debug build clean; ores.dq api, core and service
+tests pass; roundtrip script exit 0; cmake-sources and codegen drift
+clean; compass lint, drift and model all green on CI.
+
+Review round 1 raised one nit — a stale description on the crypto test
+fixture — accepted and fixed in 5198b85c8d.
+
+Known limitation: five generated ores.dq artefacts still carry slovaris
+doc comments. See * Notes for why regenerating ores.dq is unsafe today.

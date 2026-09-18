@@ -28,9 +28,9 @@ The nine ores.qt Trade files come from the model like the rest of the trade esta
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned. Qt is no longer the target. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing here. A TypeScript experiment replaces it. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -71,3 +71,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned before implementation, on the evidence the investigation
+produced rather than on a change of taste.
+
+Codegen can reach the envelope: the detail-dialog template already
+supports tabbing by view group, =DetailDialogBase= is already a
+=QWidget= so a generated dialog embeds without a base-class change, the
+foreign-key graph is available for selectors, and the eleven paste
+points in the dialog implementation are the same augmentation mechanism
+the service layer now uses. None of that was the obstacle.
+
+The obstacle is that the effort to make a UI fit codegen and C++ was
+outrunning what the UI was worth. Two findings made that concrete. The
+instrument form dispatch is pure data and would generate cleanly, but
+the =.ui= template has no paste point, so an extra widget has nowhere
+declared to sit -- a new seam invented for the UI alone. And bond, the
+freshest model, showed the deeper problem: =bond_instrument= carries
+five columns, all foreign keys, while the economics live across
+=bond_issue=, =bond_leg= and =bond_leg_rate=. A form per entity gives a
+form over a junction row. The containment that would let codegen follow
+the family is not modelled -- =bond_leg= names =instrument_id= as a
+plain column and declares no foreign key at all -- so generating a
+usable instrument form needs a data-model change before it needs a
+template change.
+
+The direction is now a TypeScript UI using ordinary code reuse rather
+than codegen. Trade work ends at the C++ layer.
+
+* Notes
+
+One fix is kept and travels separately: the entity struct-coverage guard
+refused a nullable scoped enum, which stopped trade regenerating
+altogether. That is not Qt work and it blocks anyone regenerating trade,
+so it is not abandoned with the rest.

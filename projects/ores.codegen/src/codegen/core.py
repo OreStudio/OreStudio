@@ -285,6 +285,13 @@ def _emits_ts(template_name):
     return template_name.endswith('.ts.mustache')
 
 
+# Templates emit SQL, C++ and org, never HTML, so mustache's HTML escaping
+# would corrupt every value carrying an apostrophe or an ampersand. pystache's
+# module-level render() ignores the escape argument, so the renderer is built
+# here. It holds no per-render state and is safe to share.
+_RENDERER = pystache.Renderer(escape=lambda s: s)
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -313,7 +320,7 @@ def render_template(template_path, data):
                 f"{generated_marker(template_name)}"
             )
 
-    return pystache.render(template_content, extended_data)
+    return _RENDERER.render(template_content, extended_data)
 
 
 
@@ -902,8 +909,7 @@ def normalise_sql_table_context(table):
     if 'insert_trigger' in table and 'validations' in table['insert_trigger']:
         _mark_last_item(table['insert_trigger']['validations'])
     # Pre-render the description as a SQL comment block: prefix every line with
-    # '-- ' so multi-line prose stays valid SQL, and emit it unescaped (the
-    # template uses a triple-stache) so apostrophes are not HTML-escaped.
+    # '-- ' so multi-line prose stays valid SQL.
     description = table.get('description', '') or ''
     table['description_comment'] = '\n'.join(
         f'-- {line}' if line.strip() else '--'

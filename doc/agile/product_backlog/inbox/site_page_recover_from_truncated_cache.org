@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 821A7F1C-DF26-4F0E-90B5-F70A5B62C487
+:END:
+#+title: Make compass site page recover from a truncated publish cache
+#+description: Make compass site page recover from a truncated publish cache. A 0-byte build/output/org-timestamps/site:pages.cache plus a stale Emacs lock (.#site:pages.cache) left by a dead PID makes every site page run fail with 'org-publish-cache-get called, but no cache present'. The cache is derived data and rebuilds in one run, but nothing says so: the command reports a cryptic org-internals error and no recovery. Delete the stale lock and the truncated cache before publishing, or make the command detect the state and say what to do. The how_do_i_deploy_the_site recipe documents neither the failure nor the recovery.
+#+type: capture
+#+level: cross
+#+filetags: :compass:site:tooling:dx:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

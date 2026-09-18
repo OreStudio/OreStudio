@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ores.ts.protocol.enabled: nil
+:ID: 13C6E76E-B616-49D5-ABC7-A8A70C7ADA61
+:END:
+#+title: ores.iam.account_history_messages
+#+description: Codegen operation model for the account_history protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: account_history
+#+namespace: ores::iam::messaging
+#+brief: account_history protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The account_history protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/account_version.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** account_version_history
+
+*** versions
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::account_version>
+:END:
+
+** get_account_history_request
+:PROPERTIES:
+:subject: iam.v1.accounts.history
+:response: get_account_history_response
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_history_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** history
+:PROPERTIES:
+:cpp_type: account_version_history
+:END:
+

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ores.ts.protocol.enabled: nil
+:ID: CCC16FBC-CB36-4A75-9377-31B3B3368F1E
+:END:
+#+title: ores.iam.account_party_messages
+#+description: Codegen operation model for the account_party protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: account_party
+#+namespace: ores::iam::messaging
+#+brief: account_party protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The account_party protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/account_party.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** account_party_key
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_parties_request
+:PROPERTIES:
+:subject: iam.v1.account-parties.list
+:response: get_account_parties_response
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 100
+:END:
+
+** get_account_parties_response
+
+*** account_parties
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::account_party>
+:END:
+
+*** total_available_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** get_account_parties_by_account_request
+:PROPERTIES:
+:subject: iam.v1.account-parties.by-account
+:response: get_account_parties_by_account_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_parties_by_account_response
+
+*** account_parties
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::account_party>
+:END:
+
+** save_account_party_request
+:PROPERTIES:
+:subject: iam.v1.account-parties.save
+:response: save_account_party_response
+:END:
+
+*** account_parties
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::account_party>
+:END:
+
+** save_account_party_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_account_party_request
+:PROPERTIES:
+:subject: iam.v1.account-parties.delete
+:response: delete_account_party_response
+:END:
+
+*** keys
+:PROPERTIES:
+:cpp_type: std::vector<account_party_key>
+:END:
+
+** delete_account_party_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

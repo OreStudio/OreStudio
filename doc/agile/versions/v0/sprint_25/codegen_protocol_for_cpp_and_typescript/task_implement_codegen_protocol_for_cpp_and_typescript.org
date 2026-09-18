@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_protocol_for_cpp_and_typescript:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-protocol-for-cpp-and-typescript
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
 #+updated: 2026-09-18
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,14 +28,14 @@ from the auto-generated banner the generator adds.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | STARTED                                                      |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-18                               |
+| Now          | All eleven IAM headers generate from =ores.codegen.operation= models; the codegen suite passes. |
+| Waiting on   | The full build, then the final zero-diff regeneration check.  |
+| Next         | Re-run =compass codegen regenerate --component iam --address ores.cpp.protocol= and confirm no further diff. |
+| Last touched | 2026-09-18                                                   |
 
 * Acceptance
 

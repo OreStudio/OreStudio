@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_IAM_MESSAGING_BOOTSTRAP_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_BOOTSTRAP_PROTOCOL_HPP
 
@@ -53,12 +58,30 @@ struct create_initial_admin_response {
 struct provision_tenant_request {
     using response_type = struct provision_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.bootstrap.provision-tenant";
-    std::string type;        // tenant type (e.g., "corporate")
-    std::string code;        // unique tenant code
-    std::string name;        // display name
-    std::string hostname;    // unique hostname
-    std::string description; // optional description
-    std::string principal;   // username for the admin account
+    /*
+     * tenant type (e.g., "corporate")
+     */
+    std::string type;
+    /*
+     * unique tenant code
+     */
+    std::string code;
+    /*
+     * display name
+     */
+    std::string name;
+    /*
+     * unique hostname
+     */
+    std::string hostname;
+    /*
+     * optional description
+     */
+    std::string description;
+    /*
+     * username for the admin account
+     */
+    std::string principal;
     std::string password;
     std::string email;
 };

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 1AB3A848-E562-46F1-84EE-A3E5F9CF0894
+:END:
+#+title: ores.iam.signup_messages
+#+description: Codegen operation model for the signup protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: signup
+#+namespace: ores::iam::messaging
+#+brief: signup protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The signup protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** signup_request
+:PROPERTIES:
+:subject: iam.v1.auth.signup
+:response: signup_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** signup_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

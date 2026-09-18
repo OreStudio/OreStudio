@@ -2066,6 +2066,186 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     return {"field_group": fg}
 
 
+def _indent_block(text: str, spaces: int) -> str:
+    """Pad every non-blank line of ``text`` by ``spaces``.
+
+    Mustache cannot indent a multi-line value, so a nested comment is
+    pre-indented here rather than in the template. Blank lines stay
+    blank — padding them would leave trailing whitespace in the output.
+    """
+    pad = " " * spaces
+    return "\n".join(pad + line if line.strip() else line
+                     for line in text.splitlines())
+
+
+_TS_SCALARS = {
+    "std::string": "string",
+    "bool": "boolean",
+    "int": "number",
+    "std::uint64_t": "number",
+}
+
+
+def _to_pascal_case(name: str) -> str:
+    """The interface name a snake_case message name renders to."""
+    return "".join(part.capitalize() for part in name.split("_"))
+
+
+def _ts_type(cpp_type: str) -> str | None:
+    """Project a C++ member type onto its TypeScript counterpart.
+
+    Returns ``None`` for a type with no projection yet -- the TypeScript
+    domain layer does not exist, so an operation referencing
+    ``ores::iam::domain::`` types cannot render a TypeScript interface.
+    Callers decide whether that absence is fatal; see
+    ``load_org_operation_model``.
+
+    An unqualified name is a message defined in the same protocol, so it
+    takes the interface name the template will emit for it.
+    """
+    if cpp_type.startswith("std::vector<") and cpp_type.endswith(">"):
+        inner = _ts_type(cpp_type[len("std::vector<"):-1])
+        return f"{inner}[]" if inner else None
+    if cpp_type in _TS_SCALARS:
+        return _TS_SCALARS[cpp_type]
+    if "::" not in cpp_type:
+        return _to_pascal_case(cpp_type)
+    return None
+
+
+def load_org_operation_model(path: Path | str) -> dict[str, Any]:
+    """Load an org-mode protocol-operation model.
+
+    Produces an ``{"operation": {...}}`` dict rendered by
+    ``cpp_protocol.hpp.mustache``'s ``{{#operation}}`` block: frontmatter
+    scalars (component, subcomponent, entity_singular, brief), the
+    namespace, the ``includes`` list from the named ``includes`` babel
+    block under ``* Includes``, and a ``messages`` list from the ``**``
+    headings under ``* Messages``.
+
+    A message carries two optional keys, and they are independent:
+
+    - ``subject`` — the NATS subject. Present on an operation, absent on
+      a plain payload struct such as ``party_summary``.
+    - ``response_type`` — the response the request pairs with. Absent on
+      ``public_key_request``, which has a subject and no response.
+
+    Pairing is many-to-one: ``switch_party_request`` reuses
+    ``select_party_response``, so the response is named on the request
+    rather than nested under a shared operation node.
+
+    A ``comment`` babel block documents the heading it sits under, so it
+    goes directly below that heading's ``:PROPERTIES:`` drawer. Message
+    comments stay flush; field comments are indented by four spaces (see
+    ``_indent_block``).
+
+    ``:default:`` stays a raw string: Mustache treats the number 0 as
+    falsy, so a typed ``0`` would silently drop the initializer.
+
+    Each message also carries ``name_pascal`` and each field a
+    ``ts_type``, both derived for the TypeScript archetype, which shares
+    this model. A field whose type has no projection carries no
+    ``ts_type`` key at all, and ``_reject_silent_ts_gap`` decides whether
+    that absence is fatal.
+    """
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    op: dict[str, Any] = {}
+    for key in ("product", "component", "subcomponent",
+                "entity_singular", "namespace", "brief"):
+        if key in fm:
+            op[key] = fm[key]
+
+    body = _strip_body(doc.root)
+    if body:
+        op["description"] = body
+
+    inc = _section(doc.root, "Includes")
+    if inc:
+        op["includes"] = _includes_from_named_block(inc)
+
+    messages: list[dict[str, Any]] = []
+    messages_section = _section(doc.root, "Messages")
+    if messages_section:
+        for node in messages_section.children:
+            entry: dict[str, Any] = {
+                "name": node.title,
+                "name_pascal": _to_pascal_case(node.title),
+            }
+            props = {k.lower(): v for k, v in node.properties.items()}
+            if "subject" in props:
+                entry["subject"] = props["subject"]
+            # The org names the response; the template emits the C++
+            # alias, so the model key takes the alias's own name.
+            if "response" in props:
+                entry["response_type"] = props["response"]
+            comment = node.src_blocks.get("comment")
+            if comment:
+                entry["comment"] = comment
+
+            fields: list[dict[str, Any]] = []
+            for field_node in node.children:
+                field_entry: dict[str, Any] = {"name": field_node.title}
+                field_props = {
+                    k.lower(): v for k, v in field_node.properties.items()
+                }
+                if "cpp_type" in field_props:
+                    field_entry["cpp_type"] = field_props["cpp_type"]
+                    mapped = _ts_type(field_props["cpp_type"])
+                    if mapped:
+                        field_entry["ts_type"] = mapped
+                if "default" in field_props:
+                    field_entry["default"] = field_props["default"]
+                field_comment = field_node.src_blocks.get("comment")
+                # Always set the key: Mustache resolves a name it cannot
+                # find by walking up the context stack, so an absent
+                # ``comment`` would inherit the enclosing message's.
+                field_entry["comment"] = (
+                    _indent_block(field_comment, 4) if field_comment else ""
+                )
+                fields.append(field_entry)
+            entry["fields"] = fields
+            messages.append(entry)
+    op["messages"] = messages
+
+    _reject_silent_ts_gap(path, messages, doc.file_properties)
+
+    return {"operation": op}
+
+
+def _reject_silent_ts_gap(
+    path: Path | str, messages: list[dict[str, Any]], file_properties: dict[str, str]
+) -> None:
+    """Reject an operation that cannot render TypeScript without saying so.
+
+    A field whose C++ type has no TypeScript projection renders an
+    interface with the field missing, so a UI reading it fails at run
+    time rather than at codegen. The model must either map the type or
+    switch the facet off in its own drawer, which is what the five IAM
+    protocols referencing ``ores::iam::domain::`` types do until a
+    TypeScript domain layer exists.
+    """
+    unmapped = sorted({
+        field["cpp_type"]
+        for message in messages
+        for field in message["fields"]
+        if "cpp_type" in field and "ts_type" not in field
+    })
+    if not unmapped:
+        return
+    if str(file_properties.get("ores.ts.protocol.enabled", "")).strip().lower() in (
+        "nil", "false", "no", "0"
+    ):
+        return
+    raise ValueError(
+        f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
+        "type in org_loader._ts_type, or set ':ores.ts.protocol.enabled: nil' "
+        "in the file's :PROPERTIES: drawer to skip the TypeScript facet"
+    )
+
+
 def _parse_org_table_rows(node: OrgNode) -> list[dict[str, str]]:
     """Find the first org table on ``node`` or any descendant and return
     its rows. ``parse_org`` pre-parses tables into list-of-dict form, so

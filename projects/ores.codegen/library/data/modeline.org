@@ -2,7 +2,7 @@
 :ID: 9340037F-54A6-44A7-9FC6-2CE739B81167
 :END:
 #+title: Modelines
-#+description: MASD-style org model for the three editor modelines injected into generated file headers: sql, c++, cmake. Each modeline is a leaf node under ores.modelines.emacs with a single content attribute carrying the emacs mode-line string.
+#+description: MASD-style org model for the four editor modelines injected into generated file headers: sql, c++, cmake, typescript. Each modeline is a leaf node under ores.modelines.emacs with a single content attribute carrying the emacs mode-line string.
 #+type: ores.codegen.modeline_catalogue
 
 Consumed directly by =generator.py= (=load_data=) to populate =data['modelines']=.
@@ -46,4 +46,14 @@ Modelled after the Dogen =masd.org= pattern (module → modeline_group → model
 **** content :attribute:
 :PROPERTIES:
 :masd.codec.value: mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil
+:END:
+
+*** ores.modelines.emacs.typescript :modeline:
+:PROPERTIES:
+:custom_id: 5DC0FF28-B6F6-4382-88C8-65A258E4304D
+:END:
+
+**** content :attribute:
+:PROPERTIES:
+:masd.codec.value: mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil
 :END:

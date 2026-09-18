@@ -1,0 +1,254 @@
+:PROPERTIES:
+:ores.ts.protocol.enabled: nil
+:ID: C47A4410-8624-431C-98FE-D05304CEC6D8
+:END:
+#+title: ores.iam.authorization_messages
+#+description: Codegen operation model for the authorization protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: authorization
+#+namespace: ores::iam::messaging
+#+brief: authorization protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The authorization protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/role.hpp"
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** list_roles_request
+:PROPERTIES:
+:subject: iam.v1.roles.list
+:response: list_roles_response
+:END:
+
+** list_roles_response
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::role>
+:END:
+
+** list_permissions_request
+
+** list_permissions_response
+
+*** permissions
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::permission>
+:END:
+
+** get_role_request
+
+*** identifier
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_role_response
+
+*** found
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** role
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::role>
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assign_role_request
+:PROPERTIES:
+:subject: iam.v1.roles.assign
+:response: assign_role_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assign_role_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assign_role_by_name_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** assign_role_by_name_request
+:PROPERTIES:
+:subject: iam.v1.roles.assign-by-name
+:response: assign_role_by_name_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** role_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_role_request
+:PROPERTIES:
+:subject: iam.v1.roles.revoke
+:response: revoke_role_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_role_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_role_by_name_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_role_by_name_request
+:PROPERTIES:
+:subject: iam.v1.roles.revoke-by-name
+:response: revoke_role_by_name_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** role_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_roles_request
+:PROPERTIES:
+:subject: iam.v1.roles.by-account
+:response: get_account_roles_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_roles_response
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::role>
+:END:
+
+** get_account_permissions_request
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_permissions_response
+
+*** permission_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** suggest_role_commands_request
+:PROPERTIES:
+:subject: iam.v1.roles.suggest-commands
+:response: suggest_role_commands_response
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** hostname
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** suggest_role_commands_response
+
+*** commands
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+

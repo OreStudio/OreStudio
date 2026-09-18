@@ -1,0 +1,543 @@
+:PROPERTIES:
+:ores.ts.protocol.enabled: nil
+:ID: 082C5D76-93C2-41E6-8193-9598B79DD07A
+:END:
+#+title: ores.iam.account_messages
+#+description: Codegen operation model for the account protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: account
+#+namespace: ores::iam::messaging
+#+brief: account protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The account protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** get_accounts_request
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 100
+:END:
+
+** get_accounts_response
+
+*** accounts
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::account>
+:END:
+
+*** total_available_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** save_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.save
+:response: save_account_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** totp_secret
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.update
+:response: update_account_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** full_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account holder's full (real) name. Empty clears it.
+ */
+#+end_src
+
+*** default_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Party to set as the account's default quick-login party.
+ * Empty clears the default. Must be one of the account's assigned
+ * parties (validated server-side).
+ */
+#+end_src
+
+*** job_title
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Job title / functional role of the person holding this
+ * account (e.g. "Head of Desk", "Senior Trader"). Empty clears it.
+ */
+#+end_src
+
+*** reports_to_account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account this person reports to. Empty clears it. Must
+ * be another account in the same tenant (validated server-side).
+ */
+#+end_src
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Profile picture for this account. Empty clears it. Must
+ * reference an existing image (validated server-side).
+ */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_account_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** save_account_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.delete
+:response: delete_account_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_account_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** account_operation_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** lock_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.lock
+:response: lock_account_response
+:END:
+
+*** account_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** lock_account_response
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<account_operation_result>
+:END:
+
+** unlock_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.unlock
+:response: unlock_account_response
+:END:
+
+*** account_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** unlock_account_response
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<account_operation_result>
+:END:
+
+** list_login_info_request
+:PROPERTIES:
+:subject: iam.v1.accounts.login-info
+:response: list_login_info_response
+:END:
+
+** list_login_info_response
+
+*** login_infos
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::login_info>
+:END:
+
+** reset_password_request
+:PROPERTIES:
+:subject: iam.v1.accounts.reset-password
+:response: reset_password_response
+:END:
+
+*** account_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** new_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** reset_password_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<account_operation_result>
+:END:
+
+** change_password_request
+
+*** current_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** new_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** change_password_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_my_email_request
+:PROPERTIES:
+:subject: iam.v1.accounts.update-email
+:response: update_my_email_response
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_my_email_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** set_my_default_party_request
+:PROPERTIES:
+:subject: iam.v1.accounts.set-default-party
+:response: set_my_default_party_response
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** set_my_default_party_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** select_party_request
+:PROPERTIES:
+:subject: iam.v1.accounts.select-party
+:response: select_party_response
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** switch_party_request
+:PROPERTIES:
+:subject: iam.v1.accounts.switch-party
+:response: select_party_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Re-scopes an *already-logged-in* session to a different party.
+ *
+ * Deliberately a separate subject/handler from select_party rather than a
+ * relaxed version of it: select_party only accepts a narrowly-scoped,
+ * single-use token (audience "select_party_only") issued exclusively by
+ * the login flow, by design -- see account_handler.hpp's select_party for
+ * why. switch_party accepts a normal, already-authenticated session token
+ * instead (any token that is NOT that single-use one), so an account with
+ * access to more than one party (e.g. a tenant admin with cross-entity
+ * access) can change which party's data is in view mid-session without
+ * logging out and back in. Same party-membership check and new-token
+ * issuance as select_party otherwise.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** select_party_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_setup_required
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief True when the selected party's status is 'Inactive'.
+ * The client should present the PartyProvisioningWizard immediately.
+ */
+#+end_src
+
+*** party_setup_warning
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Set when the party provisioner wizard has completed
+ * (onboarding.party = true) but the party is still Inactive. The
+ * client should show a message instead of re-launching the wizard.
+ */
+#+end_src
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Token lifetime in seconds for the newly issued token.
+ *
+ * Clients re-arm the proactive refresh timer using this value.
+ */
+#+end_src
+
+** get_accounts_request_typed
+:PROPERTIES:
+:subject: iam.v1.accounts.list
+:response: get_accounts_response
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 100
+:END:
+
+** change_password_request_typed
+:PROPERTIES:
+:subject: iam.v1.accounts.change-password
+:response: change_password_response
+:END:
+
+*** current_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** new_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

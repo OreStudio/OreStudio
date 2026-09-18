@@ -8,7 +8,7 @@
 #+filetags: :retire_qt_and_emit_ui_metadata_to_typescript:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-ts-ui-metadata
-#+pr:
+#+pr: 2105
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2105][#2105]] | [codegen] Repurpose the presentation drawer into an ores.ts.ui facet |
 
 * Review
 

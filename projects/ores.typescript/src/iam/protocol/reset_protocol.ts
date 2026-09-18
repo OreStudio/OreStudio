@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,47 +19,37 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_RESET_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_RESET_PROTOCOL_HPP
-
-#include <string>
-
-namespace ores::iam::messaging {
-
 // Reset a single tenant to bootstrap state.
 // Soft-deletes admin-created data, flips Operational parties to Inactive,
 // and re-enables system.bootstrap_mode so both TenantProvisioningWizard
 // and PartyProvisioningWizard fire on next login.
 // Requires: iam::system:reset-tenant permission (SuperAdmin only).
-struct reset_tenant_command {
-    using response_type = struct reset_tenant_result;
-    static constexpr std::string_view nats_subject = "iam.v1.system.reset-tenant";
-    std::string tenant_code;
-};
+export interface ResetTenantCommand {
+    tenant_code: string;
+}
 
-struct reset_tenant_result {
-    bool success = false;
-    std::string message;
-};
+export interface ResetTenantResult {
+    success: boolean;
+    message: string;
+}
 
 // Reset the entire system to pre-bootstrap state.
 // Purges all non-system tenants (hard delete), removes system admin accounts,
 // and re-enables system.bootstrap_mode so SystemProvisionerWizard fires on
 // next startup.
 // Requires: iam::system:reset permission (SuperAdmin only).
-struct reset_system_command {
-    using response_type = struct reset_system_result;
-    static constexpr std::string_view nats_subject = "iam.v1.system.reset";
-};
-
-struct reset_system_result {
-    bool success = false;
-    std::string message;
-};
-
+export interface ResetSystemCommand {
 }
 
-#endif
+export interface ResetSystemResult {
+    success: boolean;
+    message: string;
+}
+
+export const subjects = {
+    reset_tenant_command: "iam.v1.system.reset-tenant",
+    reset_system_command: "iam.v1.system.reset",
+} as const;

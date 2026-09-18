@@ -1,0 +1,329 @@
+:PROPERTIES:
+:ID: 72596DEE-01BE-40A5-B084-4C38DB212191
+:END:
+#+title: ores.iam.login_messages
+#+description: Codegen operation model for the login protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: login
+#+namespace: ores::iam::messaging
+#+brief: login protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The login protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** party_summary
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_category
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** business_center_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** login_request
+:PROPERTIES:
+:subject: iam.v1.auth.login
+:response: login_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** login_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password_reset_required
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** tenant_bootstrap_mode
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** party_setup_required
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** party_setup_warning
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Set when the party provisioner wizard has completed
+ * (onboarding.party = true) but the party is still Inactive. The
+ * client should show a message instead of re-launching the wizard.
+ */
+#+end_src
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** selected_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** available_parties
+:PROPERTIES:
+:cpp_type: std::vector<party_summary>
+:END:
+
+*** default_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account's stored default party, if set and among
+ * @c available_parties. Empty when unset. Only meaningful when
+ * @c selected_party_id is empty (multi-party login, picker step).
+ */
+#+end_src
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Token lifetime in seconds as configured on the server.
+ *
+ * Clients use this to arm the proactive refresh timer so that the
+ * timer interval tracks any server-side configuration changes.
+ */
+#+end_src
+
+*** session_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The IAM session UUID created for this login.
+ *
+ * Matches the session record in ores_iam_sessions_tbl. Clients should
+ * forward this as Nats-Session-Id on every subsequent request so that
+ * all calls from a single login session can be correlated in logs.
+ */
+#+end_src
+
+** logout_request
+:PROPERTIES:
+:subject: iam.v1.auth.logout
+:response: logout_response
+:END:
+
+** logout_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** public_key_request
+:PROPERTIES:
+:subject: iam.v1.auth.public-key
+:END:
+
+** refresh_request
+:PROPERTIES:
+:subject: iam.v1.auth.refresh
+:response: refresh_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to refresh a JWT token.
+ *
+ * The current token is passed in the Authorization: Bearer header.
+ * No request body is needed — identity is taken from the token claims.
+ */
+#+end_src
+
+** refresh_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Response to a token refresh request.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Token lifetime in seconds for the newly issued token.
+ *
+ * Clients re-arm the proactive refresh timer using this value.
+ */
+#+end_src
+
+** service_login_request
+:PROPERTIES:
+:subject: iam.v1.auth.service-login
+:response: service_login_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Authenticates a service account and issues a JWT.
+ *
+ * Service accounts cannot log in with the regular password-based login path.
+ * They authenticate by presenting their database user password (which is
+ * stored as a SHA-256 hash in the service account row). On success the IAM
+ * service creates a session and returns a short-lived RS256 JWT identical in
+ * structure to a human login token.
+ *
+ * The @p username must match the @c username column of an existing service
+ * account (i.e. the database user name such as "ores_local1_reporting_service").
+ * The @p password is the plaintext database password for that user.
+ */
+#+end_src
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** service_login_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+

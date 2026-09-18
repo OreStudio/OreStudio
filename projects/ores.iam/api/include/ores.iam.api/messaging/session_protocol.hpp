@@ -17,8 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_IAM_MESSAGING_SESSION_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_SESSION_PROTOCOL_HPP
+
 #include "ores.iam.api/domain/session.hpp"
 #include <chrono>
 #include <string>

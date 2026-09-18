@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ores.ts.protocol.enabled: nil
+:ID: 6C8974B6-3D65-4F75-959A-AFCD1C7826CF
+:END:
+#+title: ores.iam.session_messages
+#+description: Codegen operation model for the session protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: session
+#+namespace: ores::iam::messaging
+#+brief: session protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The session protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/session.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** list_sessions_request
+:PROPERTIES:
+:subject: iam.v1.sessions.list
+:response: list_sessions_response
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 50
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** list_sessions_response
+
+*** sessions
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::session>
+:END:
+
+*** total_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_active_sessions_request
+:PROPERTIES:
+:subject: iam.v1.sessions.active
+:response: get_active_sessions_response
+:END:
+
+** get_active_sessions_response
+
+*** sessions
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::session>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_session_statistics_request
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** start_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** end_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+** get_session_statistics_response
+
+*** statistics
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::session_statistics>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

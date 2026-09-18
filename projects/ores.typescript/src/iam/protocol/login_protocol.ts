@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,65 +19,55 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_LOGIN_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_LOGIN_PROTOCOL_HPP
+export interface PartySummary {
+    id: string;
+    name: string;
+    party_category: string;
+    business_center_code: string;
+}
 
-#include <string>
-#include <vector>
+export interface LoginRequest {
+    principal: string;
+    password: string;
+}
 
-namespace ores::iam::messaging {
-
-struct party_summary {
-    std::string id;
-    std::string name;
-    std::string party_category;
-    std::string business_center_code;
-};
-
-struct login_request {
-    using response_type = struct login_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.login";
-    std::string principal;
-    std::string password;
-};
-
-struct login_response {
-    bool success = false;
-    std::string account_id;
-    std::string tenant_id;
-    std::string tenant_name;
-    std::string username;
-    std::string email;
-    bool password_reset_required = false;
-    bool tenant_bootstrap_mode = false;
-    bool party_setup_required = false;
+export interface LoginResponse {
+    success: boolean;
+    account_id: string;
+    tenant_id: string;
+    tenant_name: string;
+    username: string;
+    email: string;
+    password_reset_required: boolean;
+    tenant_bootstrap_mode: boolean;
+    party_setup_required: boolean;
     /**
      * @brief Set when the party provisioner wizard has completed
      * (onboarding.party = true) but the party is still Inactive. The
      * client should show a message instead of re-launching the wizard.
      */
-    std::string party_setup_warning;
-    std::string token;
-    std::string error_message;
-    std::string message;
-    std::string selected_party_id;
-    std::vector<party_summary> available_parties;
+    party_setup_warning: string;
+    token: string;
+    error_message: string;
+    message: string;
+    selected_party_id: string;
+    available_parties: PartySummary[];
     /**
      * @brief The account's stored default party, if set and among
      * @c available_parties. Empty when unset. Only meaningful when
      * @c selected_party_id is empty (multi-party login, picker step).
      */
-    std::string default_party_id;
+    default_party_id: string;
     /**
      * @brief Token lifetime in seconds as configured on the server.
      *
      * Clients use this to arm the proactive refresh timer so that the
      * timer interval tracks any server-side configuration changes.
      */
-    int access_lifetime_s = 1800;
+    access_lifetime_s: number;
     /**
      * @brief The IAM session UUID created for this login.
      *
@@ -85,22 +75,19 @@ struct login_response {
      * forward this as Nats-Session-Id on every subsequent request so that
      * all calls from a single login session can be correlated in logs.
      */
-    std::string session_id;
-};
+    session_id: string;
+}
 
-struct logout_request {
-    using response_type = struct logout_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.logout";
-};
+export interface LogoutRequest {
+}
 
-struct logout_response {
-    bool success = false;
-    std::string message;
-};
+export interface LogoutResponse {
+    success: boolean;
+    message: string;
+}
 
-struct public_key_request {
-    static constexpr std::string_view nats_subject = "iam.v1.auth.public-key";
-};
+export interface PublicKeyRequest {
+}
 
 /**
  * @brief Request to refresh a JWT token.
@@ -108,25 +95,23 @@ struct public_key_request {
  * The current token is passed in the Authorization: Bearer header.
  * No request body is needed — identity is taken from the token claims.
  */
-struct refresh_request {
-    using response_type = struct refresh_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.refresh";
-};
+export interface RefreshRequest {
+}
 
 /**
  * @brief Response to a token refresh request.
  */
-struct refresh_response {
-    bool success = false;
-    std::string token;
-    std::string message;
+export interface RefreshResponse {
+    success: boolean;
+    token: string;
+    message: string;
     /**
      * @brief Token lifetime in seconds for the newly issued token.
      *
      * Clients re-arm the proactive refresh timer using this value.
      */
-    int access_lifetime_s = 1800;
-};
+    access_lifetime_s: number;
+}
 
 /**
  * @brief Authenticates a service account and issues a JWT.
@@ -141,20 +126,22 @@ struct refresh_response {
  * account (i.e. the database user name such as "ores_local1_reporting_service").
  * The @p password is the plaintext database password for that user.
  */
-struct service_login_request {
-    using response_type = struct service_login_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.service-login";
-    std::string username;
-    std::string password;
-};
-
-struct service_login_response {
-    bool success = false;
-    std::string token;
-    std::string message;
-    int access_lifetime_s = 1800;
-};
-
+export interface ServiceLoginRequest {
+    username: string;
+    password: string;
 }
 
-#endif
+export interface ServiceLoginResponse {
+    success: boolean;
+    token: string;
+    message: string;
+    access_lifetime_s: number;
+}
+
+export const subjects = {
+    login_request: "iam.v1.auth.login",
+    logout_request: "iam.v1.auth.logout",
+    public_key_request: "iam.v1.auth.public-key",
+    refresh_request: "iam.v1.auth.refresh",
+    service_login_request: "iam.v1.auth.service-login",
+} as const;

@@ -1,15 +1,15 @@
-"""Tests for the generated-file marker on C++ output.
+"""Tests for the generated-file marker on generated output.
 
 Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_generated_marker.py
 
 Generated SQL names its template in an AUTO-GENERATED block; generated
-C++ said nothing, so nothing told a reader that a file was codegen
-output. The marker is emitted at the render seam rather than by each
-template, so these tests pin the two properties that seam must hold:
-every C++ output carries the marker naming its own template, and no
-other output carries it.
+C++ and TypeScript said nothing, so nothing told a reader that a file
+was codegen output. The marker is emitted at the render seam rather
+than by each template, so these tests pin the two properties that seam
+must hold: every C++ or TypeScript output carries the marker naming its
+own template, and no other output carries it.
 
 The drift gate cannot catch a regression here. It proves regeneration
 is stable against the checked-in tree, which stays true if the marker
@@ -23,7 +23,8 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.core import (  # noqa: E402
     _emits_cpp,
-    cpp_generated_marker,
+    _emits_ts,
+    generated_marker,
     render_template,
 )
 
@@ -31,10 +32,10 @@ LICENCE = "/* licence */"
 MARKER = "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY"
 
 
-def _render(tmp_path, template_name, body="{{{cpp_license}}}\nbody\n"):
+def _render(tmp_path, template_name, licence_key="cpp_license"):
     template = tmp_path / template_name
-    template.write_text(body, encoding="utf-8")
-    return render_template(str(template), {"cpp_license": LICENCE})
+    template.write_text("{{{" + licence_key + "}}}\nbody\n", encoding="utf-8")
+    return render_template(str(template), {licence_key: LICENCE})
 
 
 def test_marker_names_the_template(tmp_path):
@@ -75,7 +76,27 @@ def test_emits_cpp_classifies_by_output_suffix():
 
 
 def test_marker_block_is_a_closed_c_comment():
-    block = cpp_generated_marker("cpp_enum.hpp.mustache")
+    block = generated_marker("cpp_enum.hpp.mustache")
     assert block.startswith("/**")
     assert block.endswith("*/")
     assert "*/" not in block[:-2]
+
+
+def test_typescript_output_is_marked(tmp_path):
+    out = _render(tmp_path, "ts_protocol.ts.mustache", "ts_license")
+    assert MARKER in out
+    assert "Template: ts_protocol.ts.mustache" in out
+    assert out.index(LICENCE) < out.index(MARKER) < out.index("body")
+
+
+def test_cpp_licence_does_not_mark_typescript(tmp_path):
+    """The two licences stay paired with the output kind they belong to."""
+    out = _render(tmp_path, "ts_protocol.ts.mustache")
+    assert MARKER not in out
+    assert LICENCE in out
+
+
+def test_emits_ts_classifies_by_output_suffix():
+    assert _emits_ts("ts_protocol.ts.mustache")
+    assert not _emits_ts("cpp_enum.hpp.mustache")
+    assert not _emits_ts("cpp_qt_detail_dialog.ui.mustache")

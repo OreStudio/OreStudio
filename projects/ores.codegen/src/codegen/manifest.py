@@ -89,6 +89,7 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.field_group",
     "ores.codegen.junction",
     "ores.codegen.lookup_entity",
+    "ores.codegen.operation",
     "ores.codegen.oresmd_quote_type",
     "ores.codegen.service_registry",
     "ores.codegen.component",

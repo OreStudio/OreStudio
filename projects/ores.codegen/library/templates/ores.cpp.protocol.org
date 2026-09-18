@@ -4,12 +4,12 @@
 #+title: ores.cpp.protocol
 #+description: Protocol (de)serialisation.
 #+type: facet
-#+model_types: domain_entity schema junction
+#+model_types: domain_entity schema junction operation
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:
 #+created: 2026-06-27
-#+updated: 2026-07-16
+#+updated: 2026-09-18
 
 This page is the node for the =ores.cpp.protocol= facet of the codegen
 template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype

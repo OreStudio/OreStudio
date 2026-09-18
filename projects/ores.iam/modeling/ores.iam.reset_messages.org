@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 37671A0B-2043-439C-B4FF-1C9805EBD1DB
+:END:
+#+title: ores.iam.reset_messages
+#+description: Codegen operation model for the reset protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: reset
+#+namespace: ores::iam::messaging
+#+brief: reset protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The reset protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** reset_tenant_command
+:PROPERTIES:
+:subject: iam.v1.system.reset-tenant
+:response: reset_tenant_result
+:END:
+
+#+begin_src cpp :name comment
+// Reset a single tenant to bootstrap state.
+// Soft-deletes admin-created data, flips Operational parties to Inactive,
+// and re-enables system.bootstrap_mode so both TenantProvisioningWizard
+// and PartyProvisioningWizard fire on next login.
+// Requires: iam::system:reset-tenant permission (SuperAdmin only).
+#+end_src
+
+*** tenant_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** reset_tenant_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** reset_system_command
+:PROPERTIES:
+:subject: iam.v1.system.reset
+:response: reset_system_result
+:END:
+
+#+begin_src cpp :name comment
+// Reset the entire system to pre-bootstrap state.
+// Purges all non-system tenants (hard delete), removes system admin accounts,
+// and re-enables system.bootstrap_mode so SystemProvisionerWizard fires on
+// next startup.
+// Requires: iam::system:reset permission (SuperAdmin only).
+#+end_src
+
+** reset_system_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

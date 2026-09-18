@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 2A21711B-E107-43FE-95A1-A05BFC4B52E1
+:END:
+#+title: ores.ts.protocol
+#+description: Wire payload interfaces and NATS subject constants.
+#+type: facet
+#+model_types: operation
+#+level: cross
+#+facet_group: ores.ts
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+This page is the node for the =ores.ts.protocol= facet of the codegen
+template library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+One template: a TypeScript module per protocol, holding one exported
+interface per message and one =subjects= constant naming the NATS
+subjects. Only =operation= models render here — an operation model *is*
+a protocol, and it carries the subjects and the message shapes.
+
+The facet is narrower than its C++ sibling on purpose. An operation
+whose fields reference a type with no TypeScript counterpart cannot
+render a complete interface, so it declares
+=:ores.ts.protocol.enabled: nil= in its own drawer and
+=org_loader.load_org_operation_model= refuses to load it otherwise. A
+field that vanishes from an interface is a run-time failure in a UI that
+reads it, and no later check would see it.
+
+* The ores.ts.protocol facet
+
+The UI-facing end of the messaging fabric. Sibling to
+[[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]], which renders the same messages as C++
+structs; the two templates read one model, so the wire shape is stated
+once.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:8864A622-4C03-480B-B48A-854C13844786][ores.ts.protocol.protocol_types]] | Wire payload interfaces and NATS subject constants for one protocol. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's facet catalogue and shared Mustache conventions.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

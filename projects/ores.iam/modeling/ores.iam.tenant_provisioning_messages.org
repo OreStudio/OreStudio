@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: E37DCAAC-30A3-4E7E-890D-EBD226538690
+:END:
+#+title: ores.iam.tenant_provisioning_messages
+#+description: Codegen operation model for the tenant_provisioning protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: tenant_provisioning
+#+namespace: ores::iam::messaging
+#+brief: tenant_provisioning protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The tenant_provisioning protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** complete_tenant_provisioning_command
+:PROPERTIES:
+:subject: iam.v1.tenants.complete-provisioning
+:response: complete_tenant_provisioning_response
+:END:
+
+** complete_tenant_provisioning_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** provision_acme_tenant_command
+:PROPERTIES:
+:subject: iam.v1.tenants.provision-acme
+:response: provision_acme_tenant_response
+:END:
+
+#+begin_src cpp :name comment
+// --- Acme one-click tenant provisioning (--source acme) ---
+//
+// A single server-side orchestrated request: imports the four-party Acme
+// Bank LEI hierarchy, publishes real GLEIF counterparties (small), then
+// for each operating company publishes its business units, portfolios,
+// books, accounts, and account contact informations. No repeated
+// per-party logins, no orchestration logic client-side -- driven by
+// internal actor impersonation through the real handler pipeline, see
+// ores.iam.core/messaging/tenant_provisioning_handler.hpp's provision_acme.
+#+end_src
+
+** provision_acme_tenant_step
+
+*** step
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** action
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** record_count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+** provision_acme_tenant_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** steps
+:PROPERTIES:
+:cpp_type: std::vector<provision_acme_tenant_step>
+:END:
+

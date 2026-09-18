@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 033C4C69-A8D2-45C4-B351-5A3059B02E04
+:END:
+#+title: Task: Add the ores.codegen.operation model type and port the IAM protocol headers
+#+description: Add the ores.codegen.operation model type to ores.codegen and port the eleven hand-written IAM protocol headers to org with zero byte differences.
+#+type: task
+#+level: s1
+#+filetags: :codegen_protocol_for_cpp_and_typescript:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-protocol-for-cpp-and-typescript
+#+pr: https://github.com/OreStudio/OreStudio/pull/2104
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 1 of the story. Teach ores.codegen to express protocol messages, then move the
+eleven hand-written IAM protocol headers onto that model.
+
+This task does not change C++. The generated headers must match the current bytes, apart
+from the auto-generated banner the generator adds.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | STARTED                                                      |
+| Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
+| Now          | Done. Committed as =5690abd04e= and open as PR #2104.       |
+| Waiting on   | CI and the merge.                                            |
+| Next         | Merge, then close this task.                                 |
+| Last touched | 2026-09-18                                                   |
+
+* Acceptance
+
+- =load_model= loads an =ores.codegen.operation= org and yields an operation model.
+- The =ores.cpp.protocol= facet admits the =operation= model type, so the generation set includes the new model.
+- All eleven IAM protocol headers generate from org and match the current bytes, apart from the auto-generated banner.
+- Regeneration over the IAM component produces zero diff.
+- The build passes and the existing tests pass.
+- CI passes and the site builds cleanly.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2104][#2104]] | Generate the IAM protocol from one model into C++ and TypeScript |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All eleven headers generate from org models. The full build passes, and
+=compass codegen regenerate --component iam --address ores.cpp.protocol=
+leaves all sixteen headers in the directory byte-identical.
+
+Three deviations from byte identity, all intended and recorded in the
+commit body: the generator's banner on every header; one blank line after
+the include guard in =session_protocol.hpp= and
+=session_samples_protocol.hpp=; and six end-of-line field comments in
+=bootstrap_protocol.hpp= rendered as leading blocks, which is the comment
+form the project requires.
+
+The codegen suite reports 222 passed and one failure,
+=test_a_colliding_earlier_column_does_not_hide_a_later_real_one=. That
+failure predates this work and is not related to it: it expects a
+=domain::asset_class= row that =projects/modeling/cpp_custom_types.org=
+does not hold.

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: AC8F2B43-AC9F-41CF-AC5B-B0F37CADC556
+:END:
+#+title: ores.iam.session_samples_messages
+#+description: Codegen operation model for the session_samples protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: session_samples
+#+namespace: ores::iam::messaging
+#+brief: session_samples protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The session_samples protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** session_sample_dto
+
+#+begin_src cpp :name comment
+/**
+ * @brief Time-series sample for session telemetry.
+ */
+#+end_src
+
+*** sample_time_ms
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** bytes_sent
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** bytes_received
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+** get_session_samples_request
+:PROPERTIES:
+:subject: iam.v1.sessions.samples
+:response: get_session_samples_response
+:END:
+
+*** session_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_session_samples_response
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<session_sample_dto>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

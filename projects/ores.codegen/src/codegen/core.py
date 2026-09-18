@@ -33,6 +33,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.service_registry": "service_registry",
     "ores.codegen.dataset":          "dataset",
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
+    "ores.codegen.operation":        "operation",
 }
 
 # The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
@@ -127,7 +128,7 @@ def _load_modelines_from_org(path):
             if cv:
                 result[current_name] = cv.group(1)
                 current_name = None  # reset after first content attribute
-    expected = {"sql", "c++", "cmake"}
+    expected = {"sql", "c++", "cmake", "typescript"}
     missing = expected - result.keys()
     if missing:
         raise ValueError(
@@ -215,6 +216,7 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
         'plantuml': {'prefix': "' ", 'suffix': '', 'start': "'", 'end': ''},
         'python': {'prefix': '# ', 'suffix': '', 'start': '"""', 'end': '"""'},
         'javascript': {'prefix': ' * ', 'suffix': '', 'start': '/**', 'end': ' */'},
+        'typescript': {'prefix': ' * ', 'suffix': '', 'start': '/**', 'end': ' */'},
     }
 
     # Get the format for the specified language
@@ -240,13 +242,13 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     return result
 
 
-def cpp_generated_marker(template_name):
+def generated_marker(template_name):
     """
-    Build the generated-file marker for a C++ output.
+    Build the generated-file marker for a source output.
 
     Mirrors the marker the SQL templates carry, so a reader of a
-    generated header or implementation can tell it is codegen output and
-    which template produced it.
+    generated header, implementation or TypeScript module can tell it is
+    codegen output and which template produced it.
 
     Args:
         template_name (str): Basename of the template being rendered
@@ -273,6 +275,17 @@ def _emits_cpp(template_name):
     return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
 
 
+def _emits_ts(template_name):
+    """
+    Whether a template produces a TypeScript module.
+
+    C++ and TypeScript share the marker's comment syntax, so the two
+    predicates stay separate only to keep each licence paired with the
+    output kind it belongs to.
+    """
+    return template_name.endswith('.ts.mustache')
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -292,11 +305,15 @@ def render_template(template_path, data):
     extended_data['generate_flag_svg'] = generate_flag_svg
 
     template_name = os.path.basename(template_path)
-    if 'cpp_license' in extended_data and _emits_cpp(template_name):
-        extended_data['cpp_license'] = (
-            f"{extended_data['cpp_license']}\n"
-            f"{cpp_generated_marker(template_name)}"
-        )
+    for licence_key, emits in (
+        ('cpp_license', _emits_cpp),
+        ('ts_license', _emits_ts),
+    ):
+        if licence_key in extended_data and emits(template_name):
+            extended_data[licence_key] = (
+                f"{extended_data[licence_key]}\n"
+                f"{generated_marker(template_name)}"
+            )
 
     return pystache.render(template_content, extended_data)
 
@@ -766,6 +783,16 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
+    elif model_type == 'operation' and 'operation' in model_data:
+        operation = model_data['operation']
+        path_vars = _component_path_vars(operation)
+        entity_singular = operation.get('entity_singular', 'unknown')
+
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{EntityPascal}', snake_to_pascal(entity_singular))
+
     elif model_type == 'enum' and 'enum' in model_data:
         enum = model_data['enum']
         component = enum.get('component', 'unknown')
@@ -1117,6 +1144,7 @@ def load_model(model_path):
             load_org_component_model,
             load_org_component_overview_model,
             load_org_dataset_model,
+            load_org_operation_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
@@ -1138,6 +1166,8 @@ def load_model(model_path):
             return load_org_component_model(model_path)
         if org_type == 'domain_entity':
             return load_org_model(model_path)
+        if org_type == 'operation':
+            return load_org_operation_model(model_path)
 
         # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):
@@ -1643,6 +1673,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_component = model_type == 'component'
     is_service_registry = model_type == 'service_registry'
     is_field_group = model_type == 'field_group'
+    is_operation = model_type == 'operation'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -1700,6 +1731,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Service registry model '{model_filename}' requires --address ores.shell.service")
+            return
+    elif is_operation:
+        # Protocol-operation models must be used via an address (no default templates)
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Operation model '{model_filename}' requires --address "
+                  "(ores.cpp.protocol for C++, ores.ts.protocol for TypeScript)")
             return
     elif is_schema_model:
         # Entity schema models use a different template set
@@ -1774,6 +1813,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             data['cmake_license'] = cmake_license
             data['cmake_modeline'] = cmake_modeline
+
+        # Get the TypeScript modeline and generate TypeScript license
+        ts_modeline = data['modelines'].get('typescript', '')
+        if ts_modeline:
+            ts_license = generate_license_with_header(
+                data['licence-GPL-v3'],
+                ts_modeline,
+                'typescript'
+            )
+            data['ts_license'] = ts_license
+            data['ts_modeline'] = ts_modeline
 
     # Add the model data to the template data
     # Use the model filename (without extension) as the key
@@ -4165,6 +4215,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if fg.get('fields'):
             fg['fields'][-1]['last'] = True
         data['field_group'] = fg
+
+    if is_operation and isinstance(model, dict) and 'operation' in model:
+        op = model['operation']
+        op['component_upper'] = op.get('component', 'unknown').upper()
+        if 'entity_singular' in op:
+            op['entity_singular_upper'] = op['entity_singular'].upper()
+        data['operation'] = op
 
     # Special processing for enum models
     if is_enum and isinstance(model, dict) and 'enum' in model:

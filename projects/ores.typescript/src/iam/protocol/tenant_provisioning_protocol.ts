@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,28 +19,16 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_TENANT_PROVISIONING_PROTOCOL_HPP
+export interface CompleteTenantProvisioningCommand {
+}
 
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::iam::messaging {
-
-struct complete_tenant_provisioning_command {
-    using response_type = struct complete_tenant_provisioning_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.complete-provisioning";
-};
-
-struct complete_tenant_provisioning_response {
-    bool success = false;
-    std::string message;
-};
+export interface CompleteTenantProvisioningResponse {
+    success: boolean;
+    message: string;
+}
 
 // --- Acme one-click tenant provisioning (--source acme) ---
 //
@@ -51,23 +39,22 @@ struct complete_tenant_provisioning_response {
 // per-party logins, no orchestration logic client-side -- driven by
 // internal actor impersonation through the real handler pipeline, see
 // ores.iam.core/messaging/tenant_provisioning_handler.hpp's provision_acme.
-struct provision_acme_tenant_command {
-    using response_type = struct provision_acme_tenant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";
-};
-
-struct provision_acme_tenant_step {
-    std::string step;
-    std::string action;
-    std::uint64_t record_count = 0;
-};
-
-struct provision_acme_tenant_response {
-    bool success = false;
-    std::string message;
-    std::vector<provision_acme_tenant_step> steps;
-};
-
+export interface ProvisionAcmeTenantCommand {
 }
 
-#endif
+export interface ProvisionAcmeTenantStep {
+    step: string;
+    action: string;
+    record_count: number;
+}
+
+export interface ProvisionAcmeTenantResponse {
+    success: boolean;
+    message: string;
+    steps: ProvisionAcmeTenantStep[];
+}
+
+export const subjects = {
+    complete_tenant_provisioning_command: "iam.v1.tenants.complete-provisioning",
+    provision_acme_tenant_command: "iam.v1.tenants.provision-acme",
+} as const;

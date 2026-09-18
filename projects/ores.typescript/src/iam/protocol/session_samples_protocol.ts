@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,35 +19,28 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
-
-#include "ores.iam.api/domain/account_version.hpp"
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::iam::messaging {
-
-struct account_version_history {
-    std::vector<ores::iam::domain::account_version> versions;
-};
-
-struct get_account_history_request {
-    using response_type = struct get_account_history_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.history";
-    std::string username;
-};
-
-struct get_account_history_response {
-    bool success = false;
-    std::string message;
-    account_version_history history;
-};
-
+/**
+ * @brief Time-series sample for session telemetry.
+ */
+export interface SessionSampleDto {
+    sample_time_ms: number;
+    bytes_sent: number;
+    bytes_received: number;
 }
 
-#endif
+export interface GetSessionSamplesRequest {
+    session_id: string;
+}
+
+export interface GetSessionSamplesResponse {
+    samples: SessionSampleDto[];
+    success: boolean;
+    message: string;
+}
+
+export const subjects = {
+    get_session_samples_request: "iam.v1.sessions.samples",
+} as const;

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 1E93BE86-58BF-40FB-BB93-132D639BDC87
+:END:
+#+title: ores.ts
+#+description: The TypeScript technical space: the wire payloads the ores.qt UI consumes, projected from the same org models that drive the C++ headers.
+#+type: technical_space
+#+level: cross
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+This page is the node for the =ores.ts= technical space in the codegen
+physical-space address graph. Its title is its MASD address; it gathers the
+facets generated for this technical space. Each facet is its own document,
+linked from the table below. Codegen traverses this graph (root → technical
+space → facet → archetype) to resolve which archetypes an entity generates.
+
+* Summary
+
+The TypeScript projection. The ores.qt UI moves to TypeScript, so it needs
+the same message shapes the C++ services speak, without hand-copying them.
+Every facet here renders from the org models that already drive the C++
+facets, so the two projections cannot drift.
+
+* Shared conventions
+
+- ={{{ts_license}}}= triple-stache injects the licence header and the
+  generated-file marker.
+- Field names stay =snake_case=. They are the JSON keys rfl::json writes
+  from the C++ member names, so the TypeScript field name and the key on
+  the wire are one string.
+- Type names take PascalCase (=login_request= → =LoginRequest=), because
+  a type name is internal to TypeScript and never crosses the wire.
+
+* Facets
+
+Facets in this technical space — each links to its own node doc. Generated;
+do not edit by hand.
+
+| Facet | Archetypes | Description |
+|-------+------------+-------------|
+| [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] | 1 | Wire payload interfaces and NATS subject constants. |
+
+* See also
+
+- Parent: the =ores= physical-space root.
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the C++ projection of the same models.

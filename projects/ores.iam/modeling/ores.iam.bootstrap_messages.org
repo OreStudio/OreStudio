@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 4B98E2D0-8FE3-4321-8CFD-90A4C13422EA
+:END:
+#+title: ores.iam.bootstrap_messages
+#+description: Codegen operation model for the bootstrap protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: bootstrap
+#+namespace: ores::iam::messaging
+#+brief: bootstrap protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The bootstrap protocol messages.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** bootstrap_status_request
+:PROPERTIES:
+:subject: iam.v1.bootstrap.status
+:response: bootstrap_status_response
+:END:
+
+** bootstrap_status_response
+
+*** is_in_bootstrap_mode
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** create_initial_admin_request
+:PROPERTIES:
+:subject: iam.v1.bootstrap.create-admin
+:response: create_initial_admin_response
+:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** create_initial_admin_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** provision_tenant_request
+:PROPERTIES:
+:subject: iam.v1.bootstrap.provision-tenant
+:response: provision_tenant_response
+:END:
+
+*** type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * tenant type (e.g., "corporate")
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * unique tenant code
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * display name
+ */
+#+end_src
+
+*** hostname
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * unique hostname
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * optional description
+ */
+#+end_src
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/*
+ * username for the admin account
+ */
+#+end_src
+
+*** password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** provision_tenant_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+

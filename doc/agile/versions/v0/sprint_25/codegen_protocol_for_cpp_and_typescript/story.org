@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: FA160AE1-CB9A-410F-A8B0-31FBF2247962
+:END:
+#+title: Story: Generate protocol messages from one model into C++ and TypeScript
+#+description: Add an ores.codegen.operation model type so the hand-written IAM protocol headers generate from org with zero byte differences, then add a TypeScript target space so the TypeScript UI consumes the same model.
+#+type: story
+#+level: s2
+#+filetags: :codegen:protocol:typescript:iam:sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The IAM component hand-writes eleven protocol headers. Each header declares request and response structs, a NATS subject, and a response alias. ores.codegen cannot express these messages today, because the entity model covers CRUD shapes only.
+
+This story adds an ores.codegen.operation model type. One org file holds every message of one protocol header. The C++ template renders that org into the same bytes the hand-written header holds today.
+
+The story then adds a TypeScript target space. The same org renders TypeScript interfaces. The ores.qt UI is moving to TypeScript, and it needs every message.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Both phases are built, verified and committed; the PR is open. |
+| Waiting on    | CI and the merge.                      |
+| Next          | Merge, then remove ores.qt and ores.wt and their codegen facets. The coverage gap below then resumes. |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+- An ores.codegen.operation org loads and renders through the codegen CLI.
+- The ores.cpp.protocol facet admits the operation model type.
+- All eleven hand-written IAM protocol headers generate from org with zero byte differences, apart from the auto-generated banner.
+- A TypeScript target space generates the login protocol types.
+- The generated TypeScript compiles under tsc --strict.
+- CI passes and the site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:314A293B-452A-4BB6-B7FA-88B0DD8E0AE2][Scaffold story: Generate protocol messages from one model into C++ and TypeScript]] | STARTED | 2026-09-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:033C4C69-A8D2-45C4-B351-5A3059B02E04][Add the ores.codegen.operation model type and port the IAM protocol headers]] | STARTED | 2026-09-18 | | Phase 1: add the operation model type to ores.codegen and port the eleven hand-written IAM protocol headers to org with zero byte differences. |
+| [[id:C3490D64-F68E-4E46-A325-F8163F3073EE][Task: Generate the protocol as TypeScript for the UI]] | STARTED | 2026-09-18 | | Phase 2: add the TypeScript target space and generate the IAM protocol messages as TypeScript modules. |
+
+* Decisions
+
+- *The generated headers gain the AUTO-GENERATED banner.* =render_template= stamps that
+  banner into every =*.hpp.mustache= output that carries =cpp_license=. Suppressing it for
+  these eleven headers needs a special case in =_emits_cpp=, which costs more than the
+  five banner lines it removes.
+- *The org names the response on the request node.* Pairing is many-to-one:
+  =switch_party_request= reuses =select_party_response=. A nested =*** request= /
+  =*** response= shape cannot express that, so the request node carries a =:response:= key
+  and plain structs stay flat siblings.
+- *TypeScript field names stay snake_case.* The C++ member names are the rfl::json keys.
+  The wire format therefore fixes the TypeScript property names, and a camelCase rename in
+  the generated interfaces would break decoding.
+- *The operation model type sits beside the existing model types.* =load_model= already
+  dispatches on =#+type:=, so the new type needs one map entry and one loader function.
+- *A comment block documents the heading it sits under.* The block goes below that
+  heading's =:PROPERTIES:= drawer. =parse_org= binds a src block to the node that was
+  current when the block opened, so a block placed above a heading documents the
+  *previous* heading instead.
+- *=:cpp_type:= is the model's type key, and TypeScript will map from it.* The entity
+  model already carries one type key per language (=(:type:=) for SQL, =:cpp_type:= for
+  C++). The operation model follows that convention. The TypeScript archetype derives its
+  spelling from =:cpp_type:= through a fixed mapping rather than taking a second key, so
+  the two spellings cannot drift apart.
+- *A field's =comment= key is always present, empty when the field has no comment.*
+  Mustache resolves a name it cannot find by walking up the context stack, so an absent
+  =comment= would inherit the enclosing message's comment.
+- *Two headers gain a blank line after the include guard.* The generator emits that blank
+  line uniformly; nine of the eleven originals already had it. =session_protocol.hpp= and
+  =session_samples_protocol.hpp= did not.
+- *Six trailing comments in =bootstrap_protocol.hpp= become leading blocks.* The comment
+  rules for this repository forbid end-of-line comments, so the generated form promotes
+  each one. The promotion keeps every word; only the position changes.
+- *No =compass add operation= scaffold type yet.* The other model types have one
+  (=entity_org=, =field_group=, =junction=, =lookup_entity=, =service_registry=,
+  =dataset_overview=). Adding one before the operation model settles would freeze a
+  scaffold shape that the TypeScript work may still change.
+- *The TypeScript space is =ores.ts=, and its one facet is =ores.ts.protocol=.* The facet
+  admits =operation= models alone: an operation model *is* a protocol, carrying both the
+  message shapes and the NATS subjects. No facet here is driven by a =domain_entity= yet.
+- *A =:cpp_type:= with no TypeScript projection stops the model loading.* The TypeScript
+  archetype derives its spelling from =:cpp_type:= through a fixed table, and
+  =_reject_silent_ts_gap= refuses a model that has an unmapped type without declaring
+  =:ores.ts.protocol.enabled: nil=. Without that gate the field would simply vanish from
+  the interface, which is a run-time failure in the UI that no later check would see.
+- *The five protocols that reference =ores::iam::domain::= types declare that gate.*
+  =account=, =account_history=, =account_party=, =authorization= and =session= name ten
+  domain types that have no TypeScript counterpart yet. They generate C++ and no
+  TypeScript. Projecting the domain types is the next task.
+- *The generated interfaces carry no request-to-response pairing.* The model keeps
+  =:response:= because the C++ struct needs =response_type= for generic dispatch. A UI
+  that wants the pairing can name the response beside the request, so the TypeScript
+  template emits the interfaces and the =subjects= constant alone.
+- *The generated-file marker is one function for both languages.*
+  =cpp_generated_marker= became =generated_marker=, and =_emits_ts= joins =_emits_cpp= at
+  the render seam. C++ and TypeScript share the marker's comment syntax, so the two
+  predicates exist only to keep each licence paired with its own output kind.
+- *=projects/ores.typescript= carries no CMakeLists.txt.* =projects/CMakeLists.txt= lists
+  its subdirectories explicitly, so a project with no C++ build is invisible to the
+  build tree until something adds it on purpose.
+
+* Coverage gap
+
+IAM carries 138 protocol messages across seven message families. Thirty reach
+TypeScript when this story merges. The remaining 108 fall into two groups, and
+the two need different work.
+
+*Entity-driven messages (42).* =tenant=, =tenant_type=, =account_type=,
+=tenant_status= and =account_contact_information= are driven by entity org
+models that already exist, and C++ generates their protocol headers today.
+TypeScript does not, because =ores.ts.protocol= admits =operation= models only
+and its template has no entity branch. Closing this group needs an
+=ores.ts.domain= facet, mirroring =ores.cpp.domain=, plus an entity branch in
+the TypeScript protocol template. Nothing new needs modelling.
+
+*Domain-referencing messages (66).* =account=, =authorization=, =account_party=,
+=session= and =account_history= reference eight =ores::iam::domain::= types.
+Seven of the eight are hand-written C++ with no org model: =account=, =role=,
+=permission=, =session=, =login_info=, =account_version= and
+=session_statistics=. Together they are 917 lines across six headers. Codegen
+has nothing to project, so closing this group means porting those types to org
+models first, the same job this story did for the eleven protocol headers.
+
+* Out of scope
+
+- The other hand-written protocol headers in the repository. This story covers IAM alone.
+- The two groups above, deferred to their own task.
+- C++ behaviour changes. The port holds the bytes steady, apart from the banner.
+- Qt UI code. The story generates the TypeScript the UI consumes; the UI migration is
+  separate work.
+- The HTTP and shell transport shapes.

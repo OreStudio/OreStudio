@@ -252,7 +252,7 @@ std::nullopt
 | modified_by              | Modified By |
 | version                  | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         ois_conventions
 :item_var:                oc
@@ -295,7 +295,7 @@ std::nullopt
 | rate_cutoff              | Rate Cutoff              | rateCutoffEdit             | spin_box  |        |             |                        |
 | end_of_month             | End Of Month             | endOfMonthEdit             | check_box |        |             |                        |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name             | field                    | header      | type      | width |
 |-----------------------+--------------------------+-------------+-----------+-------|

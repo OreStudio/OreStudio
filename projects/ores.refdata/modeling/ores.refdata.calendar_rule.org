@@ -290,7 +290,7 @@ std::nullopt
 :iterator_var: rule
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/calendar_rule.hpp
 :domain_class:                refdata::domain::calendar_rule
@@ -335,7 +335,7 @@ std::nullopt
 | effective_from  | Eff. From     | effectiveFromSpin  | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
 | effective_to    | Eff. To       | effectiveToSpin    | spin_box  |        |             |           |                             |                        |                             |                    |                                    |                       |                    |                      |                   |          |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field          | header      | type   | width | hidden_by_default |
 |----------------+----------------+-------------+--------+-------+--------------------|

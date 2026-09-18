@@ -162,7 +162,7 @@ drop function if exists ores_trading_validate_trade_type_fn;
 | modified_by | Modified By   |
 | version     | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.trading.api/domain/trade_type.hpp
 :domain_class:           trading::domain::trade_type
@@ -196,7 +196,7 @@ drop function if exists ores_trading_validate_trade_type_fn;
 | has_options   | Has Options    | hasOptionsCheckBox   | check_box |        |             |                         |
 | has_extension | Has Extension  | hasExtensionCheckBox | check_box |        |             |                         |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field          | header         | type      | width |
 |--------------+----------------+----------------+-----------+-------|

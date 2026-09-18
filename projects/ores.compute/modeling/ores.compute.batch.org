@@ -98,7 +98,7 @@ Lifecycle status: open, processing, assimilating, or closed.
 | modified_by  | Modified By  |
 | recorded_at  | Recorded At  |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/batch.hpp
 :domain_class:            compute::domain::batch
@@ -125,7 +125,7 @@ Lifecycle status: open, processing, assimilating, or closed.
 :changed_event_include:   ores.compute.api/eventing/batch_changed_event.hpp
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field        | header      | type   | width |
 |-------------+--------------+-------------+--------+-------|

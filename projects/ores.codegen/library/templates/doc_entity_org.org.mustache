@@ -131,8 +131,8 @@ TODO -- one row per column needing an insert-time validation function.
 | Column | Header |
 |--------+--------|
 
-{{#has_qt}}
-** Qt
+{{#has_presentation}}
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.{{component}}.api/domain/{{slug}}.hpp
 :domain_class:            {{component}}::domain::{{slug}}
@@ -153,25 +153,25 @@ TODO -- one row per column needing an insert-time validation function.
 :history_request_class:   {{component}}::messaging::get_{{slug}}_history_request
 :history_response_class:  {{component}}::messaging::get_{{slug}}_history_response
 :history_message_type:    get_{{slug}}_history_request
-{{#qt_has_uuid_primary_key}}
+{{#presentation_has_uuid_primary_key}}
 :has_uuid_primary_key:    true
-{{/qt_has_uuid_primary_key}}
-{{^qt_has_uuid_primary_key}}
+{{/presentation_has_uuid_primary_key}}
+{{^presentation_has_uuid_primary_key}}
 :has_uuid_primary_key:    false
-{{/qt_has_uuid_primary_key}}
-{{#qt_has_change_reason_cache}}
+{{/presentation_has_uuid_primary_key}}
+{{#presentation_has_change_reason_cache}}
 :has_change_reason_cache: true
-{{/qt_has_change_reason_cache}}
-{{^qt_has_change_reason_cache}}
+{{/presentation_has_change_reason_cache}}
+{{^presentation_has_change_reason_cache}}
 :has_change_reason_cache: false
-{{/qt_has_change_reason_cache}}
-{{#qt_has_explorer_api}}
+{{/presentation_has_change_reason_cache}}
+{{#presentation_has_explorer_api}}
 :has_explorer_api:        true
-{{/qt_has_explorer_api}}
-{{#qt_has_pagination}}
+{{/presentation_has_explorer_api}}
+{{#presentation_has_pagination}}
 :has_pagination:          true
-{{/qt_has_pagination}}
-{{#qt_has_csv_xml_io}}
+{{/presentation_has_pagination}}
+{{#presentation_has_csv_xml_io}}
 :has_csv_xml_io:          true
 :csv_export_class:        TODO
 :csv_export_include:      TODO
@@ -179,16 +179,16 @@ TODO -- one row per column needing an insert-time validation function.
 :xml_export_include:      TODO
 :xml_import_class:        TODO
 :xml_import_include:      TODO
-{{/qt_has_csv_xml_io}}
-{{#qt_has_export_macro}}
+{{/presentation_has_csv_xml_io}}
+{{#presentation_has_export_macro}}
 :has_export_macro:        true
-{{/qt_has_export_macro}}
-{{#qt_has_version_navigation}}
+{{/presentation_has_export_macro}}
+{{#presentation_has_version_navigation}}
 :has_version_navigation:  true
-{{/qt_has_version_navigation}}
-{{#qt_has_parent_scoping}}
+{{/presentation_has_version_navigation}}
+{{#presentation_has_parent_scoping}}
 :parent_entity_singular:  TODO -- singular name of the parent entity this one is listed under.
-{{/qt_has_parent_scoping}}
+{{/presentation_has_parent_scoping}}
 :settings_group:          {{entity_title}}ListWindow
 :window_title:            {{entity_title}}
 :icon:                    {{entity_title}}
@@ -199,12 +199,12 @@ TODO -- one row per column needing an insert-time validation function.
 | field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_allow_blank | combo_fetch | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | badge_key |
 |-------+-------+--------+------+--------+-------------+-------------+-------------+--------------------+-------------+--------------------+----------------------+-----------------+---------------------+-------------------+----------------------+-------------------+-------------+----------------------+-----------|
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name | field | header | type | width | is_badge | badge_key | formatter | formatter_include |
 |-----------+-------+--------+------+-------+----------+-----------+-----------+--------------------|
 
-{{/has_qt}}
+{{/has_presentation}}
 ** Paste blocks
 
 TODO -- one =***= sub-heading per custom repository method. See

@@ -151,7 +151,7 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/monetary_nature.hpp
 :domain_class:           refdata::domain::monetary_nature
@@ -179,7 +179,7 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 :icon:                   Classification
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width | is_badge | badge_key       |
 |--------------+---------------+-------------+-----------+-------+----------+-----------------|

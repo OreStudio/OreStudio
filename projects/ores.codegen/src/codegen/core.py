@@ -669,14 +669,6 @@ def _component_path_vars(entity):
         dict: placeholder name -> resolved value.
     """
     component = entity.get('component', 'unknown')
-    # qt_component: override for entities whose Qt UI lives in a
-    # different ores.qt.* project than the entity's own component (e.g.
-    # a variability system_setting entity whose UI is grouped into
-    # ores.qt.iam alongside accounts/roles/tenants rather than getting
-    # its own ores.qt.variability project). Defaults to component so
-    # every entity that doesn't set this keeps generating into
-    # ores.qt.{component} as before.
-    qt_component = entity.get('qt_component', component)
     subcomponent = entity.get('subcomponent', '')
     if subcomponent:
         component_include = f"{component}.{subcomponent}"
@@ -713,7 +705,6 @@ def _component_path_vars(entity):
 
     return {
         'component': component,
-        'qt_component': qt_component,
         'component_dir': component_dir,
         'component_core_dir': component_core_dir,
         'component_service_dir': component_service_dir,
@@ -969,30 +960,6 @@ def get_junction_template_mappings():
     """
     return [
         ("sql_schema_junction_create.mustache", "_create.sql"),
-    ]
-
-
-def get_qt_domain_entity_template_mappings():
-    """
-    Define the mapping for Qt domain entity templates.
-
-    Returns:
-        list: List of tuples (template_name, output_dir, output_suffix) for Qt generation
-    """
-    return [
-        # Client model facet
-        ("cpp_qt_client_model.hpp.mustache", "include/ores.qt", "Model.hpp"),
-        ("cpp_qt_client_model.cpp.mustache", "src", "Model.cpp"),
-        # MDI window facet
-        ("cpp_qt_mdi_window.hpp.mustache", "include/ores.qt", "MdiWindow.hpp"),
-        ("cpp_qt_mdi_window.cpp.mustache", "src", "MdiWindow.cpp"),
-        # Detail dialog facet
-        ("cpp_qt_detail_dialog.hpp.mustache", "include/ores.qt", "DetailDialog.hpp"),
-        ("cpp_qt_detail_dialog.cpp.mustache", "src", "DetailDialog.cpp"),
-        ("qt_detail_dialog_ui.mustache", "ui", "DetailDialog.ui"),
-        # Controller facet
-        ("cpp_qt_controller.hpp.mustache", "include/ores.qt", "Controller.hpp"),
-        ("cpp_qt_controller.cpp.mustache", "src", "Controller.cpp"),
     ]
 
 
@@ -1432,7 +1399,7 @@ def validate_rls_isolation(domain_entity):
 
 def validate_explorer_interface(domain_entity):
     """
-    Validate the qt.explorer_interface knob: the name of an abstract
+    Validate the presentation.explorer_interface knob: the name of an abstract
     interface a generated Controller additionally implements, for a
     cross-component explorer window that needs to drive openEdit/
     openHistory without linking against this entity's concrete Controller
@@ -1443,17 +1410,21 @@ def validate_explorer_interface(domain_entity):
     abstract class, far from the actual misconfiguration.
 
     Args:
-        domain_entity (dict): not mutated; qt.explorer_interface has no
-            default (its absence simply means no extra interface applies).
+        domain_entity (dict): not mutated; presentation.explorer_interface
+            has no default (its absence simply means no extra interface
+            applies).
 
     Raises:
-        ValueError: if qt.explorer_interface is set without qt.has_explorer_api.
+        ValueError: if presentation.explorer_interface is set without
+            presentation.has_explorer_api.
     """
-    qt = domain_entity.get('qt', {})
-    if qt.get('explorer_interface') and not qt.get('has_explorer_api'):
+    presentation = domain_entity.get('presentation', {})
+    if (presentation.get('explorer_interface')
+            and not presentation.get('has_explorer_api')):
         raise ValueError(
             f"{domain_entity.get('entity_singular', '?')}: "
-            f"qt.explorer_interface requires qt.has_explorer_api")
+            f"presentation.explorer_interface requires "
+            f"presentation.has_explorer_api")
 
 
 def has_as_of_combo_fields(detail_fields):
@@ -1466,7 +1437,8 @@ def has_as_of_combo_fields(detail_fields):
     As-of lookup resolution codegen facet story.
 
     Args:
-        detail_fields (list[dict]): the qt.detail_fields list; not mutated.
+        detail_fields (list[dict]): the presentation.detail_fields list; not
+            mutated.
 
     Returns:
         bool: gates the datetime.hpp include and the
@@ -1479,7 +1451,7 @@ def has_as_of_combo_fields(detail_fields):
     )
 def validate_parent_scoped_list(domain_entity):
     """
-    Validate the qt.has_parent_scoped_list knob: scopes a
+    Validate the presentation.has_parent_scoped_list knob: scopes a
     has_readonly_paginated_list list window's get-request to an owning
     parent key (e.g. calendar_dates scoped by calendar_code). Requires
     both companion fields, since the parent key belongs to a different
@@ -1489,20 +1461,23 @@ def validate_parent_scoped_list(domain_entity):
 
     Args:
         domain_entity (dict): not mutated; has_parent_scoped_list has no
-            default of its own here (qt['has_parent_scoped_list'] is
-            defaulted separately, after this validation runs).
+            default of its own here
+            (presentation['has_parent_scoped_list'] is defaulted separately,
+            after this validation runs).
 
     Raises:
-        ValueError: if qt.has_parent_scoped_list is set without both
-            qt.parent_key_field and qt.parent_key_param.
+        ValueError: if presentation.has_parent_scoped_list is set without
+            both presentation.parent_key_field and
+            presentation.parent_key_param.
     """
-    qt = domain_entity.get('qt', {})
-    if qt.get('has_parent_scoped_list') and not (
-            qt.get('parent_key_field') and qt.get('parent_key_param')):
+    presentation = domain_entity.get('presentation', {})
+    if presentation.get('has_parent_scoped_list') and not (
+            presentation.get('parent_key_field')
+            and presentation.get('parent_key_param')):
         raise ValueError(
             f"{domain_entity.get('entity_singular', '?')}: "
-            f"qt.has_parent_scoped_list requires both "
-            f"qt.parent_key_field and qt.parent_key_param")
+            f"presentation.has_parent_scoped_list requires both "
+            f"presentation.parent_key_field and presentation.parent_key_param")
 
 
 def _projects_dir_from(model_path: Path) -> Path:
@@ -1815,28 +1790,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_operation = model_type == 'operation'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
-    generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
-    # Check for Qt generation flag (qt_ or cpp_qt_ prefix in target_template)
-    generate_qt = target_template and (target_template.startswith('qt_') or target_template.startswith('cpp_qt_'))
-
-    # A junction or domain_entity is only ever eligible for ores.cpp.qt
-    # generation via its own ** Qt drawer -- the facet's #+model_types:
-    # admits every junction/domain_entity at the routing layer
-    # (physical_space.py has no visibility into a model's body, only its
-    # frontmatter), so a model with no Qt drawer must fail fast here
-    # rather than silently emit a qt-less render (empty class names,
-    # mangled macro guards, blank #include "" -- both model kinds have
-    # exhibited this before their Qt drawer became mandatory).
-    if is_junction and generate_qt and not model.get('junction', {}).get('qt'):
-        print(f"{model_filename}: junction has no ** Qt drawer -- "
-              f"{target_template} needs one (see ores.refdata.calendar_date.org "
-              f"for a worked example)")
-        return 1
-    if is_domain_entity and generate_qt and not model.get('domain_entity', {}).get('qt'):
-        print(f"{model_filename}: domain_entity has no ** Qt drawer -- "
-              f"{target_template} needs one (see ores.refdata.calendar.org "
-              f"for a worked example)")
-        return 1
+    generate_cpp = target_template and target_template.startswith('cpp_')
 
     # Determine which templates to process
     if target_template:
@@ -3558,9 +3512,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['notify_id_array'] = ', '.join(
                 f"changed_{c['column']}" for c in pk_columns
             )
-        # Process Qt-specific fields
-        if 'qt' in domain_entity:
-            qt = domain_entity['qt']
+        # Process the presentation drawer
+        if 'presentation' in domain_entity:
+            presentation = domain_entity['presentation']
             # Auto-derive include paths and domain class from the domain entity
             # so models don't need to spell them out. Models may still override
             # by setting these fields explicitly.
@@ -3571,37 +3525,37 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'{component}.{_subcomponent}' if _subcomponent else component)
             component_include = domain_entity.get(
                 'component_include', _derived_component_include)
-            if 'domain_include' not in qt and entity_singular and component_include:
-                qt['domain_include'] = (
+            if 'domain_include' not in presentation and entity_singular and component_include:
+                presentation['domain_include'] = (
                     f'ores.{component_include}/domain/{entity_singular}.hpp')
-            if 'protocol_include' not in qt and entity_singular and component_include:
-                qt['protocol_include'] = (
+            if 'protocol_include' not in presentation and entity_singular and component_include:
+                presentation['protocol_include'] = (
                     f'ores.{component_include}/messaging/{entity_singular}_protocol.hpp')
-            if 'domain_class' not in qt and entity_singular and component:
-                qt['domain_class'] = f'{component}::domain::{entity_singular}'
-            if 'changed_event_class' not in qt and entity_singular and component:
-                qt['changed_event_class'] = (
+            if 'domain_class' not in presentation and entity_singular and component:
+                presentation['domain_class'] = f'{component}::domain::{entity_singular}'
+            if 'changed_event_class' not in presentation and entity_singular and component:
+                presentation['changed_event_class'] = (
                     f'{component}::eventing::{entity_singular}_changed_event')
-            if 'changed_event_include' not in qt and entity_singular and component_include:
-                qt['changed_event_include'] = (
+            if 'changed_event_include' not in presentation and entity_singular and component_include:
+                presentation['changed_event_include'] = (
                     f'ores.{component_include}/eventing/{entity_singular}_changed_event.hpp')
             # Cross-plugin export macro: opt-in via has_export_macro, for entities
-            # whose generated Qt classes are constructed from another qt/* plugin's
+            # whose generated Qt classes are constructed from another presentation/* plugin's
             # shared library (built with -fvisibility=hidden) and therefore need a
             # dllexport-style annotation to resolve at load time.
-            if qt.get('has_export_macro') and component:
-                if 'export_macro' not in qt:
-                    qt['export_macro'] = f'ORES_QT_{component.upper()}_EXPORT'
-                if 'export_header' not in qt:
-                    qt['export_header'] = f'{component.capitalize()}Export.hpp'
+            if presentation.get('has_export_macro') and component:
+                if 'export_macro' not in presentation:
+                    presentation['export_macro'] = f'ORES_QT_{component.upper()}_EXPORT'
+                if 'export_header' not in presentation:
+                    presentation['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
-            qt.setdefault('qt_settings_version', 1)
-            if 'columns' in qt:
-                _mark_last_item(qt['columns'])
+            presentation.setdefault('qt_settings_version', 1)
+            if 'columns' in presentation:
+                _mark_last_item(presentation['columns'])
                 # Compute has_description_column flag
-                qt['has_description_column'] = any(
+                presentation['has_description_column'] = any(
                     c.get('enum_name') == 'Description'
-                    for c in qt['columns']
+                    for c in presentation['columns']
                 )
                 # Columns hidden from the list view by default: any column
                 # explicitly marked hidden_by_default in the org model, plus
@@ -3610,7 +3564,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # exception).
                 seen_enum_names = set()
                 hidden_columns = []
-                for c in qt['columns']:
+                for c in presentation['columns']:
                     if c.get('enum_name') in seen_enum_names:
                         continue
                     if c.get('hidden_by_default') or c.get('enum_name') == 'Description':
@@ -3618,8 +3572,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         seen_enum_names.add(c.get('enum_name'))
                 if hidden_columns:
                     _mark_last_item(hidden_columns)
-                qt['hidden_columns'] = hidden_columns
-                # Cross-reference qt columns with domain columns to flag optionals:
+                presentation['hidden_columns'] = hidden_columns
+                # Cross-reference presentation columns with domain columns to flag optionals:
                 # when the underlying domain column is std::optional<std::string>, the
                 # Qt model needs to unwrap before QString::fromStdString.
                 domain_col_types = {
@@ -3639,54 +3593,54 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # narrow BaseCurrency/QuoteCurrency next to its wide
                 # composited PairCode column).
                 icon_column_names = {
-                    ic.get('column') for ic in qt.get('icon_columns', [])
+                    ic.get('column') for ic in presentation.get('icon_columns', [])
                 }
-                if qt.get('flag_icon_column'):
-                    icon_column_names.add(qt['flag_icon_column'])
-                for idx, qt_col in enumerate(qt['columns']):
-                    field = qt_col.get('field')
+                if presentation.get('flag_icon_column'):
+                    icon_column_names.add(presentation['flag_icon_column'])
+                for idx, column in enumerate(presentation['columns']):
+                    field = column.get('field')
                     cpp_type = domain_col_types.get(field, '')
-                    if qt_col.get('is_string') and cpp_type.startswith('std::optional<'):
-                        qt_col['is_optional_string'] = True
-                        qt_col['is_string'] = False
-                    if qt_col.get('is_int') and cpp_type.startswith('std::optional<'):
-                        qt_col['is_optional_int'] = True
-                        qt_col['is_int'] = False
-                    if qt_col.get('is_double') and cpp_type.startswith('std::optional<'):
-                        qt_col['is_optional_double'] = True
-                        qt_col['is_double'] = False
+                    if column.get('is_string') and cpp_type.startswith('std::optional<'):
+                        column['is_optional_string'] = True
+                        column['is_string'] = False
+                    if column.get('is_int') and cpp_type.startswith('std::optional<'):
+                        column['is_optional_int'] = True
+                        column['is_int'] = False
+                    if column.get('is_double') and cpp_type.startswith('std::optional<'):
+                        column['is_optional_double'] = True
+                        column['is_double'] = False
                     # Auto-assign column index for badge resolver calls
-                    qt_col.setdefault('column_index', idx)
+                    column.setdefault('column_index', idx)
                     # Default column_style when not specified. self_colour
                     # (e.g. badge_definition's own background_colour/
                     # text_colour columns) shares badge_centered's pill
                     # rendering but not is_badge's BadgeCache-lookup
                     # resolver — see has_self_colour_columns below.
-                    if 'column_style' not in qt_col:
-                        if qt_col.get('is_badge') or qt_col.get('self_colour'):
-                            qt_col['column_style'] = 'cs::badge_centered'
-                        elif qt_col.get('enum_name') in icon_column_names:
-                            qt_col['column_style'] = 'cs::icon_text_left'
-                        elif qt_col.get('is_int') or qt_col.get('is_optional_int'):
-                            qt_col['column_style'] = 'cs::mono_center'
+                    if 'column_style' not in column:
+                        if column.get('is_badge') or column.get('self_colour'):
+                            column['column_style'] = 'cs::badge_centered'
+                        elif column.get('enum_name') in icon_column_names:
+                            column['column_style'] = 'cs::icon_text_left'
+                        elif column.get('is_int') or column.get('is_optional_int'):
+                            column['column_style'] = 'cs::mono_center'
                         else:
-                            qt_col['column_style'] = 'cs::text_left'
+                            column['column_style'] = 'cs::text_left'
                 # Compute has_badge_columns flag — also true when a detail
                 # field's static_combo uses the badge system (needs the same
                 # BadgeCache threaded to the controller even with no badge
                 # list columns), not just list-view is_badge columns.
-                qt['has_badge_columns'] = (
-                    any(c.get('is_badge') for c in qt['columns'])
-                    or qt.get('has_combo_badge_source', False)
+                presentation['has_badge_columns'] = (
+                    any(c.get('is_badge') for c in presentation['columns'])
+                    or presentation.get('has_combo_badge_source', False)
                 )
-                qt['has_date_columns'] = any(c.get('is_date') for c in qt['columns'])
+                presentation['has_date_columns'] = any(c.get('is_date') for c in presentation['columns'])
                 # self_colour columns (e.g. badge_definition's own
                 # background_colour/text_colour) render badge_centered too,
                 # but the column's own value IS the colour — no
                 # BadgeCache lookup needed, so this stays separate from
                 # has_badge_columns (which gates BadgeCache wiring).
-                qt['has_self_colour_columns'] = any(
-                    c.get('self_colour') for c in qt['columns']
+                presentation['has_self_colour_columns'] = any(
+                    c.get('self_colour') for c in presentation['columns']
                 )
                 # EntityItemDelegate (icon_centered/icon_text_left sizing,
                 # badge_centered rendering) is needed whenever the list view
@@ -3702,9 +3656,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # doesn't require a BadgeCache, so this is safe to widen
                 # independently of badgeCache_ (which stays gated on
                 # has_badge_columns, since only badge columns need it).
-                qt['needs_item_delegate'] = (
-                    qt['has_badge_columns'] or qt.get('has_any_flag_icon', False)
-                    or qt['has_self_colour_columns']
+                presentation['needs_item_delegate'] = (
+                    presentation['has_badge_columns'] or presentation.get('has_any_flag_icon', False)
+                    or presentation['has_self_colour_columns']
                 )
             # has_explorer_api opts a controller into the public
             # openAdd()/openEdit()/openHistory() surface a sibling explorer
@@ -3713,29 +3667,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # when set, the controller additionally gets
             # openAddWithParent(boost::uuids::uuid parent<Pascal>Id) for
             # explorers that create this entity nested under a parent node.
-            parent_entity_singular = qt.get('parent_entity_singular')
-            qt['has_parent_relationship'] = bool(
-                qt.get('has_explorer_api') and parent_entity_singular
+            parent_entity_singular = presentation.get('parent_entity_singular')
+            presentation['has_parent_relationship'] = bool(
+                presentation.get('has_explorer_api') and parent_entity_singular
             )
-            if qt['has_parent_relationship']:
+            if presentation['has_parent_relationship']:
                 parent_pascal = snake_to_pascal(parent_entity_singular)
-                qt['parent_entity_pascal'] = parent_pascal
-                qt.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
-                qt.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
+                presentation['parent_entity_pascal'] = parent_pascal
+                presentation.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
+                presentation.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
             # explorer_interface is an optional companion to has_explorer_api:
             # when a cross-component explorer window (e.g. OrgExplorerMdiWindow
-            # in ores.qt.trading) needs to drive this controller's openEdit/
+            # in ores.presentation.trading) needs to drive this controller's openEdit/
             # openHistory without linking against its concrete header, the
             # entity model names an abstract interface (hand-authored
-            # elsewhere, e.g. ores.qt.api/IBusinessUnitBrowser.hpp) that the
+            # elsewhere, e.g. ores.presentation.api/IBusinessUnitBrowser.hpp) that the
             # generated Controller additionally implements. Same-component
             # explorers (PortfolioExplorer/OrgExplorer for Book, both in
-            # ores.qt.trading) need no such interface — leave unset.
+            # ores.presentation.trading) need no such interface — leave unset.
             validate_explorer_interface(domain_entity)
-            qt['has_explorer_interface'] = bool(qt.get('explorer_interface'))
+            presentation['has_explorer_interface'] = bool(presentation.get('explorer_interface'))
             validate_parent_scoped_list(domain_entity)
             # Add iterator variable reference for templates
-            qt['item_var'] = qt.get('item_var', 'item')
+            presentation['item_var'] = presentation.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided. The
             # default shape is the code+name+description lookup form: a
             # key row plus a display-name row, each gated on the column
@@ -3747,8 +3701,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # ...) gets no display-name row either -- the name row must
             # not be emitted unconditionally, the way description is
             # gated below, or the dialog binds a phantom member.
-            if 'detail_fields' not in qt:
-                key_field = qt.get('key_field', 'code')
+            if 'detail_fields' not in presentation:
+                key_field = presentation.get('key_field', 'code')
                 column_names = {c.get('name') for c in domain_entity.get('columns', [])}
                 # A display name carried as the natural key (refdata's
                 # code-keyed lookups, e.g. rounding_type) is a real
@@ -3776,9 +3730,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         {'field': 'description', 'label': 'Description', 'widget': 'descriptionEdit',
                          'type': 'text_edit',
                          'placeholder': 'Enter a description'})
-                qt['detail_fields'] = fields
+                presentation['detail_fields'] = fields
             # Compute per-field flags for template iteration
-            detail_fields = qt['detail_fields']
+            detail_fields = presentation['detail_fields']
             required_fields = []
             required_dynamic_combo_fields = []
             date_fields = []
@@ -3804,9 +3758,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     # colours -- same shape as combo_widget_class for a
                     # currency flagged_combo. Applies equally to a fixed
                     # (static_combo) or DB-backed (dynamic_combo) badge list.
-                    f.setdefault('combo_widget_class', 'ores::qt::OreBadgeComboBox')
+                    f.setdefault('combo_widget_class', 'ores::presentation::OreBadgeComboBox')
                     f.setdefault('combo_widget_extends', 'QComboBox')
-                    f.setdefault('combo_widget_header', 'ores.qt/OreBadgeComboBox.hpp')
+                    f.setdefault('combo_widget_header', 'ores.presentation/OreBadgeComboBox.hpp')
                 if f['is_dynamic_combo'] and f.get('combo_fetch_fn'):
                     field_pascal = snake_to_pascal(f.get('field', ''))
                     f.setdefault('combo_setter_pascal', field_pascal)
@@ -3844,9 +3798,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     # and keep the generic inline path.
                     if flag_source == 'currency':
                         f.setdefault('combo_helper', 'setup_currency_combo')
-                        f.setdefault('combo_widget_class', 'ores::qt::OreCurrencyComboBox')
+                        f.setdefault('combo_widget_class', 'ores::presentation::OreCurrencyComboBox')
                         f.setdefault('combo_widget_extends', 'QComboBox')
-                        f.setdefault('combo_widget_header', 'ores.qt/OreCurrencyComboBox.hpp')
+                        f.setdefault('combo_widget_header', 'ores.presentation/OreCurrencyComboBox.hpp')
                 f['is_check_box'] = f.get('type') == 'check_box'
                 f['is_spin_box'] = f.get('type') == 'spin_box'
                 # Colour swatch button (QColorDialog-backed) — see
@@ -3878,7 +3832,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # needed.
                 f['is_self_referencing_combo'] = (
                     f.get('combo_domain_type') and
-                    f.get('combo_domain_type') == qt.get('domain_class')
+                    f.get('combo_domain_type') == presentation.get('domain_class')
                 )
                 # Tri-state checkbox for optional<bool>; normal two-state
                 # for plain bool. Nullable spin box uses minimum as sentinel.
@@ -3962,19 +3916,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 required_fields[-1]['_is_last'] = True
             if required_dynamic_combo_fields:
                 required_dynamic_combo_fields[-1]['_is_last'] = True
-            qt['required_fields'] = required_fields
-            qt['required_dynamic_combo_fields'] = required_dynamic_combo_fields
-            qt['date_fields'] = date_fields
+            presentation['required_fields'] = required_fields
+            presentation['required_dynamic_combo_fields'] = required_dynamic_combo_fields
+            presentation['date_fields'] = date_fields
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
-            qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
+            presentation['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
             # onCodeChanged() only makes sense (and is only ever connected)
             # for an is_key field that's a QLineEdit -- a combo-widget key
             # (e.g. currency_pair_convention's pair_code) wires to the
             # generic onFieldChanged() like any other combo instead. Gate
             # the method's generation so it doesn't sit as unreachable dead
             # code for entities whose key isn't a line_edit.
-            qt['has_line_edit_key'] = bool(
+            presentation['has_line_edit_key'] = bool(
                 key_field_data and key_field_data.get('is_line_edit'))
             # Every field locked after create (is_key or immutable):
             # setCreateMode() disables each by its own widget kind
@@ -4008,25 +3962,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     # the entire lifetime of the Create dialog instead of
                     # just after create.
                     'is_auto_generated_key': (
-                        f['is_key'] and qt.get('has_uuid_primary_key', False) and
+                        f['is_key'] and presentation.get('has_uuid_primary_key', False) and
                         f.get('field') == domain_entity.get('primary_key', {}).get('column', '')
                     ),
                 }
                 for f in detail_fields if f['is_locked_after_create']
             ]
-            qt['locked_fields'] = locked_fields
-            qt['has_locked_fields'] = bool(locked_fields)
+            presentation['locked_fields'] = locked_fields
+            presentation['has_locked_fields'] = bool(locked_fields)
             # Default has_pagination to False if not set
-            qt['has_pagination'] = qt.get('has_pagination', False)
+            presentation['has_pagination'] = presentation.get('has_pagination', False)
             # Default has_readonly_paginated_list to False if not set
-            qt['has_readonly_paginated_list'] = qt.get('has_readonly_paginated_list', False)
+            presentation['has_readonly_paginated_list'] = presentation.get('has_readonly_paginated_list', False)
             # A read-only list controller never opens a detail dialog, so it
             # cannot use the change-reason cache: wire the cache only when the
             # controller is not read-only (the cache plumbing exists for the
             # detail dialogs the read-only profile omits).
-            qt['wires_change_reason_cache'] = (
-                qt.get('has_change_reason_cache', False)
-                and not qt['has_readonly_paginated_list'])
+            presentation['wires_change_reason_cache'] = (
+                presentation.get('has_change_reason_cache', False)
+                and not presentation['has_readonly_paginated_list'])
             # Default has_parent_scoped_list to False if not set. Paired
             # with parent_key_field (the protocol request field, e.g.
             # calendar_code) and parent_key_param (the C++ member/
@@ -4038,24 +3992,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # solves a different problem (pre-filling a foreign key on
             # create for a still-full-CRUD entity, not filtering a
             # read-only list's get-request).
-            qt['has_parent_scoped_list'] = qt.get('has_parent_scoped_list', False)
-            qt['has_text_edit_fields'] = any(
+            presentation['has_parent_scoped_list'] = presentation.get('has_parent_scoped_list', False)
+            presentation['has_text_edit_fields'] = any(
                 f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )
-            qt['has_combo_fields'] = any(
+            presentation['has_combo_fields'] = any(
                 f.get('type') in ('static_combo', 'dynamic_combo', 'flagged_combo')
                 for f in detail_fields
             )
-            qt['has_dynamic_combo_fields'] = any(
+            presentation['has_dynamic_combo_fields'] = any(
                 f.get('type') == 'dynamic_combo' for f in detail_fields
             )
-            qt['has_flagged_combo_fields'] = any(
+            presentation['has_flagged_combo_fields'] = any(
                 f.get('type') == 'flagged_combo' for f in detail_fields
             )
-            qt['has_static_combo_fields'] = any(
+            presentation['has_static_combo_fields'] = any(
                 f.get('type') == 'static_combo' for f in detail_fields
             )
-            qt['has_colour_fields'] = any(
+            presentation['has_colour_fields'] = any(
                 f.get('type') == 'colour' for f in detail_fields
             )
             # Deduplicated <customwidgets> entries for any promoted combo
@@ -4078,25 +4032,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'header': f.get('combo_widget_header', ''),
                 })
             if combo_customs:
-                qt['combo_widget_customs'] = combo_customs
+                presentation['combo_widget_customs'] = combo_customs
             # Whether any static_combo or dynamic_combo detail field renders
             # its items as badges (via the badge system, apply_combo_badges
             # resolves purely off (badge_key, item text) at paint time — it
             # doesn't care how the combo was populated) — gates BadgeCache
             # wiring into the detail dialog itself (has_badge_columns only
             # wires it into the list/MDI window).
-            qt['has_combo_badge_source'] = any(
+            presentation['has_combo_badge_source'] = any(
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')
             )
             # Gates the datetime.hpp include and the setX()/setReadOnly()
             # re-populate calls below -- see has_as_of_combo_fields's own
             # docstring for what combo_as_of_fetch_fn is for.
-            qt['has_as_of_combo_fields'] = has_as_of_combo_fields(detail_fields)
-            qt['has_uuid_detail_fields'] = any(
+            presentation['has_as_of_combo_fields'] = has_as_of_combo_fields(detail_fields)
+            presentation['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )
-            qt['has_date_detail_fields'] = any(f.get('is_date') for f in detail_fields)
+            presentation['has_date_detail_fields'] = any(f.get('is_date') for f in detail_fields)
             # A `party_id` natural key that is *not* exposed as a Detail
             # field is implicit-from-session by convention (see book/
             # portfolio) -- setCreateMode must still populate it from the
@@ -4112,56 +4066,56 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 None
             )
             detail_field_names = {f.get('field') for f in detail_fields}
-            qt['hidden_party_id_on_create'] = bool(
+            presentation['hidden_party_id_on_create'] = bool(
                 party_id_field and 'party_id' not in detail_field_names
             )
             # Delete request id field: protocol generates 'ids' for UUID PK and
             # '{pk_column}s' for text PK (matching cpp_protocol.hpp.mustache line 53).
-            if qt.get('has_uuid_primary_key', False):
-                qt.setdefault('delete_request_id_field', 'ids')
-                qt['delete_request_id_is_plural'] = (
-                    qt['delete_request_id_field'] != 'id')
+            if presentation.get('has_uuid_primary_key', False):
+                presentation.setdefault('delete_request_id_field', 'ids')
+                presentation['delete_request_id_is_plural'] = (
+                    presentation['delete_request_id_field'] != 'id')
             else:
                 pk_col = domain_entity.get('primary_key', {}).get('column', '')
-                if pk_col and 'delete_request_id_field' not in qt:
-                    qt['delete_request_id_field'] = f'{pk_col}s'
-                if 'delete_request_id_field' in qt:
-                    qt.setdefault('delete_request_id_is_plural', True)
+                if pk_col and 'delete_request_id_field' not in presentation:
+                    presentation['delete_request_id_field'] = f'{pk_col}s'
+                if 'delete_request_id_field' in presentation:
+                    presentation.setdefault('delete_request_id_is_plural', True)
             # History response data field: most protocols use 'history', but
             # some older ones (predating that convention) name it after the
             # entity's plural collection instead (e.g. cds_convention's
             # get_cds_convention_history_response.cds_conventions) -- those
             # entities set :history_response_data_field: explicitly in their
             # model to override this default.
-            qt.setdefault('history_response_data_field', 'history')
+            presentation.setdefault('history_response_data_field', 'history')
             # Determine if the Qt key field is a UUID (needs to_string wrapping).
             # A key field is UUID when has_uuid_primary_key is true AND the key_field
             # matches the primary key column (i.e. the key field IS the UUID PK, not a
             # separate natural-key string like unit_code).
             pk_col_name = domain_entity.get('primary_key', {}).get('column', '')
-            key_field_name = qt.get('key_field', '')
+            key_field_name = presentation.get('key_field', '')
             key_field_is_uuid = (
-                qt.get('has_uuid_primary_key', False) and
+                presentation.get('has_uuid_primary_key', False) and
                 key_field_name == pk_col_name
             )
-            qt['key_field_is_uuid'] = key_field_is_uuid
+            presentation['key_field_is_uuid'] = key_field_is_uuid
             if key_field_is_uuid:
-                qt['key_to_string_prefix'] = 'boost::uuids::to_string('
-                qt['key_to_string_suffix'] = ')'
+                presentation['key_to_string_prefix'] = 'boost::uuids::to_string('
+                presentation['key_to_string_suffix'] = ')'
             else:
-                qt['key_to_string_prefix'] = ''
-                qt['key_to_string_suffix'] = ''
-            qt['metadata_start_row'] = len(detail_fields)
-            qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
-            qt['metadata_start_row_plus_2'] = len(detail_fields) + 2
-            qt['metadata_start_row_plus_3'] = len(detail_fields) + 3
+                presentation['key_to_string_prefix'] = ''
+                presentation['key_to_string_suffix'] = ''
+            presentation['metadata_start_row'] = len(detail_fields)
+            presentation['metadata_start_row_plus_1'] = len(detail_fields) + 1
+            presentation['metadata_start_row_plus_2'] = len(detail_fields) + 2
+            presentation['metadata_start_row_plus_3'] = len(detail_fields) + 3
             # Group detail_fields by their optional view_group cell into Qt
             # detail-dialog tabs (see codegen_input_org_schema.org). Computed
             # here, after detail_fields is fully finalized (both the
             # org-provided and auto-generated-above cases), not in
             # org_loader.py, so it uses the same fully-enriched field dicts
             # the .ui template already renders per-field widgets from.
-            qt['view_groups'] = compute_view_groups(detail_fields)
+            presentation['view_groups'] = compute_view_groups(detail_fields)
         # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
         domain_entity.setdefault('generator_facet_name', 'generators')
         domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()
@@ -4338,17 +4292,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for key, value in junction['repository'].items():
                 junction[key] = value
         data['junction'] = junction
-        # A junction with a ** Qt drawer renders through the ores.cpp.qt
-        # facet exactly like a domain_entity: org_loader.py's
-        # load_org_junction_model already aliased the entity_singular/
-        # entity_plural/entity_pascal/... family (and repository.
-        # entity_plural_short) onto this same dict when it parsed the
-        # drawer, so the (already fully-enriched, component_include and
-        # all) junction dict can stand in for 'domain_entity' as-is --
-        # no separate enrichment pass needed, the domain_entity-only
-        # block above never runs for a junction model.
-        if generate_qt and 'qt' in junction:
-            data['domain_entity'] = junction
 
     # Special processing for field-group models
     if is_field_group and isinstance(model, dict) and 'field_group' in model:
@@ -4471,22 +4414,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{sub_dir}/{name_singular}{suffix}"
             else:
                 output_filename = f"{name_singular}.hpp"
-        elif generate_qt and is_domain_entity and 'domain_entity' in data and 'qt' in data['domain_entity']:
-            # Qt generation for domain entity — only when the model has a ** Qt section.
-            domain_entity = data['domain_entity']
-            entity_pascal = domain_entity.get('entity_pascal', 'Unknown')
-            # Find the mapping for this template
-            qt_mappings = get_qt_domain_entity_template_mappings()
-            mapping = next(((t, d, s) for t, d, s in qt_mappings if t == template_name), None)
-            if mapping:
-                sub_dir, suffix = mapping[1], mapping[2]
-                # Client model uses "Client" prefix
-                if 'client_model' in template_name:
-                    output_filename = f"{sub_dir}/Client{entity_pascal}{suffix}"
-                else:
-                    output_filename = f"{sub_dir}/{entity_pascal}{suffix}"
-            else:
-                output_filename = f"{entity_pascal}.hpp"
         elif is_domain_entity and 'domain_entity' in data:
             # For domain entity models, derive filename from domain_entity definition
             # Use entity_singular for filename (table/indexes/functions use entity_plural)

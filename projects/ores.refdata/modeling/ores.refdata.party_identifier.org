@@ -191,7 +191,7 @@ std::string("Test identifier")
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/party_identifier.hpp
 :domain_class:            refdata::domain::party_identifier
@@ -231,7 +231,7 @@ before the dialog is shown, never user-chosen.
 | id_value    | Value       | idValueEdit     | line_edit     | false  | true        | Enter identifier value  |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
 | description | Description | descriptionEdit | line_edit     | false  | false       | Enter description       |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

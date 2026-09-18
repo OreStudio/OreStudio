@@ -105,7 +105,7 @@ std::string("EUR-EURIBOR-6M")
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         fra_conventions
 :item_var:                fc
@@ -137,7 +137,7 @@ std::string("EUR-EURIBOR-6M")
 | id    | Id    | idEdit    | line_edit | true   | true        | Enter convention id |
 | index | Index | indexEdit | line_edit |        | true        | e.g. EUR-EURIBOR-6M |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name  | field       | header      | type      | width |
 |------------+-------------+-------------+-----------+-------|

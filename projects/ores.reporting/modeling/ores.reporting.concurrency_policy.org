@@ -132,7 +132,7 @@ faker::number::integer(1, 100)
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.reporting/domain/concurrency_policy.hpp
 :domain_class:           reporting::domain::concurrency_policy
@@ -165,7 +165,7 @@ faker::number::integer(1, 100)
 | name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

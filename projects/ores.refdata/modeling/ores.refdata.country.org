@@ -211,7 +211,7 @@ drop function if exists ores_refdata_validate_country_fn;
 | modified_by   | Modified By   |
 | version       | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_class:                refdata::domain::country
 :collection_name:             countries
@@ -249,7 +249,7 @@ drop function if exists ores_refdata_validate_country_fn;
 | name          | Name          | nameEdit          | line_edit |        | true        | Enter display name          |
 | official_name | Official Name | officialNameEdit  | line_edit |        | true        | Enter official country name |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header        | type      | width |
 |--------------+---------------+---------------+-----------+-------|

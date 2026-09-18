@@ -299,7 +299,7 @@ codegen-side rule.
 | modified_by      | Modified By    |
 | version          | Version        |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp
 :domain_class:            synthetic::domain::yield_curve_process_parameter_definition
@@ -342,7 +342,7 @@ codegen-side rule.
 | max_value        | Max Value        | maxValueEdit          | line_edit |        |             | Unbounded if empty              |
 | display_order    | Display Order    | displayOrderEdit      | spin_box  |        | true        |                                 |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field            | header         | type      | width |
 |----------------+------------------+----------------+-----------+-------|

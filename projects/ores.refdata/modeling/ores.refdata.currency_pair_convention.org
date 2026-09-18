@@ -232,7 +232,7 @@ trigger's DQ validation (see below) remains the production guard, and
 | modified_by              | Modified By               |
 | version                  | Version                   |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/currency_pair_convention.hpp
 :domain_class:           refdata::domain::currency_pair_convention
@@ -260,7 +260,7 @@ trigger's DQ validation (see below) remains the production guard, and
 :icon:                   Currency
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name              | field                   | header                   | type      | width | is_badge | badge_key                                          | formatter      | formatter_include          | tooltip |
 |------------------------+--------------------------+---------------------------+-----------+-------+----------+-----------------------------------------------------+----------------+----------------------------+---------|
@@ -275,7 +275,7 @@ trigger's DQ validation (see below) remains the production guard, and
 | ModifiedBy              | modified_by                | Modified By               | string    | auto  |          |                                                     |                |                            |
 | RecordedAt              | recorded_at                 | Recorded At               | timestamp | auto  |          |                                                     |                |                            |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Composites base+quote flags into the =PairCode= column's decoration,
 splitting the combined =pair_code= string (e.g. "EUR/USD") since this

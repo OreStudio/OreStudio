@@ -134,7 +134,7 @@ faker::number::integer(1, 100)
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/code_domain.hpp
 :domain_class:           dq::domain::code_domain
@@ -162,7 +162,7 @@ faker::number::integer(1, 100)
 :has_pagination:         true
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

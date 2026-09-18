@@ -219,7 +219,7 @@ std::nullopt
 | modified_by     | Modified By |
 | version         | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.reporting/domain/report_instance.hpp
 :domain_class:           reporting::domain::report_instance
@@ -256,7 +256,7 @@ std::nullopt
 | description    | Description | descriptionEdit | text_edit |        |             | Description                    |
 | output_message | Output      | outputEdit      | text_edit |        |             | Execution log or error message |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name     | field          | header      | type      | width |
 |---------------+----------------+-------------+-----------+-------|

@@ -157,7 +157,7 @@ drop function if exists ores_refdata_validate_tenor_resolution_algorithm_fn;
 | modified_by   | Modified By   |
 | version       | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/tenor_resolution_algorithm.hpp
 :domain_class:           refdata::domain::tenor_resolution_algorithm
@@ -192,7 +192,7 @@ drop function if exists ores_refdata_validate_tenor_resolution_algorithm_fn;
 | description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description             |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                                  |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header        | type      | width |
 |--------------+---------------+---------------+-----------+-------|

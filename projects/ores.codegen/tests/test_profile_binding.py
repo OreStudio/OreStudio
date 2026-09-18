@@ -63,14 +63,14 @@ def test_profile_supplies_root_level_defaults():
     assert de["has_workspace_id"] is False
 
 
-def test_profile_supplies_qt_namespace_defaults():
+def test_profile_supplies_presentation_namespace_defaults():
     de = _model_with_flags(
         ":schema: public\n:product: ores\n:component: refdata\n"
         ":profile: simple-lookup\n"
     )
-    assert de["qt"]["has_pagination"] is True
-    assert de["qt"]["has_change_reason_cache"] is True
-    assert de["qt"]["has_uuid_primary_key"] is False
+    assert de["presentation"]["has_pagination"] is True
+    assert de["presentation"]["has_change_reason_cache"] is True
+    assert de["presentation"]["has_uuid_primary_key"] is False
 
 
 def test_explicit_value_overrides_profile_default():
@@ -89,8 +89,8 @@ def test_no_profile_leaves_model_unaffected():
     assert "has_tenant_id" not in de
 
 
-def test_profile_qt_default_feeds_derived_qt_flag():
-    # has_toolbar is derived (org_loader._parse_qt_drawer) from
+def test_profile_presentation_default_feeds_derived_flag():
+    # has_toolbar is derived (org_loader._parse_presentation_drawer) from
     # has_version_navigation, among others. fully-featured-lookup supplies
     # has_version_navigation=true purely via the profile, with no explicit
     # :has_version_navigation: in the drawer -- the derivation must see the
@@ -102,11 +102,11 @@ def test_profile_qt_default_feeds_derived_qt_flag():
         MINIMAL_HEADER
         + "* Flags\n:PROPERTIES:\n:schema: public\n:product: ores\n"
         + ":component: refdata\n:profile: fully-featured-lookup\n:END:\n"
-        + "* C++\n** Qt\n:PROPERTIES:\n:domain_class: refdata::domain::thing\n:END:\n"
+        + "* C++\n** Presentation\n:PROPERTIES:\n:domain_class: refdata::domain::thing\n:END:\n"
     )
     de = org_document_to_model(parse_org(text))["domain_entity"]
-    assert de["qt"]["has_version_navigation"] is True
-    assert de["qt"]["has_toolbar"] is True
+    assert de["presentation"]["has_version_navigation"] is True
+    assert de["presentation"]["has_toolbar"] is True
 
 
 def _junction_header(profile: str | None = None, extra_frontmatter: str = "") -> str:
@@ -150,19 +150,19 @@ def test_junction_explicit_value_overrides_profile_default(tmp_path):
     assert j["has_tenant_id"] is False
 
 
-def test_junction_profile_qt_default_feeds_derived_qt_flag(tmp_path):
+def test_junction_profile_presentation_default_feeds_derived_flag(tmp_path):
     # Same has_toolbar ordering regression as the domain_entity case above,
     # but exercised through the junction loader path (calendar_date is the
-    # one junction with its own Qt drawer).
+    # one junction with its own presentation drawer).
     text = (
         _junction_header("fully-featured-lookup")
-        + "* C++\n** Qt\n:PROPERTIES:\n:domain_class: refdata::domain::thing\n:END:\n"
+        + "* C++\n** Presentation\n:PROPERTIES:\n:domain_class: refdata::domain::thing\n:END:\n"
     )
     p = tmp_path / "thing.org"
     p.write_text(text, encoding="utf-8")
     j = load_org_junction_model(p)["junction"]
-    assert j["qt"]["has_version_navigation"] is True
-    assert j["qt"]["has_toolbar"] is True
+    assert j["presentation"]["has_version_navigation"] is True
+    assert j["presentation"]["has_toolbar"] is True
 
 
 # --------------------------------------------------------------------------
@@ -201,7 +201,7 @@ def test_multiple_profiles_compose_orthogonal_traits():
     )
     de = org_document_to_model(parse_org(text))["domain_entity"]
     assert de["has_tenant_id"] is True  # from simple-lookup
-    assert de["qt"]["has_pagination"] is True  # from simple-lookup
+    assert de["presentation"]["has_pagination"] is True  # from simple-lookup
 
 
 def test_conflicting_profiles_raise():

@@ -178,7 +178,7 @@ ctx.random_int(1, 30)
 :iterator_var: t
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/tenor.hpp
 :domain_class:           refdata::domain::tenor
@@ -215,7 +215,7 @@ ctx.random_int(1, 30)
 | unit         | Unit         | unitCombo        | dynamic_combo |        | true        |                             |              | refdata::domain::tenor_unit          | ores.qt/LookupFetcher.hpp  | fetch_tenor_units     | tenorUnitWatcher    | code               | description          | display_order     | tenor units    | UnitCombo             | tenor_unit |
 | multiplier   | Multiplier   | multiplierEdit   | spin_box      |        |             |                             |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field        | header       | type      | width | is_badge | badge_key  | formatter | formatter_include |
 |-------------+--------------+--------------+-----------+-------+----------+------------+-----------+--------------------|

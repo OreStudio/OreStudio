@@ -315,7 +315,7 @@ std::string("https://example.com")
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/counterparty_contact_information.hpp
 :domain_class:            refdata::domain::counterparty_contact_information
@@ -362,7 +362,7 @@ set programmatically before the dialog is shown, never user-chosen.
 | email         | Email          | emailEdit         | line_edit     | false  | false       | Enter email          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 | web_page      | Web Page       | webPageEdit       | line_edit     | false  | false       | Enter web page       |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header         | type      | width |
 |--------------+---------------+----------------+-----------+-------|
@@ -376,7 +376,7 @@ set programmatically before the dialog is shown, never user-chosen.
 | ModifiedBy   | modified_by   | Modified By    | string    |   120 |
 | RecordedAt   | recorded_at   | Recorded At    | timestamp |   150 |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 | column      | accessor          | field1       | field2 |
 |-------------+--------------------+--------------+--------|

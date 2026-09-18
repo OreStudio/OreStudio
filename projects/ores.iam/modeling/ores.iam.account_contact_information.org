@@ -314,7 +314,7 @@ predates the context-carrying form the auto-seeding blocks use.
 | modified_by  | Modified By |
 | version      | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.iam.api/domain/account_contact_information.hpp
 :domain_class:            iam::domain::account_contact_information
@@ -366,7 +366,7 @@ never user-chosen.
 | email         | Email          | emailEdit         | line_edit     | false  | false       | Enter email          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 | web_page      | Web Page       | webPageEdit       | line_edit     | false  | false       | Enter web page       |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header         | type      | width |
 |--------------+---------------+----------------+-----------+-------|
@@ -379,7 +379,7 @@ never user-chosen.
 | ModifiedBy   | modified_by   | Modified By    | string    |   120 |
 | RecordedAt   | recorded_at   | Recorded At    | timestamp |   150 |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 | column      | accessor          | field1       | field2 |
 |-------------+--------------------+--------------+--------|

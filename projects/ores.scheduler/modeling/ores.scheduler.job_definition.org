@@ -172,7 +172,7 @@ Payload for nats_publish action type.
 :iterator_var: jd
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.scheduler/domain/job_definition.hpp
 :domain_class:           scheduler::domain::job_definition
@@ -209,7 +209,7 @@ Payload for nats_publish action type.
 | schedule_expression | Schedule (cron) | scheduleExpressionEdit | line_edit |        | true        | e.g., 0 * * * * (every hour)       |
 | database_name       | Database        | databaseNameEdit       | line_edit |        | true        | Target PostgreSQL database name    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field               | header      | type   | width |
 |--------------+---------------------+-------------+--------+-------|

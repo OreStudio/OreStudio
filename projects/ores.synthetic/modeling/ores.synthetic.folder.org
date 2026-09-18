@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 5455BC0F-59E3-4EA4-ABA2-6C4BB6CA00C7
-:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.synthetic.folder
 #+description: Codegen entity model for the synthetic folder table; a generic, party-scoped hierarchy node organizing feeds into collection/asset-class/instrument-type folders.

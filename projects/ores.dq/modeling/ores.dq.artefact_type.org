@@ -200,7 +200,7 @@ faker::number::integer(1, 100)
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/artefact_type.hpp
 :domain_class:           dq::domain::artefact_type
@@ -240,7 +240,7 @@ faker::number::integer(1, 100)
 | target_subject  | Target Subject  | targetSubjectEdit    | line_edit |        |             | Enter the publish-from-dq subject  |
 | display_order   | Display Order   | displayOrderEdit     | spin_box  |        |             |                                     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name     | field          | header         | type      | width |
 |---------------+----------------+----------------+-----------+-------|

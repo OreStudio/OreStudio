@@ -339,7 +339,7 @@ def _generate_single(
         graph = load_graph(base_dir / "library" / "templates")
         if not address_supports_model_type(address, model_type, graph):
             # The address can never generate this model type (e.g. a
-            # junction model against ores.cpp.qt) — auto-discovered
+            # junction model against ores.cpp.repository) — auto-discovered
             # --component runs hit this constantly and it is not a
             # failure, so it stays silent (DEBUG). An explicit
             # single-entity invocation naming an incompatible pair is a
@@ -376,35 +376,10 @@ def _generate_single(
     dataset_prefix = dataset.get("prefix") or dataset.get("name")
     dataset_dir = model_path.parent
 
-    # A junction or domain_entity with no ** Qt drawer is incompatible with
-    # ores.cpp.qt (see generate_from_model's own fail-fast for the same
-    # condition). Under an explicit --address ores.cpp.qt request that
-    # incompatibility is the whole point of the run and must still error.
-    # But under the default, address-less "full supported set" run it used
-    # to abort the ENTIRE generate the moment it reached the first Qt unit
-    # in iteration order -- silently starving every facet ordered after Qt
-    # (repository, service, SQL, ...) of ever being generated for that
-    # entity, and for domain_entity there was no fail-fast at all, so a
-    # missing Qt drawer instead rendered broken Qt output (empty #include,
-    # empty class names) that nothing caught until compile time. Skip just
-    # the Qt units instead, so the rest of the supported set still
-    # generates and no broken Qt files get written.
-    is_junction_no_qt = model_type == "junction" and not model_data.get("junction", {}).get("qt")
-    is_domain_entity_no_qt = (
-        model_type == "domain_entity" and not model_data.get("domain_entity", {}).get("qt"))
-    model_incompatible_with_qt = is_junction_no_qt or is_domain_entity_no_qt
-    qt_address_requested = bool(address) and address.startswith("ores.cpp.qt")
-
     written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
         output_path = project_root / unit["output"]
-        is_qt_template = template_name.startswith("cpp_qt_") or template_name.startswith("qt_")
-        if model_incompatible_with_qt and is_qt_template and not qt_address_requested:
-            log.info(
-                "%s: skipping %s -- %s has no ** Qt drawer",
-                model_path.name, template_name, model_type)
-            continue
         if dry_run:
             print(str(output_path))
             continue
@@ -450,9 +425,8 @@ def _generate_single(
                 target_output=output_path.name,
             )
             if result:
-                # generate_from_model already logged why (e.g. a junction
-                # missing the ** Qt drawer its address requires) -- abort
-                # rather than hand a nonexistent path to clang_format_files
+                # generate_from_model already logged why -- abort rather
+                # than hand a nonexistent path to clang_format_files
                 # below, which would crash on a file-not-found instead of
                 # surfacing the real cause.
                 return result

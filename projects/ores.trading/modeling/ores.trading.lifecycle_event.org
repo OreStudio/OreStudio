@@ -114,7 +114,7 @@ std::nullopt
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.trading.api/domain/lifecycle_event.hpp
 :domain_class:           trading::domain::lifecycle_event
@@ -146,7 +146,7 @@ std::nullopt
 | code        | Code        | codeEdit        | line_edit | true   | true        | Enter lifecycle event code   |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description          |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

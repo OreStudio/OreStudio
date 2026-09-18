@@ -1380,7 +1380,7 @@ below is the order the wire carries.
 | audit.modified_by         | Modified By |
 | identity.version          | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.trading/domain/trade.hpp
 :domain_class:            trading::domain::trade
@@ -1420,7 +1420,7 @@ below is the order the wire carries.
 | termination_date    | Termination Date    | terminationDateEdit    | line_edit |        | true        | YYYY-MM-DD                          |
 | execution_timestamp | Execution Timestamp | executionTimestampEdit | line_edit |        |             | YYYY-MM-DD HH:MM:SS                 |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name       | field            | header      | type      | width |
 |-----------------+------------------+-------------+-----------+-------|

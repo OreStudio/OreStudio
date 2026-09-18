@@ -237,7 +237,7 @@ $$ language plpgsql;
 | modified_by        | Modified By   |
 | version            | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/business_unit_type.hpp
 :domain_class:            refdata::domain::business_unit_type
@@ -272,7 +272,7 @@ $$ language plpgsql;
 | level              | Level         | levelEdit              | spin_box  |        |             |                                  |
 | description        | Description   | descriptionEdit        | text_edit |        |             | Enter a description              |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header        | type      | width | is_badge | badge_key           |
 |-------------------+--------------------+---------------+-----------+-------+----------+---------------------|

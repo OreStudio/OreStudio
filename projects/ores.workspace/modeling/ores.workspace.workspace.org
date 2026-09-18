@@ -163,7 +163,7 @@ Lifecycle status: active or archived.
 | version     | Version     |
 | modified_by | Modified By |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.workspace.api/domain/workspace.hpp
 :domain_class:            workspace::domain::workspace
@@ -205,7 +205,7 @@ Lifecycle status: active or archived.
 | owner_id            | Owner       | ownerEdit       | line_edit       |        |             |                           |
 | status_code         | Status      | statusEdit      | line_edit       |        |             |                           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type   | width |
 |-------------+-------------+-------------+--------+-------|

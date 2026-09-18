@@ -199,7 +199,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 | modified_by          | Modified By      |
 | version              | Version          |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/business_centre.hpp
 :domain_class:                refdata::domain::business_centre
@@ -239,7 +239,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 | coding_scheme_code   | Coding Scheme  | codingSchemeCombo          | dynamic_combo |        | true        |                           |              |                        | ores.qt/LookupFetcher.hpp   |                    |           | dq::domain::coding_scheme     | fetch_coding_schemes   | codingSchemeWatcher       | code              | description          | version           | coding schemes  | CodingSchemeCombo     |
 | country_alpha2_code  | Country        | countryAlpha2Combo         | flagged_combo |        |             |                           | country      | fetch_country_codes   | ores.qt/LookupFetcher.hpp   | true               |           |                               |                        |                           |                   |                      |                   |                  |                       |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header          | type      | width |
 |--------------------+----------------------+-----------------+-----------+-------|
@@ -253,7 +253,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 | ModifiedBy          | modified_by         | Modified By     | string    | 120   |
 | RecordedAt          | recorded_at         | Recorded At     | timestamp | 150   |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Country gets its own flag icon in the list, keyed by
 =country_alpha2_code= via the generic country-code accessor (same

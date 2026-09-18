@@ -228,7 +228,7 @@ std::string("IRS")
 | modified_by      | Modified By   |
 | version          | Version       |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/ir_curve_template_entry.hpp
 :domain_class:            synthetic::domain::ir_curve_template_entry
@@ -265,7 +265,7 @@ std::string("IRS")
 | end_tenor_code   | End Tenor       | endTenorCodeEdit    | line_edit |        | true        | Enter end tenor code (e.g. 1Y)      |
 | instrument_code  | Instrument      | instrumentCodeEdit  | line_edit |        | true        | Enter instrument code (e.g. Swap)   |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field            | header          | type      | width |
 |----------------+------------------+-----------------+-----------+-------|

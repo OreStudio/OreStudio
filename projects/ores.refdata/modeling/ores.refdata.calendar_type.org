@@ -156,7 +156,7 @@ drop function if exists ores_refdata_validate_calendar_type_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/calendar_type.hpp
 :domain_class:           refdata::domain::calendar_type
@@ -184,7 +184,7 @@ drop function if exists ores_refdata_validate_calendar_type_fn;
 :icon:                   Classification
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width | is_badge | badge_key     |
 |--------------+---------------+-------------+-----------+-------+----------+---------------|

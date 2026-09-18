@@ -254,7 +254,7 @@ std::nullopt
 | modified_by          | Modified By     |
 | version              | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/counterparty.hpp
 :domain_class:            refdata::domain::counterparty
@@ -293,7 +293,7 @@ std::nullopt
 | business_center_code     | Business Center      | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    |                      | ores.qt/LookupFetcher.hpp     |                        |                       |                    |                        |                    |                        |                            |               |                     |
 | parent_counterparty_id   | Parent Counterparty  | parentCounterpartyCombo | dynamic_combo | false | true        |                   |                   |                     |                                | refdata::domain::counterparty     | full_name            | ores.qt/LookupFetcher.hpp     | fetch_counterparties   | parentCounterpartyWatcher | id             | short_code             | version            | counterparties         | ParentCounterpartyCombo    |               | No Parent           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header          | type      | width | is_badge | badge_key    | formatter | formatter_include |
 |--------------------+----------------------+-----------------+-----------+-------+----------+--------------+-----------+--------------------|
@@ -306,7 +306,7 @@ std::nullopt
 | ModifiedBy         | modified_by          | Modified By     | string    | 120   |          |              |           |                    |
 | RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |          |              |           |                    |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Business center gets its own flag icon, same as any other
 single-business-centre cell (e.g. Book's rates centre code column).

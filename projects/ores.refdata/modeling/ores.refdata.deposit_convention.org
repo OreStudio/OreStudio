@@ -190,7 +190,7 @@ std::nullopt
 | modified_by        | Modified By |
 | version            | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         deposit_conventions
 :item_var:                dc
@@ -228,7 +228,7 @@ std::nullopt
 | end_of_month       | End Of Month       | endOfMonthEdit       | check_box |        |             |                     |
 | settlement_days    | Settlement Days    | settlementDaysEdit   | spin_box  |        |             |                     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header      | type      | width |
 |------------------+--------------------+-------------+-----------+-------|

@@ -187,7 +187,7 @@ std::string("Test exception")
 :iterator_var: exc
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:              ores.refdata.api/domain/calendar_exception.hpp
 :domain_class:                refdata::domain::calendar_exception
@@ -226,7 +226,7 @@ std::string("Test exception")
 | is_business_day  | Business Day  | isBusinessDayCheckBox | check_box |     |             |           |                                  |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
 | description      | Description   | descriptionEdit    | line_edit |        |             |           | Optional note                   |                        |                             |                    |                              |                       |                    |                        |                    |                                    |               |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name       | field            | header       | type   | width | hidden_by_default |
 |-----------------+------------------+--------------+--------+-------+--------------------|

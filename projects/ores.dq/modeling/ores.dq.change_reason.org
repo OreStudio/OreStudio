@@ -217,7 +217,7 @@ faker::number::integer(1, 100)
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/change_reason.hpp
 :domain_class:           dq::domain::change_reason
@@ -253,7 +253,7 @@ faker::number::integer(1, 100)
 | description          | Description         | descriptionEdit        | text_edit |        |             | Enter a description              |
 | category_code        | Category            | categoryCodeEdit       | line_edit |        |             | Enter the owning category code   |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name           | field                | header              | type      | width |
 |---------------------+----------------------+---------------------+-----------+-------|

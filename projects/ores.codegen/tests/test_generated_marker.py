@@ -71,7 +71,7 @@ def test_marker_absent_when_no_cpp_licence(tmp_path):
 def test_emits_cpp_classifies_by_output_suffix():
     assert _emits_cpp("cpp_enum.hpp.mustache")
     assert _emits_cpp("oresmd_parser.cpp.mustache")
-    assert not _emits_cpp("cpp_qt_detail_dialog.ui.mustache")
+    assert not _emits_cpp("cpp_widget.ui.mustache")
     assert not _emits_cpp("cmake_component_src.mustache")
 
 
@@ -99,4 +99,4 @@ def test_cpp_licence_does_not_mark_typescript(tmp_path):
 def test_emits_ts_classifies_by_output_suffix():
     assert _emits_ts("ts_protocol.ts.mustache")
     assert not _emits_ts("cpp_enum.hpp.mustache")
-    assert not _emits_ts("cpp_qt_detail_dialog.ui.mustache")
+    assert not _emits_ts("cpp_widget.ui.mustache")

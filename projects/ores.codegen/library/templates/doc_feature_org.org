@@ -46,7 +46,7 @@ this feature's value links here rather than restating its effect.
 | Field | Value |
 |-------+-------|
 | Literal name | =(the exact org-mode property name, e.g. :has_pagination:)= |
-| Bundle | (=ores.sql.schema= / =ores.cpp.qt= / =licence= / structural — see [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] for =has_tenant_id=/=has_workspace_id=) |
+| Bundle | (=ores.sql.schema= / =ores.cpp.repository= / =licence= / structural — see [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] for =has_tenant_id=/=has_workspace_id=) |
 | Type | (bool / string / collection<string> / collection<struct> / struct) |
 | Default | (value when omitted) |
 

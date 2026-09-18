@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 78CCF7BC-7D0A-437C-9E4B-395DB3CB03E9
-:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.series_classification_rule
 #+description: The taxonomy rule for one ORE series type and metric: which asset classes and which series subclass its keys map onto.

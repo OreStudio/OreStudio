@@ -487,7 +487,7 @@ std::nullopt
 | modified_by       | Modified By  |
 | version           | Version      |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/ir_curve_generation_config.hpp
 :domain_class:            synthetic::domain::ir_curve_generation_config
@@ -533,7 +533,7 @@ std::nullopt
 | vintage_date                       | Vintage Date                   | vintageDateEdit                | line_edit     |        |             | Required if Price Source is vintage, YYYY-MM-DD |          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | description                        | Description                    | descriptionEdit                | plain_text_edit |      |             | What this configuration represents        |                        |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name                    | field                             | header                      | type      | width |
 |-------------------------------+------------------------------------+------------------------------+-----------+-------|

@@ -117,9 +117,9 @@ def model_flags(path: Path) -> tuple:
     """Read every property drawer in the model, keyed by feature name.
 
     A model states its features across several drawers rather than one.
-    The entity-level ones sit in ``* Flags``, but the Qt tier states
-    ``has_uuid_primary_key``, ``has_pagination`` and
-    ``has_change_reason_cache`` in the nested ``** Qt`` drawer under
+    The entity-level ones sit in ``* Flags``, but the presentation tier
+    states ``has_uuid_primary_key``, ``has_pagination`` and
+    ``has_change_reason_cache`` in the nested ``** Presentation`` drawer under
     ``* C++``. Reading only ``* Flags`` made the three features the
     profiles most often fix invisible, so the check passed by not
     looking. Every drawer is read instead, and the heading path is kept

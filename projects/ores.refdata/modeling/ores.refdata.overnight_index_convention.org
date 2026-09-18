@@ -133,7 +133,7 @@ Number of business days from fixing to value date (usually 0 or 1).
 | modified_by        | Modified By     |
 | version            | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         overnight_index_conventions
 :item_var:                ni
@@ -167,7 +167,7 @@ Number of business days from fixing to value date (usually 0 or 1).
 | day_count_fraction | Day Count Fraction | dayCountFractionEdit | line_edit |        | true        | e.g. ACT/360   |
 | settlement_days    | Settlement Days    | settlementDaysEdit   | spin_box  |        |             |                |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header          | type      | width |
 |------------------+--------------------+-----------------+-----------+-------|

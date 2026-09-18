@@ -94,7 +94,7 @@ std::string(faker::lorem::sentence())
 :iterator_var: t
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/floating_index_type.hpp
 :domain_class:           refdata::domain::floating_index_type
@@ -126,7 +126,7 @@ std::string(faker::lorem::sentence())
 | code        | Code        | codeEdit        | line_edit | true   | true        | e.g. EUR-EURIBOR-6M                        |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description                        |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

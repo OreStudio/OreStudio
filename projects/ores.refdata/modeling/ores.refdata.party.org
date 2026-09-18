@@ -392,7 +392,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 | modified_by           | Modified By     |
 | version               | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/party.hpp
 :domain_class:           refdata::domain::party
@@ -431,7 +431,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 | business_center_code | Business Center | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    |                      | ores.qt/LookupFetcher.hpp     |                        |                       |                    |                        |                    |                  |                        |               |                     |
 | parent_party_id      | Parent Party    | parentPartyCombo      | dynamic_combo | false  | true        |                   |                   |                     |                                | refdata::domain::party            | full_name            | ores.qt/LookupFetcher.hpp     | fetch_parties          | parentPartyWatcher    | id                 | short_code             | version            | parties          | ParentPartyCombo       |               | No Parent           |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name           | field                | header          | type      | width | is_badge | badge_key    | formatter | formatter_include |
 |---------------------+----------------------+-----------------+-----------+-------+----------+--------------+-----------+--------------------|
@@ -444,7 +444,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 | ModifiedBy          | modified_by          | Modified By     | string    |   120 |          |              |           |                    |
 | RecordedAt          | recorded_at          | Recorded At     | timestamp |   150 |          |              |           |                    |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Business center gets its own flag icon, same as any other
 single-business-centre cell (e.g. Book's rates centre code column).

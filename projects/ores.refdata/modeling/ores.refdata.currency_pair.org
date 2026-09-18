@@ -202,7 +202,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 | modified_by        | Modified By         |
 | version            | Version             |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/currency_pair.hpp
 :domain_class:           refdata::domain::currency_pair
@@ -234,7 +234,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :icon:                   Currency
 :END:
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header              | type      | width | is_badge | badge_key                     | formatter      | formatter_include         |
 |--------------------+----------------------+---------------------+-----------+-------+----------+--------------------------------+----------------+----------------------------|
@@ -246,7 +246,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 | ModifiedBy         | modified_by          | Modified By         | string    | auto  |          |                                |                |                            |
 | RecordedAt         | recorded_at          | Recorded At         | timestamp | auto  |          |                                |                |                            |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Composites base+quote flags into the =PairCode= column's decoration
 (same cell as the "EUR/USD" text), matching the FX Spot grid's

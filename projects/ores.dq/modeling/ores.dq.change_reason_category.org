@@ -122,7 +122,7 @@ std::string(faker::lorem::sentence())
 
 ** Custom repository methods
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/change_reason_category.hpp
 :domain_class:           dq::domain::change_reason_category
@@ -157,7 +157,7 @@ std::string(faker::lorem::sentence())
 | code        | Code        | codeEdit        | line_edit | true   | true        | Enter change reason category code |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description            |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

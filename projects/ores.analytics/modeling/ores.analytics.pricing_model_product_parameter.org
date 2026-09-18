@@ -158,7 +158,7 @@ std::string("0.03")
 :iterator_var: pp
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.analytics.api/domain/pricing_model_product_parameter.hpp
 :domain_class:           analytics::domain::pricing_model_product_parameter
@@ -192,7 +192,7 @@ std::string("0.03")
 | parameter_name  | Name  | parameterNameEdit   | line_edit    | true   | true        | Parameter name (e.g. Calibration, Reversion, sy) |
 | parameter_value | Value | parameterValueEdit  | line_edit    |        | true        | Parameter value (e.g. Bootstrap, 0.03, Y)        |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name      | field           | header      | type      | width |
 |----------------+-----------------+-------------+-----------+-------|

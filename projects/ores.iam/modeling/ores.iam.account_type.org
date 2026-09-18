@@ -155,7 +155,7 @@ drop function if exists ores_iam_validate_account_type_fn;
 | modified_by   | Modified By |
 | version       | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.iam.api/domain/account_type.hpp
 :domain_class:           iam::domain::account_type
@@ -188,7 +188,7 @@ drop function if exists ores_iam_validate_account_type_fn;
 | name        | Name        | nameEdit        | line_edit |        | true        | Enter display name      |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name    | field         | header      | type      | width |
 |--------------+---------------+-------------+-----------+-------|

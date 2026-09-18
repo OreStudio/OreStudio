@@ -109,7 +109,7 @@ drop function if exists ores_trading_validate_trade_id_type_fn;
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.trading.api/domain/trade_id_type.hpp
 :domain_class:           trading::domain::trade_id_type
@@ -141,7 +141,7 @@ drop function if exists ores_trading_validate_trade_id_type_fn;
 | code        | Code        | codeEdit        | line_edit | true   | true        | Enter trade ID type code       |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description            |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name   | field       | header      | type      | width |
 |-------------+-------------+-------------+-----------+-------|

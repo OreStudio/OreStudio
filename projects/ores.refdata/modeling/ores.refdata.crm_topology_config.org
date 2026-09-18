@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
-:ores.cpp.qt.enabled: true
 :END:
 #+title: ores.refdata.crm_topology_config
 #+description: Codegen entity model for the refdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
@@ -188,7 +187,7 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :iterator_var: c
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:          ores.refdata.api/domain/crm_topology_config.hpp
 :domain_class:            refdata::domain::crm_topology_config
@@ -224,7 +223,7 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 | pivot_currency_code  | Pivot Currency  | pivotCcyCombo   | flagged_combo |    | true        |              | currency    | fetch_currency_codes | ores.qt/LookupFetcher.hpp   | false              |
 | enabled              | Enabled         | enabledCheckBox | check_box |        |             |              |             |                      |                             |                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header          | type      | width | is_badge | badge_key   |
 |--------------------+----------------------+-----------------+-----------+-------+----------+-------------|
@@ -235,7 +234,7 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 | ModifiedBy          | modified_by          | Modified By     | string    | auto  |          |             |
 | RecordedAt          | recorded_at          | Recorded At     | timestamp | auto  |          |             |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 Pivot currency gets its own flag icon, same as any other
 single-currency cell (e.g. Book's FunctionalCurrency) -- no compositing

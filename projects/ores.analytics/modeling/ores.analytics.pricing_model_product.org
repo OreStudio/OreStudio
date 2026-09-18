@@ -143,7 +143,7 @@ std::string("DiscountingSwapEngine")
 :iterator_var: pmp
 :END:
 
-** Qt
+** Presentation
 :PROPERTIES:
 :domain_include:         ores.analytics.api/domain/pricing_model_product.hpp
 :domain_class:           analytics::domain::pricing_model_product
@@ -177,7 +177,7 @@ std::string("DiscountingSwapEngine")
 | model                    | Model               | modelEdit                  | line_edit     |        | true        | Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier) |                                        |                                                   |               |             |               |                   |                       |                     |                    |
 | engine                   | Engine              | engineEdit                 | line_edit     |        | true        | Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)      |                                        |                                                   |               |             |               |                   |                       |                     |                    |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name             | field                    | header      | type      | width |
 |-----------------------+--------------------------+-------------+-----------+-------|

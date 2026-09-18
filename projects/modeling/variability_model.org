@@ -149,7 +149,6 @@ entity's =:PROPERTIES:= drawer via =ores.*= properties, following Dogen's conven
 :PROPERTIES:
 :ID: ...
 :ores.cpp.enabled: true
-:ores.cpp.qt.enabled: false
 :END:
 #+end_src
 

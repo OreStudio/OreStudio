@@ -279,7 +279,7 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 | modified_by          | Modified By     |
 | version              | Version         |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :has_pagination:          true
 :domain_include:          ores.refdata.api/domain/business_unit.hpp
@@ -318,7 +318,7 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 | status               | Status          | statusCombo        | static_combo  |        |             |                              |                                 |                      |                                |                              |                       |                    |                        |                    |                       |                        | Active,Inactive,Closed   |
 | unit_type_id         | Unit Type       | unitTypeCombo      | dynamic_combo |        |             |                              | refdata::domain::business_unit_type | name             | ores.qt/LookupFetcher.hpp     | fetch_business_unit_types    | unitTypeWatcher       | id                 | description            | level              | business unit types  | UnitTypeCombo          |                          |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name          | field                | header          | type      | width |
 |--------------------+----------------------+-----------------+-----------+-------|
@@ -330,7 +330,7 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 | ModifiedBy         | modified_by          | Modified By     | string    | 120   |
 | RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |
 
-*** Icon columns (Qt model)
+*** Icon columns
 
 | column             | accessor                  | field1                | field2 |
 |--------------------+----------------------------+------------------------+--------|

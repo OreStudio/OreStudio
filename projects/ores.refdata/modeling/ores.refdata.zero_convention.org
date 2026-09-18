@@ -214,7 +214,7 @@ std::nullopt
 | modified_by        | Modified By    |
 | version            | Version        |
 
-** Qt
+** Presentation
 :PROPERTIES:
 :collection_name:         zero_conventions
 :item_var:                zc
@@ -251,7 +251,7 @@ std::nullopt
 | spot_calendar         | Spot Calendar         | spotCalendarEdit         | line_edit |        |             |                     |
 | roll_convention       | Roll Convention       | rollConventionEdit       | line_edit |        |             |                     |
 
-*** Columns (Qt model)
+*** Columns
 
 | enum_name        | field              | header         | type      | width |
 |------------------+--------------------+----------------+-----------+-------|

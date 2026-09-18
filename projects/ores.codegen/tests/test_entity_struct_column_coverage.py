@@ -5,7 +5,7 @@ Run::
     python3 -m pytest projects/ores.codegen/tests/test_entity_struct_column_coverage.py
 
 The entity template gives a column its struct member by switching on one
-of nine type flags. A column matching none of them is dropped from the
+of ten type flags. A column matching none of them is dropped from the
 struct with nothing to show for it: the SQL column and the domain member
 both still read as present, so no other layer notices, and the field
 quietly stops being on the wire. The generator refuses instead, and

@@ -26,7 +26,7 @@ The nine ores.qt Trade files come from the model like the rest of the trade esta
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
 | Now          | Abandoned. Qt is no longer the target. |
 | Waiting on   | Nothing.                               |
@@ -66,9 +66,14 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1, PR #2101. The fix itself was confirmed by the reviewer, who
+traced the template independently rather than taking the body's word for
+it. Two non-blocking nits, both accepted.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Module docstring still says nine type flags; the tuple now holds ten | test_entity_struct_column_coverage.py | Accept | Counted the tuple: ten. Docstring corrected |
+| 2 | The Status table's State cell still read BACKLOG while Now, Next and the story row all said abandoned | task_regenerate-trade-qt-estate.org | Accept | My miss: the abandon commit matched on STARTED, which the cell never held. Set to ABANDONED |
 
 * Result
 

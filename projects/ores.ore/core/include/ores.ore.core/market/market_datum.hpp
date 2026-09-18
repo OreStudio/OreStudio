@@ -81,8 +81,11 @@ struct market_datum {
     /**
      * @brief Tenor or surface coordinate within the series.
      *
-     * Null for scalar series (FX spot, equity spot, recovery rate) and for
-     * types not present in the registry (safe fallback).
+     * Null when the key carries no coordinate of its own: a type with no
+     * tenor or surface dimension (FX spot, equity spot, recovery rate), a
+     * key shorter than its type expects, or a type the registry does not
+     * know (safe fallback). A consumer that needs a value asks the registry
+     * for the type's default point.
      *
      * Examples: "2Y", "25Y/10Y/ATM", "1Y/6M/0/0/0.025".
      */

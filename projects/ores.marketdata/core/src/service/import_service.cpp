@@ -22,13 +22,17 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/market_series_asset_class.hpp"
+#include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
+#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
@@ -40,77 +44,31 @@
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
+#include <vector>
 
 namespace ores::marketdata::service {
 
 namespace {
 
-struct series_classification {
-    std::string asset_class;
-    std::string series_subclass;
-    bool is_scalar;
-};
-
-// Maps ORE series_type → classification.
-series_classification classify_series_type(const std::string& series_type) {
-    static const std::map<std::string, series_classification> k_table = {
-        // FX
-        {"FX", {"fx", "spot", true}},
-        {"FXFWD", {"fx", "forward", false}},
-        {"FX_OPTION", {"fx", "volatility", false}},
-        // Rates curves
-        {"DISCOUNT", {"interest_rates", "yield", false}},
-        {"ZERO", {"interest_rates", "yield", false}},
-        {"MM", {"interest_rates", "yield", false}},
-        {"MM_FUTURE", {"interest_rates", "fra", false}},
-        {"FRA", {"interest_rates", "fra", false}},
-        {"IMM_FRA", {"interest_rates", "fra", false}},
-        {"IR_SWAP", {"interest_rates", "yield", false}},
-        // Rates spreads
-        {"BASIS_SWAP", {"interest_rates", "basis", false}},
-        {"BMA_SWAP", {"interest_rates", "basis", false}},
-        {"CC_BASIS_SWAP", {"interest_rates", "xccy", false}},
-        {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy", false}},
-        // Rates vols
-        {"SWAPTION", {"interest_rates", "volatility", false}},
-        {"CAPFLOOR", {"interest_rates", "volatility", false}},
-        // Credit
-        {"HAZARD_RATE", {"credit", "spread", false}},
-        {"CDS", {"credit", "spread", false}},
-        {"CDS_INDEX", {"credit", "index_credit", false}},
-        {"INDEX_CDS_OPTION", {"credit", "index_credit", false}},
-        {"RECOVERY_RATE", {"credit", "recovery", true}},
-        // Equity
-        {"EQUITY", {"equity", "spot", true}},
-        {"EQUITY_FWD", {"equity", "forward", false}},
-        {"EQUITY_DIVIDEND", {"equity", "forward", false}},
-        {"EQUITY_OPTION", {"equity", "volatility", false}},
-        // Commodity
-        {"COMMODITY", {"commodity", "spot", true}},
-        {"COMMODITY_FWD", {"commodity", "forward", false}},
-        {"COMMODITY_OPTION", {"commodity", "volatility", false}},
-        // Inflation
-        {"ZC_INFLATIONSWAP", {"inflation", "swap", false}},
-        {"YY_INFLATIONSWAP", {"inflation", "swap", false}},
-        {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
-        {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
-        {"SEASONALITY", {"inflation", "seasonality", false}},
-        // Bond
-        {"BOND", {"bond", "price", false}},
-        // Fixings (index series)
-        {"FIXING", {"interest_rates", "yield", true}},
-    };
-
-    const auto it = k_table.find(series_type);
-    if (it != k_table.end())
-        return it->second;
-    throw std::invalid_argument("Unknown ORE series_type: " + series_type);
-}
-
 auto& import_helpers_lg() {
     using namespace ores::logging;
     static auto instance = make_logger("ores.marketdata.service.import_service");
     return instance;
+}
+
+// One junction row per asset class, carrying the series' own audit trail so
+// the two tables read as one change.
+domain::market_series_asset_class make_asset_class_row(const domain::market_series& series,
+                                                       const std::string& code) {
+    domain::market_series_asset_class row;
+    row.tenant_id = series.tenant_id.to_string();
+    row.market_series_id = series.id;
+    row.asset_class_code = code;
+    row.modified_by = series.modified_by;
+    row.performed_by = series.performed_by;
+    row.change_reason_code = series.change_reason_code;
+    row.change_commentary = series.change_commentary;
+    return row;
 }
 
 // Fetches every known currency pair from ores.refdata (paginated), for
@@ -166,20 +124,17 @@ import_service::import(const messaging::import_market_data_request& req) {
     messaging::import_market_data_response resp;
     boost::uuids::random_generator gen;
     repository::market_series_repository series_repo;
+    repository::market_series_asset_class_repository series_asset_class_repo(ctx_);
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
 
-    // Cache: (series_type, metric, qualifier) → (series.id, is_scalar)
+    // Cache: (series_type, metric, qualifier) → series id.
     using SeriesKey = std::tuple<std::string, std::string, std::string>;
-    struct series_info {
-        boost::uuids::uuid id;
-        bool is_scalar;
-    };
-    std::map<SeriesKey, series_info> series_cache;
+    std::map<SeriesKey, boost::uuids::uuid> series_cache;
 
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
-                                     const std::string& qualifier) -> series_info {
+                                     const std::string& qualifier) -> boost::uuids::uuid {
         const auto key = std::make_tuple(series_type, metric, qualifier);
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
@@ -188,13 +143,13 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Look up existing series in DB.
         const auto existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {
-            const series_info info{existing.front().id, existing.front().is_scalar};
-            series_cache.emplace(key, info);
-            return info;
+            const auto id = existing.front().id;
+            series_cache.emplace(key, id);
+            return id;
         }
 
         // Create a new series.
-        const auto cl = classify_series_type(series_type);
+        const auto cl = core::series_classifier::classify(series_type, metric, qualifier);
         domain::market_series s;
         s.id = gen();
         s.tenant_id = ctx_.tenant_id();
@@ -202,9 +157,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.series_type = series_type;
         s.metric = metric;
         s.qualifier = qualifier;
-        s.asset_class = cl.asset_class;
         s.series_subclass = cl.series_subclass;
-        s.is_scalar = cl.is_scalar;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();
         s.change_reason_code =
@@ -212,10 +165,16 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.change_commentary = "Imported from ORE market data file";
         series_repo.write(ctx_, s);
 
-        const series_info info{s.id, s.is_scalar};
-        series_cache.emplace(key, info);
+        std::vector<domain::market_series_asset_class> classes;
+        classes.reserve(cl.asset_classes.size());
+        for (const auto& code : cl.asset_classes)
+            classes.push_back(make_asset_class_row(s, code));
+        if (!classes.empty())
+            series_asset_class_repo.write(classes);
+
+        series_cache.emplace(key, s.id);
         ++resp.series_count;
-        return info;
+        return s.id;
     };
 
     const auto on_duplicate = req.duplicates_are_errors ?
@@ -286,13 +245,12 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.id = gen();
                 obs.tenant_id = ctx_.tenant_id();
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                obs.series_id = series.id;
+                obs.series_id = series;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                // Scalar series (FX spot, equity spot, ...) have no tenor/surface
-                // coordinate; point_id defaults to "SPOT" for those. Non-scalar
-                // series with a missing point_id (malformed/unrecognised key)
-                // keep the empty default rather than being mislabelled as spot.
-                obs.point_id = d.point_id.value_or(series.is_scalar ? "SPOT" : "");
+                // A key that carries no point of its own takes the series
+                // type's answer for its single point.
+                obs.point_id =
+                    d.point_id.value_or(ores::ore::market::default_point_for(d.series_type));
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
@@ -322,7 +280,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 fix.id = gen();
                 fix.tenant_id = ctx_.tenant_id();
                 fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                fix.series_id = series.id;
+                fix.series_id = series;
                 fix.fixing_date = f.date;
                 fix.source = req.source;
                 fix.value = f.value;

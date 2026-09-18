@@ -51,9 +51,7 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
 
     r.qualifier = v.qualifier;
 
-    r.asset_class = v.asset_class;
     r.series_subclass = v.series_subclass;
-    r.is_scalar = v.is_scalar;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;
@@ -85,9 +83,7 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
 
     r.qualifier = v.qualifier;
 
-    r.asset_class = v.asset_class;
     r.series_subclass = v.series_subclass;
-    r.is_scalar = v.is_scalar;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;

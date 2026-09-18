@@ -151,7 +151,11 @@ void RateCurvesMdiWindow::reload() {
 
         self->rows_.clear();
         for (const auto& s : result.series) {
-            if (s.asset_class != "interest_rates" || s.is_scalar)
+            // A series' asset classes live in a junction table this view has no
+            // read path for, so the yield subclass stands in for the class: the
+            // catalogue's rates-only, curve-shaped subclass. It also keeps the
+            // rates fixings out, whose subclass is index_fixing.
+            if (s.series_subclass != "yield")
                 continue;
             self->rows_.push_back({s.series_type, s.metric, s.qualifier, s.series_subclass});
         }

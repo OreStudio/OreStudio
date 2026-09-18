@@ -56,9 +56,7 @@ struct market_series_entity {
 
     std::string qualifier;
 
-    std::string asset_class;
     std::string series_subclass;
-    bool is_scalar = false;
     std::string derivation_kind = "OBSERVED";
     std::string derivation_config_id;
     int derivation_config_version = 0;

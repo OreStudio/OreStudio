@@ -10,7 +10,7 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-09-17
 
 Many-to-many junction table from the /junction/ model: composite text primary key over =junction.left= / =junction.right= columns, optional =tenant_id= (={{#junction.has_tenant_id}}=), per-side indexes with comments. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity}_create.sql=.  DDL for a junction table linking two entities. Includes the composite primary key, optional extra columns, and the standard audit trail.
 
@@ -182,6 +182,11 @@ begin
 
 {{/nullable}}
 {{/junction.foreign_keys}}
+{{#junction.insert_trigger.validations}}
+    -- Validate {{column}}
+    new.{{column}} := {{validation_function}}({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.{{column}});
+
+{{/junction.insert_trigger.validations}}
     return new;
 end;
 $$ language plpgsql;

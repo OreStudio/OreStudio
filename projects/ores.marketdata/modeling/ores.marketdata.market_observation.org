@@ -15,7 +15,7 @@
 #+updated: 2026-09-04
 
 A single market data observation: the value of a series at a given
-=observation_datetime= and optional =point_id= (tenor/surface coordinate).
+=observation_datetime= and =point_id= (tenor/surface coordinate).
 =observation_datetime= is the financial valid-time (UTC); =valid_from=/=valid_to=
 is the transaction time. Corrections replace the previous value via the
 soft-update trigger.
@@ -88,12 +88,18 @@ ctx.past_timepoint()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :natural_key: true
 :END:
 
 Tenor or compound surface identifier (e.g. =1Y=, =5Y/2Y/ATM=, =0.03/10Y/2Y=).
-Null for scalar series such as FX spot rates.
+
+Every observation carries one. A series whose keys have no coordinate of
+their own has a single point and names it explicitly -- =SPOT= for an FX
+rate, an equity or a commodity price, the empty string for a series with
+no coordinate at all, such as a recovery rate. The value comes from
+=ores::ore::market::default_point_for()=, so it is a property of the
+series type rather than something each producer decides.
 
 ** value
 :PROPERTIES:
@@ -144,13 +150,13 @@ Source tag identifying the producer channel that published this observation
 |----------------------+----------|
 | series_id            | false    |
 | observation_datetime | false    |
-| point_id             | true     |
+| point_id             | false    |
 
 ** Indexes
 
 | name                         | columns                                                                           | unique | current_only | where_extra        |
 |------------------------------+-----------------------------------------------------------------------------------+--------+--------------+--------------------|
-| observations_current_uniq    | tenant_id, party_id, series_id, observation_datetime, coalesce(point_id, '')     | true   | true         |                    |
+| observations_current_uniq    | tenant_id, party_id, series_id, observation_datetime, point_id                   | true   | true         |                    |
 | observations_series_datetime | tenant_id, party_id, series_id, observation_datetime desc                         | false  | false        |                    |
 | observations_tenant_datetime | tenant_id, party_id, observation_datetime desc                                    | false  | false        |                    |
 | observations_source          | tenant_id, party_id, source, observation_datetime desc                            | false  | false        | source is not null |

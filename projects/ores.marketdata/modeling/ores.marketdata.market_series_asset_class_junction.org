@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 8E9E03CE-9B64-4A1C-B201-A96AE159B4CE
+:END:
+#+title: ores.marketdata.market_series_asset_class
+#+description: Codegen junction model for market_series_asset_classes.
+#+type: ores.codegen.junction
+#+component: marketdata
+#+filetags: :model:junction:marketdata:
+#+name: market_series_asset_classes
+#+name_singular: market_series_asset_class
+#+name_title: Market Series Asset Class
+#+name_singular_words: asset class assignment
+#+brief: Links a market series to each asset class it belongs to.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+A market series is a container of observations, and the asset classes it
+serves follow from what it observes rather than from a single value on
+the series itself. Most series belong to exactly one class, but a
+pairwise correlation relates two -- an equity index against an FX rate,
+say -- and belongs to both. A not-null column cannot hold that, so the
+relationship is a junction.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        market_series_id
+:column_short:  series
+:column_title:  Series
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the classes a series belongs to
+:END:
+
+ID of the market series.
+
+References ores_marketdata_market_series_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        asset_class_code
+:column_short:  asset_class
+:column_title:  Asset Class
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the series in an asset class
+:END:
+
+Code of an asset class the series belongs to.
+
+References ores_refdata_asset_class_codes_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("interest_rates")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_market_series_asset_classes_tbl
+:END:
+
+* Foreign keys
+
+** market_series_id
+:PROPERTIES:
+:table:         ores_marketdata_market_series_tbl
+:error_message: Invalid market_series_id: %. No market series found with this id.
+:END:
+
+ID of the market series; must exist in ores_marketdata_market_series_tbl.
+
+* Insert trigger
+** Validations
+
+The asset class is checked by the same function =market_series= used
+before the column moved here, so the code is validated against the
+system tenant's catalogue and a bootstrap load still passes through.
+
+| column           | validation_function                       |
+|------------------+-------------------------------------------|
+| asset_class_code | ores_refdata_validate_asset_class_code_fn |
+
+* Repository
+:PROPERTIES:
+:name_singular_short: asset_class
+:name_short:          asset_classes
+:name_singular_words: asset class
+:name_words:          asset classes
+:order_column:        asset_class_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: msac
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| market_series_id | Series      |
+| asset_class_code | Asset Class |
+| modified_by      | Modified By |
+| version          | Version     |
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] — the
+  taxonomy the =asset_class_code= column references, and the ruling that
+  a correlation references two classes rather than a third cross-asset
+  class.
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][market_series]] — the
+  series these rows qualify.

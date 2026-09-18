@@ -7,14 +7,14 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:inventory:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-09-17
 
 * Summary
 
 =ores.marketdata= is an existing, production-quality component that stores market
 series (catalog), observations (time series), and fixings in TimescaleDB, scoped by
-tenant. FX spot is already a first-class citizen: =series_type="FX"=, =is_scalar=true=,
-=point_id= null. NATS request-reply subjects cover query and save operations for all
+tenant. FX spot is already a first-class citizen: =series_type="FX"=, with every
+observation on it carrying =point_id= =SPOT=. NATS request-reply subjects cover query and save operations for all
 three entity types, but no fan-out (publish) subject exists yet for live ticks. The
 Qt market data plugin has tabular list windows only — no chart display. The sole
 charting widget in the codebase is =QueueChartWindow= in =ores.qt.compute=, which
@@ -47,7 +47,6 @@ current record per =(tenant, series_type, metric, qualifier)=).
 | =qualifier=   | string              | ORE key segment 3 onwards (e.g. =EUR/USD=, =EUR=). |
 | =asset_class= | string              | Coarse class, a code from =refdata.asset_class_code=: =fx=, =interest_rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=. |
 | =subclass=    | string              | Fine class, a code from =refdata.series_subclass_code=: =yield=, =spot=, =forward=, =volatility=, =basis=, =xccy=, etc. |
-| =is_scalar=   | bool                | True when the series has no tenor/surface dimension (FX spot, equity spot). Observations for scalar series always have =point_id= null. |
 | =recorded_at= | timestamp           | Transaction time (inserted). |
 
 ** market_observation
@@ -63,7 +62,7 @@ one, preserving full transaction-time history.
 | =tenant_id=        | =tenant_id= wrapper | Scoping. |
 | =series_id=        | UUID              | FK → =market_series.id=. |
 | =observation_date= | =year_month_day=  | Financial valid-time (the market date). |
-| =point_id=         | optional string   | Tenor or surface coordinate (e.g. ="1Y"=, ="1Y/ATM"=). Null for scalar series (FX spot, equity spot). |
+| =point_id=         | string            | Tenor or surface coordinate (e.g. ="1Y"=, ="1Y/ATM"=). Never null: a series whose keys carry no coordinate of their own takes the one its series type names, which is =SPOT= for an FX rate and the empty string for a series with no coordinate at all. |
 | =value=            | string            | Observed value, e.g. ="1.08456"=. Stored as string to preserve precision verbatim. |
 | =source=           | optional string   | Data source tag, e.g. ="BLOOMBERG"=. |
 | =recorded_at=      | timestamp         | Transaction time (inserted). |
@@ -85,8 +84,7 @@ EUR/USD spot mid-price is stored as:
 | =qualifier=   | =EUR/USD= |
 | =asset_class= | =fx= |
 | =subclass=    | =spot= |
-| =is_scalar=   | =true= |
-| =point_id=    | null (all observations) |
+| =point_id=    | =SPOT= (all observations) |
 | ORE key       | =FX/RATE/EUR/USD= |
 
 A synthetic EUR/USD tick is a =save_market_observations_request= with a single

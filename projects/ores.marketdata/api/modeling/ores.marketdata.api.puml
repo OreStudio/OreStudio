@@ -24,8 +24,6 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
         namespace domain #F2F2F2 {
-            enum asset_class {
-            }
             class market_fixing <<struct>> {
                 +fixing_date : chrono::year_month_day
                 +value : string
@@ -33,8 +31,8 @@ namespace ores #F2F2F2 {
                 +recorded_at : chrono::system_clock::time_point
             }
             class market_observation <<struct>> {
-                +observation_date : chrono::year_month_day
-                +point_id : optional<string>
+                +observation_datetime : chrono::system_clock::time_point
+                +point_id : string
                 +value : string
                 +source : optional<string>
                 +recorded_at : chrono::system_clock::time_point
@@ -44,16 +42,13 @@ namespace ores #F2F2F2 {
                 +series_type : string
                 +metric : string
                 +qualifier : string
-                +asset_class : domain::asset_class
-                +subclass : domain::series_subclass
-                +is_scalar : bool
+                +asset_class : string
+                +series_subclass : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
-            }
-            enum series_subclass {
             }
         }
         namespace messaging #F2F2F2 {

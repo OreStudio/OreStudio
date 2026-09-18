@@ -35,8 +35,8 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Catalog entry identifying what is being observed (series type, metric, qualifier, asset
- * class).
+ * @brief Catalog entry identifying what is being observed (series type, metric, qualifier,
+ * subclass).
  *
  * A catalog entry for a market data series — it records what is being observed:
  * a yield curve, vol surface, spot rate, fixing index, or similar. Standard
@@ -44,7 +44,10 @@ namespace ores::marketdata::domain {
  * exclusion is appropriate.
  *
  * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
- * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ * series_subclass carries the coarse taxonomy for filtering, and the asset
+ * classes the series belongs to live in
+ * market_series_asset_classes -- a set rather than a column, because a
+ * pairwise correlation relates two classes at once.
  *
  * derivation_kind/derivation_config_id/derivation_config_version mark
  * whether this series is directly observed (the sentinel OBSERVED) or
@@ -89,38 +92,18 @@ struct market_series final {
     std::string metric;
 
     /**
-     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR,
-     * EUR-EURIBOR-3M, or an empty string for scalars).
+     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR, EUR-CHF,
+     * EUR-EURIBOR-3M).
      */
     std::string qualifier;
 
     /**
-     * @brief Asset class this series belongs to, as a code from refdata.asset_class_code
-     * (referenced asset_class_code.code; column named asset_class, not asset_class_code, for the
-     * same C++ name lookup reason as instrument_code.asset_class). Validated by
-     * ores_refdata_validate_asset_class_code_fn, the codebase's cross-table reference mechanism.
-     *
-     * Carried as the code itself rather than a compiled enum: the taxonomy is runtime-managed, so
-     * no compiled list can be exhaustive over it, and the table is the single source of truth.
-     * There is no default -- an unset class must fail at the database boundary rather than silently
-     * claim to be FX, which is the defect this column previously had.
-     */
-    std::string asset_class;
-
-    /**
      * @brief Subclass within the asset class, as a code from refdata.series_subclass_code
      * (referenced series_subclass_code.code). Validated by
-     * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism as
-     * asset_class above, and carried as the code itself for the same reason: the taxonomy is
-     * runtime-managed.
+     * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism the
+     * asset-class junction uses, and carried as the code itself: the taxonomy is runtime-managed.
      */
     std::string series_subclass;
-
-    /**
-     * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),
-     * false when it is curve/surface/matrix data.
-     */
-    bool is_scalar = false;
 
     /**
      * @brief References derivation_kind.code -- whether this series is directly observed (the

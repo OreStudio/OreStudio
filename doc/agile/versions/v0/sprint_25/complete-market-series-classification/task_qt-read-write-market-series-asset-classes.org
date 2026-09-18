@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: B17CEB3E-0350-4E2B-83FD-E89BFE2476F3
+:END:
+#+title: Task: Read and write the market series asset classes in Qt
+#+description: The Qt client reads and writes the market_series_asset_classes junction, so the market series grid shows the asset classes each series belongs to and the New Series form records them. Junction protocols are hand-written, so this carries its own protocol, client fetch and in-memory join.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Qt client reads and writes the =market_series_asset_classes= junction, so the market series grid shows the asset classes each series belongs to and the New Series form records them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- A protocol carries the asset classes for each market series, hand-written because junction messaging is not generated.
+- The client fetches the junction rows with the series and joins them in memory.
+- The market series grid shows each class's catalogue =name= and filters on it.
+- The New Series form writes one junction row per class the series key yields.
+- A series created through the form has junction rows; today it has none.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+*This task restores something, it does not only add it.* The junction
+change removed three things from the UI, because the data behind them
+left the series row and no read path replaced it:
+
+- The market series grid's =Asset Class= column, which showed the raw
+  =asset_class= code.
+- The grid's asset class filter combo box on the toolbar, which filtered
+  that column client-side.
+- The New Series form's asset class combo box, so a series created
+  through the form now has no junction rows at all.
+
+Each comes back here, sourced from the junction rather than the series
+row. The grid column and the filter should read the catalogue =name=,
+which is the display correction PR #2092 recorded and could not make.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

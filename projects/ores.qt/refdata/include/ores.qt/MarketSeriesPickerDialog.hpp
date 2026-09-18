@@ -108,7 +108,6 @@ private:
     QLineEdit* newSeriesTypeEdit_ = nullptr;
     QLineEdit* newMetricEdit_ = nullptr;
     QLineEdit* newQualifierEdit_ = nullptr;
-    QComboBox* newAssetClassCombo_ = nullptr;
     QComboBox* newSubclassCombo_ = nullptr;
 
     std::vector<marketdata::domain::market_series> rows_;

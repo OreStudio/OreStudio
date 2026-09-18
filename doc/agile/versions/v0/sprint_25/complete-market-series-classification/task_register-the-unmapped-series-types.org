@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 65572B8E-55B8-4988-AE63-A25EBAFD65CD
+:END:
+#+title: Task: Register the unmapped series types in the key registry
+#+description: Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know, so each type's keys split into one series with many points instead of many single-observation series.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- The registry carries an entry for each of OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING, with its qualifier depth and point dimension read off the corpus.
+- Every distinct key of those types decomposes into a qualifier and a point, so its observations share one series.
+- A test asserts the classifier's type set and the registry's type set are equal, so the two tables cannot drift.
+- The corpus census of distinct series is materially lower after the change, and the drop is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

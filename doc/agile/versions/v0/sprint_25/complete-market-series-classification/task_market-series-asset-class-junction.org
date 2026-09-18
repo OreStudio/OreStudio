@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 1CBBD6A0-95F7-46E4-9DE9-AFDDA9FEB831
+:END:
+#+title: Task: Give a market series a set of asset classes
+#+description: Replace the single not-null market_series.asset_class column with an ores_marketdata_market_series_asset_classes_tbl junction, so a pairwise correlation can reference the two classes it relates. Update the classifier's consumers, the DQ publish path and the Qt market series grid, and confirm the refdata catalogue descriptions read correctly.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch: feature/extract-series-classifier-and-cover-the-corpus
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the single not-null =market_series.asset_class= column with a
+junction table, so a pairwise correlation can reference the two asset
+classes it relates. Update every consumer of the column, and confirm
+the refdata catalogue descriptions read correctly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The work is verified.         |
+| Next         | Nothing. |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- =ores_marketdata_market_series_asset_classes_tbl= exists and is
+  tenant-scoped, and a series carries any number of asset classes.
+- =market_series.asset_class= is gone: the column, its check row, its
+  generator, and every reader of it.
+- An import writes one junction row per class the classifier returns,
+  so a cross-class correlation writes two.
+- The Qt market series grid no longer shows a raw code the series does
+  not carry, and the column and its filter come back sourced from the
+  junction under the sibling task. Amended on review; this bullet
+  claimed the grid would show the catalogue =name=, which the change
+  does not deliver because no read path for the junction exists.
+- Every =name= and =description= in the refdata catalogues this work
+  touched reads correctly.
+
+* Plan
+
+Unit 4 of the story plan, then Unit 5. Unit 4 runs before the sibling
+task's Unit 1, so that no step in the sequence needs a guarded
+=front()= or an invented filler for the empty class set.
+
+*Unit 4, the junction.* A new =ores.codegen.junction= org,
+=ores.marketdata.market_series_asset_class_junction=, modelled on
+=ores.iam.account_party_junction= for the uuid-keyed shape. Left is
+=market_series_id=, right is =asset_class_code=, both soft FKs. The
+profile binds under =* Flags=, not in front matter, because
+=load_org_junction_model= reads front matter through a fixed allowlist
+that does not include =profile=. Generate it, then drop =asset_class=
+from =market_series.org= and regenerate.
+
+Consumers to update: =import_service.cpp=, =feed_ingest_loop.cpp=, the
+DQ publish SQL, =ClientMarketSeriesModel=, =MarketSeriesMdiWindow=,
+=MarketSeriesPickerDialog=, and the domain tests.
+
+*Unit 5, the catalogues.* The populate SQL for the catalogues this
+work touched already carries =name= and =description= for every row.
+This unit reads them, confirms each reads correctly, and fixes any
+that do not.
+
+* Notes
+
+*Three deviations from the plan, all deliberate, all recorded here
+rather than absorbed.*
+
+The plan expected the domain type to carry a collection of asset class
+codes, and the Qt grid and its filter to read that collection. Neither
+shipped. A series reads its classes from the junction, and nothing else
+holds them, so a client cannot know a series' classes without a second
+request — and no protocol serves one. Junction messaging is
+hand-written, not generated, so serving one means writing a protocol,
+a handler and a client fetch by hand.
+
+The three items this defers, all to the sibling task: the grid's
+=Asset Class= column, the toolbar filter combo box that filtered it
+client-side, and the New Series form's asset class combo box. The
+column and the filter are a regression, not a gap: both worked before
+this change, showing and filtering on the raw code.
+
+The alternative was to keep the column reading a value the series no
+longer has, which cannot compile, or to leave a filter combo that
+filters on nothing, which is a control that lies. Deleting them and
+restoring them from the junction is the smaller honest step.
+
+The plan's third expectation holds as written: =import_service= writes
+one junction row per code the classifier returns.
+
+*The consumer list missed a populate script, and the recreate caught
+it.* =marketdata_market_series_fomc_populate.sql= seeds the two FOMC
+segment series and named =asset_class= in its column list. The column
+is gone, so the insert failed. =setup_schema.sql= sets
+=ON_ERROR_STOP=, so the populate phase aborted there, and
+=compass db recreate= returned 1. The failure hid its own cause: the
+metadata phase runs after the schema phase, so a non-zero exit left no
+metadata row and no =ores.env_type=, and the schema itself looked
+complete because refdata populates before marketdata.
+
+The fix removes the column and writes one junction row per series. A
+full =db recreate= now completes with no errors in 1m 25s, and both
+the series and junction rows are present.
+
+*The consumer list missed a second reader, and the build caught it.*
+=RateCurvesMdiWindow.cpp= filtered its rows on =s.asset_class !=
+"interest_rates"=, which no longer compiles. The row does not carry the
+class, and the junction has no read path, so the filter reads
+=series_subclass == "yield"= instead -- the catalogue's rates-only,
+curve-shaped subclass. That is narrower than the old test, which also
+admitted the spread, FRA, xccy and volatility subclasses.
+
+*That filter was also hiding the window's own content.* Its second
+clause called =has_point_dimension=, and the registry has no entry for
+=RATES= or =YieldCurve=. Those are the two series types the synthetic
+feed and the republish service write, so the window exists to show
+them, and both were filtered out. =has_point_dimension= answers false
+for a type it does not know. =decompose_key= treats an unknown type the
+same way, and folds every segment into the qualifier with no point. The
+new filter drops the call, so the seeded curves appear. No other code
+in the tree calls =has_point_dimension=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The replacement filter is narrower than the one it replaces, so the window shows fewer curves | =RateCurvesMdiWindow.cpp= | Accepted as recorded | =series_subclass == "yield"= admits the four yield subtypes and drops the basis, =fra=, =xccy= and volatility subclasses the old =asset_class= test admitted. =* Notes= states this before the change ships. The window is named for curves, so the narrower test reads truer, but it is a visible change in a window no test reaches. |
+| 2 | =misspell-fixer .= exits 1 | three =org= records outside this change set | Declined | All three hits are the upstream identifier =LOAD_PROFILE_1_EXPLICT=, quoted verbatim because the portfolio references the name. Correcting it would make the records false. Two earlier PR review tables reached the same decision. No file in this change set is among them. |
+
+* Result
+
+Unit 4 shipped. =market_series.asset_class= is gone, and a series carries
+its classes through =ores_marketdata_market_series_asset_classes_tbl=,
+generated from a new =ores.codegen.junction= org.
+
+*What changed.* The junction org models =market_series_id= against
+=asset_class_code=, both soft FKs, under the =tenant-scoped-junction=
+profile. Dropping the column took its check row, its generator and its
+insert-trigger validation with it. =import_service= writes one junction
+row per code the classifier returns, so a cross-class correlation writes
+two. =feed_ingest_loop=, the DQ publish SQL, the domain tests and six Qt
+files followed. Two stale =component_files.cmake= were regenerated.
+
+*What the change surfaced.* Three defects, all recorded in =* Notes=
+above. The consumer list missed a populate script, and the =db recreate=
+caught it. It also missed a second reader, and the build caught it. That
+reader, =RateCurvesMdiWindow=, had a further latent fault: its
+=has_point_dimension= clause dropped both seeded series, because the
+registry holds no entry for =RATES= or =YieldCurve= and the predicate
+answers false for a type it does not know. The grid was empty before
+this work began.
+
+*Verification.* =compass db recreate -y -k= completes clean in 1m 25s,
+with both the series rows and the junction rows present. The full build
+reaches 100% with no errors and no warnings. The suite passes 73 of 73
+in 1126s.
+
+*The corpus classifier tests ran.* =ores.marketdata.core.tests= passed
+697 assertions across 191 test cases, and all four corpus cases appear
+in the run. =every_distinct_series_key_in_the_ore_corpus_classifies=
+clears its 90000-key floor, so the walk found the corpus rather than an
+empty tree. The suite randomises case order, so the walk's cost lands on
+whichever case calls the survey first, about 18s; the rest reuse it.
+
+*Not covered.* No automated test reaches the Qt windows. The
+=RateCurvesMdiWindow= filter change is verified by compile, link and
+inspection only.
+
+*Deferred to the sibling task.* The grid's =Asset Class= column, its
+toolbar filter and the New Series form's class combo box. Nothing serves
+the junction over the wire, so restoring them means a hand-written
+protocol, handler and client fetch.

@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "classification/series_classifier.cpp"
     "messaging/feed_binding_history_provider_registrar.cpp"
     "messaging/feed_binding_registrar.cpp"
     "messaging/market_fixing_registrar.cpp"
@@ -46,6 +47,9 @@ set(files
     "repository/market_observation_mapper.cpp"
     "repository/market_observation_repository.cpp"
     "repository/market_observations_repository.cpp"
+    "repository/market_series_asset_class_entity.cpp"
+    "repository/market_series_asset_class_mapper.cpp"
+    "repository/market_series_asset_class_repository.cpp"
     "repository/market_series_entity.cpp"
     "repository/market_series_mapper.cpp"
     "repository/market_series_repository.cpp"
@@ -62,6 +66,7 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/classification/series_classifier.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/feed_binding_handler.hpp"
@@ -102,6 +107,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_observation_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_observation_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_observations_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_asset_class_entity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_asset_class_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/repository/market_series_repository.hpp"

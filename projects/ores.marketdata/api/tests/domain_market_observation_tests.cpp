@@ -69,7 +69,7 @@ TEST_CASE("create_curve_observation_with_tenor", tags) {
     CHECK(sut.source == "BLOOMBERG");
 }
 
-TEST_CASE("create_scalar_observation_without_point_id", tags) {
+TEST_CASE("create_observation_without_point_id", tags) {
     auto lg(make_logger(test_suite));
 
     static boost::uuids::random_generator gen;
@@ -79,9 +79,8 @@ TEST_CASE("create_scalar_observation_without_point_id", tags) {
     sut.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} /
                                                      std::chrono::month{6} / std::chrono::day{1}};
     sut.value = "1.08450";
-    // point_id is null for scalar series (FX spot, equity spot)
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Scalar observation: " << sut;
+    BOOST_LOG_SEV(lg, info) << "Observation without a point: " << sut;
 
     CHECK(sut.point_id.empty());
     CHECK(sut.value == "1.08450");

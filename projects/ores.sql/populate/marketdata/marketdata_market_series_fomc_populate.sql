@@ -46,6 +46,10 @@
  * Both rows belong to the system party, matching the party the synthetic
  * dataset publishes into and therefore the party_id on the feed's ticks.
  *
+ * Both also carry one junction row each in
+ * ores_marketdata_market_series_asset_classes_tbl, since the asset class is
+ * no longer a column on the series row.
+ *
  * This script is idempotent - uses INSERT ON CONFLICT DO NOTHING (a
  * rerun must not reset a row the republish service has already stamped).
  */
@@ -54,7 +58,7 @@
 
 insert into ores_marketdata_market_series_tbl (
     id, tenant_id, version, party_id, series_type, metric, qualifier,
-    asset_class, series_subclass, is_scalar,
+    series_subclass,
     derivation_kind, derivation_config_id, derivation_config_version,
     modified_by, performed_by, change_reason_code, change_commentary
 )
@@ -65,7 +69,7 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'RATES', 'YIELD', 'USD/SOFR-FOMC',
-        'interest_rates', 'yield', false,
+        'yield',
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Raw FOMC-dated OIS grid: the synthetic feed''s tick target for the FOMC segment'
@@ -76,12 +80,37 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'YieldCurve', 'DISCOUNT', 'USD/SOFR-FOMC',
-        'interest_rates', 'yield', false,
+        'yield',
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Bootstrapped USD SOFR curve (FOMC segment): republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
     )
 on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+-- Both series belong to the interest rates asset class, which the junction
+-- carries rather than the series row.
+insert into ores_marketdata_market_series_asset_classes_tbl (
+    market_series_id, tenant_id, asset_class_code, version,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    (
+        'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'The raw FOMC-dated OIS grid is an interest rates series'
+    ),
+    (
+        'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'The bootstrapped USD SOFR curve is an interest rates series'
+    )
+on conflict (tenant_id, market_series_id, asset_class_code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 

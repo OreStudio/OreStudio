@@ -39,7 +39,7 @@ namespace ores::marketdata::domain {
  * hypertable partitioned by observation_datetime.
  *
  * A single market data observation: the value of a series at a given
- * observation_datetime and optional point_id (tenor/surface coordinate).
+ * observation_datetime and point_id (tenor/surface coordinate).
  * observation_datetime is the financial valid-time (UTC); valid_from/valid_to
  * is the transaction time. Corrections replace the previous value via the
  * soft-update trigger.
@@ -81,8 +81,13 @@ struct market_observation final {
     std::chrono::system_clock::time_point observation_datetime;
 
     /**
-     * @brief Tenor or compound surface identifier (e.g. 1Y, 5Y/2Y/ATM, 0.03/10Y/2Y). Null for
-     * scalar series such as FX spot rates.
+     * @brief Tenor or compound surface identifier (e.g. 1Y, 5Y/2Y/ATM, 0.03/10Y/2Y).
+     *
+     * Every observation carries one. A series whose keys have no coordinate of their own has a
+     * single point and names it explicitly -- SPOT for an FX rate, an equity or a commodity price,
+     * the empty string for a series with no coordinate at all, such as a recovery rate. The value
+     * comes from ores::ore::market::default_point_for(), so it is a property of the series type
+     * rather than something each producer decides.
      */
     std::string point_id;
 

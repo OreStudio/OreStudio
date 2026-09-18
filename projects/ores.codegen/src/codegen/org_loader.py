@@ -1863,6 +1863,19 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             _soft_fk_validation_node_to_dict(c) for c in fk_section.children
         ]
 
+    # Validations through a named function, parsed identically to a
+    # domain_entity's (see load_org_model): an `* Insert trigger` section
+    # whose `** Validations` table names the function each column is
+    # checked by. A junction's sides are always mandatory, so nothing here
+    # is nullable and the template renders the unconditional form.
+    insert_section = _section(doc.root, "Insert trigger")
+    if insert_section:
+        validations_section = _section(insert_section, "Validations")
+        if validations_section:
+            j["insert_trigger"] = {
+                "validations": _parse_org_table_rows(validations_section)
+            }
+
     sql_section = _section(doc.root, "SQL")
     if sql_section:
         sql_flags = _section(sql_section, "Flags")

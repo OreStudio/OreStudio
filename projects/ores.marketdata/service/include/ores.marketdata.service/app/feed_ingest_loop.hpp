@@ -108,8 +108,9 @@ private:
     /// observation row. Returns true when the observation was persisted, so
     /// callers can gate side effects (republish) on a durable write.
     /// asset_class and series_subclass are supplied by the caller -- the binding
-    /// for a bound tick, the wire payload for a self-describing one. Nothing is
-    /// inferred from the series_type.
+    /// for a bound tick, the wire payload for a self-describing one; neither is
+    /// inferred from the series_type. point_id is the caller's coordinate, or
+    /// empty to take the series type's default, which is SPOT for an FX rate.
     bool persist_tick_observation(const ores::database::context& ctx,
                                   ores::utility::uuid::tenant_id tenant_id,
                                   const boost::uuids::uuid& party_id,
@@ -118,7 +119,6 @@ private:
                                   const std::string& qualifier,
                                   const std::string& asset_class,
                                   const std::string& series_subclass,
-                                  bool is_scalar,
                                   std::chrono::system_clock::time_point datetime,
                                   const std::string& value,
                                   const std::string& source,

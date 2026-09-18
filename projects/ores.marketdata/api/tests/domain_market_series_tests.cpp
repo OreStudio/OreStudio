@@ -38,9 +38,7 @@ market_series make_eur_discount_series() {
     s.series_type = "DISCOUNT";
     s.metric = "RATE";
     s.qualifier = "EUR";
-    s.asset_class = "interest_rates";
     s.series_subclass = "yield";
-    s.is_scalar = false;
     s.modified_by = "system";
     s.performed_by = "system";
     s.change_reason_code = "system.new";
@@ -63,12 +61,10 @@ TEST_CASE("create_market_series_with_valid_fields", tags) {
     CHECK(sut.series_type == "DISCOUNT");
     CHECK(sut.metric == "RATE");
     CHECK(sut.qualifier == "EUR");
-    CHECK(sut.asset_class == "interest_rates");
     CHECK(sut.series_subclass == "yield");
-    CHECK(sut.is_scalar == false);
 }
 
-TEST_CASE("create_scalar_fx_spot_series", tags) {
+TEST_CASE("create_fx_spot_series", tags) {
     auto lg(make_logger(test_suite));
 
     market_series sut;
@@ -76,9 +72,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
     sut.series_type = "FX";
     sut.metric = "RATE";
     sut.qualifier = "EUR/USD";
-    sut.asset_class = "fx";
     sut.series_subclass = "spot";
-    sut.is_scalar = true;
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -88,9 +82,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
 
     CHECK(sut.series_type == "FX");
     CHECK(sut.qualifier == "EUR/USD");
-    CHECK(sut.asset_class == "fx");
     CHECK(sut.series_subclass == "spot");
-    CHECK(sut.is_scalar == true);
 }
 
 TEST_CASE("market_series_json_serialisation", tags) {
@@ -116,9 +108,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     sut.series_type = "SWAPTION";
     sut.metric = "RATE_LNVOL";
     sut.qualifier = "EUR";
-    sut.asset_class = "interest_rates";
     sut.series_subclass = "volatility";
-    sut.is_scalar = false;
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -127,9 +117,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     BOOST_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
 
     CHECK(sut.series_type == "SWAPTION");
-    CHECK(sut.asset_class == "interest_rates");
     CHECK(sut.series_subclass == "volatility");
-    CHECK(sut.is_scalar == false);
 }
 
 TEST_CASE("create_market_series_with_faker", tags) {
@@ -140,9 +128,7 @@ TEST_CASE("create_market_series_with_faker", tags) {
     sut.series_type = "MM";
     sut.metric = "RATE";
     sut.qualifier = std::string(faker::finance::currencyCode());
-    sut.asset_class = "interest_rates";
     sut.series_subclass = "yield";
-    sut.is_scalar = false;
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());
     sut.change_reason_code = "system.new";

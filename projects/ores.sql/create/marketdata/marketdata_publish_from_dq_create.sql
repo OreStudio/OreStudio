@@ -62,7 +62,6 @@ declare
     v_series_id uuid;
     v_asset_class text;
     v_series_subclass text;
-    v_is_scalar boolean;
     v_exists boolean;
 begin
     select name into v_dataset_name
@@ -125,11 +124,9 @@ begin
             -- Bond/Commodity/.../ForeignExchange/... taxonomy.
             v_asset_class := 'fx';
             v_series_subclass := 'spot';
-            v_is_scalar := true;
         elsif r.series_type = 'RATES' and r.metric = 'YIELD' then
             v_asset_class := 'interest_rates';
             v_series_subclass := 'yield';
-            v_is_scalar := false;
         else
             raise exception 'Unclassified series_type/metric: %/% - extend this function', r.series_type, r.metric;
         end if;
@@ -153,15 +150,26 @@ begin
             -- else both required).
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
-                series_type, metric, qualifier, asset_class, series_subclass, is_scalar,
+                series_type, metric, qualifier, series_subclass,
                 derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
-                r.series_type, r.metric, r.qualifier, v_asset_class, v_series_subclass, v_is_scalar,
+                r.series_type, r.metric, r.qualifier, v_series_subclass,
                 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            );
+
+            insert into ores_marketdata_market_series_asset_classes_tbl (
+                tenant_id, market_series_id, asset_class_code, version,
+                modified_by, performed_by, change_reason_code, change_commentary,
+                valid_from, valid_to
+            ) values (
+                p_target_tenant_id, v_series_id, v_asset_class, 0,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name,
+                clock_timestamp(), ores_utility_infinity_timestamp_fn()
             );
         end if;
 
@@ -171,7 +179,7 @@ begin
               and existing.party_id = v_target_party_id
               and existing.series_id = v_series_id
               and existing.observation_datetime = r.observation_date::timestamptz
-              and coalesce(existing.point_id, '') = coalesce(r.point_id, '')
+              and existing.point_id = r.point_id
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 

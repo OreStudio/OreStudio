@@ -365,6 +365,36 @@ rather than one special value. That removes the only value in the
 market data enumeration that has no counterpart in any external scheme,
 and removes the need to explain it.
 
+** How a correlation names its two classes
+
+ORE does not carry the classes on the key. It names each operand after
+the factor class that operand belongs to, so the classes are recovered
+from the operand names:
+
+| Operand begins with | Class             | Example              |
+|---------------------+-------------------+----------------------|
+| =EQ-=               | =equity=          | =EQ-RIC:.SPX=        |
+| =FX-=               | =fx=              | =FX-GENERIC-USD-EUR= |
+| =COMM-=             | =commodity=       | =COMM-NYMEX:CL=      |
+| contains =-CMS-=    | =interest_rates=  | =EUR-CMS-10Y=        |
+
+A rates operand takes the fourth form rather than a prefix. A swap rate
+names its currency, not a class, and =-CMS-= is the part that marks it
+as one. The exception is real in the corpus and not a special case we
+introduced.
+
+An operand matching no rule contributes no class. A correlation over
+two such operands therefore references no class at all, which the
+junction permits and a single not-null column would not. A pair whose
+two operands share a class references that class once, not twice.
+
+This is a naming convention of the corpus rather than a published ORE
+contract. =series_classifier= implements it, and the corpus test runs
+every correlation pair the examples carry through it and pins the
+outcome for a cross-class, a same-class and a rates pair, so a change
+in the convention surfaces as a test failure rather than as a silently
+wrong class.
+
 ** Bond stays
 
 Bond is absent from both risk classifications for a good reason: a

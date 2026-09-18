@@ -20,15 +20,11 @@
 #include "ores.qt/MarketSeriesMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/asset_class_code_protocol.hpp"
 #include <QHeaderView>
-#include <QLabel>
 #include <QPointer>
 #include <QWidgetAction>
-#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -45,10 +41,8 @@ MarketSeriesMdiWindow::MarketSeriesMdiWindow(ClientManager* clientManager,
     , reloadAction_(new QAction("Reload", this))
     , viewObsAction_(new QAction("View Observations", this))
     , viewChartAction_(new QAction("Chart", this))
-    , assetClassCombo_(new QComboBox(this))
     , model_(std::make_unique<ClientMarketSeriesModel>(clientManager))
     , proxyModel_(new QSortFilterProxyModel(this))
-    , assetClassWatcher_(new QFutureWatcher<AssetClassFetchResult>(this))
     , clientManager_(clientManager)
     , username_(username) {
 
@@ -115,11 +109,6 @@ void MarketSeriesMdiWindow::setupUi() {
         }
     });
 
-    connect(assetClassWatcher_,
-            &QFutureWatcher<AssetClassFetchResult>::finished,
-            this,
-            &MarketSeriesMdiWindow::onAssetClassesLoaded);
-
     if (clientManager_) {
         connect(clientManager_,
                 &ClientManager::connected,
@@ -131,7 +120,6 @@ void MarketSeriesMdiWindow::setupUi() {
                 &MarketSeriesMdiWindow::onConnectionStateChanged);
         if (clientManager_->isConnected()) {
             model_->refresh();
-            loadAssetClasses();
         }
     }
 
@@ -163,21 +151,6 @@ void MarketSeriesMdiWindow::setupToolbar() {
     viewChartAction_->setEnabled(false);
     connect(viewChartAction_, &QAction::triggered, this, &MarketSeriesMdiWindow::viewChart);
     toolBar_->addAction(viewChartAction_);
-
-    toolBar_->addSeparator();
-
-    // Asset class filter
-    auto* filterLabel = new QLabel(tr("  Asset Class: "), this);
-    toolBar_->addWidget(filterLabel);
-
-    // Populated dynamically from refdata.v1.asset-classes.list after connection.
-    // The "All" entry is always present; per-class items are added by loadAssetClasses().
-    assetClassCombo_->addItem(tr("All"), QString{});
-    connect(assetClassCombo_,
-            QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this,
-            &MarketSeriesMdiWindow::onAssetClassFilterChanged);
-    toolBar_->addWidget(assetClassCombo_);
 }
 
 void MarketSeriesMdiWindow::updateActionStates() {
@@ -185,15 +158,15 @@ void MarketSeriesMdiWindow::updateActionStates() {
         tableView_->selectionModel() && tableView_->selectionModel()->hasSelection();
     viewObsAction_->setEnabled(hasSelection);
 
-    // The live chart is meaningful only for FX spot series (scalar, FX series
-    // type). Other series types are not yet handled by the chart window.
+    // The live chart is meaningful only for FX spot series. Other series types
+    // are not yet handled by the chart window.
     bool isFxSpot = false;
     if (hasSelection) {
         const auto selection = tableView_->selectionModel()->selectedRows();
         if (!selection.isEmpty()) {
             const auto sourceIndex = proxyModel_->mapToSource(selection.first());
             if (const auto* s = model_->getSeries(sourceIndex.row()))
-                isFxSpot = s->is_scalar && s->series_type == "FX";
+                isFxSpot = s->series_type == "FX";
         }
     }
     viewChartAction_->setEnabled(isFxSpot);
@@ -253,71 +226,6 @@ void MarketSeriesMdiWindow::onSelectionChanged() {
 void MarketSeriesMdiWindow::onConnectionStateChanged() {
     if (clientManager_ && clientManager_->isConnected()) {
         model_->refresh();
-        loadAssetClasses();
-    }
-}
-
-void MarketSeriesMdiWindow::loadAssetClasses() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<MarketSeriesMdiWindow> self = this;
-    QFuture<AssetClassFetchResult> future = QtConcurrent::run([self]() -> AssetClassFetchResult {
-        return exception_helper::wrap_async_fetch<AssetClassFetchResult>(
-            [&]() -> AssetClassFetchResult {
-                if (!self || !self->clientManager_)
-                    return {};
-                refdata::messaging::get_asset_class_codes_request req;
-                auto result = self->clientManager_->process_authenticated_request(std::move(req));
-                if (!result)
-                    return {};
-                AssetClassFetchResult r;
-                r.asset_classes = std::move(result->asset_classes);
-                return r;
-            },
-            "asset classes");
-    });
-    assetClassWatcher_->setFuture(future);
-}
-
-void MarketSeriesMdiWindow::onAssetClassesLoaded() {
-    const auto result = assetClassWatcher_->result();
-    if (result.success && !result.asset_classes.empty())
-        populateAssetClassCombo(result.asset_classes);
-}
-
-void MarketSeriesMdiWindow::populateAssetClassCombo(
-    const std::vector<refdata::domain::asset_class_code>& classes) {
-    const QString current = assetClassCombo_->currentData().toString();
-
-    assetClassCombo_->clear();
-    assetClassCombo_->addItem(tr("All"), QString{});
-    // The list column holds the code, so the code is what filtering matches on.
-    for (const auto& ac : classes) {
-        assetClassCombo_->addItem(QString::fromStdString(ac.name), QString::fromStdString(ac.code));
-    }
-
-    // Restore previous selection if it still exists.
-    if (!current.isEmpty()) {
-        const int idx = assetClassCombo_->findData(current);
-        if (idx >= 0)
-            assetClassCombo_->setCurrentIndex(idx);
-    }
-}
-
-void MarketSeriesMdiWindow::onAssetClassFilterChanged(int /*index*/) {
-    applyAssetClassFilter();
-}
-
-void MarketSeriesMdiWindow::applyAssetClassFilter() {
-    // The server-side filter uses series_type, not asset_class directly.
-    // We use client-side proxy filtering on the AssetClass column (col 3).
-    const QString filterText = assetClassCombo_->currentData().toString();
-    if (filterText.isEmpty()) {
-        proxyModel_->setFilterFixedString({});
-    } else {
-        proxyModel_->setFilterKeyColumn(ClientMarketSeriesModel::AssetClass);
-        proxyModel_->setFilterFixedString(filterText);
     }
 }
 

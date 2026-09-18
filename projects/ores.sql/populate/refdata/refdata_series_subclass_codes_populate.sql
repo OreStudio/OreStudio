@@ -41,7 +41,7 @@ insert into ores_refdata_series_subclass_codes_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), 'spot', 0, 'Spot',
-     'Price of the underlying for immediate or near-immediate delivery: an FX rate, an equity price, a commodity price. Scalar -- the series has no tenor dimension, so every observation on it carries a null point_id. FX spot is the canonical case (FX/RATE/EUR/USD), and it is the series that the forward and option series in the same book ultimately reference.',
+     'Price of the underlying for immediate or near-immediate delivery: an FX rate, an equity price, a commodity price. The series has no tenor dimension of its own, so each observation names the single point SPOT. FX spot is the canonical case (FX/RATE/EUR/USD), and it is the series that the forward and option series in the same book ultimately reference.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'forward', 0, 'Forward',
      'Price or rate for delivery on a future date. Covers FX forwards and forward points, equity forwards and dividend curves, and commodity forward curves. Unlike spot, a forward series is a curve: each observation names its tenor in point_id, and the value is only meaningful together with that tenor.',
@@ -50,7 +50,7 @@ values
      'Implied volatility quoted on a curve or surface. Covers FX option surfaces, swaption and cap/floor surfaces, and equity and commodity option surfaces. This is the widest subclass: a surface has two coordinates (expiry and strike) where a curve has one, and the point_id encoding is not shared across the asset classes that use it.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'yield', 0, 'Yield',
-     'Yield, zero rate, or discount factor curve. The rates-side workhorse: money-market and deposit curves, zero curves, discount curves, and bootstrapped swap curves all land here. Always curve-shaped, always per currency or per currency and index, with point_id naming the pillar.',
+     'Yield, zero rate, or discount factor curve. The rates-side workhorse: money-market and deposit curves, zero curves, discount curves, and bootstrapped swap curves all land here. Always curve-shaped, always per currency or per currency and index, with point_id naming the pillar. A published index fixing is not a curve and does not belong here; it is an index_fixing.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'basis', 0, 'Basis',
      'Basis spread curve: the difference between two otherwise comparable curves. Covers basis swaps and BMA/SIFMA swaps. A basis quote is meaningful only relative to the two legs it spans, so the qualifier carries both reference names rather than one currency.',
@@ -74,17 +74,26 @@ values
      'Inflation swap curve: zero-coupon or year-on-year, quoted per inflation index. Meaningful only alongside a nominal discounting curve and the index''s own fixing history.',
      11, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'capfloor', 0, 'Cap/Floor',
-     'Cap and floor volatility surface: implied volatility on an option on a floating rate, quoted by strike (often as a moneyness offset from the swap rate) and expiry.',
+     'Inflation cap and floor volatility surface: implied volatility on an option on an inflation index, zero-coupon or year-on-year, quoted by strike and expiry. The inflation counterpart of swap; the nominal rates cap/floor and swaption surfaces belong to volatility.',
      12, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'seasonality', 0, 'Seasonality',
-     'Inflation seasonality adjustment factors: the within-year multiplicative pattern in a price index that the headline year-on-year rate does not show. A per-month adjustment rather than a traded quote.',
+     'Seasonality adjustment factor: the within-year multiplicative pattern that a headline annual figure does not show. Covers inflation seasonality, the monthly adjustment applied to a price index, and commodity shape profiles, which spread an annual power or gas forward price across the delivery period''s peak and off-peak hours. A per-period adjustment rather than a traded quote.',
      13, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'price', 0, 'Price',
      'Bond price, clean or dirty, quoted per bond or per benchmark issue. The bond asset class''s primary observed market data, alongside yield-to-maturity.',
      14, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
     (ores_utility_system_tenant_id_fn(), 'correlation', 0, 'Correlation',
      'Correlation matrix entry across underlyings, currencies, or credit names. Referenced by multi-asset and cross-currency structures whose payoff depends on the joint behaviour of two or more underlyings. Kept in the taxonomy even though no single asset class owns it, because ORE emits correlation market data and an import carrying it must have a home.',
-     15, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes')
+     15, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
+    (ores_utility_system_tenant_id_fn(), 'prepayment', 0, 'Prepayment',
+     'Conditional prepayment rate: the rate at which borrowers repay a mortgage or callable debt ahead of schedule. Quoted per pool or per instrument, and a primary input to the valuation of mortgage-backed and callable structures, where the timing of the cashflows is uncertain rather than their amount. Unlike recovery, which is a loss given default, prepayment is an assumption about early redemption.',
+     16, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
+    (ores_utility_system_tenant_id_fn(), 'transition_probability', 0, 'Transition Probability',
+     'Probability that a rated entity moves between two credit ratings, or defaults, over a stated horizon. Quoted per rating provider and per pair of ratings, and read as a matrix rather than a single curve. It is the ratings-basis alternative to a hazard rate curve: both describe the likelihood of default, but a transition matrix also models migration between the non-default states.',
+     17, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes'),
+    (ores_utility_system_tenant_id_fn(), 'index_fixing', 0, 'Index Fixing',
+     'Published reference rate for one index on one date, such as a money-market fixing or an inflation print. One value per date and no pillars, which is what separates it from yield: an index fixing is observed, not bootstrapped, and a curve is built from a history of them rather than the other way round. The index is named in the qualifier.',
+     18, current_user, current_user, 'system.initial_load', 'Initial population of series subclass codes')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

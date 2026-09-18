@@ -93,8 +93,9 @@ void series_classification_rule_service::save_rules(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " series classification rules";
     auto ts = rules;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

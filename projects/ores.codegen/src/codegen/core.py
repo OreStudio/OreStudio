@@ -1713,6 +1713,256 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     return items
 
 
+# --- TypeScript UI metadata (the ores.ts.ui facet) -------------------------
+#
+# One data file per entity, holding the table's columns and the form's
+# fields as data, so one shared DataTable and one shared FieldControl
+# render every entity. The derivations are the codegen request's sections
+# 3.4 and 3.5; a member the request does not name is not emitted, because
+# a member nothing consumes is a member a hundred entities inherit
+# silently.
+#
+# The blocks are rendered here rather than in the template: every member
+# but the last carries a trailing comma, and mustache can offer a comma or
+# a leading comma, not "a comma unless last". A pre-rendered block keeps
+# the template's shape honest and the comma rules in one place.
+
+# The member sets every entity carries, listed so they are never offered as
+# editable fields. The four audit members and the audit pair are hidden in
+# the table as well: they are read-only provenance, and the shared detail
+# screen renders them from the protocol type rather than from these.
+_UI_AUDIT_COLUMNS = frozenset({
+    'version', 'modified_by', 'performed_by', 'recorded_at',
+    'change_reason_code', 'change_commentary',
+})
+_UI_HIDDEN_FIELDS = _UI_AUDIT_COLUMNS | {'id', 'tenant_id'}
+_UI_AUDIT_HIDDEN = _UI_AUDIT_COLUMNS
+
+# FieldControl is a closed set in ui-contract.ts. A model's
+# `plain_text_edit` names the same control as `text_edit` with a
+# read-only hint the contract has no member for, so it maps rather than
+# adding a tenth member the consuming side would not render.
+_UI_CONTROL_ALIASES = {'plain_text_edit': 'text_edit'}
+# The column the two arrays' members sit at: the template emits each array
+# at column 0, its objects one level in, and their members one further.
+_UI_MEMBER_INDENT = 8
+_UI_CONTROLS = frozenset({
+    'line_edit', 'text_edit', 'static_combo', 'dynamic_combo',
+    'flagged_combo', 'check_box', 'spin_box', 'colour', 'date',
+})
+
+
+def _ui_camel(name):
+    """``alpha2_code`` -> ``alpha2Code``; the entity prefix of a label key."""
+    pascal = snake_to_pascal(name)
+    return pascal[:1].lower() + pascal[1:]
+
+
+def _ui_str(value):
+    return "'" + str(value).replace('\\', '\\\\').replace("'", "\\'") + "'"
+
+
+def _ui_bool(value):
+    return 'true' if value else 'false'
+
+
+def _ui_render_object(members, indent):
+    """A brace object with one member per line and a trailing comma.
+
+    ``members`` is a list of ``(name, rendered_value)``; the opening brace
+    sits at ``indent`` and the members one level in. A value that is itself
+    multi-line (an options list) carries its own indentation.
+    """
+    lines = [' ' * indent + '{'] + [
+        ' ' * (indent + 4) + f'{name}: {value},' for name, value in members
+    ] + [' ' * indent + '}']
+    return '\n'.join(lines)
+
+
+def _ui_render_array(items, indent):
+    """A bracketed array of pre-rendered objects, one per line."""
+    if not items:
+        return '[]'
+    body = ',\n'.join(_ui_render_object(m, indent + 4) for m in items)
+    return '[\n' + body + '\n' + ' ' * indent + ']'
+
+
+def _ui_column_style(column, icon_columns):
+    """Section 3.5's mapping, in the C++ derivation's precedence order.
+
+    The C++ side also derives these, and this follows it except where it
+    stops short: it lets a UUID and a timestamp fall through to
+    text_left. The request's table is explicit that both are mono_left,
+    so the two projections disagree on those columns until the C++ side
+    catches up.
+    """
+    if column.get('is_badge') or column.get('self_colour'):
+        return 'badge_centered'
+    if column.get('enum_name') in icon_columns:
+        return 'icon_text_left'
+    if column.get('is_int') or column.get('is_optional_int'):
+        return 'mono_center'
+    if column.get('is_uuid') or column.get('is_timestamp'):
+        return 'mono_left'
+    return 'text_left'
+
+
+def _ui_columns(columns, entity, presentation, icon_columns):
+    flag_column = presentation.get('flag_icon_column')
+    out = []
+    for column in columns:
+        field = column.get('field', '')
+        enum_name = column.get('enum_name', '')
+        members = [
+            ('name', _ui_str(field)),
+            ('headerKey', _ui_str(f'{entity}.col{enum_name}')),
+            ('style', _ui_str(_ui_column_style(column, icon_columns))),
+            ('hidden', _ui_bool(
+                bool(column.get('hidden_by_default'))
+                or enum_name == 'Description'
+                or field in _UI_AUDIT_HIDDEN)),
+        ]
+        width = column.get('width')
+        if width and str(width).strip().lower() != 'auto':
+            members.append(('width', str(width).strip()))
+        if enum_name == flag_column:
+            members.append(('flag', 'true'))
+        if column.get('badge_key'):
+            members.append(('codeDomain', _ui_str(column['badge_key'])))
+        if column.get('is_timestamp'):
+            members.append(('temporal', 'true'))
+        out.append(members)
+    return out
+
+
+def _ui_fields(fields, entity, nullable_by_field, projects_dir):
+    """One member list per detail field, already filtered of the audit
+    members and the ones every entity carries but nobody edits."""
+    out = []
+    for row in fields:
+        field = row.get('field', '')
+        control = _UI_CONTROL_ALIASES.get(row.get('type'), row.get('type'))
+        if control not in _UI_CONTROLS:
+            raise ValueError(
+                f"ui metadata: field '{field}' has type '{row.get('type')}', "
+                f"which is not a FieldControl member")
+        members = [
+            ('name', _ui_str(field)),
+            ('labelKey', _ui_str(f'{entity}.fld{snake_to_pascal(field)}')),
+            ('control', _ui_str(control)),
+            ('required', _ui_bool(bool(row.get('is_required')))),
+            ('isKey', _ui_bool(bool(row.get('is_key')))),
+        ]
+        if row.get('is_key') or row.get('immutable'):
+            members.append(('readOnlyAfterCreate', 'true'))
+        members.append(('nullable', _ui_bool(bool(nullable_by_field.get(field)))))
+        if (row.get('placeholder') or '').strip():
+            members.append(
+                ('placeholderKey', _ui_str(f'{entity}.{_ui_camel(field)}Ph')))
+        if row.get('is_tristate'):
+            members.append(('triState', 'true'))
+        values = row.get('combo_values') or []
+        if values:
+            options = '\n'.join(
+                ' ' * (_UI_MEMBER_INDENT + 4) + '{ value: %s, labelKey: %s },' % (
+                    _ui_str(v.get('value', '')),
+                    _ui_str(f"{entity}.type.{v.get('value', '')}"))
+                for v in values)
+            members.append(('options', '[\n' + options + '\n' + ' ' * _UI_MEMBER_INDENT + ']'))
+        lookup = _ui_lookup(row, projects_dir)
+        if lookup:
+            members.append(('lookup', lookup))
+        if row.get('spin_min') is not None:
+            members.append(('min', str(row['spin_min'])))
+        if row.get('spin_max') is not None:
+            members.append(('max', str(row['spin_max'])))
+        if row.get('badge_key'):
+            members.append(('codeDomain', _ui_str(row['badge_key'])))
+        out.append(members)
+    return out
+
+
+def _ui_lookup(row, projects_dir):
+    """Where a fetched combo's options come from, or nothing.
+
+    The collection is resolved one hop: the combo names a domain type, the
+    type's last segment names an entity, and that entity's own presentation
+    drawer names the collection it lists from. A hop that does not resolve
+    omits the member rather than naming a source that may be wrong.
+    """
+    from .org_loader import collection_name_for_domain_type  # noqa: PLC0415
+    if row.get('type') not in ('dynamic_combo', 'flagged_combo'):
+        return None
+    code_field = row.get('combo_code_field')
+    label_field = row.get('combo_display_field') or row.get('combo_tooltip_field')
+    if not code_field or not label_field:
+        return None
+    collection = collection_name_for_domain_type(
+        projects_dir, row.get('combo_domain_type'))
+    if not collection:
+        return None
+    return '{ collection: %s, valueField: %s, labelField: %s }' % (
+        _ui_str(collection), _ui_str(code_field), _ui_str(label_field))
+
+
+def _ui_display_field(columns, entity_singular, key_field):
+    """The field a person recognises a record by.
+
+    The request states the member but not its source, so it takes the first
+    of the entity's own name, its name column and its key that the column
+    table carries.
+    """
+    names = {c.get('field') for c in columns}
+    for candidate in ('name', f'{entity_singular}_name', key_field):
+        if candidate and candidate in names:
+            return candidate
+    return None
+
+
+def ui_meta_projection(entity, model_path):
+    """The ores.ts.ui template's data for one entity, or None.
+
+    ``entity`` is a loaded ``domain_entity`` or ``junction`` dict, enriched
+    first: the auto-default detail fields and the per-field flags are what
+    the projection reads. None when the entity has no column table, which
+    is a model with no presentation metadata to project; resolve_targets
+    withholds the facet there, so a template never renders it.
+    """
+    presentation = entity.get('presentation') or {}
+    columns = presentation.get('columns') or []
+    if not columns:
+        return None
+    entity_singular = entity.get('entity_singular', 'unknown')
+    projects_dir = _projects_dir_from(model_path)
+    icon_columns = {ic.get('column') for ic in presentation.get('icon_columns') or []}
+    if presentation.get('flag_icon_column'):
+        icon_columns.add(presentation['flag_icon_column'])
+    nullable_by_field = {
+        c.get('name'): c.get('nullable') for c in entity.get('columns') or []
+    }
+    key_field = presentation.get('key_field', '')
+    visible_fields = [
+        row for row in presentation.get('detail_fields') or []
+        if row.get('field') not in _UI_HIDDEN_FIELDS
+    ]
+    fields = _ui_fields(visible_fields, entity_singular, nullable_by_field,
+                        projects_dir)
+    return {
+        'entity': entity_singular,
+        'entity_camel': _ui_camel(entity_singular),
+        'collection': presentation.get('collection_name', ''),
+        'display_field': _ui_display_field(columns, entity_singular, key_field) or '',
+        'key_field': key_field,
+        # The template states the key is read-only after creation, which
+        # only holds when the key is one of the emitted fields.
+        'key_in_fields': any(
+            row.get('field') == key_field for row in visible_fields),
+        'fields_block': _ui_render_array(fields, 0),
+        'columns_block': _ui_render_array(
+            _ui_columns(columns, entity_singular, presentation, icon_columns), 0),
+    }
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -4366,6 +4616,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # If no git directory found, use the current directory as base
     if git_path is None:
         git_path = current_path
+
+    # TypeScript UI metadata, built from the enriched presentation drawer.
+    # A model with no column table has nothing to project and the facet is
+    # withheld for it, so the template never renders without this.
+    ui_entity = data.get('domain_entity') or data.get('junction')
+    if ui_entity:
+        ui_meta = ui_meta_projection(ui_entity, model_path)
+        if ui_meta:
+            data['ui_meta'] = ui_meta
 
     # Process each associated template
     for template_name in templates_to_process:

@@ -113,6 +113,17 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
+# The TypeScript UI metadata facet projects the presentation drawer's
+# column table. A model with no such table has no presentation metadata to
+# project, and an empty declaration would state that the entity has no
+# columns -- which is false for the market-data and staging entities that
+# deliberately carry no UI drawer at all. Six more entities get a drawer
+# from their bound profile, with flags but no table, and are equally
+# nothing to project.
+_UI_META_FACETS = frozenset({
+    "ores.ts.ui",
+})
+
 
 def _hosted_subcomponents(component_org: Path) -> list[str]:
     """Return the sub-component projects hosted directly under an org's root.
@@ -224,6 +235,14 @@ def resolve_targets(
     gen_facets = resolve_generation_set(supported, target)
 
     model_data = load_model(model_path)
+    if model_type in ("domain_entity", "junction"):
+        ent = model_data.get(model_type) or {}
+        if not ((ent.get("presentation") or {}).get("columns")):
+            # Hard gate, like the messaging and history-provider gates
+            # below: an explicit :ores.ts.ui.enabled: override must not
+            # re-admit a facet the model has no input for.
+            gen_facets = {f for f in gen_facets
+                          if f not in _UI_META_FACETS}
     if model_type == "junction":
         junction = model_data.get("junction", {})
         left = (junction.get("left") or {}).get("list_by")

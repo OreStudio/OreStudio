@@ -40,6 +40,7 @@ do not edit by hand.
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
 | [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] | 1 | Wire payload interfaces and NATS subject constants. |
+| [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]] | 1 | Per-entity presentation metadata: the table's columns and the form's fields, as data. |
 
 * See also
 

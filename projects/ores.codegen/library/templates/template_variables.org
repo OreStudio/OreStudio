@@ -185,6 +185,25 @@ Variables specific to C++ code generation (=cpp.*= sub-objects and helpers).
 | =select_tables=        | FROM/JOIN clause tables.                                      | =accounts a=              |
 | =where_extra=          | Extra WHERE conditions appended to standard queries.          | =AND a.active = true=     |
 
+* TypeScript UI metadata
+
+Variables for the =ores.ts.ui= archetypes. The projection arrives whole, as
+=ui_meta=, and only for a model whose presentation drawer carries a column
+table; the facet is withheld for every other model, so a template never
+renders an entity without it. The two arrays arrive already rendered, because
+mustache cannot express "a trailing comma unless it is the last member".
+
+| Variable         | Description                                            | Example          |
+|------------------+--------------------------------------------------------+------------------|
+| =entity=         | Entity singular, as the model declares it.             | =book_status=    |
+| =entity_camel=   | Entity singular in camelCase; names the exports.       | =bookStatus=     |
+| =collection=     | Collection the list request fetches.                   | =statuses=       |
+| =display_field=  | Field a person recognises a record by.                 | =name=           |
+| =key_field=      | The natural key.                                       | =code=           |
+| =key_in_fields=  | True when the key is one of the emitted fields.        | =true=           |
+| =fields_block=   | The =FieldMeta= array, rendered.                       | =(array)=        |
+| =columns_block=  | The =ColumnMeta= array, rendered.                      | =(array)=        |
+
 * Qt specifics
 
 Variables for Qt model/view and dialog archetypes.

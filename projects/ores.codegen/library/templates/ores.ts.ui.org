@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 3704B43E-423F-4558-907C-7E07BB7561BE
+:END:
+#+title: ores.ts.ui
+#+description: Per-entity presentation metadata: the table's columns and the form's fields, as data.
+#+type: facet
+#+model_types: domain_entity junction
+#+level: cross
+#+facet_group: ores.ts
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+This page is the node for the =ores.ts.ui= facet of the codegen
+template library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+One archetype: a data module per entity, declaring the entity's table
+columns and its detail form's fields. One shared =DataTable= and one
+shared =FieldControl= read those declarations, so adding an entity costs
+a declaration rather than a screen.
+
+The metadata is the presentation drawer's, projected a second time.
+=ores.ts.ui= and the C++ presentation facets read one drawer, so the two
+projections cannot state different columns.
+
+* What the facet emits, and what it does not
+
+The declarations hold no English. Field labels, column headers,
+placeholders and combo options are translation keys, derived from the
+entity and the member name by a fixed convention; the words live in the
+locale catalogue. A generated English label would be overwritten on the
+next regeneration and could never be translated.
+
+Field grouping into tabs is not emitted. Which fields belong together is
+a domain judgement the drawer does not carry, and deriving it from table
+order would produce arbitrary groups; each entity keeps a small
+hand-written overlay naming its groups.
+
+* Which entities emit
+
+A model whose presentation drawer carries a column table, which is the
+input every member derives from. A model with no drawer — the market-data
+and staging entities that carry none by design — emits nothing, rather
+than an empty declaration saying the entity has no columns. The facet is
+withheld for those models in =resolve_targets=, before the per-archetype
+=enabled= overrides, so an override cannot re-admit it.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:4693A9C7-C6EE-4565-B180-52655BA38719][ores.ts.ui.ui_meta]] | Table columns and detail fields for one entity, as data. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's facet catalogue and shared Mustache conventions.
+- [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the sibling facet emitting the wire payloads these declarations describe.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this facet's template may read.

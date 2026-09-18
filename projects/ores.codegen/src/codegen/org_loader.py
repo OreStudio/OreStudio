@@ -1005,6 +1005,42 @@ def _entity_org_by_table(projects_dir: Path) -> dict[str, dict[str, Any]]:
     return out
 
 
+@lru_cache(maxsize=None)
+def _collection_name_by_entity(projects_dir: Path) -> dict[str, str]:
+    """Map every entity's ``#+entity_singular:`` to its ``:collection_name:``.
+
+    Raw-text scan (no org parse), cached per process, the same shape and for
+    the same reason as ``_entity_org_by_table`` above. A detail field's
+    ``combo_domain_type`` names the domain type its options come from (e.g.
+    ``refdata::domain::book_status``); the TypeScript lookup source needs the
+    collection that type lists from, which only the target entity's own
+    presentation drawer states.
+    """
+    out: dict[str, str] = {}
+    for org in sorted(projects_dir.glob("*/modeling/*.org")):
+        text = org.read_text(encoding="utf-8", errors="replace")
+        sm = re.search(r"^#\+entity_singular:\s*(\S+)", text, re.M)
+        if not sm:
+            continue
+        cm = re.search(r"^:collection_name:\s*(\S+)\s*$", text, re.M)
+        if cm:
+            out[sm.group(1)] = cm.group(1)
+    return out
+
+
+def collection_name_for_domain_type(projects_dir: Path,
+                                    combo_domain_type: str) -> str | None:
+    """The collection a ``refdata::domain::book_status`` combo lists from.
+
+    Resolved one hop: the domain type's last ``::`` segment is the target
+    entity's singular, and that entity's presentation drawer names its
+    collection. Returns None when the hop does not resolve, and the caller
+    omits the lookup rather than emitting a source it cannot name.
+    """
+    entity = (combo_domain_type or "").rsplit("::", 1)[-1]
+    return _collection_name_by_entity(projects_dir).get(entity)
+
+
 def _table_display(node: OrgNode) -> list[dict[str, str]]:
     if not node.tables:
         return []
@@ -1069,20 +1105,14 @@ def _presentation_columns(node: OrgNode) -> list[dict[str, Any]]:
 def _presentation_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
     """Convert the drawer's 'Icon columns' table into the dict list shape.
 
-    Each row is one Qt::DecorationRole column: `column` (the Column enum
-    value), `accessor` (a function taking ImageCache& then 1-2 row fields,
-    e.g. currency_flag_icon), `field1` (always), `field2` (optional — a
-    second row field for a composited two-field icon, e.g. a currency pair).
-    `has_field2` is computed so the template can conditionally emit the
-    second argument without any templating logic beyond section presence.
+    `column` is the Column enum value of a column that renders an icon,
+    and both projections read it to mark that column's style. The
+    `accessor`, `field1` and `field2` cells record how the icon was built
+    for the retired Qt view and have no reader now.
 
-    `is_pair` marks a *visually* wide (roughly 2:1) composited icon that
-    needs the view's iconSize widened past the single-flag default —
-    defaults to true when field2 is set (the two-field case, e.g.
-    currency_pair's own base_currency/quote_currency), but must be set
-    explicitly for a single-field accessor that still produces a pair icon
-    internally (e.g. currency_flag_icon_from_pair_code splitting one
-    "BASE/QUOTE" field) — has_field2 alone can't detect that case.
+    `is_pair` marks a *visually* wide (roughly 2:1) composited icon. It
+    defaults to true when `field2` is set, and a single-field accessor that
+    still produces a pair icon internally must set it explicitly.
     """
     if not node.tables:
         return []

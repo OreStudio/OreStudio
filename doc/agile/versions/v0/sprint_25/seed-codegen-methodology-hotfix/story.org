@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 98E44999-1CA1-4C50-AEDA-AF2B2E42496E
+:END:
+#+title: Story: Restore the code generation methodology the slovaris removal took
+#+description: Database recreation fails on main: a shared methodology row left with the retired slovaris dataset, but ten seed scripts still name it.
+#+type: story
+#+level: s2
+#+filetags: :sql:dq:seed:sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Database recreation completes on main again, and every seed script that names the code generation methodology resolves against it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+- compass db recreate completes from scratch
+- The methodology is seeded alongside the other general methodologies, not inside a dataset-specific script
+- The restored implementation details describe the live pipeline, naming no deleted script
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E7D8B72A-1C2C-4274-8F82-1673F990D2E2][Scaffold story: Restore the code generation methodology the slovaris removal took]] | STARTED | 2026-09-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FEAF22EA-2EC8-48E3-B929-DA0DFECD7BE1][Restore the code generation methodology seed]] | BACKLOG | | | Initial task for: Restore the code generation methodology the slovaris removal took |
+
+* Decisions
+
+* Out of scope
+
+-

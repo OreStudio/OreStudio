@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: FEAF22EA-2EC8-48E3-B929-DA0DFECD7BE1
+:END:
+#+title: Task: Restore the code generation methodology seed
+#+description: Initial task for: Restore the code generation methodology the slovaris removal took
+#+type: task
+#+level: s1
+#+filetags: :seed-codegen-methodology-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98E44999-1CA1-4C50-AEDA-AF2B2E42496E][Restore the code generation methodology the slovaris removal took]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Database recreation completes on main again, and every seed script that names the code generation methodology resolves against it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:98E44999-1CA1-4C50-AEDA-AF2B2E42496E][Restore the code generation methodology the slovaris removal took]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- compass db recreate completes from scratch
+- The methodology is seeded alongside the other general methodologies, not inside a dataset-specific script
+- The restored implementation details describe the live pipeline, naming no deleted script
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

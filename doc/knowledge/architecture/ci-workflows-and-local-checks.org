@@ -7,14 +7,17 @@
 #+level: cross
 #+filetags: :ci:devops:pr:velocity:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-09-18
 
 * Summary
 
-GitHub runs no PR gate and no automatic review: the =pr.yml= workflow
-was deleted (including its classifier, and the branch-protection
-required check), and the =claude-code-review.yml= auto review is
-retired too. The
+GitHub runs no automatic review and no build or test gate: the =pr.yml=
+workflow was deleted (including its classifier, and the
+branch-protection required check), and the =claude-code-review.yml=
+auto review is retired too. Four path-filtered workflows still gate a
+pull request on drift and lint — =codegen-drift.yml=, =doc-lint.yml=,
+=shell-script-drift.yml=, and =template-drift.yml= — and none of them
+compiles the C++ or runs ctest. The
 [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]]'s submit-PR skills classify the change
 and run only the matching checks before raising the PR; the review
 runs locally before submit (the =compass-code-review-pr= skill, including the
@@ -27,22 +30,43 @@ every check, and the classification rule table.
 
 ** The PR gate
 
-There is no PR gate. The =pr.yml= workflow gated every pull request to
-=main= until the gate-reduction task deleted it: the =classify= job
-(the path classifier) and =pr-gate= (the sole required check, which
-aggregated classify) went with it, and the branch-protection required
-check was removed. The site, roundtrip, and drift checks it once ran
-now run locally (see the fate table below).
+No workflow builds or tests a pull request. The =pr.yml= workflow gated
+every pull request to =main= until the gate-reduction task deleted it:
+the =classify= job (the path classifier) and =pr-gate= (the sole
+required check, which aggregated classify) went with it, and the
+branch-protection required check was removed. The site and roundtrip
+checks it once ran now run locally (see the fate table below).
 
-The workflow that touches PR branches:
+Five workflows still run on =pull_request=. The first four each fire
+only on their own paths and cover drift and lint alone:
 
+- =codegen-drift.yml= (=projects/*/modeling/**=,
+  =projects/ores.codegen/**=) runs =check_component_drift.py --all= and
+  =check_model_drift.py --summary=. It guards a gap
+  =template-drift.yml= cannot see: that job proves the =.mustache=
+  artefacts match their org sources, not that the code generated from
+  them was regenerated afterwards.
+- =doc-lint.yml= (=**.org=, =**.mustache=, =build/scripts/generate_skill*.py=,
+  =compass.py=, and itself) runs =compass lint= plus the six
+  skill-consistency checks.
+- =shell-script-drift.yml= (=doc/recipes/shell/**=, the recipe script
+  builder, =projects/ores.shell/scripts/library/**=) re-runs the shell
+  tangle and fails on a diff.
+- =template-drift.yml= (=projects/ores.codegen/library/templates/**= and
+  the tangle script) re-runs the template tangle and fails on a diff.
 - =claude.yml= runs the review on demand via an =@claude= comment.
+
+A change matching none of those paths sees no CI at all, which is why
+the submit-PR skill's local classification stays mandatory: it is the
+only thing that catches a broken build before review.
 
 ** Fate of each check
 
 | Check                 | Fate            | Where it runs instead / rationale |
 |-----------------------+-----------------+-----------------------------------|
-| classify, site, roundtrip, cmake-sources-drift, codegen-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally); optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. codegen-drift: local tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the script's =KNOWN_DRIFT_FREE= registry; a component not yet at zero drift is measured with =--component <name>=. pr-gate: no branch-protection required check remains. |
+| classify, site, roundtrip, cmake-sources-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally) for a full publish, or =compass site page= for the incrementally rebuilt pages; optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. pr-gate: no branch-protection required check remains. |
+| codegen-drift          | deleted with pr.yml; restored as =codegen-drift.yml= 2026-09-11 | =codegen-drift.yml= gates a PR on =projects/*/modeling/**= and =projects/ores.codegen/**=. Locally: tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the script's =KNOWN_DRIFT_FREE= registry; a component not yet at zero drift is measured with =--component <name>=. |
+| doc-lint               | added 2026-09-09 | =doc-lint.yml= gates a PR on =**.org=, =**.mustache=, =build/scripts/generate_skill*.py=, =compass.py=, and itself. Locally: =compass lint= plus the six =build/scripts/= skill-consistency checks. |
 | claude-code-review    | deleted with the local-review task | Local: the =compass-code-review-pr= skill runs before submit (in =compass-pr-raise=); findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
 | misspell              | deleted with the local-review task | Local misspell check folded into the =compass-code-review-pr= review pass (=misspell-fixer .=, check-only; exit 0 = clean; =.misspell-fixer.ignore= respected). |
 | site-cdash (Doxygen)  | stays        | =build-site.yml= builds the full site + Doxygen and deploys on main push. |
@@ -50,7 +74,7 @@ The workflow that touches PR branches:
 | nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
 | nightly-format        | stays        | Daily clang-format drift → auto-fix PR; local =tangle_clang_format= exists. |
 | ore_coverage          | stays        | Coverage on main push. |
-| shell-script-drift / template-drift | stays | Cheap main-push checks; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
+| shell-script-drift / template-drift | stays | Cheap checks on both a PR and a main push; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
 | codeql-analysis, stale | stays       | Manual security scan; housekeeping bot. |
 
 ** Change-classification rules
@@ -74,11 +98,13 @@ bucketed =ores.compass= and =ores.codegen= changes as docs, so their
 test suites never ran anywhere; locally they always do.
 
 The =projects/*/modeling/*= paths under docs carry a codegen-drift
-exception: the retired =pr.yml= codegen-drift job ran unconditionally,
-because a model-only edit classifies as docs and would otherwise skip
-the check that catches forgotten regeneration. A change touching the
-modeling paths also runs the codegen drift checks (tangle, then
-=check_component_drift.py=).
+exception — to this table's default, not to CI: =codegen-drift.yml= does
+gate them on a PR. The exception exists because a model-only edit
+classifies as docs, and the docs class on its own runs no codegen
+check. A change touching the modeling paths therefore also runs the
+codegen drift checks (tangle, then =check_component_drift.py=). Run
+them locally even though CI repeats them: the gate only reports after a
+reviewer is already looking.
 
 ** Local verification flow
 
@@ -95,9 +121,10 @@ modeling paths also runs the codegen drift checks (tangle, then
 5. Record the verification in the PR description as a
    =--change= bullet (e.g. "Verification: doc-only change; local site
    build clean").
-6. Raise the PR. GitHub runs no gate and no automatic review; the
-   on-demand =@claude= trigger stays. Merge when the review round is
-   complete. Continuous builds and nightlies stay on GitHub.
+6. Raise the PR. The four drift/lint workflows run their own checks on
+   the paths they cover, and the on-demand =@claude= trigger stays.
+   Nothing on GitHub builds or tests the PR. Merge when the review
+   round is complete. Continuous builds and nightlies stay on GitHub.
 
 ** Open questions for the implementation tasks
 

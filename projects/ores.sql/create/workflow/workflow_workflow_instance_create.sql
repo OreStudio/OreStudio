@@ -18,10 +18,6 @@
  *
  */
 /**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_non_temporal_create.mustache
- * To modify, update the template and regenerate.
- *
  * Workflow Instance Table
  *
  * Tracks the lifecycle of a workflow execution, including its type, status,

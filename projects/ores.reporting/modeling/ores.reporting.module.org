@@ -7,7 +7,7 @@
 #+component: reporting
 #+filetags: :model:module:reporting:
 #+created: 2026-06-09
-#+updated: 2026-06-09
+#+updated: 2026-09-17
 
 The =ores.reporting= module groups all logical entities in the =ores.reporting= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
 
@@ -19,6 +19,7 @@ The =ores.reporting= module groups all logical entities in the =ores.reporting= 
 | [[id:4597D5A9-C591-4992-ABEE-8822C10D8D96][ores.reporting.concurrency_policy]] | Report instance concurrency behaviour when a new trigger fires. |
 | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] | Persistent template for a scheduled report. |
 | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] | A single execution of a report definition. |
+| [[id:32FCDE76-1C5A-4AFC-8671-7468C0F024DB][ores.reporting.risk_report_config]] | ORE-level parameters for a risk report definition. |
 
 * See also
 

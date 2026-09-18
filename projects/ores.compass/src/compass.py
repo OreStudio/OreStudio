@@ -3428,8 +3428,11 @@ def _capture_commit(out_file, title, note, co_author):
         return res.returncode
 
     backlog = PROJECT_ROOT / "doc" / "agile" / "product_backlog"
+    # Every bucket regenerate_backlog_indexes.py writes belongs here too, or
+    # the commit leaves that index regenerated but unstaged, and the next
+    # branch switch carries the dirty file along.
     paths = [out_file] + [backlog / f"{b}.org"
-                          for b in ("inbox", "next", "deferred")]
+                          for b in ("inbox", "next", "deferred", "discarded")]
     rels = [str(p.relative_to(PROJECT_ROOT)) for p in paths if p.exists()]
 
     subject = f"[agile] Capture: {title}"
@@ -3459,6 +3462,22 @@ def _capture_commit(out_file, title, note, co_author):
     print(f"✅ Capture committed: {subject}")
     return 0
 
+
+def _find_stash_by_tag(tag):
+    """The SHA of the stash entry whose subject carries `tag`, if any.
+
+    The stack is shared by every worktree, so an entry is addressed by the
+    SHA it had when it was pushed rather than by its position on the stack.
+    """
+    res = subprocess.run(["git", "stash", "list", "--format=%H %gs"],
+                         capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    for line in res.stdout.splitlines():
+        sha, _, subject = line.partition(" ")
+        if tag in subject:
+            return sha
+    return None
+
+
 def _capture_pr_flow(slug, title, args, inbox_dir, out_file):
     """Branch, create capture, commit, push, open PR — no task doc required.
 
@@ -3473,25 +3492,37 @@ def _capture_pr_flow(slug, title, args, inbox_dir, out_file):
         capture_output=True, text=True, cwd=str(PROJECT_ROOT))
     orig_branch = p.stdout.strip()
 
-    # Stash any tracked modifications so the branch switch is clean.
-    stashed = False
+    # Stash any tracked modifications so the branch switch is clean. Every
+    # worktree shares one stack, so the entry carries a tag unique to this
+    # run and is restored by the SHA it had when pushed. A bare pop takes
+    # whatever sits on top, which may be another session's entry.
+    stash_sha = None
     has_staged   = subprocess.run(["git", "diff", "--cached", "--quiet"],
                                    cwd=str(PROJECT_ROOT)).returncode != 0
     has_unstaged = subprocess.run(["git", "diff", "--quiet"],
                                    cwd=str(PROJECT_ROOT)).returncode != 0
     if has_staged or has_unstaged:
-        p = subprocess.run(
-            ["git", "stash", "push", "-m", "compass capture --pr: save wip"],
-            cwd=str(PROJECT_ROOT))
-        stashed = (p.returncode == 0)
+        tag = f"compass capture --pr: {slug} (pid {os.getpid()})"
+        p = subprocess.run(["git", "stash", "push", "-m", tag],
+                           cwd=str(PROJECT_ROOT))
+        if p.returncode == 0:
+            stash_sha = _find_stash_by_tag(tag)
+            if stash_sha is None:
+                print("❌ Stashed the working tree but cannot find the entry "
+                      "again. It is still on the stack; recover it by hand.",
+                      file=sys.stderr)
 
     def _restore(rc):
         subprocess.run(["git", "checkout", orig_branch], cwd=str(PROJECT_ROOT))
-        if stashed:
-            pop = subprocess.run(["git", "stash", "pop"], cwd=str(PROJECT_ROOT))
-            if pop.returncode != 0:
-                print("⚠️  Stash pop had conflicts — resolve manually.",
-                      file=sys.stderr)
+        if stash_sha:
+            applied = subprocess.run(["git", "stash", "apply", stash_sha],
+                                     cwd=str(PROJECT_ROOT))
+            if applied.returncode != 0:
+                print(f"⚠️  Could not reapply the stashed changes. They are "
+                      f"still on the stack as {stash_sha}.", file=sys.stderr)
+            else:
+                subprocess.run(["git", "stash", "drop", stash_sha],
+                               cwd=str(PROJECT_ROOT))
         return rc
 
     branch = "capture/" + slug.replace("_", "-")
@@ -3542,7 +3573,7 @@ def _capture_pr_flow(slug, title, args, inbox_dir, out_file):
         f"## Summary\n\n{args.note.strip()}\n\n"
         "## Changes\n\n"
         f"- Add capture `{slug}` to the product backlog inbox.\n"
-        "- Regenerate inbox/next/deferred backlog indexes.\n\n"
+        "- Regenerate the backlog indexes.\n\n"
         "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
     p = subprocess.run(

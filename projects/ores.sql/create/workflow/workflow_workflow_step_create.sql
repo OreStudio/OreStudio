@@ -18,10 +18,6 @@
  *
  */
 /**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_non_temporal_create.mustache
- * To modify, update the template and regenerate.
- *
  * Workflow Step Table
  *
  * Records the execution of one step in a saga workflow, including the step

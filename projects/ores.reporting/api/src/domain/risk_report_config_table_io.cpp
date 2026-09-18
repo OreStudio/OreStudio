@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -18,18 +18,27 @@
  *
  */
 /**
- * Stores the schema version, git commit, and build environment inserted at
- * database creation time. Used to correlate service behaviour with the
- * database schema in use. Contains exactly one row.
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
  */
+#include "ores.reporting.api/domain/risk_report_config_table_io.hpp"
+#include "ores.reporting.api/domain/risk_report_config_table.hpp"
+#include <ostream>
 
-create table if not exists "ores_database_info_tbl" (
-    "id" uuid not null,
-    "schema_version" text not null,
-    "build_environment" text not null,
-    "git_commit" text not null,
-    "git_date" text not null,
-    "created_at" timestamp with time zone not null default current_timestamp,
-    primary key (id),
-    check ("id" <> ores_utility_nil_uuid_fn())
-);
+namespace ores::reporting::domain {
+
+namespace {
+
+void print_risk_report_config_table(std::ostream& s, const std::vector<risk_report_config>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<risk_report_config>& v) {
+    print_risk_report_config_table(s, v);
+    return s;
+}
+
+}

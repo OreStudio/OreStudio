@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -18,18 +18,21 @@
  *
  */
 /**
- * Stores the schema version, git commit, and build environment inserted at
- * database creation time. Used to correlate service behaviour with the
- * database schema in use. Contains exactly one row.
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.cpp.mustache
+ * To modify, update the template and regenerate.
  */
+#include "ores.reporting.core/repository/risk_report_config_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-create table if not exists "ores_database_info_tbl" (
-    "id" uuid not null,
-    "schema_version" text not null,
-    "build_environment" text not null,
-    "git_commit" text not null,
-    "git_date" text not null,
-    "created_at" timestamp with time zone not null default current_timestamp,
-    primary key (id),
-    check ("id" <> ores_utility_nil_uuid_fn())
-);
+namespace ores::reporting::repository {
+
+std::ostream& operator<<(std::ostream& s, const risk_report_config_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

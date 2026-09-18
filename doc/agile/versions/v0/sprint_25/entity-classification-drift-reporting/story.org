@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-09-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Claim the bind task.                   |
-| Last touched  | 2026-09-07                               |
+| Now           | The bind task is DONE and the drift gate holds. All tasks in this story are DONE. |
+| Waiting on    | The merge, then the post-merge live system test. |
+| Next          | Merge the PR, then run the live system test. Close the story after that. |
+| Last touched  | 2026-09-17                               |
 
 * Acceptance
 
@@ -41,10 +41,51 @@ Bring ores.reporting to the state the compass-codegen-fix-drift skill defines: e
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:789D58B7-5282-41E0-879E-F5052AB295C6][Bind ores.reporting entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected. |
+| [[id:789D58B7-5282-41E0-879E-F5052AB295C6][Bind ores.reporting entities to profiles; verify zero-diff regen]] | DONE | 2026-09-17 | 2026-09-17 | Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes expected. |
 
 * Decisions
 
+- *Scope widened to hand-written code that should be generated (2026-09-17).*
+  The bind task now also brings un-modelled entities into codegen. The window
+  found =risk_report_config=, =report_input_bundle=, and two
+  =risk_report_config= junction tables with SQL tables and hand-written C++,
+  and no org model. The user's mandate: hand-crafted code that should be
+  generated is fixed in the same pass.
+
+- *The physical space table narrows the API surface (2026-09-17).* The
+  =risk_report_config= model disables ten addresses, because nothing writes a
+  risk report config and the generated registrars have no composition point to
+  join. Recorded in the bind task.
+
+- *Two steps for the Qt tier (2026-09-17).* =ores.qt/reporting= holds 36
+  generated files that no =CMakeLists.txt= builds. =ores.qt/compute= builds 40
+  hand-written files with the same class names instead. Step 1, the bind task,
+  lets the model edits regenerate into =ores.qt/reporting= and leaves the build
+  alone. Step 2, a separate task, brings the templates to parity, wires the
+  plugin, and deletes the hand-written copies.
+
+- *Two entities resolve to bespoke shapes, not to one profile (2026-09-17).*
+  Neither bind forced a profile onto an entity it does not fit.
+  =report_definition= keeps =uuid-identified-lookup= and its explicit
+  =has_workspace_id: true= override, because the product wants report
+  definitions to record the live workspace. =report_instance= keeps
+  =fk-scoped-child= and gains =parent_entity_singular: report_definition=,
+  so a report definition explorer can open an instance nested under it.
+  No new profile was needed.
+
+- *All story tasks are DONE; the story stays open (2026-09-17).* The bind
+  task closes at the drift gate, per the 2026-09-07 decision. The story
+  waits on the post-merge live system test. Three entities stay
+  hand-written as recorded exceptions in the bind task, each with the
+  archetype gap that blocks it and a named revisit trigger. That is the
+  recorded-exception path, not a silent omission.
+
 * Out of scope
 
--
+- The =ores.dq= artefact tier. About fifty =dq_*_artefact_create.sql= tables
+  have one model between them. =report_definition_template= in ores.reporting
+  mirrors one of those tables and cannot be generated until the tier is
+  modelled. Recorded in the bind task.
+- The four nullable scalars outside ores.reporting with no C++ default
+  (=ores.compute=, =ores.trading=). Fixing them changes generated output for
+  those components and breaks their drift gates. Recorded in the bind task.

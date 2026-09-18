@@ -35,6 +35,21 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
 }
 
+# The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
+# column its struct member. A column matching none of them is dropped from the
+# struct in silence; see the guard in the column loop.
+_ENTITY_STRUCT_FLAGS = (
+    'is_uuid',
+    'is_optional_uuid',
+    'is_optional_timestamp',
+    'is_required_timestamp',
+    'is_nullable_string',
+    'is_nullable_numeric',
+    'is_already_optional',
+    'is_enum',
+    'is_simple',
+)
+
 
 def _read_org_type(model_path):
     """Return the model-type string for an org file by reading its #+type: header.
@@ -2292,6 +2307,37 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     elif cpp_type == 'int':
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
+                # A declared SQL-only column is meant to reach no C++ layer,
+                # so it skips every remaining per-column step, the guard
+                # below included. Keep this continue last in the loop body:
+                # a step added after it is skipped here without a word.
+                col['sql_only'] = bool(col.get('sql_only', False))
+                if col['sql_only']:
+                    continue
+                # Every other column must reach the struct through exactly one
+                # of the entity template's type flags. One matching none of
+                # them is dropped from the struct with nothing to show for it:
+                # the SQL column and the domain member both still read as
+                # present, so no other layer notices, and the field quietly
+                # stops being on the wire. Two shapes reach that state today --
+                # a nullable column whose cpp_type is outside the string and
+                # numeric sets (std::vector<double> for a numeric[] column,
+                # which sqlgen cannot bind), and a nullable scoped enum.
+                # Refuse, rather than generate a struct with a hole.
+                if not any(col.get(flag) for flag in _ENTITY_STRUCT_FLAGS):
+                    raise ValueError(
+                        f"column '{col.get('name')}' (type {col.get('type')!r}, "
+                        f"cpp_type {col.get('cpp_type')!r}) reaches no member of "
+                        f"the generated entity struct: no type flag in "
+                        f"cpp_domain_type_entity.hpp.mustache matches it, so it "
+                        f"is dropped from the struct and the field stops being "
+                        f"on the wire. Give it a cpp_type the template can "
+                        f"express (std::string, int, double, bool, a uuid, a "
+                        f"timestamp, a non-nullable scoped enum, or an explicit "
+                        f"std::optional<...>), or declare ':sql_only: true' if "
+                        f"the column is meant to stay in the schema with no C++ "
+                        f"representation."
+                    )
             # Unconditional on natural_keys (unlike the other has_* flags
             # below, which are computed only inside the natural_keys block):
             # an entity can have enum columns with a surrogate-UUID-only

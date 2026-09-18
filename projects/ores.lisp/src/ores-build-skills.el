@@ -129,9 +129,11 @@
     (progn
       (org-publish-all t)
       (ores/prune-stale-skills)
-      (message "Build complete!"))
+      (message "Build complete!")
+      (kill-emacs 0))
   (error
-   (message "Build failed: %s" (error-message-string err))))
+   (message "Build failed: %s" (error-message-string err))
+   (kill-emacs 1)))
 
 (provide 'ores-build-skills)
 ;;; ores-build-skills.el ends here

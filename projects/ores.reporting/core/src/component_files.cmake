@@ -45,6 +45,7 @@ set(files
     "repository/report_type_entity.cpp"
     "repository/report_type_mapper.cpp"
     "repository/report_type_repository.cpp"
+    "repository/risk_report_config_entity.cpp"
     "repository/risk_report_config_mapper.cpp"
     "repository/risk_report_config_repository.cpp"
     "service/concurrency_policy_service.cpp"

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-reporting:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bind-reporting-entities-to-profiles
+#+pr: 2094
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-09-07
-#+environment:
+#+updated: 2026-09-17
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,27 +26,543 @@ Survey every ores.reporting entity against the profile catalogue, rebind matches
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-07                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-17                             |
 
 * Acceptance
 
-- Every entity discovered via the reporting-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every entity discovered via the reporting catalogue entry is surveyed against all Variability Profiles.
 - Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
 - No-match entities are recorded with their actual feature values, not silently dropped.
+- Every entity that carries a hand-written copy of a generated shape gets an org model. The regeneration replaces the hand-written code, and the hand-written copy is deleted.
+- Any new profile the survey justifies is authored under =projects/modeling/= and added to the profile index.
 - Full local build and ctest green after regeneration.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Method: the compass-codegen-fix-drift skill, run at automation level 0
+(manual, per fix). Findings from steps 1 to 4 are in =* Notes=. The work
+divides into three parts.
+
+1. *Settle the two profile binds.* Neither bind needs a new profile; the two
+   entities do not resolve to one shape after all.
+
+   - =report_definition= keeps =uuid-identified-lookup= and its explicit
+     =has_workspace_id: true= override. The override is deliberate: the
+     product wants report definitions to record the live workspace.
+   - =report_instance= keeps =fk-scoped-child= and gains
+     =parent_entity_singular: report_definition=, so a report definition
+     explorer can open an instance nested under it. The profile's
+     =has_explorer_api= half was already materialised.
+
+2. *Bring the un-modelled entities into codegen where the archetypes allow it.*
+   =risk_report_config= had SQL, hand-written C++, and no org model. It now has
+   a model, and regeneration replaced the hand-written copies.
+
+   Three entities stay hand-written, as recorded exceptions:
+   =report_input_bundle= and the two =risk_report_config= junction tables. The
+   archetypes cannot express their shape. The reasons are in =* Notes=. No
+   exclusion was added, so the drift check still sees them.
+
+3. *Verify composition, then the gate.* Check that the registrar families the
+   regeneration rewrites have a caller at the composition points. Confirm
+   =check_component_drift.py --all= still passes.
+
+Order: part 1 first. It is small and it proves the profile mechanism. Part 2
+carries the bulk. Part 3 closes.
 
 * Notes
+
+** Step 1 baseline (2026-09-17)
+
+Regenerated all 5 models of =reporting= against an untouched tree. The output
+is byte-identical. There is no pre-existing drift.
+
+=reporting= is already in the =KNOWN_DRIFT_FREE= registry. The story names
+=reporting-cpp=, but the catalogue holds no such entry. =--address= selects
+the technical space, and the component is called =reporting=.
+
+** Step 2 survey
+
+Four entity models carry variability: =concurrency_policy=, =report_type=,
+=report_definition=, =report_instance=. The module and the component overview
+are structurally not entities, so exclude both. No junction and no legacy
+=lookup_entity= exists, so no migration is needed.
+
+** Steps 3 and 4: classification
+
+All four entities already bind a profile. Two binds are clean:
+
+| Entity             | Profile        | Verdict |
+|--------------------+----------------+---------|
+| concurrency_policy | simple-lookup  | Clean.  |
+| report_type        | simple-lookup  | Clean.  |
+
+Two binds are wrong.
+
+=report_definition= binds =uuid-identified-lookup= and sets
+=:has_workspace_id: true=. The profile fixes =has_workspace_id= to false. The
+generated SQL confirms the override: the table carries a =workspace_id=
+column, a workspace index, and a workspace validation call.
+
+=report_instance= binds =fk-scoped-child=. That profile requires
+=parent_entity_singular= and fixes =has_explorer_api= to true. The entity sets
+neither. No explorer artefact exists for any reporting entity. The entity has
+its own top-level MDI window instead, which contradicts the profile.
+
+** The new-profile candidate
+
+Both wrong binds resolve to the same shape: UUID primary key, tenant and
+workspace scope, standard Qt tier, no parent. No existing profile covers it.
+The skill allows a new profile once a second entity repeats the combination.
+Here two entities repeat it.
+
+** Un-modelled entities (scope added 2026-09-17)
+
+A classification of all 206 reporting source files by the
+=AUTO-GENERATED FILE - DO NOT EDIT MANUALLY= marker gives 148 generated and
+58 hand-written.
+
+Two entity families in the hand-written set have SQL tables but no org model:
+
+| Family                      | Table                                          | C++ artefacts                       |
+|-----------------------------+------------------------------------------------+-------------------------------------|
+| risk_report_config          | ores_reporting_risk_report_configs_tbl         | domain type, entity, mapper, repo    |
+| report_input_bundle         | ores_reporting_report_input_bundles_tbl        | entity, repository                   |
+| risk_report_config_books    | ores_reporting_risk_report_config_books_tbl    | none                                 |
+| risk_report_config_portfolios | ores_reporting_risk_report_config_portfolios_tbl | none                             |
+
+Both families mirror the generated shape exactly, minus the marker. Both use a
+stale include guard of the form =ORES_REPORTING_REPOSITORY_...=, where the
+generator emits =ORES_REPORTING_CORE_REPOSITORY_...=. The component
+description advertises "risk report configurations", but the module lists only
+four entities.
+
+** Workspace ID is already present (2026-09-17)
+
+No model change was needed. Both entities already carry =workspace_id= in all
+three layers:
+
+| Layer  | report_definition                              | report_instance |
+|--------+------------------------------------------------+-----------------|
+| SQL    | column, index, and validation call             | same            |
+| Entity | =std::string workspace_id;=                    | same            |
+| Domain | =boost::uuids::uuid workspace_id = ...=        | same            |
+
+Both default to =utility::uuid::live_workspace_id()=, so a new definition
+already lands in the live workspace. =report_definition= sets the flag
+explicitly; =report_instance= inherits it from =fk-scoped-child=.
+
+** Two product decisions (2026-09-17)
+
+=report_definition= keeps =has_workspace_id: true= against its profile. This
+is deliberate and recorded here, not drift.
+
+=report_instance= gains =parent_entity_singular: report_definition= plus
+=parent_id_field_camel: definitionId= and =parent_id_field: definition_id=.
+The last two are needed because the resolver derives
+=parent_report_definition_id= by default, and the column is =definition_id=.
+Regeneration adds =openAddWithParent()= and a prefill block. Output is
+idempotent.
+
+** The Qt estate for reporting is generated but not built (2026-09-17)
+
+=projects/ores.qt/reporting/= holds 36 generated files. It is the only
+=ores.qt/*= directory with no =CMakeLists.txt= and no =add_subdirectory=
+entry. =projects/ores.qt/compute/= instead builds 40 hand-written files with
+the same class names, the same =ores::qt= namespace, and the same
+=ores.qt/...= include paths.
+
+All 16 shared files differ. The hand-written set has four typed history
+dialogs the generated set lacks; the generated set has the explorer API and
+version-history plumbing the hand-written set lacks. Neither is a superset.
+
+Consequence: codegen for reporting's Qt produces output the application never
+compiles. PRs #1904 and #1918 are where the two sets diverged.
+
+Decision (2026-09-17): two steps. Step 1, this task, lets the model edits
+regenerate into =ores.qt/reporting= and leaves the build alone. Step 2, a
+separate task, brings the templates to parity, wires the plugin, and deletes
+the hand-written copies. Until step 2 the generated controller changes do not
+reach the application, so no tree widget appears yet.
+
+The unused =qt_component= knob in =core.py= exists for exactly this split. No
+entity in the repo sets it.
+
+** Drift gate false positive (2026-09-17)
+
+=check_component_drift.py= exits 1 whenever any file in the tree is dirty,
+because it runs =git diff= over the whole repository rather than over the
+component's generated paths. A dirty agile doc is enough to fail it. Verified:
+with only the two agile org files modified, the regeneration is byte-identical
+and the run still exits 1.
+
+The call is at line 115 of =projects/ores.codegen/scripts/check_component_drift.py=:
+=subprocess.run(["git", "diff"], cwd=REPO_ROOT, ...)=, with no pathspec. The
+script's own docstring describes the intent, which is to catch a hand-edited
+generated file.
+
+Consequence: =--all= can only be run against a committed tree. Run it after
+the commit that lands the regeneration, not before. Scoping the diff to the
+component's generated paths would remove the false positive and make the check
+usable before a commit.
+
+** Part 2, family 1: risk_report_config is modelled (2026-09-17)
+
+The model is =projects/ores.reporting/modeling/ores.reporting.risk_report_config.org=.
+It was reverse-engineered from the hand-written C++, because no model existed.
+Regeneration replaced 15 files and refreshed two =component_files.cmake= lists.
+
+*** The physical space table narrows the API surface
+
+The model carries a =* Physical space= table that disables ten addresses:
+=ores.cpp.service=, =ores.cpp.protocol=, =ores.cpp.nats-handler=,
+=ores.cpp.nats-sub-registrar=, =ores.cpp.nats-event-registrar=,
+=ores.cpp.nats-eventing=, =ores.cpp.nats-event-cache=,
+=ores.cpp.history-provider-registrar=, =ores.cpp.presentation=, and
+=ores.cpp.eventing-integration-test=.
+
+Reason: nothing writes a risk report config today. The only consumer is
+=report_execution_handler=. =ores.reporting/core/src/messaging/registrar.cpp=
+is a hand-written fan-out, not a per-entity registrar aggregator. A generated
+registrar has nowhere to join. This is the step 7 finding, recorded below.
+
+*** A column the entity template cannot express is now refused
+
+While reversing the hand-written header, one column vanished from the
+generated entity with no error. The entity template gives a column its struct
+member by switching on one of nine type flags. A column that matches none of
+them is dropped in silence. The SQL column and the domain member both still
+read as present, so no other layer notices, and the field quietly stops being
+on the wire.
+
+Two shapes reach that state: a nullable column whose C++ type is outside the
+string and numeric sets, and a nullable scoped enum. Only =var_quantiles=
+matched either one repo-wide.
+
+=core.py= now raises when a column matches no flag. The model declares the
+intended omission with =:sql_only: true=, which keeps the column in the schema
+and keeps it out of every C++ layer. The two templates that render columns
+honour the flag. A regression test covers all four cases:
+=projects/ores.codegen/tests/test_entity_struct_column_coverage.py=.
+
+Precedent: commit =09c6c4a03a=, which refuses a domain group model that would
+lose a field.
+
+*** sqlgen cannot bind a Postgres array
+
+=var_quantiles= is =numeric(5,4)[]=. sqlgen has no array binding, so no C++
+layer can carry it. The column stays in the schema. Remove =:sql_only:= and
+regenerate once sqlgen, or a replacement, can bind =numeric[]=.
+
+*** Nine columns needed an explicit C++ default
+
+=:default:= is SQL-side only. For a plain scalar, =core.py= auto-supplies a
+C++ default only for a non-nullable =bool= or =int=. Nine columns of the
+hand-written header carried a meaningful default that regeneration would have
+dropped, so the model now sets =:default_value:= on each:
+=observation_model=, =n_threads=, =market_data_type=, =npv_enabled=,
+=cashflow_enabled=, =xva_quantile=, =xva_dim_quantile=,
+=xva_dim_horizon_calendar_days=, =xva_dim_regression_order=, and =var_method=.
+
+*** Four generator blocks wrote std::nullopt into a std::string
+
+The hand-written generator blocks for =market_data_date=, =var_method=,
+=simm_version=, and =simm_calculation_currency= returned =std::nullopt= into a
+plain =std::string= member. That does not compile. The blocks now return a
+string literal.
+
+*** The generated SQL gains four things and renames one index
+
+The create script was regenerated. Behaviour is unchanged except for one index
+name: =risk_report_configs_definition_uniq_idx= becomes
+=risk_report_configs_report_definition_id_uniq_idx=. Four genuine improvements
+land with it: =clock_timestamp()= instead of =current_timestamp=,
+=set search_path = public, pg_temp=, a call to
+=ores_dq_validate_change_reason_fn=, and consistent =NEW.=/=OLD.= casing.
+=var_quantiles= is retained.
+
+The notify-trigger script changes one declaration: =changed_id= becomes =uuid=
+instead of =text=. The drop script loses four =drop index= statements, because
+the generated form drops the table and its indexes together.
+
+** Three entities stay hand-written: recorded exceptions (2026-09-17)
+
+The archetypes cannot express these tables. No exclusion was added, so the
+drift check still sees them.
+
+| Entity                          | Gap in the archetype                                                                                                                |
+|---------------------------------+-------------------------------------------------------------------------------------------------------------------------------------|
+| risk_report_config_books        | =sql_schema_junction_create.mustache= emits =version= plus four audit columns unconditionally. The table has neither.               |
+| risk_report_config_portfolios   | Same gap.                                                                                                                           |
+| report_input_bundle             | =sql_schema_domain_entity_create.mustache= emits =valid_from=/=valid_to= and puts both in the primary key unconditionally. The table is immutable: =primary key (tenant_id, id)= and a plain =created_at=. |
+
+=:has_tenant_id: false= does not rescue the two junctions. The template ties
+the =tenant_id= column to the same flag, so the column the tables do carry
+would disappear.
+
+The =report_input_bundle= gap is not confined to the SQL. The entity, mapper,
+and domain templates carry the same assumption. Its hand-written entity
+declares =sqlgen::PrimaryKey<std::string> id= and a bare =db_timestamp
+created_at=, with no =valid_from=, =valid_to=, =version=, or audit members.
+Generating it would add seven columns to the table and change its primary
+key. That is a schema decision, not a codegen detail.
+
+The junction gap is wider than one flag. Wrapping the version and audit block
+in a flag is necessary, and not sufficient: the generated junction also puts
+=tenant_id= in the primary key and in the exclusion constraint, and names the
+left and right indexes from the column names rather than the hand-chosen
+=..._config_idx=. Three template capabilities, not one.
+
+Nothing writes either junction table today. A repo-wide search finds only
+readers: =reporting_resolve_book_ids_fn=, the RLS policies, and the two
+hand-written scope queries in =risk_report_config_repository.cpp=. No INSERT
+exists in C++, SQL, or seed data. That is why the gap is not urgent.
+
+** Exceptions revisited, second pass (2026-09-17)
+
+Two claims from the first pass did not survive checking. The corrections
+change the recommendation for both families.
+
+*The immutable archetype is not new; it is orphaned.* The retired JSON-model
+pipeline had =sql_schema_non_temporal_create.mustache=, and three checked-in
+files still name it:
+
+| File                                                       | Owner    |
+|------------------------------------------------------------+----------|
+| =projects/ores.sql/create/workflow/workflow_workflow_instance_create.sql= | workflow |
+| =projects/ores.sql/create/workflow/workflow_workflow_step_create.sql=     | workflow |
+| =projects/ores.sql/create/database/database_database_infos_create.sql=    | database |
+
+The template does not exist. =projects/ores.codegen/generate_workflow_schema.sh=
+still points at =models/workflow/*_domain_entity.json= and =src/generator.py=,
+both retired. So the marker on those three files lies: nothing regenerates
+them. Neither =workflow= nor =database= is in =KNOWN_DRIFT_FREE=, so the gate
+never looks. This is a separate finding from the three exceptions, and it is
+the one a reader is most likely to be misled by.
+
+The generated shape in those files matches =report_input_bundles= closely:
+uuid =id=, =tenant_id=, a plain =created_at=, no temporal columns, and no
+partial-index predicate. One difference is instructive: =workflow_instance=
+uses =primary key (id)= while =report_input_bundles= uses =primary key
+(tenant_id, id)=.
+
+*The bundle is live; the junctions are not.* =report_input_bundle= is written
+today by =report_execution_handler.cpp= (the =assemble_bundle= step) through
+=report_input_bundle_repository::create=, and read by =find_by_instance_id=.
+Its hand-written surface is five files and two methods. The entity archetype
+generates a bitemporal, versioned, audited, eventing-enabled, history-enabled,
+paginated stack. Forcing the bundle through it would add seven columns to a
+live table, move the primary key, and emit far more code than the two methods
+that exist.
+
+The gap is therefore not a missing SQL branch. It is a lifecycle the archetype
+does not model: write once, never update, never delete, keep no history.
+
+*Revised recommendation.* Hold both families as recorded exceptions, and
+record the trigger to revisit each:
+
+- The two junctions: revisit when something first writes them. At that point
+  conform them to the conventional junction shape by hand and generate them,
+  or close the three template gaps. Order does not matter while no writer
+  exists, because the audit columns would stay empty either way.
+- =report_input_bundle=: revisit when a second write-once entity appears. One
+  entity does not justify a new archetype. The same rule the skill applies to
+  profiles applies here: a novel combination earns its own name only once a
+  second entity repeats it.
+
+The orphaned =sql_schema_non_temporal_create.mustache= output is a separate
+task. It belongs with the =ores.dq= artefact tier finding, not with this one.
+
+**The legacy archetype references are deleted (2026-09-17)**
+
+The archetype itself was already gone. The template is absent from
+=projects/ores.codegen/library/templates/=. Only its references remained.
+Three changes remove them.
+
+- =projects/ores.codegen/generate_workflow_schema.sh= is deleted. The script
+  called =src/generator.py= with =models/workflow/*_domain_entity.json=. Both
+  are absent. Its template is absent. Nothing could run it.
+- The three SQL files lost their false =AUTO-GENERATED= block. Only comment
+  lines were removed, so the DDL is unchanged and the recreated schema is
+  unaffected. The =database_info= file also lost a meaningless =*  Table=
+  title, an artifact of its empty entity title.
+- =ores_schema.puml= is regenerated, along with the =ores_schema.png= and
+  =ores_schema.cmapx= artifacts the same script renders. The three notes no
+  longer carry the stale text.
+
+=git grep= now finds zero references under =projects/=. The remaining hits
+are past-sprint org files, which are history and stay unchanged.
+
+*Two findings came out of this.*
+
+*The whole family of generator scripts is dead.* =src/generator.py= and
+=models/= are both absent, so every =generate_*.sh= script in
+=projects/ores.codegen/= calls a module that does not exist. A backlog story
+already scopes the cleanup: =Decommission legacy ores.codegen bash scripts=
+(=doc/agile/product_backlog/next/decommission_codegen_bash_scripts/story.org=,
+ID =1C659EB3-5227-46B6-8B5C-68E9F98C10D1=). It is in state BACKLOG with one
+unstarted task. This task deleted only the script the archetype referenced.
+
+*The ER diagram was six weeks stale.* Regenerating it changed 1786 lines. The
+last generation was 2026-08-07, so the diff is real drift across every
+component, not noise from this change. The repository convention is to
+regenerate and commit the diagram with SQL work, so this is overdue rather
+than wrong. It is one commit's worth of unrelated churn and can be split out.
+
+** Step 7 finding: the generated registrars have no caller (2026-09-17)
+
+=ores.reporting/core/src/messaging/registrar.cpp= is hand-written. It builds
+each =*_handler= directly, so the generated per-entity registrar classes have
+nowhere to join. Two families are orphaned today, four classes each:
+
+| Family                        | Classes                                                       |
+|-------------------------------+----------------------------------------------------------------|
+| =*_registrar=                 | report_definition, report_instance, report_type, concurrency_policy |
+| =*_history_provider_registrar=| same four                                                      |
+
+Nothing calls either family. The =*_event_registrar= family is composed:
+=ores.reporting/service/src/app/application.cpp= calls all four
+=register_*_event_mapping= functions, so it is not part of the finding.
+
+The skill allows two end states: composed at the composition point, or
+recorded as a deliberately unwired subject. These are the second state.
+
+The physical space table in the =risk_report_config= model follows from this
+finding. Generating a registrar with no caller adds dead code.
+
+** Separate finding: eight nullable scalars have no C++ default (2026-09-17)
+
+Recorded, not fixed. A nullable plain scalar with no =:default_value:= leaves
+its C++ member uninitialised, so default construction reads indeterminate
+values. Eight columns across three components have this shape:
+
+| Component     | Columns                                                                                          |
+|---------------+--------------------------------------------------------------------------------------------------|
+| ores.compute  | =pgmq_msg_id= (=std::int64_t=), =outcome= (=int=)                                                |
+| ores.trading  | =repo_rate= (=double=), =funding_rate= (=double=)                                                |
+| ores.reporting| =xva_quantile=, =xva_dim_quantile=, =xva_dim_horizon_calendar_days=, =xva_dim_regression_order=  |
+
+The four =ores.reporting= columns are fixed in this task's model. The four
+outside =ores.reporting= are left alone: fixing them changes generated output
+for =ores.compute= and =ores.trading=, which breaks their drift gates. They
+belong to a separate codegen-gap task.
+
+** The regenerated SQL was applied and rolled back (2026-09-17)
+
+=reporting_create.sql= and =reporting_drop.sql= were both run inside one
+transaction against the development database, then rolled back. The whole
+reporting component was exercised, not only the changed file. Both directions
+completed with no error.
+
+One migration note. The live database still carries
+=risk_report_configs_definition_uniq_idx=. The regenerated create script does
+not create that name, and the drop script does not drop it. A fresh database
+from =compass db recreate= is unaffected. An upgraded database keeps the stale
+index until someone drops it by hand.
+
+** Follow-up: the new entity has no test file (2026-09-17)
+
+The four older reporting entities each have a hand-written
+=api/tests/domain_<entity>_tests.cpp=. Tests are not generated in this
+component, so no test appeared for =risk_report_config=.
+
+The template is already covered four times over in this component, and the
+regenerated header was diffed line by line against the hand-written one. The
+gap is recorded rather than filled: the four hand-written repository methods
+(=find_by_definition_id=, =resolve_book_ids=, =get_book_scope=,
+=get_portfolio_scope=) have no coverage either, and they are the part that a
+test should target.
+
+** Out of scope: report_definition_template mirrors a DQ table (2026-09-17)
+
+=ores.reporting.api/domain/report_definition_template.hpp= and its
+=report_definition_template_json_io= pair are hand-written. They are a read
+model for a row of =ores_dq_report_definitions_artefact_tbl=.
+
+The type is not a reporting entity and has no table of its own, so no
+reporting model can generate it. Its true home is the =ores.dq= artefact
+tier, which is un-modelled: the repository holds about fifty
+=dq_*_artefact_create.sql= tables and one model, =ores.dq.artefact_type=.
+
+Reported here for the backlog. Fixing it means modelling the DQ artefact
+tier, which is a different component and a different task.
+
+** Verification: build, regeneration, and CMake lists (2026-09-17)
+
+Three checks passed.
+
+- *Build.* =./compass.sh build= exited 0 at 100 percent with zero =error:=
+  lines. All seven new =risk_report_config= translation units compiled, and
+  =ores.reporting.api=, =ores.reporting.core=, =.service=, and every test
+  target linked.
+- *Regeneration is idempotent.* =./compass.sh codegen regenerate --component
+  reporting --address ores= ran against the already-regenerated tree. The
+  =git diff= hash, the untracked-file hash, and =git status --short= are all
+  unchanged. The same command inside =check_component_drift.py= ran a third
+  time and again changed nothing. Skill step 5 is satisfied.
+- *CMake source lists.* =regenerate_cmake_component_files.py --all --check=
+  exits 0. Every =component_files.cmake= in the repository is current.
+
+*The component test target compiles; four of its tests need a running NATS.*
+
+=./compass.sh build test_ores.reporting.core.tests --preset
+linux-clang-debug-make= built and linked the target at 100 percent, then ran
+18 test cases. Four failed, all with the same message: =NATS connect failed:
+No server available for connection=. The other 14 passed.
+
+The failure is the environment, not the code under test. The four failures
+are the eventing integration tests, and no ORE Studio service was running for
+this worktree at the time. =compass services status= showed 23 of 23 units
+stopped, and the NATS broker for this worktree listens on port 21605 only
+while =nats-server-clever_dijkstra= is up. Starting the services fixed the
+cause; the ctest result recorded below is the run made after that start.
+
+Two services, =marketdata= and =synthetic=, failed to start for the same
+reason described next.
+
+*The database was twenty days stale. That was the root cause.*
+
+The first full =rat= run failed. Two targets did not pass:
+=ores.compute.core.tests= (7 of 13) and =ores.analytics.core.tests= (2 of 34).
+The compute failures read =column "version" of relation
+"ores_compute_app_version_platforms_tbl" does not exist=. The =rat= target
+aborted there, so it never reached a clean reporting result.
+
+=compass db status= gave the cause. The schema was built from commit
+=fdbdf2f98d-d= on 2026-08-28 and reported =drift: stale=, twenty days behind
+HEAD. =compass db recreate -y -k= rebuilt it in 16 minutes and 32 seconds.
+The status now reads =drift: current= and =built from: bcbcb8e380-d=, which is
+this task's own commit. The database therefore holds the new
+=risk_report_config= schema.
+
+After the recreate all 23 services started, including =marketdata= and
+=synthetic=. No service fails now. The two earlier failures were stale-schema
+symptoms, not defects in those components.
+
+*The full suite is green. The acceptance is met.*
+
+=./compass.sh build rat --preset linux-clang-debug-make= ran 72 test suites
+and exited 0. It reports zero =failed:= lines, and 62 suites print "All tests
+passed". The acceptance clause "Full local build and ctest green after
+regeneration" is therefore satisfied.
+
+=ores.reporting.core.tests= passes all 18 test cases with 58 assertions in
+this run. The four eventing integration tests that failed on the stopped
+environment now pass. The two targets that failed on the stale database,
+=ores.compute.core.tests= and =ores.analytics.core.tests=, both pass.
+
+*The drift check passes once the tree is committed.*
+
+Both claims above were confirmed by running the check twice more. Before the
+commit it exited 1, printing this task's own change set. After the commit it
+printed "No drift: regenerated output matches the checked-in tree" and exited
+0. =--all= over the =KNOWN_DRIFT_FREE= registry then exited 0 as well, which
+retires skill step 8 for this component.
 
 * Test Scenarios
 
@@ -63,12 +579,82 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2094][#2094]] | [reporting,codegen] Bind the reporting entities to profiles and generate risk_report_config |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =sql_only= =continue= is the last statement in the column loop, so it silently decides the fate of any step added after it. | =projects/ores.codegen/src/codegen/core.py= | Accept | The skip is correct: an SQL-only column reaches no C++ layer. The comment now says so and states that the =continue= stays last. |
+| 2 | The new guard test is not wired into an automated runner. Nothing in CI runs =projects/ores.codegen/tests=. | =projects/ores.codegen/tests/test_entity_struct_column_coverage.py= | Decline | Pre-existing and repo-wide: the 38 tests in that directory share the gap. It needs its own change. The drift gate enforces the generated output today. |
+| 3 | The index rename leaves the old index in place on a database that is upgraded, not recreated. | =projects/ores.sql/create/reporting/reporting_risk_report_configs_create.sql= | Decline | Recorded in this task. =compass db recreate= is the documented route, and the drop script drops the table with its indexes. |
+| 4 | =ores.qt/reporting= is regenerated, but no =CMakeLists.txt= builds it, so the Qt output is not compiled or tested. | =projects/ores.qt/reporting/src/ReportInstanceController.cpp= | Decline | Deliberate. Step 1 of the two-step plan in the story. Carried as a testing limitation. |
+| 5 | =codegen-drift.yml= runs on pull requests for the paths this change touches, so the "CI runs no PR gate" premise is wrong here. | =.github/workflows/codegen-drift.yml= | Decline | Process finding, not a code defect, and out of scope for this change — the same two checks run locally instead. Fixed later on this branch by the commit that corrected the premise in the two skills and in the CI knowledge doc it came from. |
+| 6 | =misspell-fixer .= reports three files. | =doc/agile/versions/v0/sprint_25/shell-command-codegen/task_generate-the-trading-command-units.org= (+2) | Decline | All three quote the upstream identifier =LOAD_PROFILE_1_EXPLICT= inside Review tables that record the decision not to correct it. No file this change touches. |
+| 7 | The ={{^sql_only}}= guards were written into the tangle output, not the =org= template sources, so =compass build --direct codegen_templates= stripped them and both =.mustache= files stopped being reproducible. | =projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org= | Accept | Fixed. The guards now live in the =org= sources, and the re-tangle reproduces both =.mustache= files byte for byte. The codegen-drift check found this, not a reading of the diff. |
+| 8 | A nullable numeric column maps to a plain domain field through a =0= sentinel: =value_or(0)= on read and == 0 ? nullopt : value= on write, so a caller that sets the field to exactly =0= persists =NULL=. | =projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache= | Decline | Pre-existing and repo-wide: this change does not touch the template, and every nullable numeric column in the tree shares the convention. The two values =0= and =NULL= are conflated, so a deliberate =0= is written back as =NULL=. Not a regression here — the template deserves its own change. |
+| 9 | =var_quantiles= is unreachable from C++ once the struct drops it; confirm that nothing downstream still expects the field. | =projects/ores.reporting/api/modeling/ores.reporting.api.puml= | Accept | Nothing in C++ reads the field, and this task records why: sqlgen cannot bind =numeric[]=. But the hand-written API diagram still declared it, so it claimed a member the struct does not have. The member is removed and the =PNG= regenerated. It was the only divergence across the diagram's 36 members. |
 
 * Result
+
+Done. The bind is complete and the drift gate holds.
+
+*What shipped.* Eight commits on
+=feature/bind-reporting-entities-to-profiles=.
+
+- =report_definition= keeps =uuid-identified-lookup= and its explicit
+  =has_workspace_id: true= override. The override is deliberate.
+- =report_instance= keeps =fk-scoped-child= and gains
+  =parent_entity_singular: report_definition=.
+- =risk_report_config= was hand-written. It now has an org model at
+  =projects/ores.reporting/modeling/ores.reporting.risk_report_config.org=,
+  and codegen generates its API, core repository, and SQL.
+- The retired non-temporal SQL archetype is gone: the dead script deleted,
+  three false =AUTO-GENERATED= headers removed, and the ER diagram
+  regenerated.
+- The =sql_only= guards on the domain class and generator templates moved
+  from the tangle output into the =org= sources they are tangled from. Both
+  =.mustache= files are reproducible again from =compass build --direct
+  codegen_templates=. See the Review table, finding 7.
+
+*Acceptance.* Five of the six clauses are met outright.
+
+- The survey covers every entity in the reporting catalogue entry.
+- Every matching entity regenerates with zero added diff.
+- The no-match entities are recorded with their feature values.
+- No new profile was needed.
+- The full =rat= suite is green: 73 suites, 0 failures.
+
+The fourth clause, "every entity that carries a hand-written copy of a
+generated shape gets an org model", is met for =risk_report_config= alone.
+Three entities stay hand-written as recorded exceptions. The record names
+the archetype gap that blocks each one and a revisit trigger. This follows
+the skill's recorded-exception path. It is not a silent omission. See
+=* Notes=.
+
+*The drift gate.* reporting-cpp is in =KNOWN_DRIFT_FREE=.
+=check_component_drift.py --component reporting= exits 1 before a commit and
+0 after, where it prints "No drift: regenerated output matches the
+checked-in tree". =--all= over the registry exits 0. This retires skill
+step 8.
+
+*Environment.* The database was twenty days stale. The stale schema caused
+two suites to fail on a missing column. =compass db recreate -y -k= rebuilt
+it in 16m 32s. =db status= then reported =drift: current=. All 23 services
+start.
+
+The rebase onto =origin/main= made the database stale a second time. Main's
+nine commits added =ores_refdata_series_subclass_codes_tbl= and
+retaxonomised the asset classes, and the database predated both.
+=ores.refdata.core.tests= and =ores.marketdata.core.tests= failed on the
+missing relation, and on =asset_class_code: interest_rates=. These are
+stale-schema symptoms, not defects in this change: the branch touches no
+refdata or marketdata file. A second =compass db recreate -y -k= cleared
+both. Both suites now pass: =ores.refdata.core.tests= in 263.78s and
+=ores.marketdata.core.tests= in 4.25s.
+
+The suite ran as =ctest -I= index-range chunks, not one run. Three other
+worktrees were building and testing on this host at the same time, and the
+memory guard stopped each long background run. The chunks cover tests 1 to
+73 with no gap and no repeat: 1-15, 16-30, 31-40, 41-44, 45-60, 61-73.
+Every chunk reported "100% tests passed".

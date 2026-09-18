@@ -163,6 +163,9 @@ void ReportInstanceController::onAddNewRequested() {
 void ReportInstanceController::openAdd() {
     showAddWindow();
 }
+void ReportInstanceController::openAddWithParent(boost::uuids::uuid definitionId) {
+    showAddWindow(definitionId);
+}
 void ReportInstanceController::openEdit(const reporting::domain::report_instance& instance) {
     showDetailWindow(instance);
 }
@@ -189,11 +192,16 @@ void ReportInstanceController::wireDetailDialogCommon(ReportInstanceDetailDialog
             &ReportInstanceController::errorMessage);
 }
 
-void ReportInstanceController::showAddWindow() {
+void ReportInstanceController::showAddWindow(boost::uuids::uuid definitionId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new report instance";
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
+    if (!definitionId.is_nil()) {
+        reporting::domain::report_instance prefilled;
+        prefilled.definition_id = definitionId;
+        detailDialog->setInstance(prefilled);
+    }
     detailDialog->setCreateMode(true);
 
     connect(detailDialog,

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-18
 #+updated: 2026-09-18
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -53,7 +53,7 @@ the org dataset pipeline]].
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -32,6 +32,11 @@
             "as_of_date": "2024-12-29",
             "license": "MIT License",
             "artefact_type": "images",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
+            "source_dir": "external/flags/flag-icons",
+            "description_template": "Flag of {key}",
             "tag_code": "flag",
             "tag_description": "Country and region flag images"
         }

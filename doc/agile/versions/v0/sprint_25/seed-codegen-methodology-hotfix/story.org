@@ -21,11 +21,11 @@ Database recreation completes on main again, and every seed script that names th
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Done. The seed is restored.            |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. The story is closed.          |
 | Last touched  | 2026-09-18                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Database recreation completes on main again, and every seed script that names th
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:E7D8B72A-1C2C-4274-8F82-1673F990D2E2][Scaffold story: Restore the code generation methodology the slovaris removal took]] | DONE | 2026-09-18 | 2026-09-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FEAF22EA-2EC8-48E3-B929-DA0DFECD7BE1][Restore the code generation methodology seed]] | STARTED | 2026-09-18 | | Initial task for: Restore the code generation methodology the slovaris removal took |
+| [[id:FEAF22EA-2EC8-48E3-B929-DA0DFECD7BE1][Restore the code generation methodology seed]] | DONE | 2026-09-18 | 2026-09-18 | Initial task for: Restore the code generation methodology the slovaris removal took |
 
 * Decisions
 

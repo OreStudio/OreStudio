@@ -26,11 +26,11 @@ Database recreation completes on main again, and every seed script that names th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:98E44999-1CA1-4C50-AEDA-AF2B2E42496E][Restore the code generation methodology the slovaris removal took]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance

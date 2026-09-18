@@ -19,39 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_mapper.hpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_MAPPER_HPP
-#define ORES_TRADING_CORE_REPOSITORY_TRADE_MAPPER_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_TRADE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_TRADE_HISTORY_FIELD_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/repository/trade_entity.hpp"
+#include <vector>
 
-namespace ores::trading::repository {
+namespace ores::trading::presentation {
 
 /**
- * @brief Maps trade domain entities to data storage layer and vice-versa.
+ * @brief Renders a trade to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-class ORES_TRADING_CORE_EXPORT trade_mapper {
-private:
-    inline static std::string_view logger_name = "ores.trading.repository.trade_mapper";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    static domain::trade map(const trade_entity& v);
-    static trade_entity map(const domain::trade& v);
-
-    static std::vector<domain::trade> map(const std::vector<trade_entity>& v);
-    static std::vector<trade_entity> map(const std::vector<domain::trade>& v);
-};
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_trade_fields(const domain::trade& v);
 
 }
 

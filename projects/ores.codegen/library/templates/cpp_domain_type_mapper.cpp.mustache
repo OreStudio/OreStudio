@@ -29,50 +29,26 @@ domain::{{entity_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::{{entity_singular}} r;
-{{#has_identity_group}}
 {{#has_audit_columns}}
-    r.identity.version = v.version;
+    r.{{{scaffold_prefix}}}version = v.version;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
 {{/has_tenant_id}}
 {{#has_workspace_id}}
-    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+    r.{{{scaffold_prefix}}}workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
 {{/has_workspace_id}}
 {{#primary_key.columns}}
 {{#is_text}}
-    r.identity.{{column}} = v.{{column}}.value();
+    r.{{{group_prefix}}}{{column}} = v.{{column}}.value();
 {{/is_text}}
 {{#is_uuid}}
-    r.identity.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
+    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
 {{/is_uuid}}
 {{#is_int}}
-    r.identity.{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
+    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
 {{/is_int}}
 {{/primary_key.columns}}
-{{/has_identity_group}}
-{{^has_identity_group}}
-{{#has_audit_columns}}
-    r.version = v.version;
-{{/has_audit_columns}}
-{{#has_tenant_id}}
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-{{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-{{/has_workspace_id}}
-{{#primary_key.columns}}
-{{#is_text}}
-    r.{{column}} = v.{{column}}.value();
-{{/is_text}}
-{{#is_uuid}}
-    r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
-{{/is_uuid}}
-{{#is_int}}
-    r.{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
-{{/is_int}}
-{{/primary_key.columns}}
-{{/has_identity_group}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
     produce incorrect code if those keys live in the identity sub-struct. }}
@@ -97,109 +73,68 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
-{{#is_identity_group_column}}
 {{#is_uuid}}
-    r.identity.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+    r.{{{group_prefix}}}{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
 {{#render_is_optional_uuid}}
-    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
 {{/render_is_optional_uuid}}
 {{#render_is_uuid}}
-    r.identity.{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
 {{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
 {{#render_is_optional_timestamp}}
-    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
 {{/render_is_optional_timestamp}}
 {{#render_is_timestamp}}
     if (v.{{name}})
-        r.identity.{{name}} = timestamp_to_timepoint(*v.{{name}});
+        r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(*v.{{name}});
     else
-        r.identity.{{name}} = {};
+        r.{{{group_prefix}}}{{name}} = {};
 {{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
-    r.identity.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
+    r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
 {{/is_required_timestamp}}
+{{^render_is_enum}}
 {{#is_nullable_string}}
-    r.identity.{{name}} = v.{{name}}.value_or("");
+{{#render_is_optional_string}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
+{{/render_is_optional_string}}
+{{^render_is_optional_string}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.value_or("");
+{{/render_is_optional_string}}
 {{/is_nullable_string}}
+{{/render_is_enum}}
 {{#is_nullable_numeric}}
-    r.identity.{{name}} = v.{{name}}.value_or(0);
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.value_or(0);
 {{/is_nullable_numeric}}
 {{#is_already_optional}}
-    r.identity.{{name}} = v.{{name}};
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_already_optional}}
 {{#is_enum}}
-    r.identity.{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
+    r.{{{group_prefix}}}{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
 {{/is_enum}}
-{{#is_simple}}
-    r.identity.{{name}} = v.{{name}};
-{{/is_simple}}
-{{/is_identity_group_column}}
-{{^is_identity_group_column}}
-{{#is_uuid}}
-    r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
-{{/is_uuid}}
-{{#is_optional_uuid}}
-{{#render_is_optional_uuid}}
-    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_uuid}}
-{{#render_is_uuid}}
-    r.{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
-{{/render_is_uuid}}
-{{/is_optional_uuid}}
-{{#is_optional_timestamp}}
-{{#render_is_optional_timestamp}}
-    r.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_timestamp}}
-{{#render_is_timestamp}}
-    if (v.{{name}})
-        r.{{name}} = timestamp_to_timepoint(*v.{{name}});
-    else
-        r.{{name}} = {};
-{{/render_is_timestamp}}
-{{/is_optional_timestamp}}
-{{#is_required_timestamp}}
-    r.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
-{{/is_required_timestamp}}
-{{#is_nullable_string}}
-    r.{{name}} = v.{{name}}.value_or("");
-{{/is_nullable_string}}
-{{#is_nullable_numeric}}
-    r.{{name}} = v.{{name}}.value_or(0);
-{{/is_nullable_numeric}}
-{{#is_already_optional}}
-    r.{{name}} = v.{{name}};
-{{/is_already_optional}}
-{{#is_enum}}
-    r.{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
+{{#render_is_enum}}
+{{^is_enum}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ?
+        rfl::string_to_enum<{{{render_cpp_type}}}>(*v.{{name}}).value_or({{{render_cpp_type}}}{}) :
+        {{{render_cpp_type}}}{};
 {{/is_enum}}
+{{/render_is_enum}}
 {{#is_simple}}
-    r.{{name}} = v.{{name}};
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_simple}}
-{{/is_identity_group_column}}
 {{/columns}}
-{{#has_audit_group}}
 {{#has_audit_columns}}
-    r.audit.modified_by = v.modified_by;
-    r.audit.performed_by = v.performed_by;
-    r.audit.change_reason_code = v.change_reason_code;
-    r.audit.change_commentary = v.change_commentary;
+    r.{{{audit_prefix}}}modified_by = v.modified_by;
+    r.{{{audit_prefix}}}performed_by = v.performed_by;
+    r.{{{audit_prefix}}}change_reason_code = v.change_reason_code;
+    r.{{{audit_prefix}}}change_commentary = v.change_commentary;
 {{/has_audit_columns}}
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
-{{/has_audit_group}}
-{{^has_audit_group}}
-{{#has_audit_columns}}
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-{{/has_audit_columns}}
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
-{{/has_audit_group}}
+    r.{{{audit_prefix}}}recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -210,50 +145,26 @@ domain::{{entity_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     {{entity_singular}}_entity r;
-{{#has_identity_group}}
 {{#primary_key.columns}}
 {{#is_text}}
-    r.{{column}} = v.identity.{{column}};
+    r.{{column}} = v.{{{group_prefix}}}{{column}};
 {{/is_text}}
 {{#is_uuid}}
-    r.{{column}} = boost::uuids::to_string(v.identity.{{column}});
+    r.{{column}} = boost::uuids::to_string(v.{{{group_prefix}}}{{column}});
 {{/is_uuid}}
 {{#is_int}}
-    r.{{column}} = std::to_string(v.identity.{{column}});
+    r.{{column}} = std::to_string(v.{{{group_prefix}}}{{column}});
 {{/is_int}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();
 {{/has_tenant_id}}
 {{#has_workspace_id}}
-    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
+    r.workspace_id = boost::uuids::to_string(v.{{{scaffold_prefix}}}workspace_id);
 {{/has_workspace_id}}
 {{#has_audit_columns}}
-    r.version = v.identity.version;
+    r.version = v.{{{scaffold_prefix}}}version;
 {{/has_audit_columns}}
-{{/has_identity_group}}
-{{^has_identity_group}}
-{{#primary_key.columns}}
-{{#is_text}}
-    r.{{column}} = v.{{column}};
-{{/is_text}}
-{{#is_uuid}}
-    r.{{column}} = boost::uuids::to_string(v.{{column}});
-{{/is_uuid}}
-{{#is_int}}
-    r.{{column}} = std::to_string(v.{{column}});
-{{/is_int}}
-{{/primary_key.columns}}
-{{#has_tenant_id}}
-    r.tenant_id = v.tenant_id.to_string();
-{{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
-{{/has_workspace_id}}
-{{#has_audit_columns}}
-    r.version = v.version;
-{{/has_audit_columns}}
-{{/has_identity_group}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
     produce incorrect code if those keys live in the identity sub-struct. }}
@@ -272,107 +183,65 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
-{{#is_identity_group_column}}
 {{#is_uuid}}
-    r.{{name}} = boost::uuids::to_string(v.identity.{{name}});
+    r.{{name}} = boost::uuids::to_string(v.{{{group_prefix}}}{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
 {{#render_is_optional_uuid}}
-    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.identity.{{name}})) : std::nullopt;
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{{group_prefix}}}{{name}})) : std::nullopt;
 {{/render_is_optional_uuid}}
 {{#render_is_uuid}}
-    r.{{name}} = v.identity.{{name}} == boost::uuids::uuid{} ? std::nullopt :
-                                                                std::optional(boost::uuids::to_string(v.identity.{{name}}));
+    r.{{name}} = v.{{{group_prefix}}}{{name}} == boost::uuids::uuid{} ? std::nullopt :
+                                                      std::optional(boost::uuids::to_string(v.{{{group_prefix}}}{{name}}));
 {{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
 {{#render_is_optional_timestamp}}
-    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.identity.{{name}})) : std::nullopt;
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.{{{group_prefix}}}{{name}})) : std::nullopt;
 {{/render_is_optional_timestamp}}
 {{#render_is_timestamp}}
-    r.{{name}} = v.identity.{{name}} != std::chrono::system_clock::time_point{} ?
-                     std::optional(ores::platform::time::datetime::to_db_string(v.identity.{{name}})) :
+    r.{{name}} = v.{{{group_prefix}}}{{name}} != std::chrono::system_clock::time_point{} ?
+                     std::optional(ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{name}})) :
                      std::nullopt;
 {{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.identity.{{name}});
+    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{name}});
 {{/is_required_timestamp}}
+{{^render_is_enum}}
 {{#is_nullable_string}}
-    r.{{name}} = v.identity.{{name}}.empty() ? std::nullopt : std::optional(v.identity.{{name}});
+{{#render_is_optional_string}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
+{{/render_is_optional_string}}
+{{^render_is_optional_string}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.empty() ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
+{{/render_is_optional_string}}
 {{/is_nullable_string}}
+{{/render_is_enum}}
 {{#is_nullable_numeric}}
-    r.{{name}} = v.identity.{{name}} == 0 ? std::nullopt : std::optional(v.identity.{{name}});
+    r.{{name}} = v.{{{group_prefix}}}{{name}} == 0 ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
 {{/is_nullable_numeric}}
 {{#is_already_optional}}
-    r.{{name}} = v.identity.{{name}};
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_already_optional}}
 {{#is_enum}}
-    r.{{name}} = rfl::enum_to_string(v.identity.{{name}});
+    r.{{name}} = rfl::enum_to_string(v.{{{group_prefix}}}{{name}});
 {{/is_enum}}
-{{#is_simple}}
-    r.{{name}} = v.identity.{{name}};
-{{/is_simple}}
-{{/is_identity_group_column}}
-{{^is_identity_group_column}}
-{{#is_uuid}}
-    r.{{name}} = boost::uuids::to_string(v.{{name}});
-{{/is_uuid}}
-{{#is_optional_uuid}}
-{{#render_is_optional_uuid}}
-    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_uuid}}
-{{#render_is_uuid}}
-    r.{{name}} = v.{{name}} == boost::uuids::uuid{} ? std::nullopt :
-                                                      std::optional(boost::uuids::to_string(v.{{name}}));
-{{/render_is_uuid}}
-{{/is_optional_uuid}}
-{{#is_optional_timestamp}}
-{{#render_is_optional_timestamp}}
-    r.{{name}} = v.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_timestamp}}
-{{#render_is_timestamp}}
-    r.{{name}} = v.{{name}} != std::chrono::system_clock::time_point{} ?
-                     std::optional(ores::platform::time::datetime::to_db_string(v.{{name}})) :
-                     std::nullopt;
-{{/render_is_timestamp}}
-{{/is_optional_timestamp}}
-{{#is_required_timestamp}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{name}});
-{{/is_required_timestamp}}
-{{#is_nullable_string}}
-    r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
-{{/is_nullable_string}}
-{{#is_nullable_numeric}}
-    r.{{name}} = v.{{name}} == 0 ? std::nullopt : std::optional(v.{{name}});
-{{/is_nullable_numeric}}
-{{#is_already_optional}}
-    r.{{name}} = v.{{name}};
-{{/is_already_optional}}
-{{#is_enum}}
-    r.{{name}} = rfl::enum_to_string(v.{{name}});
+{{#render_is_enum}}
+{{^is_enum}}
+    r.{{name}} = std::optional(std::string(rfl::enum_to_string(v.{{{group_prefix}}}{{name}})));
 {{/is_enum}}
+{{/render_is_enum}}
 {{#is_simple}}
-    r.{{name}} = v.{{name}};
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_simple}}
-{{/is_identity_group_column}}
 {{/columns}}
-{{#has_audit_group}}
 {{#has_audit_columns}}
-    r.modified_by = v.audit.modified_by;
-    r.performed_by = v.audit.performed_by;
-    r.change_reason_code = v.audit.change_reason_code;
-    r.change_commentary = v.audit.change_commentary;
+    r.modified_by = v.{{{audit_prefix}}}modified_by;
+    r.performed_by = v.{{{audit_prefix}}}performed_by;
+    r.change_reason_code = v.{{{audit_prefix}}}change_reason_code;
+    r.change_commentary = v.{{{audit_prefix}}}change_commentary;
 {{/has_audit_columns}}
-{{/has_audit_group}}
-{{^has_audit_group}}
-{{#has_audit_columns}}
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-{{/has_audit_columns}}
-{{/has_audit_group}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

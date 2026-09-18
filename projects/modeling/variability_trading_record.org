@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 95BF5857-D9DC-40B5-8081-FAB3C24FF0A4
+:END:
+#+title: Profile: Trading record
+#+description: Tenant- and workspace-scoped transactional trading data, proven on the wire by a generated eventing test, with a hand-crafted Qt surface.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models transactional trading data: the record a booking produces, as
+against the reference data every other profile in this catalogue
+describes. A lookup is read mostly and shared across the firm; a
+trading record is written on every amendment, curated per trading desk
+and workspace, and its writes are events other components react to.
+That difference is what this profile fixes.
+
+It covers both halves of a booking. [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][Trade]] carries the envelope — who
+the parties are, which book, where it has got to — and an instrument
+carries the economics. The two differ in how they establish their
+party and in how their domain struct is composed, so the profile
+deliberately fixes neither: a feature this profile does not list is
+the model's own choice, which is what lets one profile serve both.
+
+What it does fix is the part they have no reason to differ on. Both are
+scoped to a tenant and a workspace. Both are written through NATS, so
+both should carry the generated eventing test that proves the pipeline
+end to end — Postgres trigger, event source, event bus, NATS publish —
+rather than leaving that to each author to remember. Neither generates
+a Qt surface: the trade blotter and the per-instrument forms are
+hand-crafted in =ores.qt= and consume the generated protocol.
+
+* Reference entity
+
+[[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][trade]] — the first binding. The instrument families bind it as they
+are ported; they carry [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][trading instrument]] today, which fixes the
+same tenant and workspace scoping but enables no facet, which is why
+sixteen instruments declare the eventing test by hand and ten do not.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice. Party derivation is the notable
+omission: a trade takes its party from its book, an instrument from the
+session, and both are correct for what they model.
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | true |
+
+* Physical space
+
+The eventing test is the facet this profile exists to fix, and it is
+switched off until the seeding chain can carry a trade's ancestors. A
+trade's parents are a book and a portfolio in =ores.refdata=, and the
+seeder now reaches across that boundary -- but the seeded book's own
+party is not yet active when the book is written, so the test fails on
+the parent rather than on anything it means to prove. Switch this to
+=true= once that is fixed; nothing else in the profile depends on it.
+
+| Address | Enabled |
+|---------+---------|
+| =ores.cpp.eventing-integration-test= | false |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.
+- [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][Profile: Trading instrument]] — the narrower profile the instrument families carry today.

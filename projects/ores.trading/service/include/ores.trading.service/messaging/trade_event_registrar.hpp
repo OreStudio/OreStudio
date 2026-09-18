@@ -19,31 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
+#ifndef ORES_TRADING_SERVICE_MESSAGING_TRADE_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_TRADE_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::trading::generators {
+namespace ores::trading::service::messaging {
 
-/**
- * @brief Generates a synthetic trade.
- */
-ORES_TRADING_API_EXPORT domain::trade
-generate_synthetic_trade(utility::generation::generation_context& ctx);
+[[nodiscard]] ores::eventing::service::subscription
+register_trade_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                             ores::eventing::service::event_bus& event_bus,
+                             ores::nats::service::client& nats);
 
-/**
- * @brief Generates N synthetic trades.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::service::messaging
 
 #endif

@@ -131,9 +131,10 @@ public:
                 // ignored here. Wire this up (with a filter argument that
                 // matches list_filter_column's semantics) if/when this
                 // facet is rolled out to an entity that needs both.
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
-                resp.total_available_count =
-                    static_cast<int>(resp.{{entity_plural_short}}.size());
+                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(
+                    req->offset, req->limit, req->{{list_filter_column}});
+                resp.total_available_count = static_cast<int>(
+                    svc.count_{{entity_plural_short}}(req->{{list_filter_column}}));
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
@@ -210,7 +211,7 @@ public:
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
 {{#has_batch_save}}
-                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}}{{#save_extra_args}}, {{save_extra_args}}{{/save_extra_args}});
+                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}});
 {{/has_batch_save}}
 {{^has_batch_save}}
                 svc.save_{{entity_singular_short}}(req->data);
@@ -802,7 +803,7 @@ public:
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
 {{#has_batch_save}}
-                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}}{{#save_extra_args}}, {{save_extra_args}}{{/save_extra_args}});
+                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}});
 {{/has_batch_save}}
 {{^has_batch_save}}
                 svc.save_{{entity_singular_short}}(req->data);

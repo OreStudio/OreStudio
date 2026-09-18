@@ -128,8 +128,8 @@ public:
                 // ignored here. Wire this up (with a filter argument that
                 // matches list_filter_column's semantics) if/when this
                 // facet is rolled out to an entity that needs both.
-                resp.trades = svc.list_trades(req->node_id);
-                resp.total_available_count = static_cast<int>(resp.trades.size());
+                resp.trades = svc.list_trades(req->offset, req->limit, req->node_id);
+                resp.total_available_count = static_cast<int>(svc.count_trades(req->node_id));
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
@@ -146,7 +146,6 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        const auto transitions = fetch_fsm_transitions(extract_bearer(msg));
         BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -161,7 +160,7 @@ public:
         service::trade_service svc(req_ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
-                svc.save_trades(req->trades, transitions);
+                svc.save_trades(req->trades);
                 BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, save_trade_response{.success = true});
             } catch (const std::exception& e) {
@@ -251,32 +250,6 @@ public:
         reply(nats_, msg, resp);
     }
 
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::trade_service svc(ctx);
-        if (auto req = decode<get_trade_history_request>(msg)) {
-            try {
-                auto versions = svc.get_trade_history(req->id);
-                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_trade_history_response{.success = true, .versions = std::move(versions)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, get_trade_history_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-    }
-
     void instrument(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -289,7 +262,7 @@ public:
         get_trade_instrument_response resp;
         try {
             if (auto req = decode<get_trade_instrument_request>(msg)) {
-                auto trade_opt = svc.find_trade(req->trade_id);
+                auto trade_opt = svc.get_trade(req->trade_id);
                 if (!trade_opt) {
                     resp.success = false;
                     resp.message = "Trade not found: " + req->trade_id;
@@ -325,12 +298,7 @@ public:
                 const auto offset = static_cast<std::uint32_t>(req->offset);
                 const auto limit = static_cast<std::uint32_t>(req->limit);
 
-                std::optional<boost::uuids::uuid> node;
-                if (!req->node_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    node = gen(req->node_id);
-                }
-                auto trades = svc.list_trades_by_node(offset, limit, node);
+                auto trades = svc.list_trades(offset, limit, req->node_id);
                 resp.items.reserve(trades.size());
                 for (auto& t : trades)
                     resp.items.push_back({.trade = std::move(t)});
@@ -369,11 +337,9 @@ public:
             constexpr std::uint32_t page_size = 1000;
             for (const auto& bid : req->book_ids) {
                 try {
-                    boost::uuids::string_generator gen;
-                    const auto book_node = std::optional<boost::uuids::uuid>(gen(bid));
                     std::uint32_t offset = 0;
                     while (true) {
-                        auto trades = svc.list_trades_by_node(offset, page_size, book_node);
+                        auto trades = svc.list_trades(offset, page_size, bid);
                         const auto n = static_cast<std::uint32_t>(trades.size());
                         if (n == 0)
                             break;

@@ -17,31 +17,47 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/nil_generator.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::trade generate_synthetic_trade(utility::generation::generation_context& ctx) {
-    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::trade r;
-    r.identity.version = 1;
+    r.identity.version = 0;
+    r.identity.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.id = ctx.generate_uuid();
+    r.identity.party_id = ctx.generate_uuid();
     r.identity.external_id = std::string();
     r.parties.book_id = ctx.generate_uuid();
     r.parties.portfolio_id = ctx.generate_uuid();
     r.parties.successor_trade_id = std::nullopt;
     r.classification.trade_type = std::string("Swap");
+    r.parties.counterparty_id = std::nullopt;
+    r.classification.product_type = domain::product_type::swap;
+    r.classification.instrument_id = std::nullopt;
+    r.classification.asset_class = std::nullopt;
     r.classification.netting_set_id = std::string("NS-001");
-    r.classification.activity_type_code = std::string("new_booking");
-    r.classification.status_id = boost::uuids::nil_uuid();
+    r.classification.activity_type_code = std::string("New");
+    r.classification.status_id = ctx.generate_uuid();
     r.lifecycle.trade_date = std::string("2025-01-15");
     r.lifecycle.execution_timestamp = std::string("2025-01-15 10:00:00");
     r.lifecycle.effective_date = std::string("2025-01-16");

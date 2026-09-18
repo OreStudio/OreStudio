@@ -27,8 +27,7 @@ O(n²) field-uniqueness check.  The JSON wire format is nested:
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:          trading-record
 :END:
 
 * Columns
@@ -54,7 +53,7 @@ Surrogate key for the trade record.
 Internal party owning this trade (denormalized from book_id).
 
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+ctx.generate_uuid()
 #+end_src
 
 ** external_id
@@ -149,13 +148,18 @@ std::nullopt
 :PROPERTIES:
 :type:     product_type_t
 :cpp_type: std::string
+:is_enum:  true
 :nullable: true
 :END:
 
 ORE product type discriminator.
 
+The column is text in the database and an enumeration in the domain
+struct, so the generated sample states the enumerator: the generator
+builds the struct, not the row.
+
 #+begin_src cpp :name generator
-std::string("Swap")
+domain::product_type::swap
 #+end_src
 
 ** instrument_id
@@ -222,7 +226,7 @@ std::string("New")
 Current FSM state (soft FK to ores_dq_fsm_states_tbl).
 
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+ctx.generate_uuid()
 #+end_src
 
 ** trade_date
@@ -287,9 +291,34 @@ std::string("2026-01-15")
 
 * Foreign keys
 
-The soft references a trade carries. =book_id= and =portfolio_id= are
-not listed here: their validation is part of the book derivation, which
-the SQL section's "Party id from book id" declares.
+The soft references a trade carries.
+
+** book_id
+:PROPERTIES:
+:table:         ores_refdata_books_tbl
+:parent_entity: book
+:skip_check:    true
+:nullable:      false
+:error_message: Invalid book_id: %. Book must exist for tenant.
+:END:
+
+The book a trade is booked into. =skip_check= suppresses the inline
+check, because the SQL section's "Party id from book id" already
+validates the book on its way to deriving the party from it. The entry
+is still needed: it is what tells the eventing test to seed a book
+before it writes a trade.
+
+** portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:skip_check:    true
+:nullable:      false
+:error_message: Invalid portfolio_id: %. Portfolio must exist for tenant.
+:END:
+
+Declared for the same reason, and checked in the same place: the
+derivation cross-checks the stated portfolio against the book's parent.
 
 ** successor_trade_id
 :PROPERTIES:
@@ -353,6 +382,113 @@ and which portfolio contains it. The insert trigger therefore derives
 =party_id= from the book rather than trusting the caller, and rejects a
 =portfolio_id= that disagrees with the book's parent.
 
+** Status transition
+
+A trade's status is not a value the caller supplies: it is the target of a
+guarded transition. The activity names the event, reference data maps the
+event to a transition in the =trade_status= machine, and the transition
+states which status it may be taken from. An activity that maps to no
+transition versions the trade and leaves it where it was, which is why a
+fixing on a live trade stays live.
+
+The guard lives in the insert trigger rather than in a service because
+every path that writes a version passes through it, and because the
+version select above locks the superseding row: reading the prior status
+under that lock is what stops two concurrent amendments from both
+believing their transition is legal.
+
+#+begin_src sql :name status_transition_declarations :implements B9428A09-3610-4CAD-A200-E6CDE53B7C8D
+    v_fsm_transition_id uuid;
+    v_from_state_id uuid;
+    v_to_state_id uuid;
+    v_transition_name text;
+    v_prior_status_id uuid;
+#+end_src
+
+The booking case. The machine has not started, so the transition must be
+one that starts it: a transition stating a =from_state_id= is an event
+that presumes a history this trade does not have.
+
+#+begin_src sql :name status_transition_on_insert :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
+    select fsm_transition_id into v_fsm_transition_id
+    from ores_trading_activity_types_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and code = NEW.activity_type_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_fsm_transition_id is not null then
+        select from_state_id, to_state_id, name
+          into v_from_state_id, v_to_state_id, v_transition_name
+        from ores_dq_fsm_transitions_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and id = v_fsm_transition_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if not found then
+            raise exception 'Activity type % names FSM transition %, which does not exist.',
+                NEW.activity_type_code, v_fsm_transition_id
+                using errcode = '23503';
+        end if;
+
+        if v_from_state_id is not null then
+            raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
+                NEW.activity_type_code, v_transition_name, v_from_state_id
+                using errcode = '23514';
+        end if;
+
+        NEW.status_id = v_to_state_id;
+    end if;
+#+end_src
+
+The amendment case. The prior row is locked by the version select above,
+so the status read here cannot race another writer.
+
+#+begin_src sql :name status_transition_on_amend :implements 59F4313F-B119-44D8-8E4E-05AE8B18DE95
+        select status_id into v_prior_status_id
+        from "ores_trading_trades_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        select fsm_transition_id into v_fsm_transition_id
+        from ores_trading_activity_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.activity_type_code
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_fsm_transition_id is null then
+            NEW.status_id = v_prior_status_id;
+        else
+            select from_state_id, to_state_id, name
+              into v_from_state_id, v_to_state_id, v_transition_name
+            from ores_dq_fsm_transitions_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and id = v_fsm_transition_id
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if not found then
+                raise exception 'Activity type % names FSM transition %, which does not exist.',
+                    NEW.activity_type_code, v_fsm_transition_id
+                    using errcode = '23503';
+            end if;
+
+            if v_from_state_id is null then
+                raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
+                    NEW.activity_type_code, v_transition_name, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            if v_prior_status_id is distinct from v_from_state_id then
+                raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
+                    NEW.activity_type_code, v_transition_name, v_from_state_id, v_prior_status_id
+                    using errcode = '23514';
+            end if;
+
+            NEW.status_id = v_to_state_id;
+        end if;
+
+#+end_src
+
 ** Indexes
 
 The six lookups the trade blotter and the risk feeds issue against the
@@ -380,10 +516,145 @@ The =name= column carries the stem: the template renders it as
 :subcomponent:       api
 :has_batch_save:     true
 :list_filter_column: node_id
-:save_extra_args:    transitions
 :handler_ctor_param: std::string http_base_url = {}
 :handler_ctor_init:  http_base_url_(std::move(http_base_url))
 :END:
+
+** Repository methods
+
+A trade's node-scoped listing is not a column filter: the node may be a
+book, a portfolio or a business unit, so the database resolves it to a
+book-id set first and the read runs against that set. An empty node
+covers the whole tenant, which is why the unfiltered listing needs no
+separate call.
+
+#+begin_src cpp :name repository_declarations :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::trade> read_latest_for_node_id(context ctx,
+                                                    std::uint32_t offset,
+                                                    std::uint32_t limit,
+                                                    const std::string& node_id);
+
+    std::uint32_t count_latest_for_node_id(context ctx, const std::string& node_id);
+#+end_src
+
+#+begin_src cpp :name repository_methods :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+namespace {
+
+using context = ores::database::context;
+
+std::vector<std::string> fetch_book_ids(context ctx,
+                                        const std::string& fn,
+                                        const std::string& tid,
+                                        const std::string& id,
+                                        logging::logger_t& lg,
+                                        const std::string& desc) {
+    const std::string sql = "SELECT id::text FROM " + fn + "($1::uuid, $2::uuid) AS t(id)";
+    return execute_parameterized_string_query(ctx, sql, {tid, id}, lg, desc);
+}
+
+std::vector<domain::trade> read_trades_for_books(context ctx,
+                                                 const std::vector<std::string>& book_ids,
+                                                 const std::string& tid,
+                                                 const std::string& wid,
+                                                 std::uint32_t offset,
+                                                 std::uint32_t limit,
+                                                 logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    std::vector<domain::trade> result;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::read<std::vector<trade_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                                 "valid_to"_c == max && "book_id"_c == bid) |
+                           order_by("id"_c);
+        auto batch = execute_read_query<trade_entity, domain::trade>(
+            ctx,
+            query,
+            [](const auto& entities) { return trade_mapper::map(entities); },
+            lg,
+            "Reading trades for book");
+        result.insert(result.end(),
+                      std::make_move_iterator(batch.begin()),
+                      std::make_move_iterator(batch.end()));
+    }
+
+    std::ranges::sort(result, {}, [](const auto& t) { return t.identity.id; });
+
+    if (offset >= result.size())
+        return {};
+    const auto end = std::min(static_cast<std::size_t>(offset + limit), result.size());
+    return std::vector<domain::trade>(result.begin() + offset, result.begin() + end);
+}
+
+std::uint32_t count_trades_for_books(context ctx,
+                                     const std::vector<std::string>& book_ids,
+                                     const std::string& tid,
+                                     const std::string& wid,
+                                     logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    struct count_result {
+        long long count;
+    };
+    std::uint32_t total = 0;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::select_from<trade_entity>(sqlgen::count().as<"count">()) |
+                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                                 "valid_to"_c == max && "book_id"_c == bid) |
+                           sqlgen::to<count_result>;
+        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+        ensure_success(r, lg);
+        total += static_cast<std::uint32_t>(r->count);
+    }
+    return total;
+}
+
+}
+
+
+
+std::vector<domain::trade>
+trade_repository::read_latest_for_node_id(context ctx,
+                                       std::uint32_t offset,
+                                       std::uint32_t limit,
+                                       const std::string& node_id) {
+
+    if (node_id.empty())
+        return read_latest(ctx, offset, limit);
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto& nid = node_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading trades for node: " << nid;
+    const auto book_ids = fetch_book_ids(ctx,
+                                         "ores_trading_get_book_ids_for_node_fn",
+                                         tid,
+                                         nid,
+                                         lg(),
+                                         "Fetching book IDs for node subtree");
+    return read_trades_for_books(ctx, book_ids, tid, wid, offset, limit, lg());
+}
+
+std::uint32_t trade_repository::count_latest_for_node_id(context ctx,
+                                                      const std::string& node_id) {
+
+    if (node_id.empty())
+        return get_total_trade_count(ctx);
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto& nid = node_id;
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades for node: " << nid;
+    const auto book_ids = fetch_book_ids(ctx,
+                                         "ores_trading_get_book_ids_for_node_fn",
+                                         tid,
+                                         nid,
+                                         lg(),
+                                         "Fetching book IDs for node subtree");
+    return count_trades_for_books(ctx, book_ids, tid, wid, lg());
+}
+
+#+end_src
 
 ** Handler includes
 
@@ -436,15 +707,6 @@ save path reads its transitions from.
 #include <chrono>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
-#+end_src
-
-** Handler save prologue
-
-A trade's save carries its FSM transitions, so the handler fetches them
-once per request before the standard flow rather than once per trade.
-
-#+begin_src cpp :name handler_save_prologue :implements 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
-        const auto transitions = fetch_fsm_transitions(extract_bearer(msg));
 #+end_src
 
 ** Handler private members
@@ -891,32 +1153,6 @@ export paths.
         reply(nats_, msg, resp);
     }
 
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::trade_service svc(ctx);
-        if (auto req = decode<get_trade_history_request>(msg)) {
-            try {
-                auto versions = svc.get_trade_history(req->id);
-                BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_trade_history_response{.success = true, .versions = std::move(versions)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, get_trade_history_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-    }
-
     void instrument(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -929,7 +1165,7 @@ export paths.
         get_trade_instrument_response resp;
         try {
             if (auto req = decode<get_trade_instrument_request>(msg)) {
-                auto trade_opt = svc.find_trade(req->trade_id);
+                auto trade_opt = svc.get_trade(req->trade_id);
                 if (!trade_opt) {
                     resp.success = false;
                     resp.message = "Trade not found: " + req->trade_id;
@@ -965,12 +1201,7 @@ export paths.
                 const auto offset = static_cast<std::uint32_t>(req->offset);
                 const auto limit = static_cast<std::uint32_t>(req->limit);
 
-                std::optional<boost::uuids::uuid> node;
-                if (!req->node_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    node = gen(req->node_id);
-                }
-                auto trades = svc.list_trades_by_node(offset, limit, node);
+                auto trades = svc.list_trades(offset, limit, req->node_id);
                 resp.items.reserve(trades.size());
                 for (auto& t : trades)
                     resp.items.push_back({.trade = std::move(t)});
@@ -1009,11 +1240,9 @@ export paths.
             constexpr std::uint32_t page_size = 1000;
             for (const auto& bid : req->book_ids) {
                 try {
-                    boost::uuids::string_generator gen;
-                    const auto book_node = std::optional<boost::uuids::uuid>(gen(bid));
                     std::uint32_t offset = 0;
                     while (true) {
-                        auto trades = svc.list_trades_by_node(offset, page_size, book_node);
+                        auto trades = svc.list_trades(offset, page_size, bid);
                         const auto n = static_cast<std::uint32_t>(trades.size());
                         if (n == 0)
                             break;
@@ -1108,16 +1337,6 @@ struct trade_export_item {
     ores::trading::domain::instrument_payload instrument;
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };
-
-/**
- * @brief Paginated list of trades under a taxonomy node.
- *
- * @p node_id may be a book, portfolio, or business unit UUID; the server
- * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
- * An empty @p node_id lists all trades visible to the tenant.
- *
- * The response carries only trade metadata (no instrument data). To load
- * the instrument for a specific trade, use get_trade_instrument_request.
 
 struct get_trade_instrument_request {
     using response_type = struct get_trade_instrument_response;

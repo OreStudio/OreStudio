@@ -276,12 +276,12 @@ void trade_commands::process_get_trade_history(std::ostream& out,
         return;
     }
 
-    if (result->versions.empty()) {
+    if (result->history.empty()) {
         out << "No history found for this trade." << std::endl;
         return;
     }
 
-    out << result->versions << std::endl;
+    out << result->history << std::endl;
 }
 
 }

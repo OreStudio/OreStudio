@@ -17,10 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/service/trade_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -32,84 +36,78 @@ using namespace ores::logging;
 trade_service::trade_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::trade> trade_service::list_trades() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trades";
-    return repo_.read_latest(ctx_);
-}
-
 std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trades with offset=" << offset << ", limit=" << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Listing all trades";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::vector<domain::trade> trade_service::list_trades_by_node(
-    std::uint32_t offset, std::uint32_t limit, std::optional<boost::uuids::uuid> node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node offset=" << offset << ", limit=" << limit;
-    return repo_.read_latest_for_node(ctx_, offset, limit, node_id);
+std::vector<domain::trade>
+trade_service::list_trades(std::uint32_t offset, std::uint32_t limit, const std::string& node_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node_id"
+                               << " offset=" << offset << ", limit=" << limit;
+    return repo_.read_latest_for_node_id(ctx_, offset, limit, node_id);
+}
+
+std::uint32_t trade_service::count_trades(const std::string& node_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades by node_id";
+    return repo_.count_latest_for_node_id(ctx_, node_id);
 }
 
 std::uint32_t trade_service::count_trades() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting trades";
-    return repo_.count_latest(ctx_);
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trades count";
+    return repo_.get_total_trade_count(ctx_);
 }
 
-std::uint32_t trade_service::count_trades_by_node(std::optional<boost::uuids::uuid> node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting trades by node";
-    return repo_.count_latest_for_node(ctx_, node_id);
+
+std::optional<domain::trade> trade_service::get_trade_at_version(const std::string& id,
+                                                                 std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
-std::optional<domain::trade> trade_service::find_trade(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding trade: " << id;
+std::optional<domain::trade> trade_service::get_trade(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-void trade_service::save_trade(const domain::trade& v, const fsm_transition_map& transitions) {
+void trade_service::save_trade(const domain::trade& v) {
     if (v.identity.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.identity.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade. " << "id: " << v.identity.id;
     auto t = v;
-    stamp(t.identity, ctx_);
-    stamp(t.audit, ctx_);
-    const std::optional<boost::uuids::uuid> current =
-        t.classification.status_id.is_nil() ? std::nullopt :
-                                              std::make_optional(t.classification.status_id);
-    t.classification.status_id = trade_status_service::resolve_status(
-        ctx_, t.classification.activity_type_code, current, transitions);
+    stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade: " << t.identity.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade. " << "id: " << v.identity.id;
 }
 
-void trade_service::save_trades(const std::vector<domain::trade>& trades,
-                                const fsm_transition_map& transitions) {
-    for (const auto& t : trades) {
-        if (t.identity.id.is_nil())
+void trade_service::save_trades(const std::vector<domain::trade>& trades) {
+    for (const auto& e : trades) {
+        if (e.identity.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
-    auto resolved = trades;
-    for (auto& t : resolved) {
-        stamp(t.identity, ctx_);
-        stamp(t.audit, ctx_);
-        const std::optional<boost::uuids::uuid> current =
-            t.classification.status_id.is_nil() ? std::nullopt :
-                                                  std::make_optional(t.classification.status_id);
-        t.classification.status_id = trade_status_service::resolve_status(
-            ctx_, t.classification.activity_type_code, current, transitions);
-    }
-    repo_.write(ctx_, resolved);
+    auto ts = trades;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void trade_service::remove_trade(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade: " << id;
+void trade_service::delete_trade(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade. " << "id: " << id;
+}
+
+void trade_service::delete_trades(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::trade> trade_service::get_trade_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

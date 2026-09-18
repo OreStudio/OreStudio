@@ -19,31 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::generators {
+namespace ores::trading::messaging {
 
-/**
- * @brief Generates a synthetic trade.
- */
-ORES_TRADING_API_EXPORT domain::trade
-generate_synthetic_trade(utility::generation::generation_context& ctx);
+std::vector<ores::nats::service::subscription>
+register_trade_handlers(ores::nats::service::client& nats,
+                        ores::database::context ctx,
+                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-/**
- * @brief Generates N synthetic trades.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::messaging
 
 #endif

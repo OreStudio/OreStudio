@@ -372,6 +372,7 @@ declare
     v_max_cardinality integer;
     v_current_count integer;
 {{/domain_entity.sql.has_cardinality_limit_validations}}
+<<paste:B9428A09-3610-4CAD-A200-E6CDE53B7C8D>>
 begin
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate tenant_id

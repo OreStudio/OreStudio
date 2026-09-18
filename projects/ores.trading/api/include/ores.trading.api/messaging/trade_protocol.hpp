@@ -120,16 +120,6 @@ struct trade_export_item {
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };
 
-/**
- * @brief Paginated list of trades under a taxonomy node.
- *
- * @p node_id may be a book, portfolio, or business unit UUID; the server
- * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
- * An empty @p node_id lists all trades visible to the tenant.
- *
- * The response carries only trade metadata (no instrument data). To load
- * the instrument for a specific trade, use get_trade_instrument_request.
-
 struct get_trade_instrument_request {
     using response_type = struct get_trade_instrument_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";

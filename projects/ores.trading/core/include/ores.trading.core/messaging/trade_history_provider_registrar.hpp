@@ -19,31 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::generators {
+namespace ores::trading::messaging {
 
-/**
- * @brief Generates a synthetic trade.
- */
-ORES_TRADING_API_EXPORT domain::trade
-generate_synthetic_trade(utility::generation::generation_context& ctx);
+void register_trade_history_provider(ores::history::service::dispatch_registry& registry);
 
-/**
- * @brief Generates N synthetic trades.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::messaging
 
 #endif

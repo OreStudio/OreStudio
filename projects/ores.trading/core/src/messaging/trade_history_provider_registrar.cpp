@@ -19,31 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_TRADE_GENERATOR_HPP
+#include "ores.trading.core/messaging/trade_history_provider_registrar.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.trading.core/presentation/trade_history_field_mapper.hpp"
+#include "ores.trading.core/service/trade_service.hpp"
 
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+namespace ores::trading::messaging {
 
-namespace ores::trading::generators {
-
-/**
- * @brief Generates a synthetic trade.
- */
-ORES_TRADING_API_EXPORT domain::trade
-generate_synthetic_trade(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic trades.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n, utility::generation::generation_context& ctx);
-
+void register_trade_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.trading.trade",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::trade_service svc(scoped_ctx);
+            auto versions = svc.get_trade_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_trade_fields);
+        });
 }
 
-#endif
+} // namespace ores::trading::messaging

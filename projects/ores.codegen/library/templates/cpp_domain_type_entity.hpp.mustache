@@ -75,6 +75,11 @@ struct {{entity_singular}}_entity {
 {{#is_enum}}
     std::string {{name}};
 {{/is_enum}}
+{{#render_is_enum}}
+{{^is_enum}}
+    std::optional<std::string> {{name}};
+{{/is_enum}}
+{{/render_is_enum}}
 {{#is_simple}}
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/is_simple}}

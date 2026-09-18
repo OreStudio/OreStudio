@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:skills:claude_code:emacs:recipe:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-09-18
 
 For where the output lands and how the build script works, see
 [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
@@ -27,8 +27,11 @@ vcpkg), so it works in a light environment:
 ./compass.sh build --direct skills
 #+end_src
 
-Output lands under =build/output/= in the skills directory configured
-by =CMakeLists.txt= (=ORES_SKILLS_DIRECTORY=).
+Output lands in the skills directory configured by =CMakeLists.txt=
+(=ORES_SKILLS_DIRECTORY=, by default the =.claude/skills/= beside the
+checkout). The script prunes that directory after it writes, so a skill
+removed from =doc/llm/skills/= leaves the bundle in the same run, and a
+failed publish never empties it.
 
 In a full environment the equivalent =deploy_skills= CMake target
 (=cmake --build --preset <preset> --target deploy_skills=) runs the same

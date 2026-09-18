@@ -126,7 +126,7 @@ Environment, database, services, shell, client, site.
 | [[id:68056570-965C-4B2B-9A32-64A3AEA20611][compass-devops-deploy-manual]] | Devops Deploy Manual | Build and publish the user manual PDF. |
 | [[id:7BB0B6CC-A88D-4EA1-900C-7AC01B5B432F][compass-devops-deploy-settings]] | Devops Deploy Settings | Tangle Claude Code settings.json from its org source. |
 | [[id:C6E41D12-6D7A-4C5E-BD89-C399A4ECA021][compass-devops-deploy-site]] | Devops Deploy Site | Build and publish the documentation website from the org-roam graph. |
-| [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][compass-devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories. |
+| [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][compass-devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills, then reload it in the running session. |
 | [[id:3A869409-B8E7-420B-9BFA-0BAC9E9F804F][compass-devops-deprovision-environment]] | Deprovision a named environment | Use compass env deprovision to remove a named worktree and its directory. |
 | [[id:AA14F8A0-F037-4303-88D9-059771BD764D][compass-devops-provision-environment]] | Provision a new named environment | Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env. |
 | [[id:435BD960-CA83-4B1A-829D-F345181206B2][compass-devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |

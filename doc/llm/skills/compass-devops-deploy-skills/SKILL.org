@@ -9,31 +9,29 @@
 #+level: s1
 #+filetags: :llm:skill:skills:claude_code:compass:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-09-18
 
 #+begin_export markdown
 ---
 name: compass-devops-deploy-skills
-description: Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories.
+description: Build the Claude Code skills bundle from doc/llm/skills, then reload it in the running session.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-Skill sources changed and the deployed bundle is stale (compass bearings warns): rebuild and purge.
+Skill sources changed and the deployed bundle is stale (compass bearings warns): rebuild and prune.
 
 * How to use this skill
 
 
 1. /Deploy after every skill edit/. The harness reads the deployed bundle,
    not the org sources, so an unbuilt edit changes nothing for any session.
+   The deploy prunes the bundle after it writes, so a renamed or retired
+   skill does not linger under its old name.
 
-2. /Purge what the deploy leaves behind/. Deployment writes but never
-   deletes, so a renamed or retired skill keeps loading under its old name
-   until its deployed directory is removed.
-
-3. /Tell the user to run =/reload-skills=/. A running session holds the
+2. /Tell the user to run =/reload-skills=/. A running session holds the
    bundle it started with, so until it reloads, the edit is live on disk
    and invisible to the very session that made it.
 

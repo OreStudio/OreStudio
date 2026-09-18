@@ -1,0 +1,71 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Populate reference drift
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.sql/**"
+      - "projects/ores.seeder/**"
+      - "projects/ores.codegen/scripts/check_populate_references.py"
+      - "projects/ores.codegen/tests/test_populate_references.py"
+      - ".github/workflows/populate-reference-drift.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/ores.sql/**"
+      - "projects/ores.seeder/**"
+      - "projects/ores.codegen/scripts/check_populate_references.py"
+      - "projects/ores.codegen/tests/test_populate_references.py"
+      - ".github/workflows/populate-reference-drift.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The seed data under projects/ores.sql/populate/ is a dependency graph
+  # carried in string arguments, and setup_schema.sql runs psql with
+  # ON_ERROR_STOP=on. One name that nothing defines aborts the recreate and
+  # skips every statement after it, so the GRANT block never runs and the
+  # database is left half-built. That is how the codegen methodology went
+  # missing while every drift job stayed green: the populate file that
+  # referenced it by name was generated, and no job read the reference.
+  references:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every populate reference is defined
+        run: |
+          python3 projects/ores.codegen/scripts/check_populate_references.py
+      # The check passes every tree if its parser stops finding the lookup
+      # guards, which is a silent failure: the gate stays green while it reads
+      # nothing. The tests pin the guard discovery, so that cannot happen
+      # unnoticed.
+      - name: Install test dependencies
+        run: |
+          pip install --quiet pytest
+      - name: Test the check
+        run: |
+          python3 -m pytest projects/ores.codegen/tests/test_populate_references.py -q

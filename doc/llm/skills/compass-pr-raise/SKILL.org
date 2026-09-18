@@ -104,6 +104,15 @@ lifecycle is ordered this way.
      untracked drift it surfaces. A component not yet at zero drift is
      measured per-component with =--component <name>=; it cannot pass
      =--all= until it joins the registry.
+   - *populate reference drift*:
+     =python3 projects/ores.codegen/scripts/check_populate_references.py=.
+     It reads the lookup contract from the upsert function bodies under
+     =projects/ores.sql/create= and fails when a populate script names a
+     methodology, dataset or account that no populate script defines. A
+     name nothing defines aborts =compass db recreate= part-way through
+     =setup_schema.sql=, so the GRANT block never runs and the database
+     stays half-built. Run it when anything under =projects/ores.sql/*=
+     or =projects/ores.seeder/*= changed.
    - *Compass test suite*:
      =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
    - *CDash experimental* (code class; visibility only):

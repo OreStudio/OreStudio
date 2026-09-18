@@ -136,10 +136,8 @@ void feed_ingest_loop::refresh() {
                 st->series_identity = b.ore_key;
                 st->nats_subject = ores::marketdata::domain::synthetic_tick_subject(
                     ores::marketdata::domain::fx_spot_kind_token, source_name);
-                st->publish_subject = ore_key_to_publish_subject(key.tenant_id,
-                                                                 key.workspace_id,
-                                                                 key.party_id,
-                                                                 b.ore_key);
+                st->publish_subject = ore_key_to_publish_subject(
+                    key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
             }
         }
     }
@@ -162,9 +160,8 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
         const auto it = bindings_by_source_.find(source_name);
         if (it == bindings_by_source_.end()) {
             if (unbound_warned_.insert(source_name).second)
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Dropping tick for unbound source '" << source_name
-                    << "' - no enabled feed_binding";
+                BOOST_LOG_SEV(lg(), warn) << "Dropping tick for unbound source '" << source_name
+                                          << "' - no enabled feed_binding";
             return;
         }
         bindings = it->second;
@@ -175,8 +172,8 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                                                 b.tenant_id.to_string(),
                                                 boost::uuids::to_string(b.party_id),
                                                 boost::uuids::to_string(b.workspace_id)};
-        const std::string publish_subject = ore_key_to_publish_subject(
-            key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
+        const std::string publish_subject =
+            ore_key_to_publish_subject(key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
 
         const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
         std::uint64_t prev_count = 0;
@@ -195,8 +192,8 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
         }
 
         if (prev_count == 0) {
-            BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << b.ore_key
-                                      << "' subject='" << publish_subject << "' mid=" << tick->mid;
+            BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << b.ore_key << "' subject='"
+                                      << publish_subject << "' mid=" << tick->mid;
         }
 
         // Persist the observation; the republish below is gated on this
@@ -338,20 +335,19 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
         nats_.js_publish(publish_subject, msg.data);
 }
 
-bool feed_ingest_loop::persist_tick_observation(
-    const ores::database::context& ctx,
-    ores::utility::uuid::tenant_id tenant_id,
-    const boost::uuids::uuid& party_id,
-    const std::string& series_type,
-    const std::string& metric,
-    const std::string& qualifier,
-    const std::string& asset_class,
-    const std::string& series_subclass,
-    bool is_scalar,
-    std::chrono::system_clock::time_point datetime,
-    const std::string& value,
-    const std::string& source,
-    const std::string& point_id) {
+bool feed_ingest_loop::persist_tick_observation(const ores::database::context& ctx,
+                                                ores::utility::uuid::tenant_id tenant_id,
+                                                const boost::uuids::uuid& party_id,
+                                                const std::string& series_type,
+                                                const std::string& metric,
+                                                const std::string& qualifier,
+                                                const std::string& asset_class,
+                                                const std::string& series_subclass,
+                                                bool is_scalar,
+                                                std::chrono::system_clock::time_point datetime,
+                                                const std::string& value,
+                                                const std::string& source,
+                                                const std::string& point_id) {
     // Local generator per call: the per-party subscriptions dispatch
     // callbacks concurrently, so a shared generator would race.
     boost::uuids::random_generator uuid_gen;

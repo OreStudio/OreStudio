@@ -153,8 +153,7 @@ void RateCurvesMdiWindow::reload() {
         for (const auto& s : result.series) {
             if (s.asset_class != "interest_rates" || s.is_scalar)
                 continue;
-            self->rows_.push_back(
-                {s.series_type, s.metric, s.qualifier, s.series_subclass});
+            self->rows_.push_back({s.series_type, s.metric, s.qualifier, s.series_subclass});
         }
 
         const bool empty = self->rows_.empty();

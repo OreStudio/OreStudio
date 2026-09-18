@@ -53,8 +53,8 @@ template <typename T>
 inline constexpr bool is_optional_v = is_optional<T>::value;
 
 template <typename T>
-inline constexpr bool has_token_conversion_v = std::is_same_v<T, int> ||
-    std::is_same_v<T, std::int64_t> || std::is_same_v<T, double> ||
+inline constexpr bool has_token_conversion_v =
+    std::is_same_v<T, int> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, double> ||
     std::is_same_v<T, boost::uuids::uuid>;
 
 template <typename T>

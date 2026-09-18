@@ -294,8 +294,7 @@ void MarketSeriesMdiWindow::populateAssetClassCombo(
     assetClassCombo_->addItem(tr("All"), QString{});
     // The list column holds the code, so the code is what filtering matches on.
     for (const auto& ac : classes) {
-        assetClassCombo_->addItem(QString::fromStdString(ac.name),
-                                  QString::fromStdString(ac.code));
+        assetClassCombo_->addItem(QString::fromStdString(ac.name), QString::fromStdString(ac.code));
     }
 
     // Restore previous selection if it still exists.

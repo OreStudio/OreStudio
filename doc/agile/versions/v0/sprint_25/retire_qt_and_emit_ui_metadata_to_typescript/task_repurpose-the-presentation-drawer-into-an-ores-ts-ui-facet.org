@@ -146,6 +146,9 @@ via its "Verifies task" field.
 | 10 | =misspell-fixer .= exits 1. | (repository root) | Declined | The exit code comes from the prefilter list, not from a hit. All ten matches are outside the change: six =EXPLICT= strings in sprint_25 task docs that are present at =origin/main=, and four files under =projects/ores.typescript/node_modules/=. |
 | 11 | The =ores.ts= technical-space row still says its facets "the wire payloads the ores.qt UI consumes". | =projects/ores.codegen/library/templates/ores.org=, =ores.ts.org= | Fixed | Both descriptions now name the presentation metadata beside the wire payloads. |
 | 12 | The =ores.cpp= technical-space description lists "Qt UI" among its facets. | =projects/ores.codegen/library/templates/ores.cpp.org=, =ores.org= | Fixed | The Qt UI phrase is gone from both descriptions. |
+| 13 | Deleting the =* Physical space= section left prose pointing at it in four =ores.dq= models. | =ores.dq.lei_entity.org=, =ores.dq.lei_relationship.org=, =ores.dq.report_definition.org=, =ores.dq.synthetic_fx_spot_config.org= | Fixed | The dangling pointer is gone from each. The rationale each sentence gives does not rest on the table. The fourth file is one the reviewer did not name. |
+| 14 | The deleted =test_qt_detail_fields_default.py= was the only guard on the key-is-name auto-default, which the projection reads. | =projects/ores.codegen/tests/test_ui_meta_projection.py= | Fixed | Two cases drive =generate_from_model= on an entity with no detail-field table, which no existing case did. Both fail when =key_is_name= is forced false. |
+| 15 | The =--shape= help string renders "Flags/SQL/ presentation sections". | =projects/ores.codegen/src/doc_generate.py= | Fixed | The stray space is gone. |
 
 * Result
 

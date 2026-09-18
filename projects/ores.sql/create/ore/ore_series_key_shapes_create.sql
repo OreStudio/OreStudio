@@ -146,3 +146,17 @@ on delete to "ores_ore_series_key_shapes_tbl" do instead (
       and series_type = OLD.series_type
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Series Key Shape
+-- =============================================================================
+alter table ores_ore_series_key_shapes_tbl enable row level security;
+
+create policy series_key_shapes_tbl_tenant_isolation_policy
+on ores_ore_series_key_shapes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

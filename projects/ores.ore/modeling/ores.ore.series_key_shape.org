@@ -115,6 +115,7 @@ Example: 'FXFWD/RATE/ccy1/ccy2/tenor'.
 ** Flags
 :PROPERTIES:
 :tablename: ores_ore_series_key_shapes_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists series_classification_rules_tbl_tenant_isolation_policy on "ores_marketdata_series_classification_rules_tbl";
 drop rule if exists ores_marketdata_series_classification_rules_delete_rule on "ores_marketdata_series_classification_rules_tbl";
 drop trigger if exists ores_marketdata_series_classification_rules_insert_trg on "ores_marketdata_series_classification_rules_tbl";
 drop function if exists ores_marketdata_series_classification_rules_insert_fn;

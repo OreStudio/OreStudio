@@ -167,3 +167,17 @@ on delete to "ores_marketdata_series_classification_rules_tbl" do instead (
       and series_type = OLD.series_type and metric = OLD.metric
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Series Classification Rule
+-- =============================================================================
+alter table ores_marketdata_series_classification_rules_tbl enable row level security;
+
+create policy series_classification_rules_tbl_tenant_isolation_policy
+on ores_marketdata_series_classification_rules_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

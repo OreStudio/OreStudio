@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists series_key_shapes_tbl_tenant_isolation_policy on "ores_ore_series_key_shapes_tbl";
 drop rule if exists ores_ore_series_key_shapes_delete_rule on "ores_ore_series_key_shapes_tbl";
 drop trigger if exists ores_ore_series_key_shapes_insert_trg on "ores_ore_series_key_shapes_tbl";
 drop function if exists ores_ore_series_key_shapes_insert_fn;

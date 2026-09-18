@@ -169,6 +169,7 @@ relates; the subclass is the correlation itself.'
 ** Flags
 :PROPERTIES:
 :tablename: ores_marketdata_series_classification_rules_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

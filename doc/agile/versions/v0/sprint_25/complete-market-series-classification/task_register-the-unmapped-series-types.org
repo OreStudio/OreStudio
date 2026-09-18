@@ -31,11 +31,11 @@ one series with many points instead of many single-observation series.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Unit 4 done: the corpus walk runs through both readers, the classifier and the registry agree, all green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit 5: the classification table becomes data (task 219). |
+| Next         | Nothing. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -699,6 +699,33 @@ an empty string engages the optional rather than clearing it, so the
 row carried a class and the rejection never fired. The case now clears
 the optional, which is the state the mapper carries from a null column.
 
+** The review round's row level security fix
+
+The two tables this task adds now carry the same tenant isolation as
+their siblings. A query against the catalogue reports the state of the
+four tables side by side, and it is the evidence rather than the
+generated SQL:
+
+| Table | Row level security | Policies |
+|-------+--------------------+----------|
+| =ores_marketdata_market_series_tbl= | on | 1 |
+| =ores_marketdata_series_classification_rules_tbl= | on | 1 |
+| =ores_ore_series_key_shapes_tbl= | on | 1 |
+| =ores_marketdata_market_series_asset_classes_tbl= | off | 0 |
+
+The first row is a sibling that already had the policy, so the two
+added tables now match a table the component already trusted. The last
+row is the junction the follow-up task owns.
+
+Both suites that the change can reach were re-run after the fix and are
+green: =ores.marketdata.core.tests= passed in 30.68 seconds and
+=ores.ore.core.tests= passed in 532.86 seconds, both reporting no
+failure and no skip. The marketdata run is the one that matters most,
+because it drives the import path and the eventing case that read both
+tables under the new policy. The ore run matters because a test tenant
+is provisioned fresh on every run, so it proves the provisioning copy
+still fills both tables with row level security switched on.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -718,8 +745,111 @@ via its "Verifies task" field.
 
 * Review
 
+The local review round, run over =git diff main...HEAD= before the PR
+was raised.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two tables this task adds carry no row level security, while every sibling tenant-scoped table does. | =ore_series_key_shapes_create.sql=, =marketdata_series_classification_rules_create.sql= | Accepted, fixed | Important. Every marketdata data table opts in inline, and refdata applies RLS to its generated catalogues from a central file, so the omission is real and not a convention this branch is free to skip. Fixed with =:rls_tenant_isolation: true= in the two modelling orgs and a regeneration: 30 insertions across four files, being the policy block in each create and the =drop policy= line in each drop, with nothing else churned. Both create files were applied to the test database and each reported =ALTER TABLE= and =CREATE POLICY=. |
+| 2 | The =market_series_asset_classes= junction has neither row level security nor a drop script, and is absent from =marketdata_drop.sql=. | =marketdata_drop.sql=, =sql_schema_junction_create.mustache= | Declined here, follow-up | Important but pre-existing, and not fixable the way finding 1 was: the junction templates never read the =:rls_tenant_isolation:= flag, so no junction in the tree is tenant isolated whatever its model says. A proper fix is a template change reaching every junction, plus a hand-written drop file as refdata does for =currency_currency_groups=. Filed as [[id:7E064C21-14EA-401C-A73D-35EA1743EED7][Complete the market series asset class junction]]. |
+| 3 | The generated eventing test matches a notification as a set rather than as an exact compound key, so a permutation of the key parts would also match. | =write_series_classification_rule_publishes_nats_changed_event= | Declined here, follow-up | Minor. The match is =std::all_of= over a =std::find= into the notification's key vector, which is set membership. Unreachable in the generated case, whose fresh tenant emits only the notification it wrote. Filed as [[id:FA45F2D4-860F-4B24-98BE-3D0B39DAF186][Handle compound keys in the generated eventing artefacts]]. |
+| 4 | The event member =series_types= takes its name from the first key column and pluralises it, while carrying every key part. | =cpp_nats_changed_event.hpp.mustache= | Declined here, follow-up | Minor, and the same generated-shape question as finding 3. The trigger fills the vector from =jsonb_build_array(changed_series_type, changed_metric)=, so the member holds a type and a metric under a name that claims types alone. Correct for the single-column keys every other opted-in model has. Filed with finding 3. |
+| 5 | =misspell-fixer .= exits 1 on four org records. | =task_market-series-asset-class-junction.org= and three others | Declined | Minor, pre-existing. All four quote an upstream ORE identifier that carries a typo at source and is reproduced verbatim in those records, because a misspelt identifier is still the identifier. None of the four is in this branch's diff, and the identifier is described rather than repeated here so that this record does not become a fifth hit. |
+| 6 | =compass db status= reported no drift while the stored provisioner function was a migration behind. | =ores_iam_provision_tenant_fn= | No change | Note. The command measures drift in days and the two changes share a day, so a same-day schema change is invisible. This is what let the stale provisioner through in Unit 5a; applying one file fixed it. Recorded rather than changed, because the gap is in the tool's resolution and not in this task's artefacts. |
 
 * Result
+
+The ORE series vocabulary is data. Both facts that describe a key, how
+it splits into a series and a point and what it classifies as, are now
+rows a user can manage rather than lists compiled into the binary, and
+every series type the corpus carries decomposes properly.
+
+The task title names only the smaller half of what shipped. The Plan
+records the rescope: the eight missing types were to be added to a
+compiled table, and instead the table became managed data, which pulled
+the classification table in with it.
+
+** What shipped
+
+- =ores.ore.series_key_shape=, owned by =ores.ore= because the grammar
+  it records is ORE's and ORE defines it. Forty-three rows: the
+  thirty-five the compiled table carried, reproduced row for row, plus
+  the eight the corpus carries and the table did not know.
+- =ores.marketdata.series_classification_rule=, owned by
+  =ores.marketdata= because it maps a type onto our refdata taxonomy.
+  Forty-three rows that reproduce the compiled map, so the swap changes
+  no answer the classifier gave before. Two columns carry what a single
+  class column could not: =asset_class_source= separates a literal rule
+  from a correlation, whose classes are read from the two operands its
+  key names, and the key holds the metric as well as the type so
+  =GENERIC-MD= is classified by the instrument inside it.
+- =series_key_registry= and =series_classifier= are values built from
+  rows and passed in by const reference. Neither reaches for the
+  database, so both are testable with no database, no NATS and no
+  pipeline, which is what the story asked for.
+- =ores_iam_provision_tenant_fn= copies both tables into a fresh
+  tenant, so a new environment can import.
+- The review round found that the two added tables carried no row level
+  security and fixed it. The policy is opted into from each model, and
+  a catalogue query confirms both tables now report row level security
+  on with one policy, matching the sibling table the component already
+  trusted.
+
+** Acceptance
+
+Every bullet is met. Two are worth stating precisely rather than
+ticking.
+
+The eight types each have a row, and the corpus proves the seven it
+carries as market data keys. =GENERIC-MD= is the exception the Notes
+explain: the corpus holds it only as the fixing id of four rows, so
+=import_service= composes =FIXING/RATE/<id>= for them and the
+=GENERIC-MD= shape row is never reached by this corpus. Its
+classification rule is still covered, by the catalogue sweep that
+classifies every type the classifier names.
+
+The census drop is the acceptance's material change, and it is
+measured rather than asserted: 1,612 distinct series before the eight
+rows and 1,117 after, a fall of 31 per cent, printed by the test that
+runs both ways.
+
+The classifier's type set and the table's type set are equal at
+forty-three, asserted in both directions, so a type with a shape row
+and no classification row, or the reverse, cannot pass unnoticed.
+
+** Evidence
+
+| Suite | Result | Time |
+|-------+--------+------|
+| =ores.marketdata.core.tests= | 1/1 passed | 30.68 s |
+| =ores.ore.core.tests= | 1/1 passed | 532.86 s |
+
+Both were re-run after the row level security fix, with row level
+security live on both new tables. The ore run matters because a test
+tenant is provisioned fresh on every run, so it proves the provisioning
+copy still fills both tables with the policy switched on.
+
+The remaining checks: the cmake source lists report "All
+component_files.cmake up to date"; the template tangle is clean; and
+=misspell-fixer .= reports four hits, all pre-existing and none in this
+branch.
+
+** Left open
+
+The codegen drift check cannot reach a verdict in this worktree. It
+regenerates and then diffs the whole tree, and another session holds
+files dirty, so its global diff cannot be empty. Its regeneration
+leaves every file this branch commits unmodified, which is the part
+that speaks to this change; it must be re-run on a clean worktree.
+
+Two documentation gaps stay open and belong to tasks rather than to
+this one: =SHAPE_PROFILE= and =GENERIC-MD= are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=, which also lacks
+the per-type qualifier and point table, and task 235 owns the
+correlation operand convention.
+
+Two defects found in review are pre-existing and filed rather than
+fixed here: the junction table has neither row level security nor a
+drop script, and the generated eventing artefacts mis-handle a
+compound key. Both are recorded in the Review table with the tasks that
+own them.

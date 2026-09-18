@@ -745,8 +745,10 @@ via its "Verifies task" field.
 
 * Review
 
-The local review round, run over =git diff main...HEAD= before the PR
-was raised.
+Two review rounds. The first is the local review over =git diff
+main...HEAD=, run before the PR was raised. The second is the on-demand
+=@claude= review of [[https://github.com/OreStudio/OreStudio/pull/2102][#2102]], which reported no correctness issues
+and raised two non-blocking observations.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
@@ -756,6 +758,8 @@ was raised.
 | 4 | The event member =series_types= takes its name from the first key column and pluralises it, while carrying every key part. | =cpp_nats_changed_event.hpp.mustache= | Declined here, follow-up | Minor, and the same generated-shape question as finding 3. The trigger fills the vector from =jsonb_build_array(changed_series_type, changed_metric)=, so the member holds a type and a metric under a name that claims types alone. Correct for the single-column keys every other opted-in model has. Filed with finding 3. |
 | 5 | =misspell-fixer .= exits 1 on four org records. | =task_market-series-asset-class-junction.org= and three others | Declined | Minor, pre-existing. All four quote an upstream ORE identifier that carries a typo at source and is reproduced verbatim in those records, because a misspelt identifier is still the identifier. None of the four is in this branch's diff, and the identifier is described rather than repeated here so that this record does not become a fifth hit. |
 | 6 | =compass db status= reported no drift while the stored provisioner function was a migration behind. | =ores_iam_provision_tenant_fn= | No change | Note. The command measures drift in days and the two changes share a day, so a same-day schema change is invisible. This is what let the stale provisioner through in Unit 5a; applying one file fixed it. Recorded rather than changed, because the gap is in the tool's resolution and not in this task's artefacts. |
+| 7 | =try_classify= falls back from an exact metric match to the empty-metric wildcard row; the reviewer asked whether any type could now hold both, shadowing each other or leaving a metric-specific row unused. | =series_classifier.cpp=, =marketdata_series_classification_rules_populate.sql= | Declined, no change | The seed settles it: 43 rows for 43 distinct series types, one row per type. Forty-two carry the empty metric and exactly one, the =EQUITY_OPTION= row for GENERIC-MD, carries a metric. No type holds both, so neither shadowing nor an unused row is reachable, and =try_classify= tries the exact metric before the wildcard in any case. One correction: the constructor does not reject a duplicate =(series_type, metric)= pair. =by_type_[rule.series_type][rule.metric] = std::move(rule)= assigns, so a duplicate would silently overwrite the row before it. That is unreachable because =read_latest= filters on =valid_to= being the maximum, which leaves exactly one live version per natural key, so uniqueness comes from the read path and not from the constructor. |
+| 8 | =feed_ingest_loop= guards the cached registry with =if (series_key_registry_)=, though =start()= populates it before subscribing, which makes the branch dead. | =feed_ingest_loop.cpp= | Declined, no change | Minor, and the reviewer allowed it as deliberate defence. The guard keeps =on_tick= from depending on an invariant that a different function establishes. Removing it would trade one =std::optional= test for a cross-function assumption about call order. Two corrections to the reference, neither changing the substance: the file is =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= rather than the =core/src/service/= path the comment cites, and the guard is at line 409. |
 
 * Result
 

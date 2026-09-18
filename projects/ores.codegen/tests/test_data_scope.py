@@ -7,9 +7,9 @@ Run::
 Covers the seams the data-scope path adds on top of the physical-space graph:
 the dataset model loader, the resolve_output_path ``dataset`` branch,
 resolve_targets threading each archetype's ``#+data_source:`` through to its
-unit, and the image-artefact enrichment that reads a manifest's SVGs. The
-fixtures are written to a tmp directory, so the tests do not depend on any
-dataset shipped in the tree.
+unit, and the artefact enrichments that join an archetype's own payload to the
+manifest describing its dataset. The fixtures are written to a tmp directory,
+so the tests do not depend on any dataset shipped in the tree.
 """
 import json
 import sys
@@ -87,39 +87,47 @@ def test_resolve_targets_threads_data_source_and_master_name(tmp_path):
     assert by_output["demo_populate.sql"]["data_source"] == "model.json"
 
 
-def make_image_manifest(tmp_path, svgs, source_dir="external/icons"):
-    """Write a repo-shaped manifest plus the SVG files its dataset points at."""
-    (tmp_path / ".git").mkdir(exist_ok=True)
-    dataset_dir = tmp_path / "projects" / "demo"
-    dataset_dir.mkdir(parents=True)
-    svg_dir = tmp_path / source_dir
+def make_image_dataset(tmp_path, items, svgs, data_dir="icons"):
+    """Write a dataset directory: the image payload, its manifest, and the SVGs.
+
+    The layout mirrors a real dataset, where the model and its payloads sit
+    together, so the archetype reaches its own payload and the manifest that
+    describes the dataset from one directory.
+    """
+    dataset_dir = tmp_path / "projects" / "ores.seeder" / "datasets" / "demo"
+    svg_dir = dataset_dir / data_dir
     svg_dir.mkdir(parents=True)
     for key, body in svgs.items():
         (svg_dir / f"{key}.svg").write_text(body, encoding="utf-8")
 
     manifest = {
         "name": "Demo",
+        "sources": [{"name": "Demo Source", "data_dir": data_dir}],
         "datasets": [{
             "name": "Demo Images",
             "subject_area": "Demo Subject Area",
             "domain": "Reference Data",
             "artefact_type": "images",
-            "source_dir": source_dir,
-            "description_template": "Icon for {key}",
         }],
     }
-    manifest_path = dataset_dir / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    return manifest_path
+    (dataset_dir / "manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8")
+    (dataset_dir / "images.json").write_text(
+        json.dumps([{"key": k, "description": d} for k, d in items]),
+        encoding="utf-8")
+    return dataset_dir
 
 
 def test_image_artefact_reads_svgs_in_key_order_and_translates_names(tmp_path):
-    manifest_path = make_image_manifest(tmp_path, {
-        "gb": "  <svg id='gb'/>\n",
-        "ad": "<svg id='ad'/>",
-    })
+    dataset_dir = make_image_dataset(
+        tmp_path,
+        items=[("ad", "Flag of ad"), ("gb", "Flag of gb")],
+        svgs={"ad": "<svg id='ad'/>", "gb": "  <svg id='gb'/>\n"},
+    )
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
     artefact = _build_image_artefact(
-        json.loads(manifest_path.read_text()), manifest_path)
+        items, manifest, dataset_dir / "manifest.json")
 
     # subject_area/domain are the manifest's names; the archetype reads the
     # _name forms, so the enrichment translates them.
@@ -129,35 +137,54 @@ def test_image_artefact_reads_svgs_in_key_order_and_translates_names(tmp_path):
         "domain_name": "Reference Data",
     }
     assert artefact["count"] == 2
+    # The payload's order is the insert order, and the descriptions come from
+    # it rather than from a template the manifest would have to carry.
     assert [i["key"] for i in artefact["items"]] == ["ad", "gb"]
     assert [i["description"] for i in artefact["items"]] == [
-        "Icon for ad", "Icon for gb"]
+        "Flag of ad", "Flag of gb"]
     # The whitespace around an SVG document is stripped, matching the SQL the
     # legacy generator emitted.
     assert artefact["items"][1]["svg"] == "<svg id='gb'/>"
 
 
 def test_image_artefact_is_absent_when_no_dataset_declares_images(tmp_path):
-    manifest_path = make_image_manifest(tmp_path, {"ad": "<svg/>"})
-    manifest = json.loads(manifest_path.read_text())
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
     manifest["datasets"][0]["artefact_type"] = "coding_schemes"
-    assert _build_image_artefact(manifest, manifest_path) is None
+    assert _build_image_artefact(
+        items, manifest, dataset_dir / "manifest.json") is None
 
 
 def test_image_artefact_rejects_a_missing_source_dir(tmp_path):
-    manifest_path = make_image_manifest(tmp_path, {"ad": "<svg/>"})
-    manifest = json.loads(manifest_path.read_text())
-    manifest["datasets"][0]["source_dir"] = "external/absent"
-    with pytest.raises(FileNotFoundError, match="external/absent"):
-        _build_image_artefact(manifest, manifest_path)
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["sources"][0]["data_dir"] = "absent"
+    with pytest.raises(FileNotFoundError, match="absent"):
+        _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
 
 
-def test_resolve_targets_wires_the_image_artefact_to_the_manifest(tmp_path):
-    doc = make_dataset(tmp_path, payloads=("manifest.json",))
+def test_image_artefact_rejects_a_payload_entry_with_no_svg(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    items.append({"key": "zz", "description": "Flag of zz"})
+    with pytest.raises(FileNotFoundError, match="zz.svg"):
+        _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
+
+
+def test_resolve_targets_wires_the_image_artefact_to_both_payloads(tmp_path):
+    doc = make_dataset(tmp_path, payloads=("images.json", "manifest.json"))
     units, _, _ = resolve_targets(doc, CODEGEN_BASE, address="ores.sql.populate")
     by_output = {Path(u["output"]).name: u for u in units}
+    # Both names, in declaration order: the payload first, the manifest that
+    # describes the dataset second.
     assert by_output["demo_images_artefact_populate.sql"]["data_source"] == \
-        "manifest.json"
+        "images.json manifest.json"
 
 
 def make_ip2country_manifest(tmp_path, data_file="ip2country-v4-u32.tsv"):

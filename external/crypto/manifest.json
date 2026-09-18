@@ -42,8 +42,6 @@
             "origin_code": "Primary",
             "nature_code": "Actual",
             "treatment_code": "Raw",
-            "source_dir": "external/crypto/cryptocurrency-icons",
-            "description_template": "Icon for {key}",
             "tag_code": "cryptocurrency",
             "tag_description": "Cryptocurrency icon images"
         },

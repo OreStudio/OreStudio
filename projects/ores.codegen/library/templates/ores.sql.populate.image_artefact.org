@@ -2,10 +2,10 @@
 :ID: 3733242C-846A-45D1-8A9B-BD4D475CCC5A
 :END:
 #+title: ores.sql.populate.image_artefact
-#+description: Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}= inlines one SVG document per ={{key}}=, read from the dataset's =source_dir=.
+#+description: Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}= inlines one SVG document per ={{key}}=, read from the directory the manifest's source declares.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_images_artefact_populate.sql
-#+data_source: manifest.json
+#+data_source: images.json manifest.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
@@ -13,15 +13,32 @@
 #+updated: 2026-09-18
 
 Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}=
-inlines one SVG document per ={{key}}=, read from the dataset's =source_dir=.
+inlines one SVG document per ={{key}}=, read from the directory the
+manifest's source declares.
 
-The payload is the dataset's own =manifest.json=. The enrichment in
-=codegen/core.py= selects the manifest dataset whose =artefact_type= is
-=images=, reads every =.svg= file under its =source_dir=, and exposes them as
-={{image_artefact.items}}=. It also translates the manifest's =subject_area=
-and =domain= to the =subject_area_name= and =domain_name= forms used here.
-The SVG files stay the single source of truth; no transform of them is
-checked in.
+This archetype reads two payloads, both siblings in the dataset's own
+directory. =images.json= is its own: one ={"key", "description"}= entry per
+image, in the order the artefact rows are inserted. =manifest.json= is the
+dataset's metadata, and it carries the two things the payload does not:
+which dataset this is, and where the SVG documents live.
+
+The enrichment in =codegen/core.py= joins them. It selects the manifest
+dataset whose =artefact_type= is =images=, takes the directory from that
+manifest's first source =data_dir=, resolves it against the manifest's own
+directory, and reads one =.svg= document per key listed in the payload. It
+also translates the manifest's =subject_area= and =domain= to the
+=subject_area_name= and =domain_name= forms used here.
+
+The SVG documents stay the single source of truth, in the source tree, and
+are read from it at generation time only. The generated script cannot read
+them at run time, because it inlines them, so nothing is deferred there.
+Nothing about them is checked in twice: the payload describes them, and the
+documents themselves are not copied into the dataset directory.
+
+A key with no =.svg= document beside it fails the generation. That is
+deliberate. The alternative, walking the directory, would emit a row for
+every file present and silently ignore a payload entry whose document went
+missing.
 
 The template resolves the dataset row by =(name, subject_area_name,
 domain_name)= rather than by =code=, because those three name the row the
@@ -37,7 +54,7 @@ The full template source. Edit here and re-tangle with
 =library/templates/sql_image_artefact_populate.mustache=.
 
 #+begin_src mustache :tangle sql_image_artefact_populate.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_populate.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.populate.image_artefact.org. Edit the org source. }}
 {{! Template to generate SQL for DQ image artefacts }}
 {{{sql_license}}}
 /*

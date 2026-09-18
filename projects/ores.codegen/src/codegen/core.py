@@ -1541,41 +1541,50 @@ def _repo_root_from(model_path) -> Path:
     return _projects_dir_from(model_path).parent
 
 
-def _build_image_artefact(manifest: dict, model_path) -> dict | None:
-    """The image artefact a manifest declares, with its SVGs read from disk.
+def _build_image_artefact(items, manifest: dict, manifest_path) -> dict | None:
+    """The image artefact an image payload and its manifest describe.
 
-    Selects the manifest dataset whose ``artefact_type`` is ``images`` and
-    reads every ``.svg`` under its ``source_dir``, relative to the repository
-    root. The dataset names are translated to the ``_name`` forms the
-    archetypes read. Returns None when the manifest declares no image dataset,
-    so a manifest payload without images renders no artefact.
+    ``items`` is the image payload: one ``{"key", "description"}`` entry per
+    image, in the order the payload lists them. The SVG documents stay in the
+    source tree and are read from it here, because the generated script inlines
+    them and so cannot read them at run time. The manifest names their
+    directory through its source's ``data_dir``, relative to the manifest
+    itself. Returns None when the manifest declares no image dataset, so a
+    manifest without images renders no artefact.
     """
-    repo_root = _repo_root_from(model_path)
     dataset = _manifest_dataset(manifest, IMAGE_ARTEFACT_TYPE)
     if dataset is None:
         return None
-    source_dir = repo_root / dataset['source_dir']
+    source = next((s for s in manifest.get('sources', []) if s.get('data_dir')), None)
+    if source is None:
+        raise ValueError(
+            f"Dataset '{dataset.get('name')}' declares an image artefact but "
+            "the manifest has no source with a data_dir")
+    source_dir = Path(manifest_path).resolve().parent / source['data_dir']
     if not source_dir.is_dir():
         raise FileNotFoundError(
             f"Image artefact source directory not found: {source_dir} "
             f"(declared by dataset '{dataset.get('name')}')")
-    description_template = dataset.get('description_template', 'Image for {key}')
-    items = []
-    for svg_path in sorted(source_dir.glob('*.svg')):
-        key = svg_path.stem
-        items.append({
-            'key': key,
-            'description': description_template.format(key=key),
+    built = []
+    for item in items:
+        svg_path = source_dir / f"{item['key']}.svg"
+        if not svg_path.is_file():
+            raise FileNotFoundError(
+                f"Image artefact SVG not found: {svg_path} "
+                f"(listed by dataset '{dataset.get('name')}')")
+        built.append({
+            'key': item['key'],
+            'description': item['description'],
             'svg': svg_path.read_text(encoding='utf-8').strip(),
         })
     return {
         'dataset': _dataset_names(dataset),
-        'items': items,
-        'count': len(items),
+        'items': built,
+        'count': len(built),
     }
 
 
-def _build_ip2country_artefact(manifest: dict, model_path) -> dict | None:
+def _build_ip2country_artefact(manifest: dict, manifest_path) -> dict | None:
     """The IP-to-country artefact a manifest declares.
 
     Returns the dataset names the archetype resolves the dataset row by, and
@@ -1591,8 +1600,8 @@ def _build_ip2country_artefact(manifest: dict, model_path) -> dict | None:
         raise ValueError(
             f"Dataset '{dataset.get('name')}' declares an ip2country artefact "
             "but the manifest has no source with a data_file")
-    repo_root = _repo_root_from(model_path)
-    manifest_dir = Path(model_path).resolve().parent
+    repo_root = _repo_root_from(manifest_path)
+    manifest_dir = Path(manifest_path).resolve().parent
     data_file = (manifest_dir / source['data_file']).relative_to(repo_root).as_posix()
     return {
         'dataset': _dataset_names(dataset),
@@ -1692,7 +1701,7 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     return items
 
 
-def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
+def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
     """
     Generate output files from a model using the appropriate templates.
 
@@ -1705,6 +1714,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         prefix (str): Optional prefix for output filenames
         target_template (str): Optional override for the template to use
         target_output (str): Optional override for the output filename
+        extra_model_paths (list): Optional further payloads to load alongside the
+            model, each keyed by its own stem, for an archetype that reads more
+            than one input file
     """
     # Load the model
     model = load_model(model_path)
@@ -1927,6 +1939,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     model_dir = Path(model_path).parent
     _resolve_file_references(data[model_key], model_dir, data)
 
+    # A dataset archetype may name several payloads: its own artefact data and
+    # the manifest that describes the dataset. Each loads under its own stem,
+    # so the templates read them by name.
+    payload_paths = {model_key: Path(model_path)}
+    for extra_path in (extra_model_paths or []):
+        extra_path = Path(extra_path)
+        key = extra_path.stem
+        data[key] = load_model(extra_path)
+        _mark_last_item(data[key])
+        _resolve_file_references(data[key], extra_path.parent, data)
+        payload_paths[key] = extra_path
+
     # --- oresmd quote-type models ---
     # Project the batch/single spec dicts onto the top-level keys the
     # oresmd_enums.hpp template consumes. The batch manifest loads as
@@ -2075,74 +2099,81 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 row['uri_tail'] = 'quote=' + rest
                 row['uri_split'] = True
 
-    # For manifest.json, copy methodologies to top level for template access
-    if model_key == 'manifest' and isinstance(data[model_key], dict):
-        if 'methodologies' in data[model_key]:
-            data['methodologies'] = data[model_key]['methodologies']
+    # Every payload the archetype named is enriched under its own stem. The
+    # metadata-core payloads key off the model that declares them; a dataset's
+    # manifest lifts the blocks its sibling archetypes read.
+    for model_key in payload_paths:
+        # For manifest.json, copy methodologies to top level for template access
+        if model_key == 'manifest' and isinstance(data[model_key], dict):
+            if 'methodologies' in data[model_key]:
+                data['methodologies'] = data[model_key]['methodologies']
 
-    # For manifest.json, read the artefacts the dataset declares
-    if model_key == 'manifest' and isinstance(data[model_key], dict):
-        image_artefact = _build_image_artefact(data[model_key], model_path)
-        if image_artefact is not None:
-            data['image_artefact'] = image_artefact
-        ip2country = _build_ip2country_artefact(data[model_key], model_path)
-        if ip2country is not None:
-            data['ip2country'] = ip2country
+        # For manifest.json, read the artefacts the dataset declares
+        if model_key == 'manifest' and isinstance(data[model_key], dict):
+            image_artefact = _build_image_artefact(
+                data.get('images') or [], data[model_key],
+                payload_paths[model_key])
+            if image_artefact is not None:
+                data['image_artefact'] = image_artefact
+            ip2country = _build_ip2country_artefact(
+                data[model_key], payload_paths[model_key])
+            if ip2country is not None:
+                data['ip2country'] = ip2country
 
-    # Special processing for country_currency model to fill in currency defaults
-    if model_key == 'country_currency':
-        processed_data = []
-        for i, item in enumerate(data[model_key]):
-            processed_item = item.copy()
+        # Special processing for country_currency model to fill in currency defaults
+        if model_key == 'country_currency':
+            processed_data = []
+            for i, item in enumerate(data[model_key]):
+                processed_item = item.copy()
 
-            # Select a default from the pool based on the item index for diversity
-            pool_index = i % len(CURRENCY_DEFAULTS_POOL)
-            defaults = CURRENCY_DEFAULTS_POOL[pool_index]
+                # Select a default from the pool based on the item index for diversity
+                pool_index = i % len(CURRENCY_DEFAULTS_POOL)
+                defaults = CURRENCY_DEFAULTS_POOL[pool_index]
+                
+                # Add hardcoded defaults for missing fields
+                processed_item.setdefault('currency_symbol', defaults['symbol'])
+                processed_item.setdefault('fraction_symbol', defaults['fraction_symbol'])
+                processed_item.setdefault('fractions_per_unit', defaults['fractions_per_unit'])
+                processed_item.setdefault('rounding_type', defaults['rounding_type'])
+                processed_item.setdefault('rounding_precision', defaults['rounding_precision'])
+                processed_item.setdefault('format', defaults['format'])
+                processed_item.setdefault('asset_class', defaults['asset_class'])
+                
+                # Add country specific defaults
+                country_code = item.get('country_code', 'XX')
+                country_name = item.get('country_name', 'Unknown')
+                processed_item.setdefault('country_alpha3', f"X{country_code}")
+                # Use a deterministic numeric code based on the alpha2 code
+                numeric_base = sum(ord(c) for c in country_code) + 1000
+                processed_item.setdefault('country_numeric', numeric_base)
+                processed_item.setdefault('country_official_name', f"Republic of {country_name}")
+                
+                # Pre-calculate lowercase country code for template use
+                if 'country_code' in processed_item:
+                    processed_item['country_code_lower'] = processed_item['country_code'].lower()
+                
+                processed_data.append(processed_item)
             
-            # Add hardcoded defaults for missing fields
-            processed_item.setdefault('currency_symbol', defaults['symbol'])
-            processed_item.setdefault('fraction_symbol', defaults['fraction_symbol'])
-            processed_item.setdefault('fractions_per_unit', defaults['fractions_per_unit'])
-            processed_item.setdefault('rounding_type', defaults['rounding_type'])
-            processed_item.setdefault('rounding_precision', defaults['rounding_precision'])
-            processed_item.setdefault('format', defaults['format'])
-            processed_item.setdefault('asset_class', defaults['asset_class'])
-            
-            # Add country specific defaults
-            country_code = item.get('country_code', 'XX')
-            country_name = item.get('country_name', 'Unknown')
-            processed_item.setdefault('country_alpha3', f"X{country_code}")
-            # Use a deterministic numeric code based on the alpha2 code
-            numeric_base = sum(ord(c) for c in country_code) + 1000
-            processed_item.setdefault('country_numeric', numeric_base)
-            processed_item.setdefault('country_official_name', f"Republic of {country_name}")
-            
-            # Pre-calculate lowercase country code for template use
-            if 'country_code' in processed_item:
-                processed_item['country_code_lower'] = processed_item['country_code'].lower()
-            
-            processed_data.append(processed_item)
-        
-        # Mark the last item for Mustache templates
-        _mark_last_item(processed_data)
-            
-        # Store the processed data under the original key for templates to use
-        data[model_key] = processed_data
+            # Mark the last item for Mustache templates
+            _mark_last_item(processed_data)
+                
+            # Store the processed data under the original key for templates to use
+            data[model_key] = processed_data
 
-    # Special processing for datasets model to handle dependencies
-    if model_key == 'datasets':
-        for ds in data[model_key]:
-            if 'dependencies' in ds:
-                # Transform simple string list to objects for Mustache
-                ds['dataset_dependencies'] = []
-                for dep_code in ds['dependencies']:
-                    ds['dataset_dependencies'].append({
-                        'parent_code': ds['code'],
-                        'dependency_code': dep_code,
-                        'role': 'visual_assets'  # Default role
-                    })
-                # Mark last for SQL formatting if needed
-                _mark_last_item(ds['dataset_dependencies'])
+        # Special processing for datasets model to handle dependencies
+        if model_key == 'datasets':
+            for ds in data[model_key]:
+                if 'dependencies' in ds:
+                    # Transform simple string list to objects for Mustache
+                    ds['dataset_dependencies'] = []
+                    for dep_code in ds['dependencies']:
+                        ds['dataset_dependencies'].append({
+                            'parent_code': ds['code'],
+                            'dependency_code': dep_code,
+                            'role': 'visual_assets'  # Default role
+                        })
+                    # Mark last for SQL formatting if needed
+                    _mark_last_item(ds['dataset_dependencies'])
 
     # Special processing for component scaffold models
     if is_component and isinstance(model, dict) and 'component' in model:

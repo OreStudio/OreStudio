@@ -35,8 +35,6 @@
             "origin_code": "Primary",
             "nature_code": "Actual",
             "treatment_code": "Raw",
-            "source_dir": "external/flags/flag-icons",
-            "description_template": "Flag of {key}",
             "tag_code": "flag",
             "tag_description": "Country and region flag images"
         }

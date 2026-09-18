@@ -15,10 +15,14 @@
 IPv4-to-country ranges as =ores_dq_ip2country_artefact_tbl= rows, loaded
 from the dataset's source TSV by the generated script's own psql =\copy=.
 
-The payload is the dataset's own =manifest.json=. The enrichment in
-=codegen/core.py= selects the manifest dataset whose =artefact_type= is
-=ip2country=, translates its =subject_area= and =domain= to the
-=subject_area_name= and =domain_name= forms used here, and exposes the
+The payload is the dataset's own =manifest.json=, and it is the only input
+this archetype has. The artefact data is the source TSV, which the generated
+script loads at run time, so nothing but metadata reaches the generator. A
+separate payload file would restate the manifest and add nothing.
+
+The enrichment in =codegen/core.py= selects the manifest dataset whose
+=artefact_type= is =ip2country=, translates its =subject_area= and =domain=
+to the =subject_area_name= and =domain_name= forms used here, and exposes the
 manifest source's =data_file= as a repository-relative
 ={{ip2country.data_file}}=.
 

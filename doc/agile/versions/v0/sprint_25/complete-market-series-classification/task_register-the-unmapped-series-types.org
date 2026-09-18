@@ -33,9 +33,9 @@ one series with many points instead of many single-observation series.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Unit 1 done: the entity, its schema, and the 43-row seed, all green. |
+| Now          | Unit 2 done: =series_key_registry= is a value built from the rows, all green. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit 2: make =series_key_registry= a value built from the rows. |
+| Next         | Unit 3: migrate the parser and the two =default_point_for= call sites. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -95,22 +95,29 @@ throw and aborts the file. That pulls 219 into this work.
 becomes a value built from rows.
 
 #+begin_src cpp
-struct series_key_shape {
-    std::string series_type;
-    unsigned int qualifier_depth;
-    bool has_point_dimension;
-    std::string default_point;
-};
-
 class ORES_ORE_CORE_EXPORT series_key_registry final {
 public:
-    explicit series_key_registry(std::vector<series_key_shape> shapes);
+    explicit series_key_registry(std::vector<domain::series_key_shape> shapes);
     decomposed_key decompose(const std::string& key) const;
     bool has_point_dimension(const std::string& series_type) const;
     std::string default_point_for(const std::string& series_type) const;
     std::vector<std::string> known_series_types() const;
+
+private:
+    std::unordered_map<std::string, domain::series_key_shape> by_type_;
 };
 #+end_src
+
+The rows are the generated =domain::series_key_shape= rather than a
+second struct of four fields. The design sketched a parallel struct,
+because it was not obvious that =ores.ore.core= may see the entity
+type. It may: =ores.ore.core= already links =ores.ore.api.lib=, and
+its generated repositories include that header to return rows. A
+second struct would be a second artefact for the same table-shaped
+data, which the data oriented design note rules out: the wire shape
+is a codegen projection of the entity, not another type. So the
+repository's rows feed the constructor with no mapping layer between
+them.
 
 =reconstruct_key= stays free. It joins strings and needs no table, so
 the serializer does not change.
@@ -119,6 +126,15 @@ The constructor throws when the rows are empty, and the message names
 the table. It also rejects a row that claims a point dimension and
 carries a default point. A table constraint carries the same two
 checks, so an illegal state cannot be stored either.
+
+A third check was considered and declined. =qualifier_depth= is an
+=integer= in the table, so a negative depth can be stored. It needs no
+check, because a negative depth makes the key shorter than its type
+expects, and that branch already folds the whole remainder into the
+qualifier: the row degrades a key exactly as an uncatalogued type
+does, and the key still reconstructs verbatim. Throwing in the
+constructor would abort an import over a row the table accepts, which
+is the failure this task exists to remove.
 
 ** An unknown type still folds
 
@@ -184,6 +200,19 @@ files. The C++ test comment claims 107,951 across 42 in 95, so the two
 disagree. The =compass test run= warning is the authority, and this
 work must reconcile the count.
 
+The two counts differ in what they count, not in what the corpus
+holds. Market data lives in =*.txt= files, one =date key value= per
+line. Fixings live in =fixings.csv= files headed
+=#fixingDate,fixingId,fixingValue=, and every line there is also a
+dated key. A walk of the market data files alone finds 39 types in 62
+files; the remaining types and files come from the fixings. GENERIC-MD
+is the clearest case: it appears in no market data file at all, and
+only in two =fixings.csv= files. Unit 4 must therefore state which of
+the two, or which union, it counts, and the test comment must say the
+same. The census must run through =parse_market_data= and
+=parse_fixings= rather than a hand-written line rule, so that the
+count follows the reader the corpus actually feeds.
+
 SHAPE_PROFILE and GENERIC-MD are absent from
 =doc/knowledge/domain/ore_market_data_catalogue.org=. That document
 also needs the per-type qualifier and point table.
@@ -227,6 +256,53 @@ convention. Every aggregate registrar is hand-written and selective:
 calls a generated sub-registrar only for =market_observation=. No
 consumer needs the surface yet, because Unit 2 reads the rows in
 process. Wire the registrar when a client must manage the table.
+
+** Unit 2 evidence
+
+=series_key_registry= is now a value. It holds the rows in an
+=unordered_map= keyed by series type, and it answers =decompose=,
+=has_point_dimension=, =default_point_for= and =known_series_types=
+from them. The constructor throws on an empty table and on a row that
+claims a point dimension and also carries a default point.
+
+The three free functions stay, marked =@deprecated= in Doxygen only, so
+every existing call site keeps working until Unit 3 deletes them. The
+compiled table therefore still sits in the source, and Unit 2 changes
+no behaviour that a caller can reach. That is why the rest of the tree
+sees nothing from this unit.
+
+Eleven cases cover the class, and all eleven ran and passed:
+
+| Case | What it pins |
+|------+--------------|
+| =registry_decompose_splits_qualifier_from_point= | Depth 2 and depth 1 both split |
+| =registry_decompose_folds_a_type_with_no_point_dimension= | FX and RECOVERY_RATE fold whole |
+| =registry_decompose_folds_a_key_shorter_than_its_type= | A short key still round-trips |
+| =registry_decompose_folds_an_uncatalogued_type= | OI_FUTURE folds whole |
+| =registry_decompose_throws_on_a_key_with_no_metric= | One segment throws |
+| =registry_roundtrips_every_fixture_key= | Every fixture key reconstructs |
+| =registry_answers_from_its_rows_and_not_a_compiled_table= | A type with no row answers false |
+| =registry_default_point_answers_from_its_rows= | SPOT appears only where a row says so |
+| =registry_known_series_types_is_sorted= | The type list is ordered |
+| =registry_rejects_an_unseeded_table= | The empty table throws |
+| =registry_rejects_a_row_with_a_point_and_a_default_point= | The contradiction throws |
+
+=ores.ore.core.tests= is green. The suite ran in 531.87 seconds and
+reported 429,775 assertions with no failure and no skip. The eleven
+case names above are read back from the run's own results file, so the
+run is the evidence rather than the source.
+
+The full seventy-three suite run did not complete, and this is a gap
+worth stating plainly. Two attempts were killed from outside compass:
+the first three minutes and forty seconds in, at suite 21 of 73, and
+the second before it reached a suite at all. Neither kill was a lock
+problem. The lock is an =flock= on the lock file, so the kernel frees
+it when the holder dies, and the slot was free after both kills. The
+affected suite was then run alone in the foreground, and that is the
+run recorded here. The other seventy-two suites are expected to be
+unaffected, because the deprecated free functions still carry the old
+behaviour, but the unit's evidence rests on the one suite that the
+change can reach.
 
 * Test Scenarios
 

@@ -25,8 +25,10 @@ namespace {
 
 const std::string tags("[ore][market][registry]");
 
+using ores::ore::domain::series_key_shape;
 using ores::ore::market::decompose_key;
 using ores::ore::market::reconstruct_key;
+using ores::ore::market::series_key_registry;
 
 void check_roundtrip(const std::string& key) {
     INFO("key: " << key);
@@ -34,6 +36,37 @@ void check_roundtrip(const std::string& key) {
     CHECK(!dk.series_type.empty());
     CHECK(!dk.metric.empty());
     CHECK(!dk.qualifier.empty());
+    CHECK(reconstruct_key(dk) == key);
+}
+
+series_key_shape make_shape(const std::string& series_type,
+                            int qualifier_depth,
+                            bool has_point_dimension,
+                            const std::string& default_point = "") {
+    series_key_shape shape;
+    shape.series_type = series_type;
+    shape.qualifier_depth = qualifier_depth;
+    shape.has_point_dimension = has_point_dimension;
+    shape.default_point = default_point;
+    return shape;
+}
+
+// Covers each branch the registry takes: a multi-segment qualifier, a
+// single-segment one, a type with no point and a real default point, and a
+// type with no point and no default.
+std::vector<series_key_shape> fixture() {
+    return {
+        make_shape("FX", 2, false, "SPOT"),
+        make_shape("DISCOUNT", 2, true),
+        make_shape("SWAPTION", 1, true),
+        make_shape("RECOVERY_RATE", 3, false),
+        make_shape("CORRELATION", 2, true),
+    };
+}
+
+void check_registry_roundtrip(const series_key_registry& registry, const std::string& key) {
+    INFO("key: " << key);
+    const auto dk = registry.decompose(key);
     CHECK(reconstruct_key(dk) == key);
 }
 
@@ -247,4 +280,131 @@ TEST_CASE("roundtrip_all_known_types", tags) {
 
     for (const auto& key : keys)
         check_roundtrip(key);
+}
+
+// =============================================================================
+// series_key_registry — a value built from rows, with no database
+// =============================================================================
+
+TEST_CASE("registry_decompose_splits_qualifier_from_point", tags) {
+    const series_key_registry registry(fixture());
+
+    const auto discount = registry.decompose("DISCOUNT/RATE/EUR/CURVE/2Y");
+    CHECK(discount.series_type == "DISCOUNT");
+    CHECK(discount.metric == "RATE");
+    CHECK(discount.qualifier == "EUR/CURVE");
+    CHECK(discount.point_id == std::optional<std::string>("2Y"));
+
+    const auto swaption = registry.decompose("SWAPTION/RATE_LNVOL/CHF/25Y/10Y/ATM");
+    CHECK(swaption.qualifier == "CHF");
+    CHECK(swaption.point_id == std::optional<std::string>("25Y/10Y/ATM"));
+
+    const auto correlation = registry.decompose("CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM");
+    CHECK(correlation.qualifier == "EUR-CMS-10Y/EUR-CMS-2Y");
+    CHECK(correlation.point_id == std::optional<std::string>("1Y/ATM"));
+}
+
+TEST_CASE("registry_decompose_folds_a_type_with_no_point_dimension", tags) {
+    const series_key_registry registry(fixture());
+
+    const auto fx = registry.decompose("FX/RATE/EUR/CHF");
+    CHECK(fx.qualifier == "EUR/CHF");
+    CHECK(!fx.point_id.has_value());
+
+    const auto recovery = registry.decompose("RECOVERY_RATE/RATE/CPTY_A/SR/USD");
+    CHECK(recovery.qualifier == "CPTY_A/SR/USD");
+    CHECK(!recovery.point_id.has_value());
+}
+
+TEST_CASE("registry_decompose_folds_a_key_shorter_than_its_type", tags) {
+    const series_key_registry registry(fixture());
+
+    const auto dk = registry.decompose("DISCOUNT/RATE/EUR");
+    CHECK(dk.qualifier == "EUR");
+    CHECK(!dk.point_id.has_value());
+    CHECK(reconstruct_key(dk) == "DISCOUNT/RATE/EUR");
+}
+
+TEST_CASE("registry_decompose_folds_an_uncatalogued_type", tags) {
+    const series_key_registry registry(fixture());
+
+    const auto dk = registry.decompose("OI_FUTURE/PRICE/USD/2019-10/CME/3M");
+    CHECK(dk.series_type == "OI_FUTURE");
+    CHECK(dk.metric == "PRICE");
+    CHECK(dk.qualifier == "USD/2019-10/CME/3M");
+    CHECK(!dk.point_id.has_value());
+    CHECK(reconstruct_key(dk) == "OI_FUTURE/PRICE/USD/2019-10/CME/3M");
+}
+
+TEST_CASE("registry_decompose_throws_on_a_key_with_no_metric", tags) {
+    const series_key_registry registry(fixture());
+    CHECK_THROWS_AS(registry.decompose("ONLYONE"), std::invalid_argument);
+    CHECK_THROWS_AS(registry.decompose(""), std::invalid_argument);
+}
+
+TEST_CASE("registry_roundtrips_every_fixture_key", tags) {
+    const series_key_registry registry(fixture());
+    for (const auto& key :
+         {"FX/RATE/EUR/CHF",
+          "DISCOUNT/RATE/EUR/CURVE/2Y",
+          "SWAPTION/RATE_LNVOL/CHF/25Y/10Y/ATM",
+          "RECOVERY_RATE/RATE/CPTY_A/SR/USD",
+          "CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM",
+          "OI_FUTURE/PRICE/USD/2019-10/CME/3M"})
+        check_registry_roundtrip(registry, key);
+}
+
+TEST_CASE("registry_answers_from_its_rows_and_not_a_compiled_table", tags) {
+    const series_key_registry registry(fixture());
+
+    CHECK(registry.has_point_dimension("DISCOUNT"));
+    CHECK(registry.has_point_dimension("CORRELATION"));
+    CHECK_FALSE(registry.has_point_dimension("FX"));
+    CHECK_FALSE(registry.has_point_dimension("RECOVERY_RATE"));
+
+    // IR_SWAP has no row in this fixture, so a registry built from rows has
+    // nothing to answer with: there is no compiled fallback behind it.
+    CHECK_FALSE(registry.has_point_dimension("IR_SWAP"));
+    CHECK(registry.default_point_for("IR_SWAP").empty());
+}
+
+TEST_CASE("registry_default_point_answers_from_its_rows", tags) {
+    const series_key_registry registry(fixture());
+    CHECK(registry.default_point_for("FX") == "SPOT");
+    CHECK(registry.default_point_for("DISCOUNT").empty());
+    CHECK(registry.default_point_for("RECOVERY_RATE").empty());
+    CHECK(registry.default_point_for("OI_FUTURE").empty());
+}
+
+TEST_CASE("registry_known_series_types_is_sorted", tags) {
+    const series_key_registry registry(fixture());
+    const std::vector<std::string> expected{
+        "CORRELATION", "DISCOUNT", "FX", "RECOVERY_RATE", "SWAPTION"};
+    CHECK(registry.known_series_types() == expected);
+}
+
+TEST_CASE("registry_rejects_an_unseeded_table", tags) {
+    try {
+        const series_key_registry registry(std::vector<series_key_shape>{});
+        FAIL("accepted an empty table, known types: " << registry.known_series_types().size());
+    } catch (const std::invalid_argument& ex) {
+        const std::string msg{ex.what()};
+        CHECK(msg.find("ores_ore_series_key_shapes_tbl") != std::string::npos);
+        CHECK(msg.find("unseeded") != std::string::npos);
+    }
+}
+
+TEST_CASE("registry_rejects_a_row_with_a_point_and_a_default_point", tags) {
+    auto shapes = fixture();
+    shapes.push_back(make_shape("FXFWD", 2, true, "SPOT"));
+
+    try {
+        const series_key_registry registry(shapes);
+        FAIL("accepted a contradictory row, known types: "
+             << registry.known_series_types().size());
+    } catch (const std::invalid_argument& ex) {
+        const std::string msg{ex.what()};
+        CHECK(msg.find("FXFWD") != std::string::npos);
+        CHECK(msg.find("SPOT") != std::string::npos);
+    }
 }

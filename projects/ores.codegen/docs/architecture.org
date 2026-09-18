@@ -56,8 +56,7 @@ projects/ores.codegen/
 │   ├── doc_generate.py      # v2 information-architecture doc generator
 │   ├── fpml_parser.py       # FPML Genericode XML → JSON models
 │   ├── images_generate_sql.py
-│   ├── lei_extract_subset.py
-│   └── iso_generate_metadata_sql.py
+│   └── lei_extract_subset.py
 ├── modeling/
 │   └── ores.codegen.org     # Component model (the entry point)
 ├── docs/
@@ -84,7 +83,7 @@ projects/ores.codegen/
 | =src/codegen/diff_cmd.py=                | =diff= subcommand implementation                                         |
 | =src/doc_generate.py=                    | v2 information-architecture document generator (task/story/sprint/...)   |
 | =src/fpml_parser.py=                     | FPML Genericode XML → JSON models                                       |
-| =src/iso_generate_metadata_sql.py=       | ISO standards → SQL                                                      |
+| =external/iso/iso_generate_metadata_sql.py= | ISO standards → SQL (kept beside the dataset it generates from)       |
 | =src/images_generate_sql.py=             | Image artefacts (flags, crypto icons) → SQL                              |
 | =src/lei_extract_subset.py=              | LEI dataset subset extractor                                             |
 | [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]            | One org node per graph element (root/technical-space/facet/archetype); declares which templates generate for which model types |

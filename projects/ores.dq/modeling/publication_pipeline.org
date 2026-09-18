@@ -130,13 +130,13 @@ FPML-shaped.
 
 Non-FPML external sources (GLEIF LEI CSVs, crypto exchange lists, ISO
 code lists) don't fit the Genericode XML shape, so each has its own
-one-off Python script under =projects/ores.codegen/src/= (e.g.
-=lei_generate_metadata_sql.py=, =crypto_generate_metadata_sql.py=,
-=iso_generate_metadata_sql.py=) that parses that one source's native
-format and emits SQL =INSERT= statements directly (not via the
-=sql_populate_refdata= archetype). This part genuinely is hand-written
-per source, and is expected to stay that way — the parsing logic is
-inherently source-format-specific.
+one-off Python script (e.g. =lei_generate_metadata_sql.py= and
+=crypto_generate_metadata_sql.py= under =projects/ores.codegen/src/=,
+=iso_generate_metadata_sql.py= under =external/iso/=) that parses that
+one source's native format and emits SQL =INSERT= statements directly
+(not via the =sql_populate_refdata= archetype). This part genuinely is
+hand-written per source, and is expected to stay that way — the parsing
+logic is inherently source-format-specific.
 
 *** Computed/synthetic data — neither case
 

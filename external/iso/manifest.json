@@ -1,6 +1,7 @@
 {
     "name": "ISO Standards Reference Data",
     "description": "International Organization for Standardization (ISO) reference data including country codes and currency codes",
+    "methodology_file": "methodology.txt",
     "source_url": "https://www.iso.org/",
     "catalog": {
         "name": "ISO Standards",

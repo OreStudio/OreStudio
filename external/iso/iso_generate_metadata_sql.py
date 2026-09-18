@@ -2,17 +2,23 @@
 """
 Generates SQL populate scripts for ISO Standards metadata.
 
-Reads the manifest.json from external/iso/ and generates:
+Reads manifest.json and methodology.txt from this directory and writes to
+projects/ores.sql/populate/iso/:
   - iso_catalog_populate.sql
-  - iso_coding_schemes_populate.sql
   - iso_methodology_populate.sql
+  - iso_coding_schemes_dataset_populate.sql
+  - iso_coding_schemes_artefact_populate.sql
   - iso_dataset_populate.sql
   - iso_dataset_tag_populate.sql
   - iso_dataset_dependency_populate.sql
-  - iso.sql (master include file)
+  - iso_populate.sql (master include file)
+
+iso_countries_artefact_populate.sql and iso_currencies_artefact_populate.sql
+are maintained by hand. Nothing here derives their rows, because the standards
+are published as documents and not as a redistributable list.
 
 Usage:
-    python3 iso_generate_metadata_sql.py
+    python3 external/iso/iso_generate_metadata_sql.py
     python3 iso_generate_metadata_sql.py --manifest-dir /path/to/external/iso
     python3 iso_generate_metadata_sql.py --output-dir /path/to/output
 """
@@ -74,9 +80,13 @@ def generate_catalog_sql(manifest: dict, output_file: Path):
         print("  No catalog defined in manifest, skipping")
         return
 
+    name = escape_sql_string(catalog['name'])
+    description = escape_sql_string(catalog['description'])
+    owner = escape_sql_string(catalog['owner'])
+
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(get_header())
-        f.write("""
+        f.write(f"""
 /**
  * ISO Standards Catalog Population Script
  *
@@ -84,24 +94,21 @@ def generate_catalog_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Catalog
+    -- =============================================================================
 
--- =============================================================================
--- ISO Standards Catalog
--- =============================================================================
+    -- --- ISO Standards Catalog ---
 
-\\echo '--- ISO Standards Catalog ---'
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{name}',
+        '{description}',
+        '{owner}'
+    );
+END $$;
 
-""")
-        name = escape_sql_string(catalog['name'])
-        description = escape_sql_string(catalog['description'])
-        owner = escape_sql_string(catalog['owner'])
-
-        f.write(f"""select metadata.dq_catalogs_upsert_fn(
-    '{name}',
-    '{description}',
-    '{owner}'
-);
 """)
 
     print(f"  Generated catalog: {catalog['name']}")
@@ -136,13 +143,12 @@ def generate_coding_schemes_artefact_sql(manifest: dict, output_file: Path):
  * Populates the dq_coding_schemes_artefact_tbl staging table.
  *
  * To publish to production:
- *   SELECT * FROM metadata.dq_coding_schemes_publish_fn(
- *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),
+ *   SELECT * FROM ores_dq_coding_schemes_publish_fn(
+ *       (SELECT id FROM ores_dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores_utility_infinity_timestamp_fn()),
+ *       ores_utility_system_tenant_id_fn(),
  *       'upsert'
  *   );
  */
-
-set schema 'ores';
 
 -- =============================================================================
 -- ISO Standards Coding Schemes Artefacts
@@ -151,10 +157,10 @@ set schema 'ores';
 \\echo '--- ISO Standards Coding Schemes Artefacts ---'
 
 -- Store dataset_id in psql variable for reuse
-select id as v_dataset_id from metadata.dq_datasets_tbl where code = '{dataset_code}' and valid_to = public.utility_infinity_timestamp_fn() \\gset
+select id as v_dataset_id from ores_dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores_utility_infinity_timestamp_fn() \\gset
 
 -- Clear existing artefacts for this dataset before inserting
-delete from metadata.dq_coding_schemes_artefact_tbl
+delete from ores_dq_coding_schemes_artefact_tbl
 where dataset_id = :'v_dataset_id';
 
 """)
@@ -169,10 +175,13 @@ where dataset_id = :'v_dataset_id';
             uri_sql = "'" + uri.replace("'", "''") + "'" if uri else 'null'
             description = escape_sql_string(cs['description'])
 
-            f.write(f"""insert into metadata.dq_coding_schemes_artefact_tbl (
+            f.write(f"""insert into ores_dq_coding_schemes_artefact_tbl (
+    tenant_id,
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
-) values (
+)
+values (
+    ores_utility_system_tenant_id_fn(),
     :'v_dataset_id',
     '{code}', 0, '{name}', '{authority_type}',
     '{subject_area}', '{domain}', {uri_sql}, '{description}'
@@ -183,7 +192,7 @@ where dataset_id = :'v_dataset_id';
     print(f"  Generated {len(coding_schemes)} coding scheme artefact entries")
 
 
-def generate_methodology_sql(manifest: dict, output_file: Path):
+def generate_methodology_sql(manifest: dict, methodology_text: str, output_file: Path):
     """Generate the methodology populate SQL file."""
     print(f"Generating {output_file.name}...")
 
@@ -195,38 +204,37 @@ def generate_methodology_sql(manifest: dict, output_file: Path):
 /**
  * ISO Standards Methodology Population Script
  *
- * Auto-generated from external/iso/manifest.json
+ * Auto-generated from external/iso/manifest.json and methodology.txt
  * This script is idempotent.
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Methodologies
+    -- =============================================================================
 
--- =============================================================================
--- ISO Standards Methodologies
--- =============================================================================
-
-\\echo '--- ISO Standards Methodologies ---'
+    -- --- ISO Standards Methodologies ---
 
 """)
 
+        statements = []
         for meth in methodologies:
             name = escape_sql_string(meth['name'])
             description = escape_sql_string(meth['description'])
             url = meth['url']
+            methodology_steps = escape_sql_string(methodology_text)
 
-            # Build methodology steps
-            methodology_steps = f"""Data sourced from {url}
-
-See methodology documentation for detailed steps."""
-
-            f.write(f"""select metadata.dq_methodologies_upsert_fn(
-    '{name}',
-    '{description}',
-    '{url}',
-    '{escape_sql_string(methodology_steps)}'
-);
-
+            statements.append(f"""    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{name}',
+        '{description}',
+        '{url}',
+        '{methodology_steps}'
+    );
 """)
+
+        f.write("\n".join(statements))
+        f.write("END $$;\n\n")
 
     print(f"  Generated {len(methodologies)} methodology entries")
 
@@ -252,16 +260,17 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_file: Path):
  * This must be run before other datasets that reference these coding schemes.
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Coding Schemes Dataset
+    -- =============================================================================
 
--- =============================================================================
--- ISO Coding Schemes Dataset
--- =============================================================================
-
-\\echo '--- ISO Coding Schemes Dataset ---'
+    -- --- ISO Coding Schemes Dataset ---
 
 """)
 
+        statements = []
         for dataset in coding_scheme_datasets:
             name = escape_sql_string(dataset['name'])
             code = dataset['code']
@@ -276,27 +285,29 @@ set schema 'ores';
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
 
-            f.write(f"""-- {name}
-select metadata.dq_datasets_upsert_fn(
-    '{code}',
-    '{catalog}',
-    '{subject_area}',
-    '{domain}',
-    '{coding_scheme}',
-    'Primary',
-    'Actual',
-    'Raw',
-    '{methodology}',
-    '{name}',
-    '{description}',
-    '{source_system}',
-    '{business_context}',
-    current_date,
-    '{license_info}',
-    '{artefact_type}'
-);
-
+            statements.append(f"""    -- {name}
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{code}',
+        '{catalog}',
+        '{subject_area}',
+        '{domain}',
+        '{coding_scheme}',
+        'Primary',
+        'Actual',
+        'Raw',
+        '{methodology}',
+        '{name}',
+        '{description}',
+        '{source_system}',
+        '{business_context}',
+        current_date,
+        '{license_info}',
+        '{artefact_type}'
+    );
 """)
+
+        f.write("\n".join(statements))
+        f.write("END $$;\n\n")
 
     print(f"  Generated {len(coding_scheme_datasets)} coding schemes dataset entries")
 
@@ -321,16 +332,17 @@ def generate_dataset_sql(manifest: dict, output_file: Path):
  * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Datasets
+    -- =============================================================================
 
--- =============================================================================
--- ISO Standards Datasets
--- =============================================================================
-
-\\echo '--- ISO Standards Datasets ---'
+    -- --- ISO Standards Datasets ---
 
 """)
 
+        statements = []
         for dataset in other_datasets:
             name = escape_sql_string(dataset['name'])
             code = dataset['code']
@@ -345,27 +357,29 @@ set schema 'ores';
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
 
-            f.write(f"""-- {name}
-select metadata.dq_datasets_upsert_fn(
-    '{code}',
-    '{catalog}',
-    '{subject_area}',
-    '{domain}',
-    '{coding_scheme}',
-    'Primary',
-    'Actual',
-    'Raw',
-    '{methodology}',
-    '{name}',
-    '{description}',
-    '{source_system}',
-    '{business_context}',
-    current_date,
-    '{license_info}',
-    '{artefact_type}'
-);
-
+            statements.append(f"""    -- {name}
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{code}',
+        '{catalog}',
+        '{subject_area}',
+        '{domain}',
+        '{coding_scheme}',
+        'Primary',
+        'Actual',
+        'Raw',
+        '{methodology}',
+        '{name}',
+        '{description}',
+        '{source_system}',
+        '{business_context}',
+        current_date,
+        '{license_info}',
+        '{artefact_type}'
+    );
 """)
+
+        f.write("\n".join(statements))
+        f.write("END $$;\n\n")
 
     print(f"  Generated {len(other_datasets)} dataset entries")
 
@@ -386,16 +400,17 @@ def generate_dataset_tag_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Dataset Tags
+    -- =============================================================================
 
--- =============================================================================
--- ISO Standards Dataset Tags
--- =============================================================================
-
-\\echo '--- ISO Standards Dataset Tags ---'
+    -- --- ISO Standards Dataset Tags ---
 
 """)
 
+        statements = []
         for dataset in datasets:
             if 'tag_code' not in dataset:
                 continue
@@ -406,15 +421,17 @@ set schema 'ores';
             tag_code = dataset['tag_code']
             tag_description = escape_sql_string(dataset['tag_description'])
 
-            f.write(f"""select metadata.dq_tags_upsert_fn(
-    '{name}',
-    '{subject_area}',
-    '{domain}',
-    '{tag_code}',
-    '{tag_description}'
-);
-
+            statements.append(f"""    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{name}',
+        '{subject_area}',
+        '{domain}',
+        '{tag_code}',
+        '{tag_description}'
+    );
 """)
+
+        f.write("\n".join(statements))
+        f.write("END $$;\n\n")
 
     tag_count = sum(1 for d in datasets if 'tag_code' in d)
     print(f"  Generated {tag_count} dataset tag entries")
@@ -436,34 +453,37 @@ def generate_dataset_dependency_sql(manifest: dict, output_file: Path):
  * This script is idempotent.
  */
 
-set schema 'ores';
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Dataset Dependencies
+    -- =============================================================================
 
--- =============================================================================
--- ISO Standards Dataset Dependencies
--- =============================================================================
-
-\\echo '--- ISO Standards Dataset Dependencies ---'
+    -- --- ISO Standards Dataset Dependencies ---
 
 """)
 
+        statements = []
         for dep in dependencies:
             dataset_code = dep['dataset_code']
             dependency_code = dep['dependency_code']
             role = dep['role']
 
-            f.write(f"""select metadata.dq_dataset_dependencies_upsert_fn(
-    '{dataset_code}',
-    '{dependency_code}',
-    '{role}'
-);
-
+            statements.append(f"""    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{dataset_code}',
+        '{dependency_code}',
+        '{role}'
+    );
 """)
+
+        f.write("\n".join(statements))
+        f.write("END $$;\n\n")
 
     print(f"  Generated {len(dependencies)} dataset dependency entries")
 
 
 def generate_master_sql(output_file: Path):
-    """Generate the iso.sql master include file."""
+    """Generate the iso_populate.sql master include file."""
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -505,8 +525,9 @@ def generate_master_sql(output_file: Path):
 
 -- Publish coding schemes to production (required before other datasets can reference them)
 \\echo '--- Publishing ISO Coding Schemes ---'
-select * from metadata.dq_coding_schemes_publish_fn(
-    (select id from metadata.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),
+select * from ores_dq_coding_schemes_publish_fn(
+    (select id from ores_dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(),
     'upsert'
 );
 
@@ -566,7 +587,7 @@ def main():
     if args.manifest_dir:
         manifest_dir = Path(args.manifest_dir)
     else:
-        manifest_dir = repo_root / 'external' / 'iso'
+        manifest_dir = Path(__file__).resolve().parent
 
     if args.output_dir:
         output_dir = Path(args.output_dir)
@@ -575,32 +596,42 @@ def main():
 
     # Validate paths
     manifest_file = manifest_dir / 'manifest.json'
+    methodology_file = manifest_dir / 'methodology.txt'
 
     if not manifest_file.exists():
         print(f"Error: Manifest file not found: {manifest_file}", file=sys.stderr)
+        sys.exit(1)
+
+    if not methodology_file.exists():
+        print(f"Error: Methodology file not found: {methodology_file}", file=sys.stderr)
         sys.exit(1)
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"ISO Standards Metadata SQL Generator")
     print(f"====================================")
-    print(f"Manifest: {manifest_file}")
-    print(f"Output:   {output_dir}")
+    print(f"Manifest:    {manifest_file}")
+    print(f"Methodology: {methodology_file}")
+    print(f"Output:      {output_dir}")
     print()
 
     # Load manifest
     with open(manifest_file, 'r', encoding='utf-8') as f:
         manifest = json.load(f)
 
+    with open(methodology_file, 'r', encoding='utf-8') as f:
+        methodology_text = f.read().strip()
+
     # Generate files
     generate_catalog_sql(manifest, output_dir / 'iso_catalog_populate.sql')
-    generate_methodology_sql(manifest, output_dir / 'iso_methodology_populate.sql')
+    generate_methodology_sql(manifest, methodology_text,
+                             output_dir / 'iso_methodology_populate.sql')
     generate_coding_schemes_dataset_sql(manifest, output_dir / 'iso_coding_schemes_dataset_populate.sql')
     generate_coding_schemes_artefact_sql(manifest, output_dir / 'iso_coding_schemes_artefact_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'iso_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'iso_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'iso_dataset_dependency_populate.sql')
-    generate_master_sql(output_dir / 'iso.sql')
+    generate_master_sql(output_dir / 'iso_populate.sql')
 
     print()
     print("Generation complete!")

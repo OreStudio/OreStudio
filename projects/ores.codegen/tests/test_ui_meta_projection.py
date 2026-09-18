@@ -19,9 +19,10 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
-from codegen.core import ui_meta_projection  # noqa: E402
+from codegen.core import generate_from_model, ui_meta_projection  # noqa: E402
 
 MODEL = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book_status.org"
+CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
 
 def _project(columns, fields=(), level1=(), **drawer):
@@ -168,3 +169,147 @@ def test_display_field_prefers_the_name_column():
 def test_an_entity_with_no_display_column_emits_an_empty_one():
     projection = _project([{"field": "modified_at", "enum_name": "ModifiedAt"}])
     assert projection["display_field"] == ""
+
+
+def _emit_fields(tmp_path, key_field):
+    """Emit one entity that carries no detail-field table, so the fields
+    the projection reads are the auto-default shape `generate_from_model`
+    builds for it.
+
+    Four entities in the registry are in this position today, `compute.app`
+    among them. Every case above hands `_project` its fields, so none of
+    them reaches this block.
+    """
+    natural_key = "name" if key_field == "name" else "code"
+    extra = "" if key_field == "name" else f"""
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The display name.
+"""
+    model = tmp_path / "ores.testcomp.thing.org"
+    model.write_text(f"""\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-000000000042
+:END:
+#+title: ores.testcomp.thing
+#+description: Fixture for the auto-default detail-field shape.
+#+type: ores.codegen.entity
+#+component: testcomp
+#+entity_singular: thing
+#+entity_plural: things
+#+entity_title: Thing
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: testcomp
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key.
+
+** {natural_key}
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The key field.
+{extra}
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+A description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_testcomp_things_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: thing
+:entity_plural_short:   things
+:entity_singular_words: test thing
+:entity_plural_words:   test things
+:END:
+
+** Presentation
+:PROPERTIES:
+:domain_include:       ores.testcomp.api/domain/thing.hpp
+:domain_class:         testcomp::domain::thing
+:protocol_include:     ores.testcomp.api/messaging/thing_protocol.hpp
+:collection_name:      things
+:key_field:            {key_field}
+:has_uuid_primary_key: true
+:END:
+
+*** Columns
+
+| enum_name   | field       | header      | type | width |
+|-------------+-------------+-------------+------+-------|
+| Code        | code        | Code        | text | auto  |
+| Name        | name        | Name        | text | auto  |
+| Description | description | Description | text | auto  |
+""", encoding="utf-8")
+    output = tmp_path / "out"
+    output.mkdir()
+    generate_from_model(
+        str(model),
+        CODEGEN / "library" / "data",
+        CODEGEN / "library" / "templates",
+        output,
+        is_processing_batch=True,
+        target_template="ts_ui.ts.mustache",
+        target_output="thing_ui.ts",
+    )
+    text = (output / "thing_ui.ts").read_text(encoding="utf-8")
+    return text.split("Fields: readonly FieldMeta[] = [", 1)[1].split("];", 1)[0]
+
+
+def test_the_auto_default_form_carries_a_name_keyed_entity_once(tmp_path):
+    """An entity whose key field IS its display name must emit one field.
+
+    The default shape is a key row plus a display-name row. When the key
+    is `name` the two would bind the same column twice, so the key row
+    carries it alone.
+    """
+    block = _emit_fields(tmp_path, key_field="name")
+    assert block.count("name: 'name'") == 1
+    assert "name: 'description'" in block
+    assert "isKey: true" in block
+
+
+def test_the_auto_default_form_keeps_code_plus_name(tmp_path):
+    block = _emit_fields(tmp_path, key_field="code")
+    assert "name: 'code'" in block
+    assert "name: 'name'" in block
+    assert "name: 'description'" in block

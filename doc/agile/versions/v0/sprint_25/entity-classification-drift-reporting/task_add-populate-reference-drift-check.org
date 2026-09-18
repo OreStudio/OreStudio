@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 5DA510D4-1C1E-4062-8B85-04A35E227A1B
+:END:
+#+title: Task: Add a populate reference drift check
+#+description: Task for: Entity classification and drift baseline: ores.reporting
+#+type: task
+#+level: s1
+#+filetags: :entity-classification-drift-reporting:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-populate-reference-drift-check
+#+pr: 2103
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A populate script that names a methodology, dataset or account no populate script defines aborts 'compass db recreate' part-way through setup_schema.sql, so the GRANT block never runs and the database stays half-built. No drift gate reads those cross-references today. Add one that derives the lookup contract from the upsert function bodies under projects/ores.sql/create and applies it to the literals under projects/ores.sql/populate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3E49EAF7-0545-4A4C-9DD8-34608FC41293][Entity classification and drift baseline: ores.reporting]] |
+| Now          | Nothing. |
+| Waiting on   |                                        |
+| Next         | Nothing. |
+| Last touched | 2026-09-18                             |
+
+* Acceptance
+
+- check_populate_references.py reports zero violations on the tree
+- The check fails when a referenced name has no definition
+- A CI workflow gates the check and its tests on projects/ores.sql and projects/ores.seeder changes
+- The local PR-raise gate lists the new check
+
+* Plan
+
+- Read the lookup contract out of the upsert function bodies under
+  =projects/ores.sql/create=. A =raise exception '<thing> not found'=
+  guard marks a name as mandatory, and the =select= above it names the
+  table and the columns that identify the row. Nothing is hard-coded,
+  so a new guarded upsert extends the check for free.
+- Apply that contract to the string literals at the call sites under
+  =projects/ores.sql/populate=.
+- Cover the composite lookups as well as the single-column ones:
+  =ores_dq_tags_upsert_fn= names a dataset by name, subject area and
+  domain, not by name alone.
+- Gate it in CI and list it in the local check set the PR-raise skill
+  runs.
+
+* Notes
+
+- The first version of the check passed on the clean tree and on a tree
+  with the definition deleted. It parsed function parameters as
+  =p_name text= rather than =p_name=, so no parameter ever matched its
+  guard and every lookup was skipped in silence. A gate that cannot
+  fail is the failure mode worth testing for, which is why the CI job
+  runs the tests as well as the check.
+- Anchoring the contract on the raise guard is what keeps the check
+  honest. The guard is the only place that states a name is mandatory,
+  and the =select= beside it supplies the table and columns, so the
+  check cannot describe a contract the functions do not have.
+- The uuid parameters the runtime publish functions take need no
+  special casing. Their guards name an =id= column, and populate
+  scripts never pass those as literals, so the check passes over them
+  on its own. It finds 52 guards and 5716 call sites.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2103][#2103]] | [ores.codegen] Add a populate reference drift check |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built =projects/ores.codegen/scripts/check_populate_references.py=. It
+parses the functions under =projects/ores.sql/create= for the guards
+that raise on a missing row and for the =insert= that writes one, then
+applies the resulting contract to the literal arguments in
+=projects/ores.sql/populate=. It derives 52 guards and 5716 call sites,
+and reports zero violations on the tree.
+
+Added =.github/workflows/populate-reference-drift.yml=, which runs the
+check on any change under =projects/ores.sql/= or
+=projects/ores.seeder/= and then runs its tests.
+
+Added =projects/ores.codegen/tests/test_populate_references.py=. One
+test proves the tree resolves, one pins the guard discovery so the
+parser cannot quietly stop finding guards, and one deletes the
+methodology definition from a copy of the tree and requires the
+violation.
+
+Listed the check in the local gate in
+=doc/llm/skills/compass-pr-raise/SKILL.org= and deployed the skills
+bundle.
+
+Verified. The clean tree passes in 4.5 seconds. Deleting the
+methodology definition from a copy produces 34 violations, including
+=acme_dataset_populate.sql=, the file the recreate died in. The three
+guarded paths carry real data: 8 references against 85 definitions,
+114 against 244, and 85 against 15.
+
+Three limits are deliberate and recorded here. The check is set-level,
+not order-level, so it proves a name is defined somewhere rather than
+defined before its first use. It reads every =*.sql= under
+=populate/=, including files =populate.sql= never includes, so a
+definition in an orphan file satisfies it. It only sees literal
+arguments, which keeps the runtime publish functions out of scope but
+also makes a name assembled from a variable invisible.

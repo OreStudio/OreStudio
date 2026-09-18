@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: C3490D64-F68E-4E46-A325-F8163F3073EE
+:END:
+#+title: Task: Generate the protocol as TypeScript for the UI
+#+description: Add the TypeScript target space to ores.codegen and generate the IAM protocol messages as TypeScript modules for the ores.qt UI.
+#+type: task
+#+level: s1
+#+filetags: :codegen_protocol_for_cpp_and_typescript:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-protocol-for-cpp-and-typescript
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Phase 2 of the story. Add the =ores.ts= technical space so the ores.qt UI consumes the protocol messages without hand-copying them, and generate the IAM protocols the model can already express.
+
+* Status
+
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | STARTED                                                      |
+| Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
+| Now          | Done pending the PR. The =ores.ts= space renders six IAM protocols; =tsc --strict= passes; regeneration is idempotent. |
+| Waiting on   | CI, once the PR opens.                                       |
+| Next         | Open the PR and record it below.                             |
+| Last touched | 2026-09-18                                                   |
+
+* Acceptance
+
+- A =ores.ts= technical space and an =ores.ts.protocol= facet render one TypeScript module per operation model.
+- The six self-contained IAM protocols generate and typecheck under =tsc --strict=.
+- An operation whose fields reference a type with no TypeScript projection fails to load, unless the model disables the facet in its own drawer.
+- Regeneration over the IAM component produces zero diff.
+- The build passes and the existing tests pass.
+
+* Plan
+
+The target space is a second traversal of the same graph, not a second model.
+=ores.ts.protocol= admits =operation= models and carries one archetype, so the
+eleven orgs Phase 1 wrote generate twice: once as C++ headers, once as
+TypeScript modules.
+
+=projects/ores.typescript= holds the output. It has a =package.json=, a
+=tsconfig.json= in =strict= mode, and no =CMakeLists.txt= — the project is not
+part of the C++ build tree, so the typecheck is the only gate it needs.
+
+Three codegen seams carry the new language: a =typescript= modeline, a
+=ts_license= alongside =cpp_license=, and =generated_marker= widened from the
+C++-only =cpp_generated_marker=. The type projection itself sits in
+=org_loader._ts_type=, a table from =:cpp_type:= to the TypeScript spelling.
+
+The work was ordered so each step ends in a check: the loader and its guard
+first, then the graph nodes, then one protocol generated and typechecked, then
+the remaining five, then a regenerate over the whole component.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Six TypeScript modules generate under
+=projects/ores.typescript/src/iam/protocol/=: =login=, =bootstrap=,
+=reset=, =signup=, =session_samples= and =tenant_provisioning=. Each
+holds one interface per message plus a =subjects= constant. =tsc
+--noEmit= under =strict= and =noUncheckedIndexedAccess= reports no
+error, and a second regeneration leaves all six byte-identical.
+
+The five remaining IAM protocols opt out with
+=:ores.ts.protocol.enabled: nil=. Each references an
+=ores::iam::domain::= type, and no TypeScript domain layer exists yet,
+so their interfaces would be silently short. Regeneration reports them
+as "nothing to generate", which is the intended signal.
+
+Two properties of the generated surface are worth a follow-up decision:
+
+- Field comments keep their C++ doxygen markup (=@brief=, =@c=, =@p=).
+  The prose reads fine, but the markup is a C++ idiom in a TypeScript
+  file.
+- A message with no fields renders as =export interface X {}=, which
+  accepts any object. =Record<string, never>= would reject junk the
+  server ignores.

@@ -32,9 +32,9 @@ from the auto-generated banner the generator adds.
 |--------------+--------------------------------------------------------------|
 | State        | STARTED                                                      |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | All eleven IAM headers generate from =ores.codegen.operation= models; the codegen suite passes. |
-| Waiting on   | The full build, then the final zero-diff regeneration check.  |
-| Next         | Re-run =compass codegen regenerate --component iam --address ores.cpp.protocol= and confirm no further diff. |
+| Now          | Done. Committed as =5690abd04e=.                            |
+| Waiting on   | CI, once the PR opens.                                       |
+| Next         | Open the PR and record it below.                             |
 | Last touched | 2026-09-18                                                   |
 
 * Acceptance
@@ -72,3 +72,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All eleven headers generate from org models. The full build passes, and
+=compass codegen regenerate --component iam --address ores.cpp.protocol=
+leaves all sixteen headers in the directory byte-identical.
+
+Three deviations from byte identity, all intended and recorded in the
+commit body: the generator's banner on every header; one blank line after
+the include guard in =session_protocol.hpp= and
+=session_samples_protocol.hpp=; and six end-of-line field comments in
+=bootstrap_protocol.hpp= rendered as leading blocks, which is the comment
+form the project requires.
+
+The codegen suite reports 222 passed and one failure,
+=test_a_colliding_earlier_column_does_not_hide_a_later_real_one=. That
+failure predates this work and is not related to it: it expects a
+=domain::asset_class= row that =projects/modeling/cpp_custom_types.org=
+does not hold.

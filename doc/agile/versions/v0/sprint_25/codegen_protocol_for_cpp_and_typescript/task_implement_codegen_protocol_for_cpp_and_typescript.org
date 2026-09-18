@@ -32,9 +32,9 @@ from the auto-generated banner the generator adds.
 |--------------+--------------------------------------------------------------|
 | State        | STARTED                                                      |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | Done. Committed as =5690abd04e= and open as PR #2104.       |
-| Waiting on   | CI and the merge.                                            |
-| Next         | Merge, then close this task.                                 |
+| Now          | Done. Committed as =5690abd04e=, merged as =8036dc81fd= via PR #2104. |
+| Waiting on   | Nothing.                                                     |
+| Next         | Close this task.                                             |
 | Last touched | 2026-09-18                                                   |
 
 * Acceptance

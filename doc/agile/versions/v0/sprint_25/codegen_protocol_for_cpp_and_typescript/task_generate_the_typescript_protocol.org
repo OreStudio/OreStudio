@@ -28,9 +28,9 @@ Phase 2 of the story. Add the =ores.ts= technical space so the ores.qt UI consum
 |--------------+--------------------------------------------------------------|
 | State        | STARTED                                                      |
 | Parent story | [[id:FA160AE1-CB9A-410F-A8B0-31FBF2247962][Generate protocol messages from one model into C++ and TypeScript]] |
-| Now          | Done. Committed as =8af78455ee= and open as PR #2104. The =ores.ts= space renders six IAM protocols; =tsc --strict= passes; regeneration is idempotent. |
-| Waiting on   | CI and the merge.                                            |
-| Next         | Merge, then close this task.                                 |
+| Now          | Done. Committed as =8af78455ee=, merged as =8036dc81fd= via PR #2104. The =ores.ts= space renders six IAM protocols; =tsc --strict= passes; regeneration is idempotent. |
+| Waiting on   | Nothing.                                                     |
+| Next         | Close this task.                                             |
 | Last touched | 2026-09-18                                                   |
 
 * Acceptance

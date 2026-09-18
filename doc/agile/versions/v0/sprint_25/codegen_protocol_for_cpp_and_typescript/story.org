@@ -27,9 +27,9 @@ The story then adds a TypeScript target space. The same org renders TypeScript i
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Both phases are built, verified and committed; the PR is open. |
-| Waiting on    | CI and the merge.                      |
-| Next          | Merge, then remove ores.qt and ores.wt and their codegen facets. The coverage gap below then resumes. |
+| Now           | Both phases are built, verified and merged as =8036dc81fd= via PR #2104. |
+| Waiting on    | Nothing.                               |
+| Next          | Remove ores.qt and ores.wt and their codegen facets. The coverage gap below then resumes. |
 | Last touched  | 2026-09-18                               |
 
 * Acceptance

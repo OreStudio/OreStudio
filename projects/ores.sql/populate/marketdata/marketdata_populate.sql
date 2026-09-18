@@ -43,4 +43,8 @@
 \ir ./marketdata_market_series_fomc_populate.sql
 
 \echo ''
+\echo '--- Series Classification Rules ---'
+\ir ./marketdata_series_classification_rules_populate.sql
+
+\echo ''
 \echo '=== Market Data Component Population Complete ==='

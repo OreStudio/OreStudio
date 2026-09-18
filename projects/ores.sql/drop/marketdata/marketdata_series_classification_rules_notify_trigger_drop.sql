@@ -18,16 +18,5 @@
  *
  */
 
--- Drop observations and fixings before series (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_observation_lineages_notify_trigger_drop.sql
-\ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
-\ir ./marketdata_series_classification_rules_drop.sql
+drop trigger if exists ores_marketdata_series_classification_rules_notify_trg on "ores_marketdata_series_classification_rules_tbl";
+drop function if exists ores_marketdata_series_classification_rules_notify_fn;

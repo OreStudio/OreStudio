@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,17 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_MARKETDATA_API_DOMAIN_SERIES_CLASSIFICATION_RULE_TABLE_IO_HPP
+#define ORES_MARKETDATA_API_DOMAIN_SERIES_CLASSIFICATION_RULE_TABLE_IO_HPP
 
--- Drop observations and fixings before series (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_observation_lineages_notify_trigger_drop.sql
-\ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
-\ir ./marketdata_series_classification_rules_drop.sql
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief Dumps the series_classification_rule objects to a stream in table format.
+ */
+ORES_MARKETDATA_API_EXPORT std::ostream&
+operator<<(std::ostream& s, const std::vector<series_classification_rule>& v);
+
+}
+
+#endif

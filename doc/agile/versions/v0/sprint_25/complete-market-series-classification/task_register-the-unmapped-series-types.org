@@ -492,6 +492,213 @@ seconds, read back from the run's own results file. This unit changes
 one test file and no other target, so =ores.ore.core.tests= is not
 re-run; Unit 3's run of it stands.
 
+** Unit 5a evidence
+
+The classification table is data. Its rows live in
+=ores_marketdata_series_classification_rules_tbl=, one per series type,
+and the compiled map it replaces no longer sits on the path an import
+takes.
+
+=ores.marketdata.series_classification_rule= is generated from
+=projects/ores.marketdata/modeling/ores.marketdata.series_classification_rule.org=,
+with the facets the other marketdata catalogues carry: the domain type,
+the entity, the mapper, the repository, the service, the history
+provider registrar, the event registrar, the presentation field mapper,
+the JSON and table IO, the protocol, the generator and the eventing
+integration test.
+
+The natural key is =(tenant_id, series_type, metric)=. Two codegen
+templates gained what this model needs. The eventing test template now
+matches a notification by every key part rather than by the id alone,
+because the notify trigger emits one =entity_id= per key column: a test
+that matched on the type alone would accept a notification for another
+metric of the same type. The schema template now honours
+=:skip_empty_check:=, the per-column opt-out from the =<> ''= check,
+which =metric= needs because the empty metric is a value this table
+gives a meaning to. Both changes are guarded, and the new model is the
+only model in the tree that reaches either one, so no generated file
+that already existed changes.
+
+The table carries what its siblings carry: the temporal primary key
+=(tenant_id, series_type, metric, valid_from, valid_to)=, the exclusion
+constraint over the validity range, the version and latest-row indexes,
+the insert trigger that manages the version and validates
+=asset_class_code= when it is present together with
+=series_subclass_code= and =change_reason_code=, the notify trigger, and
+the delete rule that closes the active row instead of removing it.
+
+Two columns hold what one class column could not. =asset_class_source=
+is =literal= for forty-two of the forty-three rows, and those rows read
+their class from =asset_class_code=. The forty-third is =CORRELATION=:
+its source is =correlation_operands=, its class column is null, and its
+subclass is =correlation=, because a pairwise correlation belongs to the
+two classes its operands name and to neither alone. The gating between
+the two columns is a table check, so the database refuses a
+=correlation_operands= row that names a class and a =literal= row that
+names none.
+
+=GENERIC-MD= is the one row keyed by a metric as well as a type. Its
+metric is =EQUITY_OPTION=, because the wrapper's metric slot names the
+instrument inside it, so this row is the =EQUITY_OPTION= rule reached
+by the type route and it takes the class and the subclass that route
+gives. Every other row leaves the metric empty and covers every metric
+of its type.
+
+The seed is =marketdata_series_classification_rules_populate.sql=. It
+holds the forty-three rows grouped by family, each with a description
+that says why that type takes its class and its subclass and, where the
+choice can be disputed, the corpus evidence behind it. It is idempotent
+through =on conflict ... do nothing= against the active row.
+
+The seed reproduces the compiled table it replaces. A row-by-row compare
+of the two reports the same forty-two types with the same class and the
+same subclass on every one, including the codes that name a catalogue
+row outside the fifteen the generator's array carries, such as
+=transition_probability= for =RATING= and =prepayment= for =CPR=. So
+Unit 5b can read the rows without changing any answer the classifier
+gives today, which is what makes the swap verifiable rather than merely
+plausible.
+
+A test tenant is provisioned fresh on every run, so
+=ores_iam_provision_tenant_fn= copies the classification rows into it,
+as it already did for the series key shapes. Without the copy the
+tenant's table is empty, and the reader that Unit 5b builds rejects an
+empty table, so the copy is what keeps a fresh tenant able to import.
+
+=ores.testing/sql_values_rows.hpp= is new and holds the populate-script
+scanner that =series_key_shape_seed.hpp= introduced in Unit 3. Both
+seeds read a populate script as text, so a test that passes here passes
+against the rows the loader writes. The classification seed header is
+the second user of the scanner, and the shape seed header now shares it
+instead of carrying its own copy.
+
+=the_classification_rule_seed_is_well_formed= covers the seed. It
+requires a non-empty seed, restricts the source to its two literals,
+rejects a duplicate =(series_type, metric)=, requires a subclass and a
+description, enforces the gating between source and class, and pins the
+two rows whose meaning the columns alone do not carry: =CORRELATION=
+takes =correlation_operands= and the =correlation= subclass, and
+=GENERIC-MD= is keyed by =EQUITY_OPTION= and takes =equity=.
+
+Both suites are green, and both counts are read back from the runs' own
+results files:
+
+| Suite                        | Cases | Assertions | Failures | Skips |
+|------------------------------+-------+------------+----------+-------|
+| =ores.marketdata.core.tests= |   195 |        930 |        0 |     0 |
+| =ores.ore.core.tests=        |   535 |    429,773 |        0 |     0 |
+
+The marketdata suite holds two cases more than Unit 4 left it: the seed
+check above, and the generated
+=write_series_classification_rule_publishes_nats_changed_event=, which
+writes through the repository and watches the notification arrive on
+NATS. That case is what proves the new table's notify trigger, its
+subject and its event type are wired, which every later reader of the
+table depends on.
+
+The table reached its correct ownership by repair, not by the plan's
+=compass db recreate -y -k=. It was created owned by the test DDL user
+with a null ACL, where every sibling is owned by the environment's DDL
+user and carries the five-role grant. The repair moved the table and
+its two functions to the DDL user and granted each role its usual
+rights, and the ACL then matched the sibling marketdata tables exactly.
+The recreate was declined deliberately: it drops
+=ores_dev_brave_hopper=, which another active session shares. The
+grants are prefix-based, so a fresh setup gives a new
+=ores_marketdata_*= table its service grant without a change.
+
+Of the three checks, two pass and one cannot reach a verdict here. The
+cmake source lists are in step, reported by the check itself as "All
+component_files.cmake up to date". The template tangle is clean:
+=compass build --direct codegen_templates= re-tangled 176 facet
+documents and left the four committed template files byte-identical, so
+each tangled mustache matches its org source. The codegen drift check
+exits 1, and the failure is not this unit's. Its regeneration leaves
+every file this unit commits unmodified; the exit comes from its global
+=git diff=, which cannot be empty in this worktree while another
+session holds six files dirty, among them
+=projects/ores.utility/src/convert/base64_converter.cpp=. It must be
+re-run when the worktree is clean. Nothing it can find is outstanding
+here, because the two template changes reach one model each and that
+model is the one this unit adds.
+
+** Unit 5b and 5c evidence
+
+The classifier is a value built from rows. =series_classifier= takes
+the rule rows in its constructor and holds them by type and then by
+metric, and =import_service= reads the table and passes it in. The
+compiled map is gone: =classify=, =try_classify= and
+=known_series_types= answer from the rows alone, so a type the table
+does not carry fails rather than resolving from a list in the binary.
+The header says so, and a case in the classifier suite proves it by
+asking for a type the fixture does not carry.
+
+The constructor rejects the four states a reader must never accept: an
+empty row set, which names the table and says it is unseeded; a row
+whose =asset_class_source= is neither =literal= nor
+=correlation_operands=; a =literal= row that carries no class code; and
+a =correlation_operands= row that also names one, because a reader
+would not know which of the two to record. The first is why a fresh
+tenant must receive the copy, and the other three are why a bad row
+fails the import before any series is written rather than halfway
+through it.
+
+The empty metric is the wildcard the column documents. A key whose
+metric has no row of its own takes its type's row for the empty metric,
+which is the =GENERIC-MD= route, and a row whose type and metric repeat
+replaces the earlier one.
+
+=import_service= builds the classifier on the first series that needs
+one and keeps it for the request. Both the market data path and the
+fixings path create series, so the read belongs to neither branch, and
+a request that carries neither payload never pays for it. The read
+happens once per request, not once per series.
+
+One piece of the mapping stays compiled, and it is the piece that is
+not taxonomy. =operand_asset_class= resolves a correlation operand by
+the prefix ORE gives it, =EQ-=, =FX-= and =COMM-=, and by the =-CMS-=
+a rates operand carries instead of a prefix. That is a naming rule
+about ORE's own keys, which no row of ours can state. Task 235 owns its
+documentation.
+
+The corpus suite now builds its classifier from
+=ores::testing::seed_classification_rules()=, the populate script the
+loader reads, so the rows a test classifies against are the rows an
+environment receives. Nine cases cover the value directly, from a
+fixture of four rows that no database backs: the answers and the absent
+fallback, the metric preference and the empty-metric fallback, the
+two-operand correlation with its deduplication and its empty case, the
+sorted type list, the repeated row, and the four rejections.
+
+| Suite                        | Cases | Assertions | Failures | Skips |
+|------------------------------+-------+------------+----------+-------|
+| =ores.marketdata.core.tests= |   204 |        956 |        0 |     0 |
+
+Both counts are read back from the run's own results file, and the
+suite took 37.00 seconds. Nine cases and twenty-six assertions are new
+against Unit 5a's run. The full build is green for every target, and
+this unit's change reaches one test target, so only that one is re-run
+here; the other suites were green in the run that surfaced the failures
+below.
+
+Five of those failures were the environment and not the code, and all
+five carried the unseeded-table message. A test tenant is provisioned
+fresh on every run, and the =ores_iam_provision_tenant_fn= stored in
+the database copied forty-nine tables where the file copies fifty. The
+table it did not copy was the classification rules, whose copy block
+was committed after the function was last applied, so every tenant the
+first run provisioned held no rules and the reader refused to build,
+which is the behaviour this unit gives it. =compass db status= reported
+no drift, because it measures drift in days and the two changes share a
+day; that gap is recorded for the review round. Applying the one stale
+file brought the stored function in step, and the five cases pass.
+
+The sixth failure was this unit's own. The case that requires a
+=literal= row to carry a class built its row with an empty string, and
+an empty string engages the optional rather than clearing it, so the
+row carried a class and the rejection never fired. The case now clears
+the optional, which is the state the mapper carries from a null column.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

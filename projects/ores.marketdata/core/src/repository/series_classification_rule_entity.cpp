@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,17 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.marketdata.core/repository/series_classification_rule_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
--- Drop observations and fixings before series (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_observation_lineages_notify_trigger_drop.sql
-\ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
-\ir ./marketdata_series_classification_rules_drop.sql
+namespace ores::marketdata::repository {
+
+std::ostream& operator<<(std::ostream& s, const series_classification_rule_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

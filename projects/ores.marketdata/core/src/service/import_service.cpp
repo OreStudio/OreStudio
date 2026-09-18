@@ -28,6 +28,7 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
@@ -40,6 +41,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <rfl/enums.hpp>
 #include <set>
 #include <sstream>
@@ -133,6 +135,12 @@ import_service::import(const messaging::import_market_data_request& req) {
     using SeriesKey = std::tuple<std::string, std::string, std::string>;
     std::map<SeriesKey, boost::uuids::uuid> series_cache;
 
+    // Read the classification rules once for the whole batch, on the first
+    // series that needs them. Both the market data and the fixings paths
+    // create series, so the read belongs to neither branch; a request that
+    // carries neither payload never pays for it.
+    std::optional<core::series_classifier> classifier;
+
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
                                      const std::string& qualifier) -> boost::uuids::uuid {
@@ -150,7 +158,10 @@ import_service::import(const messaging::import_market_data_request& req) {
         }
 
         // Create a new series.
-        const auto cl = core::series_classifier::classify(series_type, metric, qualifier);
+        if (!classifier)
+            classifier.emplace(
+                repository::series_classification_rule_repository{}.read_latest(ctx_));
+        const auto cl = classifier->classify(series_type, metric, qualifier);
         domain::market_series s;
         s.id = gen();
         s.tenant_id = ctx_.tenant_id();

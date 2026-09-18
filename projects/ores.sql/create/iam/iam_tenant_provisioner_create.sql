@@ -892,6 +892,28 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % ORE series key shapes', v_copied_count;
 
+    -- Series classification rules (the taxonomy: which asset classes and
+    -- which series subclass each ORE series type maps onto). Every tenant
+    -- reads this table to build its classifier, and the reader rejects an
+    -- empty table, so a tenant without these rows cannot import market data
+    -- at all.
+    insert into ores_marketdata_series_classification_rules_tbl (
+        series_type, metric, tenant_id, version, asset_class_source, asset_class_code,
+        series_subclass_code, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.series_type, t.metric, v_tenant_id, 0, t.asset_class_source, t.asset_class_code,
+        t.series_subclass_code, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_marketdata_series_classification_rules_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % series classification rules', v_copied_count;
+
     -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================

@@ -31,5 +31,7 @@
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_feed_bindings_create.sql
 \ir ./marketdata_feed_bindings_notify_trigger_create.sql
+\ir ./marketdata_series_classification_rules_create.sql
+\ir ./marketdata_series_classification_rules_notify_trigger_create.sql
 
 \ir ./marketdata_publish_from_dq_create.sql

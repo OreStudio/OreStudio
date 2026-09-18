@@ -88,9 +88,10 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{/domain_entity.has_gist_exclusion}}
 {{/domain_entity.sql.hypertable}}
 {{/domain_entity.has_tenant_in_pk}}
+{{! A text key column normally rejects the empty string. A model whose column gives the empty string a meaning of its own -- a wildcard metric, say -- declares :skip_empty_check: on that column to suppress the check. }}
     check ("valid_from" < "valid_to"){{#domain_entity.primary_key.columns}}{{#is_uuid}}{{^skip_uuid_check}},
-    check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}},
-    check ("{{column}}" <> ''){{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
+    check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}}{{^skip_empty_check}},
+    check ("{{column}}" <> ''){{/skip_empty_check}}{{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}
 );
 {{#domain_entity.has_multiple_natural_keys}}

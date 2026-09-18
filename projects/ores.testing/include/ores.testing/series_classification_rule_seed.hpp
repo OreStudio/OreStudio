@@ -17,24 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_SERIES_KEY_SHAPE_SEED_HPP
-#define ORES_TESTING_SERIES_KEY_SHAPE_SEED_HPP
+#ifndef ORES_TESTING_SERIES_CLASSIFICATION_RULE_SEED_HPP
+#define ORES_TESTING_SERIES_CLASSIFICATION_RULE_SEED_HPP
 
-#include "ores.ore.api/domain/series_key_shape.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/sql_values_rows.hpp"
 #include <cstddef>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::testing {
 
 /**
- * @brief The series key shape rows as the populate script writes them, read
- *        from the script itself rather than restated in C++.
+ * @brief The series classification rule rows as the populate script writes
+ *        them, read from the script itself rather than restated in C++.
  *
  * A test that restates the seed would pass after the seed changed, which is
  * the drift this reads the file to catch. The script is the same one the
@@ -44,44 +44,45 @@ namespace ores::testing {
  * Parsed once per process and shared; the file does not change while a test
  * binary runs.
  */
-inline const std::vector<ores::ore::domain::series_key_shape>& seed_shapes() {
-    static const auto shapes = [] {
+inline const std::vector<ores::marketdata::domain::series_classification_rule>&
+seed_classification_rules() {
+    static const auto rules = [] {
         const auto path = ores::testing::project_root::resolve(
-            "projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql");
+            "projects/ores.sql/populate/marketdata/"
+            "marketdata_series_classification_rules_populate.sql");
         const auto sql = ores::platform::filesystem::file::read_content(path);
 
         // Column positions of one `values` row, as the script writes them.
         constexpr std::size_t series_type_column = 1;
-        constexpr std::size_t qualifier_depth_column = 3;
-        constexpr std::size_t has_point_dimension_column = 4;
-        constexpr std::size_t default_point_column = 5;
-        constexpr std::size_t min_columns = 6;
+        constexpr std::size_t metric_column = 2;
+        constexpr std::size_t asset_class_source_column = 4;
+        constexpr std::size_t asset_class_code_column = 5;
+        constexpr std::size_t series_subclass_code_column = 6;
+        constexpr std::size_t description_column = 7;
+        constexpr std::size_t min_columns = 8;
 
-        std::vector<ores::ore::domain::series_key_shape> result;
+        std::vector<ores::marketdata::domain::series_classification_rule> result;
         for (const auto& columns : sql_values_rows(sql, path.string())) {
             if (columns.size() < min_columns)
                 throw std::invalid_argument("row with " + std::to_string(columns.size()) +
                                             " columns in " + path.string() +
                                             ", expected at least " + std::to_string(min_columns));
 
-            ores::ore::domain::series_key_shape shape;
-            shape.series_type = columns[series_type_column];
-            shape.qualifier_depth = std::stoi(columns[qualifier_depth_column]);
-            shape.has_point_dimension = columns[has_point_dimension_column] == "true";
-            shape.default_point = columns[default_point_column];
-            result.push_back(std::move(shape));
+            ores::marketdata::domain::series_classification_rule rule;
+            rule.series_type = columns[series_type_column];
+            rule.metric = columns[metric_column];
+            rule.asset_class_source = columns[asset_class_source_column];
+            // Null is the honest "no class here" for a correlation rule, and
+            // the script writes the keyword rather than an empty string.
+            if (columns[asset_class_code_column] != "null")
+                rule.asset_class_code = columns[asset_class_code_column];
+            rule.series_subclass_code = columns[series_subclass_code_column];
+            rule.description = columns[description_column];
+            result.push_back(std::move(rule));
         }
         return result;
     }();
-    return shapes;
-}
-
-/**
- * @brief The key grammar a test gets when it has no database to read one from.
- */
-inline const ores::ore::market::series_key_registry& seed_registry() {
-    static const ores::ore::market::series_key_registry registry{seed_shapes()};
-    return registry;
+    return rules;
 }
 
 }

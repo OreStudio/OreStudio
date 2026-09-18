@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.database.lib
         ores.utility.lib
         ores.database.lib
+        ores.marketdata.api.lib
         ores.ore.core.lib
     PRIVATE
         ores.platform.lib

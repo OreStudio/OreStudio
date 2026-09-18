@@ -55,10 +55,15 @@ the org dataset pipeline]].
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Plan step 1 done: the committed populate SQL is read. |
+| Now          | Image family done: the archetype, its enrichment, the manifest provenance and the flag retirement are committed. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the three archetype families (plan step 2). |
+| Next         | The ip2country family, then FPML.      |
 | Last touched | 2026-09-18                               |
+
+The bar is semantic equivalence, not byte-identical output: the same rows
+with the same values, however the SQL is written. The user set this bar,
+and it is what makes the six metadata-core archetypes usable at all, since
+they emit a different SQL shape from the committed files.
 
 * Acceptance
 

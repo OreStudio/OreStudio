@@ -32,6 +32,9 @@
             "as_of_date": "2025-01-21",
             "license": "PDDL v1.0",
             "artefact_type": "ip2country",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
             "tag_code": "geolocation",
             "tag_description": "IP address geolocation data"
         }

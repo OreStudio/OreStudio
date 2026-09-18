@@ -178,8 +178,10 @@ that exercises the scaffold profiles end-to-end.
 - =src/codegen/cli.py= — the CLI entry point.
 - =src/doc_generate.py= — the org-document generator.
 - =src/fpml_parser.py= — FPML Genericode XML → JSON converter.
-- =src/iso_generate_metadata_sql.py=, =src/images_generate_sql.py=,
-  =src/lei_extract_subset.py= — specialised data importers.
+- =src/images_generate_sql.py=, =src/lei_extract_subset.py= —
+  specialised data importers.
+- =external/iso/iso_generate_metadata_sql.py= — the ISO importer, kept
+  beside the dataset it generates from.
 
 * Dependencies
 

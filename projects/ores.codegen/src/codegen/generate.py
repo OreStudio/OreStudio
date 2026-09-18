@@ -416,13 +416,18 @@ def _generate_single(
             if not unit["data_source"]:
                 log.error("archetype %s carries no #+data_source:", template_name)
                 return 1
-            source_path = dataset_dir / unit["data_source"]
-            if not source_path.exists():
-                log.error("data_source not found for archetype %s: %s",
-                          template_name, source_path)
-                return 1
+            # An archetype may name several payloads: its own artefact data and
+            # the manifest that describes the dataset. The first is the model;
+            # the rest load alongside it under their own stems.
+            source_paths = [dataset_dir / name
+                            for name in unit["data_source"].split()]
+            for source_path in source_paths:
+                if not source_path.exists():
+                    log.error("data_source not found for archetype %s: %s",
+                              template_name, source_path)
+                    return 1
             generate_from_model(
-                str(source_path),
+                str(source_paths[0]),
                 data_dir,
                 templates_dir,
                 output_path.parent,
@@ -432,6 +437,7 @@ def _generate_single(
                 prefix=dataset_prefix,
                 target_template=template_name,
                 target_output=output_path.name,
+                extra_model_paths=[str(p) for p in source_paths[1:]],
             )
         else:
             result = generate_from_model(

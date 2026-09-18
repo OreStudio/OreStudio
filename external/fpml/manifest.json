@@ -30,6 +30,10 @@
             "business_context": "Coding scheme metadata for FpML standards",
             "license": "FpML License",
             "artefact_type": "coding_schemes",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
+            "as_of_date": "2026-01-23",
             "tag_code": "coding_scheme",
             "tag_description": "FpML coding scheme definitions"
         }

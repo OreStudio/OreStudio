@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 3733242C-846A-45D1-8A9B-BD4D475CCC5A
+:END:
+#+title: ores.sql.populate.image_artefact
+#+description: Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}= inlines one SVG document per ={{key}}=, read from the directory the manifest's source declares.
+#+type: archetype
+#+output: projects/ores.sql/populate/{dataset}/{prefix}_images_artefact_populate.sql
+#+data_source: images.json manifest.json
+#+facet: ores.sql.populate
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}=
+inlines one SVG document per ={{key}}=, read from the directory the
+manifest's source declares.
+
+This archetype reads two payloads, both siblings in the dataset's own
+directory. =images.json= is its own: one ={"key", "description"}= entry per
+image, in the order the artefact rows are inserted. =manifest.json= is the
+dataset's metadata, and it carries the two things the payload does not:
+which dataset this is, and where the SVG documents live.
+
+The enrichment in =codegen/core.py= joins them. It selects the manifest
+dataset whose =artefact_type= is =images=, takes the directory from that
+manifest's first source =data_dir=, resolves it against the manifest's own
+directory, and reads one =.svg= document per key listed in the payload. It
+also translates the manifest's =subject_area= and =domain= to the
+=subject_area_name= and =domain_name= forms used here.
+
+The SVG documents stay the single source of truth, in the source tree, and
+are read from it at generation time only. The generated script cannot read
+them at run time, because it inlines them, so nothing is deferred there.
+Nothing about them is checked in twice: the payload describes them, and the
+documents themselves are not copied into the dataset directory.
+
+A key with no =.svg= document beside it fails the generation. That is
+deliberate. The alternative, walking the directory, would emit a row for
+every file present and silently ignore a payload entry whose document went
+missing.
+
+The template resolves the dataset row by =(name, subject_area_name,
+domain_name)= rather than by =code=, because those three name the row the
+table enforces uniqueness on.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_image_artefact_populate.mustache=.
+
+#+begin_src mustache :tangle sql_image_artefact_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.populate.image_artefact.org. Edit the org source. }}
+{{! Template to generate SQL for DQ image artefacts }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_image_artefact_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{model_name}} Image Artefacts
+-- =============================================================================
+
+\echo '--- {{model_name}} Image Artefacts ---'
+
+DO $$
+declare
+    v_dataset_id uuid;
+begin
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where name = '{{image_artefact.dataset.name}}'
+      and subject_area_name = '{{image_artefact.dataset.subject_area_name}}'
+      and domain_name = '{{image_artefact.dataset.domain_name}}'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name="{{image_artefact.dataset.name}}", subject_area="{{image_artefact.dataset.subject_area_name}}", domain="{{image_artefact.dataset.domain_name}}"';
+    end if;
+
+    delete from ores_dq_images_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+{{#image_artefact.items}}
+    insert into ores_dq_images_artefact_tbl (
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
+    ) values (
+        v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0, '{{key}}', '{{description}}', $svg${{{svg}}}$svg$
+    );
+{{/image_artefact.items}}
+
+    raise debug 'Populated % images for dataset: %', {{image_artefact.count}}, '{{image_artefact.dataset.name}}';
+end $$;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Images' as entity, count(*) as count
+from ores_dq_images_artefact_tbl where dataset_id in (
+    select id from ores_dq_datasets_tbl
+    where name = '{{image_artefact.dataset.name}}'
+      and subject_area_name = '{{image_artefact.dataset.subject_area_name}}'
+      and domain_name = '{{image_artefact.dataset.domain_name}}'
+  )
+order by entity;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

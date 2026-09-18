@@ -4,19 +4,27 @@ Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_data_scope.py
 
-Covers the three seams the data-scope path adds on top of the physical-space
-graph: the dataset model loader, the resolve_output_path ``dataset`` branch,
-and resolve_targets threading each archetype's ``#+data_source:`` through to
-its unit. The fixtures are written to a tmp directory, so the tests do not
-depend on any dataset shipped in the tree.
+Covers the seams the data-scope path adds on top of the physical-space graph:
+the dataset model loader, the resolve_output_path ``dataset`` branch,
+resolve_targets threading each archetype's ``#+data_source:`` through to its
+unit, and the artefact enrichments that join an archetype's own payload to the
+manifest describing its dataset. The fixtures are written to a tmp directory,
+so the tests do not depend on any dataset shipped in the tree.
 """
+import json
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
-from codegen.core import resolve_output_path  # noqa: E402
+import pytest  # noqa: E402
+
+from codegen.core import (  # noqa: E402
+    _build_image_artefact,
+    _build_ip2country_artefact,
+    resolve_output_path,
+)
 from codegen.org_loader import load_org_dataset_model  # noqa: E402
 from codegen.generate import resolve_targets  # noqa: E402
 
@@ -69,11 +77,228 @@ def test_resolve_targets_threads_data_source_and_master_name(tmp_path):
     assert model_data["dataset"]["prefix"] == "demo"
 
     by_output = {Path(u["output"]).name: u for u in units}
-    # The facet opt-in (drawer :ores.sql.populate.enabled:) enables all 9
-    # archetypes; each carries its dataset-relative payload.
+    # The facet opt-in (drawer :ores.sql.populate.enabled:) enables every
+    # archetype in the facet; each carries its dataset-relative payload.
     assert by_output["demo_catalog_populate.sql"]["data_source"] == "catalogs.json"
-    assert by_output["demo_flag_populate.sql"]["data_source"] == "country_currency.json"
+    assert by_output["demo_currency_populate.sql"]["data_source"] == "country_currency.json"
     # The master include is the standardised {prefix}_populate.sql, sourced
     # from the batch manifest.
     assert "demo_populate.sql" in by_output
     assert by_output["demo_populate.sql"]["data_source"] == "model.json"
+
+
+def make_image_dataset(tmp_path, items, svgs, data_dir="icons"):
+    """Write a dataset directory: the image payload, its manifest, and the SVGs.
+
+    The layout mirrors a real dataset, where the model and its payloads sit
+    together, so the archetype reaches its own payload and the manifest that
+    describes the dataset from one directory.
+    """
+    dataset_dir = tmp_path / "projects" / "ores.seeder" / "datasets" / "demo"
+    svg_dir = dataset_dir / data_dir
+    svg_dir.mkdir(parents=True)
+    for key, body in svgs.items():
+        (svg_dir / f"{key}.svg").write_text(body, encoding="utf-8")
+
+    manifest = {
+        "name": "Demo",
+        "sources": [{"name": "Demo Source", "data_dir": data_dir}],
+        "datasets": [{
+            "name": "Demo Images",
+            "subject_area": "Demo Subject Area",
+            "domain": "Reference Data",
+            "methodology": "Demo Source",
+            "artefact_type": "images",
+        }],
+    }
+    (dataset_dir / "manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8")
+    (dataset_dir / "images.json").write_text(
+        json.dumps([{"key": k, "description": d} for k, d in items]),
+        encoding="utf-8")
+    return dataset_dir
+
+
+def test_image_artefact_reads_svgs_in_key_order_and_translates_names(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path,
+        items=[("ad", "Flag of ad"), ("gb", "Flag of gb")],
+        svgs={"ad": "<svg id='ad'/>", "gb": "  <svg id='gb'/>\n"},
+    )
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    artefact = _build_image_artefact(
+        items, manifest, dataset_dir / "manifest.json")
+
+    # subject_area/domain are the manifest's names; the archetype reads the
+    # _name forms, so the enrichment translates them.
+    assert artefact["dataset"] == {
+        "name": "Demo Images",
+        "subject_area_name": "Demo Subject Area",
+        "domain_name": "Reference Data",
+    }
+    assert artefact["count"] == 2
+    # The payload's order is the insert order, and the descriptions come from
+    # it rather than from a template the manifest would have to carry.
+    assert [i["key"] for i in artefact["items"]] == ["ad", "gb"]
+    assert [i["description"] for i in artefact["items"]] == [
+        "Flag of ad", "Flag of gb"]
+    # The whitespace around an SVG document is stripped, matching the SQL the
+    # legacy generator emitted.
+    assert artefact["items"][1]["svg"] == "<svg id='gb'/>"
+
+
+def test_image_artefact_is_absent_when_no_dataset_declares_images(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["datasets"][0]["artefact_type"] = "coding_schemes"
+    assert _build_image_artefact(
+        items, manifest, dataset_dir / "manifest.json") is None
+
+
+def test_image_artefact_rejects_a_missing_source_dir(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["sources"][0]["data_dir"] = "absent"
+    with pytest.raises(FileNotFoundError, match="absent"):
+        _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
+
+
+def test_image_artefact_rejects_a_payload_entry_with_no_svg(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    items.append({"key": "zz", "description": "Flag of zz"})
+    with pytest.raises(FileNotFoundError, match="zz.svg"):
+        _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
+
+
+def test_resolve_targets_wires_the_image_artefact_to_both_payloads(tmp_path):
+    doc = make_dataset(tmp_path, payloads=("images.json", "manifest.json"))
+    units, _, _ = resolve_targets(doc, CODEGEN_BASE, address="ores.sql.populate")
+    by_output = {Path(u["output"]).name: u for u in units}
+    # Both names, in declaration order: the payload first, the manifest that
+    # describes the dataset second.
+    assert by_output["demo_images_artefact_populate.sql"]["data_source"] == \
+        "images.json manifest.json"
+
+
+def make_ip2country_manifest(tmp_path, data_file="ip2country-v4-u32.tsv"):
+    """Write a repo-shaped manifest whose dataset declares an ip2country artefact."""
+    (tmp_path / ".git").mkdir(exist_ok=True)
+    manifest_dir = tmp_path / "external" / "ip2country"
+    manifest_dir.mkdir(parents=True)
+    (manifest_dir / data_file).write_text("0\t1\tNone\n", encoding="utf-8")
+
+    manifest = {
+        "name": "IP to Country Mapping",
+        "sources": [{"name": "iptoasn.com", "data_file": data_file}],
+        "datasets": [{
+            "name": "IP to Country IPv4 Ranges",
+            "subject_area": "IP Address to Country maps",
+            "domain": "Reference Data",
+            "methodology": "iptoasn.com",
+            "artefact_type": "ip2country",
+        }],
+    }
+    manifest_path = manifest_dir / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    return manifest_path
+
+
+def test_ip2country_artefact_carries_dataset_names_and_source_path(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    artefact = _build_ip2country_artefact(
+        json.loads(manifest_path.read_text()), manifest_path)
+
+    assert artefact["dataset"] == {
+        "name": "IP to Country IPv4 Ranges",
+        "subject_area_name": "IP Address to Country maps",
+        "domain_name": "Reference Data",
+    }
+    # The path is repository-relative, because the generated script's own
+    # \copy resolves it against the psql client's working directory.
+    assert artefact["data_file"] == "external/ip2country/ip2country-v4-u32.tsv"
+
+
+def test_ip2country_artefact_is_absent_when_no_dataset_declares_it(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["datasets"][0]["artefact_type"] = "images"
+    assert _build_ip2country_artefact(manifest, manifest_path) is None
+
+
+def test_ip2country_artefact_rejects_a_manifest_without_a_data_file(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["sources"] = [{"name": "iptoasn.com"}]
+    with pytest.raises(ValueError, match="no source with a data_file"):
+        _build_ip2country_artefact(manifest, manifest_path)
+
+
+def test_resolve_targets_wires_the_ip2country_artefact_to_the_manifest(tmp_path):
+    doc = make_dataset(tmp_path, payloads=("manifest.json",))
+    units, _, _ = resolve_targets(doc, CODEGEN_BASE, address="ores.sql.populate")
+    by_output = {Path(u["output"]).name: u for u in units}
+    assert by_output["demo_artefact_populate.sql"]["data_source"] == "manifest.json"
+
+
+def test_image_artefact_escapes_the_values_the_template_quotes(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ci", "Flag of Cote d'Ivoire")], svgs={"ci": "<svg/>"})
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["datasets"][0]["name"] = "Cote d'Ivoire Flags"
+    artefact = _build_image_artefact(
+        json.loads((dataset_dir / "images.json").read_text()),
+        manifest, dataset_dir / "manifest.json")
+
+    # The template supplies the surrounding quotes, so an apostrophe has to
+    # double rather than close the literal early.
+    assert artefact["items"][0]["description"] == "Flag of Cote d''Ivoire"
+    assert artefact["dataset"]["name"] == "Cote d''Ivoire Flags"
+
+
+def test_image_artefact_reads_the_source_its_dataset_names(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg id='named'/>"})
+    other = dataset_dir / "other"
+    other.mkdir()
+    (other / "ad.svg").write_text("<svg id='first'/>", encoding="utf-8")
+
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    # Both sources carry a data_dir and the one listed first is not the one the
+    # dataset names, so the link has to decide, not the order.
+    manifest["sources"].insert(0, {"name": "Other Source", "data_dir": "other"})
+    artefact = _build_image_artefact(
+        json.loads((dataset_dir / "images.json").read_text()),
+        manifest, dataset_dir / "manifest.json")
+
+    assert artefact["items"][0]["svg"] == "<svg id='named'/>"
+
+
+def test_image_artefact_rejects_a_dataset_naming_no_source(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    manifest["datasets"][0]["methodology"] = "Absent Source"
+    with pytest.raises(ValueError, match="Absent Source"):
+        _build_image_artefact(
+            json.loads((dataset_dir / "images.json").read_text()),
+            manifest, dataset_dir / "manifest.json")
+
+
+def test_ip2country_artefact_escapes_the_values_the_template_quotes(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["datasets"][0]["name"] = "Ranges d'Ivoire"
+    manifest["sources"][0]["data_file"] = "ranges d'Ivoire.tsv"
+
+    artefact = _build_ip2country_artefact(manifest, manifest_path)
+
+    assert artefact["dataset"]["name"] == "Ranges d''Ivoire"
+    assert artefact["data_file"] == "external/ip2country/ranges d''Ivoire.tsv"

@@ -39,6 +39,9 @@
             "as_of_date": "2024-01-15",
             "license": "MIT License",
             "artefact_type": "images",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
             "tag_code": "cryptocurrency",
             "tag_description": "Cryptocurrency icon images"
         },
@@ -56,6 +59,9 @@
             "as_of_date": "2026-01-20",
             "license": "Public Domain",
             "artefact_type": "currencies",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
             "tag_code": "cryptocurrency",
             "tag_description": "Cryptocurrency reference data (~12K coins)",
             "dependencies": [
@@ -76,6 +82,9 @@
             "as_of_date": "2026-01-20",
             "license": "Public Domain",
             "artefact_type": "currencies",
+            "origin_code": "Primary",
+            "nature_code": "Actual",
+            "treatment_code": "Raw",
             "tag_code": "cryptocurrency",
             "tag_description": "Top 100 cryptocurrencies by market cap",
             "dependencies": [

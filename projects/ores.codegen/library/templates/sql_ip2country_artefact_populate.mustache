@@ -1,0 +1,83 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.populate.ip2country.org. Edit the org source. }}
+{{! Template to generate SQL for DQ IP to country artefacts }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_ip2country_artefact_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{model_name}} IP to Country Artefacts
+-- =============================================================================
+
+\echo '--- {{model_name}} IP to Country Artefacts ---'
+
+-- The manifest declares the source; -v data_file=... overrides it.
+\if :{?data_file}
+\else
+\set data_file '{{ip2country.data_file}}'
+\endif
+
+drop table if exists staging_ip2country_import;
+
+create temp table staging_ip2country_import (
+    range_start bigint,
+    range_end bigint,
+    country_code text
+);
+
+\echo 'Loading IP ranges...'
+\copy staging_ip2country_import from :'data_file' with (format text, delimiter E'\t')
+
+DO $$
+declare
+    v_dataset_id uuid;
+begin
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where name = '{{ip2country.dataset.name}}'
+      and subject_area_name = '{{ip2country.dataset.subject_area_name}}'
+      and domain_name = '{{ip2country.dataset.domain_name}}'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name="{{ip2country.dataset.name}}", subject_area="{{ip2country.dataset.subject_area_name}}", domain="{{ip2country.dataset.domain_name}}"';
+    end if;
+
+    delete from ores_dq_ip2country_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_ip2country_artefact_tbl (
+        dataset_id, tenant_id, range_start, range_end, country_code
+    )
+    select
+        v_dataset_id,
+        ores_utility_system_tenant_id_fn(),
+        range_start,
+        range_end,
+        country_code
+    from staging_ip2country_import;
+
+    raise debug 'Populated % ranges for dataset: %', (select count(*) from staging_ip2country_import), '{{ip2country.dataset.name}}';
+end $$;
+
+drop table staging_ip2country_import;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select
+    count(*) as total_ranges,
+    count(distinct country_code) as unique_countries,
+    count(*) filter (where country_code = 'None') as unrouted_ranges
+from ores_dq_ip2country_artefact_tbl where dataset_id in (
+    select id from ores_dq_datasets_tbl
+    where name = '{{ip2country.dataset.name}}'
+      and subject_area_name = '{{ip2country.dataset.subject_area_name}}'
+      and domain_name = '{{ip2country.dataset.domain_name}}'
+  );

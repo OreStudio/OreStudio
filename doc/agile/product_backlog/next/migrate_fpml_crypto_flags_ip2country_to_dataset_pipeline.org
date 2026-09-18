@@ -38,15 +38,15 @@ old templates and generators be deleted.
    =:ores.sql.populate.enabled: true= drawer.
 2. Translate each =manifest.json= into the payload the archetypes read
    (=catalogs.json=, =datasets.json=, =tags.json=,
-   =methodologies.json=, =dataset_dependencies.json=). The field names
+   =methodologies.json=; dependencies ride on =datasets.json=). Names
    differ: =subject_area= vs =subject_area_name=, =catalog= vs
    =catalog_name=, =coding_scheme= vs =coding_scheme_code=,
    =source_system= vs =source_system_id=, =license= vs
    =license_info=, =artefact_type= vs =asset_type=.
-3. Add the missing archetypes: image artefacts (crypto icons, flags),
-   the ip2country artefact plus its TSV import, and FPML per-entity
-   refdata (22 entities, dataset plus artefact each) with coding
-   schemes.
+3. The missing archetypes are [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the
+   four-dataset migration needs]]: image artefacts, the ip2country
+   artefact plus TSV import, and FPML per-entity refdata. This capture
+   depends on that task and does not repeat its work.
 4. Delete the old templates, the four generators and the stale
    =ores.codegen/models/= references once the new output is
    byte-identical.

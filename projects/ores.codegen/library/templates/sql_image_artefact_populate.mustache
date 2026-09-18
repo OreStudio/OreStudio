@@ -1,0 +1,59 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.populate.image_artefact.org. Edit the org source. }}
+{{! Template to generate SQL for DQ image artefacts }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_image_artefact_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{model_name}} Image Artefacts
+-- =============================================================================
+
+\echo '--- {{model_name}} Image Artefacts ---'
+
+DO $$
+declare
+    v_dataset_id uuid;
+begin
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where name = '{{image_artefact.dataset.name}}'
+      and subject_area_name = '{{image_artefact.dataset.subject_area_name}}'
+      and domain_name = '{{image_artefact.dataset.domain_name}}'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name="{{image_artefact.dataset.name}}", subject_area="{{image_artefact.dataset.subject_area_name}}", domain="{{image_artefact.dataset.domain_name}}"';
+    end if;
+
+    delete from ores_dq_images_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+{{#image_artefact.items}}
+    insert into ores_dq_images_artefact_tbl (
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
+    ) values (
+        v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0, '{{key}}', '{{description}}', $svg${{{svg}}}$svg$
+    );
+{{/image_artefact.items}}
+
+    raise debug 'Populated % images for dataset: %', {{image_artefact.count}}, '{{image_artefact.dataset.name}}';
+end $$;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Images' as entity, count(*) as count
+from ores_dq_images_artefact_tbl where dataset_id in (
+    select id from ores_dq_datasets_tbl
+    where name = '{{image_artefact.dataset.name}}'
+      and subject_area_name = '{{image_artefact.dataset.subject_area_name}}'
+      and domain_name = '{{image_artefact.dataset.domain_name}}'
+  )
+order by entity;

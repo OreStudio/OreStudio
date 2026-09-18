@@ -8,7 +8,7 @@
 #+filetags: :entity-classification-drift-reporting:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-populate-reference-drift-check
-#+pr:
+#+pr: 2103
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2103][#2103]] | [ores.codegen] Add a populate reference drift check |
 
 * Review
 

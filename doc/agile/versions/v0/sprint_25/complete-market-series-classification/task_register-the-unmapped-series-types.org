@@ -33,9 +33,9 @@ one series with many points instead of many single-observation series.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Unit 2 done: =series_key_registry= is a value built from the rows, all green. |
+| Now          | Unit 3 done: the registry is the only grammar, the compiled table is gone, all green. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit 3: migrate the parser and the two =default_point_for= call sites. |
+| Next         | Unit 4: the corpus walk built from the seed, the table-against-seed check, and the classifier equality check. |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -303,6 +303,63 @@ run recorded here. The other seventy-two suites are expected to be
 unaffected, because the deprecated free functions still carry the old
 behaviour, but the unit's evidence rests on the one suite that the
 change can reach.
+
+** Unit 3 evidence
+
+The migration is complete and the compiled table is gone.
+=series_key_registry.cpp= loses 167 lines holding the type-to-shape map,
+=series_key_registry.hpp= loses the three deprecated free functions, and
+no caller can reach a compiled grammar any more.
+
+=parse_market_data= takes the registry by const reference.
+=import_service= builds one per batch from
+=series_key_shape_repository{}.read_latest(ctx_)=, next to the parse
+call, so a fixings-only import never pays for the read.
+=feed_ingest_loop= builds one in =start()= before the subscription
+exists and holds it in an =optional=; the tick path then reads it with
+no lock and no database call. An empty optional leaves the point empty,
+which is the answer an uncatalogued type already gets.
+
+The tests needed a grammar with no database behind it, so
+=ores.testing/series_key_shape_seed.hpp= reads
+=ore_series_key_shapes_populate.sql= and builds a registry from it. It
+parses the script's own text, so a test that passes here passes against
+the rows the loader writes, and a row that drifts in SQL fails the test
+that depends on it. =ores.testing= links =ores.ore.core.lib= to host it.
+
+A test tenant is provisioned fresh on every run, so
+=ores_iam_provision_tenant_fn= now copies =ores_ore_series_key_shapes_tbl=
+into it. Without that copy the tenant's table is empty, the registry
+constructor throws, and every import fails. The function was installed
+into the test database with =compass db sql -u ddl -f=, because
+=compass db setup= runs a bare =create database= that fails on an
+existing one.
+
+=ores.marketdata.core.tests= is green: 191 cases, no failure, 21.64
+seconds, including the three corpus cases that failed before.
+=ores.ore.core.tests= is green: 535 cases, no failure, 535.88 seconds.
+Both counts are read back from the runs' own results files.
+
+The corpus census now runs. It reads 107,947 distinct keys across 41
+series types in 91 files out of 3,528 walked, with none unreadable.
+That is the figure the Notes recorded from the manual survey, reached
+this time through =parse_market_data= itself, so the survey and the
+reader agree. The test comment's 107,951 across 42 in 95 does not, and
+the reconciliation belongs to Unit 4.
+
+One defect was found and fixed on the way, and it had hidden the whole
+walk. =seed_shapes()= located its =values= keyword and then started the
+row scan at the offset after the newline instead of after the keyword,
+so the first character it read was the =v= of =values=, the guard
+rejected it, and the function threw on the first iteration. Every test
+that built a registry failed with =no shape rows found in ...=, which is
+why the census read zero and why the ore core suite was red. The corpus
+test also built the seed inside its per-file =catch=, so the throw was
+swallowed once per file and an empty census looked like a corpus with no
+market data rather than a seed that could not be read. The seed is built
+outside that =catch= now, and the census reports files seen and files
+unreadable, so a walk that reads nothing cannot print the same line as a
+corpus that carries nothing.
 
 * Test Scenarios
 

@@ -871,6 +871,27 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % badge definitions', v_copied_count;
 
+    -- ORE series key shapes (the ORE key grammar: how a key splits into a
+    -- qualifier and a point). Every tenant reads this table to build its key
+    -- registry, and the reader rejects an empty table, so a tenant without
+    -- these rows cannot import market data at all.
+    insert into ores_ore_series_key_shapes_tbl (
+        series_type, tenant_id, version, qualifier_depth, has_point_dimension,
+        default_point, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.series_type, v_tenant_id, 0, t.qualifier_depth, t.has_point_dimension,
+        t.default_point, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_ore_series_key_shapes_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % ORE series key shapes', v_copied_count;
+
     -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================

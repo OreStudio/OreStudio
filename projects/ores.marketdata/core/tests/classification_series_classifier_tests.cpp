@@ -21,6 +21,7 @@
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/series_key_shape_seed.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <map>
@@ -77,6 +78,12 @@ struct corpus_survey {
     /// Keyed by the verbatim key, so a key repeated across files collapses.
     std::map<std::string, corpus_entry> entries;
     std::set<std::string> parsed_files;
+    /// Files the walk reached, could not read, and the first such error.
+    /// Without these a walk that reads nothing reports the same empty census
+    /// as a corpus that carries nothing.
+    std::size_t files_seen = 0;
+    std::size_t unreadable_files = 0;
+    std::string first_read_error;
 };
 
 /// One walk of the corpus, shared by every case in this file.
@@ -88,18 +95,26 @@ const corpus_survey& survey() {
         for (const auto& dir_entry : std::filesystem::recursive_directory_iterator(root)) {
             if (!dir_entry.is_regular_file())
                 continue;
+            ++s.files_seen;
 
             const auto path = dir_entry.path();
             std::string content;
             try {
                 content = ores::platform::filesystem::file::read_content(path);
-            } catch (const std::exception&) {
+            } catch (const std::exception& ex) {
+                ++s.unreadable_files;
+                if (s.first_read_error.empty())
+                    s.first_read_error = path.string() + ": " + ex.what();
                 continue;
             }
 
+            // Outside the try: a seed that cannot be read is a broken test,
+            // not a file that fails to parse, and inside the catch below it
+            // would be swallowed once per corpus file.
+            const auto& registry = ores::testing::seed_registry();
             std::istringstream in{content};
             try {
-                for (const auto& d : ores::ore::market::parse_market_data(in)) {
+                for (const auto& d : ores::ore::market::parse_market_data(in, registry)) {
                     s.entries[d.key] = corpus_entry{d.key, d.series_type, d.metric, d.qualifier};
                     s.parsed_files.insert(path.string());
                 }
@@ -137,8 +152,16 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
 
     // Reported on a passing run too, so the census is visible to whoever
     // tightens the floors above.
-    WARN("corpus census: " << entries.size() << " distinct keys, " << distinct_types().size()
-                           << " series types, " << survey().parsed_files.size() << " parsed files");
+    std::ostringstream census;
+    census << "corpus census: " << entries.size() << " distinct keys, " << distinct_types().size()
+           << " series types, " << survey().parsed_files.size() << " parsed files of "
+           << survey().files_seen << " seen, " << survey().unreadable_files << " unreadable";
+    // Named only when the walk found nothing. A healthy walk parses the XML
+    // majority into nothing by design, and those messages would drown the
+    // census; an empty walk is the case where one of them is the answer.
+    if (entries.empty() && !survey().first_read_error.empty())
+        census << "; first read error: " << survey().first_read_error;
+    WARN(census.str());
     REQUIRE(entries.size() >= min_distinct_keys);
     REQUIRE(survey().parsed_files.size() >= min_parsed_files);
 

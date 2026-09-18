@@ -32,6 +32,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/series_key_registry.hpp"
+#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -100,6 +101,10 @@ feed_ingest_loop::~feed_ingest_loop() {
 void feed_ingest_loop::start() {
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '"
                               << unified_wildcard_subject << "'";
+    // Before the subscription, so the tick callback never races the read and
+    // no tick pays for it.
+    series_key_registry_.emplace(
+        ores::ore::repository::series_key_shape_repository{}.read_latest(ctx_));
     tick_sub_ = nats_.subscribe(unified_wildcard_subject,
                                 [this](ores::nats::message msg) { on_tick(msg); });
     refresh();
@@ -397,8 +402,12 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.value = value;
         obs.source = source;
         // A producer that names no point takes the series type's own answer.
-        obs.point_id =
-            point_id.empty() ? ores::ore::market::default_point_for(series_type) : point_id;
+        // start() fills the grammar before it subscribes, so a tick always
+        // finds it; without one the point stays empty, which is the same
+        // "no coordinate" answer an unknown type gets.
+        obs.point_id = point_id;
+        if (obs.point_id.empty() && series_key_registry_)
+            obs.point_id = series_key_registry_->default_point_for(series_type);
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

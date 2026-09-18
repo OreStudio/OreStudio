@@ -64,8 +64,9 @@ struct decomposed_key {
      *
      * Null when the key carries no point of its own: a type without a point
      * dimension, a key shorter than its type's qualifier depth, or an unknown
-     * type. Storage fills that gap from default_point_for() rather than
-     * inventing a coordinate here, so the key still reconstructs verbatim.
+     * type. Storage fills that gap from series_key_registry::default_point_for()
+     * rather than inventing a coordinate here, so the key still reconstructs
+     * verbatim.
      *
      * Examples: "2Y", "25Y/10Y/ATM", "1Y/6M/0/0/0.025".
      */
@@ -156,31 +157,6 @@ private:
  * strings and needs no table, so it stays a free function.
  */
 ORES_ORE_CORE_EXPORT std::string reconstruct_key(const decomposed_key& dk);
-
-/**
- * @brief Decomposes an ORE market data key into its structural parts.
- *
- * @deprecated Build a series_key_registry from the shape table and call
- *             series_key_registry::decompose instead. This reaches a compiled
- *             table that the shape table replaces.
- */
-ORES_ORE_CORE_EXPORT decomposed_key decompose_key(const std::string& key);
-
-/**
- * @brief Reports whether an ORE series type has a tenor or surface dimension.
- *
- * @deprecated Build a series_key_registry from the shape table and call
- *             series_key_registry::has_point_dimension instead.
- */
-ORES_ORE_CORE_EXPORT bool has_point_dimension(const std::string& series_type);
-
-/**
- * @brief The point recorded for an observation whose key carries none.
- *
- * @deprecated Build a series_key_registry from the shape table and call
- *             series_key_registry::default_point_for instead.
- */
-ORES_ORE_CORE_EXPORT std::string default_point_for(const std::string& series_type);
 
 }
 

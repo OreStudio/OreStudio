@@ -86,7 +86,7 @@ struct market_observation final {
      * Every observation carries one. A series whose keys have no coordinate of their own has a
      * single point and names it explicitly -- SPOT for an FX rate, an equity or a commodity price,
      * the empty string for a series with no coordinate at all, such as a recovery rate. The value
-     * comes from ores::ore::market::default_point_for(), so it is a property of the series type
+     * comes from series_key_registry::default_point_for(), so it is a property of the series type
      * rather than something each producer decides.
      */
     std::string point_id;

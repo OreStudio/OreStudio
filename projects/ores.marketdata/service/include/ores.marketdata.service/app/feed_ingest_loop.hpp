@@ -27,6 +27,7 @@
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
@@ -157,6 +158,10 @@ private:
     mutable std::mutex mu_;
     /// The only subscription this loop makes; every kind arrives through it.
     std::optional<ores::nats::service::subscription> tick_sub_;
+    /// The series key grammar, read once by start() before the subscription
+    /// exists and never written again. A tick that names no point of its own
+    /// takes its point from here, so no tick costs a database read.
+    std::optional<ores::ore::market::series_key_registry> series_key_registry_;
     /// Enabled bindings by source_name, rebuilt by refresh(). A source with no
     /// entry is not consumed by anyone.
     std::map<std::string, std::vector<ores::marketdata::domain::feed_binding>> bindings_by_source_;

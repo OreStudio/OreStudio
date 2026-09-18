@@ -123,9 +123,9 @@ TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
 
     ores::marketdata::messaging::import_market_data_request req;
     // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a
-    // key with only 2 qualifier segments is short: decompose_key treats it
-    // as a malformed key with no point_id, and the import must not mislabel
-    // it as "SPOT".
+    // key with only 2 qualifier segments is short: the registry folds the
+    // whole remainder into the qualifier and returns no point_id, and the
+    // import must not mislabel it as "SPOT".
     req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n";
     req.source = "test.import_service";
 

@@ -33,6 +33,7 @@
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/market/series_key_registry.hpp"
+#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
@@ -193,7 +194,11 @@ import_service::import(const messaging::import_market_data_request& req) {
     if (!req.market_data_content.empty()) {
         std::istringstream in(req.market_data_content);
         ores::ore::market::parse_report report;
-        auto data = ores::ore::market::parse_market_data(in, on_duplicate, &report);
+        // Read the key grammar once for the whole batch. A fixings-only
+        // import never gets here, so it never pays for the read.
+        const ores::ore::market::series_key_registry registry{
+            ores::ore::repository::series_key_shape_repository{}.read_latest(ctx_)};
+        auto data = ores::ore::market::parse_market_data(in, registry, on_duplicate, &report);
         append_issues(resp.warnings, report.warnings, "market data");
         append_issues(resp.errors, report.errors, "market data");
 
@@ -249,8 +254,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 // A key that carries no point of its own takes the series
                 // type's answer for its single point.
-                obs.point_id =
-                    d.point_id.value_or(ores::ore::market::default_point_for(d.series_type));
+                obs.point_id = d.point_id.value_or(registry.default_point_for(d.series_type));
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

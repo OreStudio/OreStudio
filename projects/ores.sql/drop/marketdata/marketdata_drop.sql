@@ -29,3 +29,5 @@
 \ir ./marketdata_market_observations_drop.sql
 \ir ./marketdata_market_series_notify_trigger_drop.sql
 \ir ./marketdata_market_series_drop.sql
+\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
+\ir ./marketdata_series_classification_rules_drop.sql

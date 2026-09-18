@@ -20,9 +20,11 @@
 #ifndef ORES_MARKETDATA_CORE_CLASSIFICATION_SERIES_CLASSIFIER_HPP
 #define ORES_MARKETDATA_CORE_CLASSIFICATION_SERIES_CLASSIFIER_HPP
 
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::marketdata::core {
@@ -53,9 +55,13 @@ struct series_classification {
  * @brief Maps an ORE market data series onto our classification taxonomy.
  *
  * The ORE vocabulary is the input side and ours is the output side, so this
- * mapping is the boundary between them and belongs in one place. It depends on
- * nothing but its arguments: no database, no NATS, no import pipeline, so a
- * test can drive it directly.
+ * mapping is the boundary between them and belongs in one place.
+ *
+ * Build one from the rows of the series classification rule table and pass it
+ * down. Nothing here reads the database or reaches for a compiled table, so it
+ * is a plain value that a test can build without a database, NATS or an import
+ * pipeline. The table is the taxonomy: a type ORE adds later, or one a user
+ * brings, is an inserted row rather than a rebuild.
  *
  * The input is the series identity as the market_series table stores it — the
  * natural key of series_type, metric and qualifier. The qualifier carries the
@@ -73,7 +79,19 @@ struct series_classification {
 class ORES_MARKETDATA_CORE_EXPORT series_classifier final {
 public:
     /**
-     * @brief Classifies a series, throwing when the vocabulary has no rule.
+     * @brief Builds the classifier from the series classification rule rows.
+     *
+     * @param rules Rows of the series classification rule table, as the
+     *        repository returns them. A row whose type and metric repeat
+     *        replaces the earlier one.
+     * @throws std::invalid_argument if rules is empty, if a row names an
+     *         asset_class_source other than the two the table allows, or if a
+     *         row's source and its asset class code contradict each other.
+     */
+    explicit series_classifier(std::vector<domain::series_classification_rule> rules);
+
+    /**
+     * @brief Classifies a series, throwing when the table has no rule.
      *
      * @param series_type ORE key type (e.g. FX, DISCOUNT, CORRELATION).
      * @param metric ORE metric component (e.g. RATE, PRICE, RATE_LNVOL).
@@ -81,24 +99,30 @@ public:
      * @return The taxonomy the series belongs to.
      * @throws std::invalid_argument if no rule matches.
      */
-    [[nodiscard]] static series_classification classify(const std::string& series_type,
-                                                        const std::string& metric,
-                                                        const std::string& qualifier);
+    [[nodiscard]] series_classification classify(const std::string& series_type,
+                                                 const std::string& metric,
+                                                 const std::string& qualifier) const;
 
     /**
-     * @brief Classifies a series, returning nullopt when the vocabulary has no
-     *        rule.
+     * @brief Classifies a series, returning nullopt when the table has no rule.
      *
      * The form a corpus sweep uses: an unrecognised series is a finding to
      * report, not an exception to abort the walk with.
      */
-    [[nodiscard]] static std::optional<series_classification> try_classify(
-        const std::string& series_type, const std::string& metric, const std::string& qualifier);
+    [[nodiscard]] std::optional<series_classification>
+    try_classify(const std::string& series_type,
+                 const std::string& metric,
+                 const std::string& qualifier) const;
 
     /**
-     * @brief Every ORE series type the vocabulary has a rule for, sorted.
+     * @brief Every ORE series type the table carries, in ascending order.
      */
-    [[nodiscard]] static std::vector<std::string> known_series_types();
+    [[nodiscard]] std::vector<std::string> known_series_types() const;
+
+private:
+    std::unordered_map<std::string,
+                       std::unordered_map<std::string, domain::series_classification_rule>>
+        by_type_;
 };
 
 }

@@ -23,6 +23,7 @@
 #include <openssl/evp.h>
 #include <openssl/kdf.h>
 #include <openssl/rand.h>
+#include <limits>
 #include <stdexcept>
 
 namespace ores::utility::converter {
@@ -43,7 +44,12 @@ std::string base64_converter::convert(const std::vector<unsigned char>& data) {
         }
         bio = BIO_push(b64, bio);
         BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-        BIO_write(bio, data.data(), data.size());
+        // OpenSSL takes an int length, so reject inputs it cannot represent
+        // rather than silently truncating the write.
+        if (data.size() > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+            throw std::runtime_error("Base64 encode: Input exceeds the maximum encodable size");
+        }
+        BIO_write(bio, data.data(), static_cast<int>(data.size()));
         BIO_flush(bio);
         BIO_get_mem_ptr(bio, &bufferPtr);
         std::string encoded(bufferPtr->data, bufferPtr->length);
@@ -75,10 +81,12 @@ std::vector<unsigned char> base64_converter::convert(const std::string& encoded)
         bio = BIO_push(b64, bio);
         BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 
+        if (encoded.length() > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+            throw std::runtime_error("Base64 decode: Input exceeds the maximum decodable size");
+        }
         std::vector<unsigned char> decoded(encoded.length());
-        int decoded_len = BIO_read(bio, decoded.data(), decoded.size());
+        int decoded_len = BIO_read(bio, decoded.data(), static_cast<int>(decoded.size()));
         if (decoded_len < 0) {
-            BIO_free_all(bio);
             throw std::runtime_error("Base64 decode failed");
         }
         decoded.resize(decoded_len);

@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 8316E5A7-9BDA-4C88-856C-C933290F7396
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.ore.series_key_shape
+#+description: The ORE market data key grammar, per series type: how many key segments identify the series, whether the type carries a point of its own, and the point to record when a key carries none.
+#+type: ores.codegen.entity
+#+component: ore
+#+filetags: :model:entity:ore:
+#+entity_singular: series_key_shape
+#+entity_plural: series_key_shapes
+#+entity_title: Series Key Shape
+#+brief: How an ORE market data key splits into a series and a point, per series type.
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+The key grammar of ORE market data, one row per series type. Every ORE
+key follows the skeleton =TYPE/METRIC/[QUALIFIER...]/[POINT_ID]=, and
+this table says where the split falls: =qualifier_depth= counts the
+segments after the metric that identify the series and stay stable
+across market dates, and every remaining segment is the point (a tenor,
+a strike, a surface coordinate).
+
+The table belongs to =ores.ore= because the grammar it records is
+ORE's, not ours: ORE defines the file format and we only read it. It
+replaces a compiled C++ table, so a type ORE adds later, or one a user
+brings, is an inserted row rather than a rebuild. A type with no row is
+not an error -- its key folds whole into the qualifier and still
+reconstructs verbatim -- so an uncatalogued type never aborts an
+import.
+
+Two invariants hold. The reader rejects an empty table, because an
+empty table silently degrades every key into a series of its own. A row
+that claims a point dimension and also carries a default point is
+contradictory and is rejected, both by the reader and by the check
+constraint below.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: ore
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** series_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The ORE key type: the first segment of a market data key, verbatim.
+
+Examples: 'DISCOUNT', 'SWAPTION', 'OI_FUTURE', 'GENERIC-MD'.
+
+** qualifier_depth
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of slash-separated segments after the metric that identify the
+series. Every remaining segment forms the point.
+
+For 'DISCOUNT', a depth of 2 splits =DISCOUNT/RATE/EUR/CURVE/2Y= into
+the series =EUR/CURVE= and the point =2Y=.
+
+** has_point_dimension
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when keys of this type carry a point of their own -- a tenor or a
+surface coordinate. False for a type with no such dimension, whose
+whole remainder folds into the qualifier.
+
+** default_point
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The point recorded for an observation whose key carries none. Every
+observation stores a point, so a type with a single point needs one
+name for it.
+
+FX spot is the case that matters: its single point is a real tenor,
+=SPOT=. A type whose single point is not a tenor at all carries an
+empty string, which is the honest "no coordinate" value rather than an
+invented tenor. A row with a point dimension always carries the empty
+string here, because its points come from the keys.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The key grammar of the type and the reason for its shape, written as a
+worked example where one helps.
+
+Example: 'FXFWD/RATE/ccy1/ccy2/tenor'.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_ore_series_key_shapes_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression                                            |
+|-------------------------------------------------------|
+| not ("has_point_dimension" and "default_point" <> '') |
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: shape
+:entity_plural_short:   shapes
+:entity_singular_words: series key shape
+:entity_plural_words:   series key shapes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sks
+:END:
+
+** Table display
+
+| column              | header              |
+|---------------------+---------------------|
+| series_type         | Series Type         |
+| qualifier_depth     | Qualifier Depth     |
+| has_point_dimension | Has Point Dimension |
+| default_point       | Default Point       |
+| description         | Description         |
+| modified_by         | Modified By         |
+| version             | Version             |
+
+** Custom repository methods
+
+* See also
+
+- [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — the
+  facet whose =series_key_registry= reads this table.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data
+  catalogue]] — the quote-key formats these rows make machine-readable.

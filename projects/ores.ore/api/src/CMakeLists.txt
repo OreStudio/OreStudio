@@ -9,26 +9,42 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(name "ores.ore.api")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-add_library(${lib_target_name} INTERFACE)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
-target_include_directories(${lib_target_name} INTERFACE
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_API_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
-    INTERFACE
+    PUBLIC
         ores.platform.lib
         ores.storage.lib
         ores.logging.lib
-        ores.workflow.api.lib)
+        ores.workflow.api.lib
+        ores.eventing.api.lib
+    PRIVATE
+        ores.utility.lib
+        faker-cxx::faker-cxx)
 
-install(TARGETS ${lib_target_name})
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

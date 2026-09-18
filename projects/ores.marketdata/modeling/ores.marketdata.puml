@@ -1,0 +1,353 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.marketdata data model
+
+set namespaceSeparator ::
+
+legend right
+  Target model, per task_design-market-data-model.
+  Green <<orm>>: persisted table.
+  Amber: added by the design.
+  Purple: vocabulary that becomes a reference table.
+  Grey: vocabulary that stays a code constant.
+endlegend
+
+namespace ores #F2F2F2 {
+    namespace marketdata #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class oresmd_uri <<struct>> {
+                +value : string
+            }
+            class volatility_surface_point <<struct>> {
+                +expiry : string
+                +strike : string
+                +model_subtype : domain::volatility_model_subtype
+            }
+            class market_data_identifier <<variant>> #ECECEC {
+                +value : variant<8>
+            }
+            class fx_market_data_identifier <<struct>> {
+                +pair : string
+                +type : domain::instrument_type
+                +quote_type : optional<domain::fx_quote_type>
+                +point : optional<string>
+                +vol : optional<domain::volatility_surface_point>
+            }
+            class rates_market_data_identifier <<struct>> {
+                +ccy : string
+                +type : domain::instrument_type
+                +index : optional<domain::index_family>
+                +tenor : optional<string>
+                +role : optional<domain::curve_role>
+                +metric : optional<domain::metric>
+                +quote_type : optional<domain::ir_quote_type>
+                +point : optional<string>
+                +vol : optional<domain::volatility_surface_point>
+            }
+            class equity_market_data_identifier <<struct>> {
+                +ticker : string
+                +ccy : string
+                +type : domain::instrument_type
+                +quote_type : optional<domain::equity_quote_type>
+                +point : optional<string>
+                +vol : optional<domain::volatility_surface_point>
+            }
+            class credit_market_data_identifier <<struct>> {
+                +reference_entity : string
+                +ccy : string
+                +type : domain::instrument_type
+                +quote_type : optional<domain::credit_quote_type>
+                +point : optional<string>
+                +vol : optional<domain::volatility_surface_point>
+            }
+            class commodity_market_data_identifier <<struct>> {
+                +commodity_code : string
+                +ccy : string
+                +type : domain::instrument_type
+                +quote_type : optional<domain::commodity_quote_type>
+                +point : optional<string>
+                +vol : optional<domain::volatility_surface_point>
+            }
+            class inflation_market_data_identifier <<struct>> {
+                +index_code : string
+                +type : domain::instrument_type
+                +quote_type : optional<domain::inflation_quote_type>
+                +point : optional<string>
+            }
+            class bond_market_data_identifier <<struct>> <<new>> #FFF3C4 {
+                +instrument_id : string
+                +ccy : string
+                +type : domain::instrument_type
+                +metric : optional<domain::metric>
+                +point : optional<string>
+            }
+            class correlation_market_data_identifier <<struct>> {
+                +factor_pair : string
+                +first_class : domain::asset_class
+                +second_class : domain::asset_class
+                +type : domain::instrument_type
+                +quote_type : optional<domain::correlation_quote_type>
+            }
+
+            enum asset_class #F2DAFD {
+                rates
+                inflation
+                fx
+                equity
+                commodity
+                credit
+                bond
+            }
+            enum instrument_type #ECECEC {
+                fixing
+                curve
+                quote
+                vol
+            }
+            enum curve_role #ECECEC {
+                discount
+                projection
+                self_discounting
+            }
+            enum metric #F2DAFD {
+                rate
+                price
+                basis_spread
+                ratio
+                yield_spread
+            }
+            enum ir_quote_type #F2DAFD {
+                ir_swap
+                discount
+                mm
+                fra
+                imm_fra
+                basis_swap
+                bma_swap
+                cc_basis_swap
+                cc_fix_float_swap
+                zero
+                mm_future
+                oi_future
+            }
+            enum index_family #F2DAFD {
+                libor
+                euribor
+                sofr
+                estr
+                sonia
+                tona
+                saron
+                aonia
+                corra
+                honia
+                sora
+                swestr
+                nowa
+                kofr
+                mibor
+                zaronia
+                destr
+                polonia
+                nzonia
+                shibor
+                tiie
+                taibor
+            }
+            enum credit_quote_type #F2DAFD {
+                cds
+                hazard_rate
+                recovery_rate
+                cds_index
+                index_cds_tranche
+            }
+            enum equity_quote_type #F2DAFD {
+                spot
+                dividend
+                fwd
+            }
+            enum commodity_quote_type #F2DAFD {
+                spot
+                fwd
+                cpr
+            }
+            enum fx_quote_type #F2DAFD {
+                spot
+                fwd
+            }
+            enum inflation_quote_type #F2DAFD {
+                zc_swap
+                yy_swap
+                seasonality
+            }
+            enum correlation_quote_type #F2DAFD {
+                pairwise
+            }
+            enum volatility_model_subtype #F2DAFD {
+                rate_lnvol
+                rate_nvol
+                rate_slnvol
+                shift
+                price
+            }
+
+            namespace persistence #F2F2F2 {
+                class market_series <<struct>> <<orm>> #99CB99 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +oresmd_uri : domain::oresmd_uri
+                    +is_scalar : bool
+                    +derivation_kind : string
+                    +derivation_config_id : optional<uuid>
+                    +derivation_config_version : optional<int>
+                }
+                class market_observation <<struct>> <<orm>> #99CB99 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +series_id : uuid
+                    +observation_datetime : timestamp
+                    +point_id : optional<string>
+                    +value : string
+                    +source : optional<string>
+                }
+                class market_fixing <<struct>> <<orm>> #99CB99 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +series_id : uuid
+                    +fixing_date : date
+                    +value : string
+                    +source : optional<string>
+                }
+                class feed_binding <<struct>> <<orm>> #99CB99 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +oresmd_uri : domain::oresmd_uri
+                    +source_name : string
+                    +asset_class : optional<domain::asset_class>
+                    +enabled : bool
+                }
+                class observation_lineage <<struct>> <<orm>> #99CB99 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +series_id : uuid
+                    +observation_datetime : timestamp
+                    +point_id : optional<string>
+                    +derivation_config_id : uuid
+                    +derivation_config_version : int
+                    +source_as_of : timestamp
+                    +source_series_ids : string
+                }
+                class curve_build <<struct>> <<orm>> <<new>> #FFF3C4 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +series_id : uuid
+                    +reference_date : date
+                    +build_kind : string
+                    +source_as_of : timestamp
+                }
+                class curve_point <<struct>> <<orm>> <<new>> #FFF3C4 {
+                    +version : int
+                    +tenant_id : tenant_id
+                    +id : uuid
+                    +party_id : uuid
+                    +build_id : uuid
+                    +point_id : string
+                    +value : string
+                }
+            }
+
+            namespace refdata #F2F2F2 {
+                class currency <<struct>> #F2DAFD {
+                    +code : string
+                    +display_name : string
+                    +sort_order : int
+                }
+                class tenor <<struct>> #F2DAFD {
+                    +code : string
+                    +display_name : string
+                    +sort_order : int
+                    +kind : string
+                }
+                class quote_type <<struct>> <<new>> #FFF3C4 {
+                    +code : string
+                    +asset_class : domain::asset_class
+                    +ore_type : string
+                    +default_metric : string
+                    +point_semantics : string
+                    +qualifier_shape : string
+                }
+                class asset_class <<struct>> <<new>> #FFF3C4 {
+                    +code : string
+                    +parent_code : optional<string>
+                    +display_name : string
+                    +sort_order : int
+                }
+            }
+        }
+    }
+}
+
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::fx_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::rates_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::equity_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::credit_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::commodity_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::inflation_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::bond_market_data_identifier
+ores::marketdata::domain::market_data_identifier o-- ores::marketdata::domain::correlation_market_data_identifier
+
+ores::marketdata::domain::fx_market_data_identifier o-- ores::marketdata::domain::volatility_surface_point : vol
+ores::marketdata::domain::rates_market_data_identifier o-- ores::marketdata::domain::volatility_surface_point : vol
+ores::marketdata::domain::equity_market_data_identifier o-- ores::marketdata::domain::volatility_surface_point : vol
+ores::marketdata::domain::credit_market_data_identifier o-- ores::marketdata::domain::volatility_surface_point : vol
+ores::marketdata::domain::commodity_market_data_identifier o-- ores::marketdata::domain::volatility_surface_point : vol
+
+ores::marketdata::domain::rates_market_data_identifier ..> ores::marketdata::domain::index_family : uses
+ores::marketdata::domain::rates_market_data_identifier ..> ores::marketdata::domain::ir_quote_type : uses
+ores::marketdata::domain::correlation_market_data_identifier ..> ores::marketdata::domain::asset_class : uses
+ores::marketdata::domain::refdata::quote_type ..> ores::marketdata::domain::ir_quote_type : replaces
+ores::marketdata::domain::refdata::asset_class ..> ores::marketdata::domain::asset_class : replaces
+
+ores::marketdata::domain::persistence::market_observation --> ores::marketdata::domain::persistence::market_series : series_id
+ores::marketdata::domain::persistence::market_fixing --> ores::marketdata::domain::persistence::market_series : series_id
+ores::marketdata::domain::persistence::observation_lineage --> ores::marketdata::domain::persistence::market_series : series_id
+ores::marketdata::domain::persistence::curve_build --> ores::marketdata::domain::persistence::market_series : series_id
+ores::marketdata::domain::persistence::feed_binding o-- ores::marketdata::domain::oresmd_uri : oresmd_uri
+ores::marketdata::domain::persistence::market_series o-- ores::marketdata::domain::oresmd_uri : oresmd_uri
+ores::marketdata::domain::persistence::curve_point *-- ores::marketdata::domain::persistence::curve_build : build_id
+ores::marketdata::domain::persistence::curve_point ..> ores::marketdata::domain::persistence::market_observation : same point composite
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.puml"
+' End:
+@enduml

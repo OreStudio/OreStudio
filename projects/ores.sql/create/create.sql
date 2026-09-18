@@ -54,6 +54,7 @@
 \ir ./mq/mq_create.sql
 \ir ./compute/compute_create.sql
 \ir ./workflow/workflow_create.sql
+\ir ./ore/ore_create.sql
 \ir ./marketdata/marketdata_create.sql
 \ir ./analytics/analytics_create.sql
 \ir ./synthetic/synthetic_create.sql

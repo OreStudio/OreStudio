@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 99F780E4-370A-47D9-8DE5-A7087B7AC1E3
+:END:
+#+title: Regenerate the stale ER diagram and gate it
+#+description: projects/ores.sql/modeling/ores_schema.puml is a generated artifact (banner: GENERATED FILE - DO NOT EDIT, regenerate with ./projects/ores.codegen/plantuml_er_generate.sh) and it is a month stale. Its last commit was 6610f847fd on 2026-08-07. Regenerating it today produces 2069 changed lines and a 3 MB PNG growth, almost all of it unrelated drift: the trading bond wave, refdata catalog changes, and the marketdata classification work. No CI gate covers it, so nothing catches the drift. The market_series.is_scalar column and the market_observation.point_id nullability were deliberately left undocumented in the diagram by the point-model change set rather than dragging that month of drift into it. Work: regenerate the diagram once, wire the check into the drift gate so it cannot go stale again, and consider dropping the tracked PNG and cmapx in favour of build-only output.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox=* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

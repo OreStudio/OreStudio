@@ -31,6 +31,7 @@ set(files
     "messaging/market_observation_event_registrar.cpp"
     "messaging/market_series_event_registrar.cpp"
     "messaging/observation_lineage_event_registrar.cpp"
+    "messaging/series_classification_rule_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -52,5 +53,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_observation_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/market_series_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/observation_lineage_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/ores.marketdata.service.hpp"
 )

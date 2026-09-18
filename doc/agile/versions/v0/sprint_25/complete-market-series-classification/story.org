@@ -26,10 +26,10 @@ of the asset classes it relates.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Extracting the classifier and correcting the point model. |
+| Now           | The key shape and the classification rule are both data, read once per import and supplied to the readers. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the classifier extraction and the corpus test. |
-| Last touched  | 2026-09-17                               |
+| Next          | The Qt client reads and writes the series asset classes. |
+| Last touched  | 2026-09-18                               |
 
 * Acceptance
 
@@ -47,9 +47,61 @@ of the asset classes it relates.
 | [[id:BF395A0B-C738-43B7-B4FA-DB32988DCAE8][Extract the series classifier and cover the whole ORE corpus]] | DONE | 2026-09-17 | 2026-09-18 | Lift the ORE-vocabulary mapping out of import_service.cpp into a standalone series_classifier class that tests can reach without a database, NATS or the import pipeline. Complete the vocabulary so all 42 series types the ORE examples carry classify. Add a corpus-wide test that walks external/ore/examples and asserts every distinct series key classifies. |
 | [[id:1CBBD6A0-95F7-46E4-9DE9-AFDDA9FEB831][Give a market series a set of asset classes]] | DONE | 2026-09-17 | 2026-09-18 | Replace the single not-null market_series.asset_class column with an ores_marketdata_market_series_asset_classes_tbl junction, so a pairwise correlation can reference the two classes it relates. Update the classifier's consumers, the DQ publish path and the Qt market series grid, and confirm the refdata catalogue descriptions read correctly. |
 | [[id:B17CEB3E-0350-4E2B-83FD-E89BFE2476F3][Read and write the market series asset classes in Qt]] | BACKLOG | | | The Qt client reads and writes the market_series_asset_classes junction, so the market series grid shows the asset classes each series belongs to and the New Series form records them. Junction protocols are hand-written, so this carries its own protocol, client fetch and in-memory join. |
-| [[id:65572B8E-55B8-4988-AE63-A25EBAFD65CD][Register the unmapped series types in the key registry]] | BACKLOG | | | Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation. |
+| [[id:65572B8E-55B8-4988-AE63-A25EBAFD65CD][Register the unmapped series types in the key registry]] | DONE | 2026-09-18 | 2026-09-18 | Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation. |
+| [[id:7E064C21-14EA-401C-A73D-35EA1743EED7][Complete the market series asset class junction]] | BACKLOG | | | The market_series_asset_classes junction carries neither the row level security its sibling data tables have nor a drop script. The junction template ignores the rls_tenant_isolation flag, so no junction in the tree is tenant isolated, and the table is absent from marketdata_drop.sql even though refdata hand-writes a drop file for its own junction. |
+| [[id:FA45F2D4-860F-4B24-98BE-3D0B39DAF186][Handle compound keys in the generated eventing artefacts]] | BACKLOG | | | Two generated eventing artefacts mis-handle a compound natural key. The changed event template names the key vector after the first key column and pluralises it, so the series classification rule event carries series_types holding both the type and the metric. The generated eventing test matches a notification as a set rather than as an exact key, so a permutation of the key parts would also match. |
 
 * Decisions
+
+** The ORE vocabulary is a managed table, not a compiled list
+
+The series key shape and the classification rule both become rows. A
+compiled list cannot serve the case that matters: when ORE adds a type,
+or a user brings one of their own, the answer must be an inserted row
+rather than a rebuild. The tables are seeded from the corpus, so the
+rows an environment receives are the rows the tests classify against.
+
+** Two tables, two owners
+
+The shape table belongs to =ores.ore=, because it records ORE's own
+key grammar, which ORE defines and we only read. The classification
+table belongs to =ores.marketdata=, because it maps a type onto refdata
+taxonomy codes, which are ours. The two facts change for different
+reasons, so they live apart. Each component that owns an entity model
+owns a schema, so =ores.ore= holding tables needs no exception.
+
+** The reader takes the table
+
+=series_key_registry= and =series_classifier= are values built from
+rows. Each is built once per import and passed down by const reference,
+so a reader never reaches for the database and a test runs with no
+database, no NATS and no pipeline. There is no process-wide cache to
+invalidate when a row changes.
+
+** An empty table throws; an unknown type folds
+
+An empty table is a configuration fault and throws, naming the table,
+because it would silently degrade every key into a series of its own. A
+type with no row is a different case: its key folds whole into the
+qualifier, loses nothing, and still reconstructs verbatim, so an
+uncatalogued type never takes an import down. The alarm lives in the
+corpus test, which is red whenever the corpus carries a type with no
+row.
+
+** Row level security is opted into per table
+
+Every tenant-scoped table enables row level security in its own model,
+through the =:rls_tenant_isolation:= flag, and the generated policy
+reads =ores_iam_current_tenant_id_fn()=. Both tables this story adds
+carry it. A junction does not, because the junction templates never
+read the flag; bringing them in step is its own task.
+
+** The correlation operand rule stays compiled
+
+An operand's asset class comes from the prefix ORE gives it, =EQ-=,
+=FX-= and =COMM-=, and from the =-CMS-= a rates operand carries instead
+of a prefix. That is a naming convention about ORE's own keys, which no
+row of ours can state, so it stays in code. Task 235 documents it.
 
 * Out of scope
 

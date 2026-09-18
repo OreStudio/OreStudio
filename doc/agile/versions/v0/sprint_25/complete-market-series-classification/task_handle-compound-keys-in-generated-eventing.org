@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: FA45F2D4-860F-4B24-98BE-3D0B39DAF186
+:END:
+#+title: Task: Handle compound keys in the generated eventing artefacts
+#+description: Two generated eventing artefacts mis-handle a compound natural key. The changed event template names the key vector after the first key column and pluralises it, so the series classification rule event carries series_types holding both the type and the metric. The generated eventing test matches a notification as a set rather than as an exact key, so a permutation of the key parts would also match.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the generated eventing artefacts carry a compound natural key
+faithfully. Today the changed event names its key vector after the
+first key column, and the generated eventing test compares that vector
+as a set, so both the name and the match are only right for a
+single-column key.
+
+Two defects, one template area, and both surface on
+=series_classification_rule=, whose key is =(series_type, metric)=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- The changed event carries a key member per key column, each named
+  after the column it holds, so a consumer reads the parts rather than
+  guessing which slot is which.
+- The generated eventing test matches a notification on the exact key,
+  so a permutation of the key parts no longer matches.
+- Every model with a compound key that opts into eventing is
+  regenerated, and the models are named in the result.
+- The suites that hold the regenerated eventing tests are re-run green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Found during the review round of =register-the-unmapped-series-types=,
+which added the first compound-key model to opt into generated
+eventing.
+
+The event shape comes from
+=projects/ores.codegen/library/templates/cpp_nats_changed_event.hpp.mustache=,
+whose line reads =std::vector<std::string> {{primary_key.column}}s;=.
+The template takes the first key column and pluralises it, so the
+generated event for the classification rule declares
+=std::vector<std::string> series_types= while the notify trigger fills
+it from every key column:
+
+#+begin_src sql
+entity_ids = jsonb_build_array(changed_series_type, changed_metric)
+#+end_src
+
+The member therefore holds the type and the metric under a name that
+claims to hold types alone. It is not wrong for the single-column keys
+every other opted-in model has, which is why it has gone unnoticed.
+
+The test side is a weaker check than it looks. The generated case
+matches with =std::all_of= over a =std::find= into the notification's
+key vector, which is set membership rather than key equality: a
+notification arriving for =(type, metric)= would satisfy a test that
+expects =(metric, type)=. The fresh tenant the case runs in emits only
+the notification it wrote, so the permutation is unreachable today.
+
+Both fixes reach generated output across components, so the work is a
+template change plus a tree-wide regeneration rather than an edit to
+the classification rule artefacts. Nothing in this task changes the
+classifier or the import path.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

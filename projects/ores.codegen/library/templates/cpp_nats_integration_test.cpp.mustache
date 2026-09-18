@@ -108,6 +108,9 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+{{#primary_key.is_compound}}
+#include <algorithm>
+{{/primary_key.is_compound}}
 #include <thread>
 
 // Proves the "write an entity, observe its NATS entity-changed
@@ -365,6 +368,13 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{^primary_key.is_uuid}}
     const auto id_str = v.{{{scaffold_prefix}}}{{primary_key.column}};
 {{/primary_key.is_uuid}}
+{{#primary_key.is_compound}}
+    // The notify trigger emits one entity_id per key column, so a
+    // notification belongs to this row only when every key part is in it.
+    const std::vector<std::string> key_parts = {
+        id_str{{#primary_key.extra_columns}},
+        v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}};
+{{/primary_key.is_compound}}
     BOOST_LOG_SEV(lg, debug) << "{{entity_title}}: " << v;
 {{#seed_country_sentinel}}
     // {{entity_title}}'s insert trigger validates country_code against
@@ -413,10 +423,22 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
                     ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
                         msg.data);
                 if (decoded && decoded->entity == "ores.{{component}}.{{entity_singular}}") {
+{{#primary_key.is_compound}}
+                    const bool is_this_row = std::all_of(
+                        key_parts.begin(), key_parts.end(), [&](const auto& part) {
+                            return std::find(decoded->entity_ids.begin(),
+                                             decoded->entity_ids.end(),
+                                             part) != decoded->entity_ids.end();
+                        });
+                    if (is_this_row)
+                        received.push_back(msg);
+{{/primary_key.is_compound}}
+{{^primary_key.is_compound}}
                     for (const auto& changed_id : decoded->entity_ids) {
                         if (changed_id == id_str)
                             received.push_back(msg);
                     }
+{{/primary_key.is_compound}}
                 }
             }
         }
@@ -428,7 +450,8 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for {{entity_singular}} " << id_str
+        BOOST_LOG_SEV(lg, error) << "No notification for {{entity_singular}} " << id_str{{#primary_key.extra_columns}}
+                                 << "/" << v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}
                                  << " after " << max_attempts << " writes; observer received "
                                  << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
@@ -437,7 +460,8 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     }
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
-                            << " matching NATS notification(s) for {{entity_singular}} " << id_str;
+                            << " matching NATS notification(s) for {{entity_singular}} " << id_str{{#primary_key.extra_columns}}
+                            << "/" << v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}};
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -477,16 +501,16 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{/amend_activity}}
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_{{entity_singular_short}}_history(id_str);
+        auto versions = svc.get_{{entity_singular_short}}_history(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}});
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().{{{audit_prefix}}}change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_{{entity_singular_short}}(id_str);
+        svc.delete_{{entity_singular_short}}(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}});
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}(id_str).has_value());
-        REQUIRE(svc.get_{{entity_singular_short}}_history(id_str).size() == versions.size());
+        REQUIRE_FALSE(svc.{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}).has_value());
+        REQUIRE(svc.get_{{entity_singular_short}}_history(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}).size() == versions.size());
     }
 }
 {{/domain_entity}}

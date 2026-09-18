@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.ore data model
+
+set namespaceSeparator ::
+
+legend right
+  <<orm>>: a persisted table, generated from the entity model.
+  Everything else is hand-written in ores.ore.core.
+  The registry holds one shape per series type, and is
+  built from the table at the start of an import.
+endlegend
+
+namespace ores #F2F2F2 {
+    namespace ore #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class series_key_shape <<orm>> {
+                +series_type : string <<pk>>
+                +qualifier_depth : int
+                +has_point_dimension : bool
+                +default_point : string
+                +description : string
+            }
+        }
+        namespace market #F2F2F2 {
+            class series_key_registry {
+                +decompose(key) : decomposed_key
+                +has_point_dimension(series_type) : bool
+                +default_point_for(series_type) : string
+                +known_series_types() : vector<string>
+            }
+            class decomposed_key <<struct>> {
+                +series_type : string
+                +metric : string
+                +qualifier : string
+                +point_id : optional<string>
+            }
+        }
+    }
+}
+
+ores::ore::market::series_key_registry o-- ores::ore::domain::series_key_shape : knows
+ores::ore::market::series_key_registry ..> ores::ore::market::decomposed_key : produces
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.puml"
+' End:
+@enduml

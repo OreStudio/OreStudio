@@ -74,6 +74,7 @@ identity drift.
 | [[id:F2284D6F-CF30-4991-9F0A-50AACEFDD0D9][The NATS wire carries oresmd URIs]] | BACKLOG | | | Tick subjects and the ir_curve_tick payload carry oresmd URIs; every subscriber of marketdata.v1.tick.* and synthetic.v1.* updates; feed controllers resolve and collide on URIs. |
 | [[id:09BE481B-DEA7-45D1-9BD2-4FB31C24E811][ores.shell talks oresmd natively]] | BACKLOG | | | marketdata import stores oresmd URIs; new oresmd-native commands (list series, add series, validate); synthetic and crm command output prints URIs, never ORE keys. |
 | [[id:5E787646-8DB7-4B29-9DA6-7E94DAAABA52][Delete legacy ORE representations]] | BACKLOG | | | Drop the legacy identity columns (series_type, metric, qualifier, ore_key, currency_code), the import classification table, the split_market_series_key identity use, and the DB check constraints; update the tests. point_id stays, repurposed to carry the serialised oresmd point. |
+| [[id:F942BEFA-F1E2-42CD-995F-5F253F20B8CC][Design: the market data data model on oresmd]] | BACKLOG | | | Settle the target market data data model against prior art: one asset-class taxonomy from the asset_classes.org analysis, oresmd as the single identity column, the observation point as the serialised oresmd point, the controlled vocabularies as codegen reference tables treated as data rather than hardcoded enums, and surrogate keys in their most efficient form. Design only, no schema or code change. |
 
 * Decisions
 

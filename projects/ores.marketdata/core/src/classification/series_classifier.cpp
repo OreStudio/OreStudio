@@ -21,79 +21,17 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>
-#include <unordered_map>
+#include <utility>
 
 namespace ores::marketdata::core {
 
 namespace {
 
-struct taxon {
-    std::string asset_class;
-    std::string series_subclass;
-};
-
-// Maps ORE series_type → the single asset class and subclass it measures.
-// Every type here belongs to exactly one class; CORRELATION and GENERIC-MD do
-// not and are handled below.
-const std::unordered_map<std::string, taxon> k_table = {
-    // FX
-    {"FX", {"fx", "spot"}},
-    {"FXFWD", {"fx", "forward"}},
-    {"FX_OPTION", {"fx", "volatility"}},
-    // Rates curves
-    {"DISCOUNT", {"interest_rates", "yield"}},
-    {"ZERO", {"interest_rates", "yield"}},
-    {"MM", {"interest_rates", "yield"}},
-    {"MM_FUTURE", {"interest_rates", "fra"}},
-    {"FRA", {"interest_rates", "fra"}},
-    {"IMM_FRA", {"interest_rates", "fra"}},
-    {"IR_SWAP", {"interest_rates", "yield"}},
-    // Rates spreads
-    {"BASIS_SWAP", {"interest_rates", "basis"}},
-    {"BMA_SWAP", {"interest_rates", "basis"}},
-    {"CC_BASIS_SWAP", {"interest_rates", "xccy"}},
-    {"CC_FIX_FLOAT_SWAP", {"interest_rates", "xccy"}},
-    // Rates vols
-    {"SWAPTION", {"interest_rates", "volatility"}},
-    {"CAPFLOOR", {"interest_rates", "volatility"}},
-    // Credit
-    {"HAZARD_RATE", {"credit", "spread"}},
-    {"CDS", {"credit", "spread"}},
-    {"CDS_INDEX", {"credit", "index_credit"}},
-    {"INDEX_CDS_OPTION", {"credit", "index_credit"}},
-    {"RECOVERY_RATE", {"credit", "recovery"}},
-    {"RATING", {"credit", "transition_probability"}},
-    {"INDEX_CDS_TRANCHE", {"credit", "correlation"}},
-    {"CPR", {"bond", "prepayment"}},
-    // Equity
-    {"EQUITY", {"equity", "spot"}},
-    {"EQUITY_FWD", {"equity", "forward"}},
-    {"EQUITY_DIVIDEND", {"equity", "forward"}},
-    {"EQUITY_OPTION", {"equity", "volatility"}},
-    // Commodity
-    {"COMMODITY", {"commodity", "spot"}},
-    {"COMMODITY_FWD", {"commodity", "forward"}},
-    {"COMMODITY_OPTION", {"commodity", "volatility"}},
-    {"OI_FUTURE", {"commodity", "forward"}},
-    {"SHAPE_PROFILE", {"commodity", "seasonality"}},
-    // Inflation
-    {"ZC_INFLATIONSWAP", {"inflation", "swap"}},
-    {"YY_INFLATIONSWAP", {"inflation", "swap"}},
-    {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
-    {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor"}},
-    {"SEASONALITY", {"inflation", "seasonality"}},
-    // Bond
-    {"BOND", {"bond", "price"}},
-    {"BOND_OPTION", {"bond", "volatility"}},
-    // Fixings (index series)
-    {"FIXING", {"interest_rates", "index_fixing"}},
-};
-
-// Maps the instrument type GENERIC-MD states in its metric slot onto the same
-// taxonomy the instrument's own series type carries.
-const std::unordered_map<std::string, taxon> k_generic_md_table = {
-    {"EQUITY_OPTION", {"equity", "volatility"}},
-};
+// The two values the asset_class_source column allows. "literal" rows carry
+// their class in the row; "correlation_operands" rows derive it from the
+// operands the qualifier names, so they carry no class of their own.
+constexpr std::string_view k_literal_source = "literal";
+constexpr std::string_view k_correlation_operands_source = "correlation_operands";
 
 /**
  * ORE names a correlation operand after the factor class it belongs to: an
@@ -149,9 +87,41 @@ std::vector<std::string> correlation_asset_classes(const std::string& qualifier)
 
 }
 
+series_classifier::series_classifier(std::vector<domain::series_classification_rule> rules) {
+    if (rules.empty())
+        throw std::invalid_argument(
+            "ores_marketdata_series_classification_rules_tbl is unseeded: no series "
+            "classification rules were supplied, so no ORE series key could be classified and "
+            "every import that creates a series would abort.");
+
+    for (auto& rule : rules) {
+        if (rule.asset_class_source != k_literal_source &&
+            rule.asset_class_source != k_correlation_operands_source)
+            throw std::invalid_argument(
+                "series classification rule for '" + rule.series_type + "/" + rule.metric +
+                "' names the asset class source '" + rule.asset_class_source +
+                "'; the table allows only '" + std::string(k_literal_source) + "' and '" +
+                std::string(k_correlation_operands_source) + "'.");
+
+        if (rule.asset_class_source == k_literal_source && !rule.asset_class_code)
+            throw std::invalid_argument(
+                "series classification rule for '" + rule.series_type + "/" + rule.metric +
+                "' reads its asset class from the row but carries no asset class code.");
+
+        if (rule.asset_class_source == k_correlation_operands_source && rule.asset_class_code)
+            throw std::invalid_argument(
+                "series classification rule for '" + rule.series_type + "/" + rule.metric +
+                "' derives its asset classes from the qualifier operands and also carries the "
+                "asset class code '" +
+                *rule.asset_class_code + "'; a reader would not know which of the two to record.");
+
+        by_type_[rule.series_type][rule.metric] = std::move(rule);
+    }
+}
+
 series_classification series_classifier::classify(const std::string& series_type,
                                                   const std::string& metric,
-                                                  const std::string& qualifier) {
+                                                  const std::string& qualifier) const {
     const auto result = try_classify(series_type, metric, qualifier);
     if (!result)
         throw std::invalid_argument("No classification rule for ORE series key: " + series_type +
@@ -159,32 +129,34 @@ series_classification series_classifier::classify(const std::string& series_type
     return *result;
 }
 
-std::optional<series_classification> series_classifier::try_classify(const std::string& series_type,
-                                                                     const std::string& metric,
-                                                                     const std::string& qualifier) {
-    if (series_type == "CORRELATION")
-        return series_classification{correlation_asset_classes(qualifier), "correlation"};
-
-    if (series_type == "GENERIC-MD") {
-        const auto it = k_generic_md_table.find(metric);
-        if (it == k_generic_md_table.end())
-            return std::nullopt;
-        return series_classification{{it->second.asset_class}, it->second.series_subclass};
-    }
-
-    const auto it = k_table.find(series_type);
-    if (it == k_table.end())
+std::optional<series_classification>
+series_classifier::try_classify(const std::string& series_type,
+                                const std::string& metric,
+                                const std::string& qualifier) const {
+    const auto type = by_type_.find(series_type);
+    if (type == by_type_.end())
         return std::nullopt;
-    return series_classification{{it->second.asset_class}, it->second.series_subclass};
+
+    const auto& by_metric = type->second;
+    auto rule = by_metric.find(metric);
+    if (rule == by_metric.end())
+        rule = by_metric.find(std::string{});
+    if (rule == by_metric.end())
+        return std::nullopt;
+
+    const auto& row = rule->second;
+    if (row.asset_class_source == k_correlation_operands_source)
+        return series_classification{correlation_asset_classes(qualifier),
+                                     row.series_subclass_code};
+
+    return series_classification{{*row.asset_class_code}, row.series_subclass_code};
 }
 
-std::vector<std::string> series_classifier::known_series_types() {
+std::vector<std::string> series_classifier::known_series_types() const {
     std::vector<std::string> types;
-    types.reserve(k_table.size() + 2);
-    for (const auto& entry : k_table)
-        types.push_back(entry.first);
-    types.push_back("CORRELATION");
-    types.push_back("GENERIC-MD");
+    types.reserve(by_type_.size());
+    for (const auto& [series_type, by_metric] : by_type_)
+        types.push_back(series_type);
     std::sort(types.begin(), types.end());
     return types;
 }

@@ -29,6 +29,7 @@
 \ir ./synthetic/synthetic_drop.sql
 \ir ./analytics/drop_analytics.sql
 \ir ./marketdata/marketdata_drop.sql
+\ir ./ore/ore_drop.sql
 \ir ./workflow/drop_workflow.sql
 \ir ./compute/drop_compute.sql
 \ir ./mq/mq_drop.sql

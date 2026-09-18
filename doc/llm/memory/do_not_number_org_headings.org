@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 177EDB1C-6241-45AA-81B1-46C4B9D6329D
+:END:
+#+title: Do not number org headings
+#+description: Org numbers sections itself on export, so a number typed into a heading renders after org's own and the heading reads as 4.1. 1. What is already settled.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :org:headings:conventions:memory:feedback:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+
+Never type a number into an org heading. Write the bare title and let org number the section.
+
+*Why:* Marco flagged it on the market data design document, where every second-level heading carried a manual number. Each one rendered as 4.1. 1. What is already settled, with org's number and the manual number side by side. The design document's 16 third-level headings carried a second, independent numbering scheme, and the prose cross-referenced sections by the manual numbers rather than the ones on screen.
+
+*How to apply:* When writing or editing any org document, write headings as bare titles. When prose cross-references a section, use the number org will produce, counted from the top of the document.

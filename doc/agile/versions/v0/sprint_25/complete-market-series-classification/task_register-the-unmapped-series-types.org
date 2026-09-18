@@ -2,51 +2,729 @@
 :ID: 65572B8E-55B8-4988-AE63-A25EBAFD65CD
 :END:
 #+title: Task: Register the unmapped series types in the key registry
-#+description: Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation.
+#+description: Move the ORE series key shape out of C++ source and into a managed table, so the qualifier depth, the point dimension and the default point of a series type become data a user can extend. Covers the eight types the corpus carries but the table does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without a row a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation.
 #+type: task
 #+level: s1
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/register-the-unmapped-series-types
+#+pr: 2102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-17
-#+updated: 2026-09-17
-#+environment:
+#+updated: 2026-09-18
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know, so each type's keys split into one series with many points instead of many single-observation series.
+Make the ORE series key shape data. The qualifier depth, the point
+dimension and the default point of every series type move from a
+compiled table into one a user can manage, and the reader receives that
+table instead of reaching for it. Each of the eight types the corpus
+carries but the table does not know gains a row, so its keys split into
+one series with many points instead of many single-observation series.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-18                               |
 
 * Acceptance
 
-- The registry carries an entry for each of OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING, with its qualifier depth and point dimension read off the corpus.
-- Every distinct key of those types decomposes into a qualifier and a point, so its observations share one series.
-- A test asserts the classifier's type set and the registry's type set are equal, so the two tables cannot drift.
-- The corpus census of distinct series is materially lower after the change, and the drop is recorded.
+- The key shape of every ORE series type lives in a table, seeded
+  from the corpus and managed like any other catalogue: the qualifier
+  depth, the point dimension, and the point to record when a key
+  carries none.
+- The table holds a row for each of OI_FUTURE, SHAPE_PROFILE,
+  BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING.
+- Every distinct key of those types decomposes into a qualifier and a
+  point, so its observations share one series.
+- =ores.ore.core= receives the shape table. It never reads the database
+  itself, so its tests run with no database, no NATS and no pipeline.
+- An empty table throws, and the message names the table and says it is
+  unseeded. A row that claims a point dimension and also carries a
+  default point is rejected, both in the constructor and by a table
+  constraint.
+- =known_series_types()= answers from the supplied rows, so no list of
+  type names is compiled into the reader.
+- A test asserts that the classifier's type set and the table's type
+  set are equal, so the two cannot drift.
+- The corpus census of distinct series is materially lower after the
+  change, and the drop is recorded.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The mechanism changed after the design discussion. The shape of an ORE
+key was to stay a compiled table, with eight rows added. It becomes
+managed data instead, and this task records that rescope. The outcome
+does not change: the eight types must decompose properly.
+
+** Why the shape becomes data
+
+The shape table says how a key splits. That is ORE's grammar, so it
+belongs to =ores.ore=, and nothing in the component prevents it. Every
+component that owns an entity model owns a schema, and =ores.ore.core=
+already links =ores.database.lib=. A compiled table also cannot serve
+the case that matters: when ORE adds a type, or a user brings one of
+their own, the answer must be an inserted row, not a rebuild.
+
+** Two tables, two owners
+
+The shape table belongs to =ores.ore=, because it describes the ORE
+file format, which ORE defines and we only read. The classification
+table belongs to =ores.marketdata=, because it maps a type to refdata
+asset class codes, which are our taxonomy. The two facts change for
+different reasons. This also means the promise "a user can add their
+own types" holds only once the classification table is data too, which
+is task 219. Until then a new row imports only if both tables carry it,
+and the shape row without a classification row makes the classifier
+throw and aborts the file. That pulls 219 into this work.
+
+** The reader takes the table
+
+=series_key_registry= stops being free functions over a static map and
+becomes a value built from rows.
+
+#+begin_src cpp
+class ORES_ORE_CORE_EXPORT series_key_registry final {
+public:
+    explicit series_key_registry(std::vector<domain::series_key_shape> shapes);
+    decomposed_key decompose(const std::string& key) const;
+    bool has_point_dimension(const std::string& series_type) const;
+    std::string default_point_for(const std::string& series_type) const;
+    std::vector<std::string> known_series_types() const;
+
+private:
+    std::unordered_map<std::string, domain::series_key_shape> by_type_;
+};
+#+end_src
+
+The rows are the generated =domain::series_key_shape= rather than a
+second struct of four fields. The design sketched a parallel struct,
+because it was not obvious that =ores.ore.core= may see the entity
+type. It may: =ores.ore.core= already links =ores.ore.api.lib=, and
+its generated repositories include that header to return rows. A
+second struct would be a second artefact for the same table-shaped
+data, which the data oriented design note rules out: the wire shape
+is a codegen projection of the entity, not another type. So the
+repository's rows feed the constructor with no mapping layer between
+them.
+
+=reconstruct_key= stays free. It joins strings and needs no table, so
+the serializer does not change.
+
+The constructor throws when the rows are empty, and the message names
+the table. It also rejects a row that claims a point dimension and
+carries a default point. A table constraint carries the same two
+checks, so an illegal state cannot be stored either.
+
+A third check was considered and declined. =qualifier_depth= is an
+=integer= in the table, so a negative depth can be stored. It needs no
+check, because a negative depth makes the key shorter than its type
+expects, and that branch already folds the whole remainder into the
+qualifier: the row degrades a key exactly as an uncatalogued type
+does, and the key still reconstructs verbatim. Throwing in the
+constructor would abort an import over a row the table accepts, which
+is the failure this task exists to remove.
+
+** An unknown type still folds
+
+An empty table throws. A type with no row is a different case. Its key
+folds into the qualifier and loses nothing, because the key still
+reconstructs verbatim. A file carrying a type nobody catalogued must
+not take an import down, because ORE adds types over time and this
+corpus already carries two that ORE's own catalogue does not document.
+The alarm lives in the corpus test instead, which fails whenever the
+corpus carries a type with no row.
+
+** How the rows arrive
+
+A repository reads the table once at the start of each import, builds
+the registry, and passes it down by const reference. That is one read
+per batch rather than per key, and no process-wide cache to invalidate
+when a row changes. The component already injects this way, since
+=import_service= takes a =context=.
+
+** The call sites are shallow
+
+=decompose_key= has one production caller, =market_data_parser.cpp=.
+=default_point_for= has two, in =import_service.cpp= and
+=feed_ingest_loop.cpp=. =has_point_dimension= is used only by tests
+today. The generated =market_observation.hpp= mentions
+=default_point_for= in a comment and does not call it.
+
+** Work units
+
+| Unit | What it delivers |
+|------+------------------|
+| The entity and its seed | =ores.ore.series_key_shape=, its schema, and a populate script holding all forty-three rows |
+| The registry becomes a value | The class above, its checks, and its unit test on a fixture |
+| Migrate the call sites | The parser signature and the two =default_point_for= sites |
+| Tests | The corpus walk built from the seed, the table-against-seed check, and the classifier equality check |
+| The classification table | Task 219, without which an added row still aborts the file |
+
+Each unit ends in a build and a test run. The seed carries the values
+the corpus analysis already derived, so the analysis is not repeated.
 
 * Notes
+
+The eight new rows, with the corpus evidence behind each. The depth is
+the number of segments after the metric that identify the series; the
+rest is the point.
+
+| Type | Depth | Point dimension | Default point | Corpus evidence |
+|------+-------+-----------------+---------------+-----------------|
+| OI_FUTURE | 1 | yes | | 104 distinct keys, one series. Depth 2 gives 89 series of one point |
+| SHAPE_PROFILE | 1 | yes | | 171 keys, two series of 75 and 96 points |
+| BOND_OPTION | 1 | yes | | 154 keys, one series. Same shape as SWAPTION |
+| RATING | 1 | yes | | 64 keys, one series. An eight by eight transition matrix |
+| INDEX_CDS_TRANCHE | 1 | yes | | 8 keys, one series |
+| GENERIC-MD | 1 | yes | | A wrapper, so the inner metric names the series |
+| CPR | 1 | no | | One ISIN, no surface |
+| FIXING | 1 | no | | A synthetic key the import builds for an index fixing |
+
+The remaining thirty-five rows are the compiled table as it stands,
+with the comment above each entry as its description.
+
+The corpus walk reported 107,947 distinct keys across 41 types in 91
+files. The C++ test comment claims 107,951 across 42 in 95, so the two
+disagree. The =compass test run= warning is the authority, and this
+work must reconcile the count.
+
+The two counts differ in what they count, not in what the corpus
+holds. Market data lives in =*.txt= files, one =date key value= per
+line. Fixings live in =fixings.csv= files headed
+=#fixingDate,fixingId,fixingValue=, and every line there is also a
+dated key. A walk of the market data files alone finds 39 types in 62
+files; the remaining types and files come from the fixings. GENERIC-MD
+is the clearest case: it appears in no market data file at all, and
+only in two =fixings.csv= files. Unit 4 must therefore state which of
+the two, or which union, it counts, and the test comment must say the
+same. The census must run through =parse_market_data= and
+=parse_fixings= rather than a hand-written line rule, so that the
+count follows the reader the corpus actually feeds.
+
+SHAPE_PROFILE and GENERIC-MD are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=. That document
+also needs the per-type qualifier and point table.
+
+A multi-facet component does not wire its root modelling directory into
+CMake. =ores.trading= holds 65 entity orgs and no root
+=CMakeLists.txt=; =ores.marketdata= and =ores.ore= now hold entity orgs
+there on the same terms. Only single-facet components such as
+=ores.database= build a component-level diagram, and
+=cmake_component_modeling.mustache= has no renderer. The generated
+=ores.ore.puml= and its diagram targets therefore stay uncommitted, as
+=ores.marketdata='s did. Wiring the root modelling directory for
+multi-facet components is a separate decision.
+
+** Unit 1 evidence
+
+The seed reproduces the compiled table exactly. A mechanical compare of
+every =type, qualifier_depth, has_point_dimension, default_point= tuple
+across =series_key_registry.cpp= and the populate script reports 35
+rows matching with no mismatch and no omission, plus the eight new
+types. So the thirty-five known types keep their current shape.
+
+The entity regenerates byte-identical, and the cmake source lists are
+already in step. The ore component is not in the drift registry, so its
+gate stays the per-component check.
+
+The =ores.ore.core.tests= suite needed the database lifecycle listener
+in its =main.cpp=, which it never had. It is the only core facet that
+touches the database and lacked one; without it no test tenant is
+provisioned and the eventing test dies on an empty tenant id. With the
+listener in place the suite is 521 of 521 green. It takes 501 seconds
+because the timeout listener's watchdog joins on a one-second sleep per
+test case, so every case costs a second; =refdata.core= pays the same
+toll for its 241 cases.
+
+The entity carries the registrars that codegen emits, and nothing calls
+them. =ores.ore= has no aggregate =messaging/registrar.hpp=, unlike the
+fifteen components that expose a CRUD surface. This is not a broken
+convention. Every aggregate registrar is hand-written and selective:
+=ores.marketdata= hand-wires =market_series= and =market_fixing= and
+calls a generated sub-registrar only for =market_observation=. No
+consumer needs the surface yet, because Unit 2 reads the rows in
+process. Wire the registrar when a client must manage the table.
+
+** Unit 2 evidence
+
+=series_key_registry= is now a value. It holds the rows in an
+=unordered_map= keyed by series type, and it answers =decompose=,
+=has_point_dimension=, =default_point_for= and =known_series_types=
+from them. The constructor throws on an empty table and on a row that
+claims a point dimension and also carries a default point.
+
+The three free functions stay, marked =@deprecated= in Doxygen only, so
+every existing call site keeps working until Unit 3 deletes them. The
+compiled table therefore still sits in the source, and Unit 2 changes
+no behaviour that a caller can reach. That is why the rest of the tree
+sees nothing from this unit.
+
+Eleven cases cover the class, and all eleven ran and passed:
+
+| Case | What it pins |
+|------+--------------|
+| =registry_decompose_splits_qualifier_from_point= | Depth 2 and depth 1 both split |
+| =registry_decompose_folds_a_type_with_no_point_dimension= | FX and RECOVERY_RATE fold whole |
+| =registry_decompose_folds_a_key_shorter_than_its_type= | A short key still round-trips |
+| =registry_decompose_folds_an_uncatalogued_type= | OI_FUTURE folds whole |
+| =registry_decompose_throws_on_a_key_with_no_metric= | One segment throws |
+| =registry_roundtrips_every_fixture_key= | Every fixture key reconstructs |
+| =registry_answers_from_its_rows_and_not_a_compiled_table= | A type with no row answers false |
+| =registry_default_point_answers_from_its_rows= | SPOT appears only where a row says so |
+| =registry_known_series_types_is_sorted= | The type list is ordered |
+| =registry_rejects_an_unseeded_table= | The empty table throws |
+| =registry_rejects_a_row_with_a_point_and_a_default_point= | The contradiction throws |
+
+=ores.ore.core.tests= is green. The suite ran in 531.87 seconds and
+reported 429,775 assertions with no failure and no skip. The eleven
+case names above are read back from the run's own results file, so the
+run is the evidence rather than the source.
+
+The full seventy-three suite run did not complete, and this is a gap
+worth stating plainly. Two attempts were killed from outside compass:
+the first three minutes and forty seconds in, at suite 21 of 73, and
+the second before it reached a suite at all. Neither kill was a lock
+problem. The lock is an =flock= on the lock file, so the kernel frees
+it when the holder dies, and the slot was free after both kills. The
+affected suite was then run alone in the foreground, and that is the
+run recorded here. The other seventy-two suites are expected to be
+unaffected, because the deprecated free functions still carry the old
+behaviour, but the unit's evidence rests on the one suite that the
+change can reach.
+
+** Unit 3 evidence
+
+The migration is complete and the compiled table is gone.
+=series_key_registry.cpp= loses 167 lines holding the type-to-shape map,
+=series_key_registry.hpp= loses the three deprecated free functions, and
+no caller can reach a compiled grammar any more.
+
+=parse_market_data= takes the registry by const reference.
+=import_service= builds one per batch from
+=series_key_shape_repository{}.read_latest(ctx_)=, next to the parse
+call, so a fixings-only import never pays for the read.
+=feed_ingest_loop= builds one in =start()= before the subscription
+exists and holds it in an =optional=; the tick path then reads it with
+no lock and no database call. An empty optional leaves the point empty,
+which is the answer an uncatalogued type already gets.
+
+The tests needed a grammar with no database behind it, so
+=ores.testing/series_key_shape_seed.hpp= reads
+=ore_series_key_shapes_populate.sql= and builds a registry from it. It
+parses the script's own text, so a test that passes here passes against
+the rows the loader writes, and a row that drifts in SQL fails the test
+that depends on it. =ores.testing= links =ores.ore.core.lib= to host it.
+
+A test tenant is provisioned fresh on every run, so
+=ores_iam_provision_tenant_fn= now copies =ores_ore_series_key_shapes_tbl=
+into it. Without that copy the tenant's table is empty, the registry
+constructor throws, and every import fails. The function was installed
+into the test database with =compass db sql -u ddl -f=, because
+=compass db setup= runs a bare =create database= that fails on an
+existing one.
+
+=ores.marketdata.core.tests= is green: 191 cases, no failure, 21.64
+seconds, including the three corpus cases that failed before.
+=ores.ore.core.tests= is green: 535 cases, no failure, 535.88 seconds.
+Both counts are read back from the runs' own results files.
+
+The corpus census now runs. It reads 107,947 distinct keys across 41
+series types in 91 files out of 3,528 walked, with none unreadable.
+That is the figure the Notes recorded from the manual survey, reached
+this time through =parse_market_data= itself, so the survey and the
+reader agree. The test comment's 107,951 across 42 in 95 does not, and
+the reconciliation belongs to Unit 4.
+
+One defect was found and fixed on the way, and it had hidden the whole
+walk. =seed_shapes()= located its =values= keyword and then started the
+row scan at the offset after the newline instead of after the keyword,
+so the first character it read was the =v= of =values=, the guard
+rejected it, and the function threw on the first iteration. Every test
+that built a registry failed with =no shape rows found in ...=, which is
+why the census read zero and why the ore core suite was red. The corpus
+test also built the seed inside its per-file =catch=, so the throw was
+swallowed once per file and an empty census looked like a corpus with no
+market data rather than a seed that could not be read. The seed is built
+outside that =catch= now, and the census reports files seen and files
+unreadable, so a walk that reads nothing cannot print the same line as a
+corpus that carries nothing.
+
+** Unit 4 evidence
+
+Three cases carry the unit, and the suite that holds them is green.
+
+=the_classifier_and_the_key_registry_name_the_same_series_types= takes
+the type set from =series_classifier::known_series_types()= and from
+=seed_registry().known_series_types()=, and reports each direction
+separately, because which table gained a type is what says where the
+row is missing. Both answer 43 types, so the two cannot drift apart
+without a red test: a type with a shape row and no classification row
+aborts an import, and a type with a classification row and no shape row
+folds every key into its qualifier.
+
+=the_eight_added_rows_collapse_the_census_of_distinct_series= rebuilds
+the grammar the compiled table carried, by dropping the eight new rows
+from the seed, and walks the corpus under each. It reports =distinct
+series: 1612 before the eight rows, 1117 after=: 495 of 1,612 series
+go, a drop of 31 per cent. That is the acceptance's material drop,
+printed by the run and recorded here. The fixing entries are typed
+=("FIXING", "RATE", <index name>)= by construction rather than
+decomposed, exactly as =import_service= composes them, so the drop is
+driven by the market data side, which is where the eight rows act.
+
+=every_distinct_series_key_in_the_ore_corpus_classifies= now walks
+through both readers, as the Notes required.
+
+** What the census counts
+
+The Notes recorded that the two earlier counts disagreed: a manual
+survey reported 107,947 distinct keys across 41 types in 91 files, and
+the C++ test comment claimed 107,951 across 42 in 95. The census is the
+union of the two readers, and it reads:
+
+| Reader                  | Distinct keys | Types | Files |
+|-------------------------+---------------+-------+-------|
+| =parse_market_data=     |       107,947 |    41 |    91 |
+| =parse_fixings=         |           158 |     1 |    54 |
+| Union, as the test counts it |   108,105 |    42 |   145 |
+
+The two earlier figures were each right about their own scope, and
+neither was the union. The survey's 107,947 across 41 in 91 files is
+the market data reader alone. The union adds 158 fixing keys over 54
+files, and its forty-second type is =FIXING=, which no market data file
+carries: the market data side holds 35 of the original types plus 6 of
+the 8 this task added, and the fixing side contributes one type.
+
+=GENERIC-MD= is the added type that looked like the forty-second and is
+not one. It appears nowhere in the corpus except as the fixing id of
+four rows in two =fixings.csv= files, which address the datum they fix
+by its whole key:
+
+#+begin_src
+2024-12-02,GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C,2862.2941176471
+#+end_src
+
+=import_service= composes =FIXING/RATE/<id>= for every row of a fixing
+payload whatever its id names, so the walk gives those rows the same
+key the import gives them and they count as =FIXING=. The shape row for
+=GENERIC-MD= is therefore not reached by this corpus at all. Its
+classification rule is still covered, by the catalogue sweep in
+=every_classification_code_the_classifier_can_emit_exists_in_its_catalogue=,
+which classifies every type the classifier names, probes included.
+
+** The file name decides which reader a file feeds
+
+The first cut of this test offered every file to the market data reader
+and handed each rejection to the fixing reader. That is not what an
+import does, and it inflated the fixing census fourteen-fold.
+
+=import_service= takes market data and fixings as two separately named
+payloads, =req.market_data_content= and =req.fixings_content=, and
+never asks either reader to guess a file's kind. The corpus names its
+fixing payloads =fixings*=, so the walk does the same.
+
+Without that rule the fixing reader took 68 files for 2,246 keys, where
+the corpus holds 54 files and 158. The excess was not fixing data. The
+corpus's exposure reports are =date,EPE,ENE= tables, and
+=parse_fixings= checks the date and stores the two fields after it
+without reading them, so
+
+#+begin_src
+2016-02-05,99230.3007,0.0000
+#+end_src
+
+entered the census as a series whose qualifier is =99230.3007=. The six
+=xvacg-exposure.csv= files alone supplied 2,033 of the 2,246 keys.
+Naming the payload as the corpus and the import both name it is what
+keeps them out. A walk that counts them is not measuring fixings, and
+its floors would have been set from the inflated figure.
+
+** The fixing taxonomy, which this unit can now see
+
+Reading the fixing payloads puts the =FIXING= rule in front of the
+corpus for the first time. That closes finding 1 of the sibling task's
+review, which recorded the rule as the one the sweep proved nothing
+about and declined to remove it on the strength of the =index_fixing=
+catalogue code alone. The rule is now reached, by 158 distinct index
+names, and they do not agree with it. Every fixing classifies as
+=interest_rates= and =index_fixing=, while the names break down:
+
+| Prefix                      | Names | Class the name carries |
+|-----------------------------+-------+------------------------|
+| =COMM-=                     |    25 | commodity              |
+| =EQ-=                       |     8 | equity                 |
+| =FX-=                       |     7 | fx                     |
+| =BOND-ISIN:=                |     2 | bond                   |
+| =GENERIC-MD=                |     2 | equity                 |
+| rates and inflation indices |   114 | interest_rates         |
+
+So about 44 of the 158 name a class the rule does not give them. This
+is a taxonomy gap and not a fault this task introduces: the rule
+predates it, and the corpus could not contradict it before, because no
+test read a fixing. It is recorded rather than changed here, because
+Unit 5 turns the classification table into data, and a fixing rule that
+reads the index family is a row in that table.
+
+** Left open
+
+SHAPE_PROFILE and GENERIC-MD are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=, which also lacks
+the per-type qualifier and point table. That document is not in this
+task's acceptance and not in this unit's row of the Work-units table,
+and task 235 owns the point model's documentation. It stays open.
+
+** The suite
+
+=ores.marketdata.core.tests= is green: 193 cases, no failure, 28.83
+seconds, read back from the run's own results file. This unit changes
+one test file and no other target, so =ores.ore.core.tests= is not
+re-run; Unit 3's run of it stands.
+
+** Unit 5a evidence
+
+The classification table is data. Its rows live in
+=ores_marketdata_series_classification_rules_tbl=, one per series type,
+and the compiled map it replaces no longer sits on the path an import
+takes.
+
+=ores.marketdata.series_classification_rule= is generated from
+=projects/ores.marketdata/modeling/ores.marketdata.series_classification_rule.org=,
+with the facets the other marketdata catalogues carry: the domain type,
+the entity, the mapper, the repository, the service, the history
+provider registrar, the event registrar, the presentation field mapper,
+the JSON and table IO, the protocol, the generator and the eventing
+integration test.
+
+The natural key is =(tenant_id, series_type, metric)=. Two codegen
+templates gained what this model needs. The eventing test template now
+matches a notification by every key part rather than by the id alone,
+because the notify trigger emits one =entity_id= per key column: a test
+that matched on the type alone would accept a notification for another
+metric of the same type. The schema template now honours
+=:skip_empty_check:=, the per-column opt-out from the =<> ''= check,
+which =metric= needs because the empty metric is a value this table
+gives a meaning to. Both changes are guarded, and the new model is the
+only model in the tree that reaches either one, so no generated file
+that already existed changes.
+
+The table carries what its siblings carry: the temporal primary key
+=(tenant_id, series_type, metric, valid_from, valid_to)=, the exclusion
+constraint over the validity range, the version and latest-row indexes,
+the insert trigger that manages the version and validates
+=asset_class_code= when it is present together with
+=series_subclass_code= and =change_reason_code=, the notify trigger, and
+the delete rule that closes the active row instead of removing it.
+
+Two columns hold what one class column could not. =asset_class_source=
+is =literal= for forty-two of the forty-three rows, and those rows read
+their class from =asset_class_code=. The forty-third is =CORRELATION=:
+its source is =correlation_operands=, its class column is null, and its
+subclass is =correlation=, because a pairwise correlation belongs to the
+two classes its operands name and to neither alone. The gating between
+the two columns is a table check, so the database refuses a
+=correlation_operands= row that names a class and a =literal= row that
+names none.
+
+=GENERIC-MD= is the one row keyed by a metric as well as a type. Its
+metric is =EQUITY_OPTION=, because the wrapper's metric slot names the
+instrument inside it, so this row is the =EQUITY_OPTION= rule reached
+by the type route and it takes the class and the subclass that route
+gives. Every other row leaves the metric empty and covers every metric
+of its type.
+
+The seed is =marketdata_series_classification_rules_populate.sql=. It
+holds the forty-three rows grouped by family, each with a description
+that says why that type takes its class and its subclass and, where the
+choice can be disputed, the corpus evidence behind it. It is idempotent
+through =on conflict ... do nothing= against the active row.
+
+The seed reproduces the compiled table it replaces. A row-by-row compare
+of the two reports the same forty-two types with the same class and the
+same subclass on every one, including the codes that name a catalogue
+row outside the fifteen the generator's array carries, such as
+=transition_probability= for =RATING= and =prepayment= for =CPR=. So
+Unit 5b can read the rows without changing any answer the classifier
+gives today, which is what makes the swap verifiable rather than merely
+plausible.
+
+A test tenant is provisioned fresh on every run, so
+=ores_iam_provision_tenant_fn= copies the classification rows into it,
+as it already did for the series key shapes. Without the copy the
+tenant's table is empty, and the reader that Unit 5b builds rejects an
+empty table, so the copy is what keeps a fresh tenant able to import.
+
+=ores.testing/sql_values_rows.hpp= is new and holds the populate-script
+scanner that =series_key_shape_seed.hpp= introduced in Unit 3. Both
+seeds read a populate script as text, so a test that passes here passes
+against the rows the loader writes. The classification seed header is
+the second user of the scanner, and the shape seed header now shares it
+instead of carrying its own copy.
+
+=the_classification_rule_seed_is_well_formed= covers the seed. It
+requires a non-empty seed, restricts the source to its two literals,
+rejects a duplicate =(series_type, metric)=, requires a subclass and a
+description, enforces the gating between source and class, and pins the
+two rows whose meaning the columns alone do not carry: =CORRELATION=
+takes =correlation_operands= and the =correlation= subclass, and
+=GENERIC-MD= is keyed by =EQUITY_OPTION= and takes =equity=.
+
+Both suites are green, and both counts are read back from the runs' own
+results files:
+
+| Suite                        | Cases | Assertions | Failures | Skips |
+|------------------------------+-------+------------+----------+-------|
+| =ores.marketdata.core.tests= |   195 |        930 |        0 |     0 |
+| =ores.ore.core.tests=        |   535 |    429,773 |        0 |     0 |
+
+The marketdata suite holds two cases more than Unit 4 left it: the seed
+check above, and the generated
+=write_series_classification_rule_publishes_nats_changed_event=, which
+writes through the repository and watches the notification arrive on
+NATS. That case is what proves the new table's notify trigger, its
+subject and its event type are wired, which every later reader of the
+table depends on.
+
+The table reached its correct ownership by repair, not by the plan's
+=compass db recreate -y -k=. It was created owned by the test DDL user
+with a null ACL, where every sibling is owned by the environment's DDL
+user and carries the five-role grant. The repair moved the table and
+its two functions to the DDL user and granted each role its usual
+rights, and the ACL then matched the sibling marketdata tables exactly.
+The recreate was declined deliberately: it drops
+=ores_dev_brave_hopper=, which another active session shares. The
+grants are prefix-based, so a fresh setup gives a new
+=ores_marketdata_*= table its service grant without a change.
+
+Of the three checks, two pass and one cannot reach a verdict here. The
+cmake source lists are in step, reported by the check itself as "All
+component_files.cmake up to date". The template tangle is clean:
+=compass build --direct codegen_templates= re-tangled 176 facet
+documents and left the four committed template files byte-identical, so
+each tangled mustache matches its org source. The codegen drift check
+exits 1, and the failure is not this unit's. Its regeneration leaves
+every file this unit commits unmodified; the exit comes from its global
+=git diff=, which cannot be empty in this worktree while another
+session holds six files dirty, among them
+=projects/ores.utility/src/convert/base64_converter.cpp=. It must be
+re-run when the worktree is clean. Nothing it can find is outstanding
+here, because the two template changes reach one model each and that
+model is the one this unit adds.
+
+** Unit 5b and 5c evidence
+
+The classifier is a value built from rows. =series_classifier= takes
+the rule rows in its constructor and holds them by type and then by
+metric, and =import_service= reads the table and passes it in. The
+compiled map is gone: =classify=, =try_classify= and
+=known_series_types= answer from the rows alone, so a type the table
+does not carry fails rather than resolving from a list in the binary.
+The header says so, and a case in the classifier suite proves it by
+asking for a type the fixture does not carry.
+
+The constructor rejects the four states a reader must never accept: an
+empty row set, which names the table and says it is unseeded; a row
+whose =asset_class_source= is neither =literal= nor
+=correlation_operands=; a =literal= row that carries no class code; and
+a =correlation_operands= row that also names one, because a reader
+would not know which of the two to record. The first is why a fresh
+tenant must receive the copy, and the other three are why a bad row
+fails the import before any series is written rather than halfway
+through it.
+
+The empty metric is the wildcard the column documents. A key whose
+metric has no row of its own takes its type's row for the empty metric,
+which is the =GENERIC-MD= route, and a row whose type and metric repeat
+replaces the earlier one.
+
+=import_service= builds the classifier on the first series that needs
+one and keeps it for the request. Both the market data path and the
+fixings path create series, so the read belongs to neither branch, and
+a request that carries neither payload never pays for it. The read
+happens once per request, not once per series.
+
+One piece of the mapping stays compiled, and it is the piece that is
+not taxonomy. =operand_asset_class= resolves a correlation operand by
+the prefix ORE gives it, =EQ-=, =FX-= and =COMM-=, and by the =-CMS-=
+a rates operand carries instead of a prefix. That is a naming rule
+about ORE's own keys, which no row of ours can state. Task 235 owns its
+documentation.
+
+The corpus suite now builds its classifier from
+=ores::testing::seed_classification_rules()=, the populate script the
+loader reads, so the rows a test classifies against are the rows an
+environment receives. Nine cases cover the value directly, from a
+fixture of four rows that no database backs: the answers and the absent
+fallback, the metric preference and the empty-metric fallback, the
+two-operand correlation with its deduplication and its empty case, the
+sorted type list, the repeated row, and the four rejections.
+
+| Suite                        | Cases | Assertions | Failures | Skips |
+|------------------------------+-------+------------+----------+-------|
+| =ores.marketdata.core.tests= |   204 |        956 |        0 |     0 |
+
+Both counts are read back from the run's own results file, and the
+suite took 37.00 seconds. Nine cases and twenty-six assertions are new
+against Unit 5a's run. The full build is green for every target, and
+this unit's change reaches one test target, so only that one is re-run
+here; the other suites were green in the run that surfaced the failures
+below.
+
+Five of those failures were the environment and not the code, and all
+five carried the unseeded-table message. A test tenant is provisioned
+fresh on every run, and the =ores_iam_provision_tenant_fn= stored in
+the database copied forty-nine tables where the file copies fifty. The
+table it did not copy was the classification rules, whose copy block
+was committed after the function was last applied, so every tenant the
+first run provisioned held no rules and the reader refused to build,
+which is the behaviour this unit gives it. =compass db status= reported
+no drift, because it measures drift in days and the two changes share a
+day; that gap is recorded for the review round. Applying the one stale
+file brought the stored function in step, and the five cases pass.
+
+The sixth failure was this unit's own. The case that requires a
+=literal= row to carry a class built its row with an empty string, and
+an empty string engages the optional rather than clearing it, so the
+row carried a class and the rejection never fired. The case now clears
+the optional, which is the state the mapper carries from a null column.
+
+** The review round's row level security fix
+
+The two tables this task adds now carry the same tenant isolation as
+their siblings. A query against the catalogue reports the state of the
+four tables side by side, and it is the evidence rather than the
+generated SQL:
+
+| Table | Row level security | Policies |
+|-------+--------------------+----------|
+| =ores_marketdata_market_series_tbl= | on | 1 |
+| =ores_marketdata_series_classification_rules_tbl= | on | 1 |
+| =ores_ore_series_key_shapes_tbl= | on | 1 |
+| =ores_marketdata_market_series_asset_classes_tbl= | off | 0 |
+
+The first row is a sibling that already had the policy, so the two
+added tables now match a table the component already trusted. The last
+row is the junction the follow-up task owns.
+
+Both suites that the change can reach were re-run after the fix and are
+green: =ores.marketdata.core.tests= passed in 30.68 seconds and
+=ores.ore.core.tests= passed in 532.86 seconds, both reporting no
+failure and no skip. The marketdata run is the one that matters most,
+because it drives the import path and the eventing case that read both
+tables under the new policy. The ore run matters because a test tenant
+is provisioned fresh on every run, so it proves the provisioning copy
+still fills both tables with row level security switched on.
 
 * Test Scenarios
 
@@ -63,12 +741,119 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2102][#2102]] | [ores.ore,ores.marketdata] Make the series vocabulary data |
 
 * Review
 
+Two review rounds. The first is the local review over =git diff
+main...HEAD=, run before the PR was raised. The second is the on-demand
+=@claude= review of [[https://github.com/OreStudio/OreStudio/pull/2102][#2102]], which reported no correctness issues
+and raised two non-blocking observations.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two tables this task adds carry no row level security, while every sibling tenant-scoped table does. | =ore_series_key_shapes_create.sql=, =marketdata_series_classification_rules_create.sql= | Accepted, fixed | Important. Every marketdata data table opts in inline, and refdata applies RLS to its generated catalogues from a central file, so the omission is real and not a convention this branch is free to skip. Fixed with =:rls_tenant_isolation: true= in the two modelling orgs and a regeneration: 30 insertions across four files, being the policy block in each create and the =drop policy= line in each drop, with nothing else churned. Both create files were applied to the test database and each reported =ALTER TABLE= and =CREATE POLICY=. |
+| 2 | The =market_series_asset_classes= junction has neither row level security nor a drop script, and is absent from =marketdata_drop.sql=. | =marketdata_drop.sql=, =sql_schema_junction_create.mustache= | Declined here, follow-up | Important but pre-existing, and not fixable the way finding 1 was: the junction templates never read the =:rls_tenant_isolation:= flag, so no junction in the tree is tenant isolated whatever its model says. A proper fix is a template change reaching every junction, plus a hand-written drop file as refdata does for =currency_currency_groups=. Filed as [[id:7E064C21-14EA-401C-A73D-35EA1743EED7][Complete the market series asset class junction]]. |
+| 3 | The generated eventing test matches a notification as a set rather than as an exact compound key, so a permutation of the key parts would also match. | =write_series_classification_rule_publishes_nats_changed_event= | Declined here, follow-up | Minor. The match is =std::all_of= over a =std::find= into the notification's key vector, which is set membership. Unreachable in the generated case, whose fresh tenant emits only the notification it wrote. Filed as [[id:FA45F2D4-860F-4B24-98BE-3D0B39DAF186][Handle compound keys in the generated eventing artefacts]]. |
+| 4 | The event member =series_types= takes its name from the first key column and pluralises it, while carrying every key part. | =cpp_nats_changed_event.hpp.mustache= | Declined here, follow-up | Minor, and the same generated-shape question as finding 3. The trigger fills the vector from =jsonb_build_array(changed_series_type, changed_metric)=, so the member holds a type and a metric under a name that claims types alone. Correct for the single-column keys every other opted-in model has. Filed with finding 3. |
+| 5 | =misspell-fixer .= exits 1 on four org records. | =task_market-series-asset-class-junction.org= and three others | Declined | Minor, pre-existing. All four quote an upstream ORE identifier that carries a typo at source and is reproduced verbatim in those records, because a misspelt identifier is still the identifier. None of the four is in this branch's diff, and the identifier is described rather than repeated here so that this record does not become a fifth hit. |
+| 6 | =compass db status= reported no drift while the stored provisioner function was a migration behind. | =ores_iam_provision_tenant_fn= | No change | Note. The command measures drift in days and the two changes share a day, so a same-day schema change is invisible. This is what let the stale provisioner through in Unit 5a; applying one file fixed it. Recorded rather than changed, because the gap is in the tool's resolution and not in this task's artefacts. |
+| 7 | =try_classify= falls back from an exact metric match to the empty-metric wildcard row; the reviewer asked whether any type could now hold both, shadowing each other or leaving a metric-specific row unused. | =series_classifier.cpp=, =marketdata_series_classification_rules_populate.sql= | Declined, no change | The seed settles it: 43 rows for 43 distinct series types, one row per type. Forty-two carry the empty metric and exactly one, the =EQUITY_OPTION= row for GENERIC-MD, carries a metric. No type holds both, so neither shadowing nor an unused row is reachable, and =try_classify= tries the exact metric before the wildcard in any case. One correction: the constructor does not reject a duplicate =(series_type, metric)= pair. =by_type_[rule.series_type][rule.metric] = std::move(rule)= assigns, so a duplicate would silently overwrite the row before it. That is unreachable because =read_latest= filters on =valid_to= being the maximum, which leaves exactly one live version per natural key, so uniqueness comes from the read path and not from the constructor. |
+| 8 | =feed_ingest_loop= guards the cached registry with =if (series_key_registry_)=, though =start()= populates it before subscribing, which makes the branch dead. | =feed_ingest_loop.cpp= | Declined, no change | Minor, and the reviewer allowed it as deliberate defence. The guard keeps =on_tick= from depending on an invariant that a different function establishes. Removing it would trade one =std::optional= test for a cross-function assumption about call order. Two corrections to the reference, neither changing the substance: the file is =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= rather than the =core/src/service/= path the comment cites, and the guard is at line 409. |
 
 * Result
+
+The ORE series vocabulary is data. Both facts that describe a key, how
+it splits into a series and a point and what it classifies as, are now
+rows a user can manage rather than lists compiled into the binary, and
+every series type the corpus carries decomposes properly.
+
+The task title names only the smaller half of what shipped. The Plan
+records the rescope: the eight missing types were to be added to a
+compiled table, and instead the table became managed data, which pulled
+the classification table in with it.
+
+** What shipped
+
+- =ores.ore.series_key_shape=, owned by =ores.ore= because the grammar
+  it records is ORE's and ORE defines it. Forty-three rows: the
+  thirty-five the compiled table carried, reproduced row for row, plus
+  the eight the corpus carries and the table did not know.
+- =ores.marketdata.series_classification_rule=, owned by
+  =ores.marketdata= because it maps a type onto our refdata taxonomy.
+  Forty-three rows that reproduce the compiled map, so the swap changes
+  no answer the classifier gave before. Two columns carry what a single
+  class column could not: =asset_class_source= separates a literal rule
+  from a correlation, whose classes are read from the two operands its
+  key names, and the key holds the metric as well as the type so
+  =GENERIC-MD= is classified by the instrument inside it.
+- =series_key_registry= and =series_classifier= are values built from
+  rows and passed in by const reference. Neither reaches for the
+  database, so both are testable with no database, no NATS and no
+  pipeline, which is what the story asked for.
+- =ores_iam_provision_tenant_fn= copies both tables into a fresh
+  tenant, so a new environment can import.
+- The review round found that the two added tables carried no row level
+  security and fixed it. The policy is opted into from each model, and
+  a catalogue query confirms both tables now report row level security
+  on with one policy, matching the sibling table the component already
+  trusted.
+
+** Acceptance
+
+Every bullet is met. Two are worth stating precisely rather than
+ticking.
+
+The eight types each have a row, and the corpus proves the seven it
+carries as market data keys. =GENERIC-MD= is the exception the Notes
+explain: the corpus holds it only as the fixing id of four rows, so
+=import_service= composes =FIXING/RATE/<id>= for them and the
+=GENERIC-MD= shape row is never reached by this corpus. Its
+classification rule is still covered, by the catalogue sweep that
+classifies every type the classifier names.
+
+The census drop is the acceptance's material change, and it is
+measured rather than asserted: 1,612 distinct series before the eight
+rows and 1,117 after, a fall of 31 per cent, printed by the test that
+runs both ways.
+
+The classifier's type set and the table's type set are equal at
+forty-three, asserted in both directions, so a type with a shape row
+and no classification row, or the reverse, cannot pass unnoticed.
+
+** Evidence
+
+| Suite | Result | Time |
+|-------+--------+------|
+| =ores.marketdata.core.tests= | 1/1 passed | 30.68 s |
+| =ores.ore.core.tests= | 1/1 passed | 532.86 s |
+
+Both were re-run after the row level security fix, with row level
+security live on both new tables. The ore run matters because a test
+tenant is provisioned fresh on every run, so it proves the provisioning
+copy still fills both tables with the policy switched on.
+
+The remaining checks: the cmake source lists report "All
+component_files.cmake up to date"; the template tangle is clean; and
+=misspell-fixer .= reports four hits, all pre-existing and none in this
+branch.
+
+** Left open
+
+The codegen drift check cannot reach a verdict in this worktree. It
+regenerates and then diffs the whole tree, and another session holds
+files dirty, so its global diff cannot be empty. Its regeneration
+leaves every file this branch commits unmodified, which is the part
+that speaks to this change; it must be re-run on a clean worktree.
+
+Two documentation gaps stay open and belong to tasks rather than to
+this one: =SHAPE_PROFILE= and =GENERIC-MD= are absent from
+=doc/knowledge/domain/ore_market_data_catalogue.org=, which also lacks
+the per-type qualifier and point table, and task 235 owns the
+correlation operand convention.
+
+Two defects found in review are pre-existing and filed rather than
+fixed here: the junction table has neither row level security nor a
+drop script, and the generated eventing artefacts mis-handle a
+compound key. Both are recorded in the Review table with the tasks that
+own them.

@@ -25,5 +25,6 @@ set(files
     "repository_market_fixings_repository_tests.cpp"
     "repository_market_observations_repository_tests.cpp"
     "repository_market_series_repository_tests.cpp"
+    "series_classification_rule_eventing_integration_tests.cpp"
     "service_import_service_tests.cpp"
 )

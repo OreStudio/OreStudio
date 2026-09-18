@@ -21,6 +21,7 @@
 #include "ores.ore.core/market/market_data_serializer.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/series_key_shape_seed.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
@@ -48,6 +49,7 @@ void check_market_roundtrip(const std::string& rel_path) {
     using ores::platform::filesystem::file;
     using ores::ore::market::parse_market_data;
     using ores::ore::market::serialize_market_data;
+    using ores::testing::seed_registry;
 
     const auto path = examples_path(rel_path);
     INFO("fixture: " << rel_path);
@@ -57,7 +59,7 @@ void check_market_roundtrip(const std::string& rel_path) {
 
     // First parse
     std::istringstream in1{content};
-    const auto original = parse_market_data(in1);
+    const auto original = parse_market_data(in1, seed_registry());
 
     // Serialize
     std::ostringstream out;
@@ -65,7 +67,7 @@ void check_market_roundtrip(const std::string& rel_path) {
 
     // Re-parse
     std::istringstream in2{out.str()};
-    const auto roundtripped = parse_market_data(in2);
+    const auto roundtripped = parse_market_data(in2, seed_registry());
 
     REQUIRE(roundtripped.size() == original.size());
     for (std::size_t i = 0; i < original.size(); ++i) {

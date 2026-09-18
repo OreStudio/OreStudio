@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 7E064C21-14EA-401C-A73D-35EA1743EED7
+:END:
+#+title: Task: Complete the market series asset class junction
+#+description: The market_series_asset_classes junction carries neither the row level security its sibling data tables have nor a drop script. The junction template ignores the rls_tenant_isolation flag, so no junction in the tree is tenant isolated, and the table is absent from marketdata_drop.sql even though refdata hand-writes a drop file for its own junction.
+#+type: task
+#+level: s1
+#+filetags: :complete-market-series-classification:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give =ores_marketdata_market_series_asset_classes_tbl= the two things
+every other tenant-scoped table in the tree has: row level security and
+a drop script. The junction must not be readable across tenants, and it
+must be removable in the same order as its siblings.
+
+Two defects are in scope, and they share a cause in the junction
+codegen path rather than in this one table.
+
+- The table carries no row level security. Its sibling data tables in
+  =ores.marketdata= each enable it inline, and =refdata= applies it to
+  its own catalogues from a central policies file. The junction has
+  neither, and a junction holds the same tenant-scoped data as the
+  tables it joins.
+- The table has no drop script. =marketdata_drop.sql= wires every
+  entity drop pair and omits the junction, while =refdata= hand-writes
+  a drop file for =currency_currency_groups=. The two junctions are
+  the same shape of object and get different treatment.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- The junction template honours =:rls_tenant_isolation:= the way the
+  domain entity templates do, so a junction model opts in by flag
+  rather than by hand-written SQL.
+- The market series asset class junction enables row level security
+  with the tenant isolation policy its sibling tables carry, applied to
+  the live database.
+- Every junction in the tree that holds tenant-scoped data is brought
+  in step, and the models that gain a policy are named in the result.
+- =marketdata_drop.sql= drops the junction in reverse dependency order,
+  and a drop file exists for it.
+- Both suites that touch the table are re-run green, and a query from
+  another tenant returns no junction rows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Found during the review round of =register-the-unmapped-series-types=,
+which added the table. That task fixed the same defect on the two
+tables it owns, =ores_ore_series_key_shapes_tbl= and
+=ores_marketdata_series_classification_rules_tbl=, by opting in with
+=:rls_tenant_isolation: true= and regenerating.
+
+The junction could not be fixed the same way, and that is why it is a
+task rather than part of that review round.
+=sql_schema_junction_create.mustache= and its drop twin never read the
+flag, so no junction in the repository is tenant isolated whatever its
+model says. Adding the flag would be a no-op, and the fix is a
+template change that reaches every junction at once.
+
+The absent drop file is the same shape of gap. =marketdata_drop.sql=
+lists the five entity drop pairs and the two classification rules
+drops; the junction appears in none of them. =refdata= treats its
+junction as a first-class object with a hand-written drop file holding
+=drop rule=, =drop trigger=, =drop function= and =drop table=, in that
+order.
+
+The table belongs to task 209's Unit 4, so this task inherits its
+consumers. Nothing in this task changes the classifier or the import
+path.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

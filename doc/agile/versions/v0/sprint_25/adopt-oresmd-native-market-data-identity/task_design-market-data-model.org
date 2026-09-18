@@ -1,0 +1,611 @@
+:PROPERTIES:
+:ID: F942BEFA-F1E2-42CD-995F-5F253F20B8CC
+:END:
+#+title: Task: Design: the market data data model on oresmd
+#+description: Settle the target market data data model against prior art: one asset-class taxonomy from the asset_classes.org analysis, oresmd as the single identity column, the observation point as the serialised oresmd point, the controlled vocabularies as codegen reference tables treated as data rather than hardcoded enums, and surrogate keys in their most efficient form. Design only, no schema or code change.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-17
+#+updated: 2026-09-17
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+startup: inlineimages
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle the target data model for market data, so the story's
+remaining implementation tasks are built against an agreed shape. The
+model covers the asset class taxonomy, the identity of a series, the
+point on an observation, the controlled vocabularies, the curve
+layer, and the key form.
+
+Two documents already settle most of it. This task carries those
+decisions forward unchanged, and resolves the parts they leave open.
+Where it departs from a settled position it says so.
+
+Three requirements were added after the first draft and they change
+the scope of the parent story. They are section 4.8. The model must
+carry the values, not only the identity.
+
+This task produces the design and its diagram. It changes no schema
+and no code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Design drafted and revised 2026-09-17; awaiting agreement on the open questions in section 4.10. |
+| Waiting on   | Agreement on the open questions, and a ruling on the story's out-of-scope conflict in section 4.8.1. |
+| Next         | Distil the agreed decisions into the story, amend the affected implementation tasks, and raise the round-trip workstream. |
+| Last touched | 2026-09-17                               |
+
+* Acceptance
+
+- The asset class taxonomy matches [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]]: seven
+  classes, with =rates= renamed =interest_rates= and =cross_asset=
+  removed.
+- Every decision already taken by the analysis task
+  ([[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on oresmd]]) and the
+  inverse-projection task
+  ([[id:022F15FD-0BC3-4F07-BA1F-916AB65EFD39][Inverse projection]]) is either carried forward unchanged or
+  changed with the reason stated in writing. A silent reversal is the
+  failure this acceptance exists to catch.
+- The three-way vocabulary collision is resolved with one authority
+  named, and the resolution says what each loser becomes.
+- The observation point is shown to be the serialised oresmd point,
+  with the arity evidence recorded and the canonical form taken from
+  the implemented parser rather than re-invented.
+- The controlled vocabularies are specified as generated reference
+  tables treated as data in code, with the cost of that choice stated
+  and the values that should stay code named.
+- The surrogate key form is chosen, with the trade-off stated.
+- The curve layer is placed in the model, covering the curves the
+  bootstrap already produces.
+- The generated market data is shown to be representable, naming the
+  tables that carry it.
+- The ORE sample round trip is specified, with the fidelity limits
+  measured against the real files rather than assumed.
+- A PlantUML class diagram carries the model, with every class and its
+  attributes.
+- No schema or code change is made.
+
+* Plan
+
+** What is already settled
+
+Two pieces of prior art settle most of this model. Neither is
+re-opened here.
+
+*** The asset class taxonomy
+
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] analyses seven published classifications and
+proposes one taxonomy. Seven classes, all at the same level:
+
+| Code             | Name             |
+|------------------+------------------|
+| =interest_rates= | Interest Rate    |
+| =inflation=      | Inflation        |
+| =fx=             | Foreign Exchange |
+| =equity=         | Equity           |
+| =commodity=      | Commodity        |
+| =credit=         | Credit           |
+| =bond=           | Bond             |
+
+Two changes come with it. =cross_asset= is removed, because a
+correlation between two classes is a relation between them rather
+than a third kind of thing. =rates= is renamed =interest_rates=,
+because with =inflation= beside it the bare word no longer reads as
+the interest rate class on its own.
+
+*** The identity decisions
+
+The analysis task decided the following, and they stand:
+
+| Decision | Detail |
+|----------+--------|
+| Identity storage | One =oresmd_uri= column per identity-bearing entity. No component fields. |
+| The hybrid | Rejected everywhere. Two writable copies of one identity drift, and no constraint can detect it. |
+| Classification | =asset_class=, =series_subclass= and =is_scalar= are derived, not identity. Generated columns only where an index needs them. |
+| Surrogate FKs | Kept. They are relationships, not identity copies. Joins, RLS and the hypertable depend on them. |
+| Validation | Moves out of SQL check constraints and into the oresmd layer. |
+| Point | =point_id= keeps its column and carries the serialised oresmd point. Scalar series have a null point, and the "SPOT" sentinel dies. |
+| Boundary | ORE text and CSV stay boundary formats. ORE keys enter only at import. Nothing ORE-shaped is stored. |
+
+*** The canonical form is implemented, not proposed
+
+The inverse-projection task shipped in PR #1963. The canonical form
+is therefore a fact about the code, not a design question:
+
+- =oresmd_projections::from_ore_key= maps an ORE key string to a
+  =market_data_identifier=, seeded by the =series_key_registry=.
+- =oresmd_parser::to_uri(identifier, canonical_values)= emits the one
+  canonical string per identifier: fixed parameter order per asset
+  class, lower-cased codes, absent fields skipped.
+- The builder matches tenor and point against a supplied
+  =canonical_values= container and rejects unknown spellings.
+- Round trips are pinned by tests: =parse(to_uri(id)) == id= and
+  =to_uri(parse(uri)) == uri=.
+- The stored string is the percent-encoded canonical form, and
+  matching uses the same form.
+
+** The asset class collision, and how it resolves
+
+Three vocabularies named the same axis and disagreed.
+
+| Source | Values |
+|--------+--------|
+| oresmd URI authorities | =fx=, =ir=, =equity=, =credit=, =commodity=, =inflation=, =correlation= |
+| =domain::asset_class= | =fx=, =rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=, =cross_asset= |
+| The taxonomy | =interest_rates=, =inflation=, =fx=, =equity=, =commodity=, =credit=, =bond= |
+
+The taxonomy is the authority. Three consequences follow.
+
+- =ir= becomes =interest_rates=. The C++ enum and the
+  =refdata_asset_class_codes= table carry the taxonomy's spelling once
+  its rename lands, so the URI authority is the odd one out and moves.
+- =correlation= stops being an authority. The two surveyed example
+  keys of that shape, =CORRELATION/RATE/CCY-EUR-USD=, name a pair of
+  currencies rather than a class, which matches the taxonomy's
+  reading. A correlation identifier references two classes.
+- =bond= is added. The example quote file carries
+  =BOND/YIELD_SPREAD/...= rows, and =from_ore_key= rejects them today
+  because no oresmd authority exists. Under the taxonomy =bond= is a
+  legitimate root node, so the rejection is a coverage gap rather than
+  a correct verdict.
+
+The identifier variant gains the =bond= struct and keeps
+=correlation=, whose =asset_class= authority becomes a pair of class
+references rather than a single one. The variant is then eight
+alternatives where it holds seven today.
+
+#+begin_note
+*Settled.* Nesting =inflation= under =rates= was the one open item in
+this section. The taxonomy holds it at the same level as the other six
+classes, so a consumer that reports inflation separately selects the
+class and one that does not leaves it out. SIMM's placement of
+inflation inside the interest rate curve is recorded as a projection
+that scheme applies, not as a parent-child relation.
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] carries the rule and the correspondence that states
+it.
+#+end_note
+
+** Identity stays one column
+
+=market_series= carries one =oresmd_uri= column. The natural key is
+=(party_id, oresmd_uri)=. =series_type=, =metric=, =qualifier=,
+=asset_class=, =series_subclass= and =is_scalar= are dropped or
+become generated where an index needs them.
+
+This is unchanged from the analysis. It is restated because the
+tempting alternative is worth naming: a column per oresmd query key
+(=ccy=, =index=, =tenor=, =role=, =quote=, =metric=, =model=,
+=point=) is an untyped union in SQL, since no single asset class
+populates all of them. The parser already enforces the per-class
+shape, so the columns would add nothing the validated URI does not
+carry.
+
+** The point is already oresmd notation
+
+The question was whether the observation coordinate can be oresmd
+notation without the =oresmd://= prefix. It can, and that is what the
+code already does. The point is a fragment of the same grammar, not a
+whole identifier, so it carries no scheme.
+
+=from_ore_key= builds it as a lower-cased comma-joined composite. For
+a swaption it is three parts, as in =10y,2y,atm=. A typed
+=volatility_surface_point= struct exists alongside it for the vol
+families. The =canonical_values= container holds the composite as one
+literal, so the spelling is validated like any other.
+
+*** Why three parts, with the measured evidence
+
+A swaption is an option on a swap, so it needs two periods. The
+example quote file prices a full grid, every expiry from =1M= to =30Y=
+crossed with every underlying swap tenor from =1Y= to =50Y=. So
+=10y,2y,atm= is a ten-year option into a two-year swap, at the money,
+and a two-part point could not name a cell in that grid. The third
+part is not always the literal =ATM=: the same grid carries
+=Smile/-0.01= and =Smile/0.02=.
+
+The point is not always three parts. Counting the shapes actually
+present in =market_20160205.txt=, by segments after the =TYPE=
+segment:
+
+| Key shape | Segments | Example | The point is |
+|-----------+----------+---------+--------------|
+| =FX/RATE= | 3 | =FX/RATE/EUR/USD= | absent, the pair identifies it |
+| =CORRELATION/RATE= | 2 | =CORRELATION/RATE/CCY-EUR-USD= | absent, the factor pair carries it |
+| =BOND/YIELD_SPREAD= | 2 | =BOND/YIELD_SPREAD/ISIN:...= | absent, the security is the entity |
+| =CAPFLOOR/SHIFT= | 3 | =CAPFLOOR/SHIFT/EUR/6M= | absent, a surface-level shift |
+| =MM/RATE= | 4 | =MM/RATE/CHF/0D/1D= | one tenor |
+| =CDS/CREDIT_SPREAD= | 5 | =CDS/CREDIT_SPREAD/BANK/SR/USD/1Y= | seniority and tenor |
+| =SEASONALITY/RATE= | 4 | =SEASONALITY/RATE/MULT/UKRPI/JAN= | a month |
+| =SWAPTION/RATE_LNVOL= | 5 | =.../EUR/10Y/2Y/ATM= | expiry, swap tenor, strike |
+| =SWAPTION/RATE_LNVOL= | 6 | =.../EUR/10Y/2Y/Smile/-0.01= | the same, strike carries a kind |
+| =CAPFLOOR/RATE_LNVOL= | 7 | =.../CHF/20Y/6M/0/0/0.025= | expiry, index tenor, three-part strike |
+
+The arity varies by (quote type, metric), from absent to three
+parts. One text column holding the validated composite is the right
+shape for that. A column per axis would be a union for the same
+reason as section 4.3, and would have to be revisited every time ORE
+adds a quote family.
+
+#+begin_note
+*Unconfirmed.* The three-part tail on =CAPFLOOR/RATE_LNVOL=, as in
+=.../20Y/6M/0/0/0.025=, is 3721 of 3726 capfloor rows in the sample.
+Its exact semantics are not documented anywhere in the vendored tree,
+which carries examples and schemas but not the pricing sources.
+=from_ore_key= rejects the capfloor and option families today, which
+is the safe behaviour until the key is confirmed against ORE's
+key-building code. The model does not depend on the answer, but the
+coverage gap does, and section 4.8.5 makes closing it a requirement.
+#+end_note
+
+** The vocabularies become reference tables, with one exception
+
+=oresmd_enums.hpp= is generated from a template with its values
+hardcoded in the template text. Twelve vocabularies live that way.
+Some of them duplicate a SQL CHECK constraint, which means adding a
+value needs a template edit and a migration that must agree.
+
+The proposal is a codegen =lookup_entity= model per vocabulary,
+generating the table and the C++ accessor, with the values loaded as
+data. The machinery exists and has no authored instances yet.
+
+The gains are real but they are not the ones first assumed. The
+identity decision in section 4.3 removes the foreign keys: with one URI
+column and no component columns, no market data table has a column to
+point at a vocabulary table. The gains that survive are these.
+
+- One source of truth. The 22 =index_family= values exist today as an
+  enum, and as a CHECK constraint on
+  =ores_synthetic_ir_curve_generation_configs_tbl=. A reference table
+  collapses the two.
+- No rebuild to add a value. A new benchmark family or quote type
+  becomes a row, not a template edit plus a migration.
+- The validator already wants data. =canonical_values= is supplied to
+  the URI builder at run time. A table is where it comes from.
+
+*** The exception
+
+Two of the twelve are not business vocabularies. =instrument_type=
+(fixing, curve, quote, vol) and =curve_role= (discount, projection,
+self_discounting) are structural discriminators. The parser and the
+projections branch on them by name, as in
+=id.type != instrument_type::quote=. Nobody adds a fifth instrument
+type without a code change, so making them data buys nothing and
+costs compile-time exhaustiveness.
+
+They stay as code constants. The remaining ten become reference
+tables.
+
+*** The cost, stated plainly
+
+A vocabulary held as data cannot be switched on exhaustively. The
+compiler stops proving that every quote type is handled. What
+replaces it is a run-time check against the loaded table at the
+validation boundary, which is where the analysis already moved
+validation. The trade is deliberate: a missing handler becomes a
+rejected identifier at import rather than a compile error.
+
+** Surrogates
+
+The observation table is the only place where the surrogate key is on
+a hot path. It is a hypertable holding tick data, and its foreign key
+to =market_series= is indexed.
+
+| Form | Width | Note |
+|------+-------+------|
+| =uuid= (today) | 16 bytes | Random, so index locality is poor on an append-only table. Globally unique, no coordination. |
+| =uuidv7= | 16 bytes | Time-ordered, so locality is good. Keeps global uniqueness and the existing codegen assumptions. |
+| =bigint= identity | 8 bytes | Best locality and half the width. Sequential, so it needs coordination across environments. |
+
+The recommendation is =uuidv7= for the series surrogate, or =bigint=
+if a measurement shows the FK index dominating. Two things argue
+against changing the type on principle alone.
+
+- The surrogate is not the dominant cost of a tick row, which also
+  carries a =timestamptz=, three text columns and the point composite.
+  Halving an 8-byte-to-16-byte index entry is a small share of that.
+- The codegen stack assumes UUID primary keys across registrars,
+  repositories and the Qt layer. A =bigint= series key is a
+  cross-cutting change, and it should be paid for by a measurement
+  rather than by a preference.
+
+A measurement settles it. The loading exercise at 1k, 10k and 20k
+series used for the bond family is the shape to repeat.
+
+** The curve layer
+
+A curve is not observed. The bootstrap computes it from quotes by a
+build procedure, so its identity and its values are different kinds
+of thing. The synthetic component already does this: it builds IR
+curves from generation configs and publishes them as ticks.
+
+Curve identity is already modelled. It is a series with
+=instrument_type = curve=, which projects to the ORE curve key
+=Yield/<ccy>/<curve_id>= and carries the =role= query key. Nothing
+new is needed for identity.
+
+Curve values need two tables, and they are the same shape as the
+observation tables rather than a new concept:
+
+| Table | Key | Carries |
+|-------+-----+---------|
+| =curve_build= | series, reference date, build kind | which curve was built, for which reference date, by which procedure |
+| =curve_point= | build, point | one node of the built curve: the point composite from section 4.4, plus the value |
+
+The point composite is reused unchanged, so one coordinate grammar
+covers observed and derived values. A zero curve node at the five
+year point is the same literal, =5y=, whether it was read from a
+vendor file or solved by the bootstrap.
+
+A =curve_build= is one observation of a curve entity, which is why
+its key is (series, reference date). That is deliberately the same
+shape as (series, observation_datetime) on the observation table. A
+consumer that walks either table does the same thing.
+
+** Values come into scope
+
+The three requirements added after the first draft are these. The
+first is the largest.
+
+*** The ORE sample round trip
+
+*Requirement.* Import all the market data in the ORE samples, store
+it, confirm it reads correctly in the database, export it back to ORE
+format, and have the result identical.
+
+*This contradicts the parent story.* Its out-of-scope section reads:
+"The market data values themselves (quotes, fixings, curves): only
+identity is in scope." The requirement cannot be met under that
+boundary, so the boundary moves. The story's out-of-scope line needs
+amending, and this is a ruling for the owner rather than a decision
+this task can take.
+
+*** What the sample files actually look like
+
+This is measured against =external/ore/examples/Input/=, not assumed.
+
+#+begin_example
+20160205 BMA_SWAP/RATIO/USD/3M/3M 0.8
+20160205 BMA_SWAP/RATIO/USD/3M/1Y 0.8
+...
+#### Fake ####
+
+#artificial
+20160205 ZERO/RATE/USD/2D/1D/1M 0.0043
+#+end_example
+
+Four properties matter for a round trip, and three of them are
+hostile to it.
+
+1. *A uniform data row.* =YYYYMMDD KEY VALUE=, space separated. 8149
+   rows in =market_20160205.txt=. This part is easy, and the key is
+   exactly what =from_ore_key= consumes.
+2. *Hand-written section comments.* The file carries =#### Fake ####=,
+   =###fake###=, =#####=, =#artificial=, =# artificial=, =# Normal
+   volatility cap surfaces=, =# YY Inflation Volatilitites= and more.
+   The styles are inconsistent, and one carries a spelling mistake.
+3. *Blank lines as separators,* in places that follow the sections
+   rather than the data.
+4. *A hand-chosen row order that is not a function of the keys.* The
+   groups run =BMA_SWAP, CC_BASIS_SWAP, BASIS_SWAP, MM, IR_SWAP, FRA,
+   FX, FXFWD, ...=, which is neither alphabetical nor by segment count.
+   Within a group the order is by tenor *as a duration*, where =
+   {3M, 1Y, 2Y, ..., 10Y, 12Y, 15Y, 20Y, 25Y, 30Y}= is the file's
+   order and a string sort would put =10Y= before =2Y=.
+
+So the file is not a pure function of its data. Comments, blank
+lines and group order are all editorial choices made when the file
+was written.
+
+*** The fidelity question this forces
+
+An exporter that emits rows in a canonical sort order cannot
+reproduce these files byte for byte. Three positions are available,
+and the design does not pick between them because the answer is a
+product call about what identical means.
+
+| Position | What is stored | Round trip is identical | Cost |
+|----------+----------------+--------------------------+------|
+| Replay | The observations, plus the source line order and the comment and blank lines | Byte for byte | Stores presentation in the database, and the stored text is useless for anything except replay |
+| Canonical | The observations only | After normalising both sides | Cannot reproduce the files as they stand |
+| Both | The observations, plus an optional layout record | Byte for byte where a layout exists, canonical where it does not | The two must be kept consistent, which is the drift the analysis rejected elsewhere |
+
+The recommendation is *canonical plus a normalising comparison*, with
+replay available later if byte identity turns out to be required for
+a specific delivery. The reasoning is that the round trip exists to
+prove no data is lost, and a normalising comparison answers that
+question directly. Byte identity also answers it, but it additionally
+asserts that our exporter reproduces somebody else's whitespace,
+which is a different and much larger claim.
+
+*What "normalising" has to mean.* Parse both files into a multiset of
+(date, key, value) triples and compare those. This catches every real
+loss, including a dropped row, a changed value, a changed date and a
+re-keyed series. It deliberately ignores order, comments and blank
+lines, which is exactly the set of things section 4.8.2 showed to be
+editorial.
+
+*** The date format differs between the two file kinds
+
+Measured, not assumed:
+
+| File | Row shape | Example |
+|------+-----------+---------|
+| =market_*.txt= | =YYYYMMDD KEY VALUE= | =20160205 BMA_SWAP/RATIO/USD/3M/3M 0.8= |
+| =fixings*.txt= | =YYYY-MM-DD CODE VALUE= | =2016-01-28 EQ-SP5 2244.2= |
+
+The same exporter must emit both, so the date format is a property of
+the file kind and not a global setting.
+
+The fixings file groups by index code and sorts by date ascending
+within a code, which is a different editorial rule again.
+
+*** Keys with no oresmd mapping
+
+The round trip imports *every* key in the samples, and the samples
+contain ORE families that =from_ore_key= rejects today: BOND, the
+option and capfloor families, and the volatility sub-families. Under
+the taxonomy resolution in section 4.2 some of these gain a mapping,
+and the rest do not.
+
+Two ways out, and they are not equivalent.
+
+- *Map everything.* Extend oresmd until every sampled key has an
+  identifier. Complete, and it forces the capfloor grammar question
+  in section 4.4 to be answered rather than deferred.
+- *Pass through unmapped keys.* Store the raw ORE key for anything
+  the parser rejects, flagged as unmapped. Gets the round trip green
+  sooner and leaves a permanent second identity form in the table,
+  which is the drift the analysis ruled against.
+
+The recommendation is to map everything. It costs the capfloor
+answer, and it keeps one identity form, which is the whole point of
+the story.
+
+*** Curves the bootstrap produces
+
+*Requirement.* We already bootstrap curves, so the model must
+represent the curves we create.
+
+Section 4.7 covers it. What is worth stating here is that the bootstrap
+is the *first producer* of =curve_build= rows, so the round trip in
+4.8.1 applies to them too: a curve we build must export to ORE format
+as well as a curve we read. That is a stronger requirement than
+storing it, and it is the reason the point composite is reused rather
+than a second coordinate form being invented for curves.
+
+*** Generated market data
+
+*Requirement.* We generate market data, so the model must represent
+what we generate.
+
+This is already covered and needs no new tables, which is worth
+recording because it is easy to assume otherwise. Generated data
+lands in the same two tables as vendor data:
+
+- A generated observation is a =market_observation= row whose
+  =source= column names the producer channel, as in
+  =synthetic.v1.tick.fx_spot.eur-usd=.
+- Its provenance is an =observation_lineage= row: the
+  =derivation_config_id= and =derivation_config_version= that produced
+  it, the =source_as_of= it was built from, and the
+  =source_series_ids= it consumed.
+
+So the model already distinguishes the three provenances in one
+place: a vendor observation has a source and no lineage, a derived
+observation has both, and a bootstrapped curve has a =curve_build=.
+
+** Consequences for the existing tasks
+
+If this design is agreed, three of the story's tasks change and none
+is invalidated.
+
+| Task | Effect |
+|------+--------|
+| [[id:9B56689B-6EB0-448D-A5FA-8C029803B9F5][Identity core]] | Unchanged, plus the vocabulary tables land here or just before. |
+| [[id:413E0BB1-5156-4442-A582-9AD403AFA905][Observation identity]] | Clarified: the point is the implemented comma-joined composite, not a new serialisation. |
+| [[id:EC35D956-8E23-4455-830F-F7D2BCBB0A4A][Generation configs]] | Unchanged. |
+| [[id:F2284D6F-CF30-4991-9F0A-50AACEFDD0D9][The NATS wire]] | Unchanged. |
+| [[id:09BE481B-DEA7-45D1-9BD2-4FB31C24E811][ores.shell]] | Unchanged. |
+| [[id:5E787646-8DB7-4B29-9DA6-7E94DAAABA52][Delete legacy representations]] | Grows: the hardcoded enum values that become tables are deleted from the template. |
+| Inverse projection | Reopened in one respect only: =bond= and =correlation= coverage, per section 4.2. |
+
+Two of the story's tasks are out of scope: the work in section 4.8 is
+new and is not covered by any of them. The scaffolded tasks are
+unchanged by this design, so a further workstream lands alongside
+them.
+
+** Open questions
+
+1. *What identical means.* Section 4.8.3. This is the one that blocks
+   the round-trip workstream, and it is a product call rather than an
+   engineering one.
+2. *The story's out-of-scope line.* Section 4.8.1. The requirement
+   cannot be met without amending it.
+3. *The capfloor grammar.* Section 4.4. Deferred twice now. Mapping
+   every key in section 4.8.5 forces it.
+4. *The taxonomy's own open item.* Whether =SecuritiesFinancing=
+   earns a root. It belongs to
+   [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]], not here.
+5. *How a correlation references two classes.* oresmd has no grammar
+   for it today, since =correlation= was a single authority.
+6. *The surrogate measurement.* Section 4.6 recommends measuring before
+   changing the key type.
+7. *Whether =market_fixing= stays its own table.* The analysis keeps
+   it, on the grounds that a fixing has no point dimension. It is
+   otherwise identical to an observation, down to sharing the
+   =soft_update_delete= trigger. Not reopened here, and the round trip
+   in 4.8.1 will exercise both, so the duplication becomes visible.
+8. *A conflict between two documents.* The inventory document states
+   that fixings have no bitemporal correction and are immutable once
+   published. The generated SQL gives =market_fixing= the same
+   soft-update trigger as observations. One of the two is wrong, and
+   vendors do restate fixings, so the document is the likelier
+   candidate.
+
+* Notes
+
+- The model is drawn as a PlantUML class diagram at
+  [[proj:projects/ores.marketdata/modeling/ores.marketdata.puml][=ores.marketdata.puml=]], carrying every class and its
+  attributes. The diagram is the reference for the shape; this
+  document is the reference for why.
+
+  [[proj:projects/ores.marketdata/modeling/ores.marketdata.png]]
+
+  Green boxes are persisted tables. Amber boxes are added by this
+  design. Purple boxes are vocabulary that becomes a reference table.
+  Grey boxes are vocabulary that stays a code constant.
+- This task was written in response to a design review that produced
+  an HTML mock-up of the model. That mock-up is superseded by this
+  document and is not kept: it proposed typed component columns for
+  =market_series= and for the observation coordinate, which section
+  4.1.2's hybrid ruling had already rejected. Recording it here so the
+  same shape is not proposed a third time.
+- The design deliberately does not restate the full entity-by-entity
+  inventory. That lives in [[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on
+  oresmd]] and is unchanged.
+- The existing tests for this model are the three oresmd suites in
+  =projects/ores.marketdata/core/tests/= (parser, projections,
+  resolver), the entity domain suites in =api/tests/=, the repository
+  suites and the import service suite in =core/tests=, and the curve
+  republish resolver suites in =service/tests=. They cover identity
+  and projection. Nothing covers values, which is the gap section 4.8
+  opens.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

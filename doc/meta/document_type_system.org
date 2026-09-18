@@ -29,7 +29,7 @@ page carries only what is specific to =system=.
 - Folder :: [[proj:doc/systems][=doc/systems/=]]
 - Level :: =cross= or a specific level.
 - How to create :: system codegen is not yet wired into
-  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_doc.sh]] (no =--type system= yet); for now, copy an
+  =compass add= (no =system= type yet); for now, copy an
   existing system document under [[proj:doc/systems][=doc/systems/=]] and adjust the frontmatter
   and sections.
 - Not stateful — no TODO.

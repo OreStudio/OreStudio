@@ -6,11 +6,14 @@
 #+type: story
 #+level: s2
 #+filetags: :tooling:codegen:sprint_22:v0:
+#+state: ABANDONED
 #+created: 2026-05-30
-#+updated: 2026-06-12
+#+updated: 2026-09-18
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+*ABANDONED 2026-09-18* — Superseded by [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] (Sprint 25), which deleted every wrapper listed below and the slovaris dataset with them.
 
 * Goal
 
@@ -45,11 +48,11 @@ if they have a clear replacement.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                              |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start task_remove_generate_doc_sh.     |
+| Next          | None — superseded.                     |
 | Last touched  | 2026-05-30                             |
 
 * Acceptance
@@ -65,7 +68,7 @@ if they have a clear replacement.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DE550344-F5DF-435D-8166-C1A4C94A678E][Remove generate_doc.sh]] | BACKLOG | | | Add runbook type to compass; update Group D docs; redeploy settings; delete script. |
+| [[id:DE550344-F5DF-435D-8166-C1A4C94A678E][Remove generate_doc.sh]] | ABANDONED | | | Add runbook type to compass; update Group D docs; redeploy settings; delete script. |
 
 * Decisions
 

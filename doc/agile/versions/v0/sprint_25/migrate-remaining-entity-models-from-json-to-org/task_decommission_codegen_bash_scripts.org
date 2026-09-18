@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 7917CA28-A69D-4FA5-A95B-B0346C73272A
+:END:
+#+title: Task: Decommission the legacy ores.codegen bash scripts
+#+description: Task for: Migrate remaining ~100 entity models from JSON to org
+#+type: task
+#+level: s1
+#+filetags: :migrate-remaining-entity-models-from-json-to-org:sprint_25:v0:
+#+owner: marco
+#+branch: feature/decommission-codegen-bash-scripts
+#+pr: 2093
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete the ores.codegen bash wrappers, remove the slovaris dataset
+outright, and repoint the documentation at the live entry points.
+
+Nine wrappers are gone: three *_schema.sh scripts called
+src/generator.py, which does not exist; generate_doc.sh is superseded
+by compass add; and the six dataset wrappers
+(generate_crypto_refdata.sh, generate_dq_schema.sh,
+generate_flags_refdata.sh, generate_fpml_refdata.sh,
+generate_ip2country_refdata.sh, generate_solvaris_refdata.sh) all
+read projects/ores.codegen/models/, which no longer exists.
+
+Slovaris leaves the tree as well. It was an experiment that did not
+work: it was the only ores.codegen.dataset consumer, so the dataset
+populate pipeline had no other user, and its generated SQL was the
+sole reason several archetypes carried hardcoded slovaris strings.
+
+The populate archetypes now take every name from the dataset model
+itself ({{model_name}}, {{flags_dataset}}, ...), so the pipeline is
+reusable. Migrating crypto, flags, ip2country and FPML onto it is the
+follow-on story, not this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
+| Now          | Nothing.                               |
+| Waiting on   | Merge of PR #2093.                     |
+| Next         | Nothing. The follow-on is [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]]. |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- No script under projects/ores.codegen/ calls src/generator.py.
+- No live doc tells the reader to run generate_doc.sh.
+- No live doc tells the reader to run a deleted schema script.
+- No file under projects/ores.seeder/datasets/slovaris/ or
+  projects/ores.sql/populate/solvaris/ remains.
+- No live file references slovaris or solvaris outside the
+  historical record under doc/agile/versions/.
+
+* Plan
+
+1. Confirm each deleted wrapper is already broken or superseded. The
+   *_schema.sh scripts call a missing src/generator.py. The six dataset
+   wrappers read the deleted models/ tree. generate_doc.sh is
+   superseded by compass add.
+2. Delete the nine wrappers, the slovaris seeder dataset, and the
+   solvaris populate output.
+3. Repair the consumers: the catalogues master include, the DQ bundle
+   populate pair, and the codegen data-scope test.
+4. De-hardcode the nine ores.sql.populate archetypes so every dataset
+   name comes from the model. Re-tangle the mustache sources.
+5. Sweep generate_doc.sh out of every live doc, recipe, runbook and
+   component overview.
+6. Sweep slovaris out of the live tree: the two ores.dq models, the
+   hand-written publication header and test fixtures, the codegen
+   source comments, the seeder prose, the SQL modelling docs, and the
+   user-guide chapter.
+7. Verify by rendering a synthetic dataset end to end and checking the
+   output for hardcoded names.
+
+* Notes
+
+- The ores.dq generated artefacts (dataset_bundle.hpp,
+  dataset_bundle_member.hpp, the two dq create SQL files, and
+  ores_schema.puml) still carry the old slovaris doc comments. The
+  models are fixed; the generated copies are stale. Regenerating
+  ores.dq now is destructive: the current cpp_nats_handler template
+  (2026-09-04) no longer emits the unpaginated dataset_bundle_members
+  list operation, while the hand-written registrar.cpp:347 and
+  DataLibrarianWindow.cpp:844 still subscribe to and build that
+  request. Regeneration drops the request struct, the response struct
+  and the handler method, and the build breaks. ores.dq needs a
+  regeneration pass that also updates those two hand-written callers.
+- doc/agile/product_backlog/next/decommission_codegen_bash_scripts/
+  is superseded by this task. It is left in place: sprint_19/sprint.org
+  id-links its story, so deleting it would break that link.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2093][#2093]] | [codegen] Decommission the bash wrappers and the slovaris dataset |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | `sut.description` still held the old slovaris text on a bundle renamed to "crypto" | `projects/ores.dq/api/tests/domain_dataset_bundle_tests.cpp` | Accepted | Set to "Base System plus cryptocurrency reference data", matching the live `crypto` row in `dq_dataset_bundle_populate.sql`. Cosmetic only: the field is free text and the CHECK mirrors the assignment. |
+
+* Result
+
+Delivered on feature/decommission-codegen-bash-scripts, PR #2093.
+
+- Nine wrappers deleted. Three called a missing src/generator.py; the
+  six dataset wrappers read the deleted projects/ores.codegen/models/
+  tree; generate_doc.sh is superseded by compass add.
+- Slovaris removed from the live tree: the seeder dataset, the solvaris
+  populate output, and the references in the two ores.dq models, the
+  hand-written publication header, the test fixtures, the codegen
+  source comments, and the documentation.
+- Consumers repaired: the catalogues master include, the DQ bundle
+  populate pair, and the codegen data-scope test — the last rewritten
+  fixture-independent so it no longer depends on a shipped dataset.
+- Nine ores.sql.populate archetypes de-hardcoded so every dataset name
+  comes from the model. Verified by rendering a synthetic dataset end
+  to end: nine outputs, zero hardcoded names.
+- Acceptance met in full: no script calls src/generator.py, no live doc
+  names a deleted script, no slovaris file remains, and no live
+  reference survives outside the historical record under
+  doc/agile/versions/.
+
+Verification: full debug build clean; ores.dq api, core and service
+tests pass; roundtrip script exit 0; cmake-sources and codegen drift
+clean; compass lint, drift and model all green on CI.
+
+Review round 1 raised one nit — a stale description on the crypto test
+fixture — accepted and fixed in 5198b85c8d.
+
+Known limitation: five generated ores.dq artefacts still carry slovaris
+doc comments. See * Notes for why regenerating ores.dq is unsafe today.

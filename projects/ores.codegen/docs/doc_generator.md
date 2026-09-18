@@ -1,6 +1,6 @@
 # Document generator
 
-`generate_doc.sh` creates a new information-architecture document
+`compass add <type>` creates a new information-architecture document
 (task, story, sprint, or version) from a Mustache template, producing a
 file that already follows the contract in
 `doc/meta/document_types.org`.
@@ -26,8 +26,7 @@ type's default TODO state, and skeleton sections.
 ## Usage
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  [--type <task|story|sprint|version|component|recipe|knowledge|skill>] \
+compass add <task|story|sprint|version|component|recipe|knowledge|skill> \
   [--slug <snake_case_slug>] \
   [--parent-dir <path-where-the-new-doc-is-created>] \
   [--title "<human-readable title>"] \
@@ -44,18 +43,18 @@ projects/ores.codegen/generate_doc.sh \
   [--force]
 ```
 
-The script prints the path of the file it wrote.
+The generator prints the path of the file it wrote.
 
 ### Auto-detection of parent info
 
 For task / story / sprint, the parent document's `:ID:` and `#+title:`
 are read automatically from `<parent-dir>/<parent-type>.org`. So you
-typically only need `--type`, `--slug`, `--parent-dir`, `--title`,
+typically only need the type, `--slug`, `--parent-dir`, `--title`,
 `--description`, `--tags`. The parent IDs and titles get filled in for
 you.
 
 For example, when creating a task with
-`--parent-dir doc/agile/versions/v0/sprint_17/audit_tooling`, the script
+`--parent-dir doc/agile/versions/v0/sprint_17/audit_tooling`, the generator
 reads `.../audit_tooling/story.org`, picks up its `:ID:` and
 `#+title:`, and uses `audit_tooling` as the parent slug (from the
 folder basename).
@@ -67,8 +66,8 @@ the existing UUID via `--id`. The generator uses it verbatim instead of
 minting a fresh one. This keeps all org-roam backlinks intact.
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type component --slug component_overview \
+compass add component \
+  --slug component_overview \
   --parent-dir projects/ores.trading.core/modeling \
   --title "ores.trading" \
   --description "Trade booking and lifecycle management." \
@@ -87,17 +86,17 @@ cause a clear error rather than hanging.
 So the shortest interactive invocation is:
 
 ```sh
-projects/ores.codegen/generate_doc.sh
+compass add
 ```
 
-— and the script walks you through type, slug, parent dir, title,
+— and the generator walks you through type, slug, parent dir, title,
 description, and tags.
 
 ## Example — add a recipe
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type recipe --slug how_do_i_clear_the_cache \
+compass add recipe \
+  --slug how_do_i_clear_the_cache \
   --parent-dir doc/recipes/cmake \
   --title "How do I clear the cache?" \
   --description "Remove the CMake binary cache to force a clean re-configure." \
@@ -107,8 +106,8 @@ projects/ores.codegen/generate_doc.sh \
 ## Example — add a knowledge document
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type knowledge --slug build_system_decisions \
+compass add knowledge \
+  --slug build_system_decisions \
   --parent-dir doc/knowledge/architecture \
   --title "Build system decisions" \
   --description "Why we picked Ninja over Make as the default generator." \
@@ -118,8 +117,8 @@ projects/ores.codegen/generate_doc.sh \
 ## Example — add a skill
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type skill --slug my-new-skill \
+compass add skill \
+  --slug my-new-skill \
   --parent-dir doc/skills \
   --title "My New Skill" \
   --description "When and how to use the new skill." \
@@ -133,8 +132,8 @@ in the Claude Code markdown frontmatter.
 ## Example — add a component model doc
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type component --slug ores.example \
+compass add component \
+  --slug ores.example \
   --parent-dir projects/ores.example/modeling \
   --title "ores.example" \
   --description "One-line summary of what the component does." \
@@ -147,8 +146,8 @@ Components have no parent in the composition tree, so `--parent-id`,
 ## Example — start a new sprint
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type sprint --slug sprint_17 \
+compass add sprint \
+  --slug sprint_17 \
   --parent-dir doc/agile/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
@@ -161,8 +160,8 @@ projects/ores.codegen/generate_doc.sh \
 ## Example — add a story to the current sprint
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type story --slug improve_audit_signals \
+compass add story \
+  --slug improve_audit_signals \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Improve audit signals" \
   --description "Surface stale tasks, orphan plans, and broken links." \
@@ -175,8 +174,8 @@ projects/ores.codegen/generate_doc.sh \
 ## Example — continue a cross-sprint story
 
 ```sh
-projects/ores.codegen/generate_doc.sh \
-  --type story --slug currencies_temporal_continued \
+compass add story \
+  --slug currencies_temporal_continued \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
@@ -188,10 +187,10 @@ projects/ores.codegen/generate_doc.sh \
   --predecessor-title "Currencies temporal and export"
 ```
 
-After the script writes the successor, update the *predecessor* story
+After the generator writes the successor, update the *predecessor* story
 to point forward — add `#+successor: <new-uuid>` to its frontmatter
 and a `Continued in: [[id:...][...]]` note in `* Decisions`. There is
-no automated way to do this yet; do it by hand or extend the script.
+no automated way to do this yet; do it by hand or extend the generator.
 
 ## Templates
 

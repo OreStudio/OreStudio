@@ -54,7 +54,7 @@ And separately:
 * Root Cause
 
 All three errors share the same structural cause: the service registry model
-(~projects/ores.codegen/models/services/ores_services_service_registry.json~)
+(~projects/modeling/service_registry.org~)
 was missing cross-service SELECT/DML grants that were needed by:
 
 | Service | Table                                   | Access needed |

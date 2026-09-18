@@ -12,8 +12,7 @@ Data Sourcing and Generation Steps:
            git commit -m "[data] Update FpML genericode files"
 
 3. GENERATE SQL FILES
-   Script: projects/ores.codegen/generate_fpml_refdata.sh
-   Command: ./generate_fpml_refdata.sh
+   Script: projects/ores.codegen/src/fpml_parser.py
    Output: Schema and populate SQL files in projects/ores.sql/
 
 4. COMMIT GENERATED SQL

@@ -34,10 +34,10 @@ The full template source. Edit here and re-tangle with
  */
 
 -- =============================================================================
--- Data Quality Slovaris Catalogs
+-- Data Quality {{model_name}} Catalogs
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Catalogs ---'
+\echo '--- Data Quality {{model_name}} Catalogs ---'
 
 {{#catalogs}}
 select ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),

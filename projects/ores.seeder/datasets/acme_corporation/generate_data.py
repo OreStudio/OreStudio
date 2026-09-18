@@ -6,7 +6,7 @@ Produces flat-array JSON files -- one per DQ artefact family (LEI
 entities, LEI relationships, business units, portfolios, books,
 accounts) -- matching the shape of the corresponding
 ores_dq_*_artefact_tbl columns, following the same convention as
-projects/ores.seeder/datasets/slovaris's country_currency.json: a flat
+projects/ores.sql/populate/iso/country_currency.json: a flat
 array of records, field names chosen to map directly onto SQL columns,
 consumed later by ores.codegen mustache templates (a separate task).
 

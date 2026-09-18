@@ -33,7 +33,7 @@ Decisions=): JSON only — no SQL, no server-side wiring yet.
 | =portfolios.json=         | ores_dq_portfolios_artefact_tbl shape — one per desk + virtual roll-up |
 | =books.json=              | ores_dq_books_artefact_tbl shape — one book per desk portfolio     |
 | =accounts.json=           | New shape (no artefact table yet) — 45 staff accounts, one fixed password |
-| =manifest.json=           | Dataset/catalog descriptor, following the =slovaris= convention    |
+| =manifest.json=           | Dataset/catalog descriptor following the crafted-dataset convention |
 | =methodology.txt=         | Full generation approach and how to extend (add an office/desk)    |
 
 * Naming
@@ -51,7 +51,7 @@ counterparty]]) is sourced from that same Wikipedia article
 
 * Why this dataset
 
-Unlike [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] (a self-contained fictional universe), Acme Corporation is
+Acme Corporation is
 designed to integrate with the system's real reference data — its
 LEIs are checksum-valid on GLEIF's reserved =9695= test prefix so it
 fits the same import machinery real tenants use, and it's meant to
@@ -65,4 +65,4 @@ record carries a =company_code= tag.
 
 - [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] — the parent story; see its =* Decisions= for the full 4-task provisioning architecture.
 - [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] — the earlier analysis this dataset implements.
-- [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] — contrast case: a self-contained fictional world, deliberately *not* the pattern Acme follows.
+- [[id:6CAA15F5-634E-46B4-ABA5-185095E9911D][ores.seeder]] — the component that owns the crafted-dataset convention this overview follows.

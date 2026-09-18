@@ -18,9 +18,9 @@ of reference data. Bundles provide a way to group related datasets that
 should be installed together.
 
 Examples:
-- "slovaris": Synthetic reference data for development and testing
 - "base": Industry-standard reference data (ISO + FpML) for production
 - "crypto": Base system plus cryptocurrency reference data
+- "risk_management": Sample organisational and risk-reporting data
 
 * Flags
 :PROPERTIES:
@@ -52,7 +52,7 @@ This is the surrogate key for the bundle.
 
 Unique code for stable referencing.
 
-Examples: "slovaris", "base", "crypto".
+Examples: "base", "crypto", "risk_management".
 
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_bundle"

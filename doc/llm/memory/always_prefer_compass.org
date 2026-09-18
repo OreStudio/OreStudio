@@ -19,12 +19,11 @@ and wiring into the project graph automatically. Manual creation was explicitly
 corrected by the user during sprint 18 dashboard work (2026-05-25). Compass
 now covers all supported types: story, task, sprint, version, recipe,
 knowledge, component, capture, memory, investigation, product_identity, skill,
-diagram.
+diagram, runbook.
 
 *How to apply:* Whenever a new document needs to be created, run
-=compass.sh add <type>= with appropriate flags. For runbooks (not yet in
-compass), file a capture to add the type, then use the nearest supported type
-as a template. Never fall back to the Write tool or =generate_doc.sh=.
+=compass.sh add <type>= with appropriate flags. Never fall back to the Write
+tool or hand-write the frontmatter.
 
 The same preference applies to operations generally: before reaching
 for a raw script or tool, check whether a compass pillar covers it —

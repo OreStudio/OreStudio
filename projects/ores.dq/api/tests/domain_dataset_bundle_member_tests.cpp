@@ -45,8 +45,8 @@ TEST_CASE("create_dataset_bundle_member_with_valid_fields", tags) {
 
     dataset_bundle_member sut;
     sut.version = 1;
-    sut.bundle_code = "slovaris";
-    sut.dataset_code = "slovaris.countries";
+    sut.bundle_code = "crypto";
+    sut.dataset_code = "iso.countries";
     sut.display_order = 1;
     sut.modified_by = "admin";
     sut.change_reason_code = "system.new";
@@ -56,8 +56,8 @@ TEST_CASE("create_dataset_bundle_member_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Dataset bundle member: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.bundle_code == "slovaris");
-    CHECK(sut.dataset_code == "slovaris.countries");
+    CHECK(sut.bundle_code == "crypto");
+    CHECK(sut.dataset_code == "iso.countries");
     CHECK(sut.display_order == 1);
     CHECK(sut.modified_by == "admin");
     CHECK(sut.change_reason_code == "system.new");

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 5FFB587D-D85A-4B51-8C80-0F8D485754A7
+:END:
+#+title: Story: Migrate remaining ~100 entity models from JSON to org
+#+description: Complete the org-migration story: convert the remaining legacy JSON-format entity models to the literate .org entity-model format.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Complete the org-migration story: convert the remaining legacy JSON-format entity models to the literate .org entity-model format.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-18                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][Prune orphaned deployed skills and make the skills build delete removed sources]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:B7BE4D95-2C5F-4AC0-8845-90B083A45810][Retire the JSON-era residue the org migration left behind]] | STARTED | 2026-09-18 | | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] | DONE | 2026-09-18 | 2026-09-18 | Task for: Migrate remaining ~100 entity models from JSON to org |
+| [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the four-dataset migration needs]] | BACKLOG | | | Image artefacts, the ip2country artefact plus TSV import, and FPML per-entity refdata, so crypto/flags/ip2country/FPML can move onto the org dataset pipeline. |
+
+* Decisions
+
+- The =ores.sql.populate= archetypes are the single dataset-populate
+  pipeline. Crypto, flags, ip2country and FPML move onto it; their
+  bespoke generators are deleted once the new output is byte-identical.
+  The archetypes take every dataset name from the dataset model itself,
+  so no dataset needs a hardcoded template.
+- Slovaris is abandoned, not migrated. It was an experiment that did not
+  work, and it was the only reason several archetypes carried hardcoded
+  names. Its sprint 22 story and task stay in the discarded bucket,
+  marked ABANDONED, so the id-link from =sprint_19/sprint.org= still
+  resolves.
+- =ores.dq= must not be regenerated until its two hand-written callers
+  are updated. The current =cpp_nats_handler= template no longer emits
+  the unpaginated =dataset_bundle_members= list operation, but
+  =registrar.cpp= and =DataLibrarianWindow.cpp= still use it. Five
+  generated =ores.dq= artefacts therefore still carry slovaris doc
+  comments until that pass happens.
+
+* Out of scope
+
+-
+
+* Reframing — current context (2026-09-18)
+
+The title and the goal above record the state when the capture was
+written. The migration is complete. This section records what is true
+today, and it reframes the story.
+
+** The count of "~100 models" is stale
+
+- Zero JSON entity models remain. The =modeling/= directories hold 0
+  =.json= files and 450 =.org= files.
+- =projects/ores.codegen/models/= does not exist. The last deletion
+  was =3f03b1c433= on 2026-06-02.
+- Every =codegen_org_model_migration= task is DONE. Two were abandoned
+  on purpose: the =profiles.json= conversion to a literate
+  =facet_catalogue.org=, and the slovaris reference data.
+- 239 org models are live today: 174 =entity=, 34 =component=, 13
+  =junction=, 11 =module=, 7 =field_group=.
+
+The JSON that remains is dataset payload. The seeder datasets and the
+test corpora are live inputs to the codegen and to the tests. They are
+not models.
+
+** The migration left residue behind
+
+The migration deleted the models. Nothing deleted the artefacts that
+point at them. That is one defect class: a rename or a delete with no
+prune step.
+
+1. Four one-shot migration scripts still ship, and each one points at
+   the deleted tree: =migrate_component_to_org.py=,
+   =migrate_field_group_to_org.py=, =migrate_lookup_entity_to_org.py=,
+   and =migrate_junction_to_org.py=.
+2. Two skills tell the reader to author JSON models under
+   =projects/ores.codegen/models/{component}/=. The directory does not
+   exist, so the reader cannot follow the instruction:
+   =compass-codegen-add-entity= and =compass-codegen-add-sql-schema=.
+3. Five template org sources carry text from the generator.py era. All
+   136 =.mustache= templates are tangled from an org source, so the fix
+   belongs in the org file and never in the tangling output. Three
+   generated SQL headers name =generator.py= and
+   =models/slovaris/model.json=. One field-group header documents a
+   =_field_group.json= filename convention. One facet summary
+   attributes the dataset pipeline to =generator.py=.
+4. =projects/ores.compass/src/env_init.py= and three modeling docs
+   reference the deleted tree.
+5. The skills deployment kept output whose source was gone. 80
+   orphaned directories survived the =compass-= namespace rename,
+   because org-publish only writes. [[id:64A63677-2C11-4585-8291-8F5D0721B5F3][The prune task]] fixed the
+   mechanism.
+
+** Reframed goal
+
+Retire the residue that the JSON-to-org migration left behind. Delete
+what nothing calls. Correct what still misleads a reader.

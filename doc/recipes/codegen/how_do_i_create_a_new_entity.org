@@ -24,21 +24,16 @@ acceptable.
 
 ** 2. Create the codegen model
 
-Create =projects/ores.codegen/models/{component}/{entity}_domain_entity.json=.
-Minimum required content in the =qt= section:
+Scaffold the org model:
 
-#+begin_src json
-"qt": {
-  "has_uuid_primary_key": true,
-  "has_pagination": true,
-  "has_history": true,
-  "detail_fields": [ ... ],
-  "history_request_class":  "{component}::messaging::get_{entity}_history_request",
-  "history_response_class": "{component}::messaging::get_{entity}_history_response",
-  "history_message_type":   "get_{entity}_history_request",
-  ...
-}
+#+begin_src sh
+./compass.sh add entity_org --component {component} --slug {entity} \
+    --description "<one line>"
 #+end_src
+
+This writes =projects/ores.<component>/modeling/ores.<component>.<entity>.org=
+with =#+type: ores.codegen.entity=. Fill in the columns, the profile flags,
+and the knobs the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][meta-model]] requires.
 
 If any of =has_history=, =has_pagination=, or =detail_fields= is absent
 or disabled, add a =deviation_rationale_{dimension}= key with a one-sentence

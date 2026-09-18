@@ -117,7 +117,7 @@ public:
      * market data it resolves against) silently omitted them unless a bundle's own membership
      * happened to be hand-ordered to include them too.
      *
-     * @param bundle_code The bundle to query (e.g., 'base', 'solvaris').
+     * @param bundle_code The bundle to query (e.g., 'base', 'crypto').
      * @param resolve_dependencies If true (the default), transitive dependencies of bundle
      * members are included and ordered before their dependents. Kept as a caller-visible option,
      * matching list_publishable_datasets(), rather than silently hardcoded, for the (currently

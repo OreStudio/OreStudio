@@ -28,17 +28,6 @@
 DO $$
 BEGIN
     -- =============================================================================
-    -- Solvaris Bundle Members
-    -- =============================================================================
-
-    -- --- Solvaris Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'solvaris', 'geo.ip2country', 1);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'solvaris', 'slovaris.country_flags', 2);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'solvaris', 'slovaris.countries', 3);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'solvaris', 'slovaris.currencies', 4);
-
-    -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================
 

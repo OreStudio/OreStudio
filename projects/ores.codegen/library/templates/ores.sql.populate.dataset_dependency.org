@@ -34,10 +34,10 @@ The full template source. Edit here and re-tangle with
  */
 
 -- =============================================================================
--- Data Quality Slovaris Dataset Dependencies
+-- Data Quality {{model_name}} Dataset Dependencies
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Dataset Dependencies ---'
+\echo '--- Data Quality {{model_name}} Dataset Dependencies ---'
 
 {{#datasets}}
 {{#dataset_dependencies}}
@@ -59,7 +59,7 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn()
 select dataset_code, dependency_code, role
 from ores_dq_dataset_dependencies_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
-  and dataset_code like 'slovaris.%'
+  and dataset_code like '{{model_name}}.%'
 order by dataset_code, dependency_code;
 #+end_src
 

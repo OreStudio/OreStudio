@@ -24,8 +24,7 @@ page carries only what is specific to =runbook=.
 - Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as
   =story.org=, =task_*.org=).
 - Not stateful — runbooks are durable reference. No TODO.
-- How to create :: =compass add runbook= or
-  =projects/ores.codegen/generate_doc.sh --type runbook=.
+- How to create :: =compass add runbook=.
 - Required sections ::
   - =* Goal= — what this runbook achieves, in one sentence.
   - =* Preconditions= — what must be true before starting (branch state,

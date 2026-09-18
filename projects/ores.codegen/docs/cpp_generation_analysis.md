@@ -114,7 +114,7 @@ sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to;
         "column": "code",
         "type": "text",
         "description": "Unique code for stable referencing.",
-        "examples": ["slovaris", "base", "crypto"]
+        "examples": ["base", "crypto", "risk_management"]
       },
       {
         "column": "name",

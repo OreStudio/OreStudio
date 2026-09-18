@@ -2,7 +2,7 @@
 :ID: 3153AA4B-23D4-4111-9710-5A4971102EDC
 :END:
 #+title: How do I create a new doc?
-#+description: Use generate_doc.sh to create any document type with frontmatter, UUID, and skeleton sections pre-filled.
+#+description: Use compass add to create any document type with frontmatter, UUID, and skeleton sections pre-filled.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:templates:agile:recipe:
@@ -23,7 +23,7 @@ frontmatter?
 * Answer
 
 For *all standard document types*, use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead of calling
-=generate_doc.sh= directly. It supports: =story=, =task=, =sprint=,
+calling codegen directly. It supports: =story=, =task=, =sprint=,
 =version=, =recipe=, =knowledge=, =component=, =capture=, =memory=,
 =investigation=, =product_identity=, =skill=, =diagram=, =entity_org=,
 =field_group=, =dataset_overview=, =facet=, =facet_group=. It defaults
@@ -65,8 +65,8 @@ compass add facet_group --slug cpp \
   --title "C++ template group" --description "…"
 #+end_src
 
-Call [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] with the type, slug, parent
-directory, and the document's title and description. The script fills in a fresh
+Call =compass add <type>= with the slug, parent
+directory, and the document's title and description. The generator fills in a fresh
 UUID, today's dates, the required frontmatter (including the
 glossary-linked blurb), a =* Status= table at the type's default state where
 applicable, and the skeleton sections — leaving only the content for you to fill
@@ -86,8 +86,8 @@ script from a terminal and it prompts for any missing required field.
 :END:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type task --slug fix_broken_link \
+compass add task \
+  --slug fix_broken_link \
   --parent-dir doc/agile/versions/v0/sprint_17/audit_tooling \
   --title "Fix broken id-links surfaced by audit" \
   --description "Audit reports two unresolved id-links; fix them." \
@@ -103,8 +103,8 @@ Parent story info is auto-detected from
 :END:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type story --slug audit_tooling \
+compass add story \
+  --slug audit_tooling \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Audit tooling" \
   --description "Scripts that enforce the information-architecture invariants." \
@@ -121,8 +121,8 @@ Add =--predecessor-id= and =--predecessor-title=. The script renders
 the body:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type story --slug currencies_temporal_continued \
+compass add story \
+  --slug currencies_temporal_continued \
   --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
@@ -142,8 +142,8 @@ section.
 :END:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type sprint --slug sprint_17 \
+compass add sprint \
+  --slug sprint_17 \
   --parent-dir doc/agile/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
@@ -156,8 +156,8 @@ projects/ores.codegen/generate_doc.sh \
 :END:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type version --slug v1 \
+compass add version \
+  --slug v1 \
   --parent-dir doc/agile/versions \
   --title "Version 1" \
   --description "First production release." \
@@ -292,8 +292,8 @@ mostly when bootstrapping a new product or migrating an existing
 identity from scratch.
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type product_identity --slug product_identity \
+compass add product_identity \
+  --slug product_identity \
   --parent-dir doc/identity \
   --title "ORE Studio product identity" \
   --description "The durable statement of what ORE Studio is and is not." \
@@ -309,8 +309,8 @@ projects/ores.codegen/generate_doc.sh \
 of technical research or debugging sessions.
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type investigation --slug msvc_c1202_rfl_complexity \
+compass add investigation \
+  --slug msvc_c1202_rfl_complexity \
   --parent-dir doc/investigations \
   --title "MSVC C1202 and rfl complexity" \
   --description "Root cause analysis of recursive template depth limits in reflect-cpp." \
@@ -336,8 +336,8 @@ projects/ores.compass/compass.sh capture --note "Add an uptime screen"
 To create directly in a specific bucket via codegen:
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type capture --slug add_uptime_screen \
+compass add capture \
+  --slug add_uptime_screen \
   --parent-dir doc/agile/product_backlog/next \
   --title "Add an uptime screen" \
   --description "Surface live service health in the Qt UI." \
@@ -358,8 +358,8 @@ the kind of memory (=feedback= / =user= / =project= / =reference=
 the catalogue is greppable.
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/generate_doc.sh \
-  --type memory --slug do_not_re_export_env_vars \
+compass add memory \
+  --slug do_not_re_export_env_vars \
   --parent-dir doc/llm/memory \
   --title "Do not re-export ORES_* env vars in Bash tool calls" \
   --description "The user already exports them; prepending is noise." \
@@ -381,9 +381,9 @@ correct order is:
    will not match.
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/generate_doc.sh --type knowledge ...
-   projects/ores.codegen/generate_doc.sh --type component --slug component_overview ...
-   projects/ores.codegen/generate_doc.sh --type component --slug component_overview ...
+   compass add knowledge ...
+   compass add component --slug component_overview ...
+   compass add component --slug component_overview ...
    #+end_src
 
 2. *Collect the generated IDs.*

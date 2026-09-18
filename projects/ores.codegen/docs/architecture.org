@@ -66,8 +66,8 @@ projects/ores.codegen/
 │   └── doc_generator.md
 ├── requirements.txt
 ├── codegen.sh               # Wrapper: activates venv and calls codegen.py
-├── generate_doc.sh          # Wrapper for doc_generate.py
-└── generate_*_schema.sh     # Legacy per-component schema scripts (being retired)
+├── plantuml_er_generate.sh  # PlantUML ER diagram wrapper
+└── validate_docs.sh         # Documentation validation wrapper
 #+end_example
 
 ** Internal modules
@@ -266,8 +266,8 @@ From [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]:
   writing.
 - /Overall models/. A =model.json= can orchestrate generation of
   multiple artefacts in dependency order.
-- /Dynamic prefixing/. A =model_name= property on an overall model
-  prefixes every output file (for example =solvaris_=).
+- /Dynamic prefixing/. The dataset prefix on a dataset model
+  prefixes every output file (for example =flags_=).
 - /Automatic sibling loading/. JSON models in the same directory are
   loaded together so a template can cross-reference them.
 - /Enhanced data context/. Subject-area datasets (such as
@@ -276,14 +276,14 @@ From [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]:
 
 ** Example model structure
 
-From =models/slovaris/catalogs.json=:
+From a dataset's =catalogs.json= payload:
 
 #+begin_src json
 [
     {
-        "name": "Slovaris",
-        "description": "Imaginary world to test all system functions.",
-        "owner": "Testing Team"
+        "name": "Visual Assets",
+        "description": "Visual media assets including country flag images.",
+        "owner": "Reference Data Team"
     }
 ]
 #+end_src
@@ -329,4 +329,4 @@ To add a new named component:
 - =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
   the C++ code generation paths.
 - =projects/ores.codegen/docs/doc_generator.md= — full CLI
-  reference for =generate_doc.sh=.
+  reference for =compass add=.

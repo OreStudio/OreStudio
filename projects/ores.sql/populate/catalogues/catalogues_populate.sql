@@ -34,7 +34,6 @@
  * Data sources:
  * - Flag Icons: Visual assets for countries
  * - ISO Standards: Countries, currencies (ISO 3166, ISO 4217)
- * - Solvaris: Extended currency metadata
  * - IP to Country: IP geolocation mappings
  * - FPML: Financial products markup language reference data
  * - Cryptocurrency: Digital currency reference data
@@ -67,14 +66,6 @@
 \echo ''
 \echo '--- ISO Standards ---'
 \ir ../iso/iso_populate.sql
-
--- =============================================================================
--- Solvaris (extended currency metadata)
--- =============================================================================
-
-\echo ''
-\echo '--- Solvaris ---'
-\ir ../solvaris/solvaris_populate.sql
 
 -- =============================================================================
 -- IP to Country (IP geolocation mappings)

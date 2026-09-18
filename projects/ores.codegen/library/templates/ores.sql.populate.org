@@ -21,11 +21,9 @@ table to them.
 * Summary
 
 Reference-data INSERT templates: dataset and catalog registration, ISO
-and non-ISO currencies, countries, flag SVGs, methodologies, tags, the
-FPML refdata artefact/function pair, and the batch-execute master
-include. *None belongs to a profile* — all are invoked directly by
-=generator.py='s dataset pipeline (the slovaris dataset and FPML
-reference data now owned by =ores.seeder=).
+and non-ISO currencies, countries, flag SVGs, methodologies, tags, and
+the batch-execute master include. *None belongs to a profile* — all
+are invoked directly by the codegen dataset pipeline.
 
 * The ores.sql.populate facet
 

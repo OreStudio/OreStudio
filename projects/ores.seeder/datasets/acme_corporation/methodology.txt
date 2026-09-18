@@ -6,7 +6,7 @@ investment-bank holding group (Acme Corporation Plc, ACME Corporation UK plc,
 ACME Corporation US Inc, ACME Corporation HK Ltd), used as the system's
 fully-populated reference/demo entity.
 
-Unlike slovaris (a fully self-contained fictional universe), Acme Corporation is
+Unlike a fully self-contained fictional universe, Acme Corporation is
 designed to integrate with the system's real reference data: its parties
 carry fake-but-checksum-valid LEIs on GLEIF's reserved 9695 pre-LOU test
 prefix, so it fits the same GLEIF-import machinery real tenants (e.g.
@@ -33,7 +33,7 @@ GENERATION
 2. OUTPUT
    Flat-array JSON files, one per DQ artefact family, field names chosen
    to map directly onto the corresponding ores_dq_*_artefact_tbl columns
-   (the same convention as slovaris's country_currency.json):
+   (the same convention as country_currency.json):
      - companies.json        -- the 4 legal entities (reference/documentation)
      - lei_entities.json     -- ores_dq_lei_entities_artefact_tbl shape
      - lei_relationships.json -- ores_dq_lei_relationships_artefact_tbl shape

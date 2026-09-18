@@ -30,7 +30,7 @@ Codegen (=--address ores.cpp.qt=) is the primary path — always try it first.
 * How to use this skill
 
 1. /Generate with codegen/ (preferred):
-   =cd projects/ores.codegen && ./codegen.sh generate --model models/{component}/{entity}_domain_entity.json --address ores.cpp.qt=
+   =cd projects/ores.codegen && ./codegen.sh generate --model <path-to-model>.org --address ores.cpp.qt=
    Then go directly to Phase 4 (controller wiring).
 
 2. /If manual creation is needed/, work through four phases:

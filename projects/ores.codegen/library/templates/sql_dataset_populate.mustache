@@ -8,10 +8,10 @@
  */
 
 -- =============================================================================
--- Data Quality Slovaris Datasets
+-- Data Quality {{model_name}} Datasets
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Datasets ---'
+\echo '--- Data Quality {{model_name}} Datasets ---'
 
 {{#datasets}}
 select ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),

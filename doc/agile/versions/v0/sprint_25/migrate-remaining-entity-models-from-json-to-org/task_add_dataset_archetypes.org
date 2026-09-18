@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 9B900D8C-8F98-4733-96AF-2C838370ED9C
+:END:
+#+title: Task: Add the dataset archetypes the four-dataset migration needs
+#+description: Image artefacts, the ip2country artefact plus TSV import, and FPML per-entity refdata, so crypto/flags/ip2country/FPML can move onto the org dataset pipeline.
+#+type: task
+#+level: s1
+#+filetags: :migrate-remaining-entity-models-from-json-to-org:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-dataset-archetypes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the ores.sql.populate archetypes that crypto, flags, ip2country and
+FPML need, plus the generator changes those archetypes require, so the
+four datasets can move onto the org dataset pipeline.
+
+The nine generic archetypes from [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen
+bash scripts]] cover the six-file metadata core of every dataset:
+catalog, dataset, dataset_dependency, tag, methodology and the
+batch-execute master include. They do not cover the artefacts. Three
+archetype families are missing:
+
+1. *Image artefacts* — crypto icons and country flag SVGs. The current
+   output comes from =images_generate_sql.py=, which inlines a whole
+   SVG document per row.
+2. *The ip2country artefact plus its TSV import* — IP geolocation
+   ranges loaded from a tab-separated source file.
+3. *FPML per-entity refdata* — 22 entities, a dataset plus an artefact
+   each, plus the coding schemes they reference.
+
+The archetypes also need a generator change: the payload each dataset
+carries comes from =manifest.json=, whose field names do not match what
+the archetypes read (=subject_area= vs =subject_area_name=, =catalog=
+vs =catalog_name=, =coding_scheme= vs =coding_scheme_code=,
+=source_system= vs =source_system_id=, =license= vs =license_info=,
+=artefact_type= vs =asset_type=).
+
+This task stops at the archetypes and the generator. Moving the four
+datasets themselves is [[id:44B275EC-DC37-4961-80EF-9D79D4C186FB][Migrate FPML, crypto, flags and ip2country onto
+the org dataset pipeline]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- An image-artefact archetype generates the crypto-icon and
+  flag-image SQL that =images_generate_sql.py= produces today.
+- An ip2country archetype generates the artefact SQL plus its TSV
+  import.
+- An FPML archetype generates the per-entity dataset and artefact SQL
+  for all 22 entities, plus the coding schemes, byte-identical to the
+  committed output.
+- The generator reads =manifest.json= directly, or the four datasets
+  carry a translated payload; either way no hand-written translation
+  step remains.
+- Each new archetype is an org node in the template library with an
+  =#+model_types:=, an =#+output:= pattern, and a tangled mustache.
+- =compass build --direct tangle_codegen_templates= produces no drift.
+- The codegen test suite passes, with a test per new archetype.
+
+* Plan
+
+1. Read the committed crypto, flags, ip2country and FPML populate SQL
+   to fix the exact output each archetype must produce.
+2. Write each new archetype as an org node with its mustache source,
+   following the shape of the nine generic archetypes.
+3. Extend the generator to read =manifest.json=, or add the payload
+   translation, and decide which on the evidence.
+4. Re-tangle, then diff the generated output against the committed SQL
+   until it is byte-identical.
+5. Add a test per archetype, following =test_data_scope.py=.
+
+* Notes
+
+- The nine generic archetypes are in
+  =projects/ores.codegen/library/templates/ores.sql.populate.*.org=.
+  Copy their structure: frontmatter, mustache source block, then the
+  tangle to =sql_*_populate.mustache=.
+- =sql_dataset_refdata.org=, =sql_populate_refdata.org=,
+  =sql_populate_function_refdata.org=, =sql_non_iso_currency_populate.org=
+  and =sql_schema_artefact_create.org= are orphan archetype docs left
+  from the old FPML pipeline. No =#+facet:=, =#+output:= or
+  =#+data_source:=. They are the closest existing source for the FPML
+  archetype; read them before writing a new one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

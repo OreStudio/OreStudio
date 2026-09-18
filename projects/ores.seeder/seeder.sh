@@ -13,7 +13,7 @@
 #   ./projects/ores.seeder/seeder.sh generate <dataset>
 #
 # Example:
-#   ./projects/ores.seeder/seeder.sh generate slovaris
+#   ./projects/ores.seeder/seeder.sh generate acme_corporation
 #
 # See projects/ores.seeder/modeling/component_overview.org for the design.
 
@@ -71,7 +71,7 @@ Subcommands:
                        projects/ores.sql/populate/<dataset>/.
 
 Examples:
-  ./projects/ores.seeder/seeder.sh generate slovaris
+  ./projects/ores.seeder/seeder.sh generate acme_corporation
 EOF
         ;;
     *)

@@ -85,8 +85,8 @@ the check. See the criteria provenance notes at the end of this section.
 
 | Item | Description | Domain | Aux | What to look for |
 |------+-------------+--------+-----+------------------|
-| Domain entity model | Codegen model for the C++ domain struct | Always | Always | =projects/ores.codegen/models/refdata/<entity>_domain_entity.json= |
-| Entity model | Codegen model for the ODB entity + mapper | Always | Always | =projects/ores.codegen/models/refdata/<entity>_entity.json= |
+| Domain entity model | Codegen model for the C++ domain struct | Always | Always | =projects/ores.refdata/modeling/ores.refdata.<entity>.org=, =* C++= section |
+| Entity model | Codegen model for the ODB entity + mapper | Always | Always | =projects/ores.refdata/modeling/ores.refdata.<entity>.org=, =* SQL= and =* Repository= sections |
 | Both models consistent with DB schema | Model fields match DB columns | Always | Always | Compare model field names/types against DDL columns |
 | No hand-crafted divergence | Generated files match what codegen would produce | Always | Always | If a generated file has been edited manually, flag as drift risk |
 

@@ -6,16 +6,19 @@
 #+type: task
 #+level: s1
 #+filetags: :tooling:codegen:sprint_22:v0:decommission_codegen_bash_scripts:
+#+state: ABANDONED
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-30
-#+updated: 2026-06-12
+#+updated: 2026-09-18
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+*ABANDONED 2026-09-18* — Superseded by [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]]. The script is deleted, the runbook type already reaches compass, the Group D docs are compass-first, and the settings are redeployed.
 
 * Goal
 
@@ -43,11 +46,11 @@ supported. Two prerequisites must be satisfied first:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | ABANDONED                              |
 | Parent story | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Add runbook type to compass; update Group D docs; redeploy settings. |
+| Next         | None — superseded.                     |
 | Last touched | 2026-05-30                             |
 
 * Acceptance

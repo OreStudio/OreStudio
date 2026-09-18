@@ -11,6 +11,14 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Progress
+
+=trade= is off the list. Regenerating it for the service-layer work
+picked the template fix up as a side effect, and its generator tests --
+which asserted the hardcoded =1= -- now assert =0=. Ten files under
+=projects/*/api/src/generators/= still carry =r.version = 1=, five of
+them in =ores.trading=.
+
 * What
 
 =cpp_domain_type_generator.cpp.mustache= (and its =.org= source,

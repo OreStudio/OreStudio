@@ -55,9 +55,9 @@ the org dataset pipeline]].
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5FFB587D-D85A-4B51-8C80-0F8D485754A7][Migrate remaining ~100 entity models from JSON to org]] |
-| Now          | Not yet started.                       |
+| Now          | Plan step 1 done: the committed populate SQL is read. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write the three archetype families (plan step 2). |
 | Last touched | 2026-09-18                               |
 
 * Acceptance
@@ -72,8 +72,9 @@ the org dataset pipeline]].
 - The generator reads =manifest.json= directly, or the four datasets
   carry a translated payload; either way no hand-written translation
   step remains.
-- Each new archetype is an org node in the template library with an
-  =#+model_types:=, an =#+output:= pattern, and a tangled mustache.
+- Each new archetype is an org node in the template library with a
+  =#+data_source:=, an =#+output:= pattern, and a tangled mustache.
+  (=#+model_types:= belongs to the facet, not to the archetype.)
 - =compass build --direct tangle_codegen_templates= produces no drift.
 - The codegen test suite passes, with a test per new archetype.
 
@@ -101,6 +102,36 @@ the org dataset pipeline]].
   from the old FPML pipeline. No =#+facet:=, =#+output:= or
   =#+data_source:=. They are the closest existing source for the FPML
   archetype; read them before writing a new one.
+- Reading, 2026-09-18. What the committed populate SQL says:
+  - *Nothing consumes the nine archetypes.* No dataset model carries
+    =#+type: ores.codegen.dataset= outside agile docs, and no payload
+    JSON (=datasets.json=, =catalogs.json=, =tags.json=,
+    =methodologies.json=) exists in the tree. The pipeline is built and
+    unexercised.
+  - *The archetypes are a redesign, not a reproduction.* They emit a
+    bare =select=, a =-- Data Quality {model} ...= banner, a licence
+    via ={{{sql_license}}}=, and a =-- Summary= count block. The
+    committed crypto, flags and ip2country files emit =DO $$ BEGIN ...
+    PERFORM ... END $$;= and no summary. So byte-identical holds for the
+    three new families, which can be written to the committed style,
+    but not for the six metadata-core archetypes.
+  - *Two artefact conventions.* The crypto and flags images use
+    PL/pgSQL =DO $$=; the FPML artefacts use psql =\gset=.
+  - *Licence headers are inconsistent.* All four master includes carry
+    none. FPML carries none on its six metadata-core files either,
+    while its 44 per-entity files do. Crypto and flags use (C) 2025 and
+    (C) 2026 in the same directory.
+  - *=fpml_populate.sql= and =populate_fpml.sql= are byte-identical.*
+    =fpml_parser.py:921= writes the latter; the former is the wired
+    master include and still credits =generate_fpml_refdata.sh=.
+  - *=fpml_coding_schemes_populate.sql= is dead legacy* — =set schema
+    'metadata'= and positional =upsert_dq_coding_schemes= calls.
+  - *FPML ships no =dataset_tag= file.* Crypto, flags and ip2country do.
+  - *ip2country has two scripts for one dataset.* The DQ artefact
+    populate writes =ores_dq_ip2country_artefact_tbl=; the import
+    writes =ores_geo_ip2country_tbl= with a =:data_file= variable. The
+    artefact script is malformed: its =\copy= has no terminating
+    semicolon, and it declares the staging temp table twice.
 
 * Test Scenarios
 

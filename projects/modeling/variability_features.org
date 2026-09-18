@@ -41,7 +41,7 @@ Variability Model's own bundle tables.
 - [[id:224743E4-B05D-4221-B027-9C4779F13823][rls_party_isolation]]
 - [[id:29914714-A8D4-4D4A-A3FE-7CD6D18DEEC3][rls_system_tenant_visible]]
 
-** =ores.cpp.qt=
+** =ores.presentation=
 
 - [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]]
 - [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]]

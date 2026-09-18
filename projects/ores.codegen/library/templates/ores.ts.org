@@ -2,7 +2,7 @@
 :ID: 1E93BE86-58BF-40FB-BB93-132D639BDC87
 :END:
 #+title: ores.ts
-#+description: The TypeScript technical space: the wire payloads the ores.qt UI consumes, projected from the same org models that drive the C++ headers.
+#+description: The TypeScript technical space: the wire payloads and the per-entity presentation metadata the TypeScript UI consumes, projected from the same org models that drive the C++ headers.
 #+type: technical_space
 #+level: cross
 #+filetags: :codegen:physical-space:typescript:

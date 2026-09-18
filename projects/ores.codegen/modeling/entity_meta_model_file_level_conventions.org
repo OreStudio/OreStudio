@@ -40,7 +40,6 @@ on top of that base, and required:
 
 | Keyword           | Purpose                                              |
 |-------------------+------------------------------------------------------|
-| =:ores.cpp.qt.enabled:= (drawer, optional) | Set to =false= to skip Qt-layer generation entirely for this entity. Currently =false= on =ores.marketdata.market_observation= (a TimescaleDB hypertable entity) because the standard generated CRUD/detail-dialog Qt layer doesn't fit high-volume timeseries data — a statement about today's generated Qt layer not being the right shape, not a decision that observations never get a UI; a dedicated timeseries-appropriate UI is expected future work (see the capture on timeseries codegen analysis). Defaults to generating Qt when absent. |
 | =#+title:=        | Fully-qualified entity name, e.g. =ores.refdata.party=. |
 | =#+description:=  | What this *file* is, not what the modelled thing is. |
 | =#+entity_singular:= | Identifier form, singular (=party=).              |

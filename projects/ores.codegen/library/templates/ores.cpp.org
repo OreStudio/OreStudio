@@ -2,7 +2,7 @@
 :ID: C3F9DCE5-200A-4324-8904-B56BB73FD9CB
 :END:
 #+title: ores.cpp
-#+description: The C++ technical space: domain types, repositories, mappers, Qt UI, services, messaging, generators.
+#+description: The C++ technical space: domain types, repositories, mappers, services, messaging, generators.
 #+type: technical_space
 #+level: cross
 #+filetags: :codegen:physical-space:cpp:

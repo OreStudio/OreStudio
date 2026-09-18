@@ -1736,7 +1736,6 @@ _UI_AUDIT_COLUMNS = frozenset({
     'change_reason_code', 'change_commentary',
 })
 _UI_HIDDEN_FIELDS = _UI_AUDIT_COLUMNS | {'id', 'tenant_id'}
-_UI_AUDIT_HIDDEN = _UI_AUDIT_COLUMNS
 
 # FieldControl is a closed set in ui-contract.ts. A model's
 # `plain_text_edit` names the same control as `text_edit` with a
@@ -1820,7 +1819,7 @@ def _ui_columns(columns, entity, presentation, icon_columns):
             ('hidden', _ui_bool(
                 bool(column.get('hidden_by_default'))
                 or enum_name == 'Description'
-                or field in _UI_AUDIT_HIDDEN)),
+                or field in _UI_AUDIT_COLUMNS)),
         ]
         width = column.get('width')
         if width and str(width).strip().lower() != 'auto':

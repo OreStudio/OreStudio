@@ -11,7 +11,7 @@
 #+updated: 2026-07-17
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
-the [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] facet: the MDI list window, detail dialog, controller,
+the =ores.cpp.qt= facet: the MDI list window, detail dialog, controller,
 and client model an entity gets in the desktop client. Unlike the
 server-side facets, Qt reads across all of them by name —
 =:domain_class:=, =:save_message_type:=, etc. below are just pointers
@@ -22,7 +22,7 @@ so this page assumes those two.
 
 | Facet                     | Description                                       |
 |-----------------------------+------------------------------------------------------|
-| [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                | Qt UI: windows, dialogs, controllers, client models. |
+| =ores.cpp.qt=                | Qt UI: windows, dialogs, controllers, client models. |
 
 * The one thing to internalise before reading the knob tables
 
@@ -197,7 +197,7 @@ diverges from that default naming convention:
 
 * Per-field knobs
 
-The =*** Detail fields= and =*** Columns (Qt model)= tables (one row
+The =*** Detail fields= and =*** Columns= tables (one row
 per entity field, not the whole-entity drawer above) carry their own
 per-field properties, layered on top of the plain =field=/=label=/
 =type= columns every field needs:

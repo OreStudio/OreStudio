@@ -445,7 +445,7 @@ literate template org file.
 | Repository          | =ores.cpp.repository=    | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
 | Messaging           | =ores.cpp.protocol=      | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]         | 6          | NATS event, handler, protocol types, service       |
 | Service application | =ores.cpp.service-app=   | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]       | 12         | Application, host, config options/parser, entry point |
-| Qt UI               | =ores.cpp.qt=            | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]                | 10         | MDI window, controller, detail/history dialogs, client model |
+| Qt UI               | =ores.cpp.qt=            | =ores.cpp.qt=                | 10         | MDI window, controller, detail/history dialogs, client model |
 | Component           | =ores.cpp.component=     | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]         | 6          | Umbrella header, export macros, test main, stubs   |
 | Model types         | =ores.cpp.enum=          | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]]       | 2          | Enum class, field-group struct                     |
 | Table               | part of =ores.cpp.domain=  | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]           | 4          | libfort table adapter and I/O                      |
@@ -469,7 +469,7 @@ See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 | Facet         | Address             | Literate source | Archetypes | Purpose                                             |
 |---------------+---------------------+-----------------+------------+-----------------------------------------------------|
 | CMake build   | =ores.cmake.component= | [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]           | 8          | Component root, src variants, tests, modeling target |
-| Assets        | =ores.cpp.qt=       | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]]          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
+| Assets        | =ores.cpp.qt=       | =ores.cpp.qt=          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
 | Documentation | =ores.doc=          | [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
 
 See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]], [[id:1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04][Documentation facet]].

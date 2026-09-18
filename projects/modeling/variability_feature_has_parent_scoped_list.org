@@ -18,7 +18,7 @@ this feature's value links here rather than restating its effect.
 | Field | Value |
 |-------+-------|
 | Literal name | =:has_parent_scoped_list:= |
-| Bundle | =ores.cpp.qt= |
+| Bundle | =ores.presentation= |
 | Type | bool |
 | Default | false |
 

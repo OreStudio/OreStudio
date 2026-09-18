@@ -71,6 +71,28 @@ BEGIN
         'Authoritative ORE codes hand-curated from the ORE documentation and source code.
     Updated when a new ORE version introduces new codes or deprecates existing ones.'
     );
+
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'OreStudio Code Generation Methodology',
+        'Methodology for generating artefact files using the OreStudio code generator',
+        'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen',
+        'Code Generation Methodology:
+
+    1. SOURCE
+       The dataset is described by an org model under the owning
+       component''s modeling directory. The model is the authority; the
+       populate script is an artefact of it.
+
+    2. GENERATION
+       Component: ores.codegen
+       The populate script is rendered from the dataset archetypes and
+       regenerated whenever the model changes.
+
+    3. PROVENANCE
+       A row carrying this methodology was not observed, downloaded or
+       curated from a provider. It exists because the model says it
+       should, so the model is where a correction is made.'
+    );
 END $$;
 
 

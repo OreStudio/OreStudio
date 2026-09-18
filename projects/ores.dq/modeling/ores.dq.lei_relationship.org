@@ -273,7 +273,7 @@ explicitly terminal, not published anywhere. GLEIF LEI
 corporate-hierarchy data is queried directly from the artefact table;
 a same-component main table would be an orphan nobody designed for.
 
-Qt UI deliberately disabled (see Physical space below): same rationale
+Qt UI deliberately disabled: same rationale
 as =lei_entity= -- the generated read-only Explorer list window
 queried the (correctly nonexistent) main table and errored on open.
 

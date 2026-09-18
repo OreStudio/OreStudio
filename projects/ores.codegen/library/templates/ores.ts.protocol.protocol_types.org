@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 8864A622-4C03-480B-B48A-854C13844786
+:END:
+#+title: ores.ts.protocol.protocol_types
+#+description: Wire payload interfaces and NATS subject constants for one protocol.
+#+type: archetype
+#+output: projects/ores.typescript/src/{component}/protocol/{entity}_protocol.ts
+#+facet: ores.ts.protocol
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-18
++#+updated: 2026-09-18
+
+Wire payload interfaces and NATS subject constants for one protocol. The
+TypeScript twin of [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]]: both render from
+the same operation model, so a field added to one appears in the other.
+
+One exported interface per message, named in PascalCase. Field names stay
+snake_case, because they are the JSON keys =rfl::json= writes from the C++
+member names.
+
+The =subjects= constant collects the NATS subjects a message carries. A
+message with no subject — a plain payload such as =party_summary= — gets an
+interface and no entry in the constant.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/ts_protocol.ts.mustache=.
+
+#+begin_src mustache :tangle ts_protocol.ts.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.protocol.protocol_types.org. Edit the org source. }}
+{{{ts_license}}}
+{{#operation}}
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+export interface {{name_pascal}} {
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+
+{{/messages}}
+export const subjects = {
+{{#messages}}
+{{#subject}}
+    {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+{{/operation}}
+#+end_src
+
+* See also
+
+- [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the parent facet.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

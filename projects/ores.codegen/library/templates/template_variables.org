@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:templates:reference:
 #+created: 2026-06-08
-#+updated: 2026-07-16
+#+updated: 2026-09-18
 
 Variables are injected by =generator.py= from the Stencil context, which is
 assembled from the model metadata (=modeling/*.org= entity files) and the
@@ -265,6 +265,38 @@ Variables for inter-service messaging archetypes.
 | =service_method=   | Method name exposed by the service interface.                | =list_accounts=    |
 | =service_registry= | Name of the NATS service registry entry.                     | =ores.accounts=    |
 | =services=         | List of service definitions (loop section).                  | (list)             |
+
+** Operation models
+
+An =ores.codegen.operation= model renders through ={{#operation}}= in
+[[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] and
+[[id:8864A622-4C03-480B-B48A-854C13844786][ores.ts.protocol.protocol_types]]. One
+operation model drives both, so a variable used by only one of the two is
+still read from this one context.
+
+| Variable                | Description                                            | Example                    |
+|-------------------------+--------------------------------------------------------+----------------------------|
+| =component_upper=       | Component name, uppercased, for the include guard.     | =IAM=                      |
+| =entity_singular_upper= | Protocol name, uppercased, for the include guard.      | =LOGIN=                    |
+| =namespace=             | Namespace the C++ messages land in.                    | =ores::iam::messaging=     |
+| =includes=              | List of =#include= lines (loop section).               | (list)                     |
+| =messages=              | List of messages (loop section).                       | (list)                     |
+
+Each message carries these:
+
+| Variable         | Description                                              | Example                  |
+|------------------+----------------------------------------------------------+--------------------------|
+| =name=           | Message name.                                            | =login_request=          |
+| =name_pascal=    | Message name in PascalCase, for a TypeScript interface.  | =LoginRequest=           |
+| =subject=        | NATS subject. Absent on a plain payload struct.          | =iam.v1.auth.login=      |
+| =response_type=  | Response this request pairs with. Absent on a broadcast. | =login_response=         |
+| =comment=        | Documentation block, verbatim.                           | =/** ... */=             |
+| =fields=         | List of fields (loop section).                           | (list)                   |
+
+Each field carries =name=, =cpp_type=, =ts_type=, =default=, and
+=comment=. =ts_type= is absent when the C++ type has no TypeScript
+projection; the model must then disable the TypeScript facet in its own
+drawer or =load_org_operation_model= rejects it.
 
 * Shell command specifics
 

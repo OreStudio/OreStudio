@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 7E6AF055-EE69-4B5B-9FC0-A4A171200691
+:END:
+#+title: ores.sql.populate.ip2country
+#+description: IPv4-to-country ranges as =ores_dq_ip2country_artefact_tbl= rows, loaded from the dataset's source TSV by the generated script's own psql =\copy=.
+#+type: archetype
+#+output: projects/ores.sql/populate/{dataset}/{prefix}_artefact_populate.sql
+#+data_source: manifest.json
+#+facet: ores.sql.populate
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+IPv4-to-country ranges as =ores_dq_ip2country_artefact_tbl= rows, loaded
+from the dataset's source TSV by the generated script's own psql =\copy=.
+
+The payload is the dataset's own =manifest.json=. The enrichment in
+=codegen/core.py= selects the manifest dataset whose =artefact_type= is
+=ip2country=, translates its =subject_area= and =domain= to the
+=subject_area_name= and =domain_name= forms used here, and exposes the
+manifest source's =data_file= as a repository-relative
+={{ip2country.data_file}}=.
+
+The archetype never reads the TSV. Ranges number in the hundreds of
+thousands, so inlining them would bloat the generated file and freeze
+them at codegen time. The generated script loads the file the operator
+has on disk, at the moment they run it.
+
+* The staging load
+
+=\copy= is a psql client meta-command, so it cannot run inside a =DO=
+block. The script therefore creates one temporary staging table, loads
+it with =\copy=, and inserts from it in a =DO= block that resolves the
+dataset row. It then drops the staging table.
+
+The drop is explicit and the table carries no =on commit drop=, because
+the script runs in autocommit mode. A =on commit drop= table outside a
+transaction is dropped as soon as its own =create= commits, so the
+=\copy= that follows would find no table. The committed script this
+replaces declares =on commit drop= on the staging table it never uses,
+which hides the trap.
+
+A =drop table if exists= precedes the =create=, so a run that failed
+before its own drop does not block a second run in the same session.
+Temporary tables live for the session, so without it the =create= is
+what fails.
+
+The shape also differs from the retired =flag= archetype on purpose:
+that script kept the dataset id in a session =set_config= setting
+rather than resolving it where it is used.
+
+The load path is a psql variable. The script sets =data_file= to the
+path the manifest declares, and the operator overrides it with =-v
+data_file=...= for a later download, which is the interface the
+hand-written =ip2country_import.sql= in the same directory already
+offers.
+
+* Source format
+
+The TSV is iptoasn.com's =ip2country-v4-u32.tsv=: three tab-separated
+columns, =range_start=, =range_end= and =country_code=, with no header.
+The column names are part of this archetype rather than of the payload,
+because the target table is fixed.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_ip2country_artefact_populate.mustache=.
+
+#+begin_src mustache :tangle sql_ip2country_artefact_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.populate.ip2country.org. Edit the org source. }}
+{{! Template to generate SQL for DQ IP to country artefacts }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_ip2country_artefact_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{model_name}} IP to Country Artefacts
+-- =============================================================================
+
+\echo '--- {{model_name}} IP to Country Artefacts ---'
+
+-- The manifest declares the source; -v data_file=... overrides it.
+\if :{?data_file}
+\else
+\set data_file '{{ip2country.data_file}}'
+\endif
+
+drop table if exists staging_ip2country_import;
+
+create temp table staging_ip2country_import (
+    range_start bigint,
+    range_end bigint,
+    country_code text
+);
+
+\echo 'Loading IP ranges...'
+\copy staging_ip2country_import from :'data_file' with (format text, delimiter E'\t')
+
+DO $$
+declare
+    v_dataset_id uuid;
+begin
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where name = '{{ip2country.dataset.name}}'
+      and subject_area_name = '{{ip2country.dataset.subject_area_name}}'
+      and domain_name = '{{ip2country.dataset.domain_name}}'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name="{{ip2country.dataset.name}}", subject_area="{{ip2country.dataset.subject_area_name}}", domain="{{ip2country.dataset.domain_name}}"';
+    end if;
+
+    delete from ores_dq_ip2country_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_ip2country_artefact_tbl (
+        dataset_id, tenant_id, range_start, range_end, country_code
+    )
+    select
+        v_dataset_id,
+        ores_utility_system_tenant_id_fn(),
+        range_start,
+        range_end,
+        country_code
+    from staging_ip2country_import;
+
+    raise debug 'Populated % ranges for dataset: %', (select count(*) from staging_ip2country_import), '{{ip2country.dataset.name}}';
+end $$;
+
+drop table staging_ip2country_import;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select
+    count(*) as total_ranges,
+    count(distinct country_code) as unique_countries,
+    count(*) filter (where country_code = 'None') as unrouted_ranges
+from ores_dq_ip2country_artefact_tbl where dataset_id in (
+    select id from ores_dq_datasets_tbl
+    where name = '{{ip2country.dataset.name}}'
+      and subject_area_name = '{{ip2country.dataset.subject_area_name}}'
+      and domain_name = '{{ip2country.dataset.domain_name}}'
+  );
+#+end_src
+
+* See also
+
+- Parent facet: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1508,6 +1508,24 @@ def _projects_dir_from(model_path: Path) -> Path:
 
 
 IMAGE_ARTEFACT_TYPE = 'images'
+IP2COUNTRY_ARTEFACT_TYPE = 'ip2country'
+
+
+def _manifest_dataset(manifest: dict, artefact_type: str) -> dict | None:
+    """The manifest dataset that declares the given artefact type, if any."""
+    for dataset in manifest.get('datasets', []):
+        if dataset.get('artefact_type') == artefact_type:
+            return dataset
+    return None
+
+
+def _dataset_names(dataset: dict) -> dict:
+    """A manifest dataset's names in the forms the archetypes read."""
+    return {
+        'name': dataset['name'],
+        'subject_area_name': dataset['subject_area'],
+        'domain_name': dataset['domain'],
+    }
 
 
 def _repo_root_from(model_path) -> Path:
@@ -1533,33 +1551,53 @@ def _build_image_artefact(manifest: dict, model_path) -> dict | None:
     so a manifest payload without images renders no artefact.
     """
     repo_root = _repo_root_from(model_path)
-    for dataset in manifest.get('datasets', []):
-        if dataset.get('artefact_type') != IMAGE_ARTEFACT_TYPE:
-            continue
-        source_dir = repo_root / dataset['source_dir']
-        if not source_dir.is_dir():
-            raise FileNotFoundError(
-                f"Image artefact source directory not found: {source_dir} "
-                f"(declared by dataset '{dataset.get('name')}')")
-        description_template = dataset.get('description_template', 'Image for {key}')
-        items = []
-        for svg_path in sorted(source_dir.glob('*.svg')):
-            key = svg_path.stem
-            items.append({
-                'key': key,
-                'description': description_template.format(key=key),
-                'svg': svg_path.read_text(encoding='utf-8').strip(),
-            })
-        return {
-            'dataset': {
-                'name': dataset['name'],
-                'subject_area_name': dataset['subject_area'],
-                'domain_name': dataset['domain'],
-            },
-            'items': items,
-            'count': len(items),
-        }
-    return None
+    dataset = _manifest_dataset(manifest, IMAGE_ARTEFACT_TYPE)
+    if dataset is None:
+        return None
+    source_dir = repo_root / dataset['source_dir']
+    if not source_dir.is_dir():
+        raise FileNotFoundError(
+            f"Image artefact source directory not found: {source_dir} "
+            f"(declared by dataset '{dataset.get('name')}')")
+    description_template = dataset.get('description_template', 'Image for {key}')
+    items = []
+    for svg_path in sorted(source_dir.glob('*.svg')):
+        key = svg_path.stem
+        items.append({
+            'key': key,
+            'description': description_template.format(key=key),
+            'svg': svg_path.read_text(encoding='utf-8').strip(),
+        })
+    return {
+        'dataset': _dataset_names(dataset),
+        'items': items,
+        'count': len(items),
+    }
+
+
+def _build_ip2country_artefact(manifest: dict, model_path) -> dict | None:
+    """The IP-to-country artefact a manifest declares.
+
+    Returns the dataset names the archetype resolves the dataset row by, and
+    the source TSV as a repository-relative path. The TSV is loaded by the
+    generated script's own psql ``\\copy``, so the archetype never reads it.
+    Returns None when the manifest declares no ip2country dataset.
+    """
+    dataset = _manifest_dataset(manifest, IP2COUNTRY_ARTEFACT_TYPE)
+    if dataset is None:
+        return None
+    source = next((s for s in manifest.get('sources', []) if s.get('data_file')), None)
+    if source is None:
+        raise ValueError(
+            f"Dataset '{dataset.get('name')}' declares an ip2country artefact "
+            "but the manifest has no source with a data_file")
+    repo_root = _repo_root_from(model_path)
+    manifest_dir = Path(model_path).resolve().parent
+    data_file = (manifest_dir / source['data_file']).relative_to(repo_root).as_posix()
+    return {
+        'dataset': _dataset_names(dataset),
+        'data_file': data_file,
+    }
 
 
 @functools.lru_cache(maxsize=None)
@@ -2042,11 +2080,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'methodologies' in data[model_key]:
             data['methodologies'] = data[model_key]['methodologies']
 
-    # For manifest.json, read the image artefacts the dataset declares
+    # For manifest.json, read the artefacts the dataset declares
     if model_key == 'manifest' and isinstance(data[model_key], dict):
         image_artefact = _build_image_artefact(data[model_key], model_path)
         if image_artefact is not None:
             data['image_artefact'] = image_artefact
+        ip2country = _build_ip2country_artefact(data[model_key], model_path)
+        if ip2country is not None:
+            data['ip2country'] = ip2country
 
     # Special processing for country_currency model to fill in currency defaults
     if model_key == 'country_currency':

@@ -20,7 +20,11 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 import pytest  # noqa: E402
 
-from codegen.core import _build_image_artefact, resolve_output_path  # noqa: E402
+from codegen.core import (  # noqa: E402
+    _build_image_artefact,
+    _build_ip2country_artefact,
+    resolve_output_path,
+)
 from codegen.org_loader import load_org_dataset_model  # noqa: E402
 from codegen.generate import resolve_targets  # noqa: E402
 
@@ -154,3 +158,62 @@ def test_resolve_targets_wires_the_image_artefact_to_the_manifest(tmp_path):
     by_output = {Path(u["output"]).name: u for u in units}
     assert by_output["demo_images_artefact_populate.sql"]["data_source"] == \
         "manifest.json"
+
+
+def make_ip2country_manifest(tmp_path, data_file="ip2country-v4-u32.tsv"):
+    """Write a repo-shaped manifest whose dataset declares an ip2country artefact."""
+    (tmp_path / ".git").mkdir(exist_ok=True)
+    manifest_dir = tmp_path / "external" / "ip2country"
+    manifest_dir.mkdir(parents=True)
+    (manifest_dir / data_file).write_text("0\t1\tNone\n", encoding="utf-8")
+
+    manifest = {
+        "name": "IP to Country Mapping",
+        "sources": [{"name": "iptoasn.com", "data_file": data_file}],
+        "datasets": [{
+            "name": "IP to Country IPv4 Ranges",
+            "subject_area": "IP Address to Country maps",
+            "domain": "Reference Data",
+            "artefact_type": "ip2country",
+        }],
+    }
+    manifest_path = manifest_dir / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    return manifest_path
+
+
+def test_ip2country_artefact_carries_dataset_names_and_source_path(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    artefact = _build_ip2country_artefact(
+        json.loads(manifest_path.read_text()), manifest_path)
+
+    assert artefact["dataset"] == {
+        "name": "IP to Country IPv4 Ranges",
+        "subject_area_name": "IP Address to Country maps",
+        "domain_name": "Reference Data",
+    }
+    # The path is repository-relative, because the generated script's own
+    # \copy resolves it against the psql client's working directory.
+    assert artefact["data_file"] == "external/ip2country/ip2country-v4-u32.tsv"
+
+
+def test_ip2country_artefact_is_absent_when_no_dataset_declares_it(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["datasets"][0]["artefact_type"] = "images"
+    assert _build_ip2country_artefact(manifest, manifest_path) is None
+
+
+def test_ip2country_artefact_rejects_a_manifest_without_a_data_file(tmp_path):
+    manifest_path = make_ip2country_manifest(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["sources"] = [{"name": "iptoasn.com"}]
+    with pytest.raises(ValueError, match="no source with a data_file"):
+        _build_ip2country_artefact(manifest, manifest_path)
+
+
+def test_resolve_targets_wires_the_ip2country_artefact_to_the_manifest(tmp_path):
+    doc = make_dataset(tmp_path, payloads=("manifest.json",))
+    units, _, _ = resolve_targets(doc, CODEGEN_BASE, address="ores.sql.populate")
+    by_output = {Path(u["output"]).name: u for u in units}
+    assert by_output["demo_artefact_populate.sql"]["data_source"] == "manifest.json"

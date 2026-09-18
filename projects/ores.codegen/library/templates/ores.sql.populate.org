@@ -54,6 +54,7 @@ via ={{{svg}}}=. Otherwise the group's standard constructs.
 | [[id:9EDACFF6-04AD-447B-B60C-C224033ECAA6][ores.sql.populate.dataset]] | Registers the datasets themselves (={{#datasets}}=: code, name, catalog, coding scheme, asset type, business context) — the provenance rows every other populate references. |
 | [[id:778B5D1A-A1DF-4457-8547-8C5E45006BCA][ores.sql.populate.dataset_dependency]] | Parent/child links between datasets (={{#dataset_dependencies}}=: parent code, dependency code, role) so consumers can order loads. |
 | [[id:3733242C-846A-45D1-8A9B-BD4D475CCC5A][ores.sql.populate.image_artefact]] | Image artefacts as =ores_dq_images_artefact_tbl= rows: ={{#image_artefact.items}}= inlines one SVG document per ={{key}}=, read from the dataset's =source_dir=. |
+| [[id:7E6AF055-EE69-4B5B-9FC0-A4A171200691][ores.sql.populate.ip2country]] | IPv4-to-country ranges as =ores_dq_ip2country_artefact_tbl= rows, loaded by the script's own =\copy= from the TSV the manifest's =sources= declares. |
 | [[id:FDD7D9C7-E126-4421-890A-ED1E5DB778F1][ores.sql.populate.methodology]] | Dataset methodologies (={{#methodologies}}=: name, description, steps, url) documenting how each dataset was produced. |
 | [[id:4F6A5E02-557F-4383-A03A-91B376A8A130][ores.sql.populate.tag]] | Classification tags (domain, subject area, name, description) per dataset. |
 

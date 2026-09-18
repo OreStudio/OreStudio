@@ -83,8 +83,9 @@ void asset_class_code_service::save_asset_classes(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << asset_classes.size() << " asset class codes";
     auto ts = asset_classes;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

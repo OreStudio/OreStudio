@@ -83,8 +83,9 @@ void payment_frequency_service::save_payment_frequencies(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << payment_frequencies.size() << " payment frequencies";
     auto ts = payment_frequencies;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

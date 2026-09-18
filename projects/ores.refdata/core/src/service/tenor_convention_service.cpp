@@ -83,8 +83,9 @@ void tenor_convention_service::save_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " tenor conventions";
     auto ts = conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

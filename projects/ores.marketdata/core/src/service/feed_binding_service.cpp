@@ -81,8 +81,9 @@ void feed_binding_service::save_feed_bindings(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << feed_bindings.size() << " feed bindings";
     auto ts = feed_bindings;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

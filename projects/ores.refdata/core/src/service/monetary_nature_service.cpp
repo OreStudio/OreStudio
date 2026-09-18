@@ -80,8 +80,9 @@ void monetary_nature_service::save_types(const std::vector<domain::monetary_natu
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " monetary natures";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

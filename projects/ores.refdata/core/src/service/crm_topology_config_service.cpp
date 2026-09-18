@@ -84,8 +84,9 @@ void crm_topology_config_service::save_crm_topology_configs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_topology_configs.size()
                                << " CRM topology configs";
     auto ts = crm_topology_configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

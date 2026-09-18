@@ -39,8 +39,8 @@
 #include "ores.synthetic.api/generators/ir_curve_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/service/ir_curve_generation_config_service.hpp"
-// Soft-FK parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent's own
-// generator and repository live in the same component as the child.
+// Soft-FK parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent may live
+// in another component, so its own component names the headers.
 #include "ores.synthetic.api/generators/market_data_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"

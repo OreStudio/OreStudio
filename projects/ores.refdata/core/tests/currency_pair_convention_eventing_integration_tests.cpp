@@ -37,8 +37,8 @@
 #include "ores.refdata.api/generators/currency_pair_convention_generator.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/service/currency_pair_convention_service.hpp"
-// Soft-FK parent seeding (ores_refdata_currency_pairs_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_currency_pairs_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/currency_pair_generator.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 // Grand-parent seeding (ores_refdata_currencies_tbl): the parent's own mandatory soft FKs

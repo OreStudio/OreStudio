@@ -83,8 +83,9 @@ void ir_curve_bootstrap_pillar_service::save_pillars(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << pillars.size() << " IR curve bootstrap pillars";
     auto ts = pillars;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

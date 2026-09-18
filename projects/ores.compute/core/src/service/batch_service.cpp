@@ -79,8 +79,9 @@ void batch_service::save_batches(const std::vector<domain::batch>& batches) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << batches.size() << " compute batches";
     auto ts = batches;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -84,8 +84,9 @@ void observation_lineage_service::save_observation_lineages(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << observation_lineages.size()
                                << " observation lineages";
     auto ts = observation_lineages;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

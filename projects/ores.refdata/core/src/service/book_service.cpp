@@ -102,8 +102,9 @@ void book_service::save_books(const std::vector<domain::book>& books) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
     auto ts = books;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

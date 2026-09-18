@@ -36,10 +36,14 @@ do $$
 declare
     v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
     v_machine_id uuid;
+    v_tr_capture         uuid;
     v_tr_new             uuid;
+    v_tr_execute         uuid;
     v_tr_discard         uuid;
     v_tr_expire          uuid;
     v_tr_cancel          uuid;
+    v_tr_unexpire        uuid;
+    v_tr_uncancel        uuid;
 begin
     -- Look up the trade_status machine
     select id into v_machine_id
@@ -52,15 +56,33 @@ begin
         raise exception 'trade_status FSM machine not found. Run dq_fsm_trade_status_populate.sql first.';
     end if;
 
-    -- Look up transitions by name. Only the state-changing activities name
-    -- one: an activity that carries no transition versions the trade and
-    -- leaves it where it was. Confirmation names none here -- it belongs to
-    -- the confirmation machine, not to the lifecycle.
+    -- Look up transitions by name. Every transition in the machine is named
+    -- by at least one activity type below, so no state is unreachable and
+    -- neither ending is terminal.
+    --
+    -- Only the state-changing activities name a transition. An activity that
+    -- carries none versions the trade and leaves it where it was, which is why
+    -- a fixing on a live trade stays live. Confirmation names none here: it
+    -- belongs to the confirmation machine, not to the lifecycle.
+    select id into v_tr_capture
+    from ores_dq_fsm_transitions_tbl
+    where tenant_id = v_sys_tenant
+      and machine_id = v_machine_id
+      and name = 'capture'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
     select id into v_tr_new
     from ores_dq_fsm_transitions_tbl
     where tenant_id = v_sys_tenant
       and machine_id = v_machine_id
       and name = 'new'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_tr_execute
+    from ores_dq_fsm_transitions_tbl
+    where tenant_id = v_sys_tenant
+      and machine_id = v_machine_id
+      and name = 'execute'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     select id into v_tr_discard
@@ -84,6 +106,20 @@ begin
       and name = 'cancel'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
+    select id into v_tr_unexpire
+    from ores_dq_fsm_transitions_tbl
+    where tenant_id = v_sys_tenant
+      and machine_id = v_machine_id
+      and name = 'unexpire'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_tr_uncancel
+    from ores_dq_fsm_transitions_tbl
+    where tenant_id = v_sys_tenant
+      and machine_id = v_machine_id
+      and name = 'uncancel'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
     -- -------------------------------------------------------------------------
     -- New Activity category
     -- -------------------------------------------------------------------------
@@ -102,10 +138,20 @@ begin
          'Internal transfer creating a new trade record.',
          'New', v_tr_new,
          current_user, 'system.initial_load', 'Seed activity types'),
+        ('draft_capture',
+         v_sys_tenant, 0, 'new_activity', false,
+         'Capture of a trade the desk has not yet executed. The trade starts in draft and carries no market risk until it is executed.',
+         null, v_tr_capture,
+         current_user, 'system.initial_load', 'Seed activity types'),
 
         -- -------------------------------------------------------------------------
         -- Lifecycle Event category
         -- -------------------------------------------------------------------------
+        ('execution',
+         v_sys_tenant, 0, 'lifecycle_event', true,
+         'Execution of a captured draft. The trade becomes live and starts to carry market risk.',
+         'New', v_tr_execute,
+         current_user, 'system.initial_load', 'Seed activity types'),
         ('amendment',
          v_sys_tenant, 0, 'lifecycle_event', false,
          'Change to trade economics or contractual terms.',
@@ -213,6 +259,16 @@ begin
          v_sys_tenant, 0, 'misbooking', false,
          'Cancellation and re-booking of a misbooking.',
          null, null,
+         current_user, 'system.initial_load', 'Seed activity types'),
+        ('maturity_reversal',
+         v_sys_tenant, 0, 'misbooking', false,
+         'Reversal of a maturity applied in error. The trade returns to live.',
+         null, v_tr_unexpire,
+         current_user, 'system.initial_load', 'Seed activity types'),
+        ('cancellation_reversal',
+         v_sys_tenant, 0, 'misbooking', false,
+         'Reversal of a cancellation applied in error. The trade returns to live.',
+         null, v_tr_uncancel,
          current_user, 'system.initial_load', 'Seed activity types'),
         ('transfer',
          v_sys_tenant, 0, 'misbooking', false,

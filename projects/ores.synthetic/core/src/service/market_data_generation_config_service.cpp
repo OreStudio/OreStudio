@@ -86,8 +86,9 @@ void market_data_generation_config_service::save_market_data_generation_configs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_data_generation_configs.size()
                                << " market data generation configs";
     auto ts = market_data_generation_configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -138,8 +138,9 @@ void party_identifier_service::save_party_identifiers(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_identifiers.size() << " party identifiers";
     auto ts = party_identifiers;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

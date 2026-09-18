@@ -194,7 +194,14 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 {{/primary_key.columns}}
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
+{{#has_domain_groups}}
+{{#domain_groups}}
+    stamp(t.{{member}}, ctx_);
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
     stamp(t, ctx_);
+{{/has_domain_groups}}
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 }
@@ -212,8 +219,16 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
     auto ts = {{entity_plural_short}};
-    for (auto& e : ts)
+    for (auto& e : ts) {
+{{#has_domain_groups}}
+{{#domain_groups}}
+        stamp(e.{{member}}, ctx_);
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
         stamp(e, ctx_);
+{{/has_domain_groups}}
+    }
     repo_.write(ctx_, ts);
 }
 

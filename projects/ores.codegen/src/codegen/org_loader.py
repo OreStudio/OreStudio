@@ -1275,15 +1275,28 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 for r in rows if r.get("column")
             ]
         # party_id_from_book_id is a struct feature: the insert trigger
-        # derives party_id and the book's parent portfolio from book_id and
-        # then cross-checks the stated portfolio against it. The struct
-        # supplies the two table names and the three messages the block
-        # raises, which a Flags property cannot carry.
+        # derives both party_id and portfolio_id from book_id, because the
+        # book states both. The struct supplies the book table and the
+        # message the existence check raises, which a Flags property
+        # cannot carry.
         book_section = _section(sql_section, "Party id from book id")
         if book_section and book_section.properties:
             de.setdefault("sql", {})["party_id_from_book_id"] = {
                 k.lower(): v for k, v in book_section.properties.items()
             }
+        # An entity guarded by a state machine cannot be rewritten with the
+        # activity that booked it: that activity names a transition which
+        # starts the machine, and the row already has a state. The model
+        # therefore names the activity an amendment carries, so a generated
+        # round-trip test can amend the row it just wrote.
+        transition_section = _section(sql_section, "Status transition")
+        if transition_section and transition_section.properties:
+            props = {k.lower(): v for k, v in transition_section.properties.items()}
+            if props.get("amend_activity_code") and props.get("amend_activity_column"):
+                de["amend_activity"] = {
+                    "column": props["amend_activity_column"],
+                    "code": props["amend_activity_code"],
+                }
         indexes_section = _section(sql_section, "Indexes")
         if indexes_section and indexes_section.tables:
             rows = _parse_org_table_rows(indexes_section)

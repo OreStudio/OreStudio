@@ -113,6 +113,11 @@ domain::{{entity_singular}}
 {{#render_is_optional_timestamp}}
     r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
 {{/render_is_optional_timestamp}}
+{{^render_is_optional_timestamp}}
+{{^render_is_timestamp}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(v.{{name}}->str()) : std::nullopt;
+{{/render_is_timestamp}}
+{{/render_is_optional_timestamp}}
 {{#render_is_timestamp}}
     if (v.{{name}})
         r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(*v.{{name}});
@@ -229,6 +234,14 @@ domain::{{entity_singular}}
                      std::optional(ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{name}})) :
                      std::nullopt;
 {{/render_is_timestamp}}
+{{^render_is_optional_timestamp}}
+{{^render_is_timestamp}}
+    if (v.{{{group_prefix}}}{{name}}.has_value())
+        r.{{name}}.emplace(*v.{{{group_prefix}}}{{name}});
+    else
+        r.{{name}} = std::nullopt;
+{{/render_is_timestamp}}
+{{/render_is_optional_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{name}});
@@ -254,7 +267,9 @@ domain::{{entity_singular}}
 {{/is_enum}}
 {{#render_is_enum}}
 {{^is_enum}}
-    r.{{name}} = std::optional(std::string(rfl::enum_to_string(v.{{{group_prefix}}}{{name}})));
+    r.{{name}} = v.{{{group_prefix}}}{{name}} == {{{render_cpp_type}}}{} ?
+        std::nullopt :
+        std::optional(std::string(rfl::enum_to_string(v.{{{group_prefix}}}{{name}})));
 {{/is_enum}}
 {{/render_is_enum}}
 {{#is_simple}}

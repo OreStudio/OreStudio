@@ -422,7 +422,6 @@ set(files
     "service/trade_identifier_service.cpp"
     "service/trade_party_role_service.cpp"
     "service/trade_service.cpp"
-    "service/trade_status_service.cpp"
     "service/trade_type_service.cpp"
     "service/vanilla_swap_instrument_service.cpp"
 )
@@ -881,7 +880,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/trade_identifier_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/trade_party_role_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/trade_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/trade_status_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/trade_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 )

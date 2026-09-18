@@ -56,8 +56,8 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.classification.instrument_id = std::nullopt;
     r.classification.asset_class = std::nullopt;
     r.classification.netting_set_id = std::string("NS-001");
-    r.classification.activity_type_code = std::string("New");
-    r.classification.status_id = ctx.generate_uuid();
+    r.classification.activity_type_code = std::string("new_booking");
+    r.classification.status_id = boost::uuids::uuid{};
     r.lifecycle.trade_date = std::string("2025-01-15");
     r.lifecycle.execution_timestamp = std::string("2025-01-15 10:00:00");
     r.lifecycle.effective_date = std::string("2025-01-16");

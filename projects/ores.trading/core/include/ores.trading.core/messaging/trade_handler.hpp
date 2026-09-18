@@ -71,7 +71,6 @@
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
-#include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -737,57 +736,6 @@ private:
         }
         return {};
     }
-
-    service::fsm_transition_map fetch_fsm_transitions(std::string_view bearer) {
-        using namespace ores::dq::messaging;
-
-        {
-            std::lock_guard lock(s_cache_mutex_);
-            const auto age = std::chrono::steady_clock::now() - s_cache_fetched_;
-            if (!s_cache_.empty() && age < std::chrono::minutes(5))
-                return s_cache_;
-        }
-
-        service::fsm_transition_map result;
-        const get_fsm_transitions_request req{};
-        const auto& codec = ores::nats::default_wire_codec();
-        try {
-            using namespace ores::nats::headers;
-            std::unordered_map<std::string, std::string> hdrs;
-            if (!bearer.empty())
-                hdrs[std::string(delegated_authorization)] =
-                    std::string(bearer_prefix) + std::string(bearer);
-            const auto reply = nats_.request_sync(get_fsm_transitions_request::nats_subject,
-                                                  codec.encode(req),
-                                                  std::move(hdrs),
-                                                  std::chrono::seconds(2));
-            const auto resp = codec.decode<get_fsm_transitions_response>(reply.data);
-            if (resp && resp->success) {
-                for (auto& t : resp->transitions)
-                    result[t.id] = std::move(t);
-            } else {
-                const auto detail =
-                    resp ? resp->message : std::string("no response from DQ service");
-                throw std::runtime_error("Failed to retrieve FSM transitions: " + detail);
-            }
-        } catch (const std::runtime_error&) {
-            throw;
-        } catch (const std::exception& e) {
-            throw std::runtime_error(std::string("Failed to retrieve FSM transitions: ") +
-                                     e.what());
-        }
-
-        {
-            std::lock_guard lock(s_cache_mutex_);
-            s_cache_ = result;
-            s_cache_fetched_ = std::chrono::steady_clock::now();
-        }
-        return result;
-    }
-
-    inline static std::mutex s_cache_mutex_;
-    inline static service::fsm_transition_map s_cache_;
-    inline static std::chrono::steady_clock::time_point s_cache_fetched_{};
 
     std::string http_base_url_;
 };

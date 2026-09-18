@@ -80,8 +80,9 @@ void party_status_service::save_statuses(const std::vector<domain::party_status>
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " party statuses";
     auto ts = statuses;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

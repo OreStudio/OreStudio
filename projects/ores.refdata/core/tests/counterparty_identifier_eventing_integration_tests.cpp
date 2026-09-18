@@ -37,8 +37,8 @@
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
 #include "ores.refdata.core/service/counterparty_identifier_service.hpp"
-// Soft-FK parent seeding (ores_refdata_counterparties_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_refdata_counterparties_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"

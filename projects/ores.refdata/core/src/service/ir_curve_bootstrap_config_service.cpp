@@ -86,8 +86,9 @@ void ir_curve_bootstrap_config_service::save_bootstrap_configs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << bootstrap_configs.size()
                                << " IR curve bootstrap configs";
     auto ts = bootstrap_configs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

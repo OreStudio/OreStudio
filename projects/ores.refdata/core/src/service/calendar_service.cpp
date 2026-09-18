@@ -80,8 +80,9 @@ void calendar_service::save_calendars(const std::vector<domain::calendar>& calen
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendars.size() << " calendars";
     auto ts = calendars;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

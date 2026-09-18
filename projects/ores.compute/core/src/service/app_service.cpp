@@ -79,8 +79,9 @@ void app_service::save_apps(const std::vector<domain::app>& apps) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << apps.size() << " compute apps";
     auto ts = apps;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

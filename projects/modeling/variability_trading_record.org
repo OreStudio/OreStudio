@@ -59,17 +59,15 @@ session, and both are correct for what they model.
 
 * Physical space
 
-The eventing test is the facet this profile exists to fix, and it is
-switched off until the seeding chain can carry a trade's ancestors. A
-trade's parents are a book and a portfolio in =ores.refdata=, and the
-seeder now reaches across that boundary -- but the seeded book's own
-party is not yet active when the book is written, so the test fails on
-the parent rather than on anything it means to prove. Switch this to
-=true= once that is fixed; nothing else in the profile depends on it.
+The eventing test is the facet this profile exists to fix. It proves the
+whole write path end to end -- generator, service, mapper, Postgres
+trigger, event source, event bus, NATS publish -- and it is the only
+test in the estate that writes a trade at all. Nothing else exercises
+the lifecycle trigger, so it stays on.
 
 | Address | Enabled |
 |---------+---------|
-| =ores.cpp.eventing-integration-test= | false |
+| =ores.cpp.eventing-integration-test= | true |
 
 * See also
 

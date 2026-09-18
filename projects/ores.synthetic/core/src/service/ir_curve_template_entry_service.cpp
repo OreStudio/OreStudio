@@ -86,8 +86,9 @@ void ir_curve_template_entry_service::save_ir_curve_template_entries(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_template_entries.size()
                                << " IR curve template entries";
     auto ts = ir_curve_template_entries;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

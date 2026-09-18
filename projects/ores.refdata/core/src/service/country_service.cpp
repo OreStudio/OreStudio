@@ -92,8 +92,9 @@ void country_service::save_countries(const std::vector<domain::country>& countri
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
     auto ts = countries;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

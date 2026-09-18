@@ -104,8 +104,9 @@ void calendar_rule_service::save_calendar_rules(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_rules.size() << " calendar rules";
     auto ts = calendar_rules;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

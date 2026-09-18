@@ -96,8 +96,9 @@ void pricing_model_product_parameter_service::save_parameters(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parameters.size()
                                << " pricing model product parameters";
     auto ts = parameters;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -79,8 +79,8 @@
 {{^nullable}}
 {{#parent_entity_singular}}
 {{^parent_is_party}}
-// Soft-FK parent seeding ({{table}}): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding ({{table}}): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.{{parent_component_include}}/{{parent_generator_facet_name}}/{{parent_entity_singular}}_generator.hpp"
 #include "ores.{{parent_component_core}}/repository/{{parent_entity_singular}}_repository.hpp"
 {{#parent_required_fks}}
@@ -250,7 +250,16 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{^parent_has_audit_group}}
     {{column}}_parent.change_reason_code = "system.test";
 {{/parent_has_audit_group}}
+{{#parent_supplies_party}}
+    // The {{entity_singular}} derives its own party from this
+    // {{parent_entity_singular}}, so the {{parent_entity_singular}} carries the
+    // session party rather than a fresh one. Give it any other party and the
+    // written row is owned by a party the session cannot see, which makes it
+    // invisible to the very session that wrote it.
+    {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = *party_ctx.party_id();
+{{/parent_supplies_party}}
 {{#parent_requires_party}}
+{{^parent_supplies_party}}
     // {{parent_entity_singular}}'s own mandatory party_id FK (session-set in
     // production) needs an active party too: seed one, attached under the
     // tenant's root party like the direct-party branch below.
@@ -266,6 +275,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     ores::refdata::repository::party_repository {{column}}_party_repo;
     {{column}}_party_repo.write(party_ctx, {{column}}_party);
     {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{column}}_party.id;
+{{/parent_supplies_party}}
 {{/parent_requires_party}}
 {{#parent_is_party}}
     // Only one root party (parent_party_id null) is allowed per tenant:
@@ -293,6 +303,23 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{/parent_has_audit_group}}
 {{/parent_required_fks}}
 {{#parent_required_fks}}
+{{#requires_party}}
+    // {{parent_entity_singular}} carries a mandatory party_id FK of its own
+    // (session-set in production), so seed a party for it before its write,
+    // exactly as the direct-parent branch does.
+    auto {{var}}_party = ores::refdata::generators::generate_synthetic_party(ctx);
+    {{var}}_party.change_reason_code = "system.test";
+    auto {{var}}_party_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : {{var}}_party_existing) {
+        if (e.tenant_id == {{var}}_party.tenant_id) {
+            {{var}}_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository {{var}}_party_repo;
+    {{var}}_party_repo.write(party_ctx, {{var}}_party);
+    {{var}}.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{var}}_party.id;
+{{/requires_party}}
     // Seed the active {{parent_entity_singular}} row {{table}} references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
@@ -442,6 +469,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{/party_scoped_writes}}
         ores::{{component}}::service::{{entity_singular}}_service svc(crud_ctx);
         v.{{{audit_prefix}}}change_commentary = "updated-by-crud-round-trip";
+{{#amend_activity}}
+        // Rewriting the row is an amendment, not a booking: the booking
+        // activity names a transition that starts the state machine and is
+        // rejected on a row that already has a state.
+        v.{{{group_prefix}}}{{column}} = "{{code}}";
+{{/amend_activity}}
         repo.write(crud_ctx, v);
 
         auto versions = svc.get_{{entity_singular_short}}_history(id_str);

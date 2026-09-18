@@ -106,8 +106,9 @@ void calendar_exception_service::save_calendar_exceptions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_exceptions.size() << " calendar exceptions";
     auto ts = calendar_exceptions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

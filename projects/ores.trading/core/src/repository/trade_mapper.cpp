@@ -67,6 +67,9 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.classification.activity_type_code = v.activity_type_code;
     r.classification.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
     r.lifecycle.trade_date = v.trade_date;
+    r.lifecycle.execution_timestamp = v.execution_timestamp.has_value() ?
+                                          std::optional(v.execution_timestamp->str()) :
+                                          std::nullopt;
     r.lifecycle.effective_date = v.effective_date;
     r.lifecycle.termination_date = v.termination_date;
     r.audit.modified_by = v.modified_by;
@@ -100,7 +103,10 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.counterparty_id = v.parties.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.parties.counterparty_id)) :
                             std::nullopt;
-    r.product_type = std::optional(std::string(rfl::enum_to_string(v.classification.product_type)));
+    r.product_type =
+        v.classification.product_type == domain::product_type{} ?
+            std::nullopt :
+            std::optional(std::string(rfl::enum_to_string(v.classification.product_type)));
     r.instrument_id = v.classification.instrument_id.has_value() ?
                           std::optional(boost::uuids::to_string(*v.classification.instrument_id)) :
                           std::nullopt;
@@ -109,6 +115,10 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.activity_type_code = v.classification.activity_type_code;
     r.status_id = boost::uuids::to_string(v.classification.status_id);
     r.trade_date = v.lifecycle.trade_date;
+    if (v.lifecycle.execution_timestamp.has_value())
+        r.execution_timestamp.emplace(*v.lifecycle.execution_timestamp);
+    else
+        r.execution_timestamp = std::nullopt;
     r.effective_date = v.lifecycle.effective_date;
     r.termination_date = v.lifecycle.termination_date;
     r.modified_by = v.audit.modified_by;

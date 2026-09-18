@@ -82,8 +82,9 @@ void currency_market_tier_service::save_types(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

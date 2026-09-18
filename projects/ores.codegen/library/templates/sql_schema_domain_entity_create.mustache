@@ -334,7 +334,6 @@ declare
     current_version integer;
 {{/domain_entity.has_audit_columns}}
 {{#domain_entity.sql.party_id_from_book_id}}
-    v_book_portfolio_id uuid;
 {{/domain_entity.sql.party_id_from_book_id}}
 {{#domain_entity.sql.fk_copy_validations}}
 {{#declare_vars}}
@@ -398,31 +397,16 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Denormalise party_id and capture parent_portfolio_id from book
+    -- The book states both the owning party and the containing portfolio,
+    -- so neither is the caller's to supply: derive both and ignore what
+    -- was sent. The book row was checked above, so the values are active
+    -- by construction and need no existence check of their own.
     select party_id, parent_portfolio_id
-      into NEW.party_id, v_book_portfolio_id
+      into NEW.party_id, NEW.portfolio_id
     from {{book_table}}
     where id = NEW.book_id
       and tenant_id = NEW.tenant_id
       and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- Validate portfolio_id (soft FK to {{portfolio_table}})
-    if not exists (
-        select 1 from {{portfolio_table}}
-        where tenant_id = NEW.tenant_id
-          and id = NEW.portfolio_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception '{{portfolio_error_message}}', NEW.portfolio_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate that portfolio_id matches the book's parent portfolio
-    if NEW.portfolio_id != v_book_portfolio_id then
-        raise exception '{{cross_check_error_message}}',
-            NEW.portfolio_id, v_book_portfolio_id
-            using errcode = '23514';
-    end if;
 
 {{/domain_entity.sql.party_id_from_book_id}}
 {{#domain_entity.foreign_keys}}

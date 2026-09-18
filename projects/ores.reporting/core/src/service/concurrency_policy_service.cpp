@@ -82,8 +82,9 @@ void concurrency_policy_service::save_policies(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << policies.size() << " concurrency policies";
     auto ts = policies;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

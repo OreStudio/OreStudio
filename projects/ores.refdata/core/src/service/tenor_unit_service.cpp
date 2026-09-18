@@ -80,8 +80,9 @@ void tenor_unit_service::save_units(const std::vector<domain::tenor_unit>& units
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << units.size() << " tenor units";
     auto ts = units;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

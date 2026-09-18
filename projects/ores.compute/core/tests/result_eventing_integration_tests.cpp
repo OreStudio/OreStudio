@@ -37,8 +37,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-// Soft-FK parent seeding (ores_compute_workunits_tbl): the parent's own generator and
-// repository live in the same component as the child.
+// Soft-FK parent seeding (ores_compute_workunits_tbl): the parent may live in another
+// component, so its own component names the headers.
 #include "ores.compute.api/generators/workunit_generator.hpp"
 #include "ores.compute.core/repository/workunit_repository.hpp"
 // Grand-parent seeding (ores_compute_batches_tbl): the parent's own mandatory soft FKs

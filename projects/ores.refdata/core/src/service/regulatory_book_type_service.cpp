@@ -90,8 +90,9 @@ void regulatory_book_type_service::save_types(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " regulatory book types";
     auto ts = types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

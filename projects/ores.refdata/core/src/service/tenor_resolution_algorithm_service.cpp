@@ -84,8 +84,9 @@ void tenor_resolution_algorithm_service::save_algorithms(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << algorithms.size() << " tenor resolution algorithms";
     auto ts = algorithms;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

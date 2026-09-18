@@ -170,15 +170,18 @@ struct export_trades_to_storage_request {
     static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
 
     std::vector<std::string> book_ids;
-    std::string storage_bucket; ///< Target bucket (e.g. "report-data")
-    std::string storage_key;    ///< Target key (e.g. "{instance_id}/trades.msgpack")
+    // Target bucket, such as "report-data".
+    std::string storage_bucket;
+    // Target key, such as "{instance_id}/trades.msgpack".
+    std::string storage_key;
 };
 
 struct export_trades_to_storage_response {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string storage_key; ///< Echoed back for confirmation
+    // Echoed back from the request so the caller can confirm the target.
+    std::string storage_key;
 };
 }
 

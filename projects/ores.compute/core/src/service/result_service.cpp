@@ -93,8 +93,9 @@ void result_service::save_results(const std::vector<domain::result>& results) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " compute results";
     auto ts = results;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

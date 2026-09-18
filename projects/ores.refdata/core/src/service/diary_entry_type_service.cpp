@@ -83,8 +83,9 @@ void diary_entry_type_service::save_entry_types(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << entry_types.size() << " diary entry types";
     auto ts = entry_types;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

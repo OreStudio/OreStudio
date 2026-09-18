@@ -86,8 +86,9 @@ void crm_enabled_derived_pair_service::save_crm_enabled_derived_pairs(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_enabled_derived_pairs.size()
                                << " CRM enabled derived pairs";
     auto ts = crm_enabled_derived_pairs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

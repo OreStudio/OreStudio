@@ -86,8 +86,9 @@ void overnight_index_convention_service::save_overnight_index_conventions(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << overnight_index_conventions.size()
                                << " overnight index conventions";
     auto ts = overnight_index_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

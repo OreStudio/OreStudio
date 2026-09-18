@@ -1503,9 +1503,10 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     the seeded entity will be patched into; ``path`` is the set of tables
     already on the current chain (cycle guard for self-referential
     hierarchies). Skipped like the direct-parent resolution: nullable
-    FKs, unresolvable tables (no modeling org), parties (the direct
-    parent's party branch is the single party-seeding mechanism) and
-    cross-component parents.
+    FKs, unresolvable tables (no modeling org) and parties (the direct
+    parent's party branch is the single party-seeding mechanism). An
+    ancestor in another component is seeded like any other; each item
+    carries its own component so the test includes the right headers.
     """
     items = []
     for mfk in mfks:
@@ -1528,6 +1529,20 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             'parent_var': parent_var,
             'parent_entity_singular': grandparent['entity_singular'],
             'parent_component': grandparent['component'],
+            'parent_component_include': f"{grandparent['component']}.api",
+            'parent_component_core': f"{grandparent['component']}.core",
+            'parent_has_identity_group': grandparent.get('has_identity_group'),
+            # An ancestor may itself carry a mandatory party_id FK (a
+            # portfolio seeded as a book's parent, say). Production sets
+            # that from the session, so the test has to seed a party for
+            # it exactly as the direct-parent branch does, or the
+            # ancestor's own insert fails its party check before the
+            # entity under test is ever written.
+            'requires_party': any(
+                not m.get('nullable')
+                and (org_by_table.get(m.get('table')) or {}).get(
+                    'entity_singular') == 'party'
+                for m in grandparent.get('mandatory_fks') or []),
             'parent_generator_facet_name': (
                 grandparent['generator_facet_name'] or 'generators'),
             'target_column': mfk.get('target_column'),
@@ -2934,6 +2949,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # seeds a party too, so the parent's own insert passes its
                 # trigger. The party table is resolved via the same table
                 # scan (its entity_singular is 'party').
+                # When the entity derives its own party from this parent
+                # (party_id_from_book_id names the parent's table), the
+                # parent must carry the session party rather than a fresh
+                # one: the derived party is what the row ends up owned by,
+                # and a row owned by a party the session cannot see is
+                # invisible to the very session that wrote it.
+                _book = ((domain_entity.get('sql') or {}).get(
+                    'party_id_from_book_id') or {}).get('book_table')
+                fk['parent_supplies_party'] = bool(
+                    _book and fk.get('table') == _book)
                 fk['parent_requires_party'] = any(
                     not mfk.get('nullable')
                     and (org_by_table.get(mfk.get('table')) or {}).get(
@@ -2962,8 +2987,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name') == fk.get('column')
                     and c.get('is_identity_group_column', False)
                     for c in domain_entity.get('columns', []) or [])
+            # The amending activity is declared by column name; resolve it
+            # to the member path the test must assign through, which for a
+            # grouped entity sits inside one of the groups.
+            amend = domain_entity.get('amend_activity')
+            if amend:
+                amend['group_prefix'] = next(
+                    (c.get('group_prefix', '') or ''
+                     for c in domain_entity.get('columns', []) or []
+                     if c.get('name') == amend.get('column')),
+                    '')
             domain_entity['seed_party'] = any(
                 fk.get('parent_is_party') or fk.get('parent_requires_party')
+                or any(item.get('requires_party')
+                       for item in fk.get('parent_required_fks') or [])
                 for fk in fks)
             domain_entity['seed_parent_country_sentinel'] = any(
                 fk.get('parent_seed_country_sentinel') for fk in fks)

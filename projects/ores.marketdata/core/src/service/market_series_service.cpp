@@ -82,8 +82,9 @@ void market_series_service::save_market_series(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
     auto ts = market_series;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

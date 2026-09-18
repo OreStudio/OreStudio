@@ -83,8 +83,9 @@ void zero_convention_service::save_zero_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << zero_conventions.size() << " zero conventions";
     auto ts = zero_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -80,8 +80,9 @@ void app_version_service::save_app_versions(const std::vector<domain::app_versio
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << app_versions.size() << " app versions";
     auto ts = app_versions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

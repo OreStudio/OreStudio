@@ -91,8 +91,9 @@ void market_observation_service::save_market_observations(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_observations.size() << " market observations";
     auto ts = market_observations;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -83,8 +83,9 @@ void swap_convention_service::save_swap_conventions(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_conventions.size() << " swap conventions";
     auto ts = swap_conventions;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

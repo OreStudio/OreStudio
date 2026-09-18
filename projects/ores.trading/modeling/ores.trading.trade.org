@@ -213,7 +213,7 @@ std::string("NS-001")
 Activity type code (soft FK to ores_trading_activity_types_tbl).
 
 #+begin_src cpp :name generator
-std::string("New")
+std::string("new_booking")
 #+end_src
 
 ** status_id
@@ -225,8 +225,13 @@ std::string("New")
 
 Current FSM state (soft FK to ores_dq_fsm_states_tbl).
 
+The generated sample leaves it nil. A trade's status is the target of a
+guarded transition, so the insert trigger resolves it from the activity;
+a random uuid names no seeded state and is rejected before the trigger
+ever reaches the transition that would have set it.
+
 #+begin_src cpp :name generator
-ctx.generate_uuid()
+boost::uuids::uuid{}
 #+end_src
 
 ** trade_date
@@ -317,8 +322,9 @@ before it writes a trade.
 :error_message: Invalid portfolio_id: %. Portfolio must exist for tenant.
 :END:
 
-Declared for the same reason, and checked in the same place: the
-derivation cross-checks the stated portfolio against the book's parent.
+Declared for the same reason, and resolved in the same place: the
+derivation above sets it from the book's parent portfolio, so whatever
+the caller sent is replaced before any check could run.
 
 ** successor_trade_id
 :PROPERTIES:
@@ -343,9 +349,14 @@ Absent on an internal trade, which faces no counterparty.
 :table:         ores_dq_fsm_states_tbl
 :error_message: Invalid status_id: %. FSM state must exist.
 :use_system_tenant: true
+:skip_check:    true
 :END:
 
-The state the trade occupies in its lifecycle machine.
+The state the trade occupies in its lifecycle machine. =skip_check=
+because the status is not the caller's to supply: the transition
+resolution below assigns it from the transition's target state, which
+is a seeded state by construction. Checking the caller's value first
+would reject every write before the trigger could correct it.
 
 * Insert trigger
 
@@ -370,19 +381,31 @@ optional, and the generated guard skips the call when it is null.
 
 ** Party id from book id
 :PROPERTIES:
-:book_table:                ores_refdata_books_tbl
-:book_error_message:        Invalid book_id: %. Book must exist for tenant.
-:portfolio_table:           ores_refdata_portfolios_tbl
-:portfolio_error_message:   Invalid portfolio_id: %. Portfolio must exist for tenant.
-:cross_check_error_message: portfolio_id % does not match book parent_portfolio_id %.
+:book_table:         ores_refdata_books_tbl
+:book_error_message: Invalid book_id: %. Book must exist for tenant.
 :END:
 
 A trade states its book, and the book already knows which party owns it
-and which portfolio contains it. The insert trigger therefore derives
-=party_id= from the book rather than trusting the caller, and rejects a
-=portfolio_id= that disagrees with the book's parent.
+and which portfolio contains it. Neither is therefore the caller's to
+supply: the insert trigger derives =party_id= and =portfolio_id= from
+the book and ignores whatever was sent for them.
+
+Both are derived the same way because both are determined the same way.
+A value the book fully decides cannot disagree with the book without the
+caller being wrong, so asking a caller to send it can only introduce an
+error that the derivation removes.
 
 ** Status transition
+:PROPERTIES:
+:amend_activity_column: activity_type_code
+:amend_activity_code:   amendment
+:END:
+
+=amend_activity_code= names the activity a rewrite of an existing trade
+carries. A trade cannot be rewritten under =new_booking=: that activity
+names a transition which starts the machine, and the row already has a
+state. The generated round-trip test uses this to amend the row it has
+just booked.
 
 A trade's status is not a value the caller supplies: it is the target of a
 guarded transition. The activity names the event, reference data maps the
@@ -398,45 +421,30 @@ under that lock is what stops two concurrent amendments from both
 believing their transition is legal.
 
 #+begin_src sql :name status_transition_declarations :implements B9428A09-3610-4CAD-A200-E6CDE53B7C8D
-    v_fsm_transition_id uuid;
-    v_from_state_id uuid;
-    v_to_state_id uuid;
-    v_transition_name text;
+    v_transition record;
     v_prior_status_id uuid;
 #+end_src
+
+Both branches resolve the transition through
+=ores_trading_resolve_trade_transition_fn=, which does the lookup and
+refuses an activity naming a transition that no longer exists. What
+differs between them is the guard, and that is what stays here.
 
 The booking case. The machine has not started, so the transition must be
 one that starts it: a transition stating a =from_state_id= is an event
 that presumes a history this trade does not have.
 
 #+begin_src sql :name status_transition_on_insert :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
-    select fsm_transition_id into v_fsm_transition_id
-    from ores_trading_activity_types_tbl
-    where tenant_id = ores_utility_system_tenant_id_fn()
-      and code = NEW.activity_type_code
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
 
-    if v_fsm_transition_id is not null then
-        select from_state_id, to_state_id, name
-          into v_from_state_id, v_to_state_id, v_transition_name
-        from ores_dq_fsm_transitions_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and id = v_fsm_transition_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
-
-        if not found then
-            raise exception 'Activity type % names FSM transition %, which does not exist.',
-                NEW.activity_type_code, v_fsm_transition_id
-                using errcode = '23503';
-        end if;
-
-        if v_from_state_id is not null then
+    if v_transition.has_transition then
+        if v_transition.from_state_id is not null then
             raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
-                NEW.activity_type_code, v_transition_name, v_from_state_id
+                NEW.activity_type_code, v_transition.transition_name, v_transition.from_state_id
                 using errcode = '23514';
         end if;
 
-        NEW.status_id = v_to_state_id;
+        NEW.status_id = v_transition.to_state_id;
     end if;
 #+end_src
 
@@ -450,41 +458,25 @@ so the status read here cannot race another writer.
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn();
 
-        select fsm_transition_id into v_fsm_transition_id
-        from ores_trading_activity_types_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and code = NEW.activity_type_code
-          and valid_to = ores_utility_infinity_timestamp_fn();
+        v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
 
-        if v_fsm_transition_id is null then
+        if not v_transition.has_transition then
             NEW.status_id = v_prior_status_id;
         else
-            select from_state_id, to_state_id, name
-              into v_from_state_id, v_to_state_id, v_transition_name
-            from ores_dq_fsm_transitions_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
-              and id = v_fsm_transition_id
-              and valid_to = ores_utility_infinity_timestamp_fn();
-
-            if not found then
-                raise exception 'Activity type % names FSM transition %, which does not exist.',
-                    NEW.activity_type_code, v_fsm_transition_id
-                    using errcode = '23503';
-            end if;
-
-            if v_from_state_id is null then
+            if v_transition.from_state_id is null then
                 raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
-                    NEW.activity_type_code, v_transition_name, v_prior_status_id
+                    NEW.activity_type_code, v_transition.transition_name, v_prior_status_id
                     using errcode = '23514';
             end if;
 
-            if v_prior_status_id is distinct from v_from_state_id then
+            if v_prior_status_id is distinct from v_transition.from_state_id then
                 raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
-                    NEW.activity_type_code, v_transition_name, v_from_state_id, v_prior_status_id
+                    NEW.activity_type_code, v_transition.transition_name,
+                    v_transition.from_state_id, v_prior_status_id
                     using errcode = '23514';
             end if;
 
-            NEW.status_id = v_to_state_id;
+            NEW.status_id = v_transition.to_state_id;
         end if;
 
 #+end_src
@@ -700,7 +692,6 @@ save path reads its transitions from.
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
-#include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -713,9 +704,7 @@ save path reads its transitions from.
 
 =populate_instruments_for_trades= resolves a page of trades to their
 instrument payloads in two phases: bucket the instrument ids by product
-type, then read each product's table in one batch. The FSM transition
-map is cached process-wide because it is reference data that changes
-only on a schema migration.
+type, then read each product's table in one batch.
 
 #+begin_src cpp :name handler_private :implements A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
     template <typename Ctx>
@@ -1070,57 +1059,6 @@ only on a schema migration.
         return {};
     }
 
-    service::fsm_transition_map fetch_fsm_transitions(std::string_view bearer) {
-        using namespace ores::dq::messaging;
-
-        {
-            std::lock_guard lock(s_cache_mutex_);
-            const auto age = std::chrono::steady_clock::now() - s_cache_fetched_;
-            if (!s_cache_.empty() && age < std::chrono::minutes(5))
-                return s_cache_;
-        }
-
-        service::fsm_transition_map result;
-        const get_fsm_transitions_request req{};
-        const auto& codec = ores::nats::default_wire_codec();
-        try {
-            using namespace ores::nats::headers;
-            std::unordered_map<std::string, std::string> hdrs;
-            if (!bearer.empty())
-                hdrs[std::string(delegated_authorization)] =
-                    std::string(bearer_prefix) + std::string(bearer);
-            const auto reply = nats_.request_sync(get_fsm_transitions_request::nats_subject,
-                                                  codec.encode(req),
-                                                  std::move(hdrs),
-                                                  std::chrono::seconds(2));
-            const auto resp = codec.decode<get_fsm_transitions_response>(reply.data);
-            if (resp && resp->success) {
-                for (auto& t : resp->transitions)
-                    result[t.id] = std::move(t);
-            } else {
-                const auto detail =
-                    resp ? resp->message : std::string("no response from DQ service");
-                throw std::runtime_error("Failed to retrieve FSM transitions: " + detail);
-            }
-        } catch (const std::runtime_error&) {
-            throw;
-        } catch (const std::exception& e) {
-            throw std::runtime_error(std::string("Failed to retrieve FSM transitions: ") +
-                                     e.what());
-        }
-
-        {
-            std::lock_guard lock(s_cache_mutex_);
-            s_cache_ = result;
-            s_cache_fetched_ = std::chrono::steady_clock::now();
-        }
-        return result;
-    }
-
-    inline static std::mutex s_cache_mutex_;
-    inline static service::fsm_transition_map s_cache_;
-    inline static std::chrono::steady_clock::time_point s_cache_fetched_{};
-
     std::string http_base_url_;
 #+end_src
 
@@ -1388,15 +1326,18 @@ struct export_trades_to_storage_request {
     static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
 
     std::vector<std::string> book_ids;
-    std::string storage_bucket; ///< Target bucket (e.g. "report-data")
-    std::string storage_key;    ///< Target key (e.g. "{instance_id}/trades.msgpack")
+    // Target bucket, such as "report-data".
+    std::string storage_bucket;
+    // Target key, such as "{instance_id}/trades.msgpack".
+    std::string storage_key;
 };
 
 struct export_trades_to_storage_response {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string storage_key; ///< Echoed back for confirmation
+    // Echoed back from the request so the caller can confirm the target.
+    std::string storage_key;
 };
 #+end_src
 

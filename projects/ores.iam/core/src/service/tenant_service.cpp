@@ -80,8 +80,9 @@ void tenant_service::save_tenants(const std::vector<domain::tenant>& tenants) {
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << tenants.size() << " tenants";
     auto ts = tenants;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

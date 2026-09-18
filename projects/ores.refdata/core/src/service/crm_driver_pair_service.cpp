@@ -83,8 +83,9 @@ void crm_driver_pair_service::save_crm_driver_pairs(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_driver_pairs.size() << " CRM driver pairs";
     auto ts = crm_driver_pairs;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

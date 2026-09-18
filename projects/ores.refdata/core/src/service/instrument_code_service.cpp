@@ -82,8 +82,9 @@ void instrument_code_service::save_instruments(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instruments.size() << " instrument codes";
     auto ts = instruments;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

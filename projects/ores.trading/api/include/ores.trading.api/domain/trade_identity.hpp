@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_field_group.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_IDENTITY_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_IDENTITY_HPP
 
@@ -44,9 +49,7 @@ struct trade_identity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
+     * @brief Workspace this record belongs to. Defaults to the Live workspace sentinel.
      */
     boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 

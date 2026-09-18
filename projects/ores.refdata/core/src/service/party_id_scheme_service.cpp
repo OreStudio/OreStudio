@@ -81,8 +81,9 @@ void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_sc
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
     auto ts = schemes;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

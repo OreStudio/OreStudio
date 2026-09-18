@@ -89,8 +89,9 @@ void portfolio_service::save_portfolios(const std::vector<domain::portfolio>& po
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << portfolios.size() << " portfolios";
     auto ts = portfolios;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -82,8 +82,9 @@ void report_instance_service::save_instances(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " report instances";
     auto ts = instances;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

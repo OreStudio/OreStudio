@@ -75,8 +75,9 @@ void market_fixing_service::save_market_fixings(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_fixings.size() << " market fixings";
     auto ts = market_fixings;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

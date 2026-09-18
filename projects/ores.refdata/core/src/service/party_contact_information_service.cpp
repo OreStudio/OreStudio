@@ -145,8 +145,9 @@ void party_contact_information_service::save_party_contact_informations(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_contact_informations.size()
                                << " party contact informations";
     auto ts = party_contact_informations;
-    for (auto& e : ts)
+    for (auto& e : ts) {
         stamp(e, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

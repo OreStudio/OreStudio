@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 90F280D4-8C96-4970-9D64-533DF3F88AF0
+:END:
+#+title: compass story new --kind hotfix flips the story to STARTED b…
+#+description: compass story new --kind hotfix flips the story to STARTED but leaves its row in the sprint's Hotfixes table at BACKLOG, so the sprint table disagrees with story.org until the row is edited by hand. Observed on the main_ci_red hotfix: the scaffold output printed 'state: BACKLOG -> STARTED' and 'story state -> STARTED', yet the sprint row stayed BACKLOG. Either update the sprint row when the story state flips, or leave the story at BACKLOG until task start so the row is written once.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

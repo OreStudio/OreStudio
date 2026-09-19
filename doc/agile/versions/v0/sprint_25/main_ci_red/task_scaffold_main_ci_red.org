@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D9B3CE52-0C42-4F78-88D2-A76F7B487482][Hotfix: Windows build and SQL schema validation fail on main]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-19                               |
 
 * Acceptance
@@ -69,3 +69,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks, and the Sprint 25 Hotfixes row are
+scaffolded, and the diagnosis is recorded in the implementation task.
+The branch =hotfix/main-ci-red= carries the fix. No separate scaffold
+PR is raised: the single hotfix PR closes this task too.
+
+A capture records one tooling gap found on the way:
+=doc/agile/product_backlog/inbox/compass_sprint_row_not_flipped_with_story_state.org=.
+

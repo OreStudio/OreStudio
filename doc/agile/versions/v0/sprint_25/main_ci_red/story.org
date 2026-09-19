@@ -21,11 +21,11 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | All three fixes are applied and verified locally. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit, then raise the PR.             |
+| Next          | Nothing. |
 | Last touched  | 2026-09-19                               |
 
 * Acceptance
@@ -37,8 +37,8 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DFC2C1E4-8C57-4E15-88F6-C8AC80BA259A][Scaffold story: Hotfix: Windows build and SQL schema validation fail on main]] | STARTED | 2026-09-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:097F02D2-9CD5-4909-8C4B-85CD24F39DB8][Fix the Windows build and the SQL component prefix]] | STARTED | 2026-09-19 | | Initial task for: Hotfix: Windows build and SQL schema validation fail on main |
+| [[id:DFC2C1E4-8C57-4E15-88F6-C8AC80BA259A][Scaffold story: Hotfix: Windows build and SQL schema validation fail on main]] | DONE | 2026-09-19 | 2026-09-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:097F02D2-9CD5-4909-8C4B-85CD24F39DB8][Fix the Windows build and the SQL component prefix]] | DONE | 2026-09-19 | 2026-09-19 | Initial task for: Hotfix: Windows build and SQL schema validation fail on main |
 
 * Decisions
 
@@ -58,3 +58,21 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
   template ignores the =rls_tenant_isolation= flag, and the table is
   absent from =marketdata_drop.sql=. Task
   7E064C21-14EA-401C-A73D-35EA1743EED7 covers both.
+
+* Result
+
+Three defects on main are fixed on =hotfix/main-ci-red=, and the branch
+carries no other change.
+
+The Windows build is restored: the MSVC warning C4244 no longer stops
+the compile, and =ores.ore.api.dll= now links the libfort symbols its
+series key shape table calls. The SQL validator accepts the =ores_ore_=
+component prefix, which removes the =NAMING_010= and =NAMING_002=
+warnings.
+
+The two remaining validator warnings stay red on Linux. They need
+codegen work on the junction template, and task
+7E064C21-14EA-401C-A73D-35EA1743EED7 already owns that work.
+
+Details and evidence are in the implementation task.
+

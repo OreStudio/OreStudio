@@ -226,3 +226,9 @@ def test_current_state_facet_gate_drops_history_only_archetypes():
 
     assert "ores.cpp.presentation.history_field_mapper_impl" in \
         _NO_TEMPORAL_HISTORY_ARCHETYPES
+    # The eventing integration test walks the CRUD surface asserting version
+    # growth and a soft delete, and reads the audit tail's change_commentary,
+    # none of which a current-state entity has. It is opt-in, and the gate is
+    # what stops it being enabled into generated code that cannot compile.
+    assert "ores.cpp.eventing-integration-test.nats_integration_test" in \
+        _NO_TEMPORAL_HISTORY_ARCHETYPES

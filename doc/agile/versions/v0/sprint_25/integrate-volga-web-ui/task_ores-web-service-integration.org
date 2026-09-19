@@ -87,11 +87,13 @@ NATS certificate over the shared identity in =.env=, and joins
 =projects/ores.web/CMakeLists.txt= builds the component so the unit finds a
 built BFF.
 
-Verified: the unit renders as intended and is in the target; the built BFF
-listens on 21402, serves the bundle and the API, logs =Service ready=, and
-answers a bad credential with 401 against the running IAM service.
+Verified end to end in the sandbox once =~/.config/systemd/user= became
+writable: the units deploy, and =compass services status --use-busctl= reports
+all 24 units running, including =ores.web.service-eager_maxwell=, which serves
+the bundle and the API on 21402 and answers a bad credential with 401 against
+IAM over mTLS.
 
-Not verified here: =compass services start= cannot finish in this sandbox,
-because deploying the units writes to =~/.config/systemd/user=, which stays
-read-only. The generation and rendering halves are covered by
-=tests/test_systemd_generate.py=.
+The sandbox's user namespace makes the manager refuse =systemctl=, so compass
+grew =--use-busctl=, which reaches the same manager over the session bus. That
+transport is covered by =tests/test_systemctl_bus.py=, and the unit rendering
+by =tests/test_systemd_generate.py=.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-series-asset-class-junction-rls-drop
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
 #+updated: 2026-09-18
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -42,7 +42,7 @@ codegen path rather than in this one table.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -66,9 +66,32 @@ codegen path rather than in this one table.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two defects, one codegen cause. Fix the template, then the two consumers.
+
+1. Teach the junction create archetype the flag. Add the tenant-isolation
+   trailer to =ores.sql.schema.junction_create.org=, gated on
+   ={{#junction.sql.rls_tenant_isolation}}=, mirroring the block in
+   =ores.sql.schema.domain_entity_create.org=: =alter table ... enable row
+   level security= plus the permissive =..._tbl_tenant_isolation_policy=.
+   Re-tangle the mustache with =compass build --direct
+   tangle_codegen_templates=; never edit the tangled file by hand.
+2. Opt the one model in. The market series asset class junction gains
+   =:rls_tenant_isolation: true= in its =* SQL / ** Flags= drawer. The org
+   loader lifts that drawer into =junction.sql= unchanged, so no Python
+   change is needed. The iam account party junction already carries its
+   policy from the central =iam_rls_policies_create.sql=, so it does not
+   opt in and no policy is duplicated.
+3. The drop script. There is no junction drop archetype: the template
+   library holds =junction_create= only, and all 14 existing junction drop
+   files are hand-written with no =AUTO-GENERATED= banner. So hand-write
+   =marketdata_market_series_asset_class_drop.sql= in the shape the other
+   junctions use, plus the policy drop the new trailer creates, and wire
+   it into =marketdata_drop.sql=.
+4. Regenerate the marketdata component and confirm the only changed
+   artefact is that junction's create file.
+5. Apply to the live database, verify a cross-tenant query returns no
+   junction rows, then re-run the suites that touch the table and the
+   schema validator.
 
 * Notes
 
@@ -95,6 +118,14 @@ order.
 The table belongs to task 209's Unit 4, so this task inherits its
 consumers. Nothing in this task changes the classifier or the import
 path.
+
+Reconnaissance on 2026-09-20 corrects two assumptions above. The note
+calling =sql_schema_junction_create.mustache= "and its drop twin" is
+wrong: no junction drop archetype exists at all, which is why every
+junction drop script in the tree is hand-written. And the flag is read
+nowhere in the junction path — the template has zero references to
+=rls_tenant_isolation=, so the opt-in has to be taught rather than
+merely exercised. The plan below reflects both.
 
 * Test Scenarios
 

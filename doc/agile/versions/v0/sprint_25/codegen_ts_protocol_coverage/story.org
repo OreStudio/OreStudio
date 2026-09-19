@@ -35,7 +35,6 @@ IAM only, and 100% coverage. Every NATS message IAM speaks comes from an org mod
 - Every IAM protocol header has a TypeScript twin, and a check fails when one is missing.
 - One header per entity or protocol holds all its messages, and those messages come from exactly one model.
 - An entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
-- No model switches the TypeScript facet off, and no hand-written struct crosses the wire: every message type is either a modelled entity or a message-only model.
 - The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
 
 * Tasks

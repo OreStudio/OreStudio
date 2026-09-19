@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: EEF56C69-DA42-4C0D-B608-64BE175336F9
+:END:
+#+title: ssh in the DSH sandbox needs a user-owned config directory
+#+description: The bwrap user namespace maps only the calling uid, so every root-owned file reads back as nobody and OpenSSH refuses the system ssh_config.d Include. The sandbox wrapper binds a user-owned directory over it, and no sandbox-writable-paths entry can fix it.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+Inside the DSH sandbox every root-owned file reads back as the overflow
+uid 65534 (nobody), because the bwrap user namespace maps only the
+calling uid. OpenSSH refuses to Include a configuration file it cannot
+attribute to root or the invoking user, so every ssh call fails on
+=/etc/ssh/ssh_config.d= until a user-owned directory is bound over it.
+
+*Why:* The bash sandbox runs =bwrap= through
+=~/.dsh/bin/dsh-bwrap-writable-ores.sh=, which ro-binds =/= and creates
+a user namespace (=/proc/self/uid_map= is =1000 0 1=). Host root has no
+mapping inside, so =/etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf=
+reads as =nobody:nogroup=. OpenSSH applies =SSHCONF_CHECKPERM= to every
+file reached through =Include=, which requires an owner of root or the
+invoking user and rejects a file writable by others. It calls a fatal
+=Bad owner or permissions on %s= instead. The file cannot be repaired
+from inside: the root bind is read-only, so =touch= returns EROFS,
+=CapEff= is 0, so =chown= cannot work, and the write and edit tools are
+fenced to the workspace.
+
+*How to apply:* The wrapper creates =~/.dsh/ssh-config.d=, mirrors the
+systemd snippet into it so the =.host= and =machine/*= aliases survive,
+and binds that directory over =/etc/ssh/ssh_config.d=. On
+=Bad owner or permissions on /etc/ssh/...=, check that directory exists
+and is owned by the user. Do not add =/etc/ssh/ssh_config.d= to
+=~/.dsh/sandbox-writable-paths=: those entries become
+=--bind <path> <path>=, which changes writability and not ownership,
+and ownership is what ssh rejects. Change the wrapper itself with a bash
+command and an escalation, because =~/.dsh= sits outside the workspace.

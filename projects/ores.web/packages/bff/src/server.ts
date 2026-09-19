@@ -211,6 +211,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     throw invalidCredentials(outcome.message);
   }
 
+  /**
+   * The allow-list exists for a development server on another port, and it
+   * works because that server is a same-site origin: the session cookie is
+   * `sameSite: 'lax'`, so a genuinely cross-site caller would pass this hook
+   * and then arrive at the route without a cookie. Widen `sameSite` before
+   * adding an origin that is not a subdomain of the one serving the cookie.
+   */
   server.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
     if (origin !== undefined && config.allowedOrigins.includes(origin)) {

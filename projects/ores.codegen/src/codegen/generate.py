@@ -114,13 +114,14 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
-# The history dialog's field mapper renders the domain type's recorded_at
-# member. A current-state entity has no recorded_at (or any other temporal
-# member), so the mapper has nothing to project; both of its archetypes are
-# excluded for a current-state entity.
+# The history surface that assumes version rows and the audit tail. A
+# current-state entity has neither, so the history dialog's field mapper (which
+# projects recorded_at) and the eventing integration test (which asserts version
+# growth and a soft delete, and reads change_commentary) cannot compile for it.
 _NO_TEMPORAL_HISTORY_ARCHETYPES = frozenset({
     "ores.cpp.presentation.history_field_mapper_header",
     "ores.cpp.presentation.history_field_mapper_impl",
+    "ores.cpp.eventing-integration-test.nats_integration_test",
 })
 
 # The TypeScript UI metadata facet projects the presentation drawer's

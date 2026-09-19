@@ -43,6 +43,7 @@ _ENTITY_STRUCT_FLAGS = (
     'is_optional_uuid',
     'is_optional_timestamp',
     'is_required_timestamp',
+    'is_required_inet',
     'is_nullable_string',
     'is_nullable_numeric',
     'is_already_optional',
@@ -2620,6 +2621,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'timestamp', 'timestamptz', 'timestamp with time zone'
                 )
                 is_enum_type = col.get('is_enum', False)
+                is_inet_address_type = 'boost::asio::ip::address' in col.get('cpp_type', '')
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
@@ -2638,6 +2640,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # through to is_simple and fails at compile time inside sqlgen's
                 # transpilation layer.
                 col['is_required_timestamp'] = is_timestamp_type and not col.get('nullable', False)
+                # The same shape for a NOT NULL IP-address column: sqlgen
+                # cannot transpile or bind boost::asio::ip::address -- its
+                # parsing layer rejects the type with a static_assert -- so
+                # the entity member is std::string and the mapper converts
+                # with make_address / to_string. The test is the cpp_type,
+                # not the ':type: inet' SQL type: an inet column already
+                # declared ':cpp_type: std::string' binds as text and needs
+                # no conversion, while a boost::asio::ip::address member
+                # breaks sqlgen whatever SQL type it is declared under.
+                col['is_required_inet'] = is_inet_address_type and not col.get('nullable', False)
                 col['is_enum'] = is_enum_type and not col.get('nullable', False)
                 col['is_nullable_string'] = (
                     col.get('nullable', False)
@@ -2667,6 +2679,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     not col.get('nullable', False)
                     and not is_uuid_type
                     and not is_timestamp_type
+                    and not is_inet_address_type
                     and not is_enum_type
                     and not is_already_optional
                 )
@@ -2783,7 +2796,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         f"is dropped from the struct and the field stops being "
                         f"on the wire. Give it a cpp_type the template can "
                         f"express (std::string, int, double, bool, a uuid, a "
-                        f"timestamp, a non-nullable scoped enum, or an explicit "
+                        f"timestamp, a non-nullable boost::asio::ip::address, "
+                        f"a non-nullable scoped enum, or an explicit "
                         f"std::optional<...>), or declare ':sql_only: true' if "
                         f"the column is meant to stay in the schema with no C++ "
                         f"representation."
@@ -2796,6 +2810,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # history field mapper need this flag regardless.
             domain_entity['has_enum_columns'] = any(
                 c.get('is_enum') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate: read and write both convert
+            # through boost::asio::ip, which the mapper template includes
+            # under this flag rather than relying on a transitive include
+            # from the domain header.
+            domain_entity['has_inet_columns'] = any(
+                c.get('is_required_inet') for c in domain_entity['columns']
             )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.

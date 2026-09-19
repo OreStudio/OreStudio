@@ -63,6 +63,9 @@ struct {{entity_singular}}_entity {
 {{#is_required_timestamp}}
     std::string {{name}};
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    std::string {{name}};
+{{/is_required_inet}}
 {{#is_nullable_string}}
     std::optional<std::string> {{name}};
 {{/is_nullable_string}}

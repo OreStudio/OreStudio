@@ -16,6 +16,9 @@
 {{#has_enum_columns}}
 #include <rfl/enums.hpp>
 {{/has_enum_columns}}
+{{#has_inet_columns}}
+#include <boost/asio/ip/address.hpp>
+{{/has_inet_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -103,6 +106,9 @@ domain::{{entity_singular}}
 {{#is_required_timestamp}}
     r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
+{{/is_required_inet}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}
@@ -223,6 +229,9 @@ domain::{{entity_singular}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{name}});
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
+{{/is_required_inet}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}

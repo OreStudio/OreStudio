@@ -63,12 +63,14 @@ The Volga prototype is a TypeScript web interface for ORE Studio. It lives outsi
   =ui-contract.ts= moved out of =src/generated/= to =packages/web/src/=, so a
   wholesale codegen clean cannot delete it and a drift check cannot mistake it
   for output.
-- *The drift gate does not yet cover every emitter.*
-  =check_component_drift.py= enforces a registry that omits =dq=, =scheduler=
-  and =trading=, so the UI metadata this story generated for them is not
-  gated. Recorded as follow-up rather than widened here, because widening the
-  registry would also enforce C++ and SQL drift those components have never
-  been checked for.
+- *Only the drift-free components emit committed output.* A full
+  regeneration also produces UI metadata for =dq=, =scheduler= and =trading=,
+  which =check_component_drift.py='s registry does not cover, so that output
+  could not be verified. The committed tree therefore holds exactly what the
+  gate reproduces — the 90 UI modules and the 6 protocol modules — and
+  regeneration runs once per =KNOWN_DRIFT_FREE= slug rather than with
+  =--all=. Widening the registry stays follow-up, because it would also
+  enforce C++ and SQL drift those components have never been checked for.
 
 * Out of scope
 

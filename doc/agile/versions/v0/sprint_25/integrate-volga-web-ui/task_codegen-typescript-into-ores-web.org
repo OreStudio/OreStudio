@@ -82,11 +82,14 @@ The hand-written =ui-contract.ts= moved out of the generated tree to
 are gone.
 
 Regenerating reproduces the 90 UI modules byte for byte apart from the
-contract import, reproduces the 6 protocol modules exactly, and adds the 17
-=dq=, =scheduler= and =trading= modules the checked-in tree was missing.
+contract import, and reproduces the 6 protocol modules exactly.
+
+The committed tree holds only the components the drift gate covers. A full
+regeneration also emits UI metadata for =dq=, =scheduler= and =trading=, which
+the gate's registry omits, so that output is not committed. Regeneration runs
+once per =KNOWN_DRIFT_FREE= slug, never with =--all=.
 
 =check_component_drift.py --all= reports no drift in the generated tree. Its
 only complaint is the pre-existing uncommitted edit to
 =projects/ores.compass/tests/test_deny_bare_stash_hook.py=, which is not part
-of this branch. The drift gate's registry does not list every component that
-emits UI metadata, so the coverage gap below stays open.
+of this branch.

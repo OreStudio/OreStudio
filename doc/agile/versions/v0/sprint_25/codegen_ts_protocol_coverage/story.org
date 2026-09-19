@@ -31,7 +31,8 @@ Bind every protocol message model to the TypeScript facet and extend the project
 * Acceptance
 
 - Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
-- Each message type has its own header and its own model, so adding a message does not touch the others.
+- One header per entity or protocol holds all its messages, and those messages come from exactly one model.
+- An entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
 - No IAM protocol switches the TypeScript facet off.
 - The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
 
@@ -40,9 +41,42 @@ Bind every protocol message model to the TypeScript facet and extend the project
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C0B68BEC-A757-4A0F-8CB0-046C9E56D6E2][Scaffold story: Generate every protocol message as TypeScript]] | STARTED | 2026-09-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | BACKLOG | | | Initial task for: Generate every protocol message as TypeScript |
+| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | STARTED | 2026-09-19 | | Initial task for: Generate every protocol message as TypeScript |
 
 * Decisions
+
+- *One header per entity or protocol, not one per message.* The protocol layer
+  is 220 headers and about 21,000 lines, and its largest header is
+  =instrument_protocol.hpp= at 743 lines of plain structs. No translation unit
+  includes the =messaging/protocol.hpp= umbrella, while 526 include the
+  specific header they need, so this granularity already gives the rebuild
+  isolation that a per-message split would be bought for. Splitting per message
+  would take the tree to roughly 1,858 headers and rewrite those 526 includes
+  for no measurable compile-time gain. A header is split by message family only
+  if it grows past about a thousand lines.
+- *One model per header.* Two templates can write =<entity>_protocol.hpp=: the
+  entity block of =cpp_protocol.hpp.mustache= derives the standard CRUD
+  messages, and an operation model for the same entity declares its own.
+  Whichever renders last wins, which is how =account_protocol.hpp= came to hold
+  CRUD-shaped and declared messages side by side. An entity's messages now come
+  from one place: its message model, or the derived standard set when it has
+  none.
+- *The free-form message facet already exists.* =ores.cpp.protocol= declares
+  =model_types: domain_entity schema junction operation=, and its operation mode
+  renders whatever messages a model declares; =ores.ts.protocol= is its
+  TypeScript twin. IAM is the only component that uses it, so the work is to
+  generalise the facet, not to invent one.
+- *TypeScript needs a domain layer, not only a protocol layer.* The projection
+  map holds =std::string=, =bool=, =int= and =std::uint64_t=, recurses through
+  =std::vector=, and PascalCases bare names. Every IAM opt-out is a field whose
+  type is =ores::<component>::domain::<entity>= or
+  =std::chrono::system_clock::time_point=. A generated TypeScript domain module
+  per entity is what those fields project onto, and it is also what the UI needs
+  to read a payload without restating the entity.
+- *The standard message list is derived once.* The CRUD shapes live in the C++
+  template today. They move to the loader, which then renders both targets from
+  the same list, so C++ and TypeScript cannot drift apart. The C++ output must
+  come out byte-identical, which is what proves the move.
 
 * Out of scope
 

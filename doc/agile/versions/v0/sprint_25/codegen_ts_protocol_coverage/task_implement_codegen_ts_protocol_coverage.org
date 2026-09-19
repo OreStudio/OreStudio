@@ -2,31 +2,34 @@
 :ID: 9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B
 :END:
 #+title: Task: Generate the IAM protocol messages as TypeScript
-#+description: Initial task for: Generate every protocol message as TypeScript
+#+description: Give every IAM protocol header its TypeScript twin, with one header per entity or protocol and no opt-outs.
 #+type: task
 #+level: s1
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-ts-protocol-coverage
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
 #+updated: 2026-09-19
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Bind every protocol message model to the TypeScript facet and extend the projection until it renders, so a message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+Give every IAM protocol header its TypeScript twin. A header holds all the
+messages of one entity or one non-entity protocol, and its messages come from
+one model. Both targets render from the same derived message list, so a message
+exists in both or in neither, and no IAM protocol switches the facet off.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,18 +38,45 @@ Bind every protocol message model to the TypeScript facet and extend the project
 
 * Acceptance
 
-- Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
-- Each message type has its own header and its own model, so adding a message does not touch the others.
+- Every IAM protocol header has a TypeScript twin, and a check fails when one is missing.
+- One header per entity or protocol holds its messages, and those messages come from exactly one model.
+- An IAM entity has a TypeScript domain module, and the protocol interfaces reference it.
 - No IAM protocol switches the TypeScript facet off.
 - The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+IAM generates 138 messages across 16 headers: 11 protocol models with 96
+messages and 5 entity models with 42. Six protocols carry a TypeScript twin
+today, 30 interfaces in all, so 108 messages have none, and five models opt the
+facet out.
+
+1. Add the TypeScript domain facet: one module per entity, from the entity
+   model, giving the types the protocol fields project onto.
+2. Map those domain types, and =std::chrono::system_clock::time_point=, in
+   =org_loader._ts_type=, then drop the five opt-outs and regenerate.
+3. Derive the standard CRUD message list in the loader and render the entity
+   protocol header and its TypeScript twin from it, keeping the C++ output
+   byte-identical.
+4. Make a protocol header without a TypeScript twin fail the drift check.
 
 * Notes
+
+The message inventory is
+=build/output/iam_message_inventory.json=: every message, its fields, subject,
+response, source model, and target file. It was produced from the generated
+headers and checked against them, so the counts above are exact.
+
+Two defects found while taking the inventory:
+
+- =tenant_status_protocol.hpp:67= declares =std::vector<std::string> statuss;=.
+  The template pluralises the entity name by appending =s=, so a name already
+  ending in =s= becomes =statuss=. The delete-request field name needs the same
+  treatment as the TypeScript twin, and the fix belongs with this work.
+- =get_account_contact_informations_by_account_id_request= and its response are
+  the only messages the codegen derives rather than a model declaring them
+  (=core.py:3343=, from the =account_id= foreign key's =list_by=). They stay
+  derived, so they are not part of the message models.
 
 * Test Scenarios
 

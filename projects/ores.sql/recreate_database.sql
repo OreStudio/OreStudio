@@ -29,7 +29,7 @@
  *
  * Variables (role names + passwords):
  *   :owner_role, :rw_role, :ro_role, :service_role
- *   :ddl_user, :cli_user, :wt_user, :shell_user, :http_user
+ *   :ddl_user, :cli_user, :shell_user, :http_user
  *   :test_ddl_user, :test_dml_user, :readonly_user
  *   :iam_service_user, :refdata_service_user, :dq_service_user,
  *   :variability_service_user, :assets_service_user,
@@ -123,15 +123,6 @@ do $$ begin
 alter  user :cli_user with password :'cli_password';
 grant :rw_role to :cli_user;
 alter  role :cli_user set search_path to public;
-
--- Web Toolkit user
-select set_config('ores.cur_user', :'wt_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :wt_user with password :'wt_password';
-grant :rw_role to :wt_user;
-alter  role :wt_user set search_path to public;
 
 -- Communications user
 select set_config('ores.cur_user', :'shell_user', false);

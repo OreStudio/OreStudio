@@ -72,3 +72,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Adopted. =projects/ores.web= holds the four npm workspace packages (=bff=,
+=contracts=, =web=, =wire-protocol=), the configuration, the scripts and the
+design notes. The npm scope is =@ores/*=; the component's own process
+variables are =ORES_WEB_*=; the broker variables reuse the =ORES_NATS_*=
+names the checkout's =.env= already provides.
+
+=npm run typecheck=, =npm test= (34 tests) and =npm run build= all pass.
+=node_modules=, =dist=, =.runtime=, =.env=, the stale =connections= package
+and every screenshot and cache were left out. Every hand-written TypeScript
+and shell file carries the GPL header.
+
+The README was rewritten for the adopted component and the markdown design
+notes were converted to org; =validate_docs.sh= passes for all 42
+components.

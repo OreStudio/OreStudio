@@ -72,3 +72,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Retargeted. =ores.ts.ui.ui_meta= writes to
+=projects/ores.web/packages/web/src/generated/{component}/ui/{entity}_ui.ts=,
+and =ores.ts.protocol.protocol_types= writes to
+=projects/ores.web/packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts=.
+The hand-written =ui-contract.ts= moved out of the generated tree to
+=packages/web/src/=. =projects/ores.typescript= and =scripts/sync-generated.sh=
+are gone.
+
+Regenerating reproduces the 90 UI modules byte for byte apart from the
+contract import, reproduces the 6 protocol modules exactly, and adds the 17
+=dq=, =scheduler= and =trading= modules the checked-in tree was missing.
+
+=check_component_drift.py --all= reports no drift in the generated tree. Its
+only complaint is the pre-existing uncommitted edit to
+=projects/ores.compass/tests/test_deny_bare_stash_hook.py=, which is not part
+of this branch. The drift gate's registry does not list every component that
+emits UI metadata, so the coverage gap below stays open.

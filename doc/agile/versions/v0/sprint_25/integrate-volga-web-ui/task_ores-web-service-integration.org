@@ -72,3 +72,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Wired. =ORES_WEB_PORT= is offset 2 of the environment block — the slot the
+retired Wt client held — and =compass env configure= emits it together with
+=ORES_WEB_SESSION_SECRET=, which the BFF requires and has no default for.
+
+=ores.web.service= is in =projects/modeling/service_registry.org= with two
+new properties, =:runtime: node= and =:entry_point:=, which the org loader
+carries and =systemd_generate= renders as a =Type=simple= unit. The unit runs
+the built BFF from the component directory, appends its output to the log
+file =compass services start= polls for readiness, exports the service's own
+NATS certificate over the shared identity in =.env=, and joins
+=ores-<env>.target=. =nats_certs= generates its certificate, and
+=projects/ores.web/CMakeLists.txt= builds the component so the unit finds a
+built BFF.
+
+Verified: the unit renders as intended and is in the target; the built BFF
+listens on 21402, serves the bundle and the API, logs =Service ready=, and
+answers a bad credential with 401 against the running IAM service.
+
+Not verified here: =compass services start= cannot finish in this sandbox,
+because deploying the units writes to =~/.config/systemd/user=, which stays
+read-only. The generation and rendering halves are covered by
+=tests/test_systemd_generate.py=.

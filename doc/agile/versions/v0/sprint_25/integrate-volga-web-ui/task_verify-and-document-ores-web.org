@@ -71,3 +71,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Documented. The README describes the adopted component, and the seven
+markdown design notes are org knowledge documents under =modeling/=,
+scaffolded with compass and converted with no fact dropped. The component
+overview and its diagram exist. =validate_docs.sh= reports =OK: all 42
+components pass documentation checks=.
+
+Verified against the running environment: =npm run typecheck=, =npm test=
+(bff 30, web 9, wire-protocol 34) and =npm run build= pass. The built BFF
+serves on =ORES_WEB_PORT=, selects =eager_maxwell= from =ORES_ENV_NAME=,
+returns the SPA shell for an unknown path, returns a JSON 404 under =/api/=,
+and reaches IAM over mTLS.
+
+Not run here: the browser verification needs Playwright's browser download
+and a signed-in account, and the fleet cannot be started because unit
+deployment is blocked by the sandbox.

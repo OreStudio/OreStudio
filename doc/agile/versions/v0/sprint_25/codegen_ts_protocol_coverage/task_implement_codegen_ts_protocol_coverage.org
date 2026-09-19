@@ -8,7 +8,7 @@
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-ts-protocol-coverage
-#+pr:
+#+pr: 2110
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2110][#2110]] | [codegen] Model every IAM NATS message and generate both targets |
 
 * Review
 

@@ -131,6 +131,16 @@ SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
 
+# The ores.web site config declares one entry per environment instance. The
+# BFF resolves its entry by id, so a checkout binds its label to a declared
+# id through ORES_WEB_ENV.
+WEB_ENVIRONMENTS_RELATIVE_PATH = Path("projects") / "ores.web" / "config" / "environments.json"
+WEB_ENVIRONMENT_ID_VARIABLE = "ORES_WEB_ENV"
+# Hosts that mean "this machine". Several instances of one environment share
+# a port and subject prefix and differ only by host, so the local instance is
+# the one a local checkout serves.
+WEB_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
 
 def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
     """Scan sibling worktrees for used base ports; return (base_port, nats_port, nats_monitor_port).
@@ -186,6 +196,43 @@ def _env_value(existing: dict, key: str, fallback: str) -> str:
 def _get_or_gen_uuid(existing: dict, key: str) -> str:
     val = existing.get(key)
     return val if val else _gen_uuid()
+
+
+def _resolve_web_env_id(checkout_root: Path, nats_port: int, subject_prefix: str,
+                        env_name: str) -> str | None:
+    """Id of the ores.web environment instance this checkout serves.
+
+    The BFF resolves its site configuration by id, and it falls back to
+    ORES_ENV_NAME -- the checkout label, which is not necessarily an id the
+    web config declares. So a checkout whose label differs from its declared
+    id (e.g. the label 'swift_curie' against the declared
+    'swift_curie_local') cannot start the web service without this binding.
+
+    Match on the NATS port and subject prefix, which is how a declared entry
+    anchors itself to an environment and which compass itself assigned; prefer
+    an entry whose id is the label, then the local instance, since instances of
+    one environment share both values and differ only by host.
+
+    Returns None when the web component is absent or no entry matches, so a
+    checkout without the web interface still configures cleanly."""
+    path = checkout_root / WEB_ENVIRONMENTS_RELATIVE_PATH
+    try:
+        declared = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    entries = declared.get("environments") or []
+    candidates = [entry for entry in entries
+                  if entry.get("port") == nats_port
+                  and entry.get("subjectPrefix") == subject_prefix]
+    for entry in candidates:
+        if entry.get("id") in (env_name, env_name.lower()):
+            return entry["id"]
+    local = [entry for entry in candidates
+             if entry.get("host") in WEB_LOCAL_HOSTS]
+    resolved = local or candidates
+    if len(resolved) != 1:
+        return None
+    return resolved[0].get("id")
 
 
 def _upper(component: str) -> str:
@@ -628,6 +675,11 @@ def run(argv, project_root: Path) -> int:
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
     web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
+    web_env = (existing.get(WEB_ENVIRONMENT_ID_VARIABLE)
+               or _resolve_web_env_id(checkout_root, nats_port, nats_prefix,
+                                      env_name))
+    web_env_block = (f"# Declared ores.web site configuration this checkout serves\n"
+                     f"{WEB_ENVIRONMENT_ID_VARIABLE}={web_env}\n") if web_env else ""
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
@@ -734,7 +786,7 @@ ORES_WEB_PORT={web_port}
 # Interface the process binds. 127.0.0.1 keeps it on this host; 0.0.0.0
 # exposes it to a browser on another machine.
 ORES_WEB_BFF_HOST={web_bff_host}
-ORES_NATS_PORT={nats_port}
+{web_env_block}ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
 ORES_NATS_MONITOR_PORT={nats_monitor_port}
 ORES_NATS_MONITOR_URL={nats_monitor_url}

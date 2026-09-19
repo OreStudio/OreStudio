@@ -5,6 +5,7 @@ Run with:  python -m pytest projects/ores.compass/tests/test_env_init.py -v
 No database, systemd or network access required.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -43,3 +44,56 @@ class TestEnvValue:
         assert env_init._env_value(
             {"ORES_NATS_SUBJECT_PREFIX": ""},
             "ORES_NATS_SUBJECT_PREFIX", "ores.dev.derived") == "ores.dev.from_env"
+
+
+class TestWebEnvironmentBinding:
+    """The ores.web BFF resolves its site configuration by id.
+
+    It falls back to ORES_ENV_NAME, which is the checkout label and not
+    necessarily a declared id, so .env must carry the id the BFF needs or the
+    web service refuses to start."""
+
+    @staticmethod
+    def _declare(root: Path, environments: list) -> None:
+        config_dir = root / "projects" / "ores.web" / "config"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        (config_dir / "environments.json").write_text(
+            json.dumps({"environments": environments}), encoding="utf-8")
+
+    def test_the_local_instance_is_selected_when_the_label_is_not_an_id(
+            self, tmp_path):
+        self._declare(tmp_path, [
+            {"id": "swift_curie_local", "host": "localhost", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+            {"id": "swift_curie_newton", "host": "192.168.1.22", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+        ])
+        assert env_init._resolve_web_env_id(
+            tmp_path, 20205, "ores.dev.swift_curie", "swift_curie"
+        ) == "swift_curie_local"
+
+    def test_the_label_wins_over_the_local_instance(self, tmp_path):
+        self._declare(tmp_path, [
+            {"id": "swift_curie", "host": "192.168.1.22", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+            {"id": "swift_curie_local", "host": "localhost", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+        ])
+        assert env_init._resolve_web_env_id(
+            tmp_path, 20205, "ores.dev.swift_curie", "swift_curie"
+        ) == "swift_curie"
+
+    def test_a_checkout_without_the_web_config_resolves_to_nothing(
+            self, tmp_path):
+        assert env_init._resolve_web_env_id(
+            tmp_path, 20205, "ores.dev.swift_curie", "swift_curie") is None
+
+    def test_an_ambiguous_match_resolves_to_nothing(self, tmp_path):
+        self._declare(tmp_path, [
+            {"id": "one", "host": "localhost", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+            {"id": "two", "host": "localhost", "port": 20205,
+             "subjectPrefix": "ores.dev.swift_curie"},
+        ])
+        assert env_init._resolve_web_env_id(
+            tmp_path, 20205, "ores.dev.swift_curie", "swift_curie") is None

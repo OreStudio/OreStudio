@@ -78,6 +78,30 @@ Two defects found while taking the inventory:
   (=core.py:3343=, from the =account_id= foreign key's =list_by=). They stay
   derived, so they are not part of the message models.
 
+Two findings from reading the codegen, both of which shape the order of work:
+
+- *Two of the five opt-outs have no model to project onto.* =account=,
+  =account_version=, =login_info=, =session=, =session_statistics=,
+  =permission= and =role= are hand-written domain structs; there is no
+  =ores.iam.account.org= entity model at all, only a knowledge page that links to
+  =account.hpp=. A generated TypeScript domain layer cannot cover them, so
+  =account_messages= and =account_history_messages= need hand-written TypeScript
+  domain types, or the account aggregate needs modelling, before their
+  protocols can render. The five entity-derived protocols — =tenant=,
+  =tenant_type=, =tenant_status=, =account_type=, =account_contact_information= —
+  are fully model-backed and come first.
+- *A partial derivation already exists.*
+  =projects/ores.web/scripts/emit_protocol_ir.py= reads the entity models and
+  emits a language-neutral protocol IR for the CRUD set, with =--all= and
+  =--check=. It is a useful specification, but it is not a twin of the template:
+  it does not cover =list_filter_column=, =has_as_of_lookup=, =has_batch_save=,
+  =has_parent_id=, =read_for_cache=, =extra_list_requests= or =single_delete=,
+  and its response collection name uses =entity_plural= where the header uses
+  =entity_plural_short= (=tenant_types= against =types=). The derivation that
+  feeds the TypeScript twin therefore belongs in the loader, beside the flags the
+  C++ template already branches on, and the script should be retired onto it
+  rather than trusted.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

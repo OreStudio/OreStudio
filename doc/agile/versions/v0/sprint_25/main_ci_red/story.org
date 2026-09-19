@@ -2,7 +2,7 @@
 :ID: D9B3CE52-0C42-4F78-88D2-A76F7B487482
 :END:
 #+title: Story: Hotfix: Windows build and SQL schema validation fail on main
-#+description: The Windows MSVC jobs fail on a warnings-as-errors C4244; the Windows Clang jobs fail to link ores.ore.api; the SQL schema validator rejects the ores_ore_ component prefix.
+#+description: The Windows MSVC jobs fail on a warnings-as-errors C4244; the Windows Clang jobs fail to link ores.ore.api; the SQL schema validator rejects the ores_ore_ component prefix; the marketdata service lacks a grant on the ore tables; and the ores.web service cannot resolve its declared environment.
 #+type: story
 #+level: s2
 #+filetags: :hotfix:build:sprint_25:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Restore a green build.
+Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Two further defects break the local fleet: the marketdata service reads the ore series key shapes without a grant, and the web service cannot resolve the environment its checkout reports. Restore a green build and a healthy fleet.
 
 * Status
 
@@ -32,6 +32,8 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
 
 - The SQL schema validator accepts the =ores_ore_= component prefix.
 - The Windows MSVC and Clang jobs compile and link ores.ore.api.
+- =ores.marketdata.service= reads the ore series key shapes and stays up.
+- =ores.web.service= resolves its declared environment and stays up.
 
 * Tasks
 
@@ -61,7 +63,7 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
 
 * Result
 
-Three defects on main are fixed on =hotfix/main-ci-red=, and the branch
+Five defects on main are fixed on =hotfix/main-ci-red=, and the branch
 carries no other change.
 
 The Windows build is restored: the MSVC warning C4244 no longer stops
@@ -69,6 +71,12 @@ the compile, and =ores.ore.api.dll= now links the libfort symbols its
 series key shape table calls. The SQL validator accepts the =ores_ore_=
 component prefix, which removes the =NAMING_010= and =NAMING_002=
 warnings.
+
+The local fleet is healthy again. The marketdata service receives the
+select grant it needs on the ore tables, so it no longer dies on the
+first series classification. The web service resolves the declared
+environment its checkout reports, because =compass env configure= now
+writes =ORES_WEB_ENV=. Every one of the 24 units runs.
 
 The two remaining validator warnings stay red on Linux. They need
 codegen work on the junction template, and task

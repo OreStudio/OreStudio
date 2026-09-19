@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Restore a green build.
+Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Two further defects break the local fleet: the marketdata service lacks a grant on the ore tables, and the web service cannot resolve the environment its checkout reports. Restore a green build and a healthy fleet.
 
 * Status
 
@@ -38,10 +38,12 @@ Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warn
 - The SQL schema validator reports no naming warning for =ores_ore_=.
 - =ores.ore.api= links libfort, so the Windows Clang link resolves.
 - The MSVC C4244 warning is gone.
+- =ores.marketdata.service= starts and stays up.
+- =ores.web.service= starts and stays up.
 
 * Plan
 
-Three independent defects sit on main. Fix each one at its source.
+Five independent defects sit on main. Fix each one at its source.
 
 1. Warning C4244 in =environment_mapper_factory.cpp=. The lambda
    declares =-> char= and returns =std::tolower(c)=, which is an
@@ -52,6 +54,10 @@ Three independent defects sit on main. Fix each one at its source.
    undefined symbols in a shared library. The Windows linkers do not.
 3. Unknown component prefix =ores_ore_= in the SQL validator. Register
    the prefix in =COMPONENT_PREFIXES=.
+4. Missing select grant on the ore tables for the marketdata service.
+   Add the prefix to the service registry and regenerate the grants.
+5. No binding from a checkout label to a declared ores.web environment
+   id. Emit =ORES_WEB_ENV= from =compass env configure=.
 
 * Notes
 
@@ -72,6 +78,23 @@ Root cause and fix of each defect.
   =NAMING_010= and =NAMING_002= on =ores_ore_series_key_shapes_tbl=,
   because =COMPONENT_PREFIXES= has no =ores_ore_= entry. Fixed by
   registering the prefix.
+- =ores.marketdata.service= dies at startup with =ERROR: permission
+  denied for table ores_ore_series_key_shapes_tbl=. The service reads
+  that table to classify series (=feed_ingest_loop.cpp=,
+  =import_service.cpp=), but the per-service grants give it only
+  =ores_marketdata_= DML and =ores_refdata_= select. Fixed by adding
+  =ores_ore_= to the marketdata service's select prefixes in
+  =projects/modeling/service_registry.org= and regenerating
+  =iam_service_db_grants_create.sql= from the
+  =ores.sql.service.db_grants= archetype.
+- =ores.web.service= fails with =ConfigurationError: No environment
+  'swift_curie'=. The BFF resolves its site configuration from
+  =ORES_WEB_ENV=, else =ORES_ENV_NAME= -- the checkout label, which is
+  not necessarily a declared id. This checkout reports =swift_curie=
+  while =config/environments.json= declares =swift_curie_local= for it,
+  and =compass env configure= wrote no binding. Fixed by emitting
+  =ORES_WEB_ENV=, selecting the declared entry whose NATS port and
+  subject prefix match the ones compass assigned.
 
 Verification runs on the checkout's clang debug preset. The MSVC
 warning itself needs the Windows jobs, which are only observable on the
@@ -98,18 +121,22 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Local review of the diff found no issue in the three changed source files. The comment rules hold: no new comments, no edit-history narration. No generated file was hand-edited. | all three changed sources | Accepted | Verdict: ready to merge. =misspell-fixer .= exits 0. |
+| 1 | Local review of the diff found no issue in the changed sources. The comment rules hold: no new comments, no edit-history narration. No generated file was hand-edited: the grants SQL came from the archetype, and the templates were left alone. | all changed sources | Accepted | Verdict: ready to merge. =misspell-fixer .= exits 0. |
+| 2 | Follow-up review after the marketdata grant and the compass binding were added: the resolver's first cut matched the wrong port field, because the web config's =port= is the NATS port, not the web port. Corrected and covered by four tests. | =projects/ores.compass/src/env_init.py= | Accepted | Fixed before the raise; =pytest test_env_init.py= is 8/8. |
 
 * Result
 
-Three defects are fixed on =hotfix/main-ci-red=.
+Five defects are fixed on =hotfix/main-ci-red=.
 
 =environment_mapper_factory.cpp= casts the =std::tolower= result to
 =char= and includes =<cctype>=, so MSVC no longer promotes C4244.
 =ores.ore/api/src/CMakeLists.txt= links =libfort::fort=, so the
 Windows link of =ores.ore.api.dll= resolves its libfort symbols.
 =COMPONENT_PREFIXES= registers =ores_ore_=, so the validator reports
-neither =NAMING_010= nor =NAMING_002=.
+neither =NAMING_010= nor =NAMING_002=. The service registry grants the
+marketdata service select on the ore tables. =compass env configure=
+writes =ORES_WEB_ENV=, so the web service resolves the environment its
+checkout reports.
 
 Evidence:
 
@@ -118,9 +145,12 @@ Evidence:
 - =ores.utility.lib= and =ores.ore.api.lib= build clean on the
   checkout's clang debug preset. The link line of the latter now holds
   =libfort.a=.
-- All 254 =ores.codegen= tests pass.
-- The 11 =environment_mapper_factory= and =shared_domain_registry=
-  cases pass.
+- The full tree builds clean, and the fleet reports =running=24
+  stopped=0 missing=0=.
+- All 254 =ores.codegen= tests pass, the compass suite is 213 passed,
+  and =pytest test_env_init.py= is 8/8.
+- Codegen drift reports no drift, the model drift gate reports none, and
+  the populate references resolve.
 
 Limitations: the MSVC and clang-cl diagnostics are only observable on
 the Windows runners, which carry no =pull_request= trigger. The next

@@ -8,7 +8,7 @@
 #+filetags: :integrate-volga-web-ui:sprint_25:v0:
 #+owner: marco
 #+branch: feature/integrate-volga-web-ui
-#+pr:
+#+pr: 2108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2108][#2108]] | [web] Integrate the Volga TypeScript UI as ores.web |
 
 * Review
 

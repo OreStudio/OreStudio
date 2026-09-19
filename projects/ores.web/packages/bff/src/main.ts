@@ -28,8 +28,8 @@ import { loadSiteConfiguration } from './site-config.js';
  * Entry point.
  *
  * Configuration is validated before anything binds, so a missing certificate
- * or session secret stops the process with a readable message rather than
- * failing on the first login.
+ * stops the process with a readable message rather than failing on the first
+ * request.
  */
 async function main(): Promise<void> {
   const { values } = parseArgs({

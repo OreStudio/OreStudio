@@ -47,9 +47,8 @@ The interface repeats the environment in the header, permanently.
 
 The component has no `.env` of its own. It reads the checkout's `.env` through
 `ORES_WEB_*` for its own settings and `ORES_NATS_*` for the broker.
-`compass services start` launches it. The BFF requires
-`ORES_WEB_SESSION_SECRET`, and that setting has no default, because a default
-would be a backdoor.
+`compass services start` launches it. The session cookie holds an opaque
+random identifier, so the BFF needs no signing secret.
 
 ## The interface
 

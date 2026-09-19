@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 Wired. =ORES_WEB_PORT= is offset 2 of the environment block — the slot the
 retired Wt client held — and =compass env configure= emits it together with
-=ORES_WEB_SESSION_SECRET=, which the BFF requires and has no default for.
+=ORES_WEB_BFF_HOST=, the interface the BFF binds.
 
 =ores.web.service= is in =projects/modeling/service_registry.org= with two
 new properties, =:runtime: node= and =:entry_point:=, which the org loader

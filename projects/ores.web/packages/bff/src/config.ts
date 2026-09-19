@@ -37,8 +37,6 @@ const environmentSchema = z.object({
 
   ORES_WEB_LOG_LEVEL: z.string().default('info'),
 
-  /** Secret for the session cookie. Required: a default would be a backdoor. */
-  ORES_WEB_SESSION_SECRET: z.string().min(32),
   ORES_WEB_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(8 * 60 * 60),
   /**
    * `secure` cookies require HTTPS. Off by default so a development server on
@@ -77,7 +75,6 @@ export interface Config {
   readonly host: string;
   readonly logLevel: string;
   readonly session: {
-    readonly secret: string;
     readonly ttlSeconds: number;
     readonly cookieSecure: boolean;
   };
@@ -97,7 +94,6 @@ export function buildConfig(input: ConfigurationInput): Config {
     host: env.ORES_WEB_BFF_HOST,
     logLevel: env.ORES_WEB_LOG_LEVEL,
     session: {
-      secret: env.ORES_WEB_SESSION_SECRET,
       ttlSeconds: env.ORES_WEB_SESSION_TTL_SECONDS,
       cookieSecure: env.ORES_WEB_COOKIE_SECURE,
     },

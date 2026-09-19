@@ -136,6 +136,25 @@ A third finding waits for a decision rather than a fix: an entity-derived
 =account_protocol.hpp=. The ownership gate does not cover it, because
 =account_messages= declares the entity =account=, not =login_info=.
 
+* The check that changed the tree
+
+The drift check regenerates in place and then compares, so it writes what it is
+meant to be checking. While a drafted =login_info= model sat in
+=projects/ores.iam/modeling/=, an in-place =--all= run regenerated that entity
+for real: sixteen hand-written files overwritten and thirteen new ones created,
+all restored by hand. The draft then had to be shuffled between =build/output/=
+and =modeling/= to keep the check safe, and one agent lost it to a temporary
+directory being wiped.
+
+A check that mutates what it checks is the defect; moving the file was the
+workaround. =check_component_drift.py= gains =--dry-run=: it generates every
+component into a temporary root, reports what would change or would be created,
+writes nothing, and exits non-zero when anything differs. A drafted model can
+then stay where it is. The memory =generate_one_entity_at_a_time= carries the
+rule, and the proof is the drafted =login_info= model: present in the modeling
+directory, the dry run must report its output and leave every file
+byte-identical.
+
 * Notes
 
 The message inventory is

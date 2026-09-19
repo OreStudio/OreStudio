@@ -155,3 +155,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Part of the task shipped in PR #2110, which is why the task stays STARTED rather
+than closing here. Its acceptance — every IAM protocol header with both targets
+and no facet switched off — is not met yet.
+
+Shipped. An entity model renders its protocol as TypeScript: the =ores.ts.domain=
+facet, the =_ts_type= projection for =ores::<component>::domain::<entity>= and
+timestamps, and the standard CRUD message list derived once in the loader so
+both twins render from it. That gave =tenant=, =tenant_type=, =tenant_status=,
+=account_type= and =account_contact_information= their twins. Junction models
+gained the same treatment, which removed the =account_party= opt-out. The drift
+gate now regenerates a component at a TypeScript facet only once that facet's
+output is committed for it. Twelve of IAM's sixteen protocol headers have both
+targets now, up from six, and the C++ output is byte-identical throughout.
+
+Remaining. The four opt-outs — =account_messages=, =account_history_messages=,
+=authorization_messages= and =session_messages= — are all blocked on the six
+hand-written wire types that have no org model: =account=, =account_version=,
+=login_info=, =permission=, =role=, and =session= with =session_statistics=.
+Modelling them, deleting their hand-written headers and companions, and
+re-pointing the account handlers, the IAM service and the shell is the rest of
+the task.

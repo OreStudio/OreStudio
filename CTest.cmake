@@ -336,7 +336,9 @@ endif()
 # Only run tests if the build succeeded.
 if(configure_result EQUAL 0 AND build_result EQUAL 0)
     if(USE_MEMCHECK)
-        ctest_memcheck(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
+        # The ores.web suites are labelled 'web' and run under Node, which
+        # valgrind cannot check and would abort on; the memcheck run skips them.
+        ctest_memcheck(PARALLEL_LEVEL ${nproc} EXCLUDE_LABEL web RETURN_VALUE test_result)
     else()
         ctest_test(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
     endif()

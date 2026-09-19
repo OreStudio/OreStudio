@@ -59,4 +59,23 @@ if(ORES_WEB_ENABLED)
         WORKING_DIRECTORY ${ORES_WEB_DIR}
         COMMENT "Building the ores.web TypeScript component"
         VERBATIM)
+
+    # The checks are ctest entries rather than steps of the build target: an
+    # incremental build then stays fast, and `compass test run` covers the
+    # TypeScript the same way it covers the C++ suites. Both read the source
+    # tree, so the installed node_modules tree is all they need.
+    #
+    # They carry a label because the memcheck run excludes it: valgrind follows
+    # child processes, and the suites are Node processes it cannot check.
+    add_test(NAME ores.web.typecheck
+        COMMAND ${ORES_NPM_EXECUTABLE} run typecheck
+        WORKING_DIRECTORY ${ORES_WEB_DIR})
+
+    add_test(NAME ores.web.tests
+        COMMAND ${ORES_NPM_EXECUTABLE} run test
+        WORKING_DIRECTORY ${ORES_WEB_DIR})
+
+    set_tests_properties(ores.web.typecheck ores.web.tests PROPERTIES
+        PROCESSORS 1
+        LABELS web)
 endif()

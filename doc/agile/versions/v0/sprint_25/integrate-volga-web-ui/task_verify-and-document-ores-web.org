@@ -87,6 +87,12 @@ serves on =ORES_WEB_PORT=, selects =eager_maxwell= from =ORES_ENV_NAME=,
 returns the SPA shell for an unknown path, returns a JSON 404 under =/api/=,
 and reaches IAM over mTLS.
 
+Type checking and the unit suites are ctest entries
+(=ores.web.typecheck=, =ores.web.tests=), so =compass test run= and every
+build that runs ctest cover them, and the memcheck run skips them because
+valgrind cannot check a Node process. A TypeScript workflow runs both on a
+pull request, where the C++ workflows never trigger.
+
 Not run here: the browser verification needs Playwright's browser download
 and a signed-in account, and the fleet cannot be started because unit
 deployment is blocked by the sandbox.

@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.api.lib
     PRIVATE
         ores.utility.lib
-        faker-cxx::faker-cxx)
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

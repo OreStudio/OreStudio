@@ -2,10 +2,13 @@
 
 A TypeScript web interface for ORE Studio.
 
-The Qt client is slow to build and reaches the limits of what a C++ UI toolkit
-can express. This reimplements the interface for the browser, talking to the
-same backend over the same NATS subjects, and is structured so a desktop
-packaging can be added later without reworking the application.
+The prototype that this component adopted was called Volga. It now lives in ORE
+Studio as the component `projects/ores.web`.
+
+The Qt client was slow to build and reached the limits of what a C++ UI toolkit
+can express. This component reimplements the interface for the browser. It talks
+to the same backend over the same NATS subjects. The structure allows desktop
+packaging later without reworking the application.
 
 ## Two concerns, kept apart
 
@@ -13,18 +16,18 @@ Earlier versions of this project merged two different things into one screen:
 where the application points, and who you are. They belong to different people.
 
 **Where the application points is deployment configuration.** One JSON file
-declares every environment and which one this site serves. It is chosen at
-start and never appears in the interface.
+declares every environment and which one this site serves. An operator chooses
+it at start. It never appears in the interface.
 
-**Who you are is authentication.** A username and a password, on an ordinary
-web login form. Nothing else, because a browser that can name a host can ask
-the server to connect to it, and this one cannot.
+**Who you are is authentication.** A username and a password, on an ordinary web
+login form. Nothing else. A browser that can name a host can ask the server to
+connect to it. This browser cannot.
 
 ## Configuration
 
-`config/environments.json` is the one place the environments are declared, along
-with the shared certificates, whether the developer surface is offered, and the
-ACME test accounts. See `config/README.md`.
+`config/environments.json` is the one place the environments are declared. It
+also declares the shared certificates, whether the developer surface is offered,
+and the ACME test accounts. See `config/README.md`.
 
 Point a deployment at an environment when you start it:
 
@@ -32,41 +35,47 @@ Point a deployment at an environment when you start it:
 npm run dev:bff -- --env bright_hopper
 ```
 
-Or with the environment variable, which is what a container would use:
+Or use the environment variable, which is what a container would use:
 
 ```sh
 ORES_WEB_ENV=bright_hopper npm run dev:bff
 ```
 
-The process logs which environment it serves as its first line, because the
-worst failure mode is not knowing whether you are looking at staging or
-production. The interface repeats it in the header, permanently.
+The process logs which environment it serves as its first line. The worst
+failure mode is not knowing whether you are looking at staging or production.
+The interface repeats the environment in the header, permanently.
+
+The component has no `.env` of its own. It reads the checkout's `.env` through
+`ORES_WEB_*` for its own settings and `ORES_NATS_*` for the broker.
+`compass services start` launches it. The BFF requires
+`ORES_WEB_SESSION_SECRET`, and that setting has no default, because a default
+would be a backdoor.
 
 ## The interface
 
 The landing page uses the same layout as the project site at
-orestudio.github.io, with the same artwork, the same heading and the same links
-to ORE and QuantLib, because a link from there arrives here and the two should
+orestudio.github.io. It uses the same artwork, the same heading, and the same
+links to ORE and QuantLib. A link from there arrives here, and the two should
 not feel like different products.
 
 The header carries the mark, a link to the project site named Site, and Sign in.
-Once signed in it also offers Accounts, a Deployment page when the deployment
+Once signed in, it also offers Accounts, a Deployment page when the deployment
 has the developer surface on, and Sign out.
 
-Signing in is a username, a password and a Show toggle. Nothing else: no
-heading repeating the button, no environment notice, and no field for anything
-the deployment already knows.
+Signing in is a username, a password, and a Show toggle. Nothing else. There is
+no heading repeating the button, no environment notice, and no field for
+anything the deployment already knows.
 
-The environment is a small permanent marker in the footer beside the copyright,
-not a field and not a header item. Small because it is not an action, permanent
-because the worst failure mode is not knowing which environment you are looking
-at.
+The environment is a small permanent marker in the footer beside the copyright.
+It is not a field and not a header item. It is small because it is not an
+action. It is permanent because the worst failure mode is not knowing which
+environment you are looking at.
 
 The Deployment page is reachable only after signing in. It holds everything a
 person signing in should not have to think about: which environment this process
 serves, where it points, which file chose it, and what else that file declares.
-It is served only when the deployment has the developer surface switched on,
-because it names the host, the port and the namespace.
+The server serves it only when the deployment has the developer surface switched
+on, because it names the host, the port, and the namespace.
 
 ## Architecture
 
@@ -76,56 +85,59 @@ browser  --HTTP-->  BFF  --NATS over mTLS-->  ores.*.service
                      +-- holds the session token, never the browser
 ```
 
-The browser cannot reach NATS directly. The broker requires mutual TLS and no
-browser can present a client certificate on a WebSocket, so a server component
-is mandatory. Having one buys a stronger boundary than a direct connection
-would: the browser is not told the host, the port, the namespace or the
-certificates, and it never holds the bearer token.
+The browser cannot reach NATS directly. The broker requires mutual TLS, and no
+browser can present a client certificate on a WebSocket. A server component is
+therefore mandatory. That component buys a stronger boundary than a direct
+connection would. The browser is not told the host, the port, the namespace, or
+the certificates. It never holds the bearer token.
 
 ## Packages
 
-| Package | Responsibility |
-|---|---|
-| `packages/wire-protocol` | The ORE NATS protocol: msgpack codec, subjects, schemas, session lifecycle, mTLS transport. |
-| `packages/contracts` | The HTTP shapes the BFF and the browser both parse. No Node dependency. |
-| `packages/bff` | Fastify server. Owns the NATS connection and the session token. |
-| `packages/web` | React client. Talks to the BFF only. |
+| Package | Directory | Responsibility |
+|---|---|---|
+| `@ores/wire-protocol` | `packages/wire-protocol` | The ORE NATS protocol: msgpack codec, subjects, schemas, session lifecycle, mTLS transport. |
+| `@ores/contracts` | `packages/contracts` | The HTTP shapes that the BFF and the browser both parse. No Node dependency. |
+| `@ores/bff` | `packages/bff` | The Fastify server. It owns the NATS connection and the session token. |
+| `@ores/web` | `packages/web` | The React client. It talks to the BFF only. |
 
 ## Running the stack
 
-The C++ services have to be running first. `compass services start` installs
-systemd units outside the checkout, so this repository starts what it needs
-directly:
+`compass services start` starts the fleet. The fleet includes
+`ores.web.service`. The BFF serves the built browser bundle and the `/api`
+routes from one process on `ORES_WEB_PORT`. In this checkout that port is 21402.
+
+Build the component before you start the fleet. From `projects/ores.web`, run
+`npm ci` and `npm run build`. The service runs the built BFF from
+`packages/bff/dist`.
+
+`scripts/dev-stack.sh` remains the standalone development path:
 
 ```sh
 scripts/dev-stack.sh start
 ```
 
-That starts the broker, the IAM and refdata services, the BFF and the web
-server, then waits for each port. Open <http://127.0.0.1:21802/>.
-
-Copy `.env.example` to `.env` first and fill in a session secret. The session
-secret is required and has no default, because a default would be a backdoor.
+That path starts the broker, the IAM and refdata services, the BFF, and the Vite
+development server. It waits for each port and prints the URL to open.
 
 ## Verification
 
-Two verifiers, both asserting against the running system rather than a mock.
+Two verifiers assert against the running system rather than a mock.
 
-`scripts/verify-login.ts` exercises the protocol layer. Its first assertion is
-a deliberately rejected login, because a server that decoded the msgpack body
-answers with a message while a server that did not decode it never replies at
-all. A well-formed rejection therefore proves the subject, the encoding, and
-the response schema in one step.
+`scripts/verify-login.ts` exercises the protocol layer. Its first assertion is a
+deliberately rejected login. A server that decoded the msgpack body answers with
+a message. A server that did not decode it never replies at all. A well-formed
+rejection therefore proves the subject, the encoding, and the response schema in
+one step.
 
 `scripts/verify-browser.ts` drives a real browser through the landing page, the
-Deployment page, the sign-in screen, a rejected credential, sign-in and
+Deployment page, the sign-in screen, a rejected credential, sign-in, and
 sign-out. It asserts the absence as well as the presence: no server field, no
-namespace, no connection chooser and no master password anywhere. It captures
+namespace, no connection chooser, and no master password anywhere. It captures
 screenshots under `.runtime/screenshots/`.
 
-Unit tests cover the pieces that must not drift, including a golden-bytes test
-that an empty request encodes as the msgpack empty map, and that every declared
-field is written even when the caller omits it.
+Unit tests cover the pieces that must not drift. They include a golden-bytes
+test that an empty request encodes as the msgpack empty map, and that every
+declared field is written even when the caller omits it.
 
 ```sh
 npm test
@@ -135,9 +147,9 @@ npm run verify:browser
 
 ## The test account
 
-Row level security restricts every read to the tenant the service runs in, so a
-seeded account must live in that tenant. The password hash has to come from the
-project's own hasher, so `scripts/make-test-hash.cpp` links the real
+Row level security restricts every read to the tenant the service runs in. A
+seeded account must therefore live in that tenant. The password hash has to come
+from the project's own hasher, so `scripts/make-test-hash.cpp` links the real
 `libores.security` rather than reimplementing scrypt.
 
 ```sh
@@ -146,17 +158,45 @@ npm run seed:account -- ores_web_probe 'Secure-Password-123'
 
 ## Local desktop packaging
 
-Deferred, and the structure anticipates it. The web client talks to an HTTP API
-and holds no token, so a Tauri or Electron shell can host the same bundle
-unchanged. The BFF would either ship alongside it or be replaced by a thin host
-that uses `@ores/wire-protocol` directly, which is why that package is separate from
-the server that currently drives it.
+This work is deferred, and the structure anticipates it. The web client talks to
+an HTTP API and holds no token, so a Tauri or Electron shell can host the same
+bundle unchanged. The BFF would either ship alongside it or be replaced by a
+thin host that uses `@ores/wire-protocol` directly. That is why that package is
+separate from the server that currently drives it.
 
 ## Generated types
 
-Hand-maintaining wire field names in TypeScript is the largest remaining drift
-risk, so the intent is to generate them from the C++ codegen model.
-`scripts/emit_protocol_ir.py` reads the same org entity model that codegen
-renders into the RFL structs and emits a language-neutral protocol IR. It
-covers the 148 codegen entities across 13 components, which is 1184 messages.
-See `doc/decisions/0001-protocol-types-from-codegen.org`.
+`ores.codegen` generates the TypeScript from the same org entity models that
+drive the C++ headers. Two facets write into this component:
+
+- `ores.ts.ui` writes `packages/web/src/generated/{component}/ui/{entity}_ui.ts`.
+  The file holds the table columns, the form fields, and the entity meta.
+- `ores.ts.protocol` writes
+  `packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts`.
+  The file holds the wire payload interfaces and the NATS subject constants.
+
+Regenerate the UI metadata of one entity:
+
+```sh
+./compass.sh codegen entity generate <entity> --address ores.ts.ui
+```
+
+Regenerate all the TypeScript:
+
+```sh
+./compass.sh codegen regenerate --all --address ores.ts
+```
+
+The hand-written `packages/web/src/ui-contract.ts` holds the shapes that the
+generated files conform to. Do not edit the generated files. Change the org
+model, then regenerate.
+
+A codegen drift check covers the generated output. It regenerates the models and
+fails when the checked-in files differ from the generated ones.
+
+```sh
+python3 projects/ores.codegen/scripts/check_component_drift.py --all
+```
+
+See `projects/ores.web/modeling/0001-protocol-types-from-codegen.org` for the
+decision behind the generated wire types.

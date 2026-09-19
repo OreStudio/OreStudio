@@ -3,7 +3,7 @@
 :END:
 #+title: Protocol types are generated from the C++ codegen model
 #+description: Why the TypeScript wire types are generated from the org entity model rather than hand-written, and where the C++ reflection emitter fits.
-#+type: decision
+#+type: knowledge
 #+level: cross
 #+filetags: :decision:codegen:typescript:
 #+created: 2026-09-18
@@ -75,7 +75,7 @@ use the entity model, which only emits list, save, delete, and history pairs.
 
 * Considered alternatives
 
-**Add a codegen model type for operations.** A new =ores.codegen.operation=
+*Add a codegen model type for operations.* A new =ores.codegen.operation=
 type expresses subject-scoped request and response pairs with arbitrary field
 lists. It fits the existing machinery, which already dispatches on
 =#+type:= across eight model types and maps addresses such as
@@ -87,14 +87,14 @@ Cost is the reason this is deferred rather than rejected. Porting 38 structs
 into a new model is a real refactor of working authentication code and is not
 on the critical path for the accounts screen.
 
-**Emit JSON Schema from C++ reflection.** =rfl::json::to_schema= already works
+*Emit JSON Schema from C++ reflection.* =rfl::json::to_schema= already works
 in this tree, and every message type is reflectable because the handlers decode
 them. A small binary that walks an explicit list of message types and prints
 JSON Schema would be the absolute single source of truth and would cover the
 hand-written protocols without refactoring them. It costs more C++ work and a
 build step.
 
-**Hand-write the TypeScript schemas.** The current state. Fastest to start and
+*Hand-write the TypeScript schemas.* The current state. Fastest to start and
 the largest ongoing drift risk. Acceptable only as a temporary measure.
 
 * Current implementation

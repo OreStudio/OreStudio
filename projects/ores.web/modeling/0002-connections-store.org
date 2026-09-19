@@ -3,7 +3,7 @@
 :END:
 #+title: The connections store was removed, and why
 #+description: Why a per-user store of environments and credentials was built and then deleted.
-#+type: decision
+#+type: knowledge
 #+level: cross
 #+filetags: :decision:architecture:
 #+created: 2026-09-18

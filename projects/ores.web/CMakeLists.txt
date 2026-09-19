@@ -27,7 +27,9 @@
 option(ORES_WEB_ENABLED "Build the TypeScript web interface (ores.web)" ON)
 
 if(ORES_WEB_ENABLED)
-    find_program(ORES_NPM_EXECUTABLE npm)
+    # Windows ships npm as npm.cmd, and find_program does not consider that
+    # suffix unless the name spells it out.
+    find_program(ORES_NPM_EXECUTABLE NAMES npm.cmd npm)
     if(NOT ORES_NPM_EXECUTABLE)
         message(WARNING
             "npm was not found, so the ores.web TypeScript component will not "

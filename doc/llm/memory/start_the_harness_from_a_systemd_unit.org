@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 3A110B3E-C78B-49D8-A060-33B1A62C4EC2
+:END:
+#+title: Start the DSH harness from its systemd user unit, never from inside a checkout
+#+description: A harness started from a shell inside a worktree exports that worktree's .env into every agent shell it spawns, which can point a compass command at another worktree's database.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+Start the DeepSeek Harness with =systemctl --user start dsh-web=, from a fresh shell, and never by running =dsh web= from a shell inside an ORE Studio worktree. The =dsh-web.service= user unit starts from =%h= and inherits only the user manager's environment, which holds no =ORES_*= variables.
+
+*Why:* An agent running in =ores_dev_eager_maxwell= saw =ORES_DATABASE_NAME=ores_dev_festive_dijkstra= exported. =compass env configure= preferred those ambient values over the checkout's =.env=, so it rewrote this worktree's database name, NATS subject prefix and wire format with the other worktree's; a =compass db recreate= at that moment would have dropped the festive worktree's database.
+
+*How to apply:* Log in, open a fresh shell, and run =systemctl --user start dsh-web= (the GUI then serves on =127.0.0.1:3080=). Before trusting a session, check an agent shell with =env | grep '^ORES_'=: it must print nothing. =compass env configure= is fixed to prefer the checkout's =.env=, but the harness boundary is the first line of defence.

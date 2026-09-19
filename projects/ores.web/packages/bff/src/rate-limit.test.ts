@@ -52,4 +52,33 @@ describe('createRateLimiter', () => {
     }
     expect(limiter.trackedKeys).toBe(1);
   });
+
+  it('sweeps callers whose attempts have aged out', () => {
+    let clock = 0;
+    const limiter = createRateLimiter({
+      maxAttempts: 1,
+      windowSeconds: 60,
+      maxTrackedKeys: 3,
+      now: () => clock,
+    });
+    for (const key of ['a', 'b', 'c']) {
+      expect(limiter.allow(key)).toBe(true);
+    }
+    clock = 61_000;
+    expect(limiter.allow('d')).toBe(true);
+    expect(limiter.trackedKeys).toBe(1);
+  });
+
+  it('holds the map at the cap when no caller has aged out', () => {
+    const limiter = createRateLimiter({
+      maxAttempts: 1,
+      windowSeconds: 60,
+      maxTrackedKeys: 3,
+      now: () => 0,
+    });
+    for (const key of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      expect(limiter.allow(key)).toBe(true);
+    }
+    expect(limiter.trackedKeys).toBe(3);
+  });
 });

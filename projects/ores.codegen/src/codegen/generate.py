@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -124,6 +125,65 @@ _UI_META_FACETS = frozenset({
     "ores.ts.ui",
 })
 
+# One model owns an entity's protocol header. C++ and TypeScript read the
+# messages from one model, so an operation model that declares an entity's
+# messages renders ``<entity>_protocol`` and the entity or junction model
+# must not render a second, competing header at the same output path, where
+# the last writer would silently discard the other. Without an operation
+# model, the entity keeps its derived CRUD header.
+_PROTOCOL_FACETS = frozenset({
+    "ores.cpp.protocol",
+    "ores.ts.protocol",
+})
+
+
+@lru_cache(maxsize=None)
+def _operation_protocol_owners(modeling_dir: str) -> dict[tuple[str, str], str]:
+    """The protocols operation models own, keyed by (component, entity).
+
+    Read from the component's modeling directory. The template graph
+    describes facets, not models, so there is no in-memory registry of
+    operation models to consult; the directory holds the component's model
+    files, and the scan filters them with the same frontmatter type test the
+    regeneration uses (``manifest.is_codegen_entity_org``). Cached per
+    directory: the codegen resolves one model at a time, so a component run
+    reads its operation files once per process rather than once per model.
+
+    The value is the operation model's file name, for the log line a
+    suppressed render prints. Callers must not mutate the result.
+    """
+    directory = Path(modeling_dir)
+    # discover_models() reads these two levels; keep them in step.
+    candidates = sorted(set(directory.glob("*.org")) | set(directory.glob("*/*.org")))
+    owners: dict[tuple[str, str], str] = {}
+    for candidate in candidates:
+        if not candidate.is_file() or not _is_codegen_entity_org(candidate):
+            continue
+        if get_model_type(candidate.name, candidate) != "operation":
+            continue
+        operation = load_model(candidate).get("operation") or {}
+        component = operation.get("component")
+        entity_singular = operation.get("entity_singular")
+        if component and entity_singular:
+            owners.setdefault((component, entity_singular), candidate.name)
+    return owners
+
+
+def _protocol_entity_name(model_data: dict, model_type: str) -> str | None:
+    """The name an entity or junction contributes to ``<entity>_protocol``.
+
+    Mirrors the ``{entity}`` substitution in ``resolve_output_path`` -- a
+    junction names its singular in ``name_singular``, a domain entity in
+    ``entity_singular`` -- so ownership compares the same name the two
+    models would write to the same output path.
+    """
+    if model_type == "domain_entity":
+        return (model_data.get("domain_entity") or {}).get("entity_singular")
+    if model_type == "junction":
+        junction = model_data.get("junction") or {}
+        return junction.get("name_singular") or (junction.get("name") or "").rstrip("s")
+    return None
+
 
 def _hosted_subcomponents(component_org: Path) -> list[str]:
     """Return the sub-component projects hosted directly under an org's root.
@@ -235,6 +295,23 @@ def resolve_targets(
     gen_facets = resolve_generation_set(supported, target)
 
     model_data = load_model(model_path)
+    if model_type in ("domain_entity", "junction"):
+        entity = model_data.get(model_type) or {}
+        owner = _operation_protocol_owners(str(model_path.parent)).get(
+            (entity.get("component"), _protocol_entity_name(model_data, model_type)))
+        owned = (_PROTOCOL_FACETS & gen_facets) if owner else frozenset()
+        if owned:
+            # Hard gate, like the messaging and history-provider gates
+            # below: the operation model owns the entity's protocol, so an
+            # explicit :ores.*.protocol.enabled: override must not re-admit
+            # a second, competing header. It runs before the junction
+            # messaging gate so the log names ownership for a junction that
+            # gate would also have dropped.
+            log.info(
+                "%s: operation model %s owns this entity's protocol; not "
+                "rendering %s",
+                model_path.name, owner, ", ".join(sorted(owned)))
+            gen_facets = gen_facets - owned
     if model_type in ("domain_entity", "junction"):
         ent = model_data.get(model_type) or {}
         if not ((ent.get("presentation") or {}).get("columns")):

@@ -27,14 +27,8 @@ Note: project(LANGUAGES CXX) is unconditional so a C++ compiler is still \
 required at configure time even when vcpkg is disabled.")
 
 if(ORES_VCPKG_ENABLED)
-    # Always include common overlays
-    set(ORES_OVERLAYS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays")
-    set(VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/common")
-
-    # Add Linux-specific overlays
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-        list(APPEND VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/linux")
-    endif()
+    set(VCPKG_OVERLAY_PORTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays/common")
 
     set(CMAKE_TOOLCHAIN_FILE
         ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake

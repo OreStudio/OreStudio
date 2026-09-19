@@ -195,6 +195,7 @@ via its "Verifies task" field.
 | 17 | The sample output lists =ores_wt_user=. | =doc/recipes/shell/accounts/list.org= | Declined | The account still exists, so the captured output is what a reader gets. |
 | 18 | =misspell-fixer= flags four vendored TypeScript files. | =projects/ores.typescript/node_modules/typescript/lib/= | Fixed | The ignore file names every other vendored tree (=external=, =vcpkg=, =.packages=, the two venvs), so the =node_modules= entry joins them. Those four files carried 31 of the 38 hits, all of them Spanish and Portuguese wording the tool reads as a typo. |
 | 19 | =misspell-fixer= flags seven sprint 25 task docs. | =doc/agile/versions/v0/sprint_25/**= | Declined | Each quotes the upstream identifier =LOAD_PROFILE_1_EXPLICT= inside a review table that records the decision not to correct it, so correcting it would make the records false. All seven sit on =origin/main=, in files this branch does not touch. The tool keeps exiting 1 on them because its status reflects the prefilter list, not a hit. |
+| 20 | Two vcpkg overlay ports outlive the =qt= and =wt= features that pulled them in. | =build/cmake/overlays/common/wt/=, =build/cmake/overlays/linux/qtbase/= | Fixed | Both are orphaned: =vcpkg.json= declares no feature at all and no dependency asks for either port, while =common/sqlgen= is a live dependency and keeps its overlay. The CMake wiring was not missing, it points at the parent directories rather than the ports. The Linux tier held =qtbase= alone, so its =VCPKG_OVERLAY_PORTS= append goes with it. |
 
 * Result
 

@@ -23,9 +23,12 @@ The derivations are the request's own, held in the enriched
 =has_tenant_id=, =has_workspace_id=), the member lists
 (=primary_key.columns=, =natural_keys=, =columns=) and the audit tail
 (=has_audit_group=). Each field's =ts_type= is stamped by the loader's
-=org_loader._ts_domain_type=; a field with no projection carries no
-=ts_type= and the template emits nothing for it, rather than inventing a
-type.
+=org_loader._ts_domain_type=. A field with no projection carries no
+=ts_type=, and =org_loader._reject_silent_entity_domain_ts_gap= refuses the
+entity rather than let the template emit =<member>: ;=. That guard reads no
+=:ores.*.enabled:= property: mapping the type in =_ts_domain_type= is the
+fix, or the model records why the member has no wire shape a TypeScript
+client can read.
 
 A junction renders from the enriched =junction= dict and follows the
 C++ junction block exactly: =version=, =tenant_id= when the model sets

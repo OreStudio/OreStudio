@@ -38,8 +38,10 @@ The interface mirrors the C++ domain class's member list: the audited
 identity prelude (=version=, =tenant_id=, =workspace_id= when the model
 sets the flags), the primary key, the natural keys, the model's own
 columns, and the flat audit fields. A member whose C++ type has no
-TypeScript projection emits no field, following the same rule as
-=ores.ts.ui=: nothing is invented.
+TypeScript projection refuses the model rather than emit
+=<member>: ;=, so the interface never states an empty type. The entity
+guard is =org_loader._reject_silent_entity_domain_ts_gap=; it reads no
+=:ores.*.enabled:= property.
 
 A composed struct (=domain_groups=, =domain_identity_group=,
 =domain_audit_group=) reaches its fields through a group member, and the

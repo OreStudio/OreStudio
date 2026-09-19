@@ -134,7 +134,8 @@ NATS_MONITOR_PORT_OFFSET = 6
 # The ores.web site config declares one entry per environment instance. The
 # BFF resolves its entry by id, so a checkout binds its label to a declared
 # id through ORES_WEB_ENV.
-WEB_ENVIRONMENTS_RELATIVE_PATH = Path("projects") / "ores.web" / "config" / "environments.json"
+WEB_ENVIRONMENTS_RELATIVE_PATH = (Path("projects") / "ores.web" / "config"
+                                  / "environments.json")
 WEB_ENVIRONMENT_ID_VARIABLE = "ORES_WEB_ENV"
 # Hosts that mean "this machine". Several instances of one environment share
 # a port and subject prefix and differ only by host, so the local instance is
@@ -209,8 +210,8 @@ def _underscored(label: str) -> str:
     return label.lower().replace(".", "_").replace("-", "_")
 
 
-def _resolve_web_env_id(checkout_root: Path, nats_port: int, subject_prefix: str,
-                        env_name: str) -> str | None:
+def _resolve_web_env_id(checkout_root: Path, nats_port: int,
+                        subject_prefix: str, env_name: str) -> str | None:
     """Id of the ores.web environment instance this checkout serves.
 
     The BFF resolves its site configuration by id, and it falls back to

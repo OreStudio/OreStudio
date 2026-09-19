@@ -27,22 +27,20 @@
  * Covered accounts:
  *   - compute_wrapper_user  (Compute Wrapper worker — ComputeWrapperService role)
  *   - http_user             (HTTP REST API server  — HttpService role)
- *   - wt_user               (Wt web application   — WtService role)
  *
- * NOTE: http_user and wt_user are created with passwords by the generated
- * iam_service_accounts_populate.sql. Only their role assignments live here.
+ * NOTE: http_user is created with a password by the generated
+ * iam_service_accounts_populate.sql. Only its role assignment lives here.
  * compute_wrapper_user has no DB password; its account is created below.
  *
  * This script is idempotent. It must run after:
- *   - iam_service_accounts_populate.sql  (http_user, wt_user already exist)
+ *   - iam_service_accounts_populate.sql  (http_user already exists)
  *   - iam_service_account_roles_populate.sql
- *   - iam_roles_populate.sql             (HttpService, WtService,
+ *   - iam_roles_populate.sql             (HttpService,
  *                                         ComputeWrapperService already exist)
  */
 
 SET "ores.compute_wrapper_user" = :'compute_wrapper_user';
 SET "ores.http_user"            = :'http_user';
-SET "ores.wt_user"             = :'wt_user';
 
 DO $$
 BEGIN
@@ -60,9 +58,6 @@ BEGIN
 
     PERFORM ores_iam_account_role_assign_fn(
         ores_utility_system_tenant_id_fn(), current_setting('ores.http_user'), 'HttpService');
-
-    PERFORM ores_iam_account_role_assign_fn(
-        ores_utility_system_tenant_id_fn(), current_setting('ores.wt_user'), 'WtService');
 END $$;
 
 
@@ -72,7 +67,6 @@ from ores_iam_account_roles_tbl ar
 join ores_iam_accounts_tbl a on a.id = ar.account_id
 where a.email in (
     'compute_wrapper@system.ores',
-    'http@system.ores',
-    'wt@system.ores'
+    'http@system.ores'
 )
   and ar.valid_to = ores_utility_infinity_timestamp_fn();

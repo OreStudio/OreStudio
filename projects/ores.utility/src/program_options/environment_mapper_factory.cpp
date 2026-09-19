@@ -20,6 +20,7 @@
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.utility/program_options/shared_domain_registry.hpp"
 #include <algorithm>
+#include <cctype>
 #include <ranges>
 
 namespace ores::utility::program_options {
@@ -33,7 +34,7 @@ std::string strip_prefix_to_option_name(const std::string& env_var, const std::s
     std::ranges::transform(env_body, std::back_inserter(option_name), [](unsigned char c) -> char {
         if (c == '_')
             return '-';
-        return std::tolower(c);
+        return static_cast<char>(std::tolower(c));
     });
 
     return option_name;

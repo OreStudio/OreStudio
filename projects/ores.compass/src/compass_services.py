@@ -30,6 +30,7 @@ import sys
 import time
 from pathlib import Path
 
+import systemctl_bus
 import systemd_generate
 from compass_db import load_env, validate_env_version
 
@@ -258,7 +259,7 @@ def _nats_unit(ctx):
 def _systemctl(args, **kwargs):
     kwargs.setdefault("capture_output", True)
     kwargs.setdefault("text", True)
-    return subprocess.run(["systemctl", "--user"] + args, **kwargs)
+    return systemctl_bus.run(["--user"] + args, **kwargs)
 
 
 def _unit_active_state(unit) -> str:
@@ -306,7 +307,10 @@ def cmd_start(ctx, args):
     log_path = Path(f"/tmp/ores_{ctx.label}_services_start.log")
     print(f"📝 Progress log: {log_path} (tail -f to follow)")
     with _tee_to_file(log_path):
-        return _cmd_start(ctx, args)
+        rc = _cmd_start(ctx, args)
+        if rc != 0 and not systemctl_bus.use_busctl():
+            print(systemctl_bus.sandbox_hint(), file=sys.stderr)
+        return rc
 
 
 def _cmd_start(ctx, args):
@@ -538,6 +542,11 @@ def cmd_clear_logs(ctx, args):
 def _common(parser):
     parser.add_argument("--preset", default=None,
                         help="CMake preset (default: ORES_PRESET from .env)")
+    parser.add_argument(
+        "--use-busctl", action="store_true",
+        help="Reach the systemd user manager through busctl instead of "
+             "systemctl. Use this inside a sandbox, where the manager "
+             "refuses systemctl's connection.")
 
 
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
@@ -581,6 +590,7 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     _common(cl)
 
     args = ap.parse_args(argv)
+    systemctl_bus.set_use_busctl(getattr(args, "use_busctl", False))
     env = load_env(project_root, env_file)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)

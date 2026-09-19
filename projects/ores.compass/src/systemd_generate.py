@@ -41,6 +41,7 @@ import sys
 import uuid
 from pathlib import Path
 
+import systemctl_bus
 from compass_db import load_env
 
 # Same namespace UUID process_supervisor::build_args uses for {host_id}
@@ -554,7 +555,7 @@ def cmd_deploy(project_root: Path, env: dict, args) -> int:
             added.append(name)
 
     if added or updated or removed:
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+        systemctl_bus.run(["--user", "daemon-reload"], check=False)
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")
@@ -976,7 +977,7 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
             removed.append(dest.name)
 
     if added or updated or removed:
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+        systemctl_bus.run(["--user", "daemon-reload"], check=False)
 
     print(f"Added: {len(added)}, updated: {len(updated)}, "
           f"removed: {len(removed)}")

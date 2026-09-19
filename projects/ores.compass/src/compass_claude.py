@@ -38,6 +38,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import systemctl_bus
+
 _SLICE_ROOT = "app-claude"
 _SLICE_NAME = f"{_SLICE_ROOT}.slice"
 _SYSTEMD_SRC_DIR = Path(__file__).resolve().parent / "systemd"
@@ -108,8 +110,7 @@ def _has_user_systemd() -> bool:
     if shutil.which("systemd-run") is None:
         return False
     try:
-        subprocess.run(
-            ["systemctl", "--user", "show-environment"],
+        systemctl_bus.run(["show-environment"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         return True
     except (subprocess.CalledProcessError, OSError):
@@ -141,6 +142,6 @@ def _ensure_slice_deployed() -> None:
         changed = True
 
     if changed:
-        subprocess.run(["systemctl", "--user", "daemon-reload"],
+        systemctl_bus.run(["daemon-reload"],
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                         check=False)

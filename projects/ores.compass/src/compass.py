@@ -25,6 +25,9 @@ import sqlite3
 import subprocess
 import sys
 import time
+
+import systemctl_bus
+
 try:
     import fcntl  # POSIX-only; build-lock functions degrade gracefully without it.
 except ImportError:
@@ -2761,8 +2764,7 @@ def _env_systemd_scopes():
     Missing keys mean no scope is running for that environment.
     """
     try:
-        result = subprocess.run(
-            ["systemctl", "--user", "list-units", "--type=scope",
+        result = systemctl_bus.run(["list-units", "--type=scope",
              "--no-legend", "--output=json"],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             text=True, timeout=5)
@@ -2829,8 +2831,7 @@ def _worktree_services_status(env_name):
     import systemd_generate
     target = systemd_generate._unit_basename("ores", env_name) + ".target"
     try:
-        r = subprocess.run(
-            ["systemctl", "--user", "is-active", target],
+        r = systemctl_bus.run(["is-active", target],
             capture_output=True, text=True, timeout=2)
         return r.stdout.strip()  # "active", "inactive"
     except Exception:
@@ -6561,7 +6562,7 @@ def _site_generate_and_deploy(env_name, port):
     changed = not dest.exists() or not filecmp.cmp(src, dest, shallow=False)
     if changed:
         shutil.copyfile(src, dest)
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+        systemctl_bus.run(["daemon-reload"], check=False)
     return unit_name
 
 
@@ -6587,7 +6588,7 @@ def _cmd_site_start():
 
     port = _site_port(env)
     unit = _site_generate_and_deploy(env_name, port)
-    result = subprocess.run(["systemctl", "--user", "start", unit], check=False)
+    result = systemctl_bus.run(["start", unit], check=False)
     if result.returncode != 0:
         return 1
     _print_site_urls(build_dir, port)
@@ -6601,7 +6602,7 @@ def _cmd_site_stop():
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
     unit = _site_unit_name(env_name) + ".service"
-    result = subprocess.run(["systemctl", "--user", "stop", unit], check=False)
+    result = systemctl_bus.run(["stop", unit], check=False)
     return 0 if result.returncode == 0 else 1
 
 
@@ -6616,7 +6617,7 @@ def _cmd_site_status():
 
 
 def _systemctl_state(unit) -> str:
-    result = subprocess.run(["systemctl", "--user", "is-active", unit],
+    result = systemctl_bus.run(["is-active", unit],
                             capture_output=True, text=True, check=False)
     return result.stdout.strip() or "missing"
 
@@ -6663,7 +6664,7 @@ def _ensure_build_slice_deployed() -> None:
         return
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(_BUILD_LIMITS_DROPIN_SRC, dest)
-    subprocess.run(["systemctl", "--user", "daemon-reload"],
+    systemctl_bus.run(["daemon-reload"],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                     check=False)
 

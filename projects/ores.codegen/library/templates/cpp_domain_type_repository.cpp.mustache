@@ -43,27 +43,49 @@ std::string {{entity_singular}}_repository::sql() {
 
 void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+{{#current_state}}
+    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(v));
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(sqlgen::begin_transaction)
+                       .and_then(query)
+                       .and_then(sqlgen::commit);
+    ensure_success(r, lg());
+{{/current_state}}
+{{^current_state}}
     execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Writing {{entity_singular_words}} to database.");
+{{/current_state}}
 }
 
 void {{entity_singular}}_repository::write(
     context ctx, const std::vector<domain::{{entity_singular}}>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+{{#current_state}}
+    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(v));
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(sqlgen::begin_transaction)
+                       .and_then(query)
+                       .and_then(sqlgen::commit);
+    ensure_success(r, lg());
+{{/current_state}}
+{{^current_state}}
     execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Writing {{entity_plural_words}} to database.");
+{{/current_state}}
 }
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx) {
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto& chain = ctx.workspace_resolution();
     if (!chain.empty()) {
         const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-            where({{{tenant_where}}} && "workspace_id"_c.in(chain) && "valid_to"_c == max.value()) |
+            where({{{tenant_where}}} && "workspace_id"_c.in(chain){{domain_entity.temporal_filter}}) |
             order_by({{{primary_key.order_by_cols}}});
         return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
             ctx, query,
@@ -72,12 +94,12 @@ std::vector<domain::{{entity_singular}}>
     }
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
         order_by({{{primary_key.order_by_cols}}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
         order_by({{{primary_key.order_by_cols}}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -86,7 +108,7 @@ std::vector<domain::{{entity_singular}}>
     const auto& chain = ctx.workspace_resolution();
     if (!chain.empty()) {
         const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-            where("workspace_id"_c.in(chain) && "valid_to"_c == max.value()) |
+            where("workspace_id"_c.in(chain){{domain_entity.temporal_filter}}) |
             order_by({{{primary_key.order_by_cols}}});
         return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
             ctx, query,
@@ -95,12 +117,14 @@ std::vector<domain::{{entity_singular}}>
     }
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
         order_by({{{primary_key.order_by_cols}}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+{{^current_state}}
         where("valid_to"_c == max.value()) |
+{{/current_state}}
         order_by({{{primary_key.order_by_cols}}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -114,28 +138,30 @@ std::vector<domain::{{entity_singular}}>
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, {{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where({{{tenant_where}}} && "workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where({{{tenant_where}}} && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where("workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
@@ -159,28 +185,30 @@ std::vector<domain::{{entity_singular}}>
 {{^parent_column}}
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{column}}: " << {{column}};
 {{/parent_column}}
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+        where({{{tenant_where}}} && "workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+        where({{{tenant_where}}} && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+        where("workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+        where({{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
@@ -281,22 +309,32 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && "workspace_id"_c == wid && {{{primary_key.where_and}}}) |
+{{^current_state}}
 {{#has_audit_columns}}
         order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
         order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && {{{primary_key.where_and}}}) |
+{{^current_state}}
 {{#has_audit_columns}}
         order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
         order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
@@ -304,22 +342,32 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && {{{primary_key.where_and}}}) |
+{{^current_state}}
 {{#has_audit_columns}}
         order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
         order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{primary_key.where_and}}}) |
+{{^current_state}}
 {{#has_audit_columns}}
         order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
         order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
@@ -381,18 +429,20 @@ std::vector<domain::{{entity_singular}}>
                                                           std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}}. {{column}}: " << {{column}}
                                << " offset: " << offset << " limit: " << limit;
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
         order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
         order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -400,12 +450,17 @@ std::vector<domain::{{entity_singular}}>
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+        where("workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
         order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+{{^current_state}}
         where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+{{/current_state}}
+{{#current_state}}
+        where("{{column}}"_c == {{column}}) |
+{{/current_state}}
         order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -419,7 +474,9 @@ std::vector<domain::{{entity_singular}}>
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count_by_{{column}}(
     context ctx, const std::string& {{column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_plural_words}} count. {{column}}: " << {{column}};
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 
     struct count_result { long long count; };
 
@@ -428,12 +485,12 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -441,12 +498,17 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("workspace_id"_c == wid && "{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+                       where("workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{^current_state}}
                        where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+{{/current_state}}
+{{#current_state}}
+                       where("{{column}}"_c == {{column}}) |
+{{/current_state}}
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -493,28 +555,30 @@ std::vector<domain::{{entity_singular}}>
 {{/foreign_keys}}
 void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("workspace_id"_c == wid && {{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where("workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.where_and}}} && "valid_to"_c == max.value());
+        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 
@@ -525,19 +589,21 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
                                << " and limit: " << limit;
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
                        order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
                        order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
@@ -546,13 +612,15 @@ std::vector<domain::{{entity_singular}}>
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where("workspace_id"_c == wid && "valid_to"_c == max.value()) |
+                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
                        order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+{{^domain_entity.current_state}}
                        where("valid_to"_c == max.value()) |
+{{/domain_entity.current_state}}
                        order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
@@ -566,7 +634,9 @@ std::vector<domain::{{entity_singular}}>
 
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 
     struct count_result { long long count; };
 
@@ -575,12 +645,12 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -588,12 +658,14 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("workspace_id"_c == wid && "valid_to"_c == max.value()) |
+                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
+{{^domain_entity.current_state}}
                        where("valid_to"_c == max.value()) |
+{{/domain_entity.current_state}}
                        sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -611,7 +683,9 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(
     context ctx, {{{primary_key.batch_params}}}) {
     if ({{{primary_key.batch_empty_check}}}) return {};
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
@@ -619,12 +693,12 @@ std::vector<domain::{{entity_singular}}>
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && "workspace_id"_c == wid
               && {{{primary_key.batch_in_and}}}
-              && "valid_to"_c == max.value());
+             {{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && {{{primary_key.batch_in_and}}}
-              && "valid_to"_c == max.value());
+             {{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
@@ -632,11 +706,11 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && {{{primary_key.batch_in_and}}}
-              && "valid_to"_c == max.value());
+             {{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.batch_in_and}}} && "valid_to"_c == max.value());
+        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
     auto result = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
@@ -680,30 +754,32 @@ void {{entity_singular}}_repository::remove(
         remove(ctx, {{{primary_key.batch_loop_args}}});
 {{/primary_key.is_compound}}
 {{^primary_key.is_compound}}
+{{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.batch_in_and}}}
-              && "valid_to"_c == max.value());
+             {{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("tenant_id"_c == tid && {{{primary_key.batch_in_and}}}
-              && "valid_to"_c == max.value());
+             {{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("workspace_id"_c == wid && {{{primary_key.batch_in_and}}} && "valid_to"_c == max.value());
+        where("workspace_id"_c == wid && {{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.batch_in_and}}} && "valid_to"_c == max.value());
+        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
     execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");

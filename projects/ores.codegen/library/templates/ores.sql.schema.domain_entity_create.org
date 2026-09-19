@@ -89,8 +89,11 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
     "change_reason_code" text not null,
     "change_commentary" text not null,
 {{/domain_entity.has_audit_columns}}
+{{^domain_entity.current_state}}
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+{{/domain_entity.current_state}}
+{{^domain_entity.current_state}}
 {{#domain_entity.has_tenant_in_pk}}
     primary key (tenant_id, {{domain_entity.primary_key.column_list}}, valid_from, valid_to),
 {{#domain_entity.has_gist_exclusion}}
@@ -120,6 +123,13 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
     check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}}{{^skip_empty_check}},
     check ("{{column}}" <> ''){{/skip_empty_check}}{{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}
+{{/domain_entity.current_state}}
+{{#domain_entity.current_state}}
+    primary key ({{domain_entity.primary_key.column_list}}){{#domain_entity.primary_key.columns}}{{#is_uuid}}{{^skip_uuid_check}},
+    check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}}{{^skip_empty_check}},
+    check ("{{column}}" <> ''){{/skip_empty_check}}{{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
+    check ({{{.}}}){{/domain_entity.sql.extra_checks}}
+{{/domain_entity.current_state}}
 );
 {{#domain_entity.has_multiple_natural_keys}}
 {{^domain_entity.sql.suppress_nk_index}}
@@ -128,12 +138,12 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{#domain_entity.has_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_id}}
 {{/domain_entity.sql.suppress_nk_index}}
 {{/domain_entity.has_multiple_natural_keys}}
@@ -144,12 +154,12 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix_columns}}{{/prefix_columns}}, {{column}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
 {{/domain_entity.has_multiple_natural_keys}}
@@ -161,39 +171,39 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}}, version)
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.primary_key.is_uuid}}
 {{^domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.primary_key.index_suffix}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.primary_key.is_uuid}}
 
 create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.primary_key.column_list}}, version)
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.primary_key.column_list}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 
 create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.has_tenant_in_pk}}
 {{#domain_entity.unique_keys}}
@@ -202,12 +212,12 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{column}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
 on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.unique_keys}}
 {{#domain_entity.indexes}}
@@ -222,7 +232,7 @@ where {{{where_extra}}}{{/where_extra}}{{/current_only}};
 
 create index if not exists {{domain_entity.index_name_prefix}}_workspace_idx
 on "{{domain_entity.sql_name_base}}_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
+{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_workspace_id}}
 
 {{#domain_entity.has_tenant_id}}
@@ -374,11 +384,11 @@ declare
 {{/domain_entity.sql.has_cardinality_limit_validations}}
 <<paste:B9428A09-3610-4CAD-A200-E6CDE53B7C8D>>
 begin
-{{#domain_entity.has_tenant_in_pk}}
+{{#domain_entity.validates_tenant_on_insert}}
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-{{/domain_entity.has_tenant_in_pk}}
+{{/domain_entity.validates_tenant_on_insert}}
 {{#domain_entity.has_workspace_id}}
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
@@ -652,16 +662,20 @@ begin
     end if;
 {{/domain_entity.has_audit_columns}}
 {{^domain_entity.has_audit_columns}}
+{{^domain_entity.current_state}}
     -- Close the current active row before inserting the new one
     update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = clock_timestamp()
     where {{{domain_entity.primary_key.where_new}}}
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < clock_timestamp();
+{{/domain_entity.current_state}}
 {{/domain_entity.has_audit_columns}}
 
+{{^domain_entity.current_state}}
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.current_state}}
 {{#domain_entity.has_audit_columns}}
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -675,6 +689,7 @@ create or replace trigger {{domain_entity.sql_name_base}}_insert_trg
 before insert on "{{domain_entity.sql_name_base}}_tbl"
 for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 
+{{^domain_entity.current_state}}
 create or replace rule {{domain_entity.sql_name_base}}_delete_rule as
 on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
     update "{{domain_entity.sql_name_base}}_tbl"
@@ -700,6 +715,7 @@ on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
 {{/bump_parent_version}}
 {{/domain_entity.foreign_keys}}
 );
+{{/domain_entity.current_state}}
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.validation_fn}}

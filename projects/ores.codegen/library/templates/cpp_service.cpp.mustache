@@ -221,6 +221,7 @@ void {{entity_singular}}_service::delete_{{entity_plural_short}}({{{primary_key.
     repo_.remove(ctx_, {{{primary_key.batch_args}}});
 }
 
+{{^current_state}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_history({{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
@@ -234,6 +235,7 @@ std::vector<domain::{{entity_singular}}>
     return repo_.read_all(ctx_, boost::uuids::to_string({{primary_key.column}}));
 }
 {{/service_find_by_uuid}}
+{{/current_state}}
 {{#has_parent_id}}
 
 std::vector<ores::utility::domain::hierarchy_node>

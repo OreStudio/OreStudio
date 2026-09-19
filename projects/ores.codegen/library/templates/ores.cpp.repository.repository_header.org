@@ -123,7 +123,15 @@ public:
 {{/has_as_of_lookup}}
 
     /**
+{{#current_state}}
+     * @brief Reads the {{entity_singular_words}} rows for the given primary key.
+     *
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
+{{/current_state}}
+{{^current_state}}
      * @brief Reads all {{entity_plural_words}}, possibly filtered by primary key.
+{{/current_state}}
      */
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, {{{primary_key.params}}});
@@ -197,12 +205,25 @@ public:
     std::uint32_t get_total_{{entity_singular_short}}_count(context ctx);
 
     /**
+{{#current_state}}
+     * @brief Deletes a {{entity_singular_words}} permanently.
+     *
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
+{{/current_state}}
+{{^current_state}}
      * @brief Deletes a {{entity_singular_words}} by closing its temporal validity.
+{{/current_state}}
      */
     void remove(context ctx, {{{primary_key.params}}});
 
     /**
+{{#current_state}}
+     * @brief Deletes {{entity_plural_words}} permanently.
+{{/current_state}}
+{{^current_state}}
      * @brief Deletes {{entity_plural_words}} by closing their temporal validity.
+{{/current_state}}
      */
     void remove(context ctx, {{{primary_key.batch_params}}});
 {{#has_parent_id}}

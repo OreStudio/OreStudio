@@ -25,13 +25,13 @@ the command reports how to start the server instead of guessing.
 
 import argparse
 import socket
-import subprocess
 import sys
 import time
 from pathlib import Path
 
 import nats_certs
 import nats_init
+import systemctl_bus
 
 
 def _load_env(project_root: Path) -> dict:
@@ -51,8 +51,7 @@ def _find_unit(label: str) -> str:
         f"nats-server-{label}.service",
         f"nats-server-{label.replace('_', '-')}.service",
     ]
-    proc = subprocess.run(
-        ["systemctl", "--user", "list-unit-files"],
+    proc = systemctl_bus.run(["list-unit-files"],
         capture_output=True, text=True, check=False)
     for unit in candidates:
         if unit in proc.stdout:
@@ -62,8 +61,7 @@ def _find_unit(label: str) -> str:
 
 def _restart(label: str) -> int:
     unit = _find_unit(label)
-    proc = subprocess.run(
-        ["systemctl", "--user", "list-unit-files", unit],
+    proc = systemctl_bus.run(["list-unit-files", unit],
         capture_output=True, text=True, check=False)
     if unit not in proc.stdout:
         print(f"Error: no systemd user unit '{unit}' for environment '{label}'.", file=sys.stderr)
@@ -72,8 +70,7 @@ def _restart(label: str) -> int:
         return 1
 
     print(f"=== Restarting {unit} ===")
-    proc = subprocess.run(
-        ["systemctl", "--user", "restart", unit],
+    proc = systemctl_bus.run(["restart", unit],
         capture_output=True, text=True, check=False)
     if proc.returncode != 0:
         print(f"Error: systemctl --user restart {unit} failed:", file=sys.stderr)

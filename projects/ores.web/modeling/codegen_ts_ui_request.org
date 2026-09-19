@@ -1,0 +1,781 @@
+:PROPERTIES:
+:ID: AE16BF31-1ECF-47C3-82C9-994B43BC0BD6
+:END:
+#+title: Codegen request: TypeScript UI metadata
+#+description: Request for ores.codegen to emit TypeScript UI metadata from the entity org model: what exists, what to emit, worked examples, derivation rules, mappings, label handling, forbidden output, output constraints, verification and consumption.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ores.web:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+A specification to hand to whoever works on =ores.codegen=, for a new facet that
+emits the presentation metadata the TypeScript interface needs.
+
+Written from the consuming side. It states what the output must contain and why,
+and leaves the template mechanics to the implementer, who knows the codegen
+better than this document does.
+
+* 1. Why
+
+The TypeScript interface describes each entity's table columns and detail form
+fields as data, so that one shared =DataTable= and one shared =FieldControl=
+render every entity. That is what makes adding an entity cheap: a declaration
+plus the protocol schemas, and no new screens.
+
+Those declarations are currently hand-written. For one entity that is reasonable;
+for the hundred and two entities that already have the metadata in their org
+models, it is a great deal of typing that will drift. A style chosen slightly
+differently on the fortieth entity is a table that looks unlike the others, and
+nobody will notice for a year.
+
+The org models already carry the metadata. The codegen already derives the
+variables. What is missing is the output.
+
+* 2. What already exists
+
+Established by reading =projects/ores.codegen/library/templates/= as of this
+writing.
+
+/The template system./ Facets are literate org documents under =library/templates/=, each with =#+title:= naming its address, =#+type: facet= or =#+type: archetype=, and an =#+output:= line giving the generated path with ={component}= and ={entity}= placeholders. A facet page collects its archetypes in a table. Mustache source lives inside =#+begin_src mustache :tangle <file>.mustache= blocks and is extracted by =compass build --direct tangle_codegen_templates=.
+
+/The TypeScript technical space./ =ores.ts= is a =technical_space= page with
+=filetags: :codegen:physical-space:typescript:=. Its shared conventions are:
+
+- ={{{ts_license}}}= injects the licence header and the generated-file marker.
+- Field names stay =snake_case=, because they are the JSON keys =rfl::json=
+  writes from the C++ member names, so the TypeScript field name and the wire key
+  are one string.
+- Type names take PascalCase, because a type name never crosses the wire.
+
+/One facet already exists:/ =ores.ts.protocol=, with one archetype,
+=ores.ts.protocol.protocol_types=, whose =#+output:= is
+=projects/ores.typescript/src/{component}/protocol/{entity}_protocol.ts=.
+
+/Most of the inputs are already derived./ They come from three places, and the
+distinction matters because only the first is ready to use as-is.
+
+/One: documented codegen variables/, in =template_variables.org=, already derived
+and reachable from a template:
+
+| Group | Variables |
+|---+---|
+| Column identity | =column=, =name=, =description=, =column_index=, =column_style= |
+| Types | =cpp_type=, =is_uuid=, =is_string=, =is_int=, =is_bool=, =is_timestamp=, =is_optional=, =nullable= |
+| Keys | =is_pk=, =is_fk=, =is_key=, =is_unique= |
+| Control | =widget=, =is_line_edit=, =is_text_edit=, =is_spin_box=, =is_check_box=, =is_tristate= |
+| Selects | =is_static_combo=, =is_dynamic_combo=, =combo_values=, =combo_is_optional=, =combo_type= |
+| Bounds | =spin_min=, =spin_max= |
+| Display | =is_badge=, =badge_key=, =placeholder=, =placeholder_key= |
+| Entity | =entity_singular=, =entity_plural=, =component=, =icon= |
+
+/Two: authored values in the model's Qt property block/, not codegen variables.
+They are properties the org model declares and the archetypes read, so a facet can
+reach them, but they are hand-written input rather than derived output:
+
+| Property | Where | Wanted for |
+|---+---+---|
+| =domain_class= | the =** Qt= property block | referring to the domain type |
+| =collection_name= | the same block | the list request and the =lookup= targets |
+| =key_field= | the same block | =isKey= when the table does not mark one |
+| =window_title= | the same block | the sidebar title, as a fallback |
+
+/Three: columns of the model's own tables/, which is where the two inputs this
+facet most needs live, and which are /not/ currently plumbed through to this
+facet. Confirming or adding that plumbing is explicitly part of the work:
+
+| Input | Table | Wanted for |
+|---+---+---|
+| =field=, =label=, =widget=, =type=, =placeholder= | =*** Detail fields= | the field declaration |
+| =enum_name=, =field=, =header=, =type=, =width= | =*** Columns= | the column declaration |
+| =is_required= | =*** Detail fields= | =required= |
+| =is_key= | =*** Detail fields= | =isKey=, =readOnlyAfterCreate= |
+
+The information exists and the Qt archetypes already read it. What may not exist
+is the route from those tables to this facet, and finding out is the first task.
+
+* 3. What to emit
+
+One new archetype under a new facet =ores.ts.ui=, emitting one file per entity
+at:
+
+#+begin_src text
+projects/ores.typescript/src/{component}/ui/{entity}_ui.ts
+#+end_src
+
+One file per entity, containing pure data and no imports, so the declaration can
+be consumed anywhere without pulling a dependency.
+
+** 3.1 Worked example: country
+
+Country is the reference, because it is a flat entity that the generated standard
+already handles and the C++ side already uses as its own example. This is what
+the generator should produce for it, in full.
+
+Source, from =projects/ores.refdata/modeling/ores.refdata.country.org=:
+
+#+begin_src text
+*** Detail fields
+| field         | label         | widget            | type      | is_key | is_required | placeholder              |
+| alpha2_code   | Alpha-2 Code  | codeEdit          | line_edit | true   | true        | Enter country alpha2 code|
+| alpha3_code   | Alpha-3 Code  | alpha3CodeEdit    | line_edit |        | true        | Enter country alpha3 code|
+| numeric_code  | Numeric Code  | numericCodeEdit   | line_edit |        | true        | Enter ISO numeric code   |
+| name          | Name          | nameEdit          | line_edit |        | true        | Enter display name       |
+| official_name | Official Name | officialNameEdit  | line_edit |        | true        | Enter official country name|
+
+*** Columns (Qt model)
+| enum_name    | field         | header        | type      | width |
+| Alpha2Code   | alpha2_code   | Alpha-2 Code  | string    | 80    |
+| Alpha3Code   | alpha3_code   | Alpha-3 Code  | string    | 80    |
+| NumericCode  | numeric_code  | Numeric Code  | string    | 80    |
+| Name         | name          | Name          | string    | 200   |
+| OfficialName | official_name | Official Name | string    | 200   |
+| Version      | version       | Version       | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By   | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | 150   |
+#+end_src
+
+Output, at =projects/ores.typescript/src/refdata/ui/country_ui.ts=:
+
+#+begin_src ts
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_ui.ts.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Labels and headers are translation keys, not English. The English words are in
+ * the locale catalogue under the same keys.
+ *
+ * Field grouping into tabs is deliberately absent: it is a domain judgement the
+ * model does not carry. See country_field_groups.ts beside this file.
+ */
+import type { ColumnMeta, FieldMeta } from '../../ui-contract.js';
+
+/**
+ * The fields of a country, in the order the model declares them.
+ *
+ * `alpha2_code` is the natural key, so it is editable when creating and
+ * read-only afterwards.
+ */
+export const countryFields: readonly FieldMeta[] = [
+  {
+    name: 'alpha2_code',
+    labelKey: 'country.fldAlpha2Code',
+    control: 'line_edit',
+    required: true,
+    isKey: true,
+    readOnlyAfterCreate: true,
+    nullable: false,
+    placeholderKey: 'country.alpha2CodePh',
+    maxLength: 2,
+  },
+  {
+    name: 'alpha3_code',
+    labelKey: 'country.fldAlpha3Code',
+    control: 'line_edit',
+    required: true,
+    isKey: false,
+    nullable: false,
+    placeholderKey: 'country.alpha3CodePh',
+    maxLength: 3,
+  },
+  {
+    name: 'numeric_code',
+    labelKey: 'country.fldNumericCode',
+    control: 'line_edit',
+    required: true,
+    isKey: false,
+    nullable: false,
+    placeholderKey: 'country.numericCodePh',
+    maxLength: 3,
+  },
+  {
+    name: 'name',
+    labelKey: 'country.fldName',
+    control: 'line_edit',
+    required: true,
+    isKey: false,
+    nullable: false,
+    placeholderKey: 'country.namePh',
+  },
+  {
+    name: 'official_name',
+    labelKey: 'country.fldOfficialName',
+    control: 'line_edit',
+    required: true,
+    isKey: false,
+    nullable: false,
+    placeholderKey: 'country.officialNamePh',
+  },
+];
+
+/**
+ * The table columns, in display order.
+ *
+ * `alpha2_code` carries the flag, which is why its style is `icon_text_left`.
+ * The audit columns are hidden by default and offered through the column menu.
+ */
+export const countryColumns: readonly ColumnMeta[] = [
+  {
+    name: 'alpha2_code',
+    headerKey: 'country.colAlpha2Code',
+    style: 'icon_text_left',
+    hidden: false,
+    width: 80,
+    flag: true,
+  },
+  {
+    name: 'alpha3_code',
+    headerKey: 'country.colAlpha3Code',
+    style: 'text_left',
+    hidden: false,
+    width: 80,
+  },
+  {
+    name: 'numeric_code',
+    headerKey: 'country.colNumericCode',
+    style: 'mono_left',
+    hidden: false,
+    width: 80,
+  },
+  {
+    name: 'name',
+    headerKey: 'country.colName',
+    style: 'text_left',
+    hidden: false,
+    width: 200,
+  },
+  {
+    name: 'official_name',
+    headerKey: 'country.colOfficialName',
+    style: 'text_left',
+    hidden: false,
+    width: 200,
+  },
+  {
+    name: 'version',
+    headerKey: 'country.colVersion',
+    style: 'mono_center',
+    hidden: true,
+    width: 80,
+  },
+  {
+    name: 'modified_by',
+    headerKey: 'country.colModifiedBy',
+    style: 'text_left',
+    hidden: true,
+    width: 120,
+  },
+  {
+    name: 'recorded_at',
+    headerKey: 'country.colRecordedAt',
+    style: 'mono_left',
+    hidden: true,
+    width: 150,
+  },
+];
+
+/**
+ * The collection name the list request uses, and the display field.
+ *
+ * Emitted so the sidebar and the lookup selects do not have to know it
+ * separately.
+ */
+export const countryMeta = {
+  entity: 'country',
+  collection: 'countries',
+  displayField: 'name',
+  keyField: 'alpha2_code',
+  columns: countryColumns,
+  fields: countryFields,
+} as const;
+#+end_src
+
+*** The hand-written overlay, beside it
+
+This is the whole of what remains manual, and =country_field_groups.ts= is the
+file the component specification calls the entity's only new file.
+
+#+begin_src ts
+import type { FieldGroup } from '../../ui-contract.js';
+
+/**
+ * How a country's fields are grouped into tabs.
+ *
+ * Order matters: the groups are shown in this order, `general` first, and
+ * Provenance is appended by the shared detail screen rather than listed here.
+ */
+export const countryFieldGroups: readonly FieldGroup[] = [
+  {
+    id: 'general',
+    titleKey: 'entity.general',
+    fields: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name'],
+  },
+];
+#+end_src
+
+Nothing else is written for a country. The list screen, the detail screen, the
+table, the form and the history screen are the shared ones.
+
+** 3.2 Worked example: the awkward constructs
+
+Country is flat, so it does not show the constructs that make a generator worth
+having. These fragments are from an account-shaped entity and are the cases the
+template must handle beyond strings. Emitted into the same file, in the same two
+arrays.
+
+#+begin_src ts
+// A static combo: the options are declared, so they come from the model.
+{
+  name: 'account_type',
+  labelKey: 'account.fldType',
+  control: 'static_combo',
+  required: true,
+  isKey: false,
+  nullable: false,
+  readOnlyAfterCreate: true,   // changing what a record is changes what it means
+  options: [
+    { value: 'user', labelKey: 'account.type.user' },
+    { value: 'service', labelKey: 'account.type.service' },
+    { value: 'algorithm', labelKey: 'account.type.algorithm' },
+    { value: 'llm', labelKey: 'account.type.llm' },
+  ],
+},
+
+// A dynamic combo: the options are fetched, so the declaration names the source.
+{
+  name: 'default_party_id',
+  labelKey: 'account.fldDefaultParty',
+  control: 'dynamic_combo',
+  required: false,
+  isKey: false,
+  nullable: true,
+  lookup: { collection: 'parties', valueField: 'id', labelField: 'full_name' },
+},
+
+// A nullable checkbox: "not set" is a third state, distinct from false.
+{
+  name: 'is_locked',
+  labelKey: 'account.fldLocked',
+  control: 'check_box',
+  required: false,
+  isKey: false,
+  nullable: true,
+  triState: true,
+},
+
+// A bounded number.
+{
+  name: 'failed_login_count',
+  labelKey: 'account.fldFailedLogins',
+  control: 'spin_box',
+  required: false,
+  isKey: false,
+  nullable: false,
+  min: 0,
+  max: 9999,
+},
+
+// A column that renders as a pill, resolved against a code domain.
+{
+  name: 'account_type',
+  headerKey: 'account.colType',
+  style: 'badge_centered',
+  hidden: false,
+  width: 100,
+  codeDomain: 'account_type',
+},
+
+// A boolean column.
+{
+  name: 'is_locked',
+  headerKey: 'account.colLocked',
+  style: 'badge_centered',
+  hidden: false,
+  width: 90,
+  codeDomain: 'account_locked',
+},
+
+// A timestamp column, rendered relative with the exact value on hover.
+{
+  name: 'recorded_at',
+  headerKey: 'account.colRecorded',
+  style: 'mono_left',
+  hidden: true,
+  width: 150,
+  temporal: true,
+},
+#+end_src
+
+That is the complete vocabulary the generator has to emit. Anything that does not
+appear in these two examples should not be in the output, and if a model needs
+something that is not here, the contract gains a member rather than the template
+gaining a special case.
+
+/These examples compile./ They were checked against the contract in section 3.3
+under =strict=, =noUncheckedIndexedAccess= and =exactOptionalPropertyTypes=, with
+no DOM library loaded, so the fragment above is real TypeScript and not only a
+sketch. A template producing this output will satisfy the first of the three
+checks in section 7 before it is even generated.
+
+** 3.3 The TypeScript contract
+
+Written here so the emitted shape and the consuming code agree. The consuming
+side declares these once, in =ui-contract.ts=, and the generated files import the
+two they need. That import is type-only, so it disappears at compile time and the
+generated file has no runtime dependency.
+
+#+begin_src ts
+/** How a cell is rendered. The set is closed and matches the C++ column styles. */
+export type ColumnStyle =
+  | 'text_left'
+  | 'text_center'
+  | 'mono_left'
+  | 'mono_center'
+  | 'mono_bold_left'
+  | 'mono_right'
+  | 'mono_bold_center'
+  | 'icon_centered'
+  | 'icon_text_left'
+  | 'badge_centered';
+
+/** How a field is edited. The set is closed and matches the model's widget types. */
+export type FieldControl =
+  | 'line_edit'
+  | 'text_edit'
+  | 'static_combo'
+  | 'dynamic_combo'
+  | 'flagged_combo'
+  | 'check_box'
+  | 'spin_box'
+  | 'colour'
+  | 'date';
+
+export interface ColumnMeta {
+  /** The wire field name, which is the key the row object holds. */
+  readonly name: string;
+  /** Translation key for the header. */
+  readonly headerKey: string;
+  readonly style: ColumnStyle;
+  /** Hidden by default, available through the column menu. */
+  readonly hidden: boolean;
+  /** A width hint in pixels. The user's own resize wins. */
+  readonly width?: number;
+  /**
+   * The code domain a pill resolves against, for `badge_centered`. The shared
+   * table looks the display text and colour up rather than the model carrying
+   * them, so a rebranded badge changes in one place.
+   */
+  readonly codeDomain?: string;
+  /** True when the cell renders a flag. */
+  readonly flag?: boolean;
+  /** True when the value is a timestamp, so the cell renders it relatively. */
+  readonly temporal?: boolean;
+}
+
+export interface FieldOption {
+  /** The stored value. */
+  readonly value: string;
+  /** Translation key for what the person sees. */
+  readonly labelKey: string;
+}
+
+/** Where a foreign key's options come from. */
+export interface LookupSource {
+  /** The collection to fetch. */
+  readonly collection: string;
+  /** The field holding the stored value. */
+  readonly valueField: string;
+  /** The field holding the display text. */
+  readonly labelField: string;
+}
+
+export interface FieldMeta {
+  /** The wire field name. */
+  readonly name: string;
+  /** Translation key for the label. */
+  readonly labelKey: string;
+  readonly control: FieldControl;
+  /** A value must be supplied. */
+  readonly required: boolean;
+  /** The natural key. */
+  readonly isKey: boolean;
+  /** The field may hold no value. */
+  readonly nullable: boolean;
+  /** Translation key for the placeholder, when the model gives one. */
+  readonly placeholderKey?: string;
+  /** Translation key for a hint below the control. */
+  readonly hintKey?: string;
+  /** Editable when creating, read-only afterwards. */
+  readonly readOnlyAfterCreate?: boolean;
+  /** For `check_box`: allow a "not set" state distinct from false. */
+  readonly triState?: boolean;
+  /** For `static_combo`: the declared options. */
+  readonly options?: readonly FieldOption[];
+  /** For `dynamic_combo` and `flagged_combo`: where the options come from. */
+  readonly lookup?: LookupSource;
+  /** For `spin_box`. */
+  readonly min?: number;
+  readonly max?: number;
+  /** For a field whose value is a code resolved to a pill or a flag. */
+  readonly codeDomain?: string;
+  /** For a text field with a known limit. */
+  readonly maxLength?: number;
+}
+
+/**
+ * One tab of a detail screen.
+ *
+ * Not generated: which fields belong together is a domain judgement the model
+ * does not carry. This is the shape of the hand-written overlay.
+ */
+export interface FieldGroup {
+  readonly id: string;
+  /** Translation key for the tab's label. */
+  readonly titleKey: string;
+  /** Field names, in the order they appear within the group. */
+  readonly fields: readonly string[];
+}
+
+/** The per-entity bundle, so the registry has one thing to hold. */
+export interface EntityMeta {
+  readonly entity: string;
+  readonly collection: string;
+  /** The field a person recognises a record by. */
+  readonly displayField: string;
+  /** The natural key. */
+  readonly keyField: string;
+  readonly columns: readonly ColumnMeta[];
+  readonly fields: readonly FieldMeta[];
+}
+#+end_src
+
+The contract is deliberately small. Everything in it is used by the shared table
+or the shared form; nothing is there for a component to read directly. If a
+generated member is not consumed by shared code, it should not be emitted.
+
+** 3.4 The derivation rules
+
+These are the rules the generator applies. Each is decidable from the model, so
+none of them is a judgement call at generation time.
+
+/Columns/
+
+| Input | Output |
+|---+---|
+| One row per =*** Columns= entry, in table order | One =accountColumns= entry, in the same order |
+| =field= | =name= |
+| =header= | =headerKey=, derived as =<entityCamel>.<enumNameCamel>= for now, see §4 |
+| =type= string / =column_style= | =style=, using the mapping in §3.4 |
+| =width= | =width= |
+| The entity's hidden-by-default set | =hidden= |
+
+/Fields/
+
+| Input | Output |
+|---+---|
+| One row per =*** Detail fields= entry, in table order | One =accountFields= entry, in the same order |
+| =field= | =name= |
+| =label= | =labelKey=, see §4 |
+| =widget= / =type= | =control=, using the mapping in §3.4 |
+| =is_required= | =required= |
+| =is_key= | =isKey=, and =readOnlyAfterCreate: true= |
+| =nullable= | =nullable= |
+| =placeholder= | =placeholderKey=, see §4 |
+| A =dynamic_combo= field | =lookup=, from the model's fetch or collection |
+| A =static_combo= field | =options=, from the model's enum or item list |
+
+/Members that are always present./ =id=, =version=, =tenant_id=,
+=change_reason_code=, =change_commentary=, =modified_by=, =performed_by= and
+=recorded_at= are part of every entity. They must not be emitted as editable
+fields; =version=, =modified_by=, =performed_by=, =recorded_at= and the audit pair
+belong in the columns, hidden by default, and in the read-only Provenance panel,
+which the shared code renders from the protocol type rather than from this file.
+
+** 3.5 The mappings
+
+The C++ side has these mappings already, in the Qt archetypes and in the codegen's
+own style derivation. The generator must use the same ones so the two projections
+agree.
+
+| Column type or style | Emitted =style= |
+|---+---|
+| Integer | =mono_center= |
+| Badge, or a column with a self colour | =badge_centered= |
+| A column with an icon or flag | =icon_text_left= |
+| A UUID | =mono_left= |
+| A timestamp | =mono_left= |
+| A string | =text_left= |
+
+| Widget or type | Emitted =control= |
+|---+---|
+| =line_edit= | =line_edit= |
+| =text_edit= | =text_edit= |
+| =static_combo= | =static_combo= |
+| =dynamic_combo= | =dynamic_combo= |
+| =flagged_combo= | =flagged_combo= |
+| =check_box= | =check_box= |
+| =spin_box= | =spin_box= |
+| =colour= | =colour= |
+| =date= | =date= |
+
+* 4. Labels are keys, and that is the hard part
+
+/The decision./ The generator emits translation keys rather than English
+labels, because the interface ships in English, Portuguese and French from the
+beginning, and a generated English label cannot be translated without being
+overwritten on the next generation.
+
+/The consequence./ The key set must be derivable, so that regeneration does not
+invent new keys. Two options, in order of preference.
+
+/Preferred: derive the key from the model./ The codegen already has
+=placeholder_key=, which means keys are a concept it understands. If a
+=label_key= and =header_key= can be derived the same way, the model needs no
+change beyond supplying the base, and the emitted keys are stable forever.
+
+The convention to emit is:
+
+#+begin_src text
+<entityCamel>.<memberCamel>
+#+end_src
+
+with a small set of well-known prefixes:
+
+| Member kind | Key shape | Example |
+|---+---+---|
+| A field label | =<entity>.fld<Member>= | =account.fldFullName= |
+| A column header | =<entity>.col<Member>= | =account.colFullName= |
+| A placeholder | =<entity>.<member>Ph= | =account.fullNamePh= |
+| A combo option | =<entity>.type.<value>= | =account.type.service= |
+
+/Fallback: emit the English label alongside the key./ If deriving the key is
+not possible without guessing, emit both:
+
+#+begin_src ts
+{ name: 'full_name', labelKey: 'account.fldFullName', label: 'Full name', … }
+#+end_src
+
+The consuming side then has the English text the model already had, and the key
+set can be extracted from the generated files by a script rather than by hand.
+This is worse, because two sources of truth exist for a moment, but it is better
+than blocking on key derivation.
+
+/Whichever is chosen must be stated in the emitted file's header comment/, so
+the next person does not have to infer it.
+
+* 4b. Fields the server owns
+
+Every entity carries fields the service overwrites on write: the tenant, the
+actors, the timestamp. The generated declaration must not present them as
+editable, and the generated write path must not send them empty.
+
+The second half is the trap. The request is decoded before the service's
+authorisation runs, so a field that does not parse fails the whole request, and a
+create has no tenant and no timestamp to send. The service rejects it as an
+unexplained refusal, which from the client is indistinguishable from a missing
+permission.
+
+So the generated write path needs a well-formed placeholder for each server-owned
+field, or the BFF needs to supply one from the session. Either is fine; silence is
+not, and this is the kind of thing that costs a day per entity if it is discovered
+per entity.
+
+* 5. What must not be generated
+
+Stated explicitly, because a generator that overreaches is harder to work with
+than one that underreaches.
+
+/Field groups./ Which fields belong together in a named tab, and the group's
+heading, is a domain judgement. The org models do not carry it, and deriving it
+from the table order would produce arbitrary groups. It stays hand-written in a
+small overlay file per entity.
+
+/The entity's one-sentence description./ It is prose. If a =description= exists
+on the entity in the model, emit it as =descriptionKey=; otherwise the consuming
+side writes it.
+
+/Anything requiring a decision./ If the generator would have to choose, it
+should emit nothing and let the overlay supply it, rather than choosing a default
+that a hundred entities then inherit.
+
+* 6. Constraints on the output
+
+/Purely additive./ A new facet page and one archetype. No change to
+=ores.ts.protocol=, to the C++ facets, or to the Qt facets. The TypeScript UI
+and the Qt UI may coexist while the port is in progress, and neither may disturb
+the other.
+
+/Deterministic./ Regenerating an unchanged model must produce a byte-identical
+file, so a regeneration with no model change shows no diff.
+
+/No runtime imports./ The file is data, and it must not import the protocol
+types, because the declaration is consumed by the registry and by tests that have
+no transport. One type-only import of =ColumnMeta= and =FieldMeta= from
+=ui-contract.ts= is expected, and is what makes the emitted file checked against
+the contract rather than merely resembling it.
+
+/Both model shapes./ The facet declares =#+model_types:= matching whatever the
+existing TypeScript facet targets, plus the entity shapes that have =Columns= and
+=Detail fields= tables, which is 110 and 87 models respectively at this writing.
+Whether a model lacking those tables fails loudly or emits an empty declaration is
+the implementer's call; silently emitting nothing is the one wrong answer.
+
+/The output path is the contract./ ={component}= and ={entity}=, matching the
+existing protocol facet's ={component}/protocol/{entity}_protocol.ts=, landing
+beside it:
+
+#+begin_src text
+projects/ores.typescript/src/{component}/ui/{entity}_ui.ts
+#+end_src
+
+* 7. How it will be verified
+
+From the consuming side, three checks. They are stated so the implementer knows
+what will be run against the output rather than discovering it later.
+
+1. /The generated TypeScript compiles/ under the strict settings the existing    =ores.typescript= package already uses: =strict=, =noUncheckedIndexedAccess=,    =noEmit=. 2. /Every =labelKey=, =headerKey=, =placeholderKey= and option =labelKey= is a    key that exists in the English catalogue/, and every catalogue key that names    a field corresponds to a generated field. This is the check that keeps    translation honest, and it only works if the keys are derived rather than    invented. 3. /Two regenerations produce no diff/, proving determinism.
+
+An entity from the generated standard is the test case, not accounts. Accounts is
+the legacy hand-written screen with a six-tab dialog that does not map onto field
+groups, so it is a misleading sample. Country is the reference the C++ side
+already uses.
+
+* 8. What the consuming side does with it
+
+So the shape can be judged against its use, and changed now rather than after it
+is built on.
+
+#+begin_src ts
+// The registry entry refers to the generated declaration.
+import { accountColumns, accountFields } from '@ores/wire-protocol/generated/iam/ui/account_ui.js';
+
+// The shared table is driven by the columns.
+<DataTable columns={accountColumns} rows={accounts} />
+
+// The shared form is driven by the fields, with the overlay supplying grouping.
+<EntityForm fields={accountFields} groups={accountFieldGroups} />
+#+end_src
+
+=accountFieldGroups= is the hand-written overlay: an ordered list of group keys,
+each naming the fields it contains. That is the whole of what remains manual, and
+it is about five lines per entity.

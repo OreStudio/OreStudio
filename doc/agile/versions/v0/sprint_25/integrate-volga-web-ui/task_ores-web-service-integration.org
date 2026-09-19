@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: C2CA0605-93F7-40EA-9458-3EDCE39BB85A
+:END:
+#+title: Task: Add the ores.web service to the services subsystem
+#+description: Declare ores.web as a service so that compass services start launches it, assign it a port inside the environment port range, and wire its environment through the environment mapper.
+#+type: task
+#+level: s1
+#+filetags: :integrate-volga-web-ui:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass services start launches the ores.web web interface on a port inside the environment range, and compass services status reports it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- compass services start installs and starts the ores.web unit.
+- The service port sits inside the environment port range.
+- The unit reads its configuration through the environment mapper.
+- compass services status lists ores.web.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Wired. =ORES_WEB_PORT= is offset 2 of the environment block — the slot the
+retired Wt client held — and =compass env configure= emits it together with
+=ORES_WEB_BFF_HOST=, the interface the BFF binds.
+
+=ores.web.service= is in =projects/modeling/service_registry.org= with two
+new properties, =:runtime: node= and =:entry_point:=, which the org loader
+carries and =systemd_generate= renders as a =Type=simple= unit. The unit runs
+the built BFF from the component directory, appends its output to the log
+file =compass services start= polls for readiness, exports the service's own
+NATS certificate over the shared identity in =.env=, and joins
+=ores-<env>.target=. =nats_certs= generates its certificate, and
+=projects/ores.web/CMakeLists.txt= builds the component so the unit finds a
+built BFF.
+
+Verified end to end in the sandbox once =~/.config/systemd/user= became
+writable: the units deploy, and =compass services status --use-busctl= reports
+all 24 units running, including =ores.web.service-eager_maxwell=, which serves
+the bundle and the API on 21402 and answers a bad credential with 401 against
+IAM over mTLS.
+
+The sandbox's user namespace makes the manager refuse =systemctl=, so compass
+grew =--use-busctl=, which reaches the same manager over the session bus. That
+transport is covered by =tests/test_systemctl_bus.py=, and the unit rendering
+by =tests/test_systemd_generate.py=.
+
+=compass services= gained an optional per-service selector on =start=, =stop=,
+=restart= and =status= while this was verified, so the interface can be
+cycled on its own without bouncing the other 23 units.

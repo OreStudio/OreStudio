@@ -243,12 +243,6 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::sessions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::accounts:read');
 
-    -- Wt web service: browser UI that validates sessions and calls domain services via NATS
-    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'WtService', 'Wt web application — session validation and domain gateway');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'WtService', 'iam::tenants:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'WtService', 'iam::sessions:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'WtService', 'iam::accounts:read');
-
     -- Compute Wrapper service: worker that processes compute jobs from JetStream
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'compute::*');

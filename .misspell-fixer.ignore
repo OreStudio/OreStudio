@@ -6,4 +6,4 @@
 ^./projects/ores.org-js/graph
 ^./projects/ores.compass/venv
 ^./projects/ores.codegen/venv
-^./projects/ores.typescript/node_modules
+^./projects/ores.web/node_modules

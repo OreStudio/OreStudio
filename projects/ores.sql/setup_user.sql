@@ -33,7 +33,6 @@
  *     -v service_role='ores_local2_service' \
  *     -v ddl_user='ores_local2_ddl_user' \
  *     -v cli_user='ores_local2_cli_user' \
- *     -v wt_user='ores_local2_wt_user' \
  *     -v shell_user='ores_local2_shell_user' \
  *     -v http_user='ores_local2_http_user' \
  *     -v test_ddl_user='ores_local2_test_ddl_user' \
@@ -53,7 +52,6 @@
  *     -v workflow_service_user='ores_local2_workflow_service' \
  *     -v ddl_password='DDL_PASSWORD' \
  *     -v cli_password='CLI_PASSWORD' \
- *     -v wt_password='WT_PASSWORD' \
  *     -v shell_password='SHELL_PASSWORD' \
  *     -v http_password='HTTP_PASSWORD' \
  *     -v test_ddl_password='TEST_DDL_PASSWORD' \
@@ -116,18 +114,6 @@
 \if :{?cli_password}
 \else
     \echo 'ERROR: cli_password variable is required for CLI service.'
-    \quit
-\endif
-
-\if :{?wt_user}
-\else
-    \echo 'ERROR: wt_user variable is required.'
-    \quit
-\endif
-
-\if :{?wt_password}
-\else
-    \echo 'ERROR: wt_password variable is required for Web Toolkit service.'
     \quit
 \endif
 
@@ -349,7 +335,6 @@ create role :service_role nologin;
 -- Application-layer users retain broad rw_role access.
 create user :ddl_user      with password :'ddl_password'      in role :owner_role;
 create user :cli_user      with password :'cli_password'      in role :rw_role;
-create user :wt_user       with password :'wt_password'       in role :rw_role;
 create user :shell_user    with password :'shell_password'    in role :rw_role;
 create user :http_user     with password :'http_password'     in role :rw_role;
 -- Domain service users: no broad role — specific table GRANTs applied in
@@ -388,7 +373,6 @@ create user :readonly_user with password :'ro_password'       in role :ro_role;
 -- Set default search_path for all users
 alter role :ddl_user              set search_path to public;
 alter role :cli_user              set search_path to public;
-alter role :wt_user               set search_path to public;
 alter role :shell_user            set search_path to public;
 alter role :iam_service_user      set search_path to public;
 alter role :refdata_service_user  set search_path to public;

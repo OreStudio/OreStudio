@@ -1,0 +1,37 @@
+{
+  "name": "ores.web",
+  "version": "0.0.1",
+  "private": true,
+  "description": "TypeScript UI for ORE Studio. Web first, local desktop packaging deferred.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "start": "node --env-file=../../.env packages/bff/dist/main.js",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev": "npm run dev --workspace @ores/bff & npm run dev --workspace @ores/web",
+    "dev:bff": "npm run dev --workspace @ores/bff",
+    "dev:web": "npm run dev --workspace @ores/web",
+    "verify:login": "tsx scripts/verify-login.ts",
+    "seed:account": "bash scripts/seed-test-account.sh",
+    "ir:protocol": "python3 scripts/emit_protocol_ir.py --all --out .runtime/ir/protocol.ir.json",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/tsconfig.tsbuildinfo",
+    "verify:browser": "tsx scripts/verify-browser.ts",
+    "stack": "bash scripts/dev-stack.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "playwright": "^1.57.0",
+    "prettier": "3.9.8",
+    "tsx": "^4.23.13",
+    "typescript": "5.9.3"
+  }
+}

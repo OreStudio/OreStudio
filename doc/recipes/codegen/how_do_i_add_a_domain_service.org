@@ -63,8 +63,8 @@ all created consistently?
 | =compass env configure= | reads the registry to emit per-service =.env= credentials |
 | [[proj:projects/ores.lisp/src/ores-prodigy.el][=projects/ores.lisp/src/ores-prodigy.el=]] | derives the launch list from =ORES_*_SERVICE_DB_USER= in =.env= (downstream of =compass env configure=) |
 
-=wt_user= is intentionally /not/ in the registry — the role is
-provisioned by the hand-written SQL in
+=http_user= and =compute_wrapper_user= are intentionally /not/ in the
+registry — those roles are provisioned by the hand-written SQL in
 [[proj:projects/ores.sql/setup_user.sql][=projects/ores.sql/setup_user.sql=]], not by the =service-registry= profile.
 
 * Script

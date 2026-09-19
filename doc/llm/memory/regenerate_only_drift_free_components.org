@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E2D03F58-02F1-4CBF-A3BE-FD9522BDD2E4
+:END:
+#+title: Regenerate only the drift-free components, never with --all
+#+description: compass codegen regenerate --all rewrites every component, including those whose drift is untracked, and floods the working tree with output nobody has verified.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+Never run =compass codegen regenerate --all=. Regenerate only the components in =check_component_drift.py='s =KNOWN_DRIFT_FREE= registry, one =--component <slug>= at a time. Most components are not drift-free, and a full regeneration rewrites their generated output too.
+
+*Why:* Output from a component that is not drift-free cannot be verified: the drift gate does not cover it, so the regenerated files are unverified noise that buries the intended change and inflates the diff.
+
+*How to apply:* Read =KNOWN_DRIFT_FREE= in =projects/ores.codegen/scripts/check_component_drift.py= and loop =./compass.sh codegen regenerate --component <slug> --address <address>= over exactly those slugs. Confirm the target paths first with =--dry-run=.

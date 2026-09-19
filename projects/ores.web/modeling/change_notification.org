@@ -1,0 +1,271 @@
+:PROPERTIES:
+:ID: F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42
+:END:
+#+title: Change notification
+#+description: Change notification for the ORE Studio web UI: NATS events, the channel to the browser, payload shape, shared routed subscriptions, visual language, and what the interface must not do.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ores.web:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+What the interface does when the data underneath it moves.
+
+A list shows records somebody else may be editing. A form shows a record that may
+already have changed. Neither can be allowed to say something untrue, and neither
+may be reloaded out from under a person mid-sentence. This is the language for
+that, derived from what the Qt client does, written down so it is not reinvented
+per entity.
+
+* 1. What the Qt client does
+
+Worth stating because it is the accumulated answer, and because two of its three
+parts are right and the third is a gap.
+
+/The list marks itself stale./ When the server reports a change to the
+collection, the Reload action begins to pulse and its tooltip becomes "Data
+changed on server - click to reload". Nothing reloads on its own.
+
+/Changed rows are highlighted./ After a reload, rows whose =recorded_at= is
+newer than the previous reload are drawn in gold, and the highlight pulses six
+times at 500 ms. On the first load there is no baseline, so nothing is
+highlighted. The point is that a person watching a live system sees what changed
+without re-reading the table.
+
+/The detail form is not told./ A Qt dialog holding a record does not learn that
+the record changed elsewhere. Saving then either fails on the optimistic lock or,
+worse, overwrites. That is the gap, and this document closes it.
+
+* 2. The rules
+
+/Never reload on notification./ No screen refreshes because the server said
+something changed. A list that jumps while somebody is reading it is worse than a
+list that is briefly out of date, and a form that reloads discards what has been
+typed. The person decides when to bring changes in.
+
+/Notification is quiet, and it is in one place per screen./ A pulse on the
+reload affordance, and a mark on the records that moved. Not a toast, not a
+badge, not a sound. If a screen has a reload action, that action is where the news
+appears, because that is where the person would go to act on it.
+
+/A changed record is marked where it is./ In a list, the row is highlighted. In
+a detail screen, the record says that a newer version exists, and offers to load
+it. The mark is on the thing that changed, so a person does not have to work out
+which of forty rows is the one that moved.
+
+/A form that is being edited is never overwritten./ If the record changed while
+somebody was typing, the offer to load is visible but is not taken for them. What
+they typed is theirs until they discard it.
+
+/Saving into a stale record is refused, visibly./ The optimistic lock already
+refuses it. The screen's job is to have said so /before/ the save, so the refusal
+is a confirmation rather than a surprise.
+
+* 3. The three states
+
+| State | What it means | What the screen shows |
+|---+---+---|
+| /Current/ | Nothing has changed since the data was fetched | Nothing. Silence is the normal state |
+| /Stale/ | Something in this collection changed | The reload action pulses; its tooltip says what happened |
+| /Stale rows/ | These particular records changed | The rows are highlighted, and the highlight fades after a moment |
+
+A screen moves from current to stale, and stays there until the person reloads.
+It does not move back on its own, because the point of the mark is that it is
+still there when they look up.
+
+* 4. The TypeScript shape
+
+The parts, in the order data flows.
+
+** The events exist already
+
+The generator emits a changed event per entity — =country_changed_event= and its
+siblings — and the services publish them. They are not something the interface
+invents.
+
+** A channel to the browser
+
+The browser never reaches NATS, so the BFF carries the news. One long-lived stream
+per session, not one per screen: a screen opening and closing must not churn
+connections, and a person with six lists open wants one stream.
+
+#+begin_src text
+GET /api/events           text/event-stream
+#+end_src
+
+The envelope already exists in the protocol package. =session-expired= and
+=party-changed= are already defined and are this channel's business, because they
+are the same question asked by different parts of the interface. This adds one
+kind:
+
+#+begin_src ts
+{ event: 'entity-changed', data: { component, entity, at } }
+#+end_src
+
+** The payload is a time, not a list
+
+This is the decision that matters most, and it is the one that keeps a bulk import
+from becoming a denial of service on the interface.
+
+/A change notification says "this collection changed at time T". It does not say which records./ A person cannot act on a list of a thousand identifiers, and the interface cannot do anything with them that it cannot do better itself. What it actually needs to know is one thing: /is what I am showing older than what exists?/ A time answers that. A list does not.
+
+So the payload carries a watermark, and the client compares it against the time its
+data was loaded:
+
+#+begin_src text
+changed at 12:00:03  >  loaded at 11:59:58   →  stale
+changed at 11:59:41  >  loaded at 11:59:58   →  not stale, and nothing to do
+#+end_src
+
+/Coalescing falls out of that for free./ A thousand events from one import all
+carry a time after the client's load, so the first makes the screen stale and the
+remaining nine hundred and ninety-nine change nothing. They are not deduplicated
+by a special case; they are idempotent by construction. There is no ceiling to
+choose and no set to bound, because no set exists.
+
+/The rows that changed are worked out after the reload, not before it./ The
+client remembers when it last loaded, fetches, and marks the rows whose
+=recorded_at= is newer than that. This is what the Qt client does, and it is the
+only way to mark rows accurately: the events name a collection, so the records
+must be identified from the data rather than from the notification.
+
+** Subscriptions are shared, and routed
+
+One subscription per screen would be wrong twice over: a deployment with a hundred
+people watching accounts would open a hundred NATS subscriptions to the same
+subject, and every one of them would carry the same message.
+
+So a subscription is shared, keyed by the tenant and the entity, and the BFF keeps
+a map from that key to the sessions watching it:
+
+#+begin_src text
+  (tenant, component.entity)
+        │
+        ├── session A   ← has a list of countries open
+        ├── session B   ← has a list of countries open
+        └── session C   ← has a country open
+#+end_src
+
+/Keyed by tenant as well as entity, and that is not decoration./ Tenancy is the
+boundary the whole system is built on: a change in one tenant's accounts is not
+news in another's, and telling a session about it would leak the fact that it
+happened. Every subscription therefore carries the tenant of the sessions it
+serves, and a session is only ever routed news from its own.
+
+/Reference counted, and torn down when the last watcher goes./ The map entry
+exists while at least one session watches and is removed when the last one stops,
+so a subscription is not held open for an entity nobody is looking at. A person
+who navigates away stops watching that entity and keeps watching nothing else
+until they navigate somewhere that watches something.
+
+/A session watches what is on screen./ A list of countries watches =country=. A
+country's detail screen watches that record's entity, because the record it is
+showing is in it. A screen that watches nothing is not subscribed to anything, and
+that is the normal state of most of the interface.
+
+** What is out of scope, for now
+
+/Only the entity itself./ A change to a country is news to the country list. It
+is /also/ news to a book that references one, and to anything showing a country's
+name by lookup — and none of those are told, because the event names the entity
+that changed and not the entities that depend on it. This is the right thing to
+leave for later: the dependency graph is real, it is not derivable from the
+notification, and getting it wrong means a screen that refreshes constantly for
+reasons nobody can see.
+
+/It follows that a screen can be quietly out of date about something it shows by reference./ A book list showing a country's name will keep showing the old name until something else makes it reload. That is a known limitation rather than a bug, and it is recorded here so it is not mistaken for one later.
+
+** Subscribing per entity, in the interface
+
+#+begin_src ts
+// The list and the detail screen both use this, so both learn the same way.
+const { stale, markChanged, reload } = useEntityChanges('refdata', 'country');
+#+end_src
+
+=stale= is true once a watermark after the load has been seen, and stays true
+until the screen reloads. =markChanged(rows)= records which rows were newer than
+the previous load, so the table can mark them.
+
+** What the screen does with it
+
+#+begin_src tsx
+// The reload affordance carries the news.
+<Button
+  pending={stale}
+  onClick={reload}
+  title={stale ? t('entity.changed') : t('entity.refresh')}
+>
+  {t('entity.refresh')}
+</Button>
+
+// The rows that moved are marked, worked out from the reload, not from the event.
+<DataTable columns={meta.columns} rows={rows} changed={changedRowKeys} {...} />
+#+end_src
+
+=changed= on the table is a set of row keys, not a flag. A whole table flashing
+says nothing; the four rows that changed say everything — and they are the four
+the data says changed, which is the only account of it that can be trusted.
+
+* 5. The visual language
+
+Small, and the same everywhere, because a notification language that varies by
+screen is not a language.
+
+| Element | Treatment | Why |
+|---+---+---|
+| Reload affordance, stale | A slow pulse of its colour, repeating while stale | It is always in the same place, so a person learns one location |
+| Reload tooltip, stale | The words change to say what happened | A pulse says "look here"; the tooltip says why |
+| A changed row | Its background tinted for a few seconds, then faded | A permanent highlight becomes decoration; a fading one stays news |
+| A changed row, still stale | A left border in the same colour | The fade is for the moment; the border is for as long as it is true |
+| A detail screen whose record moved | A line above the form saying a newer version exists, with Load | The form cannot tint itself without hiding the fields |
+
+/Colour./ One accent for "changed", used only for this. It is not the colour
+used for errors, not the colour used for warnings, and not the accent used for
+primary actions, because a thing that means one thing must not mean four.
+
+/Motion./ A pulse is slow — around two seconds a cycle — and stops. A fast pulse
+reads as an error, and a pulse that never stops becomes wallpaper within a day.
+
+/Reduced motion./ A person who has asked their system for less motion gets the
+colour and the border and no pulse. The information is the same; only the
+movement is dropped.
+
+* 6. What the interface must not do
+
+Recorded because each is the tempting shortcut.
+
+/Reload the list automatically./ Discards scroll position, and any selection.
+The Qt client got this right by not doing it.
+
+/Show a toast per change./ A busy system produces a stream of them, and a toast
+that cannot be dismissed is a toast that is ignored.
+
+/Reload the detail form./ It discards what has been typed, and there is no
+undo.
+
+/Reload the list while a row's menu is open/, or while a dialog is up. The
+person is mid-action on a specific record, and the row under their cursor moving
+is the worst moment to move it. Deferred, not dropped: the news is still there
+when the dialog closes.
+
+/Mark a row that did not change./ A whole-table flash is the same as no flash,
+and it teaches people to ignore the mark.
+
+* 7. Open questions
+
+Named rather than assumed, because they change the shape.
+
+/Does the BFF subscribe per session, or once per deployment?/ One subscription
+per session is simpler and costs a fan-out; one per deployment needs a registry of
+who is watching what. The first is right until the number of sessions is large.
+
+/How are changes to something a screen is not showing handled?/ A country
+referenced by a book, changed while somebody is editing the book. The event names
+the country; the book screen is affected and is not watching countries. Out of
+scope for now, as above, and the dependency graph is the work.
+
+/How long does a watcher survive?/ A session that navigates away stops
+watching, but a session that is idle with a list open keeps its subscription
+alive. Whether an idle session should keep one open, and for how long, is a
+question about cost rather than correctness; the honest default is to keep it,
+because tearing it down and back up is how a screen ends up missing a change.

@@ -1,0 +1,12 @@
+# Local runtime state. NATS configuration, service logs, seeded artefacts and
+# the generated protocol IR all live here and none of it is source.
+.runtime/
+
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Environment files carry credentials and must never be committed.
+.env
+.env.*
+!.env.example

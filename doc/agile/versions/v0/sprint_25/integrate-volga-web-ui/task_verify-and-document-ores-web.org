@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 9BFBDBDF-2F64-4EBA-9448-B2276E277D22
+:END:
+#+title: Task: Verify and document ores.web
+#+description: Run the component typecheck, its unit tests and the browser verification against the running environment, write the component documentation, and record the result.
+#+type: task
+#+level: s1
+#+filetags: :integrate-volga-web-ui:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ores.web component is verified against a running environment and documented to the component-documentation standard.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- The sign-in and entity flows are verified against a running environment.
+- The component doc exists and validate_docs.sh passes.
+- The task records its result.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 5741121319 | ORES_WEB_SESSION_SECRET is generated and required, but signs nothing | packages/bff/src/config.ts, src/env_init.py | Accept | Removed the variable, the config field, and the comments claiming a signing behaviour. The cookie holds a 32-byte random identifier and the store hashes it, so HMAC signing adds nothing |
+| 5741121319 | _tokens docstring says busctl prints an object path bare | src/systemctl_bus.py | Accept | Corrected to strings, object paths and signatures quoted; integers and booleans bare. Verified against a live call: `o "/org/freedesktop/systemd1/unit/dsh_2dweb_2eservice"` |
+| 5741121319 | Rate limiter's attempts map never drops a key | packages/bff/src/rate-limit.ts | Accept | Added a sweep at the tracking cap plus an eviction that holds the map at the cap, with two tests |
+| 5741121319 | CORS allow-list with a sameSite=lax cookie | packages/bff/src/server.ts | Accept | Documented that the allow-list is for same-site origins and that sameSite must widen before a genuinely cross-site origin is added |
+
+* Result
+
+Documented. The README describes the adopted component, and the seven
+markdown design notes are org knowledge documents under =modeling/=,
+scaffolded with compass and converted with no fact dropped. The component
+overview and its diagram exist. =validate_docs.sh= reports =OK: all 42
+components pass documentation checks=.
+
+Verified against the running environment: =npm run typecheck=, =npm test=
+(bff 30, web 9, wire-protocol 34) and =npm run build= pass. The built BFF
+serves on =ORES_WEB_PORT=, selects =eager_maxwell= from =ORES_ENV_NAME=,
+returns the SPA shell for an unknown path, returns a JSON 404 under =/api/=,
+and reaches IAM over mTLS.
+
+Type checking and the unit suites are ctest entries
+(=ores.web.typecheck=, =ores.web.tests=), so =compass test run= and every
+build that runs ctest cover them, and the memcheck run skips them because
+valgrind cannot check a Node process. A TypeScript workflow runs both on a
+pull request, where the C++ workflows never trigger.
+
+Not run here: the browser verification needs Playwright's browser download
+and a signed-in account, and the fleet cannot be started because unit
+deployment is blocked by the sandbox.

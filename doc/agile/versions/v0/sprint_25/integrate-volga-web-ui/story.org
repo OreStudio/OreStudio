@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488
+:END:
+#+title: Story: Integrate the Volga TypeScript UI as ores.web
+#+description: Adopt the Volga TypeScript web-UI prototype as the projects/ores.web component, generate its TypeScript from ores.codegen instead of copying it by hand, retire projects/ores.typescript, and add the component to the services subsystem with a port inside the environment range.
+#+type: story
+#+level: s2
+#+filetags: :ui:web:typescript:codegen:services:volga:sprint_25:v0:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Volga prototype is a TypeScript web interface for ORE Studio. It lives outside the repository, and it copies the codegen TypeScript output by hand. This story adopts it as projects/ores.web, generates its TypeScript from ores.codegen, retires projects/ores.typescript, and adds the component to the services subsystem so that compass services start launches the web interface on a port inside the environment range.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | All four tasks are done; PR #2108 is open. |
+| Waiting on    | Review and CI.                         |
+| Next          | Address the review, then merge and retire =projects/ores.web/doc= remnants. |
+| Last touched  | 2026-09-19                               |
+
+* Acceptance
+
+- =projects/ores.web= holds the prototype, renamed to ORE Studio conventions.
+- =ores.codegen= writes the TypeScript into =projects/ores.web=, and =projects/ores.typescript= is removed.
+- A check proves that the generated TypeScript is in step with the org model.
+- =compass services start= launches the =ores.web= service with a port inside the environment range.
+- The component typechecks, and its tests pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:57323233-C2BA-459A-BC19-94D4FDA0849A][Adopt the Volga prototype as projects/ores.web]] | DONE | 2026-09-19 | 2026-09-19 | Copy the Volga TypeScript web UI into projects/ores.web, rename it to ORE Studio conventions, remove the committed build artefacts and secrets, add the licence headers, and declare the component in the build. |
+| [[id:801A1954-2E68-40D1-BA95-E171B64576EA][Generate the ores.web TypeScript from ores.codegen]] | DONE | | 2026-09-19 | Retarget the ores.codegen TypeScript output to projects/ores.web, delete the hand-copied generated files and the ores.typescript component, and add a check that proves the generated TypeScript is in step with the org model. |
+| [[id:C2CA0605-93F7-40EA-9458-3EDCE39BB85A][Add the ores.web service to the services subsystem]] | DONE | | 2026-09-19 | Declare ores.web as a service so that compass services start launches it, assign it a port inside the environment port range, and wire its environment through the environment mapper. |
+| [[id:9BFBDBDF-2F64-4EBA-9448-B2276E277D22][Verify and document ores.web]] | DONE | | 2026-09-19 | Run the component typecheck, its unit tests and the browser verification against the running environment, write the component documentation, and record the result. |
+
+* Decisions
+
+- *One listener, one port.* The environment block allocates a fixed set of
+  ports per environment and expects one port per service. The BFF therefore
+  serves the built browser bundle and the API on =ORES_WEB_PORT=, and Vite
+  stays a development-only tool on =ORES_WEB_DEV_PORT=. Two processes would
+  have spent two offsets and added a cross-unit start ordering for no gain.
+- *The port is the retired Wt slot.* =ORES_WEB_PORT= is offset 2 of
+  =ORES_BASE_PORT=, which the removed Wt client held; offsets 0, 1, 4, 5 and 6
+  stay as they are, so no live environment is renumbered.
+- *The service is a registry entry, not a wrapper.* =systemd_generate= gains
+  a =node= runtime and renders =Type=simple= itself, rather than calling a
+  shell shim dropped into =publish/bin= by hand. The same model property is
+  what a future macOS or Windows generator would read.
+- *The generated tree holds only generated files.* The hand-written
+  =ui-contract.ts= moved out of =src/generated/= to =packages/web/src/=, so a
+  wholesale codegen clean cannot delete it and a drift check cannot mistake it
+  for output.
+- *Only the drift-free components emit committed output.* A full
+  regeneration also produces UI metadata for =dq=, =scheduler= and =trading=,
+  which =check_component_drift.py='s registry does not cover, so that output
+  could not be verified. The committed tree therefore holds exactly what the
+  gate reproduces — the 90 UI modules and the 6 protocol modules — and
+  regeneration runs once per =KNOWN_DRIFT_FREE= slug rather than with
+  =--all=. Widening the registry stays follow-up, because it would also
+  enforce C++ and SQL drift those components have never been checked for.
+
+* Out of scope
+
+-

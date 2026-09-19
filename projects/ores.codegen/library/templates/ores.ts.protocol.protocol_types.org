@@ -4,7 +4,7 @@
 #+title: ores.ts.protocol.protocol_types
 #+description: Wire payload interfaces and NATS subject constants for one protocol.
 #+type: archetype
-#+output: projects/ores.typescript/src/{component}/protocol/{entity}_protocol.ts
+#+output: projects/ores.web/packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts
 #+facet: ores.ts.protocol
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

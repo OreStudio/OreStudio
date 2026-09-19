@@ -2,7 +2,7 @@
 :ID: C635D9E4-C934-4BBF-A5CA-D81DEC345FFD
 :END:
 #+title: ores.doc.modeling.service_registry
-#+description: Codegen service-registry model: catalogue of backend services and fleet processes, each with two independent optional aspects -- DB access (psql var, IAM role, DML grant prefixes) and deployment (replicas, enabled, dependencies, extra CLI args). One top-level section per service.
+#+description: Codegen service-registry model: catalogue of backend services and fleet processes, each with two independent optional aspects -- DB access (psql var, IAM role, DML grant prefixes) and deployment (replicas, enabled, dependencies, execution runtime, extra CLI args). One top-level section per service.
 #+type: archetype
 #+facet: ores.doc.modeling
 #+level: cross
@@ -15,10 +15,16 @@ heading is one entry with two independent, both-optional aspects: DB access
 (connection variables, IAM role, and the DML/select/execute prefixes the SQL
 GRANT generator uses to build per-service =GRANT= statements -- only for
 entries with their own NATS-domain-service role) and deployment (replica
-count, enabled flag, startup dependencies, and per-service CLI flags that
-=compass systemd generate= uses to render one concrete unit per service).
-Every entry needs the deployment aspect; not every entry needs the DB-access
-one.
+count, enabled flag, startup dependencies, execution runtime, and per-service
+CLI flags that =compass systemd generate= uses to render one concrete unit per
+service). Every entry needs the deployment aspect; not every entry needs the
+DB-access one.
+
+The execution runtime is =native= for a compiled binary, the default, or
+=node= for a TypeScript service. A =node= entry also declares an
+=entry_point= relative to its component directory, which is
+=projects/<service name without the .service suffix>=; the generator renders a
+=Type=simple= unit that runs the built entry point with the Node interpreter.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] and [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]]
 for the complete schema.
@@ -53,6 +59,7 @@ The full template source. Edit here and re-tangle with
 :replicas:    1
 :enabled:     true
 :depends_on:  ores.iam.service
+:runtime:     native
 :END:
 
 ,** DML prefixes

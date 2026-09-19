@@ -1,0 +1,28 @@
+{
+  "name": "@ores/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The HTTP contracts shared by the BFF and the browser. One schema, parsed on both sides.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --build --force",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "vitest": "5.0.1"
+  }
+}

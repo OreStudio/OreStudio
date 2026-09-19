@@ -2,17 +2,17 @@
 :ID: D7DE4834-234A-43EA-B14B-20DB80E7B1B7
 :END:
 #+title: Other Technical Spaces
-#+description: ORE Studio's remaining technical spaces — CMake, Assets, Doc (codegen-supported) and Emacs Lisp, Python, JavaScript, XML/FPML (manually authored).
+#+description: ORE Studio's remaining technical spaces — CMake, Assets, Doc and TypeScript (codegen-supported) and Emacs Lisp, Python, JavaScript, XML/FPML (manually authored).
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:technical_space:codegen:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-09-19
 
-This document covers the [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical spaces]] beyond [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]] and [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]: three that
-are codegen-supported (CMake, Assets, Doc) and four that are manually
-authored (Emacs Lisp, Python, JavaScript, XML/FPML). For the MASD concepts
-see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
+This document covers the [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical spaces]] beyond [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]] and [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]: four that
+are codegen-supported (CMake, Assets, Doc, TypeScript) and four that are
+manually authored (Emacs Lisp, Python, JavaScript, XML/FPML). For the MASD
+concepts see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
 
 * Codegen-supported technical spaces
 
@@ -78,6 +78,29 @@ for each document type.
 | Template | =ores.doc.template= | [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] |
 
 All four are [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] of this technical space.
+
+** TypeScript Technical Space
+
+Component: =ores.web= (the browser interface).
+
+TypeScript implements the web interface. Most of the component is authored
+by hand: the BFF that holds the NATS connection and the session, the browser
+client, and the wire-protocol plumbing. Two families are generated instead,
+from the same org entity models that drive the C++ facets, so the two
+projections cannot drift:
+
+| Facet | Output |
+|-------+--------|
+| =ores.ts.ui= | =packages/web/src/generated/{component}/ui/{entity}_ui.ts= |
+| =ores.ts.protocol= | =packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts= |
+
+The generated tree is committed and covered by the codegen drift gate. A
+hand-written =packages/web/src/ui-contract.ts= holds the types both the
+generated modules and the screens are checked against.
+
+The component has no C++ parts, so it is not a compiled target.
+=projects/ores.web/CMakeLists.txt= only wires its npm build into the build,
+and =compass services start= launches the built BFF as =ores.web.service=.
 
 * Manually-authored technical spaces
 

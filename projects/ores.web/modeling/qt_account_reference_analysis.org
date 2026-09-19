@@ -1,0 +1,597 @@
+:PROPERTIES:
+:ID: 2BF2FFC1-B6A0-495E-9B14-E26ACF09EA55
+:END:
+#+title: Qt account screen: raw reference analysis
+#+description: Historical reference analysis of the removed Qt account screen: dialog structure, form fields, tabs, child tables, save and delete flows, audit fields, history dialog, validation, and per-entity variation.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ores.web:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+*Note (historical).* The Qt client that this analysis describes was removed in
+PR #2106. Nothing here describes code that still exists in the tree. Read it
+only for the behaviour it records, not as a description of the current codebase.
+
+This is the working analysis behind =entity_specification.org=, kept because it
+carries the exact file and line citations that the specification deliberately
+leaves out. Read the specification for the rules; come here to see where a rule
+came from, or to check one against the Qt source.
+
+It was produced by reading the C++ checkout and is a description of what is
+there, defects included. The specification is the one that decides what to
+build.
+
+* Standard CRUD Entity Detail Dialog — Exact Specification (account as reference)
+
+Source tree: =/mnt/development/OreStudio/ores_dev_festive_dijkstra= (read-only; nothing modified).
+
+* Source key (paths relative to repo root)
+
+| Token | Path |
+|---+---|
+| =DDB.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/DetailDialogBase.hpp= / =projects/ores.qt/api/src/DetailDialogBase.cpp= |
+| =CRD.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/ChangeReasonDialog.hpp= / =.../src/ChangeReasonDialog.cpp= |
+| =CRC.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/ChangeReasonCache.hpp= / =.../src/ChangeReasonCache.cpp= |
+| =ACC.hpp/.cpp/.ui= | =projects/ores.qt/iam/include/ores.qt/AccountDetailDialog.hpp= / =.../src/AccountDetailDialog.cpp= / =.../ui/AccountDetailDialog.ui= |
+| =ACH.hpp/.cpp/.ui= | =projects/ores.qt/iam/{include/ores.qt/AccountHistoryDialog.hpp, src/AccountHistoryDialog.cpp, ui/AccountHistoryDialog.ui}= |
+| =HDB.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/HistoryDialogBase.hpp= / =.../src/HistoryDialogBase.cpp= |
+| =HD.hpp/.cpp/.ui= | =projects/ores.qt/api/include/ores.qt/HistoryDialog.hpp= / =.../src/HistoryDialog.cpp= / =.../ui/HistoryDialog.ui= |
+| =CETW.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/ChildEntityTableWidget.hpp= / =.../src/ChildEntityTableWidget.cpp= |
+| =ACET.hpp/.cpp= | =projects/ores.qt/iam/include/ores.qt/AccountChildEntityTables.hpp= / =.../src/AccountChildEntityTables.cpp= |
+| =PW.hpp/.cpp/.ui= | =projects/ores.qt/api/{include/ores.qt/ProvenanceWidget.hpp, src/ProvenanceWidget.cpp, ui/ProvenanceWidget.ui}= |
+| =ACID.hpp/.cpp/.ui= | =projects/ores.qt/iam/{include/ores.qt/AccountContactInformationDetailDialog.hpp, src/AccountContactInformationDetailDialog.cpp, ui/AccountContactInformationDetailDialog.ui}= |
+| =T-cpp= | =projects/ores.codegen/library/templates/cpp_qt_detail_dialog.cpp.mustache= |
+| =T-hpp= | =projects/ores.codegen/library/templates/cpp_qt_detail_dialog.hpp.mustache= |
+| =T-ui= | =projects/ores.codegen/library/templates/qt_detail_dialog_ui.mustache= |
+| =MODEL= | =projects/ores.iam/modeling/ores.iam.account_contact_information.org= (example codegen-bound entity) |
+| =CTRL= | =projects/ores.qt/iam/src/AccountController.cpp= |
+| =MDIW= | =projects/ores.qt/iam/src/AccountMdiWindow.cpp= |
+| =ACCT.hpp= | =projects/ores.iam/api/include/ores.iam.api/domain/account.hpp= |
+| =ACCTP.hpp= | =projects/ores.iam/api/include/ores.iam.api/messaging/account_protocol.hpp= |
+| =CRDOM.hpp= | =projects/ores.dq/api/include/ores.dq.api/domain/change_reason.hpp= |
+| =CRCONST.hpp= | =projects/ores.dq/api/include/ores.dq.api/domain/change_reason_constants.hpp= |
+| =MBH.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/MessageBoxHelper.hpp= / =.../src/MessageBoxHelper.cpp= |
+| =PMI.hpp/.cpp= | =projects/ores.qt/api/include/ores.qt/PasswordMatchIndicator.hpp= / =.../src/PasswordMatchIndicator.cpp= |
+| =WU.hpp= | =projects/ores.qt/api/include/ores.qt/WidgetUtils.hpp= |
+
+Base classes in the inheritance chain: =ores::qt::DetailDialogBase : public QWidget= (=DDB.hpp:84=); =ores::qt::HistoryDialogBase : public QWidget= (=HDB.hpp:75=); =AccountDetailDialog final : public DetailDialogBase= (=ACC.hpp:58=); =AccountHistoryDialog final : public HistoryDialogBase= (=ACH.hpp:40=). The generic =HistoryDialog final : public HistoryDialogBase= (=HD.hpp:53=). The dialog is /not/ a =QDialog=; it is a =QWidget= hosted inside a =DetachableMdiSubWindow= (=CTRL:326-328, 457-459=). Child CRUD dialogs are additionally wrapped in a throwaway =QDialog= wrapper to get modal =exec()= (=ACET.cpp:140-166, 203-225=).
+
+* 1. DIALOG STRUCTURE
+
+** 1.1 Root shell (account)
+
+| Element | Exact value | Citation |
+|---+---+---|
+| Top-level widget | =QWidget name="AccountDetailDialog"= | =ACC.ui:4= |
+| =windowTitle= | =Account Details= | =ACC.ui:25-27= |
+| =geometry= | width 600, height 700 | =ACC.ui:5-12= |
+| =minimumSize= | 600 × 500 | =ACC.ui:13-18= |
+| =sizePolicy= | =Preferred=/=Preferred=, stretch 0/0 | =ACC.ui:19-24= |
+| Root layout | =QVBoxLayout name="verticalLayout"= | =ACC.ui:28= |
+| Child 0 | =QTabWidget name="tabWidget"=, =currentIndex=0= | =ACC.ui:30-31= |
+| Child 1 | =QHBoxLayout name="buttonLayout"= | =ACC.ui:389= |
+
+Generated standard shell is identical (=T-ui:3-31=), except generated dialogs are 600×500 and window title ={{entity_title}} Details= (=T-ui:10-11, 26-28=).
+
+** 1.2 Runtime-inserted toolbar (hidden by default)
+
+The dialog builds its own top =QToolBar= and inserts it as layout widget 0 (=ACC.cpp:89-105=):
+
+#+begin_src text
+toolBar_ = new QToolBar(this);
+toolBar_->setMovable(false); toolBar_->setFloatable(false);
+revertAction_ = new QAction("Revert to this version", this);
+revertAction_->setToolTip("Revert account to this historical version");
+mainLayout->insertWidget(0, toolBar_);
+toolBar_->setVisible(false);
+#+end_src
+=ACC.cpp:89-105=. It becomes visible only in read-only/historical mode (=ACC.cpp:1093=). Generated dialogs with =has_version_navigation= additionally get =First=, =Previous=, =Next=, =Last= actions and a =Revert= action, all =setVisible(false)= until history mode (=T-cpp:152-205=).
+
+** 1.3 Button box
+
+Order in the layout is: horizontal spacer → /Delete/ → /Close/ → /Save/ (=ACC.ui:390-423=). Labels are exactly =Delete=, =Close=, =Save=; =Save= has =default=true= (=ACC.ui:419-421=). All three are =QPushButton= (=ACC.ui:401,408,415=). Icons are assigned at runtime:
+- Save ← =Icon::Save= (=ACC.cpp:108-109=)
+- Delete ← =Icon::Delete= (=ACC.cpp:111-112=)
+- Close ← =Icon::Dismiss= (=ACC.cpp:113-114=)
+
+Signals: Save→=onSaveClicked=, Delete→=onDeleteClicked=, Close→=onCloseClicked= (=ACC.cpp:115-117=). The generated standard is byte-identical in structure (=T-ui:221-261=) and the same icon wiring (=T-cpp:126-135=; AccountContactInformation: =ACID.cpp:88-98=).
+
+** 1.4 Add mode vs edit mode
+
+Mode is selected by =isAddMode_ = account.username.empty()= (=ACC.cpp:262-266=). =setCreateMode()= (=ACC.cpp:324-360=) applies:
+
+| Aspect | Create (add) | Edit |
+|---+---+---|
+| Title / container | =New Account= (=CTRL:461-462=) | =Account: %1= (=CTRL:464-466=) |
+| =usernameEdit= | editable (=setReadOnly(false)=) | read-only (=setReadOnly(true)=) — =ACC.cpp:328= |
+| =accountTypeCombo= | enabled, index 0 = "User" (=ACC.cpp:349-351=) | /disabled/ (=ACC.cpp:349=) |
+| Security tab (index 1) | enabled (=ACC.cpp:336-337=) | disabled |
+| Login Status tab (index 2) | disabled (=ACC.cpp:338-339=) | enabled |
+| Roles tab (index 3) | enabled (=ACC.cpp:340-341=) | enabled |
+| Parties tab (index 4) | enabled (pre-select allowed) (=ACC.cpp:342-345=) | enabled |
+| Provenance tab | disabled (=setProvenanceEnabled(!createMode)=, =ACC.cpp:346=) | enabled |
+| =deleteButton= | disabled but /visible/ (=updateSaveResetButtonState= sets =setEnabled(!isAddMode_)=, =ACC.cpp:1151=; the generated template instead hides it: =setVisible(!createMode)=, =T-cpp:543=) | enabled |
+| Password fields | cleared on =setAccount=; validated on save (=ACC.cpp:292-294=) | hidden tab, no validation (=ACC.cpp:494-496=) |
+| Default account type | =user= (=ACC.cpp:351=) | from record (=ACC.cpp:281-283=) |
+
+Hidden fields in all modes: the Admin row is invisible — =isAdminCheckBox= text =Grant administrative privileges= and =labelIsAdmin= text =Admin:= both carry =visible=false= in the =.ui= (=ACC.ui:94-112=) and are re-hidden in the constructor (=ACC.cpp:138-140=). Comment: "Admin row hidden — privileges managed via RBAC role assignments".
+
+Read-only / historical mode (=setReadOnly(readOnly, versionNumber)=, =ACC.cpp:1081-1119=): =saveButton= & =deleteButton= =setVisible(!readOnly)=, toolbar =setVisible(readOnly)=; Security tab disabled; roles/parties widgets =setReadOnly(readOnly)= and =setVisible(versionNumber == 0)= (so hidden for a numbered historical version); child tables read-only; =setFieldsReadOnly= sets =usernameEdit=/=emailEdit= read-only and disables the type combo. Controller sets container title =Account: %1 (Version %2 - Read Only)= (=CTRL:520-524=). Note: =fullNameEdit= and =jobTitleEdit= are /not/ put read-only by =setFieldsReadOnly= (=ACC.cpp:1121-1129=).
+
+** 1.5 Close behaviour
+
+=onCloseClicked()= (=DDB.cpp:121-132=):
+#+begin_src text
+if (hasUnsavedChanges()) {
+  MessageBoxHelper::question(this, "Unsaved Changes",
+      "You have unsaved changes. Close anyway?", Yes|No);
+  if (reply != Yes) return;
+}
+closeConfirmed_ = true; requestClose();
+#+end_src
+=hasUnsavedChanges()= for account returns =isDirty_= (=ACC.hpp:159-161=). =requestClose()= emits =closeRequested= (=DDB.hpp:196-198=), which the controller connects to the sub-window's close slot (=connect_dialog_close=, =CTRL:475=).
+
+* 2. FORM FIELDS (account, in exact order)
+
+The dialog has /no/ date pickers, spin boxes, or free-text areas among entity fields (the only =QPlainTextEdit= is the read-only provenance commentary). Every editable field is a =QLineEdit= or =QComboBox=.
+
+** General tab → group box =Account Information= (=QFormLayout name="formLayout"=)
+
+| Row | Label text (exact) | Widget | Control type | Placeholder | Edit-mode state |
+|---+---+---+---+---+---|
+| 0 | =Username:= | =usernameEdit= | QLineEdit | =Enter username= | read-only (=ACC.cpp:328=) |
+| 1 | =Full Name:= | =fullNameEdit= | QLineEdit | =Enter full name= | editable |
+| 2 | =Email:= | =emailEdit= | QLineEdit | =Enter email address= | editable (but set read-only in historical mode, =ACC.cpp:1123=) |
+| 3 | =Type:= | =accountTypeCombo= | QComboBox | — | disabled (=ACC.cpp:349=) |
+| 4 | =Admin:= | =isAdminCheckBox= text =Grant administrative privileges= | QCheckBox | — | /hidden in all modes/ (=ACC.ui:94-112=, =ACC.cpp:138-140=) |
+| 5 | =Job Title:= | =jobTitleEdit= | QLineEdit | =e.g. Head of Desk, Senior Trader= | editable |
+| 6 | =Reports To:= | =reportsToCombo= | QComboBox | — | editable |
+
+Citations: =ACC.ui:36-137= (=Account Information= group and rows); =ACC.cpp:143-146= (type combo values/labels).
+
+=accountTypeCombo= items: label / data = =User=/=user=, =Service=/=service=, =Algorithm=/=algorithm=, =LLM=/=llm= (=ACC.cpp:143-146=). Changing it also pushes the type to the parties widget (=ACC.cpp:151-155=).
+
+=reportsToCombo= is populated asynchronously from =get_accounts_request= (limit 10 000), first item =(none)= with empty data, display name = =full_name= else =username=; self excluded by username; value = account UUID string (=ACC.cpp:374-422=). It is /not/ repopulated per-account in =setAccount= (arg is ignored) and defaults to selection 0.
+
+** General tab → group box =Photo= (=ACC.ui:141-146=)
+
+Title =Photo=, empty =QVBoxLayout name="photoGroupLayout"=. At runtime =initFlagButton(ui_->photoGroup->layout())= inserts a centred 52×52 flat =QPushButton= (icon 48×48, pointing-hand cursor, tooltip =Click to select flag=) (=ACC.cpp:72=, =DDB.cpp:150-173=). This edits the account's =image_id= profile picture. Pending state restyles the button border orange and tooltip =Flag changed (unsaved)= (=DDB.cpp:40-46, 212-214=). Entities with no image never call this.
+
+** Security tab → group box =Password= (=QFormLayout name="formLayout_2"=)
+
+| Row | Label text | Widget | Type | Placeholder |
+|---+---+---+---+---|
+| 0 | =Password:= | =passwordEdit= | QLineEdit, =echoMode=Password= | =Enter password= |
+| 1 | =Confirm Password:= | =confirmPasswordEdit= | QLineEdit, =echoMode=Password= | =Confirm password= |
+| 2 (col 1) | — | =showPasswordCheck= text =Show passwords= | QCheckBox | — |
+
+Citations: =ACC.ui:166-214=. =showPasswordCheck= toggles echo mode of both fields between =QLineEdit::Normal= and =QLineEdit::Password= (=ACC.cpp:132-136=). Inline match help: =PasswordMatchIndicator::connectFields(passwordEdit, confirmPasswordEdit)= paints the confirm field border green =#4CAF50= on match, red =#cc0000= on mismatch, default when empty (=ACC.cpp:129=, =PMI.hpp:37-60=).
+
+** Login Status tab → group box =Login Status (Read-only)= (=QFormLayout name="formLayout_4"=)
+
+| Row | Label | Widget | Type |
+|---+---+---+---|
+| 0 | =Online:= | =onlineBadge= | QLabel (badge) |
+| 1 | =Locked:= | =lockedBadge= | QLabel (badge) |
+| 2 | =Failed Logins:= | =failedLoginsEdit= | QLineEdit =readOnly=true= |
+| 3 | =Last Login:= | =lastLoginEdit= | QLineEdit =readOnly=true= |
+| 4 | =Last IP:= | =lastIpEdit= | QLineEdit =readOnly=true= |
+| 5 | =Last Attempt IP:= | =lastAttemptIpEdit= | QLineEdit =readOnly=true= |
+
+Citations: =ACC.ui:231-347=. Populated by =setLoginInfo= (=ACC.cpp:447-487=): badges via =BadgeLabelUtils::apply(..., "account_online", ...)= and ="account_locked"=; last login =Qt::ISODate= or the literal =Never= when epoch ≤ 0; missing info shows =N/A= in all five. IPs from =li.last_ip.to_string()=.
+
+** Validation (client-side)
+
+- =usernameEdit= must be non-empty after trim, else warning =Validation Error= / =Username is required.= (=ACC.cpp:535-539=).
+- Create mode only password rules (=ACC.cpp:542-566=): non-empty → =Password is required for new accounts.=; equality → =Passwords do not match.=; length ≥ 12 → =Password must be at least 12 characters long.= (=validatePassword()= helper: =ACC.cpp:493-515=).
+- No email-format, no full-name, no job-title validation.
+- Submit gating: Save is enabled only when something is dirty (=updateSaveResetButtonState=, =ACC.cpp:1131-1152=).
+
+* 3. TABBED / GROUPED SECTIONS
+
+Tab order as built (=.ui= order, then runtime insertions):
+
+| # | Tab title | Container | Contents | Editable in place |
+|---+---+---+---+---|
+| 0 | =General= | =QWidget name="generalTab"= | Group =Account Information= (7 rows above) + Group =Photo= (flag button) + vertical spacer | yes (per field rules) |
+| 1 | =Security= | =securityTab= | Group =Password= (2 fields + show toggle) + spacer | create mode only |
+| 2 | =Login Status= | =loginStatusTab= | Group =Login Status (Read-only)= (2 badges + 4 read-only edits) + spacer | never (read-only) |
+| 3 | =Roles= | =rolesTab= | placeholder =QLabel= text =Role assignments are managed via the Roles widget.= centred; /replaced at runtime/ by =AccountRolesWidget= | yes |
+| 4 | =Parties= | =partiesTab= | placeholder =Party assignments are managed via the Parties widget.=; /replaced by/ =AccountPartiesWidget= | yes |
+| 5 | =Contact Information= | /dynamically inserted/ =ChildEntityTableWidget= | child-entity table, inserted before the last tab | yes (Add/Delete/double-click edit) |
+| 6 | =Provenance= | =provenanceTab= | embedded =ores::qt::ProvenanceWidget= | never (read-only) |
+
+Citations: tabs =ACC.ui:32-385=; placeholders =ACC.ui:352-359, 367-374=; replacement logic =ACC.cpp:157-193=; Contact Information insertion =ACC.cpp:214-218= and =ACET.cpp:61-65= (insert at =count()-1= so Provenance stays last); Provenance widget =ACC.ui:378-385=.
+
+Group headings are exact: =Account Information=, =Photo=, =Password=, =Login Status (Read-only)= plus the =ProvenanceWidget='s own group =Record Provenance= (=PW.ui:15-18=) whose six read-only rows are =Version:=, =Modified By:=, =Performed By:=, =Recorded At:=, =Change Reason:=, =Commentary:= (=PW.ui:21-115=; =versionEdit=, =modifiedByEdit=, =performedByEdit=, =recordedAtEdit=, =changeReasonEdit= are =QLineEdit readOnly=true=, =commentaryEdit= is =QPlainTextEdit readOnly=true=, 80–150 px tall).
+
+** Roles widget (=AccountRolesWidget=)
+
+=QGroupBox= titled dynamically =Assigned Roles (%1)= where =%1= is the effective count (=AccountRolesWidget.cpp:41, 315=), a =QListWidget= of assigned roles (single selection, alternating rows), and a row =QComboBox roleCombo_= + two =QToolButton=s: Add (tooltip =Assign selected role=) and Delete/revoke (tooltip =Revoke selected role=) (=AccountRolesWidget.cpp:42-88=). Add/revoke only stage changes locally; un-staging is symmetric (clicking Add on a staged removal removes the removal) (=AccountRolesWidget.cpp:209-254=). =load()= fetches assigned roles + all roles asynchronously (=AccountRolesWidget.cpp:110-202=). Read-only disables both buttons (=AccountRolesWidget.cpp:204-207, 320-327=). Item tooltip = role description; combo lists names not already effective.
+
+** Parties widget (=AccountPartiesWidget=)
+
+=QGroupBox= titled dynamically =Assigned Parties (%1)= (=AccountPartiesWidget.cpp:44, 451-452=), a =QListWidget= of assigned parties (single selection, alternating rows), a =QComboBox partyCombo_= + Add (tooltip =Add selected party=) and Remove (tooltip =Remove selected party=) =QToolButton=s, and below them a =Default Party:= =QLabel= + =defaultPartyCombo_= (=AccountPartiesWidget.cpp:42-111=). Party list items render ="{full_name} ({party_type})"=; the default party is prefixed =★ =, suffixed = — Default=, indigo bold (=#7C6CE8=), with tooltip =This is the account's default quick-login party.= (=AccountPartiesWidget.cpp:352-391=). The default combo has item =(none)= + only already-persisted assigned parties, and its tooltip explains quick-login (=AccountPartiesWidget.cpp:100-103, 457-492=). Add/remove stage locally; the parent commits on Save (=AccountPartiesWidget.cpp:289-346=). =addRequested= for a tenant-admin account is unusual: confirmation =Administrator Account= / =This is an administrator account. Assigning parties to administrator accounts is not typical and may not be appropriate.\n\nContinue?= (=AccountPartiesWidget.cpp:293-303=). Read-only disables the default combo and buttons (=AccountPartiesWidget.cpp:283-287, 494-501=).
+
+Both widgets emit =statusMessage=, =errorMessage=, =roleListChanged=/=partyListChanged=, and parties additionally =dataLoaded=/=defaultPartyChanged=; the parent wires these to its own signals and to =updateSaveResetButtonState()= (=ACC.cpp:171-212=).
+
+* 4. CHILD ENTITY TABLES
+
+** 4.1 Generic widget — =ChildEntityTableWidget=
+
+Entity-agnostic; it knows nothing about any service/domain (=CETW.hpp:34-43=). Constructor takes =(columnHeaders, addLabel, deleteLabel, parent)= (=CETW.hpp:53-56=). It builds:
+
+- =QVBoxLayout= containing a =QToolBar= and a =QTableWidget= (=CETW.cpp:34-57=).
+- Toolbar icon size 16×16; Add action icon =Icon::Add= label/tooltip = =addLabel=; Delete action icon =Icon::Delete= label/tooltip = =deleteLabel= (=CETW.cpp:38-42=).
+- =addRequested()= emitted on Add; =deleteRequested(int row)= emitted on Delete with the table's =currentRow()= (=CETW.cpp:43-46=).
+- Table: column count/labels from =columnHeaders=, =horizontalHeader()->setStretchLastSection(true)=, selection behavior =SelectRows=, selection mode =SingleSelection=, /edit triggers =NoEditTriggers=/, vertical header hidden (=CETW.cpp:48-54=).
+- API: =setRows(const std::vector<QStringList>&)= replaces all rows and =resizeColumnsToContents()= (=CETW.cpp:62-70=); =currentRow()=; =table()= for finer control (=CETW.hpp:60-66=).
+
+There is no inline editing: the only edit path is a double-click, wired by the host (=ACET.cpp:55-58=).
+
+** 4.2 Account host — =AccountChildEntityTables=
+
+A =QObject= that owns exactly one =ChildEntityTableWidget= for account contact information (=ACET.hpp:39-48=), constructed as:
+
+#+begin_src text
+new ChildEntityTableWidget({"Email", "Country", "Street", "City", "Phone"},
+                           "Add Contact", "Delete Contact", dialogParent)
+#+end_src
+=ACET.cpp:39-45=. This yields a table with columns /Email, Country, Street, City, Phone/ and toolbar tooltips /Add Contact/ / /Delete Contact/.
+
+- =attachTo(QTabWidget*)= inserts it before the last tab under title =Contact Information= (=ACET.cpp:61-65=).
+- =reload(accountId, clientManager, username, imageCache, changeReasonCache)= fans out =get_account_contact_informations_by_account_id_request= (limit 1000) and maps each record to the 5 cells =email, country_code, street_line_1, city, phone= (=ACET.cpp:67-123=). No-op if the id is nil, no client manager, or disconnected (=ACET.cpp:77-79=).
+- =setReadOnly(bool)= sets a flag consulted by every mutating path (=ACET.cpp:82-84=).
+- /Add/: guarded by read-only; if the parent id is nil it warns =Save Required= / =Save the account first, then add contact information.=; if disconnected warns =Disconnected= / =Cannot add contact while disconnected from server.= (=ACET.cpp:125-138=). It opens a modal =QDialog= wrapper titled =Add Contact=, hosts an =AccountContactInformationDetailDialog=, injects client manager / change-reason cache / image cache / username, calls =setCreateMode(true)=, assigns a random UUID and the parent =account_id=, and reloads on =QDialog::Accepted= (=ACET.cpp:140-166=).
+- /Delete/: guarded; deletes by id via =delete_account_contact_information_request=; on failure warns =Delete Failed=; on success reloads (=ACET.cpp:168-196=). Note it does /not/ prompt a change reason for the child delete.
+- /Edit/: double-click opens the same dialog wrapped in a =QDialog= titled =Contact Information Details=, =setCreateMode(false)=, =setReadOnly(readOnly_ || !connected)=, and reloads on accept (=ACET.cpp:198-225=).
+
+** 4.3 Other per-entity hosts (pattern confirmation)
+
+=CounterpartyChildEntityTables= and =PartyChildEntityTables= exist under =projects/ores.qt/refdata/{include,src}= and mirror this pattern (=ACET.hpp:39-47= explicitly cites =PartyChildEntityTables= as the rationale). The account variant is "scoped to account's one composite child — accounts have no identifiers entity" (=ACET.hpp:42-47=).
+
+** 4.4 Generated/composite-child seam
+
+The generated detail dialog reserves a seam for hosting such tables (and hierarchy trees) via model-declared =:implements= blocks; the generated =.cpp= constructor carries the comment:
+
+#+begin_src text
+// Composite child-entity tables seam: an :implements
+// 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+// + QToolBar per embedded child entity ... wraps each in a tab, and inserts it
+// into this dialog's tab widget.
+#+end_src
+=ACID.cpp:56-65= (same text in =T-cpp:97-103=).
+
+* 5. SAVE FLOW
+
+Entry point =onSaveClicked()= (=ACC.cpp:517-964=); =save()= is a public thin wrapper (=ACC.cpp:489-491=).
+
+** 5.0 Pre-flight (both modes)
+
+1. /Connection guard/: if =!clientManager_ || !clientManager_->isConnected()= → log warn, =emit errorMessage("Not connected to server. Please login.")=, return (=ACC.cpp:518-522=).
+2. /Party-readiness guard/: if =partiesWidget_ && !partiesWidget_->isDefaultPartyReady()= → =emit errorMessage("Still loading account data — please try again in a moment.")=, return (=ACC.cpp:524-532=). (Save is normally disabled in this window — =ACC.cpp:1149-1150=.)
+3. /Username required/: trimmed empty → =MessageBoxHelper::warning(this, "Validation Error", "Username is required.")=, return (=ACC.cpp:534-539=).
+4. /Password rules (create mode only)/: the three checks/messages listed in §2 (=ACC.cpp:541-566=).
+
+** 5.1 Create branch (=isAddMode_ == true=) — =ACC.cpp:570-724=
+
+1. /Party warning/: if no pending party change and =!partiesWidget_->hasAvailableParties()=, warn =No Parties Available= / ="No parties are defined in the system. The account will be created without a party assignment and will not be able to log in until a party is assigned."= (non-blocking, =ACC.cpp:573-581=). Otherwise ask =No Party Assigned= / ="No party has been assigned to this account.\n\nAccounts without a party assignment cannot log in to any party context.\n\nCreate the account without a party?"= with Yes|No; No aborts (=ACC.cpp:583-592=).
+2. /Capture staged child adds/: =partiesWidget_->pendingAdds()=, =rolesWidget_->pendingAdds()= (=ACC.cpp:595-601=).
+3. /Copy form values/ to locals: username, password, email, account_type (=ACC.cpp:603-608=).
+4. /Async/ =QtConcurrent::run= (=ACC.cpp:610-677=):
+   - Build =iam::messaging::save_account_request { principal=username, password, email, account_type, totp_secret="" }= (=ACC.cpp:618-623=; fields at =ACCTP.hpp:45-53=). /No change-reason fields exist on this request and none are prompted in create mode./
+   - =process_authenticated_request=; transport failure → ={false, "Failed to communicate with server"}=; =!success= → ={false, response.message}= (=ACC.cpp:625-634=).
+   - Parse =response.account_id= UUID (=ACC.cpp:636-638=).
+   - Commit each staged party via =save_account_party_request=; failures produce ="Account created but party assignment failed: " + …= (=ACC.cpp:640-657=).
+   - Commit each staged role via =assign_role_request=; failures produce ="Account created but role assignment failed: " + …= (=ACC.cpp:659-674=).
+   - Success → ={true, account_id_str}= (=ACC.cpp:676=).
+5. /Watcher/ (=QFutureWatcher<std::pair<bool,std::string>>=, =ACC.cpp:679-724=):
+   - Success: =isDirty_=false=, emit =isDirtyChanged(false)=, refresh buttons; parse UUID and =emit accountCreated(account_id)=; reload parties/roles widgets; =notifySaveSuccess(tr("Account '%1' created").arg(username))= (=ACC.cpp:690-714=).
+   - Failure: log error, =emit errorMessage("Failed to create account: %1")=, =MessageBoxHelper::critical(self, "Create Failed", message)= (=ACC.cpp:715-721=).
+
+** 5.2 Edit branch — =ACC.cpp:725-963=
+
+1. /Compute what needs saving/: =needsPartySave = partiesWidget_->hasPendingChanges()=, =needsRoleSave = rolesWidget_->hasPendingChanges()=, =needsAccountSave = isDirty_ || defaultBeingRemoved || partiesWidget_->hasPendingDefaultPartyChange()= (=ACC.cpp:728-764=). (Default-party selection is always re-sent as part of the account update.)
+2. /Change-reason prompt/ — /only when party or role assignments changed/:
+   #+begin_src text
+   if (needsPartySave || needsRoleSave) {
+     const auto crSel = promptChangeReason(
+         ChangeReasonDialog::OperationType::Amend, true, "common");
+     if (!crSel) return;                       // user cancelled
+     changeReasonCode = crSel->reason_code;
+     changeCommentary = crSel->commentary;
+   }
+   #+end_src
+   =ACC.cpp:766-775=. A pure account-field edit (email/full name/job title/reports-to) triggers /no/ prompt and leaves the request's =change_reason_code=/=change_commentary= empty, even though =update_account_request= carries those fields (=ACCTP.hpp:85-86=).
+3. /Capture/ account_id, email, full name, job title, reports-to id, image id (pending flag if changed), pending role adds/removes, pending party adds/removes, change reason (=ACC.cpp:777-806=).
+4. /Async/ =QtConcurrent::run= (=ACC.cpp:792-899=):
+   - If =needsAccountSave=: build =update_account_request { account_id, email, full_name, default_party_id, job_title, reports_to_account_id, image_id }= — /=change_reason_code=/=change_commentary= are not populated/ — and send; transport failure → ="Failed to communicate with server"=; =!success= → =response.message= (=ACC.cpp:810-831=).
+   - Commit party additions (=save_account_party_request=, with =change_reason_code=/=change_commentary=/=modified_by=""= set on the child and comment "server overwrites from session", =ACC.cpp:833-851=).
+   - Commit party removals (=delete_account_party_request= by key, =ACC.cpp:853-868=).
+   - Commit role additions (=assign_role_request=, =ACC.cpp:870-882=) and removals (=revoke_role_request=, =ACC.cpp:884-896=).
+   - Success → ={true, {}}= (=ACC.cpp:898=).
+5. /Watcher/ (=ACC.cpp:901-960=):
+   - Success: =isDirty_=false=; =isDirtyChanged(false)=; if flag changed commit the staged image and =resetFlagChanged()=; rebase =currentAccount_.default_party_id= to the value actually sent and call =partiesWidget_->rebaseDefaultParty(finalDefaultPartyId)=; reload parties/roles if they changed; update buttons; =emit accountUpdated(account_id)=; =notifySaveSuccess(tr("Account updated"))= (=ACC.cpp:912-952=).
+   - Failure: =emit errorMessage("Failed to save: %1")=; =MessageBoxHelper::critical(self, "Save Failed", message)= (=ACC.cpp:953-958=).
+
+** 5.3 Signals emitted and dialog fate
+
+- Success signals: =accountCreated(uuid)= / =accountUpdated(uuid)= / =accountDeleted(uuid)= (=ACC.hpp:144-146=), plus =isDirtyChanged(bool)= (=ACC.hpp:147=).
+- =notifySaveSuccess(message)= emits =statusMessage(message)= then =requestClose()= (=DDB.hpp:203-206=) — so /a successful save emits the status message and closes the dialog/ (the MDA sub-window is =WA_DeleteOnClose=, =CTRL:458=).
+- Failure: =errorMessage(QString)= signal (=DDB.hpp:169=) + a modal critical box; dialog stays open.
+- Controller reacts to all three entity signals by marking the list window stale (=CTRL:430-454=).
+
+** 5.4 The generic (codegen-bound) save flow
+
+For comparison, the generated standard always prompts, including create, and writes the reason onto the entity before saving:
+
+#+begin_src text
+const auto crOpType = createMode_ ? Create : Amend;
+const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+if (!crSel) return;
+entity_.change_reason_code = crSel->reason_code;
+entity_.change_commentary  = crSel->commentary;
+...
+save_<entity>_request request; request.data = entity_;
+#+end_src
+=T-cpp:1356-1396=; concrete instance in =ACID.cpp:333-341, 358-361=. Success emits =<item>Saved(code)= and =notifySaveSuccess(tr("{{entity_title}} '%1' saved").arg(code))= (=T-cpp:1404-1414=; =ACID.cpp:378-384=).
+
+* 6. DELETE FLOW
+
+Account delete (=onDeleteClicked=, =ACC.cpp:971-1049=):
+
+1. Connection guard → =emit errorMessage("Not connected to server. Please login.")=, return (=ACC.cpp:972-976=).
+2. If =isAddMode_= → log and return silently (=ACC.cpp:978-981=).
+3. /Confirmation/:
+   #+begin_src text
+   MessageBoxHelper::question(this, "Delete Account",
+     QString("Are you sure you want to delete account '%1'?")
+         .arg(QString::fromStdString(currentAccount_.username)),
+     QMessageBox::Yes | QMessageBox::No);
+   #+end_src
+   Yes|No only; anything but Yes returns (=ACC.cpp:985-995=).
+4. /No change-reason prompt/ for account delete. (Contrast: the generated standard prompts =OperationType::Delete, false, "common"= before the async delete — =T-cpp:1446-1448=, =ACID.cpp:417-420=. And =ChangeReasonDialog='s Delete title/button are specifically =Deletion Reason Required= / =Confirm Delete=, =CRD.cpp:70, 166=.)
+5. /Async/ =delete_account_request { account_id }= (=ACC.cpp:997-1018=; request shape =ACCTP.hpp:100-104=). Transport failure → ="Failed to communicate with server"=.
+6. Watcher (=ACC.cpp:1020-1048=):
+   - Success: =emit statusMessage("Successfully deleted account: %1")=, =emit accountDeleted(account_id)=, then =self->requestClose()= (=ACC.cpp:1032-1039=).
+   - Failure: =emit errorMessage("Failed to delete account: %1")= + =MessageBoxHelper::critical(self, "Delete Failed", message)= (=ACC.cpp:1040-1045=).
+
+Generic template equivalent wording: title =Delete {{entity_title}}=, body =Are you sure you want to delete {{entity_singular_words}} '%1'?=, success ={{entity_title}} '%1' deleted= + entity-deleted signal + =requestClose()=, failure =Delete Failed= (=T-cpp:1438-1440, 1518-1528=; =ACID.cpp:407-411, 455-465=).
+
+* 7. AUDIT FIELDS
+
+** 7.1 Domain audit fields (every versioned entity)
+
+=account= carries (=ACCT.hpp=):
+
+| Field | Type | Meaning | Citation |
+|---+---+---+---|
+| =version= | int | optimistic-locking / change-tracking version | =ACCT.hpp:36-39= |
+| =modified_by= | string | username who recorded this version | =ACCT.hpp:51-54= |
+| =change_reason_code= | string | soft FK to change_reasons | =ACCT.hpp:56-61= |
+| =change_commentary= | string | free-text explanation | =ACCT.hpp:63-66= |
+| =performed_by= | string | username of the account that performed the operation | =ACCT.hpp:68-71= |
+| =recorded_at= | time_point | timestamp recorded | =ACCT.hpp:163-166= |
+
+** 7.2 What the user supplies
+
+- /Change reason code/: chosen from a filtered, sorted list in =ChangeReasonDialog=; /mandatory in the sense that the dialog cannot be accepted without a selection/, but it can be cancelled (in which case the whole save/delete aborts).
+- /Commentary/: mandatory only when the selected reason has =requires_commentary == true=; otherwise optional (=CRD.cpp:182-228=).
+- /=modified_by=/: never user-editable. For account it is injected as =modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_= in =getAccount()= (=ACC.cpp:369=); =setUsername()= sets it from the controller (=ACC.hpp:75=, =CTRL:398=). For generated entities it is set in =update<X>FromUi()= (=ACID.cpp:294=).
+- =performed_by=, =recorded_at=, =version= are server-assigned and only displayed.
+
+** 7.3 Where reasons come from
+
+- =ChangeReasonCache= is a shared, event-refreshed cache created once and injected via =setChangeReasonCache()= (=DDB.hpp:118-127=; =CTRL:399, 489=). The controller receives =changeReasonCache_=/=badgeCache_= in its constructor and calls =setImageCache(imageCache)= (=CTRL:55-62=).
+- It loads all reasons + categories via =loadAll()=, listens for =change_reason_changed= events, and exposes =getReasonsForNew/Amend/Delete(category_code)= filtering by =applies_to_new/amend/delete= /and/ =category_code=, sorted ascending by =display_order= (=CRC.hpp:99-117=, =ChangeReasonCache.cpp:240-290=), plus =getReasonByCode=, =isValidReasonCode=, =allReasons=, =allCategories=, and signals =loaded=/=loadError=/=refreshed= (=CRC.hpp:142-156=).
+- Categories in use: =system= (create), =common= (amend/delete) — constants ="system"= / ="common"= (=CRCONST.hpp:83, 88=).
+- Reason codes: =system.new_record=, =system.external_data_import=, =common.non_material_update=, =system.new= (synthetic), =system.test= (synthetic) (=CRCONST.hpp:36-61=). =common.non_material_update= is the special "touch" reason: allowed only when no field changed; every other reason is allowed only when a field changed (create ignores the toggle) (=CRD.cpp:96-124=, =CRD.hpp:69-73=).
+
+** 7.4 Failure to obtain a reason
+
+=promptChangeReason= (=DDB.cpp:88-119=) returns =std::nullopt= and emits =errorMessage= with exact text:
+- cache unset/not loaded → ="Change reasons not loaded. Please try again."= (=DDB.cpp:90-93=);
+- no reasons for the category → ="No change reasons available. Please contact administrator."= (=DDB.cpp:109-112=);
+- user cancel → silent =nullopt= (=DDB.cpp:115-116=).
+Its signature: =promptChangeReason(OperationType opType, bool isDirty, std::string_view category = "system")= returning =std::optional<change_reason_selection{reason_code, commentary}>= (=DDB.hpp:269-302=).
+
+** 7.5 Presentation — =ChangeReasonDialog= exact anatomy
+
+| Aspect | Create | Amend | Delete |
+|---+---+---+---|
+| Title | =New Record Reason= | =Change Reason Required= | =Deletion Reason Required= |
+| Header label | =Please select a reason for creating this record:= | =Please select a reason for this change:= | =Please select a reason for this deletion:= |
+| Save-button text | =Create= | =Save= | =Confirm Delete= |
+
+Citations: =CRD.cpp:64-85, 159-167=. Minimum width 450 (=CRD.cpp:73=). Form row label =Reason:= with a =QComboBox= (min width 300) whose display text and data are both =reason.code= (=CRD.cpp:93-125=). Below it a grey italic description label showing =reason.description= with stylesheet =QLabel { color: #888888; font-style: italic; padding: 5px; }= (=CRD.cpp:129-134, 189-190=). A group box titled =Commentary= contains a description label that flips between =Commentary is required for this reason.= and =Commentary is optional for this reason.=, a =QTextEdit= (max height 100) with placeholder =Enter explanation for this change...=, and a required marker =* Required= (=CRD.cpp:136-153, 192-200=). Required marker colour is =#cc6666= when empty, =#66cc66= once satisfied (=CRD.cpp:150, 220-228=). Button box is =QDialogButtonBox::Save | Cancel=; Save is disabled while required commentary is empty, and =validateAndAccept= refuses =accept()= as a safety net (=CRD.cpp:159-179, 209-242=). Accessors: =selectedReasonCode()= → =reasons_[index].code=; =commentary()= → trimmed plain text (=CRD.cpp:244-254=).
+
+** 7.6 Provenance display (read-only audit panel)
+
+=DetailDialogBase::populateProvenance(version, modified_by, performed_by, recorded_at, change_reason_code, change_commentary)= forwards to =ProvenanceWidget::populate=, which writes the six fields (=DDB.cpp:68-79=, =PW.cpp:38-57=). =recorded_at= is rendered through =relative_time_helper::format()= and left blank when the time_point is default-constructed (=PW.cpp:48-53=). The tab is disabled in create mode and for entities with no such tab (=DDB.hpp:237-243=, =DDB.cpp:54-66=). For account this is called from =setAccount= (=ACC.cpp:285-290=).
+
+* 8. HISTORY DIALOG
+
+Two coexisting implementations share =HistoryDialogBase=:
+
+1. /Legacy, per-entity/ (what account uses): =AccountHistoryDialog=.
+2. /Generic, entity-type-parameterised/ (the direction of travel): =ores::qt::HistoryDialog=, constructed as =HistoryDialog(entityType, entityId, clientManager, parent)=, documented as "the single, non-templated history dialog shared by every entity" (=HD.hpp:36-52=). There is /no/ =cpp_qt_history_dialog*= mustache template any more; the older per-entity dialogs are hand/generated leftovers (many exist under =compute/=, =dq/=, =iam/=, =trading/=, =workspace/=).
+
+** 8.1 How it is opened (account)
+
+- List-window toolbar action =History=, icon =Icon::History=, tooltip =View account history=; enabled only with a single row selected (=MDIW:68, 126-130, 911=).
+- =AccountMdiWindow::viewHistorySelected()= resolves the selected account and emits =showAccountHistory(username)= (=MDIW:866-882=).
+- =AccountController::onShowAccountHistory= creates a =DetachableMdiSubWindow= titled =Account History: %1=, icon =Icon::History=, wraps the widget, connects =statusChanged=/=errorOccurred=/=openVersionRequested=/=revertVersionRequested=, then calls =loadHistory()= (=CTRL:292-340=).
+- The detail dialog itself has no History button.
+
+** 8.2 Legacy layout (account) — =AccountHistoryDialog.ui=
+
+Root =QWidget=, 900×600, =windowTitle "Account History"= (=ACH.ui:4-15=). =QVBoxLayout=:
+
+- =QLabel titleLabel= bold 12pt, text =Account History= (overwritten at runtime with =Account History: <username>=) (=ACH.ui:18-28=; =ACH.cpp:79-82=).
+- =QSplitter= vertical (=ACH.ui:31-33=) containing:
+  - /=QTableWidget versionListWidget=/ — min height 150, max 250, alternating rows, =NoEditTriggers=, single selection, select rows, columns exactly /=Version=/, /=Recorded At=/, /=Modified By=/ (=ACH.ui:35-69=).
+  - detail pane with a =QTabWidget=:
+    - Tab /=Changes=/ → =QTableWidget changesTableWidget=, columns exactly /=Field=/, /=Old Value=/, /=New Value=/, =NoEditTriggers=, alternating rows, single selection/rows (=ACH.ui:89-126=).
+    - Tab /=Full Details=/ → scroll area with a =QFormLayout= of read-only =QLabel= rows: =Username:=, =Email:=, =Administrator:= (hidden at runtime), =Version:=, =Modified By:=, =Recorded At:= (=ACH.ui:127-236=; =ACH.cpp:96-108=).
+- Bottom row: spacer + =Close= button (=ACH.ui:244-262=).
+
+*** Sort order / versions
+
+Versions are newest-first: index 0 is the newest (the title is built from =history_.versions.front()=, =ACH.cpp:79-82=; =HistoryDialogBase= docs "0 = newest", =HDB.hpp:210-212=). =versionRow= supplies column 0 = version number, then cells ={relative_time_helper::format(recorded_at), modified_by}= (=ACH.cpp:72-77=). Only column 0 gets the =Icon::History= icon; a legacy table also gets alternating rows, resize-to-contents headers, and row resize (=HDB.cpp:455-478=). The newest row is auto-selected (=HDB.cpp:473-477=).
+
+*** Per-version displays
+
+- /Changes/ tab: diffs the selected version against index+1 (i.e. the previous version). Oldest version → a placeholder row =(Initial version)= with =-=/=-=; no diffs → =(No field changes)= (=HDB.cpp:565-595=). Account's diff compares only =Username= and =Email= (=ACH.cpp:84-94=). Changed cells are rendered as rich-text labels with GitHub-style line/span highlighting computed by =ores::diff::engine::compute= (=HDB.cpp:641-708=). "Oldest version has nothing to diff against" is =version_index == historySize()-1= (=HDB.cpp:582=).
+- /Full Details/ tab: username, email (Administrator row hidden), version number, modified_by, recorded-at relative time (=ACH.cpp:96-108=).
+- /Editable?/ No — every table is =NoEditTriggers=, and the only mutating actions are toolbar Open/Revert.
+- /Toolbar/ (created by =initializeHistoryUi=, inserted at layout index 0): /Reload/ (=Icon::ArrowClockwise=, tooltip =Reload history from server=), separator, /Open/ (=Icon::Edit=, tooltip =Open this version in read-only mode=), /Revert/ (=Icon::ArrowRotateCounterclockwise=, tooltip =Revert to this version=) (=HDB.cpp:388-429=). Double-clicking a version row triggers Open (=HDB.cpp:315-317=). Open is enabled with any selection; Revert only for =index > 0= (reverting the newest is a no-op) (=HDB.cpp:757-768=).
+- /Revert confirmation/ (exact): title =Revert=, body =Are you sure you want to revert '%1' from version %2 back to version %3?\n\nThis will create a new version with the data from version %3.= (=HDB.cpp:796-805=).
+- /Open/ emits the entity signal; account re-opens the detail dialog read-only via =onOpenAccountVersion= (=ACH.cpp:110-115=; =CTRL:479-532=). =revertToVersionAt= re-stamps the selected data with the latest version number before emitting =revertVersionRequested= (=ACH.cpp:117-127=).
+- /Load/: =get_account_history_request { username }= via =runHistoryRequest=; on =!success= → =historyLoadFailed(message)=; else store history and call =historyLoaded()= (=ACH.cpp:51-66=). =historyLoaded()= repopulates the list, selects row 0, sets the title, updates action states, and emits =statusChanged("Loaded %1 versions")= (=HDB.cpp:431-483=).
+- /Load failure/ (exact): =errorOccurred("Failed to load history: %1")= + =MessageBoxHelper::critical(this, "History Load Error", "Failed to load history:\n%1")= (=HDB.cpp:485-489=).
+- /Stale/: =markAsStale()= emits =statusChanged("<code> has new versions - click Reload to see them")= and pulses the Reload action gold (=HDB.cpp:251-260=; =HDB.hpp:88-93=).
+
+** 8.3 Generic layout — =HistoryDialog.ui= (compare mode)
+
+900×600, =windowTitle "History"= (=HD.ui:4-15=). A /horizontal/ =QSplitter=:
+
+- Left =timelinePane= (min 220 / max 320): bold 10pt =History Timeline= label + =QListWidget versionTimeline= (tooltip =Click a version to preview it against its predecessor.=) (=HD.ui:22-62=).
+- Right =diffPane=: header row with =Compare:= label, =compareFromCombo= (tooltip =The older version.=), =→=, =compareToCombo= (tooltip =The newer version.=), spacer, and a segmented two-button pill =All Fields= / =Only Changes= (=HD.ui:64-147=); below it a =QTextBrowser diffBrowser= (=openExternalLinks=false=) (=HD.ui:141-147=).
+- Bottom row: spacer + =Close= (=HD.ui:152-171=).
+
+Timeline cards are custom widgets: title =v<version> · <relative time>= (tooltip = full ISO-8601 UTC timestamp), then optional lines =Modified By=, =Performed By=, an amber reason-code badge, and an italic quoted commentary (=HDB.cpp:179-236=). =HistoryDialog::versionRow= supplies cells ={relative time, modified_by, performed_by, change_reason_code, change_commentary, iso_timestamp}= (=HD.cpp:125-137=). Provenance fields (=recorded_at=, =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=) are excluded from the diff table and shown on the card instead (=HD.cpp:99-114, 139-151=). Selecting a row previews it against its predecessor; the two combos can pick any pair; choosing From older than To shows =The <b>From</b> version must be older than the <b>To</b> version.=; equal selection shows either nothing (=(No field changes)=) or all fields (=HDB.cpp:514-563, 597-639=). Diff rows render as an HTML table with headers =Field= / =Value Diff= and intra-line colour spans (=HDB.cpp:710-755=). =Open=/=Revert= emit generic =(entityType, entityId, version)= signals (=HD.hpp:75-77=, =HD.cpp:191-201=).
+
+** 8.4 Size hint
+
+Every history dialog enforces a minimum of 900×600 via =sizeHint()= override (=HDB.cpp:277-280=).
+
+* 9. VALIDATION AND ERROR PRESENTATION
+
+There is /no field-level inline error UI/ (no red asterisks/text under fields) in this codebase. Errors are presented as modal message boxes plus status/error signals:
+
+| Class of problem | Presentation | Exact wording |
+|---+---+---|
+| Cross-field validation on Save (account) | =MessageBoxHelper::warning= title =Validation Error= | =Username is required.= / =Password is required for new accounts.= / =Passwords do not match.= / =Password must be at least 12 characters long.= (=ACC.cpp:537, 548-563=) |
+| Generic required-field validation | =MessageBoxHelper::warning= title =Invalid Input= | =Please fill in all required fields.= (=T-cpp:1347-1350=; =ACID.cpp:327-329=) |
+| Not connected | =errorMessage= signal (status area) | =Not connected to server. Please login.= (=ACC.cpp:520=) |
+| Save still loading | =errorMessage= signal | =Still loading account data — please try again in a moment.= (=ACC.cpp:530=) |
+| Change-reason cache missing/empty | =errorMessage= signal | see §7.4 |
+| Server rejects save | =errorMessage= signal /and/ =MessageBoxHelper::critical= title =Save Failed= (account: =Create Failed=) with the server's =message= verbatim | =Failed to save: %1= / =Failed to create account: %1= (=ACC.cpp:717-720, 955-958=) |
+| Server rejects delete | =errorMessage= signal /and/ critical title =Delete Failed= | =Failed to delete account: %1= (=ACC.cpp:1042-1044=) |
+| Delete confirmation | =MessageBoxHelper::question= title =Delete Account= | =Are you sure you want to delete account '%1'?= (=ACC.cpp:986-990=) |
+| Unsaved-close confirmation | =MessageBoxHelper::question= title =Unsaved Changes= | =You have unsaved changes. Close anyway?= (=DDB.cpp:123-126=) |
+| History load failure | =errorOccurred= + critical title =History Load Error= | =Failed to load history: %1= / =Failed to load history:\n%1= (=HDB.cpp:486-488=) |
+| Revert confirmation | =MessageBoxHelper::question= title =Revert= | =Are you sure you want to revert '%1' from version %2 back to version %3?\n\nThis will create a new version with the data from version %3.= (=HDB.cpp:796-805=) |
+| Account-level revert confirmation | =MessageBoxHelper::question= title =Revert Account= | =Are you sure you want to revert '%1' to version %2?\n\nThis will create a new version with the data from version %2.= (=ACC.cpp:1064-1071=) |
+| Child delete failed | =MessageBoxHelper::warning= title =Delete Failed= | server message (=ACET.cpp:193=) |
+| Child add before save | warning title =Save Required= | =Save the account first, then add contact information.= (=ACET.cpp:129-131=) |
+| Child operation while disconnected | warning title =Disconnected= | =Cannot add contact while disconnected from server.= / =Cannot save account contact information while disconnected from server.= / =Cannot delete account contact information while disconnected from server.= (=ACET.cpp:135-137=; =ACID.cpp:319-324, 398-403=) |
+
+=MessageBoxHelper= (=MBH.hpp:31-82=, =MBH.cpp:28-128=) renders all boxes with the app's recoloured Fluent icons (Question 48×48, Warning, Error, Info) and gives Yes a =Checkmark= icon and No a =Dismiss= icon (=MBH.cpp:39-66=). =question= defaults to =Yes | No= (=MBH.hpp:41-45=). =critical= has an overload taking expandable =detailedText= (=MBH.hpp:70-73=) but the account dialog does not use it.
+
+/Conflict/duplicate/optimistic-locking errors/: there is no dedicated conflict UI. The server's message is displayed verbatim in the critical box and in the =errorMessage= signal; nothing maps a conflict to stale-state handling. Server-side data-change notifications invoke =DetailDialogBase::markAsStale()= / =HistoryDialogBase::markAsStale()=, which for account mark the MDI parent stale and emit =statusMessage("Account %1 has been modified on the server")= (=ACC.cpp:1154-1166=; =DDB.hpp:96-97=).
+
+Combo boxes are globally configured (max 10 visible items, bounded popup view) by =WidgetUtils::setupComboBoxes(parent)=, called by every dialog after =setupUi()= (=WU.hpp:133-138=; =ACC.cpp:69=; =CRD.cpp:62=; =PW.cpp:31=; =ACID.cpp:52=).
+
+* 10. WHAT VARIES PER ENTITY
+
+The authoritative "what an implementer supplies" list is the codegen entity model's =** Qt= section plus the =*** Detail fields= table. For a codegen-bound entity, /everything/ below is data in the model =.org= file; the mustache templates produce the dialog. The account dialog is hand-authored and deviates (see §10.4).
+
+** 10.1 Model keys the implementer must supply (example: =MODEL:317-346=)
+
+Required =:…:= properties under =** Qt=:
+
+| Property | Example (account_contact_information) |
+|---+---|
+| =domain_include= | =ores.iam.api/domain/account_contact_information.hpp= |
+| =domain_class= | =iam::domain::account_contact_information= |
+| =protocol_include= | =ores.iam.api/messaging/account_contact_information_protocol.hpp= |
+| =collection_name= | =account_contact_informations= |
+| =item_var= | =accountContactInformation= |
+| =key_field= | =email= |
+| =get_request_class= / =get_response_class= / =get_message_type= | =iam::messaging::get_account_contact_informations_request= … |
+| =save_request_class= / =save_response_class= / =save_message_type= | =…save_account_contact_information_request= … |
+| =save_request_item_field= | =data= (the member the entity is assigned to) |
+| =delete_request_class= / =delete_response_class= / =delete_message_type= | =…delete_account_contact_information_request= … |
+| =history_request_class= / =history_response_class= / =history_message_type= | =…get_account_contact_information_history_request= … |
+| =has_explorer_api=, =has_export_macro= | =true= |
+| =parent_entity_singular=, =parent_id_field=, =parent_id_field_camel= | =account=, =account_id=, =accountId= (parent-scoped child) |
+| =settings_group=, =window_title=, =icon= | =AccountContactInformationListWindow=, =Account Contact Information=, =PersonAccounts= |
+
+Plus header-level: =#+entity_singular=, =#+entity_plural=, =#+entity_title=, =#+component=, and the column properties (=:type:=, =:nullable:=, =:primary_key:=, =:natural_key:=, =:cpp_type:=) (=MODEL:1-14, 31-215=).
+
+** 10.2 =*** Detail fields= table columns (one row per field, in display order)
+
+Columns (=MODEL:356-357=): =field=, =label=, =widget=, =type=, =is_key=, =is_required=, =placeholder=, =flag_source=, =combo_allow_blank=, =combo_fetch=, =combo_domain_type=, =combo_fetch_include=, =combo_fetch_fn=, =combo_watcher_name=, =combo_code_field=, =combo_tooltip_field=, =combo_sort_field=, =combo_label=, =combo_setter_pascal=, =badge_key=.
+
+Widget =type= values drive which Qt widget the UI template emits (=T-ui:57-177=) and which signal the cpp template connects (=T-cpp:315-371=):
+
+| =type= | Qt widget | Notes |
+|---+---+---|
+| =line_edit= | =QLineEdit= | key fields get =readOnly=true= and connect to =onCodeChanged= (=T-ui:57-72=, =T-cpp:316-320=) |
+| =text_edit= | =QPlainTextEdit= | 80–150 px tall (=T-ui:74-96=) |
+| =static_combo= | =QComboBox= (or custom via =combo_widget_class=) | =insertPolicy=NoInsert=; optional =badge_key= |
+| =dynamic_combo= | =QComboBox= | fetched either via a =combo_fetch_fn= include or by the caller calling =set<ComboSetter>()= |
+| =flagged_combo= | =QComboBox= | =flag_source= + =combo_fetch_fn= (e.g. =fetch_country_codes=), flag icons applied (=T-ui:122-133=) |
+| =check_box= | =QCheckBox= (blank text; optional =tristate=) | =T-ui:134-150= |
+| =spin_box= | =QSpinBox= with =spin_min=/=spin_max=; nullable int gets =specialValueText "(unset)"= | =T-ui:151-170= |
+| =colour= | =QPushButton= colour swatch | =T-ui:171-177=; wired by =wire_colour_picker= |
+| =date= (date_fields set) | date edit | validated as ISO-8601 before parse (=T-cpp:1316-1334=) |
+
+Semantics derived from these columns:
+- =is_key= → the key field: read-only in the =.ui=, drives =code()=/save log/delete lookup string, and connects to =onCodeChanged=.
+- =is_required= → contributes to =validateInput()= (=T-cpp:1309-1338=) and to save-button enablement.
+- Fields that are =:primary_key:=/=category define=d =locked_fields= are =setReadOnly(!createMode)= / =setEnabled(createMode)= in =setCreateMode()= (=T-cpp:513-542=); =is_locked_after_create= forces disabled in =setReadOnly()= (=T-cpp:573-620=); auto-generated keys are always read-only (=T-cpp:517-519=).
+- =combo_as_of_fetch_fn= fields are re-resolved when =setClientManager()=/=setReadOnly()=/=setX()= are called (=T-cpp:498-509, 627-638=).
+
+** 10.3 What is inherited / shared (never re-implemented per entity)
+
+- Shell: =QTabWidget= + provenance tab + button row =Delete=/=Close=/=Save= with the same icons (=T-ui:29-263=).
+- =DetailDialogBase=: =closeRequested=, =statusMessage=, =errorMessage=, =flagEdited=, =isCloseConfirmed=, =setChangeReasonCache=, =setBadgeCache=, =setImageCache=, =promptChangeReason=, =notifySaveSuccess=, =onCloseClicked= (with the shared unsaved-changes prompt), =requestClose=, =setProvenanceEnabled=, =populateProvenance=, =clearProvenance=, =initFlagButton=, =initKeyFlagField=, =nulloptIfZero=, pure-virtual =tabWidget()=/=provenanceTab()=/=provenanceWidget()=, default =entityImageId()=/=keyFlagField()=/=keyFlagIcon()=/=keyFlagIconSize()= (=DDB.hpp:84-413=).
+- =ProvenanceWidget=: the six read-only audit rows and their exact labels (=PW.ui:15-116=).
+- =ChangeReasonDialog= + =ChangeReasonCache=: reason filtering, touch-reason rules, commentary requirement, titles and button labels (=CRD.cpp=, =CRC.cpp=).
+- =ChildEntityTableWidget=: generic add/delete table (=CETW.cpp=).
+- =HistoryDialogBase= + (preferably) the generic =HistoryDialog=: timeline/diff machinery, Reload/Open/Revert toolbar, revert confirmation, diff helpers =checkString=/=checkInt=/=checkDouble=/=checkBool= (=HDB.hpp:286-301=), =runHistoryRequest= (=HDB.hpp:310-363=).
+- =MessageBoxHelper=, =PasswordMatchIndicator=, =WidgetUtils::setupComboBoxes=, =BadgeLabelUtils=, =IconUtils=, =LookupFetcher=, =FlagIconHelper=, =RelativeTimeHelper=.
+- Controller wiring pattern: construct → =setClientManager= → =setUsername= → =setChangeReasonCache= → =setBadgeCache= → =setImageCache= → =setX()= (or empty entity for create) → connect status/error/created/updated/deleted signals → wrap in =DetachableMdiSubWindow= (=WA_DeleteOnClose=) → =register_detachable_window= → =connect_dialog_close= → =show_managed_window=; history via the toolbar =History= action (=CTRL:392-477=; =MDIW:866-882=).
+
+** 10.4 Per-entity deltas the implementer actually writes
+
+1. /The entity-specific field set/ (=*** Detail fields=).
+2. /The title/: =windowTitle = "<entity_title> Details"= (=T-ui:26-28=).
+3. /Static combo contents/ and dynamic/flagged combo population (=T-cpp:291-300, 411-485, 755-931=).
+4. /=validateInput()=/ — the extra required-field / date checks (=T-cpp:1309-1338=).
+5. /=updateUiFromX()= / =updateXFromUi()=/ field↔domain mapping (=T-cpp:933-1292=).
+6. /Signal names/: =<item>Saved(const QString& code)= / =<item>Deleted(const QString& code)= (=T-hpp:111-113=).
+7. /Optional facets/ (each adds UI/actions/state): =has_flag_icon= (Icon group + =setImageCache= + =entityImageId()=), =has_key_flag_icon= (+ =keyFlagField()=/=keyFlagIcon()=, =key_flag_is_pair= → =keyFlagIconSize()=), =has_version_navigation= (Revert/First/Previous/Next/Last toolbar + =setHistory()= + =historicalVersion_=), =has_toolbar=, =has_generate_action= (Generate action calling the synthetic generator), =has_setting_gated_actions=, =has_combo_fields=, =has_colour_fields=, =has_uuid_primary_key=, =has_as_of_combo_fields= (=T-hpp:12-27, 80-97, 107-215=).
+8. /A composite-child host/ class (like =AccountChildEntityTables=) if the entity has child tables, plus a model =:implements 7E4A2C8D-…= block.
+9. /A controller + plugin registration/ (menu action, =showListWindow=) — see =cpp_qt_controller.cpp.mustache=.
+
+** 10.5 Account-specific deviations from the generated standard (important for a faithful React port)
+
+1. /Hand-written/, not generated (=AccountDetailDialog.hpp:1-20= has no AUTO-GENERATED banner; =AccountContactInformationDetailDialog.hpp:20-24= does).
+2. /6 tabs, not one group per view_group/: =General=, =Security=, =Login Status=, =Roles=, =Parties=, =Contact Information= (runtime), =Provenance=; the generated standard emits one tab per =view_group= plus =Provenance=.
+3. /Create mode does not prompt a change reason at all/ and =save_account_request= has no audit fields (=ACCTP.hpp:45-53=), whereas the template prompts Create with category =system=.
+4. /Edit mode prompts a change reason only when parties/roles changed/, and the account =update_account_request= is sent with empty audit fields even though it has them (=ACC.cpp:766-775, 814-821=; =ACCTP.hpp:85-86=). A pure email/full-name/job-title edit is therefore un-audited.
+5. /Delete does not prompt a change reason/ (=ACC.cpp:971-1049=), unlike the template (=T-cpp:1446-1448=).
+6. /Password fields/ exist and are create-only (a hand-written concern absent from the generic template).
+7. /Admin checkbox row/ exists but is permanently hidden (=ACC.ui:94-112=).
+8. Uses the /legacy =AccountHistoryDialog=/ rather than the generic =HistoryDialog=; its Changes diff only covers =Username= and =Email= (=ACH.cpp:84-94=).
+9. =code()= is not overridden for the account dialog; identity is exposed as =accountId()= returning the UUID string (=ACC.hpp:141=; =ACC.cpp:1168-1170=) and the controller matches notifications on it (=CTRL:259=).
+10. Extra inline help absent from the generic template: password match border, party default tooltip/badge, account-type-driven party warning, reports-to async combo.
+
+* Quick reference — exact button/action labels
+
+| Surface | Labels (exact) |
+|---+---|
+| Detail dialog buttons | =Delete=, =Close=, =Save= |
+| Detail dialog toolbar (historical) | =Revert to this version= |
+| Change-reason dialog buttons | =Create= / =Save= / =Confirm Delete=, =Cancel= |
+| Change-reason dialog titles | =New Record Reason=, =Change Reason Required=, =Deletion Reason Required= |
+| History dialog toolbar | =Reload=, =Open=, =Revert= |
+| History dialog buttons | =Close= |
+| Child table toolbar (account contacts) | =Add Contact=, =Delete Contact= |
+| Roles widget tooltips | =Assign selected role=, =Revoke selected role= |
+| Parties widget tooltips | =Add selected party=, =Remove selected party= |
+| List-window toolbar (account) | =Reload=, =Add=, =Edit=, =Delete=, =Lock=, =Unlock=, =Reset Pwd=, =History= (=View account history=), =Sessions= (=View session audit=) — =MDIW:61-69, 128, 134= |

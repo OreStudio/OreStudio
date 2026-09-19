@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 801A1954-2E68-40D1-BA95-E171B64576EA
+:END:
+#+title: Task: Generate the ores.web TypeScript from ores.codegen
+#+description: Retarget the ores.codegen TypeScript output to projects/ores.web, delete the hand-copied generated files and the ores.typescript component, and add a check that proves the generated TypeScript is in step with the org model.
+#+type: task
+#+level: s1
+#+filetags: :integrate-volga-web-ui:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One codegen run writes every generated TypeScript file into projects/ores.web, the hand-copied copies and projects/ores.typescript are gone, and a drift check fails when the model and the checked-in output disagree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- ores.codegen writes the ui and protocol TypeScript into projects/ores.web.
+- projects/ores.typescript is deleted.
+- The hand-copy script sync-generated.sh is deleted.
+- A drift check covers the generated TypeScript.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Retargeted. =ores.ts.ui.ui_meta= writes to
+=projects/ores.web/packages/web/src/generated/{component}/ui/{entity}_ui.ts=,
+and =ores.ts.protocol.protocol_types= writes to
+=projects/ores.web/packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts=.
+The hand-written =ui-contract.ts= moved out of the generated tree to
+=packages/web/src/=. =projects/ores.typescript= and =scripts/sync-generated.sh=
+are gone.
+
+Regenerating reproduces the 90 UI modules byte for byte apart from the
+contract import, and reproduces the 6 protocol modules exactly.
+
+The committed tree holds only the components the drift gate covers. A full
+regeneration also emits UI metadata for =dq=, =scheduler= and =trading=, which
+the gate's registry omits, so that output is not committed. Regeneration runs
+once per =KNOWN_DRIFT_FREE= slug, never with =--all=.
+
+=check_component_drift.py --all= reports no drift in the generated tree. Its
+only complaint is the pre-existing uncommitted edit to
+=projects/ores.compass/tests/test_deny_bare_stash_hook.py=, which is not part
+of this branch.

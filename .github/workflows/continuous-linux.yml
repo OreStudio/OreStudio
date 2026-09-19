@@ -145,6 +145,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      # The disk cleanup above deletes the image's Node.js, and ores.web needs
+      # npm. Without this step the component skips itself with a warning and the
+      # build still reports success, so the TypeScript is never compiled here.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
       - name: Validate SQL Schema
         run: |
           pip install --quiet pystache

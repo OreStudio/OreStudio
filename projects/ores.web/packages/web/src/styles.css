@@ -1,0 +1,140 @@
+/*
+ * Tailwind, with the design tokens declared as theme variables.
+ *
+ * The palette is a low-glare dark theme suitable for long sessions, and the
+ * tokens are named for their role rather than their colour so a change of hue
+ * is one edit.
+ *
+ * The trade palette is deliberately narrow: a terminal shows a lot of figures,
+ * so the accent is reserved for interaction, the surfaces carry the structure,
+ * and nothing competes with the data.
+ */
+@import 'tailwindcss';
+
+/*
+ * The palette is taken from the project site at orestudio.github.io so a link
+ * from there arrives somewhere that looks like the same project.
+ */
+@theme {
+  --color-bg-primary: #121214;
+  --color-bg-secondary: #1a1a1e;
+  --color-surface-base: #121214;
+  --color-surface-raised: #1a1a1e;
+  --color-surface-overlay: #26262b;
+  --color-surface-hover: #26262b;
+
+  --color-line-subtle: #21262d;
+  --color-line: #30363d;
+  --color-line-strong: #4a5568;
+
+  --color-ink: #e3e3e6;
+  --color-ink-muted: #a1a1aa;
+  --color-ink-faint: #71717a;
+  --color-ink-inverse: #0d1117;
+
+  --color-accent: #58a6ff;
+  --color-accent-bright: #8ab4f8;
+  --color-accent-dim: #21262d;
+
+  --color-up: #3fb950;
+  --color-down: #f85149;
+  --color-warn: #d29922;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --radius-card: 0.5rem;
+}
+
+/*
+ * A preflight extension rather than a reset of my own. Tailwind already handles
+ * the reset; this only sets what the application owns.
+ */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-bg-primary text-ink font-sans antialiased;
+    /* The project site sets 1.75, and matching it is most of what makes two
+       pages read as one publication. */
+    line-height: 1.75;
+  }
+
+  /* Focus is always visible. A keyboard user must never lose their place. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  /* One card treatment, used by every panel, so the surfaces stay consistent. */
+  .card {
+    @apply rounded-[var(--radius-card)] border border-line bg-surface-raised;
+  }
+}
+
+/*
+ * A row that changed, flashing as it arrives.
+ *
+ * The mark stays, so a person who looked away still finds it, but it runs a few
+ * times and stops. Something that flashes forever is not news, it is a decoration
+ * that becomes annoying within a day — which is why the animation carries an
+ * iteration count and the border underneath it does not.
+ */
+/*
+ * A control with news behind it.
+ *
+ * A ring that expands and fades, repeating for as long as the news is true and
+ * stopping the moment it is not. A pulse rather than a flash: this can be on
+ * screen for a while, and something that demands attention indefinitely is
+ * something people learn to ignore.
+ */
+@keyframes stale-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--color-accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 0%, transparent);
+  }
+}
+
+.stale-pulse {
+  animation: stale-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stale-pulse {
+    animation: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+}
+
+@keyframes row-changed {
+  0%,
+  100% {
+    background-color: color-mix(in oklab, var(--color-accent) 7%, transparent);
+  }
+  50% {
+    background-color: color-mix(in oklab, var(--color-accent) 22%, transparent);
+  }
+}
+
+.row-changed {
+  animation: row-changed 900ms ease-in-out 3;
+}
+
+/* A person who asked their system for less motion gets the mark without the
+   movement. The information is the same. */
+@media (prefers-reduced-motion: reduce) {
+  .row-changed {
+    animation: none;
+  }
+}

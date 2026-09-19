@@ -33,7 +33,7 @@ In execution order:
 
 4. /Wire the service layer./ Add NATS handlers and service methods following the protocol conventions in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 
-5. /Declare the UI metadata./ Fill in the =** Presentation= drawer of the entity model: =collection_name=, =key_field=, and the =*** Columns= and =*** Detail fields= tables. The =ores.ts.ui= facet emits the entity's TypeScript UI metadata to =projects/ores.typescript/src/<component>/ui/<entity>_ui.ts=, which the shared =DataTable= and =FieldControl= render. See [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
+5. /Declare the UI metadata./ Fill in the =** Presentation= drawer of the entity model: =collection_name=, =key_field=, and the =*** Columns= and =*** Detail fields= tables. The =ores.ts.ui= facet emits the entity's TypeScript UI metadata to =projects/ores.web/packages/web/src/generated/<component>/ui/<entity>_ui.ts=, which the shared =DataTable= and =FieldControl= render. See [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
 
 6. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
 

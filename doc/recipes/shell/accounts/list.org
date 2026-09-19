@@ -43,7 +43,6 @@ ores-shell>
 | 3860fdff-54db-4d83-bb6b-3a7f45b88687 | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | 0308a18f-d075-4ea0-a7a9-0211d7ca217b | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | e775c0ca-5d55-4d2d-a5dd-5f6ae7a432ba | ores_shell_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
-| cd426d64-3fcc-4306-8e5a-19149e3b89e0 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | 30ed8453-69a6-4f5c-92c3-930424565cd5 | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | a9fb774d-2048-48dc-a96c-e432d7107ea4 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 +--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+

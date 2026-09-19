@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 5E4C1A90-3B27-4E6D-9F01-7A2C8D4B6E15
+:END:
+#+title: Protocol types are generated from the C++ codegen model
+#+description: Why the TypeScript wire types are generated from the org entity model rather than hand-written, and where the C++ reflection emitter fits.
+#+type: knowledge
+#+level: cross
+#+filetags: :decision:codegen:typescript:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+* Status
+
+Proposed. The meta-model reader is built and verified. The codegen template
+and the hand-written-protocol emitter are not built.
+
+* Context
+
+The TypeScript client must encode msgpack bodies whose keys are the exact C++
+member names reflect-cpp writes. A single renamed field desynchronises the
+client silently: the server cannot decode the request, and because the C++ IAM
+handlers do not reply when decoding fails, the client sees a thirty second
+timeout rather than an error.
+
+Hand-writing those names in TypeScript makes every protocol change a two-place
+edit with no compiler help across the language boundary.
+
+* Decision
+
+Extend the existing code generator, which already renders the C++ structs from
+the org entity model, to also render the TypeScript protocol types and their
+validation schemas from that same model.
+
+The org files are the single source of truth. Each entity under
+=projects/<component>/**/modeling/*.org= already declares =:type:=,
+=:cpp_type:=, =:nullable:=, and =:primary_key:= per column, and codegen renders
+=book_protocol.hpp= from it. A TypeScript target renders beside it from the same
+input, so the two cannot disagree.
+
+The generated artefact lives in the C++ repository, next to the header it
+mirrors, and the TypeScript project consumes it. That keeps the interface
+contract on the producer side and lets the existing =--check= drift gate apply
+unchanged.
+
+* Consequences
+
+The generator covers the codegen-managed entities: 148 of approximately 151,
+across 13 components, which renders 1184 protocol messages.
+
+It does not cover the handlers that were written by hand. The authentication
+surface is the important case: =login_protocol.hpp= and =account_protocol.hpp=
+carry the login, party selection, refresh, and account operations, and
+=account.hpp= carries the account aggregate. None of them is codegen-managed,
+so none is visible to the meta-model.
+
+* The hand-written protocols
+
+Measured from the current tree. The accounts milestone needs exactly two
+headers.
+
+| Header | Structs | Subjects |
+|---|---|---|
+| =login_protocol.hpp= | 10 | 5 |
+| =account_protocol.hpp= | 28 | 13 |
+
+Two findings from that survey.
+
+=public_key_request= declares a subject but no =response_type= and has no
+handler. No generator can pair it. It should be deleted or given a response.
+
+The =account= aggregate has a table but is not codegen-managed. Its org file,
+=projects/ores.iam/core/modeling/iam_account.org=, is a =knowledge= page that
+hand-links to =account.hpp=; it has no =* Columns= section. It therefore cannot
+use the entity model, which only emits list, save, delete, and history pairs.
+
+* Considered alternatives
+
+*Add a codegen model type for operations.* A new =ores.codegen.operation=
+type expresses subject-scoped request and response pairs with arbitrary field
+lists. It fits the existing machinery, which already dispatches on
+=#+type:= across eight model types and maps addresses such as
+=ores.cpp.protocol= to templates. The entity model cannot express these shapes:
+it always emits =offset= and =limit= fields, so it cannot render an empty
+=refresh_request=, and its reply shapes are fixed.
+
+Cost is the reason this is deferred rather than rejected. Porting 38 structs
+into a new model is a real refactor of working authentication code and is not
+on the critical path for the accounts screen.
+
+*Emit JSON Schema from C++ reflection.* =rfl::json::to_schema= already works
+in this tree, and every message type is reflectable because the handlers decode
+them. A small binary that walks an explicit list of message types and prints
+JSON Schema would be the absolute single source of truth and would cover the
+hand-written protocols without refactoring them. It costs more C++ work and a
+build step.
+
+*Hand-write the TypeScript schemas.* The current state. Fastest to start and
+the largest ongoing drift risk. Acceptable only as a temporary measure.
+
+* Current implementation
+
+=scripts/emit_protocol_ir.py= reads the org entity model directly and emits a
+language-neutral protocol IR. It reproduces the subjects and field names of the
+generated C++ exactly; for =tenant= it yields =iam.v1.tenants.list=, =.save=,
+=.delete=, and =.history=, matching =tenant_protocol.hpp= line for line. It
+supports =--all= and =--check=.
+
+The next step is the =ores.ts.protocol= template that renders this IR as
+TypeScript, followed by the operation model type or the reflection emitter for
+the authentication surface.

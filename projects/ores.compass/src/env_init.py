@@ -123,6 +123,10 @@ BASE_PORT_STEP = 200
 EPHEMERAL_PORT_FLOOR = 32768
 HTTP_PORT_OFFSET_DEBUG = 0
 HTTP_PORT_OFFSET_RELEASE = 1
+# The TypeScript web interface (ores.web). Offset 2 held the retired Wt
+# client, so it is free again: the BFF listens here and serves both the HTTP
+# API and the built browser bundle.
+WEB_PORT_OFFSET = 2
 SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
@@ -165,6 +169,18 @@ def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
 def _get_or_gen(existing: dict, key: str) -> str:
     val = existing.get(key)
     return val if val else _gen_password()
+
+
+def _env_value(existing: dict, key: str, fallback: str) -> str:
+    """Value for a generated .env entry, in precedence order.
+
+    The checkout's own .env wins. The process environment is a fallback only
+    for a checkout that has no value yet (a fresh provision, or CI), because
+    an ORES_* exported by another worktree's shell must never rewrite this
+    checkout's identity: the database name and the NATS subject prefix decide
+    which environment a command touches, so a stale exported value can point
+    a command at another worktree's database."""
+    return existing.get(key) or os.environ.get(key) or fallback
 
 
 def _get_or_gen_uuid(existing: dict, key: str) -> str:
@@ -452,20 +468,17 @@ def run(argv, project_root: Path) -> int:
     # DB name: prefer explicit existing value (set by compass env provision or
     # a manual override), then derive from label_lower (fixes hyphen bug for
     # adjective-noun names like festive-hawking → ores_dev_festive_hawking).
-    db_name = (os.environ.get("ORES_DATABASE_NAME")
-               or existing.get("ORES_DATABASE_NAME")
-               or f"ores_dev_{label_lower}")
+    db_name = _env_value(existing, "ORES_DATABASE_NAME",
+                         f"ores_dev_{label_lower}")
 
     # NATS subject prefix: hyphens become dots (e.g. festive-hawking → ores.dev.festive.hawking).
-    nats_prefix = (os.environ.get("ORES_NATS_SUBJECT_PREFIX")
-                   or f"ores.dev.{env_name.replace('-', '.')}")
+    nats_prefix = _env_value(existing, "ORES_NATS_SUBJECT_PREFIX",
+                             f"ores.dev.{env_name.replace('-', '.')}")
 
     # NATS wire payload format: json or msgpack, decided once at process
     # startup (see ores::nats::wire_format). Preserve an existing choice on
     # re-run; default to msgpack for fresh environments.
-    nats_wire_format = (os.environ.get("ORES_NATS_WIRE_FORMAT")
-                        or existing.get("ORES_NATS_WIRE_FORMAT")
-                        or "msgpack")
+    nats_wire_format = _env_value(existing, "ORES_NATS_WIRE_FORMAT", "msgpack")
 
     # Ports: scan sibling environments to find the next free base_port slot,
     # then override with any value already in .env (pre-assigned by env
@@ -488,6 +501,7 @@ def run(argv, project_root: Path) -> int:
     else:
         http_port = base_port + HTTP_PORT_OFFSET_DEBUG
     site_port = base_port + SITE_PORT_OFFSET
+    web_port = base_port + WEB_PORT_OFFSET
 
     nats_url = f"nats://localhost:{nats_port}"
     nats_monitor_url = f"http://localhost:{nats_monitor_port}"
@@ -529,11 +543,11 @@ def run(argv, project_root: Path) -> int:
             print("Aborted.")
             return 1
 
-    # Postgres superuser password: env var > existing > prompt.
-    if os.environ.get("PGPASSWORD"):
-        pgpassword = os.environ["PGPASSWORD"]
-    elif existing.get("PGPASSWORD"):
-        pgpassword = existing["PGPASSWORD"]
+    # Postgres superuser password: existing > env var > prompt. The checkout's
+    # .env wins for the same reason as the identity values above; an exported
+    # PGPASSWORD is only a fallback where the checkout has none yet.
+    pgpassword = existing.get("PGPASSWORD") or os.environ.get("PGPASSWORD")
+    if pgpassword:
         print("Reusing existing PGPASSWORD.")
     else:
         import getpass
@@ -560,7 +574,6 @@ def run(argv, project_root: Path) -> int:
     service_role = f"ores_{label_lower}_service"
     ddl_user = f"ores_{label_lower}_ddl_user"
     cli_user = f"ores_{label_lower}_cli_user"
-    wt_user = f"ores_{label_lower}_wt_user"
     http_user = f"ores_{label_lower}_http_user"
     shell_user = f"ores_{label_lower}_shell_user"
     compute_wrapper_user = f"ores_{label_lower}_compute_wrapper_user"
@@ -608,13 +621,13 @@ def run(argv, project_root: Path) -> int:
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
     cli_pw = _get_or_gen(existing, "ORES_DB_CLI_PASSWORD")
-    wt_pw = _get_or_gen(existing, "ORES_DB_WT_PASSWORD")
     http_pw = _get_or_gen(existing, "ORES_DB_HTTP_PASSWORD")
     shell_pw = _get_or_gen(existing, "ORES_DB_SHELL_PASSWORD")
     readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
     test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
+    web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
@@ -715,6 +728,12 @@ ORES_COMPILER_CACHE={compiler_cache}
 ORES_HTTP_PORT={http_port}
 ORES_CONTROLLER_SERVICE_HTTP_PORT={http_port}
 ORES_SITE_PORT={site_port}
+# The TypeScript web interface (ores.web). One process serves the browser
+# bundle and the HTTP API on this port.
+ORES_WEB_PORT={web_port}
+# Interface the process binds. 127.0.0.1 keeps it on this host; 0.0.0.0
+# exposes it to a browser on another machine.
+ORES_WEB_BFF_HOST={web_bff_host}
 ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
 ORES_NATS_MONITOR_PORT={nats_monitor_port}
@@ -752,7 +771,6 @@ ORES_DB_RO_ROLE={ro_role}
 ORES_DB_SERVICE_ROLE={service_role}
 ORES_DB_DDL_USER={ddl_user}
 ORES_DB_CLI_USER={cli_user}
-ORES_DB_WT_USER={wt_user}
 ORES_DB_HTTP_USER={http_user}
 ORES_DB_SHELL_USER={shell_user}
 ORES_DB_READONLY_USER={readonly_user}
@@ -763,7 +781,6 @@ ORES_TEST_DB_DDL_USER={test_ddl_user}
 # ---------------------------------------------------------------------------
 ORES_DB_DDL_PASSWORD={ddl_pw}
 ORES_DB_CLI_PASSWORD={cli_pw}
-ORES_DB_WT_PASSWORD={wt_pw}
 ORES_DB_HTTP_PASSWORD={http_pw}
 ORES_DB_SHELL_PASSWORD={shell_pw}
 ORES_DB_READONLY_PASSWORD={readonly_pw}
@@ -813,7 +830,6 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         {"mapper": "CLI", "user": cli_user, "pw": cli_pw, "uses_db": True},
         {"mapper": "SHELL", "user": shell_user, "pw": shell_pw, "uses_db": False},
         {"mapper": "HTTP_SERVER", "user": http_user, "pw": http_pw, "uses_db": True},
-        {"mapper": "WT", "user": wt_user, "pw": wt_pw, "uses_db": True},
     ]
     for app in client_apps:
         if not app["uses_db"]:

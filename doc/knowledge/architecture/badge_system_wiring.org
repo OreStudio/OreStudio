@@ -63,8 +63,9 @@ structure per new badge domain is always three blocks:
 The Qt client held the badge resolver: =ores.qt.api='s =BadgeCache=,
 filled at login and injected into an =EntityItemDelegate= that painted
 the badge columns and resolved the combo entries. That client is
-removed, and =ores.typescript= holds UI metadata only, so nothing
-resolves or paints a badge today. *Do not look for a live resolver;*
+removed. The TypeScript web client in =ores.web= holds the generated UI
+metadata and a shared =DataTable=, but it carries no badge resolver yet,
+so nothing resolves or paints a badge today. *Do not look for a live resolver;*
 there is none.
 
 What survives is the contract on the model side. A column or detail

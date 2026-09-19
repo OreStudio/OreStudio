@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 097F02D2-9CD5-4909-8C4B-85CD24F39DB8
+:END:
+#+title: Task: Fix the Windows build and the SQL component prefix
+#+description: Initial task for: Hotfix: Windows build and SQL schema validation fail on main
+#+type: task
+#+level: s1
+#+filetags: :main_ci_red:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/main-ci-red
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9B3CE52-0C42-4F78-88D2-A76F7B487482][Hotfix: Windows build and SQL schema validation fail on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Restore a green build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D9B3CE52-0C42-4F78-88D2-A76F7B487482][Hotfix: Windows build and SQL schema validation fail on main]] |
+| Now          | Fixes applied; local checks pass.      |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, then raise the PR.             |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- The SQL schema validator reports no naming warning for =ores_ore_=.
+- =ores.ore.api= links libfort, so the Windows Clang link resolves.
+- The MSVC C4244 warning is gone.
+
+* Plan
+
+Three independent defects sit on main. Fix each one at its source.
+
+1. Warning C4244 in =environment_mapper_factory.cpp=. The lambda
+   declares =-> char= and returns =std::tolower(c)=, which is an
+   =int=. The MSVC build promotes the warning to an error through
+   =/WX=.
+2. Missing link of =libfort::fort= in =ores.ore/api/src/CMakeLists.txt=.
+   =series_key_shape_table.cpp= calls the libfort C API. Linux accepts
+   undefined symbols in a shared library. The Windows linkers do not.
+3. Unknown component prefix =ores_ore_= in the SQL validator. Register
+   the prefix in =COMPONENT_PREFIXES=.
+
+* Notes
+
+Root cause and fix of each defect.
+
+- =environment_mapper_factory.cpp:36=, both MSVC configs:
+  =warning C4244: 'return': conversion from 'int' to 'char', possible
+  loss of data=, promoted to =error C2220= by =/WX=. The build stops at
+  edge 24 of 4453. Fixed with =static_cast<char>= and an explicit
+  =<cctype>= include.
+- =ores.ore.api.dll=, both Clang configs: the link fails on undefined
+  =ft_create_table=, =FT_BASIC_STYLE=, =ft_set_border_style=,
+  =ft_set_cell_prop=, =ft_ln=, =ft_destroy_table=, =ft_nwrite= and
+  =ft_to_string=. Commit e069e792f1 turned ores.ore.api from an
+  interface library into a real library, and left out its libfort link.
+  Fixed by adding =libfort::fort= to the private link list.
+- SQL validation, all four Linux jobs and the Nightly Build:
+  =NAMING_010= and =NAMING_002= on =ores_ore_series_key_shapes_tbl=,
+  because =COMPONENT_PREFIXES= has no =ores_ore_= entry. Fixed by
+  registering the prefix.
+
+Verification runs on the checkout's clang debug preset. The MSVC
+warning itself needs the Windows jobs, which are only observable on the
+next scheduled run.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Three defects are fixed on =hotfix/main-ci-red=.
+
+=environment_mapper_factory.cpp= casts the =std::tolower= result to
+=char= and includes =<cctype>=, so MSVC no longer promotes C4244.
+=ores.ore/api/src/CMakeLists.txt= links =libfort::fort=, so the
+Windows link of =ores.ore.api.dll= resolves its libfort symbols.
+=COMPONENT_PREFIXES= registers =ores_ore_=, so the validator reports
+neither =NAMING_010= nor =NAMING_002=.
+
+Evidence:
+
+- =validate_schemas.sh= drops from four warnings to two. The two
+  removed warnings are the =ores_ore_= naming pair.
+- =ores.utility.lib= and =ores.ore.api.lib= build clean on the
+  checkout's clang debug preset. The link line of the latter now holds
+  =libfort.a=.
+- All 254 =ores.codegen= tests pass.
+- The 11 =environment_mapper_factory= and =shared_domain_registry=
+  cases pass.
+
+Limitations: the MSVC and clang-cl diagnostics are only observable on
+the Windows runners, which carry no =pull_request= trigger. The next
+scheduled Continuous Windows run after merge is the signal. The two
+remaining validator warnings keep the Linux jobs red, and task
+7E064C21-14EA-401C-A73D-35EA1743EED7 owns them.
+

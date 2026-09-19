@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: D9B3CE52-0C42-4F78-88D2-A76F7B487482
+:END:
+#+title: Story: Hotfix: Windows build and SQL schema validation fail on main
+#+description: The Windows MSVC jobs fail on a warnings-as-errors C4244; the Windows Clang jobs fail to link ores.ore.api; the SQL schema validator rejects the ores_ore_ component prefix.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:sprint_25:v0:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Latest main is red on Windows: the MSVC build fails on a warnings-as-errors warning, and the Clang build fails to link ores.ore.api. The SQL schema validator also rejects the ores_ore_ component prefix. Restore a green build.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | All three fixes are applied and verified locally. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit, then raise the PR.             |
+| Last touched  | 2026-09-19                               |
+
+* Acceptance
+
+- The SQL schema validator accepts the =ores_ore_= component prefix.
+- The Windows MSVC and Clang jobs compile and link ores.ore.api.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DFC2C1E4-8C57-4E15-88F6-C8AC80BA259A][Scaffold story: Hotfix: Windows build and SQL schema validation fail on main]] | STARTED | 2026-09-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:097F02D2-9CD5-4909-8C4B-85CD24F39DB8][Fix the Windows build and the SQL component prefix]] | STARTED | 2026-09-19 | | Initial task for: Hotfix: Windows build and SQL schema validation fail on main |
+
+* Decisions
+
+- The =ores_ore_= prefix is registered in the validator rather than
+  renaming the table. =projects/ores.ore= is a component of the
+  product, so the table name is correct and the registry was
+  incomplete.
+- The two remaining validator warnings stay out of this hotfix. They
+  belong to the market series asset class junction, and task
+  7E064C21-14EA-401C-A73D-35EA1743EED7 in the
+  =complete-market-series-classification= story already owns them.
+
+* Out of scope
+
+- =DROP_001= and =RLS_001= on
+  =ores_marketdata_market_series_asset_classes_tbl=. The junction
+  template ignores the =rls_tenant_isolation= flag, and the table is
+  absent from =marketdata_drop.sql=. Task
+  7E064C21-14EA-401C-A73D-35EA1743EED7 covers both.

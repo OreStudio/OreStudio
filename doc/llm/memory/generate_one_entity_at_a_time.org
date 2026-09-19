@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 77769020-CCA6-4F2C-ADAB-81C0AEFF7FF2
+:END:
+#+title: Generate one entity at a time, through an address
+#+description: Run codegen per entity with --address rather than per component or with --all, so a narrow change produces a narrow diff.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :codegen:drift:hygiene:memory:feedback:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+Regenerate codegen output one entity at a time, always through an explicit --address, using compass codegen entity generate <entity> --address <facet> (--diff first to preview). Never run a whole-component regeneration or --all to check one model.
+
+*Why:* A whole-tree or whole-component run materializes output for every model the facet admits, so one narrow change produces hundreds of files, most of them unrelated. The TypeScript facet widening showed this: a plain check_component_drift.py --all regenerated TypeScript for every drift-free component and aborted on four entities whose response carries ores::utility::domain::hierarchy_node, a gap that has nothing to do with the change under test.
+
+*How to apply:* Preview with --diff, confirm the paths named are the ones the change should touch, then write. Keep check_component_drift.py for verification, and constrain it with --address when a tree-wide proof is needed (--all --address ores.cpp regenerates C++ only and leaves the TypeScript alone).

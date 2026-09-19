@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 57323233-C2BA-459A-BC19-94D4FDA0849A
+:END:
+#+title: Task: Adopt the Volga prototype as projects/ores.web
+#+description: Copy the Volga TypeScript web UI into projects/ores.web, rename it to ORE Studio conventions, remove the committed build artefacts and secrets, add the licence headers, and declare the component in the build.
+#+type: task
+#+level: s1
+#+filetags: :integrate-volga-web-ui:sprint_25:v0:
+#+owner: marco
+#+branch: feature/integrate-volga-web-ui
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+projects/ores.web holds the Volga prototype under ORE Studio naming, and the component typechecks and passes its tests.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- The prototype's packages live under projects/ores.web/packages with the npm scope @ores.
+- No committed node_modules, .runtime, .env, screenshot or cache files remain.
+- New source files carry the ORE Studio licence header.
+- npm run typecheck and npm test pass for the component.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

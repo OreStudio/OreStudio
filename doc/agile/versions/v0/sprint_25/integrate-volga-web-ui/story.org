@@ -21,11 +21,11 @@ The Volga prototype is a TypeScript web interface for ORE Studio. It lives outsi
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | All four tasks are done; PR #2108 is open. |
-| Waiting on    | Review and CI.                         |
-| Next          | Address the review, then merge and retire =projects/ores.web/doc= remnants. |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-09-19                               |
 
 * Acceptance
@@ -75,3 +75,34 @@ The Volga prototype is a TypeScript web interface for ORE Studio. It lives outsi
 * Out of scope
 
 -
+
+* Result
+
+Delivered as PR #2108, merged as =3e71eae73a=.
+
+=projects/ores.web= holds the prototype under ORE Studio conventions as four
+npm workspaces (=bff=, =contracts=, =web= and =wire-protocol=), and
+=ores.codegen= writes its TypeScript there. The hand-copied output and the
+=ores.typescript= component are gone. The drift gate reproduces the committed
+tree exactly, over the 90 UI modules and the 6 protocol modules of the
+drift-free components, so a regeneration that differs fails the check.
+
+The service is a registry entry with =:runtime: node= and =:entry_point=, on
+=ORES_WEB_PORT=, which is offset 2 of the environment block. =compass services
+start= launches the fleet including it, and the fleet was cycled end to end:
+stop, start, per-service start, stop and restart, and a browser sign-in
+against the ACME tenant.
+
+Acceptance is met. The component typechecks, its suites pass under =npm test=
+and under ctest as =ores.web.typecheck= and =ores.web.tests=, the build
+compiles it wherever npm exists, and a TypeScript workflow runs both checks on
+a pull request. Linux CI installs Node now; without it the component had been
+skipping itself with a warning that left the job green.
+
+The review round is recorded in the verify task. Its four findings are fixed:
+the unused session secret is gone, the busctl quoting note is corrected, the
+rate limiter is bounded, and the CORS allow-list records its same-site
+assumption. The branch also carries three fixes the integration depended on:
+the Wt residue that made =compass db recreate= fail, the worktree-scoped
+database variables, and =env configure= preferring the checkout's own =.env=
+to the ambient process environment.

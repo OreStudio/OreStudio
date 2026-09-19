@@ -8,7 +8,7 @@
 #+filetags: :integrate-volga-web-ui:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2109
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2109][#2109]] | [doc] Close the Volga web UI integration story |
 
 * Review
 

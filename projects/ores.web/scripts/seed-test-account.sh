@@ -42,7 +42,6 @@
 #   AUDIT_ACCOUNT  Real username recorded in the audit columns.
 set -euo pipefail
 
-CHECKOUT="${CHECKOUT:-/mnt/development/OreStudio/ores_dev_festive_dijkstra}"
 USERNAME="${1:-ores_web_probe}"
 PASSWORD="${2:-Secure-Password-123}"
 TENANT_ID="${TENANT_ID:-ffffffff-ffff-ffff-ffff-ffffffffffff}"
@@ -52,21 +51,43 @@ CHANGE_REASON="${CHANGE_REASON:-system.test}"
 # within its tenant, which is what an account used for verification needs.
 ROLE="${ROLE:-TenantAdmin}"
 
-WORKSPACE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$WORKSPACE/../.." && pwd)"
+ENV_FILE="$REPO_ROOT/.env"
 HELPER="$WORKSPACE/.runtime/build/make-test-hash"
+
+env_value() {
+  sed -n "s/^$1=//p" "$ENV_FILE" | head -1
+}
+
+PRESET="$(env_value ORES_PRESET)"
+PRESET="${PRESET:-linux-clang-debug-make}"
+DB_HOST="$(env_value ORES_DB_HOST)"
+DB_HOST="${DB_HOST:-localhost}"
+DB_DATABASE="$(env_value ORES_DATABASE_NAME)"
+# PGPASSWORD belongs to the postgres superuser that `compass db` also uses, so
+# the user defaults to postgres unless the environment names another.
+DB_USER="$(env_value PGUSER)"
+DB_USER="${DB_USER:-postgres}"
+
+if [[ -z "$DB_DATABASE" ]]; then
+  echo "no ORES_DATABASE_NAME in $ENV_FILE" >&2
+  exit 1
+fi
 
 if [[ ! -x "$HELPER" ]]; then
   echo "helper not built: $HELPER (build with the command in the README)" >&2
   exit 1
 fi
 
-export PGPASSWORD="$(sed -n 's/^PGPASSWORD=//p' "$CHECKOUT/.env" | head -1)"
+export PGPASSWORD="$(env_value PGPASSWORD)"
 
 psql_admin() {
-  psql -h localhost -U postgres -d ores_dev_festive_dijkstra -v ON_ERROR_STOP=1 -qtA "$@"
+  psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 -qtA "$@"
 }
 
-HASH="$(LD_LIBRARY_PATH="$CHECKOUT/build/output/linux-clang-debug-make/publish/lib" \
+HASH="$(LD_LIBRARY_PATH="$REPO_ROOT/build/output/$PRESET/publish/lib" \
   "$HELPER" "$USERNAME" "$PASSWORD" | cut -f2)"
 
 if [[ -z "$HASH" ]]; then

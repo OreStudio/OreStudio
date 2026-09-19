@@ -22,9 +22,11 @@
 # Start a C++ service against the local NATS, with that service's own client
 # certificate.
 #
-# Each service presents a distinct certificate, so the certificate cannot come
-# from the checkout's .env; that file names the Qt client's. The database
-# credentials are per-service and do come from .env.
+# The repository root comes from this script's location, so the checkout that
+# owns the script is the checkout that runs. Each service presents a distinct
+# certificate, so the certificate is read from build/keys/nats rather than from
+# .env; that file names the shell client's. The NATS URL, the subject prefix
+# and the database credentials do come from .env.
 #
 # Usage:
 #   scripts/run-service.sh <service> [extra args...]
@@ -37,12 +39,28 @@ set -euo pipefail
 SERVICE="${1:?usage: run-service.sh <service> [args...]}"
 shift
 
-CHECKOUT="${CHECKOUT:-/mnt/development/OreStudio/ores_dev_festive_dijkstra}"
-KEYS="$CHECKOUT/build/keys/nats"
-BIN="$CHECKOUT/build/output/linux-clang-debug-make/publish/bin"
-ENV_FILE="$CHECKOUT/.env"
-WORKSPACE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$WORKSPACE/../.." && pwd)"
+ENV_FILE="$REPO_ROOT/.env"
 LOG_DIR="${LOG_DIR:-$WORKSPACE/.runtime/logs}"
+
+env_value() {
+  sed -n "s/^$1=//p" "$ENV_FILE" | head -1
+}
+
+PRESET="$(env_value ORES_PRESET)"
+PRESET="${PRESET:-linux-clang-debug-make}"
+KEYS="$REPO_ROOT/build/keys/nats"
+BIN="$REPO_ROOT/build/output/$PRESET/publish/bin"
+
+NATS_URL="$(env_value ORES_NATS_URL)"
+NATS_URL="${NATS_URL:-nats://localhost:4222}"
+NATS_SUBJECT_PREFIX="$(env_value ORES_NATS_SUBJECT_PREFIX)"
+if [[ -z "$NATS_SUBJECT_PREFIX" ]]; then
+  echo "no ORES_NATS_SUBJECT_PREFIX in $ENV_FILE" >&2
+  exit 1
+fi
 
 BINARY="$BIN/ores.$SERVICE.service"
 if [[ ! -x "$BINARY" ]]; then
@@ -56,10 +74,6 @@ if [[ ! -r "$CERT" || ! -r "$KEY" ]]; then
   echo "missing certificate for $SERVICE: $CERT" >&2
   exit 1
 fi
-
-env_value() {
-  sed -n "s/^$1=//p" "$ENV_FILE" | head -1
-}
 
 # The mapper prefix is the service name upper-cased with dashes as
 # underscores, then `_SERVICE`: the IAM service reads ORES_IAM_SERVICE_DB_*
@@ -93,10 +107,10 @@ fi
 
 mkdir -p "$LOG_DIR"
 
-echo "$SERVICE: nats://localhost:21805 prefix ores.dev.festive.dijkstra msgpack db=$DB_USER"
+echo "$SERVICE: $NATS_URL prefix $NATS_SUBJECT_PREFIX msgpack db=$DB_USER"
 exec "$BINARY" \
-  --nats-url nats://localhost:21805 \
-  --nats-subject-prefix ores.dev.festive.dijkstra \
+  --nats-url "$NATS_URL" \
+  --nats-subject-prefix "$NATS_SUBJECT_PREFIX" \
   --nats-wire-format msgpack \
   --nats-tls-ca "$KEYS/ca.crt" \
   --nats-tls-cert "$CERT" \

@@ -30,7 +30,7 @@
  * response schema.
  *
  * Prerequisites:
- *   .runtime/run-iam-service.sh          (in another shell)
+ *   scripts/dev-stack.sh start           (NATS, IAM and refdata in another shell)
  *   scripts/seed-test-account.sh         (creates the login used below)
  *
  * Run:
@@ -40,6 +40,8 @@
  */
 
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   NotAuthenticatedError,
   OresClient,
@@ -51,8 +53,24 @@ import {
   type PartySelectionRequired,
 } from '../packages/wire-protocol/src/index.js';
 
-const CHECKOUT = process.env['CHECKOUT'] ?? '/mnt/development/OreStudio/ores_dev_festive_dijkstra';
-const KEYS = `${CHECKOUT}/build/keys/nats`;
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const ENV_FILE = resolve(REPO_ROOT, '.env');
+const KEYS_DIR = resolve(REPO_ROOT, 'build', 'keys', 'nats');
+
+// The checkout's environment file is the authority. A variable already in the
+// process environment wins, as it does for the BFF started with --env-file.
+try {
+  process.loadEnvFile(ENV_FILE);
+} catch {
+  // A checkout without one falls back to the defaults below.
+}
+
+const NATS_URL =
+  setting('ORES_NATS_URL') ?? `nats://localhost:${setting('ORES_NATS_PORT') ?? '4222'}`;
+const SUBJECT_PREFIX = setting('ORES_NATS_SUBJECT_PREFIX');
+const TLS_CA = setting('ORES_NATS_TLS_CA') ?? resolve(KEYS_DIR, 'ca.crt');
+const TLS_CERT = setting('ORES_NATS_TLS_CERT') ?? resolve(KEYS_DIR, 'ores.shell.crt');
+const TLS_KEY = setting('ORES_NATS_TLS_KEY') ?? resolve(KEYS_DIR, 'ores.shell.key');
 const PRINCIPAL = process.env['ORES_PRINCIPAL'] ?? 'ores_web_probe';
 const PASSWORD = process.env['ORES_PASSWORD'] ?? 'Secure-Password-123';
 
@@ -66,24 +84,39 @@ function check(label: string, condition: boolean, detail = ''): void {
   console.log(`  [${status}] ${label}${detail.length > 0 ? ` (${detail})` : ''}`);
 }
 
-function pem(name: string): string {
-  return readFileSync(`${KEYS}/${name}`, 'utf8');
+/** Reads a variable, treating whitespace as absent. */
+function setting(name: string): string | undefined {
+  const value = process.env[name];
+  return value !== undefined && value.trim().length > 0 ? value : undefined;
 }
 
-function makeClient(): OresClient {
-  return new OresClient({
-    transport: new NatsTransport({
-      server: 'nats://localhost:21805',
-      subjectPrefix: 'ores.dev.festive.dijkstra',
-      tls: {
-        ca: pem('ca.crt'),
-        cert: pem('ores.qt.client.crt'),
-        key: pem('ores.qt.client.key'),
-      },
-      name: 'ores.web.verify',
-    }),
-    format: 'msgpack',
+function pem(path: string): string {
+  return readFileSync(path, 'utf8');
+}
+
+interface VerificationClient {
+  readonly client: OresClient;
+  readonly transport: NatsTransport;
+}
+
+function makeClient(): VerificationClient {
+  if (SUBJECT_PREFIX === undefined || SUBJECT_PREFIX.length === 0) {
+    throw new Error(`no ORES_NATS_SUBJECT_PREFIX in ${ENV_FILE}`);
+  }
+  const transport = new NatsTransport({
+    server: NATS_URL,
+    subjectPrefix: SUBJECT_PREFIX,
+    tls: {
+      ca: pem(TLS_CA),
+      cert: pem(TLS_CERT),
+      key: pem(TLS_KEY),
+    },
+    name: 'ores.web.verify',
   });
+  return {
+    client: new OresClient({ transport, format: 'msgpack' }),
+    transport,
+  };
 }
 
 /** Asserts a rejected login reaches the client as a structured failure. */
@@ -184,7 +217,7 @@ async function verifyAccounts(client: OresClient): Promise<void> {
 /** Asserts the client refuses an authenticated call before login. */
 async function verifyUnauthenticatedRefusal(): Promise<void> {
   console.log('\nunauthenticated guard:');
-  const fresh = makeClient();
+  const { client: fresh } = makeClient();
   try {
     await fresh.listAccounts({ limit: 1 });
     check('listAccounts without a session is refused', false);
@@ -196,10 +229,10 @@ async function verifyUnauthenticatedRefusal(): Promise<void> {
 }
 
 async function main(): Promise<number> {
-  const client = makeClient();
-  await client.transport.connect();
+  const { client, transport } = makeClient();
+  await transport.connect();
   console.log('connected: mTLS handshake complete');
-  console.log(`subject prefix: ${client.transport.absoluteSubject('<relative>')}`);
+  console.log(`subject prefix: ${transport.absoluteSubject('<relative>')}`);
 
   await verifyRejectedLogin(client);
 

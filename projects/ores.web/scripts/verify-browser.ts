@@ -27,23 +27,124 @@
  * and it captures screenshots as evidence.
  *
  * Prerequisites, in order:
- *   nats-server -c .runtime/nats/nats.conf
- *   scripts/run-service.sh iam --tenant ffffffff-ffff-ffff-ffff-ffffffffffff
- *   scripts/run-service.sh refdata
- *   npx tsx --env-file=.runtime/verify.env packages/bff/src/main.ts --env festive_dijkstra
- *   npm run dev:web
+ *   scripts/dev-stack.sh start
+ *   scripts/seed-test-account.sh
  *
  * Run:
  *   npx tsx scripts/verify-browser.ts
  */
 
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
 
-const APP_URL = process.env['ORES_WEB_APP_URL'] ?? 'http://127.0.0.1:21802/';
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..');
+const ENV_FILE = resolve(REPO_ROOT, '.env');
+const SITE_CONFIG_FILE = resolve(SCRIPT_DIR, '..', 'config', 'environments.json');
+
+// The checkout's environment file is the authority. A variable already in the
+// process environment wins, as it does for the BFF started with --env-file.
+try {
+  process.loadEnvFile(ENV_FILE);
+} catch {
+  // A checkout without one falls back to the defaults below.
+}
+
+const SITE_ENVIRONMENTS = readSiteEnvironments();
+const ENVIRONMENT = expectedEnvironment();
+// The deployment page lists every environment the site configuration names, so
+// the identifier asserted below follows that file rather than one checkout.
+const OTHER_ENVIRONMENT_ID =
+  SITE_ENVIRONMENTS.find((entry) => entry.id !== ENVIRONMENT.id)?.id ?? ENVIRONMENT.id;
+const WEB_PORT = setting('ORES_WEB_PORT') ?? '8080';
+const APP_URL = process.env['ORES_WEB_APP_URL'] ?? `http://127.0.0.1:${WEB_PORT}/`;
 const USERNAME = process.env['ORES_PRINCIPAL'] ?? 'ores_web_probe';
 const PASSWORD = process.env['ORES_PASSWORD'] ?? 'Secure-Password-123';
 const SHOT_DIR = '.runtime/screenshots';
+
+interface EnvironmentExpectation {
+  readonly id: string;
+  readonly displayName: string;
+  readonly port: number;
+  readonly subjectPrefix: string;
+}
+
+/** Reads a variable, treating whitespace as absent. */
+function setting(name: string): string | undefined {
+  const value = process.env[name];
+  return value !== undefined && value.trim().length > 0 ? value : undefined;
+}
+
+/** Reads the environments the site configuration names. */
+function readSiteEnvironments(): EnvironmentExpectation[] {
+  let text: string;
+  try {
+    text = readFileSync(SITE_CONFIG_FILE, 'utf8');
+  } catch {
+    return [];
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text) as unknown;
+  } catch {
+    return [];
+  }
+  if (typeof parsed !== 'object' || parsed === null) {
+    return [];
+  }
+  const environments = (parsed as { readonly environments?: unknown }).environments;
+  if (!Array.isArray(environments)) {
+    return [];
+  }
+  const result: EnvironmentExpectation[] = [];
+  for (const item of environments) {
+    if (typeof item !== 'object' || item === null) {
+      continue;
+    }
+    const record = item as Record<string, unknown>;
+    const id = record['id'];
+    const displayName = record['displayName'];
+    const port = record['port'];
+    const subjectPrefix = record['subjectPrefix'];
+    if (
+      typeof id === 'string' &&
+      typeof displayName === 'string' &&
+      typeof port === 'number' &&
+      typeof subjectPrefix === 'string'
+    ) {
+      result.push({ id, displayName, port, subjectPrefix });
+    }
+  }
+  return result;
+}
+
+/** The environment the BFF serves, from its own variables then the site file. */
+function expectedEnvironment(): EnvironmentExpectation {
+  const requested = (process.env['ORES_WEB_ENV'] ?? setting('ORES_ENV_NAME') ?? '')
+    .trim()
+    .replaceAll('-', '_');
+  const chosen = SITE_ENVIRONMENTS.find((entry) => entry.id === requested);
+  if (chosen !== undefined) {
+    return chosen;
+  }
+  return {
+    id: requested,
+    displayName: displayNameFor(requested),
+    port: Number(setting('ORES_NATS_PORT') ?? '4222'),
+    subjectPrefix: setting('ORES_NATS_SUBJECT_PREFIX') ?? '',
+  };
+}
+
+/** Turns an environment identifier into the display name the file uses. */
+function displayNameFor(id: string): string {
+  return id
+    .split('_')
+    .filter((part) => part.length > 0)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
 
 let failures = 0;
 
@@ -92,7 +193,7 @@ async function main(): Promise<number> {
   // The environment is a small permanent marker rather than a field, so it
   // belongs in the footer beside the copyright.
   const footer = (await page.textContent('footer')) ?? '';
-  check('the environment is a footer marker', footer.includes('Festive Dijkstra'), footer.trim());
+  check('the environment is a footer marker', footer.includes(ENVIRONMENT.displayName), footer.trim());
   check('the footer carries the copyright', footer.includes('©'));
   check('it marks a development environment', footer.includes('development'));
 
@@ -115,7 +216,7 @@ async function main(): Promise<number> {
     'the password field is masked',
     (await page.getAttribute('input[name="password"]', 'type')) === 'password',
   );
-  check('the environment is named', signIn.includes('Festive Dijkstra'));
+  check('the environment is named', signIn.includes(ENVIRONMENT.displayName));
   check('there is no server field', (await page.locator('input[name="server"]').count()) === 0);
   check('there is no namespace field', !signIn.includes('Namespace'));
   check('there is no connection chooser', !signIn.includes('Quick connect'));
@@ -164,12 +265,12 @@ async function main(): Promise<number> {
   await page.goto(`${APP_URL}deployment`, { waitUntil: 'load' });
   await page.waitForSelector('h1', { timeout: 15_000 });
   const deployment = (await page.textContent('body')) ?? '';
-  check('it names the environment', deployment.includes('Festive Dijkstra'));
-  check('it shows where it points', deployment.includes('21805'));
-  check('it shows the namespace', deployment.includes('ores.dev.festive.dijkstra'));
+  check('it names the environment', deployment.includes(ENVIRONMENT.displayName));
+  check('it shows where it points', deployment.includes(String(ENVIRONMENT.port)), String(ENVIRONMENT.port));
+  check('it shows the namespace', deployment.includes(ENVIRONMENT.subjectPrefix), ENVIRONMENT.subjectPrefix);
   check('it shows the configuration file', deployment.includes('environments.json'));
   // The identifiers are the point of that table, since they are what you type.
-  check('it lists the other environments by identifier', deployment.includes('brave_hopper'));
+  check('it lists the other environments by identifier', deployment.includes(OTHER_ENVIRONMENT_ID));
   await screenshot(page, '33-deployment');
 
 

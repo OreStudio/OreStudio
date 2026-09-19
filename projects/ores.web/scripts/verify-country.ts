@@ -35,6 +35,8 @@
  *   npx tsx scripts/verify-country.ts --write
  */
 import { mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
 
 /*
@@ -42,7 +44,19 @@ import { chromium, type Page } from 'playwright';
  * open event stream so the network is never quiet again, and a wait for quiet
  * waits forever.
  */
-const APP = process.env['ORES_WEB_APP_URL'] ?? 'http://127.0.0.1:21802/';
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const ENV_FILE = resolve(REPO_ROOT, '.env');
+
+// The checkout's environment file is the authority. A variable already in the
+// process environment wins, as it does for the BFF started with --env-file.
+try {
+  process.loadEnvFile(ENV_FILE);
+} catch {
+  // A checkout without one falls back to the default port below.
+}
+
+const WEB_PORT = process.env['ORES_WEB_PORT'] ?? '8080';
+const APP = process.env['ORES_WEB_APP_URL'] ?? `http://127.0.0.1:${WEB_PORT}/`;
 const USERNAME = process.env['ORES_WEB_USER'] ?? 'ores_web_probe';
 const PASSWORD = process.env['ORES_WEB_PASSWORD'] ?? 'Secure-Password-123';
 const SHOTS = '.runtime/screenshots';
@@ -154,7 +168,7 @@ try {
   check('flags are rendered', flagCount > 0, `${flagCount} on this page`);
   if (flagCount > 0) {
     const loaded = await flags.first().evaluate(
-      (image) => (image as HTMLImageElement).naturalWidth > 0,
+      (image) => (image as unknown as { readonly naturalWidth: number }).naturalWidth > 0,
     );
     check('a flag actually loads', loaded);
   }

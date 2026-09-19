@@ -438,6 +438,7 @@ def _generate_single(
     base_dir: Path,
     address: str | None = None,
     component_mode: bool = False,
+    output_root: Path | None = None,
 ) -> int:
     if not model_path.exists():
         log.error("Model file not found: %s", model_path)
@@ -480,6 +481,14 @@ def _generate_single(
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
 
+    # Archetype #+output: paths are repository-root-relative. A caller may
+    # redirect them to an isolated root (check_component_drift --dry-run) so a
+    # render never writes into the repository. The library paths stay real, so
+    # the resolved units -- and therefore the dry-run -- are the same as the
+    # in-place run.
+    if output_root is None:
+        output_root = project_root
+
     # Data-scope (populate/seed) models carry no payload of their own: each
     # archetype names a dataset-relative #+data_source: (the JSON payload),
     # and the dataset model supplies the output prefix. We render each unit
@@ -494,7 +503,7 @@ def _generate_single(
     written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
-        output_path = project_root / unit["output"]
+        output_path = output_root / unit["output"]
         if dry_run:
             print(str(output_path))
             continue

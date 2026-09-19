@@ -198,6 +198,17 @@ def _get_or_gen_uuid(existing: dict, key: str) -> str:
     return val if val else _gen_uuid()
 
 
+def _underscored(label: str) -> str:
+    """Underscored form of an environment label.
+
+    The one canonical spelling every name built from the label uses, for the
+    database, the postgres roles, the NATS store directory, and the identifiers
+    a declared environment is compared against. It matters because a
+    provisioned label carries hyphens -- env_create's _NAME_RE requires one --
+    while every declared ores.web id uses underscores."""
+    return label.lower().replace(".", "_").replace("-", "_")
+
+
 def _resolve_web_env_id(checkout_root: Path, nats_port: int, subject_prefix: str,
                         env_name: str) -> str | None:
     """Id of the ores.web environment instance this checkout serves.
@@ -224,8 +235,9 @@ def _resolve_web_env_id(checkout_root: Path, nats_port: int, subject_prefix: str
     candidates = [entry for entry in entries
                   if entry.get("port") == nats_port
                   and entry.get("subjectPrefix") == subject_prefix]
+    label = _underscored(env_name)
     for entry in candidates:
-        if entry.get("id") in (env_name, env_name.lower()):
+        if entry.get("id") == label:
             return entry["id"]
     local = [entry for entry in candidates
              if entry.get("host") in WEB_LOCAL_HOSTS]
@@ -510,7 +522,7 @@ def run(argv, project_root: Path) -> int:
     env_name = existing.get("ORES_ENV_NAME") or label
     provision_type = existing.get("ORES_PROVISION_TYPE", "full")
     # Underscored form — safe for DB object names and NATS paths.
-    label_lower = env_name.lower().replace(".", "_").replace("-", "_")
+    label_lower = _underscored(env_name)
 
     # DB name: prefer explicit existing value (set by compass env provision or
     # a manual override), then derive from label_lower (fixes hyphen bug for

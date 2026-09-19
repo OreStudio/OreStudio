@@ -60,6 +60,20 @@ class TestWebEnvironmentBinding:
         (config_dir / "environments.json").write_text(
             json.dumps({"environments": environments}), encoding="utf-8")
 
+    def test_a_provisioned_hyphenated_label_matches_its_underscored_id(
+            self, tmp_path):
+        # compass env provision requires a hyphen in the name and writes it
+        # verbatim to ORES_ENV_NAME, while every declared id uses underscores.
+        self._declare(tmp_path, [
+            {"id": "festive_hawking", "host": "192.168.1.30", "port": 21805,
+             "subjectPrefix": "ores.dev.festive.hawking"},
+            {"id": "festive_hawking_local", "host": "localhost", "port": 21805,
+             "subjectPrefix": "ores.dev.festive.hawking"},
+        ])
+        assert env_init._resolve_web_env_id(
+            tmp_path, 21805, "ores.dev.festive.hawking", "festive-hawking"
+        ) == "festive_hawking"
+
     def test_the_local_instance_is_selected_when_the_label_is_not_an_id(
             self, tmp_path):
         self._declare(tmp_path, [

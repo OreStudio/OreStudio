@@ -23,9 +23,9 @@ Every analytics entity renders a protocol header from its org model, and no anal
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Story scaffolded; the entity projection is the open question. |
-| Waiting on    | Who lands the entity projection that the IAM story also needs. |
-| Next          | Settle that split, then start the first task. |
+| Now           | Story scaffolded and paused.           |
+| Waiting on    | The IAM protocol coverage work that lands the entity projection. |
+| Next          | Rebase on =main= once that work merges, then start the first task. |
 | Last touched  | 2026-09-19                               |
 
 * Acceptance
@@ -59,11 +59,18 @@ Every analytics entity renders a protocol header from its org model, and no anal
   =org_loader._ts_type= projects only =std::string=, =bool=, =int= and
   =std::uint64_t=. The entity interface must exist before the protocol
   interfaces can reference it.
-- *The entity projection is shared with the IAM story.* The re-cut of
-  [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] reaches the same conclusion:
-  the facet needs generalising and the domain layer needs adding. Analytics is
-  the smaller proof of that path, so this story carries the generalisation and
-  the IAM story rebases onto it.
+- *The entity projection is shared with the IAM work, and that work lands it
+  first.* The TypeScript protocol coverage story in the =eager_maxwell=
+  worktree needs the same generalisation: its re-cut decisions say the facet
+  must be generalised rather than invented, and that TypeScript needs a domain
+  layer beside the protocol layer. Two worktrees cannot write =ores.ts.protocol=,
+  =ts_protocol.ts.mustache= and =org_loader.py= at once. That worktree owns the
+  projection, and this story rebases onto it and then carries the analytics
+  slice alone.
+- *Analytics is the small proof, once unblocked.* Four entities, four generated
+  protocols, thirty-two messages, no hand-written protocol header, and the
+  narrowest type map of any drift-free component, so it exercises the entity
+  path end to end with the least output to review.
 
 * Out of scope
 

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: DB893328-FE58-4838-9365-04316D993FC6
+:END:
+#+title: Git works in every worktree under the DSH sandbox
+#+description: The DSH sandbox grants write access to the shared bare repository ores.git, so git commands need no approval; every other path outside the workspace stays read-only.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+The DSH sandbox grants write access to the shared bare repository =/mnt/development/OreStudio/ores.git=. Git commands work in every worktree without approval. All other paths outside the workspace stay read-only. The =write= and =edit= tools cannot write to =ores.git=; use git commands for changes there. A =read-only= session has no access.
+
+*Why:* Git operations failed with 'Read-only file system' because the shared git directory sits outside the workspace, and the agent had to request an escalation for every fetch, branch and commit.
+
+*How to apply:* Run git commands directly, with no sandbox escalation. Do not hand-edit anything under =ores.git=: the file tools cannot write there. Keep every other outside-workspace path read-only.

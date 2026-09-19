@@ -1,4 +1,4 @@
-"""Tests for the has_as_of_combo_fields Qt detail-field gate.
+"""Tests for the has_as_of_combo_fields detail-field gate.
 
 Run::
 

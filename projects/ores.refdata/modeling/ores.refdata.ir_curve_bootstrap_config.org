@@ -374,18 +374,14 @@ edited: this entity's real editing surface is the hand-written
 =CurveBuilderWorkbench= (see [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][the Curve builder UI task]] for why -- a
 persistent, non-modal, three-tab workbench with Save/Bootstrap/Publish
 actions rather than a save-and-close form), wired up by an equally
-hand-written =IrCurveBootstrapConfigController= -- both live
-permanently in =ores.qt.refdata= as ordinary hand-written files,
-outside codegen's ownership, so regenerating this model never touches
-them (confirmed against the =ores.cpp.qt.detail_dialog_*.enabled:
-false= precedent already established by =ores.refdata.calendar_date=,
-whose generated Controller simply omits Add/Edit-via-DetailDialog
-code entirely when detail_dialog is disabled -- disabling the
-controller facets too, rather than leaving a codegen-owned Controller
-with no Add/Edit hooks to hand-extend, is what keeps this entity's
-richer custom flow (Add/Edit both opening the Workbench, not just a
-missing Edit) fully drift-safe). The list window, history dialog, and
-client model stay fully codegen-generated and used unmodified. The
+hand-written =IrCurveBootstrapConfigController=. Both lived in the
+removed desktop client as ordinary hand-written files, outside
+codegen's ownership, so regenerating this model never touched them --
+the =ores.refdata.calendar_date= precedent, whose generated Controller
+simply omitted Add/Edit-via-DetailDialog code when detail_dialog was
+disabled, applied the same split. The generated list window, history
+dialog, and client model were never this entity's real editing
+surface. The
 =* Detail fields= table below exists only so codegen has valid input
 to generate the (unused) domain/protocol layer against -- deliberately
 minimal (plain =line_edit= throughout), not a real editing UX.

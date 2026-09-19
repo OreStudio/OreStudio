@@ -30,7 +30,7 @@ persistence without depending on =ores.dq=.
 
 * Inputs
 
-- NATS request messages from Qt clients and peer services (badge queries,
+- NATS request messages from UI clients and peer services (badge queries,
   dataset/bundle CRUD, change-management events).
 - PostgreSQL connections to =ores_dq_*= tables.
 - Domain-specific events from trading, refdata, assets, and other components

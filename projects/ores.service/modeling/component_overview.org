@@ -23,8 +23,7 @@
 =ores.service= provides the shared NATS domain service runner infrastructure
 used by every ORE Studio backend service. It supplies =domain_service_runner=
 (NATS queue-subscribe lifecycle), =signing_service_runner= (variant for
-signing-required services), =wt_service_runner= (for the Wt web frontend),
-=heartbeat_publisher= (regular NATS heartbeats for health monitoring), and
+signing-required services), =heartbeat_publisher= (regular NATS heartbeats for health monitoring), and
 =request_context= with handler helpers for processing inbound NATS messages.
 All =*.service= entrypoints build on these runners rather than wiring NATS
 directly.

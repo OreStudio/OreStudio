@@ -2,7 +2,7 @@
 :ID: 1D0B00E4-6032-4DCA-9B66-571DE9F131FC
 :END:
 #+title: Profile: Simple lookup
-#+description: Text natural key, standard tenant scope, standard Qt tier, no parent relationship.
+#+description: Text natural key, standard tenant scope, standard presentation tier, no parent relationship.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -28,7 +28,7 @@ re-derived by hand each time.
 
 [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] — a plain reference-data lookup with a human-meaningful text
 natural key (ISO code), no self-reference, no parent, and just enough
-Qt to be usable (change-reason cache, pagination) without the richer
+UI to be usable (change-reason cache, pagination) without the richer
 optional surfaces =currency= exercises.
 
 * Assignments

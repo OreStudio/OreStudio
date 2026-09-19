@@ -2,7 +2,7 @@
 :ID: 3ABD31C8-417D-4655-8115-371EFDC119AF
 :END:
 #+title: ores.refdata.counterparty_identifier
-#+description: Codegen entity model for the refdata =counterparty_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata =counterparty_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -227,7 +227,7 @@ programmatically before the dialog is shown, never user-chosen.
 | field       | label       | widget          | type          | is_key | is_required | placeholder            | combo_domain_type              | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
 |-------------+-------------+-----------------+---------------+--------+-------------+-------------------------+----------------------------------+-----------------------------+--------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
 | id          | Id          | idEdit          | line_edit     | true   | true        | Counterparty identifier id |                             |                             |                          |                      |                    |                        |                    |                 |                        |            |
-| id_scheme   | Scheme      | idSchemeCombo   | dynamic_combo | false  | true        |                         | refdata::domain::party_id_scheme | ores.qt/LookupFetcher.hpp   | fetch_party_id_schemes  | idSchemeWatcher      | code               | description            | display_order      | id schemes      | IdSchemeCombo         |            |
+| id_scheme   | Scheme      | idSchemeCombo   | dynamic_combo | false  | true        |                         | refdata::domain::party_id_scheme |    | fetch_party_id_schemes  | idSchemeWatcher      | code               | description            | display_order      | id schemes      | IdSchemeCombo         |            |
 | id_value    | Value       | idValueEdit     | line_edit     | false  | true        | Enter identifier value  |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
 | description | Description | descriptionEdit | line_edit     | false  | false       | Enter description       |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
 

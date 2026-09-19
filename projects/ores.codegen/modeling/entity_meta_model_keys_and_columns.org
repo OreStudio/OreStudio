@@ -138,8 +138,8 @@ struct book_entity {
 };
 #+end_src
 
-(=book='s primary key is actually =text=, not =uuid= — see [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s
-=:has_uuid_primary_key:= knob, which governs how the *Qt* layer
+(=book='s primary key is actually =text=, not =uuid= — see [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Presentation]]'s
+=:has_uuid_primary_key:= knob, which governs how the *UI* layer
 treats whichever type is declared here; the SQL/repository/domain
 layers just use whatever =:type:=/=:cpp_type:= says, uuid or not.)
 
@@ -182,7 +182,7 @@ Example of =book='s =name= column:
 
 Human-readable identifier for this book.
 
-Unique per tenant; used as the natural key in the Qt list window.
+Unique per tenant; used as the natural key in the list window.
 
 #+begin_src cpp :name generator
 ,std::string(faker::word::adjective()) + "_" + std::string(faker::word::noun())

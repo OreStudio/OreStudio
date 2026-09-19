@@ -48,12 +48,12 @@ justification before proceeding.
 # C++ API and core (domain type, repository, service, handler)
 ./compass.sh codegen entity generate <entity> --address ores.cpp
 
-# Qt UI (model, MDI window, detail dialog, history dialog, controller)
-./compass.sh codegen entity generate <entity> --address ores.cpp.qt
+# TypeScript UI metadata (table columns, detail fields, entity meta)
+./compass.sh codegen entity generate <entity> --address ores.ts.ui
 #+end_src
 
-Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for CMakeLists integration, controller
-wiring, and PR checkpoints at each layer boundary.
+Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for CMakeLists integration,
+UI metadata wiring, and PR checkpoints at each layer boundary.
 
 ** 4. Validate
 

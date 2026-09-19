@@ -28,8 +28,8 @@
  * definitions. Values are sourced from ORE ore_types.xsd LegType
  * enumeration.
  *
- * /2026-07-18 moved from ores.trading to ores.refdata/: the Qt UI
- * already lived in ores.qt/refdata's RefdataPlugin, hand-wired
+ * /2026-07-18 moved from ores.trading to ores.refdata/: the desktop UI
+ * already lived in the removed client's RefdataPlugin, hand-wired
  * outside codegen; the backend followed to match, same direction as
  * Book/BusinessCentre's own moves to ores.refdata, and the same move
  * floating_index_type made alongside this one.

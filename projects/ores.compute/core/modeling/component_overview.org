@@ -29,7 +29,7 @@ job assignments via NATS; results flow back through the same channel.
 
 - NATS messages from =ores.compute.wrapper= instances (registration, heartbeat,
   job completion with result paths).
-- NATS request messages from Qt clients (batch CRUD, host/app queries).
+- NATS request messages from UI clients (batch CRUD, host/app queries).
 - PostgreSQL connections to =ores_compute_*= tables.
 
 * Outputs

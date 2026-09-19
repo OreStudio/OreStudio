@@ -1,4 +1,4 @@
-;;; ores-build-help.el --- Export the user manual as Qt-help HTML. -*- lexical-binding: t; -*-
+;;; ores-build-help.el --- Export the user manual as self-contained help HTML. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2026 Marco Craveiro
 ;;
@@ -22,15 +22,17 @@
 ;;; Commentary:
 ;;
 ;; Exports the single-file user manual (doc/manual/user_guide/user_manual.org,
-;; which #+includes every chapter) to ONE self-contained HTML file suitable
-;; for compilation into a Qt help collection (.qch) by qhelpgenerator.
+;; which #+includes every chapter) to ONE self-contained HTML file with
+;; relative assets.
 ;;
 ;; Unlike the site export, the output is help-friendly:
 ;;   - assets are RELATIVE (images/NAME.png) and copied alongside the HTML,
-;;     not absolute /OreStudio/ URLs that break inside a .qch;
-;;   - a plain stylesheet renders in QTextBrowser, which supports only a
-;;     subset of HTML/CSS — no dark web theme, web fonts, highlight.js, or
-;;     font-awesome;
+;;     not absolute /OreStudio/ URLs;
+;;   - a plain stylesheet keeps to basic CSS 2.1 selectors — no dark web
+;;     theme, web fonts, highlight.js, or font-awesome. The constraint is a
+;;     leftover from the retirement of the Qt help viewer, whose QTextBrowser
+;;     supported only a subset, and is kept so the output stays readable in
+;;     the narrowest viewers;
 ;;   - no site preamble/nav.
 ;;
 ;; Output: build/output/help/user_manual.html + build/output/help/images/.
@@ -68,7 +70,7 @@
   "Alist of (REPO-RELATIVE-PATH . BASENAME) for images to copy.")
 
 (defun ores/help--proj-export (path desc backend _info)
-  "Export a proj: link for the Qt-help HTML build.
+  "Export a proj: link for the help HTML build.
 Images under the repo become relative images/BASENAME and are
 recorded for copying; everything else falls back to a GitHub URL."
   (when (org-export-derived-backend-p backend 'html)
@@ -83,10 +85,9 @@ recorded for copying; everything else falls back to a GitHub URL."
 
 (org-link-set-parameters "proj" :export #'ores/help--proj-export)
 
-;; Plain stylesheet: QTextBrowser supports a subset of CSS 2.1, so keep to
-;; basic selectors — no custom properties, flexbox, or box-shadow.
-;; No explicit colours: let QTextBrowser inherit from the Qt palette so the
-;; content is readable in both light and dark themes.
+;; Plain stylesheet: basic CSS 2.1 selectors only — no custom properties,
+;; flexbox, or box-shadow. No explicit colours, so the reader's own theme
+;; shows through.
 (defvar ores/help-style "<style>
 body { font-family: sans-serif; line-height: 1.5; margin: 1em 2em; max-width: 50em; }
 h1, h2, h3, h4, h5 { font-weight: bold; }
@@ -103,7 +104,7 @@ img { max-width: 100%; }
 </style>")
 
 (defun ores/build-help ()
-  "Export the manual to self-contained Qt-help HTML."
+  "Export the manual to self-contained help HTML."
   ;; Resolve id: links across the whole repo so export does not abort on
   ;; cross-document references (they point outside the manual; that is fine
   ;; for help — they just will not be live).
@@ -119,7 +120,7 @@ img { max-width: 100%; }
 
   (make-directory (expand-file-name "images" ores/help-output-dir) t)
 
-  ;; Plain, deterministic HTML for QTextBrowser.
+  ;; Plain, deterministic HTML.
   (let ((org-html-head ores/help-style)
         (org-html-head-include-default-style nil)
         (org-html-head-include-scripts nil)

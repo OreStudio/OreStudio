@@ -28,7 +28,7 @@ data generator produces test accounts for development and CI use.
 
 * Inputs
 
-- NATS request messages from Qt clients and peer services (account CRUD,
+- NATS request messages from UI clients and peer services (account CRUD,
   login, authorisation queries, bootstrap, reset) in the 0x2000–0x2FFF range.
 - PostgreSQL connections to =ores_iam_*= tables with temporal versioning.
 

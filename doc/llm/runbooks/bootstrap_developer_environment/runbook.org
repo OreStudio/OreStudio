@@ -56,7 +56,7 @@ In execution order:
 
 6. /Run tests./ Follow [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]: =cmake --build ... --target rat=.
 
-7. /Verify./ Run =ores.cli --help= or launch the Qt desktop client to confirm a working end-to-end setup.
+7. /Verify./ Run =ores.cli --help= or start the shell to confirm a working end-to-end setup.
 
 * Provisioning additional worktrees
 
@@ -73,7 +73,7 @@ then optionally runs =compass env configure= automatically when =--preset= is gi
 - =.env= is generated and contains valid credentials.
 - All build targets compile.
 - All tests pass.
-- CLI and Qt binaries are functional.
+- CLI and shell binaries are functional.
 
 * See also
 

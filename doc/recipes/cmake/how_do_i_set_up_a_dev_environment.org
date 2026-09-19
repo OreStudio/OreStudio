@@ -24,7 +24,7 @@ How do I set up a development environment on Ubuntu, Debian, or WSL?
    ./build/scripts/install_debian_packages.sh --full-install
    #+end_src
 
-   Installs from distro repos: GCC, Clang, CMake, Ninja, PostgreSQL, Qt6,
+   Installs from distro repos: GCC, Clang, CMake, Ninja, PostgreSQL,
    Valgrind, and X11/GL headers.
 
 2. /Initialise the database/ before the first build:

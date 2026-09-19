@@ -22,7 +22,7 @@
 
 =ores.ore.api= is a header-only library defining the shared contract for the
 ORE integration domain. It provides domain types for ORE XML structures and
-mappings, and the NATS protocol schemas consumed by =ores.ore.core= and Qt
+mappings, and the NATS protocol schemas consumed by =ores.ore.core= and UI
 clients that invoke ORE risk runs.
 
 * Inputs

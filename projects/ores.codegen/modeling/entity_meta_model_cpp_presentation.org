@@ -16,7 +16,7 @@ the two facets behind one generic-history flow: the
 field list, and the
 [[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]] facet, which registers the
 server-side history provider that feeds that list. It exists to
-answer one question: when the Qt history dialog shows "what changed
+answer one question: when the history dialog shows "what changed
 between version 3 and version 4", what does it show, in what order,
 and where does the server side of that history come from?
 

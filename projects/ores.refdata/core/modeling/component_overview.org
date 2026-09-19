@@ -29,7 +29,7 @@ drives UI drop-downs and validation.
 
 * Inputs
 
-- NATS request messages from Qt clients and peer services (query/create/update
+- NATS request messages from UI clients and peer services (query/create/update
   for currencies, counterparties, books, etc.) in the 0x3000–0x3FFF range.
 - PostgreSQL connections to =ores_refdata_*= tables with temporal versioning.
 - DQ population events for bulk reference-data loads.

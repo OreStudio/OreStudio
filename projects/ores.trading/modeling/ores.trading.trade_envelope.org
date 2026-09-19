@@ -2,7 +2,7 @@
 :ID: ae3884f8-f6b1-465c-bf24-ef072a70c9d7
 :END:
 #+title: ores.trading.trade_envelope
-#+description: Codegen entity model for the trading =trade_envelope= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =trade_envelope= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

@@ -124,7 +124,7 @@ Manual QA against the fallback badge (removing a =badge_mapping= row
 via SQL) surfaced that =BadgeCache= never subscribed to any
 change-notification event -- only loaded once at login. Fixed by
 mirroring =ChangeReasonCache='s subscribe-and-reload pattern (see
-[[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]); =badge_definition= edits
+4FF4167B-D970-4383-A263-24E329C9AB95); =badge_definition= edits
 (e.g. a colour change) now propagate live to every client.
 
 =badge_mapping= itself still has no live propagation -- it is a

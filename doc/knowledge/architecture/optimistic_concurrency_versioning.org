@@ -124,13 +124,13 @@ don't care whether) already exists."
 
 ** The four use cases, with concrete examples
 
-*** Interactive create (Qt "Add") — the bug case
+*** Interactive create ("Add" in a UI) — the bug case
 
-The Qt client's generated =onSaveClicked()= sends a domain object
-whose =version= field is default-constructed (=0=) for a brand-new
-record in create mode — see
-=projects/ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org=,
-=onSaveClicked()=. The *intent* here is "this key does not exist yet";
+The removed desktop client's generated save handler sent a domain
+object whose =version= field was default-constructed (=0=) for a
+brand-new record in create mode. No client does this today; the
+trigger's handling of it is unchanged, so the case returns with the
+first rebuilt UI. The *intent* here is "this key does not exist yet";
 there is no scenario where the user meant to overwrite an existing
 row. If the derived key happens to collide with an existing row (see
 the currency_pair example: picking a base/quote combination that
@@ -217,7 +217,7 @@ Use case 1 wants: *reject* if =found=. Use cases 2–4 want: *proceed
 regardless* if =found=. All four currently signal their intent with
 the exact same value (=version = 0=), so the SQL trigger has
 *no way to distinguish them*. This is not a currency_pair-specific
-bug — every codegen'd entity with a Qt create flow has the same latent
+bug — every codegen'd entity with a client create flow has the same latent
 hole; =currency_pair= is simply the first place it was noticed,
 because [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][pair_code became a derived, immutable key]] this sprint,
 which made "accidentally pick an already-used base/quote combination"
@@ -240,24 +240,23 @@ the plain insert path) that use cases 2–4 opt into explicitly. Once
 that exists, the trigger's =version = 0= bypass is removed entirely:
 =found = true= always requires *some* version, and a caller sending
 =0= (uninitialised/default-constructed, exactly the state of a
-brand-new Qt create) always fails the comparison against any real
+brand-new record created in a UI) always fails the comparison against any real
 =current_version >= 1=, which is precisely the rejection use case 1
 needs. This is the strong fix — it enforces the invariant at the
 single point (the trigger) every write path goes through, so no
 future write path can reintroduce the same accidental-overwrite bug
 by omission.
 
-*** B. Give every entity's Qt create flow its own pre-check (weaker, already partially in place)
+*** B. Give every entity's create flow its own pre-check (weaker, no longer in place)
 
 Where (A) isn't feasible in the short term (e.g. it needs coordinated
 changes across every entity's protocol/service/repository layer, a
-big surface), a client-side existence pre-check like the one added
-for =currency_pair='s =onSaveClicked()= (a new paste-block seam,
-=4E83FA7A-742A-4102-90AF-D337F6FB1269=, in
-=ores.cpp.qt.detail_dialog_impl.org=) closes the gap for that one
-entity, for that one client. It does *not* close it for any other
-client, script, or future UI surface hitting the same service — it is
-strictly weaker than (A), a stopgap, not a substitute.
+big surface), a client-side existence pre-check closes the gap for
+one entity, in one client. =currency_pair='s create dialog carried
+exactly such a pre-check, hand-written and gone with the desktop
+client. It did *not* close the gap for any other client, script, or
+future UI surface hitting the same service — it is strictly weaker
+than (A), a stopgap, not a substitute.
 
 *** Recommendation
 
@@ -287,7 +286,7 @@ that touch the identical SCD2 lock-close-insert block:
 A child's "touch" call to the parent (per composite versioning's
 design) is, in this document's taxonomy, exactly use case 2/4's shape
 — "advance the version regardless of what the caller knows," except
-the caller here is generated SQL, not a Qt client — so whatever
+the caller here is generated SQL, not a UI client — so whatever
 explicit "force" mechanism (A) introduces should be the *same*
 mechanism the touch function uses internally, rather than inventing a
 second, parallel bypass. Any implementation plan should sequence or

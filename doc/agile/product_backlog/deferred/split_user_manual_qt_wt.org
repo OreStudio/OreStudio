@@ -14,7 +14,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *defe
 * What
 
 Today ORE Studio has a single user manual (under =doc/manual/=). As the
-[[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt]] web front-end grows alongside the [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt]] desktop client, one manual
+ACF334D8-703B-4020-A48E-F8A8E5090E72 web front-end grows alongside the 2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF desktop client, one manual
 covering both surfaces will become unwieldy. Split it into two: a *Qt user
 manual* and a *Wt user manual*. The Wt manual should be near-identical to the
 Qt one, diverging only where the apps genuinely differ (interaction model,
@@ -37,7 +37,7 @@ already generates manual chapters via codegen (see [[id:43FF3591-AD18-4CE3-8239-
 * References
 
 - =doc/manual/= — the current single user manual.
-- [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt facet]] / [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]] — the two application surfaces.
+- ACF334D8-703B-4020-A48E-F8A8E5090E72 / 2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF — the two application surfaces.
 
 * See also
 

@@ -47,6 +47,6 @@ layout shift entirely.
 
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the design rulebook this change should be
   checked against.
-- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — the list-window pattern
+- 2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF — the list-window pattern
   =EntityListMdiWindow= is the base class for; changing its loading
   affordance affects every generated list window.

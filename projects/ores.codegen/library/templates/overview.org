@@ -40,7 +40,7 @@ The technical spaces:
 | Technical space | Facets | Scope |
 |------------------+--------+-------|
 | [[id:CA666722-1F34-4591-BC54-BC161BE45EB2][ores.cmake]] | 2 | Component =CMakeLists.txt= files across the api/core/service split. |
-| [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] | 13 | Domain types, repositories, mappers, Qt UI classes, services, components, enums. |
+| [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] | 13 | Domain types, repositories, mappers, NATS surfaces, services, components, enums. |
 | [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] | 3 | Schema create/drop, notify triggers, junctions, reference-data populates. |
 | [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] | 4 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group/technical_space/archetype types). |
 | [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] | 1 | Entity-relationship diagram generation from the bi-temporal SQL schema. |

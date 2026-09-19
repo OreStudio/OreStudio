@@ -20,8 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 _INCLUDE_LINE = "include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)\n"
 
 # Matches the inline set(files ...) block, optionally followed by a
-# blank line and a set(HEADERS ...) block (the Qt AUTOMOC case) and its
-# preceding comment line.
+# blank line and a set(HEADERS ...) block and its preceding comment line.
 _BLOCK_RE = re.compile(
     r"set\(files\n(?:.*\n)*?\)\n"
     r"(?:\n(?:# Headers must be listed for AUTOMOC[^\n]*\n)?set\(HEADERS\n(?:.*\n)*?\)\n)?",

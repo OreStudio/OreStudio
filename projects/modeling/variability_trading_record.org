@@ -2,7 +2,7 @@
 :ID: 95BF5857-D9DC-40B5-8081-FAB3C24FF0A4
 :END:
 #+title: Profile: Trading record
-#+description: Tenant- and workspace-scoped transactional trading data, proven on the wire by a generated eventing test, with a hand-crafted Qt surface.
+#+description: Tenant- and workspace-scoped transactional trading data, proven on the wire by a generated eventing test, with a hand-crafted UI surface.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -35,8 +35,9 @@ scoped to a tenant and a workspace. Both are written through NATS, so
 both should carry the generated eventing test that proves the pipeline
 end to end — Postgres trigger, event source, event bus, NATS publish —
 rather than leaving that to each author to remember. Neither generates
-a Qt surface: the trade blotter and the per-instrument forms are
-hand-crafted in =ores.qt= and consume the generated protocol.
+a UI surface: the trade blotter and the per-instrument forms were
+hand-crafted in the removed desktop client and consumed the generated
+protocol.
 
 * Reference entity
 

@@ -42,7 +42,7 @@ namespace ores::refdata::domain {
  * using FpML-style codes. Each code is unique per tenant regardless of
  * coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's
  * code-only primary key -- and optionally linked to a country for
- * flag-icon display in the Qt UI. Referenced by business_unit as a
+ * flag-icon display in the UI. Referenced by business_unit as a
  * soft FK.
  */
 struct business_centre final {

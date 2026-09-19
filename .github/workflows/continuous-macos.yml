@@ -92,8 +92,6 @@ jobs:
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: false
-    # TODO: unpin once Qt is upgraded to latest supported version (story D628C0F8); macOS 15 removed
-    # AGL.framework which Qt 6.8.x still references in its QtGui link config.
     runs-on: macos-14
     environment: CI
     strategy:
@@ -139,13 +137,6 @@ jobs:
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 2000M
           save: false
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.8.3'
-          modules: 'qtcharts'
-          cache: true
 
       - name: Generate postgres password
         id: pg_password

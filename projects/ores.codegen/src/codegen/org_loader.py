@@ -1131,10 +1131,10 @@ def _presentation_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
 def _presentation_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
     """Convert the drawer's 'Setting-gated actions' table into the dict list shape.
 
-    Each row names one existing QAction* member (`action`, without the
-    trailing underscore) whose visibility is gated by a boolean system
-    setting (`setting`). Wired via a single shared
-    SettingGatedActionController per mdi_window/detail_dialog rather
+    Each row names one QAction* member (`action`, without the trailing
+    underscore) that the retired client's window classes declared, whose
+    visibility is gated by a boolean system setting (`setting`). Wired
+    via a single shared SettingGatedActionController per window rather
     than duplicating the subscribe/notify/query mechanism per action.
     """
     if not node.tables:
@@ -1150,12 +1150,12 @@ def _presentation_related_entity_shortcuts(node: OrgNode) -> list[dict[str, Any]
     Each row is a toolbar shortcut to a related entity's own list window —
     e.g. currency's Rounding Type / Monetary Nature / Market Tier combos each
     reference a small lookup entity worth a one-click detour to. `signal`
-    names the emitted/relayed Qt signal (`show{signal}Requested`); `icon`
-    is an Icon:: enum value; `tooltip`/`label` are the toolbar action's
-    tooltip and button text. Wiring the signal to the target entity's own
-    controller happens in the plugin's composition root (e.g.
-    RefdataPlugin), not here — cross-controller wiring is inherently
-    plugin-level, same as every other controller-to-controller signal."""
+    named the emitted/relayed Qt signal (`show{signal}Requested`) of the
+    retired client's toolbar action; `icon` is an Icon:: enum value;
+    `tooltip`/`label` are that action's tooltip and button text. Wiring
+    the signal to the target entity's own controller happened in the
+    plugin's composition root (e.g. RefdataPlugin), not here —
+    cross-controller wiring was inherently plugin-level."""
     if not node.tables:
         return []
     return [
@@ -1574,10 +1574,10 @@ def _parse_presentation_drawer(
     if ic:
         presentation_out["icon_columns"] = _presentation_icon_columns(ic)
         presentation_out["has_icon_columns"] = bool(presentation_out["icon_columns"])
-        # Any pair (roughly 2:1) composited icon needs the view's
-        # iconSize widened past Qt's default square box — see
-        # currency_pair_icon_size() in FlagIconHelper.hpp — or it
-        # renders squished.
+        # Any pair (roughly 2:1) composited icon needed the retired
+        # view's iconSize widened past Qt's default square box — see
+        # currency_pair_icon_size() in its FlagIconHelper.hpp — or it
+        # rendered squished.
         presentation_out["has_pair_icon_column"] = any(
             entry.get("is_pair") for entry in presentation_out["icon_columns"]
         )
@@ -1586,16 +1586,16 @@ def _parse_presentation_drawer(
         presentation_out["setting_gated_actions"] = _presentation_setting_gated_actions(sga)
         presentation_out["has_setting_gated_actions"] = bool(presentation_out["setting_gated_actions"])
     # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
-    # facet) — a detail dialog opts into a "Generate" toolbar button that fills
-    # its fields from it by naming the QAction member "generateAction" in the
-    # Setting-gated actions table above (member declaration + visibility gating
-    # both come from that table already; this only decides whether the click
-    # handler and its generator call get generated).
+    # facet) — the retired detail dialog opted into a "Generate" toolbar button
+    # filling its fields from it by naming the QAction member "generateAction" in
+    # the Setting-gated actions table above (member declaration + visibility
+    # gating both came from that table already; this only decided whether the
+    # click handler and its generator call got generated).
     presentation_out["has_generate_action"] = any(
         a.get("action") == "generateAction" for a in presentation_out.get("setting_gated_actions", [])
     )
-    # A detail dialog needs a QToolBar iff it hosts version-nav
-    # actions, the Generate action (both add QAction rows to it),
+    # A detail dialog needed a QToolBar iff it hosted version-nav
+    # actions, the Generate action (both added QAction rows to it),
     # or the author explicitly asked for one (e.g. to host a
     # hand-written paste-block action with no dedicated knob of
     # its own, like calendar's "Regenerate up to <year>") --
@@ -1638,9 +1638,10 @@ def _parse_presentation_drawer(
     # Any list view showing a flag at all (own image_id-backed
     # column, or a derived icon_columns entry) must set an explicit
     # iconSize rather than rely on Qt's implicit per-style default —
-    # see single_flag_icon_size()/currency_pair_icon_size() in
-    # FlagIconHelper.hpp: two views relying on the implicit default
-    # aren't guaranteed to render the same flag at the same size.
+    # see single_flag_icon_size()/currency_pair_icon_size() in the
+    # retired client's FlagIconHelper.hpp: two views relying on the
+    # implicit default weren't guaranteed to render the same flag at
+    # the same size.
     presentation_out["has_any_flag_icon"] = (
         presentation_out["has_flag_icon"] or presentation_out.get("has_icon_columns", False)
     )
@@ -2010,7 +2011,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
                 # Merge, not replace -- repo also carries name_short/
                 # name_singular_short/name_words/order_column, which
                 # core.py's repository-field hoist (below) copies onto
-                # the junction's top level for the non-Qt repository/
+                # the junction's top level for the repository/
                 # service/nats-handler templates to consume directly
                 # (e.g. order_by("{{order_column}}"_c)). Replacing the
                 # dict wholesale would silently corrupt those facets the

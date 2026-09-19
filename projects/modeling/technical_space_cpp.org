@@ -12,7 +12,7 @@
 [[https://en.wikipedia.org/wiki/C%2B%2B][C++]] is a general-purpose, statically-typed, compiled programming
 language, an extension of C with classes and (in modern revisions)
 templates, RAII, and a large standard library. ORE Studio's C++ code
-is built with CMake and vcpkg, targets Qt 6 for its desktop UI, and
+is built with CMake and vcpkg, and
 compiles against Boost and other vcpkg-managed dependencies.
 
 The C++ [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is ORE Studio's primary codegen TS: it generates
@@ -57,7 +57,6 @@ The C++ TS's projections distribute across components according to the
 | NATS (handler, sub-registrar, eventing, event-registrar) | =ores.<group>.core= |
 | Service | =ores.<group>.core= |
 | Service-app | =ores.<group>.service= |
-| Qt | =ores.qt.<group>= |
 | Component | Every component |
 | Enum | =ores.<group>.api= |
 | Field-group | =ores.<group>.api= |

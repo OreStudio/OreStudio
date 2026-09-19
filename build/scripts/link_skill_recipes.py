@@ -54,12 +54,6 @@ OWNERS = {
         ("compass/how_do_i_manage_the_environment_with_compass",
          "the environment lifecycle verbs"),
     ],
-    "compass-devops-run-client": [
-        ("ops/how_do_i_ready_up_an_environment",
-         "the readiness the client assumes, and the launch with a scenario"),
-        ("ops/how_do_i_test_a_feature_after_implementation",
-         "handing a readied client to a tester"),
-    ],
     "compass-devops-deploy-manual": [
         ("cmake/how_do_i_build_the_system", "the deploy_manual target"),
     ],

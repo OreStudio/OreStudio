@@ -24,7 +24,7 @@ this feature's value links here rather than restating its effect.
 
 * Effect
 
-Emit the cross-plugin DLL export macro on the controller, for entities whose Qt classes are consumed from another plugin (Windows builds).
+Emit the cross-plugin DLL export macro on the controller, for entities whose generated classes are consumed from another plugin (Windows builds).
 
 * Structural consequence
 

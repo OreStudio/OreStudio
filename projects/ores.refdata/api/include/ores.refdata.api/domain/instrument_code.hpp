@@ -97,7 +97,7 @@ struct instrument_code final {
      * @brief Asset class this instrument code belongs to, when the product type has a fixed one
      * (references asset_class_code.code; column named asset_class, not asset_class_code, to avoid a
      * C++ name lookup collision between the member and the asset_class_code domain type itself in
-     * generated Qt code). Null where a product type has no class of its own. Two groups are null:
+     * generated code). Null where a product type has no class of its own. Two groups are null:
      * sentinel and wrapper rows (NONE, FAILED, CASHPOS, COMPOSITE, SCRIPT), which describe
      * something other than one instrument; and generic trade types (ASCOT, TRS, CFD, AUTOCALL,
      * DBLDIG, EUROBAR, PERFOPT), which take the class of whatever underlying they reference. A

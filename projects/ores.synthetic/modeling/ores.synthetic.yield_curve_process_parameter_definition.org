@@ -22,7 +22,7 @@ definition, and the mapping layer materialises those rows into the
 strongly-typed process-parameter structs of =ores.analytics.quant=
 (=two_factor_gaussian_params=, =vasicek_params=, ...). The
 =(process_type_code, parameter_name)= pair uniquely identifies a
-parameter; four fields drive the Qt parameter table: =display_name=
+parameter; four fields drive the parameter table: =display_name=
 (the English name), =symbol= (the Greek letter, where one is
 conventional), =short_label= (the layperson name shown in Simple
 mode) and =description= (the rich tooltip text). =min_value=/
@@ -126,7 +126,7 @@ it for a non-specialist reader, not a quant.
 
 Rich, user-facing description of what the parameter means and its
 domain constraints (e.g. "Correlation between the two factor Brownian
-motions; must lie in [-1, 1]"). This is the text the Qt parameter
+motions; must lie in [-1, 1]"). This is the text the parameter
 table shows next to each value field -- write it for a non-specialist
 reader, not a quant.
 
@@ -152,7 +152,7 @@ validates against its own per-process expectations.
 :END:
 
 Value a new config is pre-filled with when this parameter's row is
-added to the Qt table. Not a fallback for missing rows -- the mapping
+added to the table. Not a fallback for missing rows -- the mapping
 layer throws on a missing parameter rather than silently using a
 default; this is purely a UI convenience.
 
@@ -168,7 +168,7 @@ faker::number::decimal(0.0, 0.05)
 :END:
 
 Lower bound of the parameter's valid range (inclusive), enforced by
-the Qt spin box and the mapping layer; NULL means unbounded. E.g.
+the spin box and the mapping layer; NULL means unbounded. E.g.
 =kappa_x= min 0 (a negative mean-reversion speed is ill-posed for the
 two-factor Gaussian), =rho= min -1.
 
@@ -184,7 +184,7 @@ std::nullopt
 :END:
 
 Upper bound of the parameter's valid range (inclusive), enforced by
-the Qt spin box and the mapping layer; NULL means unbounded. E.g.
+the spin box and the mapping layer; NULL means unbounded. E.g.
 =rho= max 1.
 
 #+begin_src cpp :name generator
@@ -199,7 +199,7 @@ std::nullopt
 :default_value: 0
 :END:
 
-Order in which this parameter's row appears in the Qt parameter table,
+Order in which this parameter's row appears in the parameter table,
 within its process type. The process's own natural order (e.g. kappa_x
 before rho) should match the strong-typed struct's field order.
 

@@ -28,10 +28,10 @@ that file in place of the default =.env=.
 compass db status --env newton   # reads .env.newton
 compass db recreate -y -k --env newton
 
-# Services and client commands also support it
+# Service and shell commands also support it
 compass services status --env newton
 compass services start --env newton
-compass client start --env newton
+compass shell --env newton
 
 # Full explicit path also works
 compass db status --env-file .env.newton

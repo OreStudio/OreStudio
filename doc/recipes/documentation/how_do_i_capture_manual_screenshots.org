@@ -2,19 +2,26 @@
 :ID: 43A1EE0A-374D-4EA1-BC72-BADDDC525D20
 :END:
 #+title: How do I capture screenshots for a manual chapter?
-#+description: Confirm a build and a fresh, Acme-provisioned database, turn a chapter's [SCREENSHOT NEEDED] placeholders into a test scenario, capture each one via the QA Validation Runner (or manually when a dialog is modal), crop to the dialog, and wire the real images in.
+#+description: Confirm a build and a fresh, Acme-provisioned database, turn a chapter's [SCREENSHOT NEEDED] placeholders into a capture checklist, take each capture by hand, crop to the dialog, and wire the real images in.
 #+type: recipe
 #+level: cross
 #+filetags: :documentation:docs:manual:entity:testing:recipe:
 #+created: 2026-07-10
-#+updated: 2026-07-17
+#+updated: 2026-09-19
 
 Follows [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]], which leaves a chapter with every
 screenshot as a =[SCREENSHOT NEEDED]= placeholder carrying a =# Capture:=
 instruction. This recipe turns each placeholder into a real, cropped,
-correctly-named image, driven by the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner]]. The
+correctly-named image. The
 [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] scenario is the
 worked exemplar this recipe generalises from.
+
+*Capturing is currently blocked.* The [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner]] panel that
+took these captures was part of the Qt client, and that client is
+removed. No replacement exists yet: =ores.typescript= holds UI metadata
+only and ships no runnable screen. Steps 1, 4 and 5 below are unchanged
+and still correct for a capture taken by hand; steps 2 and 3 wait on a
+client to run them against.
 
 * Question
 
@@ -40,9 +47,8 @@ what ships.
 
 2. /Ready the environment/ — confirm the database is recent (recreate
    only if it's not) and the Acme Corporation tenant is provisioned, per
-   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5 (skip that recipe's step
-   6, client start — the scenario in step 2 below starts its own
-   client with the scenario preloaded).
+   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5. This recipe needs no
+   running client, so skip that recipe's step 6.
 
 3. /Confirm the chapter itself already builds/ before capturing
    anything, so a broken link or missing include isn't mistaken for a
@@ -52,7 +58,7 @@ what ships.
    ./compass.sh build --direct manual
    #+end_src
 
-** Create a test scenario, one step per placeholder
+** Write the capture checklist
 
 Count the placeholders and scaffold a =test_scenario= doc under the
 entity's story directory:
@@ -69,78 +75,45 @@ grep -c "SCREENSHOT NEEDED" doc/manual/user_guide/chapter_<plural>.org
   --description "Set up UI state and capture the N screenshot placeholders in chapter_<plural>.org."
 #+end_src
 
-Fill in the =* Scenario Info= table before writing steps. *Clients*
-must be *genuinely empty* (no placeholder text at all, not even
-"single client") for the common single-client case — this field is
-not just documentation: the QA Validation Runner treats *any*
-non-empty value here as "multi-client" and then only looks for steps
-nested one level deeper, under a per-client =**= heading. A stray
-placeholder with flat =**= steps silently loads *zero* steps, no
-error shown. Then add one =** Capture <target_filename>.png=
-step per placeholder, in the chapter's top-to-bottom order, each body
-copying that placeholder's =# Capture:= instruction verbatim (adjust only
-if the concrete data on file differs from the instruction's example,
-e.g. a different pair code than the one the instruction names — note the
-substitution in the step body). Do not invent extra steps *among the
-capture steps* — the count of capture steps should equal the placeholder
-count exactly — but the scenario is not complete without the two closing
-review steps below, which are mandatory and not counted against the
-placeholder count:
+Fill in the =* Scenario Info= table before writing steps, then add one
+=** Capture <target_filename>.png= step per placeholder, in the
+chapter's top-to-bottom order, each body copying that placeholder's
+=# Capture:= instruction verbatim (adjust only if the concrete data on
+file differs from the instruction's example, e.g. a different pair code
+than the one the instruction names — note the substitution in the step
+body). Do not invent extra steps *among the capture steps* — the count
+of capture steps should equal the placeholder count exactly — but the
+scenario is not complete without the closing review step below, which is
+mandatory and not counted against the placeholder count:
 
-- =** Read the manual in the Qt client= — after the chapter is wired in
-  and the images are captured (steps 3-5 below), rebuild the Qt-embedded
-  HTML help and open the chapter inside the running client's own manual
-  viewer (/Help → User Manual/, or wherever the entity's window links to
-  it), reading it top to bottom exactly as an end user would: does the
-  prose read correctly, do the segues work, does every screenshot appear
-  where expected and actually show what its caption claims?
 - =** Check the built PDF= — open the rebuilt =user_manual.pdf= (e.g. via
   =zathura= or =evince=) at the new chapter's pages and confirm layout,
-  figure numbering, and captions look correct in the PDF's own rendering,
-  which can differ from the HTML view (page breaks, figure placement,
-  the List of Figures entries).
+  figure numbering, and captions look correct in the PDF's own rendering
+  (page breaks, figure placement, the List of Figures entries).
 
-Both steps exist because the HTML/Qt-help and LaTeX/PDF renderers are
-independent pipelines from the same org source, and either can surface a
-problem the other doesn't (a caption that overflows a PDF column, an
-image path that resolves for LaTeX but not for the Qt help export, etc.).
-Do not mark the scenario PASSED without having actually looked at both.
+Do not mark the scenario PASSED without having actually looked at the PDF.
 
-** Run the scenario in the client
+** Take each capture by hand
 
-Start (or restart) the client with the scenario preloaded so the QA
-Validation Runner panel opens with it already loaded. =--open-scenario=
-*requires an absolute path* — a relative one silently fails to load
-the scenario, so resolve it explicitly rather than typing a
-=doc/agile/...=-style relative path by hand:
+Nothing loads this scenario any more, so treat it as the written
+checklist it is. Start whatever client the chapter documents, log in, and
+open the window the chapter describes. Work the checklist top to bottom:
+set up the UI state each step names, take a full-desktop capture with the
+desktop's own screenshot tool (e.g. a =Screenshot from <timestamp>.png=
+landing wherever the desktop environment saves them, often a =tmp/= or
+=Screenshots/= directory), and record the file in that step's
+=*** Result= as =Notes | [[file:...]]=. Leave the window at its natural
+size: the crop below trims the desktop away, but a maximised or resized
+window changes what the reader sees.
 
-#+begin_src sh :results verbatim
-./compass.sh client start --colour <colour> \
-  --open-scenario "$(realpath doc/agile/versions/v0/<sprint>/<story-slug>/scenario_<plural>-manual-screenshots.org)"
-#+end_src
-
-Log in, then work each step: set up the described UI state and click the
-runner's *Screenshot* button, which saves a full-desktop PNG next to the
-scenario file (named =<scenario-slug>_step<N>_<timestamp>.png=) and links
-it into that step's =*** Result= as =Notes | [[file:...]]=, then click
-*Pass*.
-
-*A step can fail to auto-capture.* If the UI state to capture is a
-*modal* dialog (e.g. a validation-rejection warning), the runner's own
-panel cannot receive the Screenshot/Pass click while that dialog holds
-focus — the step has to be captured with the desktop's own screenshot
-tool instead (e.g. a =Screenshot from <timestamp>.png= landing wherever
-the desktop environment saves them, often a =tmp/= or =Screenshots/=
-directory) and then processed by hand through steps 3-4 below like any
-other capture. Do not treat this as a scenario-authoring mistake — file
-it as the known [[id:4DEBBF25-A373-40FD-A913-B175AE27BA66][message-box modality]] gap rather than trying to route
-around it in the scenario itself.
+*Take the capture before dismissing anything the chapter describes.* A
+modal dialog is the common case — the capture has to happen while it
+holds focus, and a dismissed dialog cannot be photographed afterwards.
 
 ** Locate and identify each capture
 
 #+begin_src sh :results verbatim
-find doc/agile/versions/v0/<sprint>/<story-slug> \
-  -iname "<scenario-slug>_step*" -o -iname "<scenario-slug>_2026*"
+find . -maxdepth 2 -iname "Screenshot from 2026*"
 #+end_src
 
 Open each one (or the scenario doc's per-step =Notes= links) and match it
@@ -150,8 +123,8 @@ names the target filename, so this is a direct lookup, not a guess.
 ** Crop to just the dialog or window, following the naming convention
 
 Every published manual screenshot is cropped tightly to the window or
-dialog of interest — never the full desktop, and never with the QA
-Validation Runner panel or other chrome in frame. Use the raw capture's
+dialog of interest — never the full desktop, and never with a terminal
+or other chrome in frame. Use the raw capture's
 pixel bounds for the window in question (read them off the image; a
 quick Python/Pillow one-liner is enough, no dedicated tool):
 
@@ -163,8 +136,8 @@ im.crop((left, top, right, bottom)).save('/tmp/<crop_name>.png')
 "
 #+end_src
 
-View the crop before finalising it — check no other window's edge, no
-scenario-runner overlay, and no cut-off button bleeds into frame; widen
+View the crop before finalising it — check no other window's edge and no
+cut-off button bleeds into frame; widen
 the box and re-crop if anything does. Name the final file per
 [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]]§"Name screenshots to the standard" (the
 plural/singular rule) — the target name is already fixed by the
@@ -200,24 +173,16 @@ Figures:
 pdftotext -layout doc/manual/user_guide/user_manual.pdf - | grep -A20 "List of Figures"
 #+end_src
 
-Also rebuild the Qt-embedded HTML help so the client's own in-app manual
-viewer reflects the change — this is a *separate* pipeline from the PDF
-and does not update just because =deploy_manual= ran:
+Also export the self-contained HTML, so the browser-readable copy of the
+manual matches the PDF. This is a *separate* pipeline from the PDF and
+does not update just because =deploy_manual= ran:
 
 #+begin_src sh :results verbatim
-# Exports the self-contained HTML (build/output/help/) …
 ./compass.sh build --direct help
-# … then recompiles the .qch resource the Qt client actually ships and
-# reads (projects/ores.qt/application/resources/help/user_manual.qch).
-# This step needs the full cmake build, not --direct: it isn't an emacs
-# script, and the recompiled resource has to be picked up by rebuilding
-# and restarting ores.qt before the "Read the manual in the Qt client"
-# step below will show anything new.
-./compass.sh build deploy_help_qch --preset <preset>
 #+end_src
 
-Both builds are prerequisites for the two review steps in step 1 above —
-do them before working those steps, not after.
+Both builds are prerequisites for the review step in step 1 above — do
+them before working it, not after.
 
 ** Close out
 
@@ -231,10 +196,12 @@ outstanding.
 
 * Script
 
-No dedicated wrapper — =compass add test_scenario= (scaffold), the QA
-Validation Runner panel (capture), and a short inline Python/Pillow
+No dedicated wrapper — =compass add test_scenario= (scaffold), the
+desktop's screenshot tool (capture), and a short inline Python/Pillow
 snippet (crop) compose the flow. See [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency
-Pairs manual chapter]] for a fully worked example of every step above.
+Pairs manual chapter]] for a fully worked example; it was captured with
+the runner, so read it for the shape of the scenario and the crops rather
+than for the capture mechanics.
 
 * Tested by
 
@@ -251,9 +218,6 @@ is for.
 - [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] — the shared prerequisite chain
   this recipe's step 2 calls rather than duplicating.
 - [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
-  — the panel this recipe drives.
+  — the panel this recipe drove, before the Qt client was removed.
 - [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] — the worked
   exemplar scenario.
-- [[id:4DEBBF25-A373-40FD-A913-B175AE27BA66][Consolidate message boxes into one non-modal, copiable, standard-button
-  ORE Studio dialog]] — the backlog capture for the modal-dialog gap this
-  recipe currently has to work around by hand.

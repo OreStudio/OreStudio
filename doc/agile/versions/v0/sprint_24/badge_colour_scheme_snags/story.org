@@ -87,7 +87,7 @@ distinct from the coverage-audit-and-rollout work split into
   via =ClientManager= and reload on receipt, re-subscribing on
   login/reconnect -- this is a different, GUI-tier pattern from the
   server-side entity-mirror cache facet (see
-  [[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]), not a shared mechanism.
+  4FF4167B-D970-4383-A263-24E329C9AB95), not a shared mechanism.
 * Out of scope
 
 - The badge adoption coverage audit and rollout across

@@ -29,7 +29,7 @@ def _write(dirpath, name, body):
 
 def _make_templates(templates_dir):
     """A two-facet graph: ores.cpp.domain admits junction+domain_entity but
-    is disabled by default; ores.cpp.qt admits domain_entity only."""
+    is disabled by default; ores.cpp.presentation admits domain_entity only."""
     templates_dir.mkdir(parents=True)
     _write(templates_dir, "ores.org", "#+title: ores\n#+type: technical_space\n")
     _write(templates_dir, "ores.cpp.org",
@@ -41,12 +41,12 @@ def _make_templates(templates_dir):
            "#+title: ores.cpp.domain.class_header\n#+type: archetype\n"
            "#+facet: ores.cpp.domain\n#+output: {name}.hpp\n"
            "* Template\n#+begin_src mustache :tangle d.mustache\nx\n#+end_src\n")
-    _write(templates_dir, "ores.cpp.qt.org",
-           "#+title: ores.cpp.qt\n#+type: facet\n#+facet_group: ores.cpp\n"
+    _write(templates_dir, "ores.cpp.presentation.org",
+           "#+title: ores.cpp.presentation\n#+type: facet\n#+facet_group: ores.cpp\n"
            "#+model_types: domain_entity\n")
-    _write(templates_dir, "ores.cpp.qt.controller_header.org",
-           "#+title: ores.cpp.qt.controller_header\n#+type: archetype\n"
-           "#+facet: ores.cpp.qt\n#+output: {name}_controller.hpp\n"
+    _write(templates_dir, "ores.cpp.presentation.history_field_mapper.org",
+           "#+title: ores.cpp.presentation.history_field_mapper\n#+type: archetype\n"
+           "#+facet: ores.cpp.presentation\n#+output: {name}_controller.hpp\n"
            "* Template\n#+begin_src mustache :tangle q.mustache\nx\n#+end_src\n")
 
 
@@ -70,7 +70,7 @@ def test_address_supports_model_type_true_when_a_facet_admits_it(tmp_path):
 def test_address_supports_model_type_false_when_no_facet_admits_it(tmp_path):
     _make_templates(tmp_path / "library" / "templates")
     graph = load_graph(tmp_path / "library" / "templates")
-    assert address_supports_model_type("ores.cpp.qt", "junction", graph) is False
+    assert address_supports_model_type("ores.cpp.presentation", "junction", graph) is False
 
 
 def test_component_mode_skips_incompatible_type_silently(tmp_path, caplog):
@@ -78,7 +78,7 @@ def test_component_mode_skips_incompatible_type_silently(tmp_path, caplog):
     model_path = _make_junction_model(tmp_path)
     with caplog.at_level(logging.DEBUG, logger="codegen.generate"):
         rc = _generate_single(model_path, True, tmp_path,
-                              address="ores.cpp.qt", component_mode=True)
+                              address="ores.cpp.presentation", component_mode=True)
     assert rc == 0
     assert not any(r.levelno >= logging.WARNING for r in caplog.records)
     assert any(r.levelno == logging.DEBUG for r in caplog.records)
@@ -89,7 +89,7 @@ def test_explicit_single_entity_errors_on_incompatible_type(tmp_path, caplog):
     model_path = _make_junction_model(tmp_path)
     with caplog.at_level(logging.DEBUG, logger="codegen.generate"):
         rc = _generate_single(model_path, True, tmp_path,
-                              address="ores.cpp.qt", component_mode=False)
+                              address="ores.cpp.presentation", component_mode=False)
     assert rc == 1
     assert any(r.levelno == logging.ERROR for r in caplog.records)
 

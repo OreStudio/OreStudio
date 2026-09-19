@@ -24,7 +24,7 @@ the reference-data domain. It provides over 150 domain types for currencies,
 countries, counterparties, books, business units, business centres, and trading
 structure entities, together with JSON, table, and CSV I/O generated via =rfl=,
 and the NATS message protocol schemas for the 0x3000–0x3FFF range. All
-consumers of reference data (=ores.trading.api=, Qt clients, peer services)
+consumers of reference data (=ores.trading.api=, UI clients, peer services)
 depend on this library.
 
 * Inputs

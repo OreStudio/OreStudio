@@ -28,7 +28,7 @@ belong in any existing domain plugin.
   searchable execution list.
 - Badge-based status rendering matching colour constants used everywhere else.
 - Standard toolbar icons from the icon registry defined in
-  [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]].
+  C6ADAC80-F4E6-44E8-9525-3760CB98C41D.
 - Step-level detail dialog with its own status badges.
 - Phase-2 scope (not in this branch): throughput chart, pause/resume, retry,
   pagination, settings tab.

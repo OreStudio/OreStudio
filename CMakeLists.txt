@@ -75,17 +75,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/bin)
 
-# Qt domain plugins are placed alongside the application binary so that
-# QPluginLoader finds them with a simple applicationDirPath() lookup on both
-# Linux and Windows (no platform-specific subdirectory logic required).
-set(ORES_PLUGIN_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
 # Vendors compute engine packages (e.g. the ORE binary tarball) into the
-# publish tree so an ACME publish (ores.shell/ores.qt) always finds them at
+# publish tree so an ACME publish (ores.shell) always finds them at
 # a path relative to the running executable, without a developer needing to
-# run a separate deploy step first -- same "ship with every build" trick as
-# user_manual.qch, but as an ALL-build custom target since it has no owning
-# executable target of its own to hang a POST_BUILD command off.
+# run a separate deploy step first. It is an ALL-build custom target since it
+# has no owning executable target of its own to hang a POST_BUILD command off.
 set(ORES_VENDOR_PACKAGES_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/vendor-packages)
 # Matches engine package archives (name-version-platform_triplet.tar.gz, per
 # ores.compute.api's compute_storage::package_key convention) but not the
@@ -138,7 +132,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-option(WITH_WT "Build the Wt web interface (requires Wt library)" ON)
 
 #
 # Test environment variables: applied to all test targets.
@@ -246,18 +239,9 @@ add_custom_target(deploy_manual
 
 set(ORES_HELP_DIRECTORY "build/output/help")
 add_custom_target(deploy_help
-    COMMENT "Exporting self-contained manual HTML for Qt help to ${ORES_HELP_DIRECTORY}" VERBATIM
+    COMMENT "Exporting self-contained manual HTML to ${ORES_HELP_DIRECTORY}" VERBATIM
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-help.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_HELP_QCH_SOURCE
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help/user_manual.qch")
-add_custom_target(deploy_help_qch
-    COMMENT "Recompiling user_manual.qch and updating source tree" VERBATIM
-    COMMAND python3 build/scripts/generate_help_qch.py
-        --output-dir ${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-add_dependencies(deploy_help_qch deploy_help)
 
 add_custom_target(tangle_clang_format
     COMMENT "Tangling .clang-format from doc/knowledge/architecture/clang_format_config.org" VERBATIM
@@ -408,10 +392,6 @@ find_package(OpenSSL REQUIRED)
 # and test harnesses that need to call OPENSSL_cleanup() on exit.
 add_library(ores.openssl_cleanup INTERFACE)
 target_link_libraries(ores.openssl_cleanup INTERFACE OpenSSL::Crypto)
-
-# Qt
-set(QT_NO_PRIVATE_MODULE_WARNING ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Network Svg Charts Help)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)
@@ -576,10 +556,10 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/doc/llm/skills/modeling)
 # On Windows we disable vcpkg's per-target X_VCPKG_APPLOCAL_DEPS_INSTALL hook
 # (set in CMakePresets.json) because it registers one install(CODE ...) block
 # per installed executable. With ~80 installed targets each pulling the
-# transitive Qt+OpenSSL+libpq+Boost closure, WiX accumulates more than 65,535
+# transitive OpenSSL+libpq+Boost closure, WiX accumulates more than 65,535
 # files per cabinet (LGHT0306). The build-time VCPKG_APPLOCAL_DEPS (still ON
-# by default) already populates publish/bin/ with every DLL and Qt plugin
-# exactly once, so we install that directory in one shot — excluding our own
+# by default) already populates publish/bin/ with every DLL exactly once, so
+# we install that directory in one shot — excluding our own
 # binaries (installed individually via install(TARGETS)), test executables
 # (not meant for the installer), and build byproducts.
 if(WIN32)

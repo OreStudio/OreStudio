@@ -54,7 +54,7 @@ namespace ores::synthetic::domain {
  * driven by TWO_FACTOR_GAUSSIAN may only carry values whose definitions
  * belong to TWO_FACTOR_GAUSSIAN. Both soft FKs are additionally
  * validated at insert time by the generated validation functions. No
- * standalone Qt layer: value rows are edited from inside the IR curve
+ * standalone UI: value rows are edited from inside the IR curve
  * generation config detail dialog, which reads definitions and value
  * rows via the normal codegen repositories.
  */
@@ -92,8 +92,8 @@ struct ir_curve_generation_config_process_parameter_value final {
     /**
      * @brief The value of this parameter for this config, in the definition's data_type ("double"
      * for all current process parameters). Must lie within the definition's min_value/max_value
-     * range (NULL = unbounded); the Qt dialog's spin boxes enforce this on entry and the mapping
-     * layer re-checks it before constructing the process.
+     * range (NULL = unbounded); the dialog's spin boxes enforce this on entry and the mapping layer
+     * re-checks it before constructing the process.
      */
     double parameter_value = 0.0;
 

@@ -26,7 +26,7 @@ handlers from =ores.compute.core=, and runs the event loop.
 * Inputs
 
 - Configuration file: NATS server URL, PostgreSQL connection string.
-- NATS messages from workers and Qt clients.
+- NATS messages from workers and UI clients.
 
 * Outputs
 

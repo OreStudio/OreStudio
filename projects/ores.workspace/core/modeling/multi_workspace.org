@@ -115,7 +115,7 @@ Consequences for the database layer:
   validate a =workspace_id= FK) short-circuits unconditionally for the Live
   sentinel UUID; it receives no tenant context from triggers.
 - =list_active= for any tenant returns that tenant's Live row (the sentinel UUID
-  is in the result set), so the Qt workspace dialog displays it normally.
+  is in the result set), so a UI workspace dialog displays it normally.
 
 ** Workspace Hierarchy
 
@@ -442,8 +442,12 @@ inline constexpr std::string_view x_workspace_id = "X-Workspace-Id";
 
 ** Qt Client — WorkspaceContext
 
-The Qt client carries the active workspace in =WorkspaceContext=
-(=projects/ores.qt.api/include/ores.qt/WorkspaceContext.hpp=):
+*Removed with the Qt client.* Everything from here to the end of
+§UI Considerations describes =ores.qt=, which is gone. It is kept as the
+record of the client-side design. Nothing in it runs, and the TypeScript
+UI that replaces the client carries no workspace context yet.
+
+The Qt client carried the active workspace in =WorkspaceContext=:
 
 #+begin_src cpp
 struct WorkspaceContext {
@@ -604,7 +608,4 @@ Archive is ownership-aware: a user may archive their own workspace with
 | utility    | [[proj:projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp]]             | live_workspace_id() sentinel function       |
 | database   | [[proj:projects/ores.database/include/ores.database/domain/context.hpp]]           | Database context with workspace_id_         |
 | nats       | [[proj:projects/ores.nats/include/ores.nats/domain/headers.hpp]]                   | X-Workspace-Id header constant              |
-| qt.api     | [[proj:projects/ores.qt.api/include/ores.qt/WorkspaceContext.hpp]]                 | Qt workspace context struct                 |
-| qt.api     | [[proj:projects/ores.qt.api/include/ores.qt/ClientManager.hpp]]                    | setWorkspaceContext() and header injection  |
-| qt.api     | [[proj:projects/ores.qt.api/src/EntityController.cpp]]                             | MDI area event filter, context propagation  |
 | workspace  | [[proj:projects/ores.workspace.core/include/ores.workspace.core/service/workspace_service.hpp]] | Workspace service                |

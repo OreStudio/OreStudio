@@ -25,7 +25,7 @@ for the trading domain. It provides all instrument and trade domain types
 products), JSON and formatted-table I/O generated via the =rfl= reflection
 library, and the NATS message protocol schemas (request/response pairs for
 every operation in the 0x5000–0x5FFF range). Both =ores.trading.core= (the
-server) and Qt client components depend on this library.
+server) and UI client components depend on this library.
 
 * Inputs
 

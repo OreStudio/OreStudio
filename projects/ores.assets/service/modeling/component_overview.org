@@ -30,7 +30,7 @@ only for bootstrap, dependency injection, and graceful shutdown.
 
 - Configuration file: NATS server URL, PostgreSQL connection string, and
   environment settings.
-- NATS request messages from Qt clients on the =ores.assets.*= subject
+- NATS request messages from UI clients on the =ores.assets.*= subject
   hierarchy (0x4000–0x4FFF range).
 
 * Outputs

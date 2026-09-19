@@ -43,7 +43,7 @@ licence headers and editor modelines.
 
 - SQL files for data-quality schemas and populates (default).
 - C++ scaffolding for domain types (via profile =all-cpp=).
-- Qt scaffolding for entity UIs (via profile =qt=).
+- TypeScript UI metadata for entity screens (via profile =ts.ui=).
 - Information-architecture org documents — task / story / sprint /
   version / component — via =compass add=.
 
@@ -68,7 +68,7 @@ facets are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Ty
 | =--address ores.cpp.service= | Service layer | — |
 | =--address ores.cpp.protocol= | NATS messaging protocol header | — |
 | =--address ores.sql.schema= | SQL schema, notify triggers, drop scripts | — |
-| =--address ores.cpp.qt= | Qt UI (ClientModel, MdiWindow, dialogs, controller) | Qt6 |
+| =--address ores.ts.ui= | TypeScript UI metadata (columns, fields, entity meta) | — |
 | =--address ores.cpp= | domain + generator + repository + service + protocol | all above |
 | =--address ores= | ores.cpp + ores.sql.schema | all above |
 
@@ -130,11 +130,12 @@ Generates SQL table create, notify trigger, and drop scripts.
 Naming and idempotency conventions are in
 [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]].
 
-** qt
+** ts.ui
 
-Generates 12 files: =ClientModel=, =MdiWindow=, detail/history dialogs,
-controller, and the two =.ui= form files.  Patterns are in
-[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] and [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]].
+Generates one TypeScript file per entity, holding the UI metadata the shared
+=DataTable= and =FieldControl= consume: =fields=, =columns=, and a =meta=
+object naming the entity, its collection, and its display and key fields.
+The source is the entity model's =** Presentation= drawer.
 
 ** Component scaffold profiles
 

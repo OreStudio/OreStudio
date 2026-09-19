@@ -2,27 +2,29 @@
 :ID: F7DE2705-4D20-4878-A10C-A834F3283683
 :END:
 #+title: Badge system wiring
-#+description: How the DB-driven badge system is structured and how to extend it with a new badge — spanning ores.dq, ores.sql, and ores.qt.api.
+#+description: How the DB-driven badge system is structured and how to extend it with a new badge — the ores.dq entities and their ores.sql population, and the presentation-drawer contract a UI reads.
 #+type: knowledge
 #+level: cross
-#+filetags: :qt:architecture:badge:knowledge:
+#+filetags: :architecture:badge:knowledge:
 #+created: 2026-06-04
-#+updated: 2026-07-09
+#+updated: 2026-09-19
 
 * Summary
 
-ORE Studio renders pill badges in Qt list views and detail-dialog
-combos via a three-layer DB-driven system: =ores.dq= owns the four
-domain entities (=badge_severity=, =code_domain=, =badge_definition=,
-=badge_mapping=); =ores.sql= seeds them at install time; and
-=ores.qt.api='s =BadgeCache= loads them at login and resolves
-=(domain, entity_code)= pairs to colours at paint time. For codegen-
-backed entities, adding a new badge requires *no hand-written C++ at
-all* — the delegate wiring is generated from two org-model table
-columns (=is_badge=/=badge_key=); only the SQL population entry is
-manual. Because a missing SQL entry fails silently (the generated
-resolver just returns the shared fallback colour, not an error), it is
-the step most often forgotten. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+ORE Studio resolves pill badges from the database through a three-
+layer system: =ores.dq= owns the four domain entities
+(=badge_severity=, =code_domain=, =badge_definition=, =badge_mapping=);
+=ores.sql= seeds them at install time; and the UI resolves a
+=(domain, entity_code)= pair to a colour. For codegen-backed entities,
+adding a new badge needs no hand-written UI code — the entity's
+presentation drawer carries the badge in two table columns
+(=is_badge=/=badge_key=), and the generator emits those as =codeDomain=
+in the entity's TypeScript UI metadata. Only the SQL population entry is
+manual. Because a missing SQL entry fails silently (the resolver falls
+back to the shared fallback colour, not an error), it is the step most
+often forgotten. The UI-side resolver went with the Qt client and is not
+rebuilt yet — see §UI resolution below. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 
@@ -32,7 +34,7 @@ All four live in the =dq= schema and are managed by =ores.dq=.
 
 | Entity | Table | Purpose |
 |--------+-------+---------|
-| [[id:22798D61-7CF5-4FFC-8AC4-F3D469C47918][=badge_severity=]] | =ores_dq_badge_severities_tbl= | Named severity levels (secondary, info, success, warning, danger, primary). Codes align with Bootstrap 5 classes so Wt needs no translation. |
+| [[id:22798D61-7CF5-4FFC-8AC4-F3D469C47918][=badge_severity=]] | =ores_dq_badge_severities_tbl= | Named severity levels (secondary, info, success, warning, danger, primary). Codes align with Bootstrap 5 classes. |
 | [[id:17FF90EF-64C4-4FF2-B30F-C0714A79FFD4][=code_domain=]] | =ores_dq_code_domains_tbl= | Named namespace that disambiguates codes across entity types (e.g. =account_type=, =login_status=). |
 | [[id:7BEB786A-A573-474E-9677-64C869A64E47][=badge_definition=]] | =ores_dq_badge_definitions_tbl= | One row per visual variant: label, background colour, text colour, severity, CSS class hint. |
 | [[id:BBB49AAA-E476-435B-88CF-CC252B76655C][=badge_mapping=]] | =ores_dq_badge_mappings_tbl= | Junction: maps =(code_domain, entity_code)= → =badge_definition=. |
@@ -56,62 +58,29 @@ structure per new badge domain is always three blocks:
 3. *Badge mappings* — one =ores_dq_badge_mappings_upsert_fn= call per
    value, mapping =(domain, entity_code)= → =badge_definition_code=.
 
-The entity code in the mapping must match exactly what the Qt model
-returns for that column (see §Qt wiring below).
+** UI resolution — not built yet
 
-** BadgeCache
+The Qt client held the badge resolver: =ores.qt.api='s =BadgeCache=,
+filled at login and injected into an =EntityItemDelegate= that painted
+the badge columns and resolved the combo entries. That client is
+removed, and =ores.typescript= holds UI metadata only, so nothing
+resolves or paints a badge today. *Do not look for a live resolver;*
+there is none.
 
-=BadgeCache= ([[proj:projects/ores.qt/api/include/ores.qt/BadgeCache.hpp][=projects/ores.qt/api/include/ores.qt/BadgeCache.hpp=]])
-is a session-scoped cache populated at login from the standard
-service/protocol/client pipeline. It exposes one method:
+What survives is the contract on the model side. A column or detail
+field carries =is_badge= and =badge_key= in the entity's presentation
+drawer, and the generator emits the pair as =codeDomain= in the
+entity's =_ui.ts= file. A screen that reads =codeDomain= resolves it
+against the code domains below and paints the badge definition's
+colours. Two rules from the old resolver are kept here, because they
+are the part most easily got wrong:
 
-#+begin_src cpp
-const badge_definition* resolve(
-    const std::string& domain,
-    const std::string& entity_code) const;
-#+end_src
-
-Returns =nullptr= on cache miss — callers must fall back to a default
-colour. The cache is injected into every =ItemDelegate= at
-construction via the =plugin_context= received in =on_login=.
-
-** Qt wiring — codegen-generated (do not hand-write)
-
-For any entity generated via the =ores.cpp.qt= codegen profile, badge
-rendering is driven entirely by org-model table columns — never
-hand-write =ItemDelegate::paint()=/=sizeHint()= for a badge column;
-that predates the current mechanism and will drift from what
-regeneration produces.
-
-- *List view*: set =is_badge: true= and =badge_key: my_domain= on the
-  column's row in the entity's "Columns (Qt model)" table. The
-  =ores.cpp.qt.mdi_window_impl= template then emits a shared
-  =EntityItemDelegate= (styled =cs::badge_centered= for that column)
-  with a resolver closure bound to ='my_domain'=, falling back to
-  =color_constants::badge_fallback= (orange) on a cache miss or
-  unresolved value — the *same* fallback the combo path below uses, so
-  a missing/miskeyed mapping renders identically (not a mismatched
-  fallback colour) in both places.
-- *Detail dialog combo*: set =badge_key: my_domain= on the field's row
-  in "Detail fields" (works for both =static_combo= and
-  =dynamic_combo=). The generated =DetailDialog= calls
-  =apply_combo_badges(combo, badgeCache_, "my_domain")=.
-
-Regenerate (=codegen.sh generate --model <entity.org> --address
-ores.cpp.qt=) and rebuild; no other file changes.
-
-For hand-written (non-codegen) entities, the same =BadgeCache::resolve()=
-/ =EntityItemDelegate= building blocks apply — wire a column to
-=cs::badge_centered= and a resolver closure the same way the generated
-code does (see =EntityItemDelegate::paint()= for the dispatch and
-=ores.cpp.qt.mdi_window_impl.org='s =has_badge_columns= block for the
-resolver-closure shape to copy).
-
-The entity code passed to =resolve()= must exactly match the string
-the model returns for =Qt::DisplayRole= on that column. If the model
-returns a display name (=tr("Online")=), the badge mapping key must
-use that display name. If the model returns the raw DB code (="user"=),
-the mapping key must use the raw code.
+- The entity code passed to the resolver must exactly match the string
+  the screen shows for that value. If it shows a translated label, the
+  mapping key must use that label's value. If it shows the raw DB code
+  (="user"=), the mapping key must use the raw code.
+- A cache miss or an unresolved value falls back to the shared fallback
+  colour (orange), never an error.
 
 ** Available badge collections (code domains)
 
@@ -166,12 +135,7 @@ script partway through and leaves the DB half-populated — re-run
 - Four mappings keyed on the raw DB codes: ='user'=, ='service'=,
   ='algorithm'=, ='llm'= (because =ClientAccountModel= returns
   =account.account_type= verbatim).
-- Delegate: =Column::AccountType= added to the badge guard in
-  =AccountItemDelegate::paint()= and =sizeHint()= (min width 80 px).
-
-* See also
-
-- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — =BadgeCache=, =DelegatePaintUtils=, and the =plugin_context= that injects the cache.
-- [[id:5C39026D-0507-4544-ACF1-5A93EA3C3338][How do I add a badge to a Qt list view?]] — the four-step checklist.
-- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — how =plugin_context= (including =badge_cache=) is passed to plugins at login.
-- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity controller pattern]] — the delegate sits in the entity UI stack alongside the model and list window.
+- UI wiring: the =account_type= column carries =is_badge= and
+  =badge_key: account_type=, which the generator emits as
+  =codeDomain= in the entity's =_ui.ts= file. The delegate and the
+  combo painting went with the Qt client (§UI resolution above).

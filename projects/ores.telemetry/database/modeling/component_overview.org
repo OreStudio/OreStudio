@@ -33,7 +33,7 @@ persisting received records.
 * Outputs
 
 - Log records persisted to the =ores_telemetry= schema for querying via the
-  telemetry Qt UI.
+  telemetry UI.
 
 * Entry points
 

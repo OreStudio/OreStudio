@@ -65,7 +65,7 @@ generated from this recipe by =compass build --direct tangle_shell_scripts=
 * Tested by
 
 Manual: =compass shell -f acme_system_provision.ores= against a freshly
-recreated database, or via the Qt script library panel.
+recreated database.
 
 * See also
 

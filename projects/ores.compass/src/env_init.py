@@ -123,8 +123,6 @@ BASE_PORT_STEP = 200
 EPHEMERAL_PORT_FLOOR = 32768
 HTTP_PORT_OFFSET_DEBUG = 0
 HTTP_PORT_OFFSET_RELEASE = 1
-WT_PORT_OFFSET_DEBUG = 2
-WT_PORT_OFFSET_RELEASE = 3
 SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
@@ -355,38 +353,33 @@ def list_env(project_root: Path, show_secrets: bool) -> int:
     return 0
 
 
-def _run_install_packages(checkout_root: Path, provision_type: str,
-                          force: bool, skip: bool) -> int:
-    """Offer to run compass env install-packages based on provision_type.
+def _run_install_packages(checkout_root: Path, force: bool, skip: bool) -> int:
+    """Offer to run compass env install-packages.
 
     force=True  → install without prompting (--install-packages).
     skip=True   → skip entirely (--skip-packages).
     Otherwise   → prompt on interactive TTY; print instructions otherwise.
-    Full envs get --with-qt; light envs get baseline only.
     """
     import env_packages
 
-    with_qt = (provision_type == "full")
-    flag_desc = "--with-qt" if with_qt else "baseline only"
-    manual_cmd = ("compass env install-packages --with-qt" if with_qt
-                  else "compass env install-packages")
+    manual_cmd = "compass env install-packages"
 
     if skip:
         print(f"\nPackage installation skipped. To install later:\n  {manual_cmd}")
         return 0
 
     if force:
-        print(f"\n--- Installing system packages ({flag_desc}) ---")
-        return env_packages.install(checkout_root, with_qt=with_qt)
+        print("\n--- Installing system packages ---")
+        return env_packages.install(checkout_root)
 
     if sys.stdin.isatty():
-        ans = input(f"\nInstall system packages now? ({flag_desc}, requires sudo) [y/N] ")
+        ans = input("\nInstall system packages now? (requires sudo) [y/N] ")
         if ans in ("y", "Y"):
-            print(f"--- Installing system packages ({flag_desc}) ---")
-            return env_packages.install(checkout_root, with_qt=with_qt)
+            print("--- Installing system packages ---")
+            return env_packages.install(checkout_root)
         print(f"Skipped. To install later:\n  {manual_cmd}")
     else:
-        print(f"\nTo install system packages ({flag_desc}):\n  {manual_cmd}")
+        print(f"\nTo install system packages:\n  {manual_cmd}")
 
     return 0
 
@@ -478,7 +471,7 @@ def run(argv, project_root: Path) -> int:
     # then override with any value already in .env (pre-assigned by env
     # provision or a prior configure run). Scanning handles fresh clones that
     # bypass env provision. NATS ports are always re-derived from base_port
-    # (like http_port/wt_port/site_port below) rather than read back from
+    # (like http_port/site_port below) rather than read back from
     # .env, so a checkout still on the old independent 42221xxx/8221xxx
     # scheme actually migrates on its next `env configure` run.
     base_port, nats_port, nats_monitor_port = _scan_ports(checkout_root.parent)
@@ -492,10 +485,8 @@ def run(argv, project_root: Path) -> int:
 
     if "release" in preset:
         http_port = base_port + HTTP_PORT_OFFSET_RELEASE
-        wt_port = base_port + WT_PORT_OFFSET_RELEASE
     else:
         http_port = base_port + HTTP_PORT_OFFSET_DEBUG
-        wt_port = base_port + WT_PORT_OFFSET_DEBUG
     site_port = base_port + SITE_PORT_OFFSET
 
     nats_url = f"nats://localhost:{nats_port}"
@@ -514,8 +505,8 @@ def run(argv, project_root: Path) -> int:
     nats_tls_ca = nats_tls_cert = nats_tls_key = ""
     if (nats_certs_dir / "ca.crt").is_file():
         nats_tls_ca = str(nats_certs_dir / "ca.crt")
-        nats_tls_cert = str(nats_certs_dir / "ores.qt.client.crt")
-        nats_tls_key = str(nats_certs_dir / "ores.qt.client.key")
+        nats_tls_cert = str(nats_certs_dir / "ores.shell.crt")
+        nats_tls_key = str(nats_certs_dir / "ores.shell.key")
 
     # IAM RSA signing key (preset-independent).
     keys_dir = checkout_root / "build" / "keys"
@@ -723,7 +714,6 @@ ORES_COMPILER_CACHE={compiler_cache}
 # ---------------------------------------------------------------------------
 ORES_HTTP_PORT={http_port}
 ORES_CONTROLLER_SERVICE_HTTP_PORT={http_port}
-ORES_CONTROLLER_SERVICE_WT_PORT={wt_port}
 ORES_SITE_PORT={site_port}
 ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
@@ -738,7 +728,9 @@ ORES_NATS_STORE_DIR={nats_store_dir}
 ORES_NATS_WIRE_FORMAT={nats_wire_format}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
 # Run `compass nats certs` to generate them.
-# ORES_NATS_TLS_CERT/KEY are used by the Qt desktop client.
+# Shared client identity. systemd units take only the CA from here and pass
+# their own per-service cert/key as CLI args; nats.sh and the integration-test
+# harness use all three.
 ORES_NATS_TLS_CA={nats_tls_ca}
 ORES_NATS_TLS_CERT={nats_tls_cert}
 ORES_NATS_TLS_KEY={nats_tls_key}
@@ -911,9 +903,8 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
         print("No connections.db master password set; leaving blank.")
     out.append(f"""
 # ---------------------------------------------------------------------------
-# ores.qt connections.db master-password auto-unlock (optional; blank by
-# default). --master-password on the command line overrides this. See
-# story "Automate connections.db master-password unlock via CLI/env".
+# connections.db master-password auto-unlock (optional; blank by default).
+# See story "Automate connections.db master-password unlock via CLI/env".
 # ---------------------------------------------------------------------------
 ORES_CONNECTIONS_MASTER_PASSWORD={connections_master_password}
 """)
@@ -955,7 +946,7 @@ ORES_CONNECTIONS_MASTER_PASSWORD={connections_master_password}
         print("\n--- .env.old → .env diff ---")
         diff(checkout_root)
 
-    pkg_rc = _run_install_packages(checkout_root, provision_type,
+    pkg_rc = _run_install_packages(checkout_root,
                                    force=args.install_packages,
                                    skip=args.skip_packages)
     if pkg_rc != 0:

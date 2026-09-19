@@ -19,8 +19,8 @@
 # CDash as the "Site" build group. Same script, two configurations (like the
 # continuous/nightly compile builds): with_doxygen=false is the fast PR link
 # check; with_doxygen=true is the full site + Doxygen build for merges to main.
-# Uses the linux-doc-only cmake preset (ORES_VCPKG_ENABLED=OFF) — vcpkg,
-# sccache, and Qt are not required for an emacs-based site build.
+# Uses the linux-doc-only cmake preset (ORES_VCPKG_ENABLED=OFF) — vcpkg and
+# sccache are not required for an emacs-based site build.
 ---
 name: Site CDash
 

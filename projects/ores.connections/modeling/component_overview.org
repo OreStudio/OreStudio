@@ -23,7 +23,7 @@
 encrypted credential storage. Connections are organised into hierarchical
 folders and cross-cutting tags, with passwords encrypted using AES-256-GCM
 and a master password derived via PBKDF2. State is persisted in a local SQLite
-database. The component is used by =ores.qt= and =ores.shell= to store and
+database. The component is used by =ores.shell= to store and
 retrieve server credentials.
 
 * Inputs

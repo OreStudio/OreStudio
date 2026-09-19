@@ -248,7 +248,7 @@ of which warrants a clear home.
   =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list
   window + client model; Phase 2: detail dialog; Phase 3: history dialog;
   Phase 4: recipe docs).
-- [ ] Rewrite [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] to v2.
+- [ ] Rewrite C6ADAC80-F4E6-44E8-9525-3760CB98C41D to v2.
   - Target: 60–80 lines.
 - [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
@@ -289,7 +289,7 @@ of which warrants a clear home.
 | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] | Rewrite to v2 |
 | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Rewrite to v2 |
 | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Rewrite to v2 |
-| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] | Rewrite to v2 |
+| C6ADAC80-F4E6-44E8-9525-3760CB98C41D | Rewrite to v2 |
 
 * Verification
 

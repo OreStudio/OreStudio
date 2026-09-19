@@ -24,8 +24,8 @@ reads certs only at startup). The NATS server presents =nats-server.crt= and
 requires a client cert signed by =ca.crt= (=verify: true= in the
 rendered server config); services locate their certs via the
 =--nats-tls-ca/cert/key= CLI trio (deliberately *not* part of the
-shared-domain env fallback) or, for the Qt client and shell, the
-=ORES_NATS_TLS_*= environment variables. No TLS version is pinned
+shared-domain env fallback) or, for the shell, the =ORES_NATS_TLS_*=
+environment variables. No TLS version is pinned
 anywhere: the Go nats-server (v2.14.3) and cnats/OpenSSL defaults
 negotiate TLS 1.2–1.3. In containers, client certs are staged into a
 podman-managed volume and mounted read-only — a workaround for the
@@ -44,8 +44,8 @@ build/keys/nats/
 ├── ca.key  ca.crt            # internal CA: EC P-256, self-signed, 365 days
 ├── nats-server.key  nats-server.crt   # broker leaf: EC P-256, 90 days, SANs
 └── <service>.key  <service>.crt       # one mTLS client leaf per service
-     # ores.iam.service, ores.refdata.service, ..., ores.qt.client,
-     # ores.compute.wrapper, ores.analytics.service  (20 services)
+     # ores.iam.service, ores.refdata.service, ..., ores.shell,
+     # ores.compute.wrapper, ores.analytics.service  (19 services)
 #+end_example
 
 The service list is the =_SERVICES= constant in
@@ -190,11 +190,11 @@ binary reads them as plain files.
   from a shared =ORES_NATS_CA= would leave cert/key empty and trip the
   mTLS gate. Per-app =ORES_<APP>_NATS_TLS_*= mirrors win where present;
   the container runners pass the trio explicitly on the command line.
-- *Qt desktop client*: reads =ORES_NATS_TLS_CA/CERT/KEY= from =.env=,
+- *Shared client identity*: reads =ORES_NATS_TLS_CA/CERT/KEY= from =.env=,
   where =env_init.py= points them at =ca.crt= and the
-  =ores.qt.client.crt/.key= pair.
+  =ores.shell.crt/.key= pair.
 - *=ores.shell=*: keeps its own =ORES_SHELL_NATS_TLS_*= mirror block in
-  =.env= (same trio, =ores.qt.client= certs), read via its app-prefix
+  =.env= (same trio, =ores.shell= certs), read via its app-prefix
   mapper.
 
 ** How certificates reach containers

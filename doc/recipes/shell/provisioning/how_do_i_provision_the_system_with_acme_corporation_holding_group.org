@@ -16,7 +16,8 @@ three-stage shell flow, but =provision tenant= is called with
 server-side via internal actor impersonation — see the [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme
 provisioning]] task in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]. The tenant itself is named
 =Acme Corporation= (=acme_corporation=), matching the seeded dataset
-and the Qt one-click wizard's naming, not =Acme Bank= — an earlier
+and the one-click provisioning wizard's naming (that wizard went with
+the removed desktop client), not =Acme Bank= — an earlier
 name that was renamed away from everywhere it could be found at the
 time. The =ores-shell= block is tangled into the runnable script
 library as
@@ -42,7 +43,7 @@ database is fresh (=compass db recreate -y -k= → bootstrap mode).
 subject prefix and TLS context the shell was started with.
 
 Also publishes the vendored ORE engine packages (see [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build
-ACME compute package publishing (client lib, shell, Qt)]]) as its own
+ACME compute package publishing (client lib, shell)]]) as its own
 step, still logged in as =super_admin= so the app/version lands under
 the *system* tenant — the scope every tenant's compute jobs dispatch
 against, not one tenant's own scope — so the system is ready to run

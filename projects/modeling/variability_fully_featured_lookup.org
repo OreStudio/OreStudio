@@ -2,7 +2,7 @@
 :ID: C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB
 :END:
 #+title: Profile: Fully-featured lookup
-#+description: Text natural key, rich Qt tier exercising CSV/XML export and version navigation.
+#+description: Text natural key, rich presentation tier exercising CSV/XML export and version navigation.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -17,7 +17,7 @@ guarantee the exact feature combination below, with no ad hoc variation.
 * Purpose
 
 Models a reference-data code important and heavily-used enough to
-warrant the full Qt surface: bulk CSV/XML import-export for
+warrant the full UI surface: bulk CSV/XML import-export for
 operational data loading, and version navigation for auditing change
 history record-by-record. The exception, not the norm — most lookups
 fit =simple-lookup= instead; reach for this profile only once an
@@ -28,7 +28,7 @@ scrutiny) earns the extra surface.
 
 [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][currency]] — the most complete entity in the codebase, and the
 reference specimen the [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s
-per-layer criteria are derived from; every optional Qt feature is
+per-layer criteria are derived from; every optional UI feature is
 exercised at least once.
 
 * Assignments

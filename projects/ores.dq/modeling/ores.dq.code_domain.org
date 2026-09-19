@@ -2,7 +2,7 @@
 :ID: 17FF90EF-64C4-4FF2-B30F-C0714A79FFD4
 :END:
 #+title: ores.dq.code_domain
-#+description: Codegen entity model for the dq =code_domain= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the dq =code_domain= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: dq
 #+filetags: :model:entity:dq:
@@ -178,14 +178,13 @@ faker::number::integer(1, 100)
 
 ** Custom badge mappings tab
 
-The live =CodeDomainDetailDialog= (=projects/ores.qt/dq=) is itself
-hand-maintained, not generated from this model. Paste blocks don't apply
-here since the live file isn't tangled/generated. Instead, a read-only
-"Badge Mappings" tab (showing every entity_code -> badge_definition
-mapping registered for the displayed code_domain) is wired directly into
-=projects/ores.qt/dq/src/CodeDomainDetailDialog.cpp= by hand, mirroring
-the paste-block pattern used by =PartyHierarchyTab= in shape (see
-=BadgeMappingsTab=) even though no actual paste block is involved.
+The =CodeDomainDetailDialog= that carried this tab was hand-maintained,
+not generated from this model, and it went with the desktop client. Paste
+blocks never applied here, since that file was never tangled. What the tab
+did: a read-only "Badge Mappings" view showing every entity_code ->
+badge_definition mapping registered for the displayed code_domain, wired
+by hand in the shape of a paste block even though none was involved. A
+rebuilt screen needs this tab; nothing renders it today.
 
 * See also
 

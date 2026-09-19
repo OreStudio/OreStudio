@@ -2,7 +2,7 @@
 :ID: 32F5391B-C8C6-4D5E-BB35-B5DF08B9EB6E
 :END:
 #+title: Profile: UUID surrogate lookup
-#+description: UUID surrogate key, tenant-scoped, standard Qt tier, no relationships -- the UUID-keyed counterpart to Simple lookup.
+#+description: UUID surrogate key, tenant-scoped, standard presentation tier, no relationships -- the UUID-keyed counterpart to Simple lookup.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -21,7 +21,7 @@ manufactured UUID as its identity instead of a human-meaningful natural
 code -- typically because rows are authored through a UI form rather
 than referenced by name elsewhere in the system (a report definition, a
 synthetic data-generation config), so there is no natural key worth
-exposing. Same tenant scope and Qt tier as [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] -- change-reason
+exposing. Same tenant scope and presentation tier as [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] -- change-reason
 cache, pagination -- just keyed by =id= instead of a code. Distinct from
 [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]] and [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]: those are also UUID-keyed, but
 *because* they need a stable handle for a parent/child relationship;
@@ -33,7 +33,7 @@ than being left ad hoc per entity.
 * Reference entity
 
 [[id:2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B][dataset_bundle]] — a UUID-surrogate-keyed, tenant-scoped entity with the
-full standard Qt tier (change-reason cache, pagination), no
+full standard presentation tier (change-reason cache, pagination), no
 relationships to any other entity.
 
 * Assignments

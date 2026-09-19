@@ -65,8 +65,7 @@ target_link_libraries(${lib_target_name}
         cli::cli)
 
 # ores.shell is an application-internal component: its parts are linked into
-# ores.shell.exe and into ores.qt.exe, and are not useful as redistributable
-# artifacts. Keep static, so the two parts share no import/export macro.
+# ores.shell.exe and are not useful as redistributable artifacts. Keep static, so the two parts share no import/export macro.
 if(NOT WIN32)
     install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
 endif()

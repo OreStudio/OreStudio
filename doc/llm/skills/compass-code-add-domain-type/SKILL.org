@@ -22,7 +22,7 @@ license: Complete terms in LICENSE.txt
 When you need to add a new domain type to an ORE Studio component with
 JSON I/O, table I/O, a test data generator, and repository CRUD
 support. This is the mandatory first step before any exposure layer
-(SQL schema, HTTP, CLI, shell, Wt, Qt) can be built. See the
+(SQL schema, HTTP, CLI, shell) can be built. See the
 [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] overview for the full layer ordering.
 
 * How to use this skill
@@ -42,7 +42,7 @@ either way.
 1. /Create an org-mode entity model/ under the target component's
    =modeling/= directory (co-located org models — see the
    =component_catalogue.org='s =modeling_dir= column), following the
-   =ores.codegen.entity= (full entity: C++ + SQL + Qt),
+   =ores.codegen.entity= (full entity: C++ + SQL + presentation metadata),
    =ores.codegen.lookup_entity= (SQL-only reference table),
    =ores.codegen.field_group= (flat C++ struct fragment composed into
    a parent entity), =ores.codegen.table=, or =ores.codegen.junction=

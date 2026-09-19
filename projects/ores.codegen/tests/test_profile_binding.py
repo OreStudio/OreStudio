@@ -96,7 +96,7 @@ def test_profile_presentation_default_feeds_derived_flag():
     # :has_version_navigation: in the drawer -- the derivation must see the
     # profile-supplied value, not run before the profile is applied and see
     # it absent (regression: this previously desynced generated output --
-    # e.g. a version-nav QToolBar silently dropped -- for any entity that
+    # e.g. a version-nav toolbar silently dropped -- for any entity that
     # relied on a profile default instead of an explicit drawer property).
     text = (
         MINIMAL_HEADER

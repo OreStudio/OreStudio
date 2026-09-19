@@ -45,7 +45,7 @@ namespace ores::synthetic::domain {
  * strongly-typed process-parameter structs of ores.analytics.quant
  * (two_factor_gaussian_params, vasicek_params, ...). The
  * (process_type_code, parameter_name) pair uniquely identifies a
- * parameter; four fields drive the Qt parameter table: display_name
+ * parameter; four fields drive the parameter table: display_name
  * (the English name), symbol (the Greek letter, where one is
  * conventional), short_label (the layperson name shown in Simple
  * mode) and description (the rich tooltip text). min_value/
@@ -114,8 +114,8 @@ struct yield_curve_process_parameter_definition final {
     /**
      * @brief Rich, user-facing description of what the parameter means and its domain constraints
      * (e.g. "Correlation between the two factor Brownian motions; must lie in [-1, 1]"). This is
-     * the text the Qt parameter table shows next to each value field -- write it for a
-     * non-specialist reader, not a quant.
+     * the text the parameter table shows next to each value field -- write it for a non-specialist
+     * reader, not a quant.
      */
     std::string description;
 
@@ -127,29 +127,29 @@ struct yield_curve_process_parameter_definition final {
     std::string data_type = "double";
 
     /**
-     * @brief Value a new config is pre-filled with when this parameter's row is added to the Qt
-     * table. Not a fallback for missing rows -- the mapping layer throws on a missing parameter
-     * rather than silently using a default; this is purely a UI convenience.
+     * @brief Value a new config is pre-filled with when this parameter's row is added to the table.
+     * Not a fallback for missing rows -- the mapping layer throws on a missing parameter rather
+     * than silently using a default; this is purely a UI convenience.
      */
     double default_value = 0.0;
 
     /**
-     * @brief Lower bound of the parameter's valid range (inclusive), enforced by the Qt spin box
-     * and the mapping layer; NULL means unbounded. E.g. kappa_x min 0 (a negative mean-reversion
-     * speed is ill-posed for the two-factor Gaussian), rho min -1.
+     * @brief Lower bound of the parameter's valid range (inclusive), enforced by the spin box and
+     * the mapping layer; NULL means unbounded. E.g. kappa_x min 0 (a negative mean-reversion speed
+     * is ill-posed for the two-factor Gaussian), rho min -1.
      */
     std::optional<double> min_value;
 
     /**
-     * @brief Upper bound of the parameter's valid range (inclusive), enforced by the Qt spin box
-     * and the mapping layer; NULL means unbounded. E.g. rho max 1.
+     * @brief Upper bound of the parameter's valid range (inclusive), enforced by the spin box and
+     * the mapping layer; NULL means unbounded. E.g. rho max 1.
      */
     std::optional<double> max_value;
 
     /**
-     * @brief Order in which this parameter's row appears in the Qt parameter table, within its
-     * process type. The process's own natural order (e.g. kappa_x before rho) should match the
-     * strong-typed struct's field order.
+     * @brief Order in which this parameter's row appears in the parameter table, within its process
+     * type. The process's own natural order (e.g. kappa_x before rho) should match the strong-typed
+     * struct's field order.
      */
     int display_order = 0;
 

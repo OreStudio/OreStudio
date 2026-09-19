@@ -30,8 +30,8 @@
  * reads the enabled config per (tenant, party) and its enabled driver pairs,
  * feeds them through ores.analytics.quant::topology_builder::build, and
  * keeps one service::rate_engine per (tenant, party) up to date -- see
- * [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Qt UI is deferred to a later task
- * (ores.cpp.qt.enabled: false above), same as market_series.
+ * [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it
+ * is for market_series.
  *
  * Scoped to a tenant and a party so each party runs its own, independent
  * CRM -- two parties in the same tenant may have entirely different

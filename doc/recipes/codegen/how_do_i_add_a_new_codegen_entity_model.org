@@ -35,8 +35,9 @@ matches the entity being commissioned —
 =simple-text-key= (country-like), =fk-scoped= (book-like),
 =hierarchical-composite= (party/counterparty-like), =richest=
 (currency-like, every optional knob exercised), or =timeseries=
-(market_observation-like, no Qt). Each pre-populates the scaffold's
-Flags/SQL/Qt sections with that shape's knobs already set correctly,
+(market_observation-like, no UI metadata). Each pre-populates the
+scaffold's Flags/SQL/Presentation sections with that shape's knobs already
+set correctly,
 sampled from a real, proven-correct reference entity — omit =--shape=
 only to get the old bare, unknobbed skeleton. Individual
 =--entity-<knob>= flags (e.g. =--entity-has-workspace-id false=)
@@ -51,7 +52,7 @@ The scaffold writes
 with the required frontmatter (=#+type: ores.codegen.entity= and
 friends) and the shape's knobbed sections (=Flags=, =Primary key=,
 =Natural keys=, =Columns=, =SQL=, optionally =Foreign keys=/=Insert
-trigger=, =C++=, optionally =Qt=).
+trigger=, =C++=, optionally =Presentation=).
 
 ** 2. Fill in the model
 

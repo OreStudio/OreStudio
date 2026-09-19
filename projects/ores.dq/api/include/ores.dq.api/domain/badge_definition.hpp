@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_BADGE_DEFINITION_HPP
 #define ORES_DQ_API_DOMAIN_BADGE_DEFINITION_HPP
 
@@ -33,10 +38,10 @@ namespace ores::dq::domain {
  *
  * The badge catalogue. Each entry defines the complete visual presentation
  * of a badge: display label, tooltip, background colour, text colour,
- * severity level, and an optional Bootstrap CSS class hint for Wt.
+ * severity level, and an optional Bootstrap CSS class hint for browser rendering.
  *
  * Badge definitions are the single source of truth for all badge visual
- * metadata across Qt and Wt. They are loaded at client startup as
+ * metadata across UI clients. They are loaded at client startup as
  * reference data and looked up at render time via BadgeCache.
  */
 struct badge_definition final {
@@ -90,10 +95,10 @@ struct badge_definition final {
     std::string severity_code;
 
     /**
-     * @brief Optional Bootstrap CSS class hint for Wt rendering.
+     * @brief Optional Bootstrap CSS class hint for browser rendering.
      *
-     * Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style
-     * from background_colour/text_colour when absent.
+     * Example: 'badge bg-success'. Nullable — a renderer falls back to inline style from
+     * background_colour/text_colour when absent.
      */
     std::string css_class;
 

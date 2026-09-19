@@ -42,7 +42,7 @@ entity's shipped fields warrant — see step 2 below on scoping).
 
 Cross-check whatever the domain notes describe against the entity's *actual
 shipped fields* (its =ores.<component>.<entity>.org= codegen model and, for
-Qt UI accuracy, its =*_field_group.org= or detail-fields table). Domain
+UI-metadata accuracy, its =*_field_group.org= or detail-fields table). Domain
 notes are written ahead of implementation and often describe fields that
 were modelled and then dropped, or that are still future work — never
 document as current, shipped behaviour anything the entity's own model
@@ -64,7 +64,7 @@ requires renaming or renumbering anything else:
   --slug chapter_<plural> \
   --parent-dir doc/manual/user_guide \
   --title "<Plural>" \
-  --description "<Entity> management in ORE Studio: the standard, the Qt UI, history and revert, shell and CLI commands."
+  --description "<Entity> management in ORE Studio: the standard, history and revert, shell and CLI commands."
 #+end_src
 
 The frontmatter follows the exemplars: =#+type: manual=, =#+level: cross=,
@@ -220,7 +220,7 @@ the chapter's own =:ID:=, not a =#+include=, and put it under the
 matching =Part:= divider row:
 
 #+begin_example
-| [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][6. Countries]] | Country management: ISO 3166-1, the Qt UI, history and revert, shell and CLI commands. |
+| [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][6. Countries]] | Country management: ISO 3166-1, history and revert, shell and CLI commands. |
 #+end_example
 
 ** 6. Build to validate

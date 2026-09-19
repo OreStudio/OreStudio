@@ -23,7 +23,7 @@
 the reporting domain. It provides domain types for report types, definitions,
 instances, concurrency policies, and run status values, together with JSON
 and table I/O via =rfl=, and the NATS protocol schemas consumed by
-=ores.reporting.core= and Qt clients.
+=ores.reporting.core= and UI clients.
 
 * Inputs
 

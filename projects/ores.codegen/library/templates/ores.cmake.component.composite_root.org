@@ -20,10 +20,10 @@ generates.
 its parts, so a component's parts are listed in exactly one place.
 
 Part order is declared in the model's =#+parts:= rather than derived,
-because dependency order is not alphabetical: =ores.qt= needs
-=headless= and =api= ahead of the plugins that link them, and a
-composite whose =modeling/= carries its own =CMakeLists.txt= lists
-=modeling= among its parts.
+because dependency order is not alphabetical: =ores.refdata= needs
+=api= ahead of =core= and =service=, which link it, and a composite
+whose =modeling/= carries its own =CMakeLists.txt= lists =modeling=
+among its parts.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

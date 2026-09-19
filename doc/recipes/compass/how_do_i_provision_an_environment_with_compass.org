@@ -101,13 +101,10 @@ nats-server --config build/config/nats-festive-hawking.conf
 ** System package installation
 
 =compass env configure= offers to run =compass env install-packages= at the
-end of the configure step.  The flag set depends on the environment type
-written by =env provision=:
-
-| =ORES_PROVISION_TYPE= | Packages installed |
-|-----------------------+--------------------|
-| =full=                | baseline + =--with-qt= (Qt6 dev libraries) |
-| =light=               | baseline only (X11/GL headers, NATS, etc.) |
+end of the configure step.  The package set does not depend on the
+environment type written by =env provision=: both =full= and =light= get the
+baseline set (X11/GL headers, NATS, etc.).  Add =--full-install= when you
+also want the complete developer toolchain.
 
 On an interactive TTY, compass prompts before running.  Flags to control this:
 
@@ -126,7 +123,6 @@ On an interactive TTY, compass prompts before running.  Flags to control this:
 
 # Run package installation standalone (e.g. on a fresh machine):
 ./projects/ores.compass/compass.sh env install-packages              # baseline
-./projects/ores.compass/compass.sh env install-packages --with-qt    # + Qt6
 ./projects/ores.compass/compass.sh env install-packages --full-install  # everything
 #+end_src
 

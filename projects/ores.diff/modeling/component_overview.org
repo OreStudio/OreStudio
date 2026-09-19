@@ -26,7 +26,7 @@ diff model — =field_value= (field name plus rendered value),
 =diff_entry= (field, old value, new value) and =diff_result= (ordered
 entries) — and a compare engine that produces a =diff_result= from two
 ordered field lists. Domain services use it to compute history diffs
-server-side; frontends (Qt, shell) render its results without any
+server-side; frontends (UI, shell) render its results without any
 comparison logic of their own. The types are rfl-serialisable so
 protocol messages can embed them directly.
 

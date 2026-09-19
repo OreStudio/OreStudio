@@ -127,7 +127,7 @@ invented a new problem; it has re-solved an old one with different mechanics:
 | Concern                | UML + Profile mechanism                              | ORE Studio mechanism                                             |
 |-------------------------+--------------------------------------------------------+---------------------------------------------------------------------|
 | Logical shape            | The class's attributes and associations.               | The =* Primary key=/=* Natural keys=/=* Columns= sections.          |
-| Element-scope variability | Tagged values on a UML Profile stereotype applied to the class. | Property-drawer properties under =* SQL=/=* C++ > ** Qt= headings ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][feature bundles]]). |
+| Element-scope variability | Tagged values on a UML Profile stereotype applied to the class. | Property-drawer properties under =* SQL=/=* C++ > ** Presentation= headings ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][feature bundles]]). |
 | Protected regions        | Marker comments scanned from the /previous/ generated file and reinserted (round-trip; loses content on an unstable marker ID). | A =:implements:= babel-block property naming a kind UUID, read from the /model/, never the output (stateless; nothing to lose on regeneration — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]). |
 | Where the three concerns live | Three loosely-coupled artefacts: the diagram, the profile application, the generated-and-edited file. | One physical document, one org-roam node, one =:ID:=. |
 
@@ -265,8 +265,8 @@ scheme to maintain (an entity's =ores.*= drawer binding and its
 | Transform | The model-to-text operation that applies archetypes to a logical entity to produce artefacts. | Running =ores.codegen= |
 | Artefact | A concrete output file produced by an archetype for a specific entity. | =currency.hpp= |
 | Address | The physical-space path selector: restricts a run to the facets under it. | =--address ores.cpp= |
-| Physical space binding | Element-scope activation via =ores.*= property-drawer properties; overrides the entity's default supported set. | =:ores.cpp.qt.enabled: false= |
-| Technical space | The language/platform ecosystem hosting the physical artefacts. | C++, SQL, Qt |
+| Physical space binding | Element-scope activation via =ores.*= property-drawer properties; overrides the entity's default supported set. | =:ores.cpp.repository.enabled: false= |
+| Technical space | The language/platform ecosystem hosting the physical artefacts. | C++, SQL, TypeScript |
 
 Terms to avoid and their replacements:
 
@@ -274,7 +274,7 @@ Terms to avoid and their replacements:
 |-------+-------------+-----|
 | =type= (for metatype) | metatype | A type is =currency=; the metatype classifies it as =domain_entity=. |
 | stereotype | metatype | Stereotype is a UML mechanism; ORE Studio uses org-mode frontmatter. |
-| layer | facet (for a grouping) or technical space (for C++/SQL/Qt) | "Layer" is informal and ambiguous. |
+| layer | facet (for a grouping) or technical space (for C++/SQL/TypeScript) | "Layer" is informal and ambiguous. |
 | tier | metatype group | Invented non-MASD word. |
 
 ** Physical space → technical spaces, addresses, and templates
@@ -329,8 +329,8 @@ activation; instead the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical
 =projects/ores.codegen/library/templates/= plays that role: one node
 per technical space, fanning out to facet nodes, each carrying an =*
 Archetypes= table mapping every archetype to its output path. A
-facet's own address *is* the addressing unit — =--address ores.cpp.qt=
-selects exactly the =ores.cpp.qt= facet's templates directly, with no
+facet's own address *is* the addressing unit — =--address ores.cpp.repository=
+selects exactly the =ores.cpp.repository= facet's templates directly, with no
 indirection through any intermediate name. A grouping that spans
 several facets is addressed one level up the hierarchy instead — a
 technical-space address (=ores.cpp=) for every C++ facet, the root
@@ -445,14 +445,12 @@ literate template org file.
 | Repository          | =ores.cpp.repository=    | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
 | Messaging           | =ores.cpp.protocol=      | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]]         | 6          | NATS event, handler, protocol types, service       |
 | Service application | =ores.cpp.service-app=   | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]       | 12         | Application, host, config options/parser, entry point |
-| Qt UI               | =ores.cpp.qt=            | =ores.cpp.qt=                | 10         | MDI window, controller, detail/history dialogs, client model |
 | Component           | =ores.cpp.component=     | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]         | 6          | Umbrella header, export macros, test main, stubs   |
 | Model types         | =ores.cpp.enum=          | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]]       | 2          | Enum class, field-group struct                     |
 | Table               | part of =ores.cpp.domain=  | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]]           | 4          | libfort table adapter and I/O                      |
 
 Per-facet references: [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]], [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] (repository and
-service), [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]], [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol),
-[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]].
+service), [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]], [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol).
 
 *** SQL technical space
 
@@ -469,7 +467,7 @@ See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 | Facet         | Address             | Literate source | Archetypes | Purpose                                             |
 |---------------+---------------------+-----------------+------------+-----------------------------------------------------|
 | CMake build   | =ores.cmake.component= | [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]           | 8          | Component root, src variants, tests, modeling target |
-| Assets        | =ores.cpp.qt=       | =ores.cpp.qt=          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
+| Assets        | =ores.plantuml.er=, =ores.shell.service= | [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]] | 2          | PlantUML ER diagram, shell vars                    |
 | Documentation | =ores.doc=          | [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
 
 See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]], [[id:1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04][Documentation facet]].
@@ -477,7 +475,7 @@ See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2
 *** Manually authored facets
 
 These facets are authored rather than generated, and documented for parity:
-[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]], [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]], [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]], [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt facet]].
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]], [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]], [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]].
 
 The key attributes of a logical element live in the /domain/ facet — regular
 C++ defining the domain =struct=. Each element lives on its native component
@@ -509,8 +507,8 @@ from a proven hand-written entity.
 Commissioning =currency= produced the canonical SRPP catalogue for
 reference-data entities: the C++ domain struct with rfl-based JSON I/O, the
 repository entity/mapper/CRUD trilogy, the NATS service and protocol types, the
-SQL DDL and trigger scripts, and the full Qt UI (10 C++ archetypes plus 2 =.ui=
-archetypes in the Assets TS).
+SQL DDL and trigger scripts, and the UI metadata the TypeScript screens read
+(emitted by the =ores.ts.ui= facet).
 
 ** Automation spectrum
 
@@ -530,7 +528,7 @@ as the fitness function.
 ** The six principles, applied
 
 1. *Focus Narrowly* — the generator produces mechanical layers (C++ plumbing,
-   SQL DDL, Qt boilerplate) but never domain logic inside a service class.
+   SQL DDL, UI boilerplate) but never domain logic inside a service class.
 2. *Integrate Pervasively* — =ores.codegen= is invoked via =compass=, emits
    files that slot into CMake targets and the existing layout, and carries the
    standard licence header and editor modeline.

@@ -58,6 +58,6 @@ project-specific branding (splash, app icon), modernised icon set
 
 * See also
 
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component.
+- 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — the Qt component.
 - [[id:36A36BCB-6D25-4CEA-A2DE-53741EDAD563][Qt UI scaffold]] (sprint 01) — first iteration of the splash and
   icon set.

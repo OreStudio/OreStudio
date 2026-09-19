@@ -490,78 +490,6 @@ string would be treated as one executable path."
                               (goto-char (point-max))
                               (insert (format "\n[%s]\n" (string-trim event))))))))
     (ores/dashboard--display buf dash-buf)))
-
-(defun ores/dashboard--run-client (label cmd-list root dash-buf)
-  "Run CMD-LIST in a persistent buffer via a pipe; show it in the dashboard.
-Uses make-process so the Qt window survives without needing setsid."
-  (let* ((buf-name (format "*ores:%s:client*" label))
-         (buf      (get-buffer-create buf-name)))
-    (when (get-buffer-process buf)
-      (user-error "Client already running in %s — kill it first" buf-name))
-    (with-current-buffer buf
-      (let ((inhibit-read-only t)) (erase-buffer))
-      (special-mode)
-      (setq-local default-directory root))
-    (make-process
-     :name            (format "ores-client-%s" label)
-     :buffer          buf
-     :command         cmd-list
-     :connection-type 'pipe
-     :filter          #'ores/dashboard--service-filter
-     :noquery         t
-     :sentinel        (lambda (proc event)
-                        (when (buffer-live-p (process-buffer proc))
-                          (with-current-buffer (process-buffer proc)
-                            (let ((inhibit-read-only t))
-                              (goto-char (point-max))
-                              (insert (format "\n[%s]\n" (string-trim event))))))))
-    (ores/dashboard--display buf dash-buf)))
-
-;; ---------------------------------------------------------------------------
-;; Start-client transient
-;; ---------------------------------------------------------------------------
-
-(defun ores/dashboard--detach-prefix ()
-  "Return a shell prefix that detaches child processes from Emacs's process group.
-On Linux `setsid' is required — signals an error if missing.
-On macOS the shell's process management is sufficient; no prefix is used.
-On other systems `setsid' is used when available, otherwise an error is raised."
-  (cond
-   ((executable-find "setsid") "setsid ")
-   ((eq system-type 'darwin)   "")
-   (t (user-error "setsid not found — install util-linux (apt install util-linux)"))))
-
-(defvar ores/dashboard--client-context nil
-  "List (root label dash-buf) passed into the start-client transient.")
-
-(defun ores/dashboard--start-client-do ()
-  "Launch ores.qt using the options chosen in the transient."
-  (interactive)
-  (unless ores/dashboard--client-context
-    (user-error "No client context — invoke Start client from the dashboard"))
-  (let* ((ctx      ores/dashboard--client-context)
-         (root     (nth 0 ctx))
-         (label    (nth 1 ctx))
-         (dashbuf  (nth 2 ctx))
-         (args     (transient-args 'ores/dashboard--start-client-transient))
-         (script   (expand-file-name "projects/ores.compass/compass.sh" root))
-         (arg-list (cl-mapcan (lambda (a)
-                     (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
-                         (list (match-string 1 a) (match-string 2 a))
-                       (list a)))
-                   (or args '())))
-         (cmd-list (append (list "bash" script "client") arg-list)))
-    (ores/dashboard--run-client label cmd-list root dashbuf)))
-
-(transient-define-prefix ores/dashboard--start-client-transient ()
-  "Start the ORE Studio Qt client."
-  ["Instance"
-   ("-c" "Colour"    "--colour="    :choices ("red" "green" "blue"))
-   ("-n" "Name"      "--name=")
-   ("-l" "Log level" "--log-level=" :choices ("trace" "debug" "info" "warn" "error"))]
-  ["Actions"
-   ("s" "Start" ores/dashboard--start-client-do)])
-
 ;; ---------------------------------------------------------------------------
 ;; Group builders — each returns (title icon-fn icon-arg items title-face)
 ;; All use nerd-icons-faicon (Font Awesome 4) for reliable icon availability.
@@ -704,19 +632,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
               (lambda (_)
                 (unless (yes-or-no-p (format "DROP and recreate ores_dev_%s? " lbl))
                   (user-error "Aborted"))
-                (ores-db/--run-recreate-env lbl r))))
-           (ores/dashboard--mkitem
-            "Open connections DB (SQLite)" 'nerd-icons-faicon "nf-fa-table"
-            (let ((sqlite-db (expand-file-name "~/.local/share/ores.qt/connections.db"))
-                  (sqliterc  (expand-file-name "projects/ores.sql/utility/sqliterc.sql" root))
-                  (dash      dash-buf))
-              (lambda (_)
-                (let* ((buf-name "*ores-connections-db*")
-                       (sql-sqlite-options `("-init" ,sqliterc))
-                       (sql-database       sqlite-db))
-                  (save-window-excursion (sql-sqlite buf-name))
-                  (when-let ((buf (get-buffer buf-name)))
-                    (ores/dashboard--display buf dash)))))))
+                (ores-db/--run-recreate-env lbl r)))))
           'ores/dashboard-group-db-face)))
 
 (defun ores/dashboard--services-group (env root dash-buf)
@@ -732,12 +648,6 @@ On other systems `setsid' is used when available, otherwise an error is raised."
                   (r   root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--run-services lbl s r db))))
-           (ores/dashboard--mkitem
-            "Start client" 'nerd-icons-faicon "nf-fa-play_circle"
-            (let ((lbl label) (r root) (db dash-buf))
-              (lambda (_)
-                (setq ores/dashboard--client-context (list r lbl db))
-                (ores/dashboard--start-client-transient))))
            (ores/dashboard--mkitem
             "Service status" 'nerd-icons-faicon "nf-fa-info_circle"
             (let ((lbl label)

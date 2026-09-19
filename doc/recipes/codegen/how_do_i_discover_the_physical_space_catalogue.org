@@ -35,7 +35,7 @@ the same value =--address= takes everywhere else in =codegen entity=):
 
 #+begin_src sh :results verbatim
 ./compass.sh codegen entity archetypes --address ores.cpp
-./compass.sh codegen entity archetypes --address ores.cpp.qt
+./compass.sh codegen entity archetypes --address ores.cpp.repository
 #+end_src
 
 With =--entity=, the same tree is shown annotated with ✅/❌ per TS, facet,
@@ -47,17 +47,21 @@ type, an explicit =:ores.*.enabled: false= override (naming the exact key
 that matched), or a facet/archetype =#+default: disabled=.
 
 #+begin_src sh :results verbatim
-./compass.sh codegen entity archetypes --entity market_observation --address ores.cpp.qt
+./compass.sh codegen entity archetypes --entity badge_mapping_junction --address ores.cpp
 #+end_src
 
 #+begin_example
-Supported set for: market_observation  (domain_entity, marketdata)
-  ores.* bindings: :ores.cpp.qt.enabled: false
+Supported set for: badge_mapping_junction  (junction, dq)
+  ores.* bindings: :ores.cpp.protocol.enabled: false, :ores.cpp.service.enabled: false, ...
 
-ores.cpp  ❌ [technical space — no admissible facet]
-  ores.cpp.qt  ❌ [facet — excluded by :ores.cpp.qt.enabled: false]
-    ores.cpp.qt.client_model_header    ❌  cpp_qt_client_model.hpp.mustache  (excluded by :ores.cpp.qt.enabled: false)
+ores.cpp  ✅ [technical space — in supported set]
+  ores.cpp.domain  ✅ [facet — model types: schema domain_entity junction]
+    ores.cpp.domain.class_header       ✅  cpp_domain_type_class.hpp.mustache
     ...
+  ores.cpp.protocol  ❌ [facet — excluded by :ores.cpp.protocol.enabled: false]
+    ores.cpp.protocol.protocol_header  ❌  cpp_protocol.hpp.mustache  (excluded by :ores.cpp.protocol.enabled: false)
+  ores.cpp.service  ❌ [facet — excluded by :ores.cpp.service.enabled: false]
+    ores.cpp.service.service_header    ❌  cpp_service.hpp.mustache  (excluded by :ores.cpp.service.enabled: false)
 #+end_example
 
 =--address= and =--entity= combine — the tree is narrowed to that address
@@ -75,13 +79,13 @@ only presentation.
 
 * Tested by
 
-Manual: run =./compass.sh codegen entity archetypes --entity market_observation
---address ores.cpp.qt= (an entity with =:ores.cpp.qt.enabled: false= in its
-model) and verify every =ores.cpp.qt.*= archetype shows ❌ with that key
-named as the reason; run with a =domain_entity= entity and =--address
-ores.sql.schema= and verify =sql.schema.junction_create= /
-=sql.schema.table_create= show ❌ (model type not admitted) while
-=sql.schema.domain_entity_create= shows ✅.
+Manual: run =./compass.sh codegen entity archetypes --entity
+badge_mapping_junction --address ores.cpp= (a junction with
+=:ores.cpp.service.enabled: false= in its model) and verify every
+=ores.cpp.service.*= archetype shows ❌ with that key named as the reason;
+run with a =domain_entity= entity and =--address ores.sql.schema= and
+verify =sql.schema.junction_create= / =sql.schema.table_create= show ❌
+(model type not admitted) while =sql.schema.domain_entity_create= shows ✅.
 
 * See also
 

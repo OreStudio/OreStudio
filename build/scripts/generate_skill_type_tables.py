@@ -64,7 +64,6 @@ READ_ONLY_SUB = {
     "sprint audit": "drift between story files and the sprint table",
     "story status": "one story's tasks and their states",
     "services status": "which services run, which stopped or went missing",
-    "client status": "whether the Qt client is up",
     "pr checks": "CI state on a pull request",
     "test results": "the last ctest run",
     "review list": "the review comments on a pull request",

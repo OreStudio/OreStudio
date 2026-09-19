@@ -79,9 +79,10 @@ on =main=).
    ./compass.sh release-notes export --sprint <N>
    #+end_src
 
-6. /Capture the readme screenshot/. Take a fresh screenshot of the
-   running Qt client (e.g. via the QA Validation Runner panel's
-   screenshot button, or a desktop screenshot tool) and save it as
+6. /Capture the readme screenshot/. Take a fresh screenshot of a
+   running ORE Studio surface (a desktop screenshot tool is the only
+   option today: no client captures its own screenshots since the
+   desktop client was removed) and save it as
    =assets/images/ore_studio-v0.0.<N>.png=. Do *not* wire it into
    =readme.org= here — the readme should show the *last released*
    version, so it only gets pointed at this screenshot once sprint

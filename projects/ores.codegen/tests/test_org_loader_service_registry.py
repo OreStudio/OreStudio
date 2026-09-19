@@ -35,17 +35,13 @@ def test_every_entry_has_the_deployment_aspect(services):
 def test_db_access_aspect_is_optional(services):
     # ores.iam.service has its own NATS-domain-service role.
     assert "psql_var" in services["ores.iam.service"]
-    # ores.http.server/ores.wt.service/ores.compute.wrapper do not.
-    for name in ("ores.http.server", "ores.wt.service", "ores.compute.wrapper"):
+    # ores.http.server/ores.compute.wrapper do not.
+    for name in ("ores.http.server", "ores.compute.wrapper"):
         assert "psql_var" not in services[name], name
 
 
 def test_compute_wrapper_has_five_replicas(services):
     assert services["ores.compute.wrapper"]["replicas"] == 5
-
-
-def test_wt_service_disabled_by_default(services):
-    assert services["ores.wt.service"]["enabled"] is False
 
 
 def test_dependent_services_depend_on_iam(services):
@@ -67,8 +63,8 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_nineteen_fleet_processes(services):
-    assert len(services) == 19
+def test_eighteen_fleet_processes(services):
+    assert len(services) == 18
 
 
 def test_db_grant_prefixes_still_round_trip(services):

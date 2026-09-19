@@ -2,7 +2,7 @@
 :ID: 6c6415ff-172f-47ea-8cc6-f293ee7af888
 :END:
 #+title: ores.trading.bond_leg_amortization
-#+description: Codegen entity model for the trading =bond_leg_amortization= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =bond_leg_amortization= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

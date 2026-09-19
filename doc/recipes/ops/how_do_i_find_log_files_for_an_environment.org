@@ -39,7 +39,6 @@ How do I find the log files for a running OreStudio environment?
    | =ores.refdata.service.0.log= | Reference data service |
    | =ores.trading.service.0.log= | Trading service |
    | =ores.workspace.service.0.log= | Workspace service |
-   | =ores.wt.service.0.log= | Wt web UI service |
    | =ores.http.server.0.log= | HTTP server |
    | =nats-server.log= | NATS message bus |
 

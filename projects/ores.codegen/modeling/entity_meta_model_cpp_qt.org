@@ -1,19 +1,21 @@
 :PROPERTIES:
 :ID: 483EBF89-6151-480E-8801-FC1ABB284A17
 :END:
-#+title: Codegen entity meta-model — C++ Qt
-#+description: The ores.cpp.qt facet: MDI list window, detail dialog, controller, client model, and their knobs — grouped by what they wire up, with worked examples and the facet's paste blocks.
+#+title: Codegen entity meta-model — Presentation
+#+description: The presentation drawer: the knobs an entity model authors for its UI — grouped by what they wire up, with worked examples.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+startup: inlineimages
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-09-19
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
-the =ores.cpp.qt= facet: the MDI list window, detail dialog, controller,
-and client model an entity gets in the desktop client. Unlike the
-server-side facets, Qt reads across all of them by name —
+the =** Presentation= drawer: the knobs an entity authors for its UI.
+The facet that once read them is gone; the surviving
+reader is [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]], which
+emits the drawer's columns and fields as TypeScript UI metadata. The
+knobs themselves are unchanged. Reading across the facets by name —
 =:domain_class:=, =:save_message_type:=, etc. below are just pointers
 back to types [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] and [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] already generated —
 so this page assumes those two.
@@ -22,22 +24,22 @@ so this page assumes those two.
 
 | Facet                     | Description                                       |
 |-----------------------------+------------------------------------------------------|
-| =ores.cpp.qt=                | Qt UI: windows, dialogs, controllers, client models. |
+| =ores.ts.ui=                 | TypeScript UI metadata: columns, fields, entity meta. |
 
 * The one thing to internalise before reading the knob tables
 
 Eight =*_convention= entities (currency-like lookup entities whose
 saves require a change-reason code) were regenerated without
-=:has_change_reason_cache: true= in their Qt drawer. Nothing errored
+=:has_change_reason_cache: true= in their presentation drawer. Nothing errored
 — codegen ran clean, the build succeeded, the tests passed. The only
 symptom was an empty, unusable change-reason dropdown in the save
 dialog, found by hand during manual QA weeks later (task
 [[id:AA97E310-F293-46AD-9BE7-C13AD376346C][AA97E310]], PRs #1571/#1590).
 
 That's the general failure mode for every knob in the *Behavioural*
-group below, not a one-off bug: codegen's templates gate optional Qt
+group below, not a one-off bug: codegen's templates gate optional
 behaviour with a mustache section tag,
-={{#domain_entity.qt.<knob>}}=, and mustache's rule for section tags
+={{#domain_entity.<knob>}}=, and mustache's rule for section tags
 is "false or absent renders as nothing" — there is no way for the
 template to tell "author explicitly said no" apart from "author
 forgot". An omitted knob is therefore indistinguishable, at
@@ -53,7 +55,7 @@ party-scoped with a UUID primary key, so it also exercises
 =parent_entity_singular= and =has_uuid_primary_key=:
 
 #+begin_src org
-,** Qt
+,** Presentation
 ,:PROPERTIES:
 ,:domain_include:          ores.refdata.api/domain/book.hpp
 ,:domain_class:            refdata::domain::book
@@ -108,8 +110,8 @@ a lighter treatment here.
   and message-type identifier [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] generated for that verb.
 - *Cross-client invalidation* — =:changed_event_class:=,
   =:changed_event_include:= point at [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]'s eventing facet output,
-  so the Qt client knows which event to listen for to refresh itself.
-- *MDI window chrome* — =:settings_group:=, =:window_title:=, =:icon:=:
+  so a client knows which event to listen for to refresh itself.
+- *Window chrome* — =:settings_group:=, =:window_title:=, =:icon:=:
   cosmetic, but still required per entity (no sensible default exists
   for a window title).
 
@@ -117,7 +119,7 @@ a lighter treatment here.
 
 Every property here is, in [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] terms, a *feature* — and
 specifically MASD's *non-structural* kind: none of them change the
-entity's own logical shape, only which generated Qt code paths exist
+entity's own logical shape, only which generated UI code paths exist
 for it. (Contrast [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]'s =:has_tenant_id:=, which *does*
 add a field — structural variability, a different MASD category
 entirely.) Every property here is a boolean or identifier that
@@ -147,38 +149,33 @@ recommends as the safer choice.
   the detail dialog).
 - *Parent scoping* — =:parent_entity_singular:=, =:parent_entity_pascal:=:
   set when the entity is only ever listed under a parent window (e.g.
-  =book= under =portfolio=) rather than having its own top-level MDI
+  =book= under =portfolio=) rather than having its own top-level
   entry.
 - =:has_readonly_paginated_list:= (default: false) — strips every
   add/edit/delete/history affordance from the generated controller
-  and MDI window: no toolbar actions, no detail-dialog wiring, no
+  and top-level window: no toolbar actions, no detail-dialog wiring, no
   version navigation, no history dialog. Reload and pagination are
   untouched (=:has_pagination:= is independent and orthogonal). Use
   for a junction-backed or materialised dataset with nothing to edit
   (first consumer: =calendar_dates=, scoped by =calendar_code=) —
-  pair it with disabling this entity's =ores.cpp.qt.detail_dialog_*=
-  archetypes individually via the entity's =:ores.*.enabled:= drawer
-  overrides, since no detail dialog is ever wired to when this knob
-  is set.
+  pair it with disabling this entity's detail-dialog archetypes
+  individually via the entity's =:ores.*.enabled:= drawer overrides,
+  since no detail dialog is wired to when this knob is set.
 - *Parent-scoped lists* — =:has_parent_scoped_list:= (default: false),
   paired with =:parent_key_field:= (the protocol get-request field,
   e.g. =calendar_code=) and =:parent_key_param:= (the C++ member/
   parameter name) -- both required when the knob is set, since the
   parent key belongs to a different entity and neither can be
   derived. Only meaningful alongside =:has_readonly_paginated_list:=
-  (a still-full-CRUD entity has no analogous need). When set: the
-  =Client<Entity>Model= constructor takes the parent key and sends it
-  on every paginated fetch alongside offset/limit; the =MdiWindow=
-  constructor threads it through to the model it creates; the
-  controller's =showListWindow()= override still satisfies
-  =EntityController='s pure-virtual contract (opens with an
-  empty/unset key), while the real entry point is the new
-  =openForParent(const QString&)= public method (analogous to
-  =openAddWithParent=, but filtering a read-only list's get-request
-  rather than pre-filling a create form's foreign key -- do not
-  conflate this with =:parent_entity_singular:=/
-  =:has_parent_relationship:= above, which solves that unrelated
-  problem).
+  (a still-full-CRUD entity has no analogous need). When set, the
+  deleted templates wired it through three generated classes: the
+  client model's constructor took the parent key and sent it on every
+  paginated fetch alongside offset/limit; the list window threaded it
+  through to the model it created; and the controller exposed an
+  =openForParent()= entry point that opened the read-only list
+  filtered by that key. Do not conflate this with
+  =:parent_entity_singular:=/=:has_parent_relationship:= above, which
+  solves that unrelated problem.
 
 * Overrides
 
@@ -196,6 +193,10 @@ diverges from that default naming convention:
   those.
 
 * Per-field knobs
+
+The deleted templates were the only readers of these knobs; nothing
+consumes them today. They stay as the model's authored record of the
+intent, until the TypeScript UI grows the equivalent controls.
 
 The =*** Detail fields= and =*** Columns= tables (one row
 per entity field, not the whole-entity drawer above) carry their own
@@ -216,7 +217,7 @@ per-field properties, layered on top of the plain =field=/=label=/
   worked example on this page — flag for follow-up.)*
 - =tooltip_field= — list-column only. When set, the generated
   =Client<Entity>Model::data()= returns the value of the named field
-  for =Qt::ToolTipRole= on this column's cells. Used for columns whose
+  as the tooltip on this column's cells. Used for columns whose
   displayed text is a human-friendly stand-in for the real identifier
   (e.g. the host =DisplayName= column tooltips the =external_id=).
   Plain-field access only; no =field_access= nesting.
@@ -231,125 +232,9 @@ per-field properties, layered on top of the plain =field=/=label=/
   lookups. The ={{item_var}}= name (e.g. =host=) is in scope inside
   the body.
 
-* Paste blocks
-
-The =ores.cpp.qt= facet defines the following paste block kinds, one
-per sub-heading below — see [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] for the general mechanism
-they assume.
-
-** Detail dialog hierarchy tree seam
-:PROPERTIES:
-:ID: 9B165431-2921-4CAC-A2E8-2C186741E523
-:END:
-
-A placeholder in the generated =<Entity>DetailDialog.cpp= constructor,
-immediately after =setupConnections()=, expecting a
-=hierarchy_tree= block. An implementing block is expected to
-construct a =HierarchyModelBuilder=-derived model, wrap it in a
-=HierarchyTreeWidget=, and insert it into the dialog's layout — this
-is the Qt-side consumer of [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]'s =has_parent_id= hierarchy function.
-No entity implements this kind yet; it's a seam only, added ahead of
-wiring party/counterparty hierarchy trees into their detail dialogs.
-
-** Detail dialog private members
-:PROPERTIES:
-:ID: F55CB64E-165A-4E15-A50A-5723C0320E97
-:END:
-
-Additional private member declarations immediately before the
-standard generated =ui_=/=clientManager_=/etc. members, expecting a
-=declaration= block. Use for a hand-written helper class owned by the
-dialog as a pointer member. Pair with the header extra includes block
-below — a forward declaration alone isn't enough for most such
-members.
-
-** Detail dialog header extra includes
-:PROPERTIES:
-:ID: 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
-:END:
-
-Additional =#include= directives after the standard generated
-includes, before the =Ui= forward declaration, expecting a =body=
-block. Needed by whatever type the private-members block above
-declares.
-
-** Detail dialog extra signals
-:PROPERTIES:
-:ID: EC19A4EE-363D-4D41-A33A-D5F85A139C80
-:END:
-
-Additional signal declarations in the generated
-=<Entity>DetailDialog='s =signals:= block, after the standard
-generated =Saved=/=Deleted=/(optional) =revertRequested= signals,
-expecting a =declaration= block. Pair with the controller header's
-own =signals:= seam ([[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]]'s
-=66E078FB-D6A6-4DF6-814B-65995D948090=) and the
-=wireDetailDialogCommon= extra-connect seam below to relay a
-dialog-specific signal up through the controller without hand-editing
-generated code.
-
-** Controller: extra dialog-signal connections
-:PROPERTIES:
-:ID: DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF
-:END:
-
-Additional =connect(detailDialog, ...)= calls at the end of the
-generated =wireDetailDialogCommon()= helper -- the single place every
-detail-window call site (add/edit/history-version/revert) wires a
-freshly-constructed =<Entity>DetailDialog=, expecting a
-=implementation= block. Use to relay a custom dialog signal (declared
-via the seam above) to a matching controller signal, e.g. a
-toolbar action on the dialog that a plugin's composition root needs
-to react to.
-
-** Composite child-entity tables seam
-:PROPERTIES:
-:ID: 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
-:END:
-
-A placeholder in the constructor, immediately after the hierarchy
-tree seam above, expecting a =child_tables_setup= block. Use for a
-composite parent entity — one with genuine child entities under
-temporal composite versioning — to embed one editable =QTableWidget=
-+ =QToolBar= per child entity, each its own tab. Pairs with the
-entity-set load hook below (populate the tables once the parent's id
-is known) and, if the children need their own bespoke NATS surface,
-with [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]]'s custom-method paste blocks and [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]]'s
-custom message types. There is no generic facet for this — each
-child entity's fields, service, and protocol differ too much between
-consumers to templatize usefully with only two consumers (=party=,
-=counterparty=) to date.
-
-To use this paste block on an entity, declare it under =** Paste
-blocks > *** Composite child-entity tables seam=. See the following
-example, from =party='s identifier table (abridged):
-
-#+begin_src org
-,** Paste blocks
-,*** Composite child-entity tables seam
-
-,#+begin_src cpp :name child_tables_setup :implements 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
-    setupIdentifierTab();
-    setupContactTab();
-,#+end_src
-#+end_src
-
-** Entity-set load hook
-:PROPERTIES:
-:ID: D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
-:END:
-
-A placeholder at the end of the generated setter, after
-=updateUiFrom<EntityPascalShort>()=, expecting a
-=reload_child_tables= block. Use to refresh anything keyed off the
-entity's id once it changes — reloading the composite child-entity
-tables above, most commonly. Runs on every call to the setter,
-including create-mode; implementing blocks should tolerate an
-empty/nil id by showing an empty table rather than erroring.
-
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] / [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] — the types this facet's Naming/wiring knobs point at.
-- [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — the changed-event this facet listens for to invalidate its client-side cache.
+- [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — the changed-event the UI listens for to invalidate its client-side cache.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for what this page's Behavioural/Overrides knobs are.

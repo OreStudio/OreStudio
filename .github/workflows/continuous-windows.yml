@@ -148,13 +148,6 @@ jobs:
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.8.3'
-          modules: 'qtcharts'
-          cache: true
-
       - name: Generate postgres password
         id: pg_password
         shell: bash

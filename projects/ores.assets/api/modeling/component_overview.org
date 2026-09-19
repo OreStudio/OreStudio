@@ -22,7 +22,7 @@
 =ores.assets.api= is a header-only library defining the shared contract for
 the assets domain. It provides domain types for images (SVG text), tags, and
 their associations, JSON serialisation via =rfl=, and the NATS message protocol
-schemas consumed by both =ores.assets.core= (server) and Qt client components.
+schemas consumed by both =ores.assets.core= (server) and UI client components.
 
 * Inputs
 

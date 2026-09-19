@@ -34,6 +34,12 @@ association tables). If it does not exist, scaffold it with
 =compass add entity_org ...= before proceeding. See
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
 
+The model also carries the entity's UI metadata: the =** Presentation=
+drawer holds =collection_name=, =key_field=, and the =*** Columns= and
+=*** Detail fields= tables. The =ores.ts.ui= facet emits that drawer to a
+TypeScript file per entity, so the UI layer is a codegen run over the model
+rather than a hand-written layer of its own.
+
 ** Step 2 — Create one task per layer
 
 Use =TaskCreate= to register a task for each layer. Execute them in
@@ -43,12 +49,9 @@ it is out of scope for this entity.
 | # | Layer | Sub-skill | Codegen |
 |---|---|---|---|
 | 1 | Domain · SQL · repository · service · protocol · generator | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--address ores.cpp= (SQL via [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][compass-codegen-add-sql-schema]]) |
-| 2 | Qt UI (model, windows, dialogs, controller) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--address ores.cpp.qt= |
-| 3 | Qt plugin wiring (menus, toolbar) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] §wiring | see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] |
-| 4 | HTTP REST endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP |
-| 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP |
-| 6 | Shell REPL commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP |
-| 7 | Wt web UI | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP |
+| 2 | HTTP REST endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP |
+| 3 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP |
+| 4 | Shell REPL commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP |
 
 ** Step 3 — Gap protocol
 
@@ -84,7 +87,6 @@ and phase boundaries). Use =feature-branch-manager= between phases and
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, physical-space graph, =codegen.sh= usage.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
-- [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
 
 * Artefacts                                                        :noexport:
 

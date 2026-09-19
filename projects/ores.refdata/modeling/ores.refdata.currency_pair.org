@@ -2,7 +2,7 @@
 :ID: E1EE950D-FC22-4DAB-A93F-8B2A15196031
 :END:
 #+title: ores.refdata.currency_pair
-#+description: Codegen entity model for the refdata =currency_pair= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata =currency_pair= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -264,181 +264,11 @@ existing hand-written pattern (see =currency_flag_icon()= in
 | field                | label                | widget                   | type          | is_key | is_required | placeholder                              | flag_source | combo_fetch          | combo_fetch_include              | combo_allow_blank | combo_values                        | badge_key                    | immutable |
 |----------------------+----------------------+---------------------------+---------------+--------+-------------+-------------------------------------------+--------------+-----------------------+-----------------------------------+-------------------+---------------------------------------+-------------------------------+-----------|
 | pair_code            | Pair Code            | pairCodeEdit              | line_edit     | true   | true        | e.g. EUR/USD                              |              |                        |                                    |                   |                                        |                               |           |
-| base_currency        | Base Currency        | baseCurrencyCombo         | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               | true      |
-| quote_currency       | Quote Currency       | quoteCurrencyCombo        | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               | true      |
+| base_currency        | Base Currency        | baseCurrencyCombo         | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  |          | false             |                                        |                               | true      |
+| quote_currency       | Quote Currency       | quoteCurrencyCombo        | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  |          | false             |                                        |                               | true      |
 | classification       | Classification       | classificationCombo       | static_combo  |        |             |                                           |              |                        |                                    |                   | major,minor,exotic,commodity          | currency_pair_classification |           |
 
 ** Custom repository methods
-
-** Qt: derived pair_code
-:PROPERTIES:
-:ID: 8D2F5A17-6C4E-4B93-A1D7-3E9F0C8B2D56
-:END:
-
-pair_code is base_currency + "/" + quote_currency, not independent
-user input — kept live-synced while both are still editable (create
-mode only; once created they're locked and pair_code never changes
-again, per [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency
-changes]]). Base/Quote lock via =WidgetUtils::set_combo_locked()=
-rather than the generated =setEnabled(false)=, so the flag icon stays
-visible while locked rather than fading out — see [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][same task]].
-
-Deliverability (physical vs. cash/NDF settlement, and the settlement
-currency for the latter) was modelled here as a =deliverable=/
-=non_deliverable= boolean, then dropped entirely — real FX conventions
-allow *multiple* settlement types per pair (sometimes business-centre
-dependent), which a single boolean/optional-currency pair on
-=currency_pair= can't express; needs a proper =settlement_type=
-junction model, tracked as a future story (see the capture in the
-inbox).
-
-#+begin_src cpp :name declarations :implements F55CB64E-165A-4E15-A50A-5723C0320E97
-void updatePairCodeFromCurrencies();
-#+end_src
-
-#+begin_src cpp :name connections :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
-connect(ui_->baseCurrencyCombo, &QComboBox::currentTextChanged, this,
-        &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
-connect(ui_->quoteCurrencyCombo, &QComboBox::currentTextChanged, this,
-        &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
-#+end_src
-
-#+begin_src cpp :name create_mode_override :implements 9A719585-3AB1-47DE-B0B0-99AFDFE7180E
-WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, !createMode);
-WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, !createMode);
-// pair_code is always derived (see updatePairCodeFromCurrencies()),
-// never independently typed -- the generated locked_fields loop above
-// left it as setReadOnly(!createMode) (is_key's normal, editable-at-
-// create behaviour), which is wrong for a field that's never directly
-// entered even at create time.
-ui_->pairCodeEdit->setReadOnly(true);
-#+end_src
-
-#+begin_src cpp :name read_only_override :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
-WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, true);
-WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, true);
-#+end_src
-
-#+begin_src cpp :name validation :implements 69F22F14-6701-4E73-AFCC-78AC1B1FDDDF
-&& ui_->baseCurrencyCombo->currentText() != ui_->quoteCurrencyCombo->currentText()
-#+end_src
-
-#+begin_src cpp :name implementation :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732
-void CurrencyPairDetailDialog::updatePairCodeFromCurrencies() {
-    if (!createMode_)
-        return;
-    ui_->pairCodeEdit->setText(
-        ui_->baseCurrencyCombo->currentText() + "/" + ui_->quoteCurrencyCombo->currentText());
-}
-#+end_src
-
-** Qt: reject duplicate pair_code on create
-:PROPERTIES:
-:ID: 9F1C4E27-8B3D-4A6E-9C2F-5D7A8B3E1F04
-:END:
-
-The SQL insert trigger treats a colliding =pair_code= as the next
-*version* of the existing row (upsert-by-natural-key, the same
-pattern every bitemporal entity uses) rather than rejecting it — the
-trigger can't distinguish "genuine create" from "republish/upsert"
-without breaking the DQ→refdata publish flow, which relies on that
-exact semantics for its own re-versioning. So the check has to live
-client-side, scoped to just the interactive Add flow — see
-[[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently
-versions the existing row]].
-
-Synchronous (not =QtConcurrent=-wrapped) — a brief UI-thread block for
-a quick pre-save check, same as other synchronous
-=process_authenticated_request= call sites elsewhere in the app (e.g.
-=SystemSettingController::onRevertClicked=). Requests a generously
-high =limit= explicitly: the default (100) would silently miss
-existing pairs beyond the first page and defeat the check.
-
-#+begin_src cpp :name save_duplicate_check :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
-if (createMode_) {
-    // pair_.pair_code isn't synced from the UI until updatePairFromUi()
-    // runs, later in this function -- read the live combo-derived value
-    // directly rather than the (still-stale/empty) domain object.
-    const QString baseCode = ui_->baseCurrencyCombo->currentText();
-    const QString quoteCode = ui_->quoteCurrencyCombo->currentText();
-    const std::string derivedPairCode = ui_->pairCodeEdit->text().trimmed().toStdString();
-    const std::string invertedPairCode = (quoteCode + "/" + baseCode).toStdString();
-
-    refdata::messaging::get_currency_pairs_request checkRequest;
-    checkRequest.limit = lookup_fetch_limit;
-    auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
-    if (!checkResult) {
-        // Fail closed: the whole point of this check is to prevent a
-        // silent overwrite, so if we can't even ask the server whether
-        // the pair already exists, don't let the save through blind.
-        MessageBoxHelper::warning(this, "Cannot Verify",
-            "Could not check for an existing pair before saving. Please try again.");
-        return;
-    }
-
-    const bool exists = std::ranges::any_of(checkResult->pairs, [&](const auto& p) {
-        return p.pair_code == derivedPairCode;
-    });
-    if (exists) {
-        MessageBoxHelper::warning(this, "Duplicate Pair",
-            QString("A currency pair '%1' already exists.")
-                .arg(QString::fromStdString(derivedPairCode)));
-        return;
-    }
-
-    // FX market convention quotes each pair in one canonical
-    // direction only -- EUR/USD and USD/EUR are not independent
-    // pairs, they're the same market inverted. Reject the inverse
-    // rather than silently allowing both to coexist.
-    const bool inverseExists = std::ranges::any_of(checkResult->pairs, [&](const auto& p) {
-        return p.pair_code == invertedPairCode;
-    });
-    if (inverseExists) {
-        MessageBoxHelper::warning(this, "Inverted Pair",
-            QString("'%1' is the inverse of the existing pair '%2'. FX market "
-                   "convention allows only one direction per currency pair.\n\n"
-                   "To use '%1' instead, delete '%2' first, then create '%1'.")
-                .arg(QString::fromStdString(derivedPairCode))
-                .arg(QString::fromStdString(invertedPairCode)));
-        return;
-    }
-}
-#+end_src
-
-** Qt: Conventions toolbar button
-:PROPERTIES:
-:ID: 6A3E9C81-5F2D-4B87-A0E6-9D1C4F7B2A83
-:END:
-
-Cross-navigation from the Currency Pairs list window to the Currency
-Pair Conventions list window ([[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]]),
-via a "Conventions" toolbar button. Signal declared on the MdiWindow
-and relayed through the Controller, mirroring the generated
-=show{{...}}History= plumbing.
-
-#+begin_src cpp :name mdi_window_signal :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A
-void showConventionsRequested();
-#+end_src
-
-#+begin_src cpp :name mdi_window_toolbar :implements 18B9ED63-78C2-4259-93AC-CCDFBC88EFBD
-{
-    toolbar_->addSeparator();
-    auto* conventionsAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Conventions"));
-    conventionsAction->setToolTip(tr("Open Currency Pair Conventions"));
-    connect(conventionsAction, &QAction::triggered, this,
-            &CurrencyPairMdiWindow::showConventionsRequested);
-}
-#+end_src
-
-#+begin_src cpp :name controller_signal :implements 66E078FB-D6A6-4DF6-814B-65995D948090
-void showConventionsRequested();
-#+end_src
-
-#+begin_src cpp :name controller_relay :implements 52E70F3B-5903-4359-91FB-B533054A18AC
-connect(listWindow_, &CurrencyPairMdiWindow::showConventionsRequested,
-        this, &CurrencyPairController::showConventionsRequested);
-#+end_src
 
 * See also
 

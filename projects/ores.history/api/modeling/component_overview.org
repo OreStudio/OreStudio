@@ -28,7 +28,7 @@ entity's history uses (=get_entity_history_request=/
 than a typed per-entity subject), and =build_entity_history_versions()=,
 the shared rendering/diffing glue every server-side history_provider
 needs. A dependency-free leaf — matching =ores.diff='s dependency
-discipline — so any frontend (Qt, shell, Wt, HTTP) can decode the
+discipline — so any frontend (shell, HTTP) can decode the
 response without pulling in server-only machinery.
 
 * Inputs

@@ -64,7 +64,6 @@ podman pod rm -f "$pod_name" >/dev/null 2>&1 || true
 podman pod create --name "$pod_name" \
     --userns=keep-id \
     -p "${ORES_HTTP_PORT}:${ORES_HTTP_PORT}" \
-    -p "${ORES_CONTROLLER_SERVICE_WT_PORT}:${ORES_CONTROLLER_SERVICE_WT_PORT}" \
     -p "${ORES_NATS_PORT}:${ORES_NATS_PORT}" \
     -p "${ORES_NATS_MONITOR_PORT}:${ORES_NATS_MONITOR_PORT}" \
     >/dev/null

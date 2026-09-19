@@ -24,7 +24,7 @@
 the analytics domain. It provides domain types for pricing-engine types,
 pricing-model configurations, and product-parameter mappings, with JSON and
 table I/O via =rfl=, and the NATS protocol schemas consumed by
-=ores.analytics.core= and Qt clients.
+=ores.analytics.core= and UI clients.
 
 * Inputs
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""compass services / compass client — Operate pillar.
+"""compass services — Operate pillar.
 
 Native port of the build/scripts service-lifecycle scripts:
 
@@ -7,7 +7,6 @@ Native port of the build/scripts service-lifecycle scripts:
     stop-services.sh    ->  compass services stop
     status-services.sh  ->  compass services status
     clear-logs.sh       ->  compass services clear-logs
-    start-client.sh     ->  compass client start
 
 `compass services start/stop/status` are systemd-backed: they
 generate+deploy the concrete per-environment units (same code path as
@@ -20,15 +19,12 @@ containers story). Each unit still execs the same binaries with the
 same --log-directory args as before, so log-based readiness detection
 (gather_counts/cmd_status) is unchanged; only process ownership
 (PID-file bookkeeping -> systemd) and cascade-stop (controller ->
-PartOf=<target>) moved. The Qt client is unaffected -- it was never
-part of the controller's cascade and keeps its own PID-file-based
-launch/stop path.
+PartOf=<target>) moved.
 """
 
 import argparse
 import contextlib
 import os
-import signal
 import subprocess
 import sys
 import time
@@ -36,8 +32,6 @@ from pathlib import Path
 
 import systemd_generate
 from compass_db import load_env, validate_env_version
-
-CLIENT_COLOURS = {"red": "F44336", "green": "4CAF50", "blue": "2196F3"}
 
 
 class _Tee:
@@ -112,79 +106,6 @@ class Ctx:
                                 f"nats://localhost:{self.nats_port}")
         self.nats_prefix = env.get("ORES_NATS_SUBJECT_PREFIX",
                                    f"ores.dev.{self.label}")
-
-    def child_env(self):
-        e = os.environ.copy()
-        e.update(self.env)
-        # Real newlines for the JWT key, not the two-character '\n'.
-        key_file = self.root / "build/keys/iam-rsa-private.pem"
-        if key_file.exists():
-            e["ORES_IAM_SERVICE_JWT_PRIVATE_KEY"] = key_file.read_text()
-        e["WT_RESOURCES_DIR"] = str(
-            self.build_dir / "vcpkg_installed/x64-linux/share/Wt/resources")
-        return e
-
-
-def _pid_alive(pid) -> bool:
-    try:
-        os.kill(int(pid), 0)
-        return True
-    except (OSError, ValueError):
-        return False
-
-
-def _read_pid(pid_file: Path):
-    try:
-        return int(pid_file.read_text().strip())
-    except (OSError, ValueError):
-        return None
-
-
-def _launch(ctx, name, binary, args, pid_name=None):
-    """Start a detached process from bin_dir; record its PID file. Used only
-    by the Qt client path -- service lifecycle is systemd-managed."""
-    pid_name = pid_name or name
-    pid_file = ctx.run_dir / f"{pid_name}.pid"
-    pid = _read_pid(pid_file)
-    if pid and _pid_alive(pid):
-        print(f"  skip    {pid_name:<38} PID {pid}")
-        return pid
-    proc = subprocess.Popen([f"./{binary}"] + args, cwd=str(ctx.bin_dir),
-                            env=ctx.child_env(),
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL,
-                            start_new_session=True)
-    pid_file.write_text(f"{proc.pid}\n")
-    print(f"  start   {pid_name:<38} PID {proc.pid}")
-    return proc.pid
-
-
-def _terminate(name, pid_file, grace) -> str:
-    """SIGTERM (then SIGKILL after `grace` seconds) the PID in `pid_file`.
-    Used only by the Qt client path."""
-    pid = _read_pid(pid_file)
-    if pid is None:
-        print(f"  skip    {name} (no PID file — already stopped)")
-        return "gone"
-    pid_file.unlink(missing_ok=True)
-    if not _pid_alive(pid):
-        print(f"  gone    {name:<38} PID {pid}")
-        return "gone"
-    os.kill(pid, signal.SIGTERM)
-    print(f"  stop    {name:<38} PID {pid}")
-    print(f"Waiting for {name} to exit...", end="", flush=True)
-    for _ in range(grace * 2):
-        if not _pid_alive(pid):
-            break
-        time.sleep(0.5)
-        print(".", end="", flush=True)
-    print(" done")
-    if _pid_alive(pid):
-        os.kill(pid, signal.SIGKILL)
-        print(f"  killed  PID {pid} (did not exit within grace period)")
-    print()
-    return "stopped"
-
 
 def _wait_for_listen(port, timeout=60) -> bool:
     """ss-based LISTEN probe (TCP connect fails under mTLS)."""
@@ -377,17 +298,6 @@ def gather_counts(ctx):
     for unit, log_basename in units:
         counts[_classify(unit, log_basename)] += 1
     return {"nats": nats, "counts": counts, "service_total": len(units)}
-
-
-def client_status(ctx):
-    """List of (instance_name, pid) for running Qt clients."""
-    clients = []
-    if ctx.run_dir.is_dir():
-        for pid_file in sorted(ctx.run_dir.glob("ores.qt*.pid")):
-            pid = _read_pid(pid_file)
-            if pid and _pid_alive(pid):
-                clients.append((pid_file.stem, pid))
-    return clients
 
 
 # --- subcommands ------------------------------------------------------------
@@ -623,68 +533,6 @@ def cmd_clear_logs(ctx, args):
     return 0
 
 
-def _client_colour(colour_arg):
-    """Resolve --colour to (hex, tag), or ("", "") if unset. Returns None on
-    an invalid value (caller prints the error and exits)."""
-    if not colour_arg:
-        return "", ""
-    c = colour_arg.lower()
-    if c in CLIENT_COLOURS:
-        return CLIENT_COLOURS[c], c
-    if len(c) == 6 and all(ch in "0123456789abcdef" for ch in c):
-        return c.upper(), c
-    return None
-
-
-def cmd_client_start(ctx, args):
-    if not (ctx.bin_dir / "ores.qt").exists():
-        print(f"error: ores.qt not found in {ctx.bin_dir}", file=sys.stderr)
-        print(f"       cmake --build --preset {ctx.preset}", file=sys.stderr)
-        return 1
-    ctx.run_dir.mkdir(parents=True, exist_ok=True)
-
-    resolved = _client_colour(args.colour)
-    if resolved is None:
-        print(f"error: unknown colour '{args.colour}' — use red, green, "
-              f"blue, or a 6-digit hex value", file=sys.stderr)
-        return 1
-    colour_hex, colour_tag = resolved
-
-    pid_name = f"ores.qt.{colour_tag}" if colour_tag else "ores.qt"
-    log_file = f"{pid_name}.log"
-    client_args = ["--log-enabled", "--log-level", args.log_level,
-                   "--log-directory", "../log", "--log-filename", log_file]
-    # The colour is only a window marker; the display name is always
-    # ORES_CHECKOUT_LABEL — so the status bar shows which checkout (e.g.
-    # local2) this client is bound to. Not overridable: a mismatched name
-    # makes the client unidentifiable in the fleet/status view.
-    if ctx.label:
-        client_args += ["--instance-name", ctx.label]
-    if colour_hex:
-        client_args += ["--instance-color", colour_hex]
-    if args.open_scenario:
-        client_args += ["--open-scenario", args.open_scenario]
-    if args.master_password:
-        client_args += ["--master-password", args.master_password]
-
-    _launch(ctx, pid_name, "ores.qt", client_args)
-    print(f"\nLogs : {ctx.log_dir / log_file}")
-    return 0
-
-
-def cmd_client_stop(ctx, args):
-    resolved = _client_colour(args.colour)
-    if resolved is None:
-        print(f"error: unknown colour '{args.colour}' — use red, green, "
-              f"blue, or a 6-digit hex value", file=sys.stderr)
-        return 1
-    _, colour_tag = resolved
-    pid_name = f"ores.qt.{colour_tag}" if colour_tag else "ores.qt"
-    print(f"Stopping {pid_name} ({ctx.preset})\n")
-    _terminate(pid_name, ctx.run_dir / f"{pid_name}.pid", grace=10)
-    return 0
-
-
 # --- entry points -----------------------------------------------------------
 
 def _common(parser):
@@ -740,35 +588,3 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
             "tree": cmd_tree, "top": cmd_top,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)
-
-
-def run_client(argv, project_root: Path, env_file: Path | None = None) -> int:
-    ap = argparse.ArgumentParser(
-        prog="compass client",
-        description="Operate pillar: launch/stop the Qt client, detached.")
-    sub = ap.add_subparsers(dest="subcmd", required=True)
-
-    st = sub.add_parser("start", help="Launch the Qt client detached")
-    _common(st)
-    st.add_argument("--colour", "--color", default=None,
-                    help="red, green, blue, or 6-digit hex — instance accent")
-    st.add_argument("--log-level", default="debug")
-    st.add_argument("--open-scenario", default=None,
-                    help="Path to a test_scenario .org doc to open in the "
-                         "Scenario Runner on startup (System > Testing)")
-    st.add_argument("--master-password", default=None,
-                    help="Connections.db master password, passed through to "
-                         "--master-password. Falls back to "
-                         "ORES_CONNECTIONS_MASTER_PASSWORD in .env if not set.")
-
-    sp = sub.add_parser("stop", help="Stop a running Qt client instance")
-    _common(sp)
-    sp.add_argument("--colour", "--color", default=None,
-                    help="Must match the --colour the instance was started "
-                         "with (default: the uncoloured instance)")
-
-    args = ap.parse_args(argv)
-    env = load_env(project_root, env_file)
-    validate_env_version(project_root, env)
-    ctx = Ctx(project_root, env, args.preset)
-    return {"start": cmd_client_start, "stop": cmd_client_stop}[args.subcmd](ctx, args)

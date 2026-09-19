@@ -118,7 +118,7 @@ Any folder name outside it is a finding.
 | =modeling/= | Simple; parts; composite root | Codegen org models | Entity org models, =component_overview.org=, PlantUML sources. Not a CMake target. |
 | =api=, =core=, =service= | Composite children | C++ | Standard part roles |
 | =server=, =client=, =wrapper=, =database=, =quant= | Composite children | C++ | Specialist part roles |
-| Domain-area names | =ores.qt= children | C++ / Qt | One Qt plugin per domain area |
+| Domain-area names | =ores.shell= children | C++ | One module per domain area |
 | =venv/= | Python tools only | Python | Local interpreter. Never committed; it is gitignored. |
 
 The role of every part name is defined once in the [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component
@@ -238,8 +238,8 @@ itself.
 
 *** File naming
 
-File names are snake_case everywhere except the Qt client, whose files
-are CamelCase. A file name matches the type it holds, and the
+File names are snake_case everywhere. A file name matches the type it
+holds, and the
 implementation file mirrors the header. Tests end in =_tests.cpp=,
 headers are =.hpp=, and an aggregate header =ores.<comp>.hpp= exists
 where the component's entry points list says so. The naming rules of
@@ -247,8 +247,7 @@ where the component's entry points list says so. The naming rules of
 
 *** Type naming
 
-Type names are snake_case in all C++ code except the Qt client, where
-they are CamelCase. Namespaces follow =ores::<group>[.<part>]::<facet>=.
+Type names are snake_case in all C++ code. Namespaces follow =ores::<group>[.<part>]::<facet>=.
 Types generated for an entity match the entity slug in its org model;
 a mismatch means the model, the type, or the regeneration drifted.
 Look for types whose name contradicts their home folder or their

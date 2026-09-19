@@ -30,7 +30,7 @@ component also ships synthetic-data generators for test and development use.
 
 * Inputs
 
-- NATS request messages from peer services and Qt clients (create/amend/cancel/
+- NATS request messages from peer services and UI clients (create/amend/cancel/
   query operations on trades and instruments).
 - PostgreSQL connections to =ores_trading_*= tables via the =ores.dq= ORM
   infrastructure.

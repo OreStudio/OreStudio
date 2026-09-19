@@ -377,4 +377,3 @@ types are allowed during initial data entry.
 | sql       | [[proj:projects/ores.sql/create/refdata/refdata_business_unit_types_create.sql]]             | Business unit type SQL schema         |
 | sql       | [[proj:projects/ores.sql/create/refdata/refdata_business_units_create.sql]]                  | Business unit SQL schema              |
 | sql       | [[proj:projects/ores.sql/populate/refdata/refdata_business_unit_types_populate.sql]]         | Standard type seed data               |
-| qt        | [[proj:projects/ores.qt/src/PortfolioExplorerTreeModel.cpp]]                                 | Portfolio/book tree model             |

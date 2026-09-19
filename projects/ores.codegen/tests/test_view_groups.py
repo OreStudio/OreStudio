@@ -1,4 +1,4 @@
-"""Tests for compute_view_groups: grouping a Qt detail dialog's fields into
+"""Tests for compute_view_groups: grouping a detail dialog's fields into
 tabs via the optional per-field ``view_group`` cell.
 
 Run::

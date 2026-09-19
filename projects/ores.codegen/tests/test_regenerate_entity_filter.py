@@ -42,7 +42,7 @@ def fixture_component(tmp_path, monkeypatch):
 
 
 def _args(**overrides):
-    base = dict(component="fixture", all=False, address="ores.cpp.qt",
+    base = dict(component="fixture", all=False, address="ores.cpp.presentation",
                 dry_run=True, entity=None)
     base.update(overrides)
     return SimpleNamespace(**base)

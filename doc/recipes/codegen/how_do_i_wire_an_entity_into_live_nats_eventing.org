@@ -41,7 +41,12 @@ If =application.cpp= still hand-wires the entity (an =#include= + =register_mapp
 
 * Tested by
 
-Manual: cross-client NATS eventing verified for purpose_type (PR #1451, #1459) — edit in one Qt client, confirm the other client's list updates live without a manual refresh.
+Manual, and not repeatable today: cross-client NATS eventing was verified
+for purpose_type (PR #1451, #1459) by editing in one desktop client and
+confirming the other client's list updated live without a manual refresh.
+Both clients went with the desktop client removed in
+[[id:E18B217F-DEE4-46BE-BE07-10F86AF727A1][Task: Remove the ores.qt and ores.wt trees]], so the live cross-client
+check has no second surface to run against.
 
 * See also
 

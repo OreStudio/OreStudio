@@ -23,7 +23,7 @@
 =ores.workflow.api= is a header-only library defining the shared contract for
 the workflow domain. It provides workflow and workflow-step domain types with
 JSON I/O via =rfl=, and the NATS protocol schemas consumed by
-=ores.workflow.core= and Qt clients.
+=ores.workflow.core= and UI clients.
 
 * Inputs
 

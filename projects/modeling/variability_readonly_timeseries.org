@@ -2,7 +2,7 @@
 :ID: 3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35
 :END:
 #+title: Profile: Read-only time-series
-#+description: Text natural key, no Qt, TimescaleDB hypertable, full-crud SQL/service layers only.
+#+description: Text natural key, no UI, TimescaleDB hypertable, full-crud SQL/service layers only.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -20,7 +20,7 @@ Models a high-volume, append-only measurement stream — a price tick, a
 sensor reading, anything time-indexed where rows are written far more
 often than edited and there is no meaningful concept of a user-facing
 detail-edit form. Backed by a TimescaleDB hypertable rather than the
-standard bi-temporal table shape; no Qt surface at all, since nobody
+standard bi-temporal table shape; no UI surface at all, since nobody
 hand-edits a tick.
 
 * Reference entity

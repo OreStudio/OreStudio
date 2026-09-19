@@ -2,7 +2,7 @@
 :ID: 9DDA15D5-2287-46E0-A8B3-00571E7A2027
 :END:
 #+title: ores.workflow.workflow_step
-#+description: Codegen entity model for the workflow =workflow_step= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the workflow =workflow_step= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: workflow
 #+filetags: :model:entity:workflow:

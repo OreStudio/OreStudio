@@ -59,4 +59,3 @@ know model paths or component names.
 - [[id:6779B755-0A34-4E31-A274-8D9B77DFFB01][How do I regenerate the C++ protocol layer for an entity?]] — =protocol= profile; NATS request/response structs.
 - [[id:F4BA8D44-6940-487D-B38D-9DD27556B80A][How do I regenerate the NATS eventing layer for an entity?]] — =nats-eventing= profile; event type headers.
 - [[id:B8F158A2-3ECF-44A8-94A2-259DF7A2AF70][How do I regenerate the NATS handler layer for an entity?]] — =nats-handler= profile; NATS message handler class.
-- [[id:F77B0DF6-DA37-41BB-B4B6-D0F14F12A084][How do I regenerate the Qt UI layer for an entity?]] — =qt= profile; list, detail, history, delegate, validator, view-widget.

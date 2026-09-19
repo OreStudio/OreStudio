@@ -2,7 +2,7 @@
 :ID: FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE
 :END:
 #+title: Profile: Trading instrument
-#+description: Flat ORE trading instrument sub-types: identity + audit field groups, tenant+workspace scope, party_id from session, no Qt surface.
+#+description: Flat ORE trading instrument sub-types: identity + audit field groups, tenant+workspace scope, party_id from session, no UI surface.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -22,9 +22,9 @@ record with an identity group (=instrument_id=, =trade_type_code=,
 payoff/term fields, scoped to both tenant and workspace (instruments
 are curated per trading desk/workspace). Party is stamped from the
 session GUC; the trade type is validated at insert time against the
-trade-types lookup. No Qt surface — the per-instrument forms are
-hand-crafted in =ores.qt= and consume the generated messaging
-protocol. Discovered as a genuine recurring combination across the
+trade-types lookup. No UI surface: the per-instrument forms were
+hand-crafted in the removed desktop client and consumed the generated
+messaging protocol. Discovered as a genuine recurring combination across the
 =port-trading-instruments-to-codegen= conversion work: 11 converted
 instruments (=equity_position=, =fx_forward=, =equity_forward=,
 =fx_accumulator=, =fx_vanilla_option=, =fx_variance_swap=,

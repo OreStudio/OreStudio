@@ -24,7 +24,7 @@ this feature's value links here rather than restating its effect.
 
 * Effect
 
-Paginated fetch filtered by a parent entity's key; the =Client<Entity>Model= constructor takes the parent key and sends it on every paginated fetch, the =MdiWindow= threads it through, and the controller exposes =openForParent(const QString&)= as its real entry point. Only meaningful alongside =has_readonly_paginated_list=, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — C++ Qt]].
+Paginated fetch filtered by a parent entity's key; the deleted templates wired it through three generated classes: the client model's constructor took the parent key and sent it on every paginated fetch, the list window threaded it through to the model it created, and the controller exposed an =openForParent()= entry point that opened the read-only list filtered by that key. Only meaningful alongside =has_readonly_paginated_list=, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — Presentation]].
 
 * Structural consequence
 

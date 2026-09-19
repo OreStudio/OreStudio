@@ -51,7 +51,7 @@ namespace ores::synthetic::domain {
  * this row's own name is kept in sync for uniform hierarchy display).
  *
  * Having real, queryable folder rows (rather than string-parsing) lets any
- * caller -- Qt, ores.shell, or a wt workflow -- resolve "everything under
+ * caller -- the shell, or a future UI -- resolve "everything under
  * this folder" the same way, via the generated hierarchy function, instead
  * of each reimplementing the tree-walk itself.
  */

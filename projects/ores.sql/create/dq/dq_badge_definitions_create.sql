@@ -26,10 +26,10 @@
  *
  * The badge catalogue. Each entry defines the complete visual presentation
  * of a badge: display label, tooltip, background colour, text colour,
- * severity level, and an optional Bootstrap CSS class hint for Wt.
+ * severity level, and an optional Bootstrap CSS class hint for browser rendering.
  *
  * Badge definitions are the single source of truth for all badge visual
- * metadata across Qt and Wt. They are loaded at client startup as
+ * metadata across UI clients. They are loaded at client startup as
  * reference data and looked up at render time via BadgeCache.
  */
 

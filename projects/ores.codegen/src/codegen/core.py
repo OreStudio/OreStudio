@@ -2451,9 +2451,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             component['files'] = sorted(
                 p.relative_to(output_dir).as_posix()
                 for p in Path(output_dir).rglob('*.cpp') if p.is_file())
-            # Qt AUTOMOC components additionally need their headers listed
-            # (Qt needs to see Q_OBJECT declarations); harmless, unused
-            # HEADERS for a non-Qt component with an empty/no include/ dir.
+            # A component with a public include/ tree lists its headers
+            # too; the list stays empty for one with no include/ dir.
             include_dir = Path(output_dir).parent / 'include'
             headers = sorted(
                 p.relative_to(include_dir).as_posix()

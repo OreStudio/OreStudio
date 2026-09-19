@@ -91,14 +91,11 @@ audit]] ran on 2026-09-16, against the composite as split into =api= and
   file actually has.
 - *Recorded.* Part include prefixes. The signed-off folder catalogue nests
   public headers as =include/ores.<full-name>/=, and the domain composites
-  follow it. This component uses =include/ores.shell/= in both parts, matching
-  =ores.qt=, whose 15 of 16 parts do the same. The adapter convention is
-  therefore real but unwritten, and =ores.qt= is itself inconsistent:
-  =headless= uses =include/ores.qt.headless/=, and the =application= part's
-  target is named =ores.qt.lib= rather than =ores.qt.application.lib=.
-  Converging either side touches 153 files here and 709 in =ores.qt=, so both
-  wait on a decision. Write the adapter exception into the catalogue, or
-  converge the adapters on the full name.
+  follow it. This component uses =include/ores.shell/= in both parts, so the
+  adapter convention is real but unwritten. Converging on the full name
+  touches 153 files here, so it waits on a decision. Write the adapter
+  exception into the catalogue, or converge the adapters on the full
+  name.
 - *Recorded.* =scripts/= sits at the component root, but =application= consumes
   it and owns both the install rule and the tangle that fills it. The
   signed-off catalogue does not carry the name. Either move the tree under
@@ -149,7 +146,6 @@ now in the record.
   command and the test reporter. The part model declares no
   =#+component_kind=, so the flat archetype set applies, and no archetype
   matches an adapter part. The four files were restored byte-identical, and the
-  composite path the gate runs leaves the parts alone. The same declarations
-  are on all 16 =ores.qt= parts, so the mechanism is repository-wide. The fix
+  composite path the gate runs leaves the parts alone. The fix
   belongs to the command codegen wave, which is the first work that must write
   into a part on purpose.

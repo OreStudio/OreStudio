@@ -90,7 +90,7 @@ if(WIN32)
     else()
         set(CPACK_GENERATOR "NSIS")
         # set(CPACK_SOURCE_GENERATOR "ZIP")
-        set(CPACK_PACKAGE_EXECUTABLES "ores.qt" "ORE Studio")
+        set(CPACK_PACKAGE_EXECUTABLES "ores.shell" "ORE Studio")
         set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\assets\\\\images\\\\modern-icon.png")
 
         if(CMAKE_CL_64)

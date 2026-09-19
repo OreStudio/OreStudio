@@ -83,10 +83,10 @@ def _unit_path(unit: str) -> str:
 def _tokens(text: str) -> list:
     """Every value busctl printed, quoted or bare.
 
-    busctl quotes strings, but prints an object path, an integer or a
-    boolean bare, so a struct mixes the two: ListUnits' job_id is a bare
-    number sitting between two quoted fields. Grouping on quoted values
-    alone would silently shift every record by one field."""
+    busctl quotes strings, object paths and signatures, but prints an
+    integer or a boolean bare, so a struct mixes the two: ListUnits' job_id
+    is a bare number sitting between two quoted fields. Grouping on quoted
+    values alone would silently shift every record by one field."""
     tokens = []
     index = 0
     length = len(text)

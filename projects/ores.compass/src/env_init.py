@@ -621,6 +621,9 @@ def run(argv, project_root: Path) -> int:
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
     web_session_secret = _get_or_gen(existing, "ORES_WEB_SESSION_SECRET")
+    web_bff_host = (os.environ.get("ORES_WEB_BFF_HOST")
+                    or existing.get("ORES_WEB_BFF_HOST")
+                    or "127.0.0.1")
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
@@ -724,6 +727,9 @@ ORES_SITE_PORT={site_port}
 # The TypeScript web interface (ores.web). One process serves the browser
 # bundle and the HTTP API on this port.
 ORES_WEB_PORT={web_port}
+# Interface the process binds. 127.0.0.1 keeps it on this host; 0.0.0.0
+# exposes it to a browser on another machine.
+ORES_WEB_BFF_HOST={web_bff_host}
 # Signs the browser session cookie. ores.web refuses to start without it, so
 # it is generated once per environment and preserved on re-run.
 ORES_WEB_SESSION_SECRET={web_session_secret}

@@ -1,0 +1,86 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.domain.domain_types.org. Edit the org source. }}
+{{{ts_license}}}
+{{#domain_entity}}
+/**
+ * The {{entity_singular_words}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface {{entity_pascal}} {
+{{#has_domain_groups}}
+{{#domain_groups}}
+    {{member}}: {{ts_type}};
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
+{{#has_identity_group}}
+    identity: {{identity_group_pascal}};
+{{/has_identity_group}}
+{{^has_identity_group}}
+{{#has_audit_columns}}
+    version: number;
+{{/has_audit_columns}}
+{{#has_tenant_id}}
+    tenant_id: string;
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    workspace_id: string;
+{{/has_workspace_id}}
+{{#primary_key.columns}}
+    {{column}}: {{ts_type}};
+{{/primary_key.columns}}
+{{#natural_keys}}
+    {{column}}: {{ts_type}};
+{{/natural_keys}}
+{{/has_identity_group}}
+{{#columns}}
+{{^is_identity_group_column}}
+{{^sql_only}}
+    {{name}}: {{ts_type}};
+{{/sql_only}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_group}}
+    audit: {{audit_group_pascal}};
+{{/has_audit_group}}
+{{^has_audit_group}}
+{{#has_audit_columns}}
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+{{/has_audit_columns}}
+    recorded_at: string;
+{{/has_audit_group}}
+{{/has_domain_groups}}
+}
+{{/domain_entity}}
+{{#junction}}
+/**
+ * The {{name_singular_words}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface {{name_pascal}} {
+    version: number;
+{{#has_tenant_id}}
+    tenant_id: string;
+{{/has_tenant_id}}
+    {{left.column}}: {{left.ts_type}};
+    {{right.column}}: {{right.ts_type}};
+{{#columns}}
+    {{name}}: {{ts_type}};
+{{/columns}}
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
+}
+{{/junction}}

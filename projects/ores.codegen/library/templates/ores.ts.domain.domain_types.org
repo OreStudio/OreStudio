@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 0F51A89C-4E08-422F-9227-52E73281E563
+:END:
+#+title: ores.ts.domain.domain_types
+#+description: The TypeScript interface for one entity's or junction's domain object.
+#+type: archetype
+#+output: projects/ores.web/packages/wire-protocol/src/generated/{component}/domain/{entity}.ts
+#+facet: ores.ts.domain
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+One entity's or junction's domain interface, as a TypeScript module. It
+mirrors [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]]'s
+companion domain class ([[id:543F3A6F-C359-4075-8A53-9E48F766DCE6][ores.cpp.domain.class_header]]): the same fields, in the
+same order, from the same model. The protocol facet's
+=ores::<component>::domain::<entity>= projection names this interface, so
+the payloads reference it instead of restating the entity.
+
+The derivations are the request's own, held in the enriched
+=domain_entity= dict: the prelude's flags (=has_audit_columns=,
+=has_tenant_id=, =has_workspace_id=), the member lists
+(=primary_key.columns=, =natural_keys=, =columns=) and the audit tail
+(=has_audit_group=). Each field's =ts_type= is stamped by the loader's
+=org_loader._ts_domain_type=; a field with no projection carries no
+=ts_type= and the template emits nothing for it, rather than inventing a
+type.
+
+A junction renders from the enriched =junction= dict and follows the
+C++ junction block exactly: =version=, =tenant_id= when the model sets
+=has_tenant_id=, the =left= and =right= columns, the junction's own
+=columns=, then the audit tail. The C++ block declares that tail as
+plain members with no =has_audit_columns= branch, so the interface
+states it unconditionally. The interface name is =name_pascal=, derived
+in =core.generate_from_model=; =left=, =right= and each column carry the
+=ts_type= it stamps. =org_loader._reject_silent_junction_ts_gap= refuses
+a junction with a member that has no projection, so a member never
+vanishes from the interface silently.
+
+A composed struct (=domain_groups=, =has_identity_group=,
+=has_audit_group=) names its group member's own interface. That
+field-group TypeScript domain layer is not emitted yet, so a grouped
+entity's module references a type no module declares; the drift-free
+components in this slice contain no grouped entity.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/domain_types.ts.mustache=.
+
+#+begin_src mustache :tangle domain_types.ts.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.domain.domain_types.org. Edit the org source. }}
+{{{ts_license}}}
+{{#domain_entity}}
+/**
+ * The {{entity_singular_words}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface {{entity_pascal}} {
+{{#has_domain_groups}}
+{{#domain_groups}}
+    {{member}}: {{ts_type}};
+{{/domain_groups}}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
+{{#has_identity_group}}
+    identity: {{identity_group_pascal}};
+{{/has_identity_group}}
+{{^has_identity_group}}
+{{#has_audit_columns}}
+    version: number;
+{{/has_audit_columns}}
+{{#has_tenant_id}}
+    tenant_id: string;
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    workspace_id: string;
+{{/has_workspace_id}}
+{{#primary_key.columns}}
+    {{column}}: {{ts_type}};
+{{/primary_key.columns}}
+{{#natural_keys}}
+    {{column}}: {{ts_type}};
+{{/natural_keys}}
+{{/has_identity_group}}
+{{#columns}}
+{{^is_identity_group_column}}
+{{^sql_only}}
+    {{name}}: {{ts_type}};
+{{/sql_only}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_group}}
+    audit: {{audit_group_pascal}};
+{{/has_audit_group}}
+{{^has_audit_group}}
+{{#has_audit_columns}}
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+{{/has_audit_columns}}
+    recorded_at: string;
+{{/has_audit_group}}
+{{/has_domain_groups}}
+}
+{{/domain_entity}}
+{{#junction}}
+/**
+ * The {{name_singular_words}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface {{name_pascal}} {
+    version: number;
+{{#has_tenant_id}}
+    tenant_id: string;
+{{/has_tenant_id}}
+    {{left.column}}: {{left.ts_type}};
+    {{right.column}}: {{right.ts_type}};
+{{#columns}}
+    {{name}}: {{ts_type}};
+{{/columns}}
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
+}
+{{/junction}}
+#+end_src
+
+* See also
+
+- [[id:AA24D1D3-60B0-4650-900A-57B496BE1657][ores.ts.domain]] — the parent facet.
+- [[id:8864A622-4C03-480B-B48A-854C13844786][ores.ts.protocol.protocol_types]] — the twin that references these interfaces.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

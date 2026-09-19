@@ -79,10 +79,19 @@ def test_a_local_message_name_becomes_its_interface_name():
     assert _ts_type("std::vector<thing_item>") == "ThingItem[]"
 
 
-def test_a_qualified_type_has_no_projection():
-    assert _ts_type("ores::iam::domain::role") is None
+def test_a_domain_type_projects_onto_its_interface():
+    assert _ts_type("ores::iam::domain::role") == "Role"
+    assert _ts_type("std::vector<ores::iam::domain::session>") == "Session[]"
+
+
+def test_a_timestamp_projects_onto_a_string():
+    assert _ts_type("std::chrono::system_clock::time_point") == "string"
+
+
+def test_a_type_with_no_projection_stays_none():
     assert _ts_type("std::optional<ores::iam::domain::role>") is None
-    assert _ts_type("std::vector<ores::iam::domain::session>") is None
+    assert _ts_type("ores::utility::domain::hierarchy_node") is None
+    assert _ts_type("std::vector<ores::utility::domain::hierarchy_node>") is None
 
 
 def test_message_names_are_pascal_cased(tmp_path):
@@ -99,13 +108,15 @@ def test_fields_carry_their_typescript_type(tmp_path):
 
 
 def test_an_unprojectable_type_stops_the_model_loading(tmp_path):
-    body = MODEL.replace("std::string", "ores::iam::domain::name")
-    with pytest.raises(ValueError, match="ores::iam::domain::name"):
+    body = MODEL.replace(
+        "std::string", "ores::utility::domain::hierarchy_node")
+    with pytest.raises(ValueError, match="ores::utility::domain::hierarchy_node"):
         load_org_operation_model(_write(tmp_path, body=body))
 
 
 def test_the_drawer_flag_lets_an_unprojectable_type_through(tmp_path):
-    body = MODEL.replace("std::string", "ores::iam::domain::name")
+    body = MODEL.replace(
+        "std::string", "ores::utility::domain::hierarchy_node")
     op = load_org_operation_model(
         _write(tmp_path, drawer=DRAWER_DISABLED, body=body))["operation"]
     assert "ts_type" not in op["messages"][0]["fields"][0]

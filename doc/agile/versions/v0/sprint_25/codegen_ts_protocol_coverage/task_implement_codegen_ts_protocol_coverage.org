@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B
+:END:
+#+title: Task: Generate the IAM protocol messages as TypeScript
+#+description: Give every IAM protocol header its TypeScript twin, with one header per entity or protocol and no opt-outs.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-ts-protocol-coverage
+#+pr: 2110
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give every IAM protocol header its TypeScript twin. A header holds all the
+messages of one entity or one non-entity protocol, and its messages come from
+one model. Both targets render from the same derived message list, so a message
+exists in both or in neither, and no IAM protocol switches the facet off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- Every IAM protocol header has a TypeScript twin, and a check fails when one is missing.
+- One header per entity or protocol holds its messages, and those messages come from exactly one model.
+- An IAM entity has a TypeScript domain module, and the protocol interfaces reference it.
+- No IAM protocol switches the TypeScript facet off.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Plan
+
+IAM generates 138 messages across 16 headers: 11 protocol models with 96
+messages and 5 entity models with 42. Six protocols carry a TypeScript twin
+today, 30 interfaces in all, so 108 messages have none, and five models opt the
+facet out.
+
+1. *Done, =45d967c308=.* The =ores.ts.domain= facet, the =_ts_type= projection
+   for =ores::<component>::domain::<entity>= and a timestamp, and the loader-side
+   derivation of the standard CRUD list, rendered by both twins. The five
+   entity-derived protocols now have twins — =tenant=, =tenant_type=,
+   =tenant_status=, =account_type=, =account_contact_information=, 40 messages —
+   and the C++ came out byte-identical.
+2. *Done, =5e5c6a8155=.* The junction. =ores.ts.domain= admits =junction=, so
+   =AccountParty= is generated beside the entity interfaces, and the
+   =account_party_messages= opt-out is gone — the first of the five. The C++
+   junction block was never in play: the operation model owns that header.
+   Removing the opt-out also needed the operation's domain import, or the
+   interface would have named a type it never imported.
+3. Model IAM's six hand-written wire types — =account=, =login_info=,
+   =permission= and =role= as entities, =account_version= through the account
+   entity's version facet, and =session= with =session_statistics= as
+   message-only models — then delete the remaining four opt-outs and the
+   hand-written headers and companions, re-pointing the handlers, service and
+   shell.
+4. Make a protocol header without a TypeScript twin fail the drift check, and an
+   =:ores.ts.protocol.enabled:= key fail with it.
+
+* Progress
+
+The drift gate regenerated TypeScript for every registered component once the
+facet admitted entities, and it stopped on =ores.refdata.business_unit=, whose
+response carries =ores::utility::domain::hierarchy_node= — a hand-written
+utility type with no projection. Fixed in =a302087bd9= by scoping the gate: a
+component is regenerated at a TypeScript facet only once that facet's output is
+committed for it. The facets and their output patterns are read from the
+template library, so a component joins the TypeScript side of the gate the
+moment its first generated file lands and no list needs maintaining. Every
+other technical space is regenerated for every component as before.
+
+IAM now regenerates at six technical spaces plus =ores.ts.domain=,
+=ores.ts.protocol= and =ores.ts.ui=, and reports no drift; refdata regenerates
+at the six plus =ores.ts.ui= alone; the full set passes in about twenty
+seconds. The gate goes green on PR #2110 with all five checks.
+
+* Notes
+
+The message inventory is
+=build/output/iam_message_inventory.json=: every message, its fields, subject,
+response, source model, and target file. It was produced from the generated
+headers and checked against them, so the counts above are exact.
+
+Two defects found while taking the inventory:
+
+- =tenant_status_protocol.hpp:67= declares =std::vector<std::string> statuss;=.
+  The template pluralises the entity name by appending =s=, so a name already
+  ending in =s= becomes =statuss=. The delete-request field name needs the same
+  treatment as the TypeScript twin, and the fix belongs with this work.
+- =get_account_contact_informations_by_account_id_request= and its response are
+  the only messages the codegen derives rather than a model declaring them
+  (=core.py:3343=, from the =account_id= foreign key's =list_by=). They stay
+  derived, so they are not part of the message models.
+
+Two findings from reading the codegen, both of which shape the order of work:
+
+- *Two of the five opt-outs have no model to project onto.* =account=,
+  =account_version=, =login_info=, =session=, =session_statistics=,
+  =permission= and =role= are hand-written domain structs; there is no
+  =ores.iam.account.org= entity model at all, only a knowledge page that links to
+  =account.hpp=. A generated TypeScript domain layer cannot cover them, so
+  =account_messages= and =account_history_messages= need hand-written TypeScript
+  domain types, or the account aggregate needs modelling, before their
+  protocols can render. The five entity-derived protocols — =tenant=,
+  =tenant_type=, =tenant_status=, =account_type=, =account_contact_information= —
+  are fully model-backed and come first.
+- *A partial derivation already exists.*
+  =projects/ores.web/scripts/emit_protocol_ir.py= reads the entity models and
+  emits a language-neutral protocol IR for the CRUD set, with =--all= and
+  =--check=. It is a useful specification, but it is not a twin of the template:
+  it does not cover =list_filter_column=, =has_as_of_lookup=, =has_batch_save=,
+  =has_parent_id=, =read_for_cache=, =extra_list_requests= or =single_delete=,
+  and its response collection name uses =entity_plural= where the header uses
+  =entity_plural_short= (=tenant_types= against =types=). The derivation that
+  feeds the TypeScript twin therefore belongs in the loader, beside the flags the
+  C++ template already branches on, and the script should be retired onto it
+  rather than trusted.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2110][#2110]] | [codegen] Model every IAM NATS message and generate both targets |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Part of the task shipped in PR #2110, which is why the task stays STARTED rather
+than closing here. Its acceptance — every IAM protocol header with both targets
+and no facet switched off — is not met yet.
+
+Shipped. An entity model renders its protocol as TypeScript: the =ores.ts.domain=
+facet, the =_ts_type= projection for =ores::<component>::domain::<entity>= and
+timestamps, and the standard CRUD message list derived once in the loader so
+both twins render from it. That gave =tenant=, =tenant_type=, =tenant_status=,
+=account_type= and =account_contact_information= their twins. Junction models
+gained the same treatment, which removed the =account_party= opt-out. The drift
+gate now regenerates a component at a TypeScript facet only once that facet's
+output is committed for it. Twelve of IAM's sixteen protocol headers have both
+targets now, up from six, and the C++ output is byte-identical throughout.
+
+Remaining. The four opt-outs — =account_messages=, =account_history_messages=,
+=authorization_messages= and =session_messages= — are all blocked on the six
+hand-written wire types that have no org model: =account=, =account_version=,
+=login_info=, =permission=, =role=, and =session= with =session_statistics=.
+Modelling them, deleting their hand-written headers and companions, and
+re-pointing the account handlers, the IAM service and the shell is the rest of
+the task.

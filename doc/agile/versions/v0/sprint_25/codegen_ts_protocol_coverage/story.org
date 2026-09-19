@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 18F49E14-F89E-4E01-B4B7-33928F3B094A
+:END:
+#+title: Story: Generate every protocol message as TypeScript
+#+description: Every drift-free component renders its protocol messages to generated C++ headers from the org models, but the TypeScript twin exists for six IAM protocols only, and five IAM protocols switch the facet off because their fields reference hand-written C++ types with no org model. This story gives every message that crosses the wire an org model and both projections, across the drift-free components, with no facet switched off and no hand-written message struct. Work is one task per component, starting with IAM: 111 hand-written types cross the wire, trading 66, dq 26, iam 6, refdata 6, compute 2, scheduler 2, and one each in assets, variability and workspace.
+#+type: story
+#+level: s2
+#+filetags: :codegen:typescript:protocol:iam:drift:sprint_25:v0:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every NATS message a drift-free component speaks comes from an org model and renders to C++ and TypeScript from that one source. A full entity model generates the entity's facets; a message-only model generates the message types and nothing else. No model switches a facet off, and no hand-written struct carries a message. Each component is one task, and IAM goes first.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-19                               |
+
+* Acceptance
+
+- Every NATS message a drift-free component speaks has an org model: an entity model where it has a table, a message-only model where it does not.
+- No model switches a facet off, and no hand-written struct carries a message.
+- Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
+- One header per entity or protocol holds all its messages, and those messages come from exactly one model.
+- An entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0B68BEC-A757-4A0F-8CB0-046C9E56D6E2][Scaffold story: Generate every protocol message as TypeScript]] | DONE | 2026-09-19 | 2026-09-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | STARTED | 2026-09-19 | | Initial task for: Generate every protocol message as TypeScript |
+
+* Decisions
+
+- *One header per entity or protocol, not one per message.* The protocol layer
+  is 220 headers and about 21,000 lines, and its largest header is
+  =instrument_protocol.hpp= at 743 lines of plain structs. No translation unit
+  includes the =messaging/protocol.hpp= umbrella, while 526 include the
+  specific header they need, so this granularity already gives the rebuild
+  isolation that a per-message split would be bought for. Splitting per message
+  would take the tree to roughly 1,858 headers and rewrite those 526 includes
+  for no measurable compile-time gain. A header is split by message family only
+  if it grows past about a thousand lines.
+- *One model per header.* Two templates can write =<entity>_protocol.hpp=: the
+  entity block of =cpp_protocol.hpp.mustache= derives the standard CRUD
+  messages, and an operation model for the same entity declares its own.
+  Whichever renders last wins, which is how =account_protocol.hpp= came to hold
+  CRUD-shaped and declared messages side by side. An entity's messages now come
+  from one place: its message model, or the derived standard set when it has
+  none.
+- *The free-form message facet already exists.* =ores.cpp.protocol= declares
+  =model_types: domain_entity schema junction operation=, and its operation mode
+  renders whatever messages a model declares; =ores.ts.protocol= is its
+  TypeScript twin. IAM is the only component that uses it, so the work is to
+  generalise the facet, not to invent one.
+- *TypeScript needs a domain layer, not only a protocol layer.* The projection
+  map holds =std::string=, =bool=, =int= and =std::uint64_t=, recurses through
+  =std::vector=, and PascalCases bare names. Every IAM opt-out is a field whose
+  type is =ores::<component>::domain::<entity>= or
+  =std::chrono::system_clock::time_point=. A generated TypeScript domain module
+  per entity is what those fields project onto, and it is also what the UI needs
+  to read a payload without restating the entity.
+- *The standard message list is derived once.* The CRUD shapes live in the C++
+  template today. They move to the loader, which then renders both targets from
+  the same list, so C++ and TypeScript cannot drift apart. The C++ output must
+  come out byte-identical, which is what proves the move.
+- *The opt-out is a marker, never a resting state.* =_reject_silent_ts_gap=
+  refuses a model whose field carries no projection, so a field cannot disappear
+  from an interface without someone deciding it should. Five IAM models take the
+  opt-out, and each names a type with no model: =account= and =login_info=,
+  hand-written and both with tables; =account_version=, a version struct whose
+  entity is not modelled; =permission= and =role=, hand-written and both with
+  tables; and =session= with =session_statistics=, which are message-only and have
+  never been modelled at all. The fifth, =account_party_messages=, refers to
+  =ores::iam::domain::account_party=, which *is* generated, so it needs the
+  projection rule and nothing else.
+- *The hand-written surface is the story's backlog, and each component is one
+  task.* IAM declares six types that cross the wire and have no model, and each
+  blocks an opt-out: =account=, =login_info=, =permission= and =role= are
+  entities with hand-written tables and companions; =account_version= is the
+  account entity's version struct; =session= and =session_statistics= have no
+  table and are message-only. The two shapes cover all six, and the same
+  treatment applies component by component: refdata 6, compute 2, scheduler 2,
+  and one each in assets, variability and workspace fit one task apiece, while
+  dq's 26 and trading's 66 are likely to be split by area rather than carried as
+  a single task.
+
+* Out of scope
+
+-

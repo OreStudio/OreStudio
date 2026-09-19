@@ -2114,8 +2114,32 @@ _TS_SCALARS = {
     "std::string": "string",
     "bool": "boolean",
     "int": "number",
+    "std::uint32_t": "number",
     "std::uint64_t": "number",
 }
+
+# A domain member's fully qualified C++ name, e.g.
+# ``ores::iam::domain::tenant_type``. The entity is the interface the
+# ``ores.ts.domain`` facet emits for that entity, so the two projections
+# name one type. ``ores::utility::`` is excluded: its domain types --
+# ``hierarchy_node`` is the one a protocol carries -- are hand-written
+# utility types with no entity model behind them, so there is no facet
+# output to reference and the gap stays open.
+_TS_DOMAIN_TYPE_RE = re.compile(
+    r"^ores::(?!utility::)[A-Za-z_][A-Za-z0-9_]*::domain::"
+    r"([A-Za-z_][A-Za-z0-9_]*)$"
+)
+
+# The same qualified name inside a larger C++ type, e.g.
+# ``std::vector<ores::iam::domain::account_party>`` or
+# ``std::optional<ores::iam::domain::role>``. An operation field of one of
+# these types renders the entity's interface, so the module must import it;
+# see ``ts_domain_imports``. ``ores::utility::`` is excluded for the same
+# reason as above.
+_TS_DOMAIN_REF_RE = re.compile(
+    r"ores::(?!utility::)[A-Za-z_][A-Za-z0-9_]*::domain::"
+    r"([A-Za-z_][A-Za-z0-9_]*)"
+)
 
 
 def _to_pascal_case(name: str) -> str:
@@ -2126,11 +2150,13 @@ def _to_pascal_case(name: str) -> str:
 def _ts_type(cpp_type: str) -> str | None:
     """Project a C++ member type onto its TypeScript counterpart.
 
-    Returns ``None`` for a type with no projection yet -- the TypeScript
-    domain layer does not exist, so an operation referencing
-    ``ores::iam::domain::`` types cannot render a TypeScript interface.
-    Callers decide whether that absence is fatal; see
-    ``load_org_operation_model``.
+    A member whose type is ``ores::<component>::domain::<entity>`` takes
+    the PascalCase interface ``ores.ts.domain`` emits for that entity, and
+    a timestamp takes ``string`` (the JSON shape rfl::json writes).
+
+    Returns ``None`` for a type with no projection yet. Callers decide
+    whether that absence is fatal; see ``load_org_operation_model`` and
+    ``_reject_silent_ts_gap``.
 
     An unqualified name is a message defined in the same protocol, so it
     takes the interface name the template will emit for it.
@@ -2140,9 +2166,249 @@ def _ts_type(cpp_type: str) -> str | None:
         return f"{inner}[]" if inner else None
     if cpp_type in _TS_SCALARS:
         return _TS_SCALARS[cpp_type]
+    if cpp_type == "std::chrono::system_clock::time_point":
+        return "string"
+    domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
+    if domain:
+        return _to_pascal_case(domain.group(1))
     if "::" not in cpp_type:
         return _to_pascal_case(cpp_type)
     return None
+
+
+# Domain member types the protocol projection deliberately refuses -- they
+# are not operation-message types -- but the domain interface itself can
+# express. Both cross the wire as strings.
+_TS_DOMAIN_STRING_TYPES = frozenset({
+    "boost::uuids::uuid",
+    "std::chrono::year_month_day",
+})
+
+
+def _ts_domain_type(cpp_type: str) -> str | None:
+    """Project a domain struct member's C++ type onto TypeScript.
+
+    The domain interface mirrors the object the C++ domain class declares,
+    so it is the member type (``{{{cpp_type}}}`` verbatim in
+    ``cpp_domain_type_class.hpp.mustache``) that decides the interface
+    field: an explicit ``std::optional<T>`` becomes ``T | null`` because
+    rfl::json writes null for it, a uuid and a date become ``string``, and
+    everything else is the protocol projection's answer. Returns ``None``
+    when no projection exists, and the caller emits no field rather than
+    inventing a type.
+    """
+    cpp_type = (cpp_type or "").strip()
+    if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
+        inner = _ts_domain_type(cpp_type[len("std::optional<"):-1])
+        return f"{inner} | null" if inner else None
+    if cpp_type in _TS_DOMAIN_STRING_TYPES:
+        return "string"
+    return _ts_type(cpp_type)
+
+
+def _ts_field(name: str, cpp_type: str, comment: str = "") -> dict[str, Any]:
+    """One derived protocol field, with its TypeScript type when one exists.
+
+    ``comment`` is always set: Mustache resolves a name it cannot find by
+    walking up the context stack, so an absent ``comment`` would inherit
+    the enclosing message's."""
+    field: dict[str, Any] = {"name": name, "cpp_type": cpp_type,
+                             "comment": comment}
+    mapped = _ts_type(cpp_type)
+    if mapped:
+        field["ts_type"] = mapped
+    return field
+
+
+def _ts_message(
+    name: str,
+    *,
+    response_type: str | None = None,
+    subject: str | None = None,
+    fields: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """One derived protocol message: the shape both twins render from."""
+    message: dict[str, Any] = {
+        "name": name,
+        "name_pascal": _to_pascal_case(name),
+        "comment": "",
+        "fields": fields or [],
+    }
+    if response_type:
+        message["response_type"] = response_type
+    if subject:
+        message["subject"] = subject
+    return message
+
+
+def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The domain interfaces an operation's fields render, one entry each.
+
+    A field whose C++ type names ``ores::<component>::domain::<entity>`` --
+    on its own or inside a container -- renders that entity's interface, so
+    the module must import it or the name is undefined. Returns
+    ``{"entity": ..., "entity_pascal": ...}`` in entity-name order, so the
+    template emits one import per entity regardless of how many messages
+    reference it.
+    """
+    entities: set[str] = set()
+    for message in messages:
+        for field in message.get("fields") or []:
+            entities.update(_TS_DOMAIN_REF_RE.findall(field.get("cpp_type") or ""))
+    return [
+        {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
+        for entity in sorted(entities)
+    ]
+
+
+def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive an entity's standard CRUD message list.
+
+    The list is the model of the ``{{#domain_entity}}`` block of
+    ``cpp_protocol.hpp.mustache``: the same messages, in the same order,
+    under the same conditionals, so the C++ header and its TypeScript twin
+    describe one protocol. It must be called on the enriched entity, after
+    ``core.generate_from_model`` has hoisted the repository's
+    ``entity_plural_short`` and derived ``extra_list_requests``,
+    ``primary_key.columns`` and the messaging flags. ``single_delete`` and
+    ``delete_request_extra_args`` are handler concerns -- the protocol
+    template branches on neither -- so they are deliberately not read
+    here.
+    """
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    plural = entity.get("entity_plural", singular + "s")
+    plural_short = entity.get("entity_plural_short") or plural
+    domain_type = f"ores::{component}::domain::{singular}"
+    pk = entity.get("primary_key") or {}
+
+    list_fields = [
+        _ts_field("offset", "std::uint32_t"),
+        _ts_field("limit", "std::uint32_t"),
+    ]
+    filter_column = entity.get("list_filter_column")
+    if filter_column:
+        list_fields.append(_ts_field(filter_column, "std::string"))
+    if entity.get("has_as_of_lookup"):
+        list_fields.append(_ts_field(
+            "as_of", "std::string",
+            comment=_indent_block(
+                "// Empty = current/latest. Note: when as_of is set, results are not\n"
+                "// paginated by offset/limit -- all matching rows are returned.",
+                4)))
+
+    messages = [
+        _ts_message(
+            f"get_{plural}_request",
+            response_type=f"get_{plural}_response",
+            subject=f"{component}.v1.{plural}.list",
+            fields=list_fields),
+        _ts_message(
+            f"get_{plural}_response",
+            fields=[
+                _ts_field(plural_short, f"std::vector<{domain_type}>"),
+                _ts_field("total_available_count", "int"),
+                _ts_field("success", "bool"),
+                _ts_field("message", "std::string"),
+            ]),
+    ]
+
+    save_fields = (
+        [_ts_field(plural_short, f"std::vector<{domain_type}>")]
+        if entity.get("has_batch_save")
+        else [_ts_field("data", domain_type)]
+    )
+    messages += [
+        _ts_message(
+            f"save_{singular}_request",
+            response_type=f"save_{singular}_response",
+            subject=f"{component}.v1.{plural}.save",
+            fields=save_fields),
+        _ts_message(
+            f"save_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
+    delete_fields = []
+    for column in pk.get("columns") or []:
+        name = "ids" if column.get("is_uuid") else f"{column.get('column', '')}s"
+        delete_fields.append(_ts_field(name, "std::vector<std::string>"))
+    messages += [
+        _ts_message(
+            f"delete_{singular}_request",
+            response_type=f"delete_{singular}_response",
+            subject=f"{component}.v1.{plural}.delete",
+            fields=delete_fields),
+        _ts_message(
+            f"delete_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
+    messages += [
+        _ts_message(
+            f"get_{singular}_history_request",
+            response_type=f"get_{singular}_history_response",
+            subject=f"{component}.v1.{plural}.history",
+            fields=[_ts_field(pk.get("column", ""), "std::string")]),
+        _ts_message(
+            f"get_{singular}_history_response",
+            fields=[_ts_field("history", f"std::vector<{domain_type}>"),
+                    _ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
+    for extra in entity.get("extra_list_requests") or []:
+        suffix = extra["name_suffix"]
+        messages += [
+            _ts_message(
+                f"get_{plural}_{suffix}_request",
+                response_type=f"get_{plural}_{suffix}_response",
+                subject=f"{component}.v1.{plural}.{extra['nats_suffix']}",
+                fields=[_ts_field(extra["filter_column"], "std::string"),
+                        _ts_field("offset", "std::uint32_t"),
+                        _ts_field("limit", "std::uint32_t")]),
+            _ts_message(
+                f"get_{plural}_{suffix}_response",
+                fields=[_ts_field(plural_short, f"std::vector<{domain_type}>"),
+                        _ts_field("total_available_count", "int"),
+                        _ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+        ]
+
+    if entity.get("has_parent_id"):
+        messages += [
+            _ts_message(
+                f"get_{singular}_hierarchy_request",
+                response_type=f"get_{singular}_hierarchy_response",
+                subject=f"{component}.v1.{plural}.hierarchy",
+                fields=[_ts_field("root_id", "std::string"),
+                        _ts_field("from_root", "bool")]),
+            _ts_message(
+                f"get_{singular}_hierarchy_response",
+                fields=[_ts_field("success", "bool"),
+                        _ts_field("message", "std::string"),
+                        _ts_field(
+                            "roots",
+                            "std::vector<ores::utility::domain::hierarchy_node>")]),
+        ]
+
+    if entity.get("read_for_cache"):
+        messages += [
+            _ts_message(
+                f"read_{plural}_for_cache_request",
+                response_type=f"read_{plural}_for_cache_response",
+                subject=f"{component}.v1.{plural}.read",
+                fields=[_ts_field("tenant_id", "std::string")]),
+            _ts_message(
+                f"read_{plural}_for_cache_response",
+                fields=[_ts_field("success", "bool"),
+                        _ts_field("message", "std::string"),
+                        _ts_field(plural_short, f"std::vector<{domain_type}>")]),
+        ]
+
+    return messages
 
 
 def load_org_operation_model(path: Path | str) -> dict[str, Any]:
@@ -2241,6 +2507,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
             entry["fields"] = fields
             messages.append(entry)
     op["messages"] = messages
+    op["domain_imports"] = ts_domain_imports(messages)
 
     _reject_silent_ts_gap(path, messages, doc.file_properties)
 
@@ -2275,6 +2542,61 @@ def _reject_silent_ts_gap(
         f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
         "type in org_loader._ts_type, or set ':ores.ts.protocol.enabled: nil' "
         "in the file's :PROPERTIES: drawer to skip the TypeScript facet"
+    )
+
+
+def junction_ts_fields(junction: dict[str, Any]) -> list[dict[str, Any]]:
+    """The junction members that need a TypeScript projection, in the order
+    ``domain_types.ts.mustache`` emits them.
+
+    The audit tail is hard-coded as strings by the template, so it is not
+    listed here. Only the left and right columns and the junction's own
+    columns carry a C++ type the projection may not reach. A member with no
+    ``cpp_type`` states nothing and is skipped.
+    """
+    fields: list[dict[str, Any]] = []
+    for key in ("left", "right"):
+        side = junction.get(key) or {}
+        cpp_type = (side.get("cpp_type") or "").strip()
+        if not cpp_type:
+            continue
+        field: dict[str, Any] = {"name": side.get("column") or key,
+                                 "cpp_type": cpp_type}
+        if side.get("ts_type"):
+            field["ts_type"] = side["ts_type"]
+        fields.append(field)
+    for column in junction.get("columns") or []:
+        cpp_type = (column.get("cpp_type") or "").strip()
+        if not cpp_type:
+            continue
+        field = {"name": column.get("name"), "cpp_type": cpp_type}
+        if column.get("ts_type"):
+            field["ts_type"] = column["ts_type"]
+        fields.append(field)
+    return fields
+
+
+def _reject_silent_junction_ts_gap(
+    path: Path | str, junction: dict[str, Any]
+) -> None:
+    """Reject a junction the TypeScript domain interface cannot state in full.
+
+    A member whose C++ type has no TypeScript projection renders an
+    interface with the member missing, so a UI reading it fails at run
+    time rather than at codegen. The model must either map the type or
+    switch the facet off in its own drawer -- the same rule
+    ``_reject_silent_ts_gap`` applies to an operation's messages.
+    """
+    unmapped = sorted({
+        field["cpp_type"] for field in junction_ts_fields(junction)
+        if "ts_type" not in field
+    })
+    if not unmapped:
+        return
+    raise ValueError(
+        f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
+        "type in org_loader._ts_domain_type, or set ':ores.ts.domain.enabled: "
+        "nil' in the file's :PROPERTIES: drawer to skip the TypeScript facet"
     )
 
 

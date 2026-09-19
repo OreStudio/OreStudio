@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
-#+branch: feature/codegen-ts-protocol-coverage
+#+branch: feature/codegen-ts-iam-modelling
 #+pr: 2110
 #+blocked_on:
 #+blocked_since:

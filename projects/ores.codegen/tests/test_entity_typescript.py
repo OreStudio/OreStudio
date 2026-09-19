@@ -15,6 +15,8 @@ C++ block's conditionals.
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
@@ -26,6 +28,42 @@ from codegen.org_loader import (  # noqa: E402
 
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
+
+# A member the projection cannot state: it has no registered wire shape, so
+# ``_ts_domain_type`` returns None and the domain interface would emit
+# ``extra_payload: ;``.
+UNMAPPED_COLUMN = """
+** extra_payload
+:PROPERTIES:
+:type:     text
+:cpp_type: std::map<std::string, int>
+:nullable: false
+:END:
+
+A member with no TypeScript projection.
+"""
+
+
+def _write_tenant_type(tmp_path, *, extra_column="", extra_properties=""):
+    """The tenant_type model, with an optional member added to * Columns and
+    optional properties added to the file-level drawer."""
+    text = TENANT_TYPE.read_text(encoding="utf-8")
+    if extra_properties:
+        text = text.replace(":END:\n#+title:",
+                            f"{extra_properties}:END:\n#+title:", 1)
+    if extra_column:
+        text = text.replace("\n* SQL\n", f"{extra_column}\n* SQL\n", 1)
+    path = tmp_path / TENANT_TYPE.name
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def _render_domain(model_path, tmp_path):
+    """Render only the TypeScript domain interface for a model."""
+    return generate_from_model(
+        str(model_path), CODEGEN / "library" / "data",
+        CODEGEN / "library" / "templates", tmp_path,
+        target_template="domain_types.ts.mustache", target_output="out.ts")
 
 
 def _entity(**overrides):
@@ -151,6 +189,38 @@ def test_domain_member_types_project():
     assert _ts_domain_type(
         "std::vector<ores::iam::domain::tenant_type>") == "TenantType[]"
     assert _ts_domain_type("std::map<std::string, int>") is None
+
+
+def test_the_ip_address_projects_to_a_string():
+    """rfl::json writes boost::asio::ip::address through its reflector's
+    std::string ReflType, so the domain member is a string, not a gap."""
+    assert _ts_domain_type("boost::asio::ip::address") == "string"
+    assert _ts_domain_type(
+        "std::optional<boost::asio::ip::address>") == "string | null"
+
+
+def test_an_unmapped_entity_domain_member_refuses_the_model(tmp_path):
+    model = _write_tenant_type(tmp_path, extra_column=UNMAPPED_COLUMN)
+    with pytest.raises(ValueError) as excinfo:
+        _render_domain(model, tmp_path)
+    message = str(excinfo.value)
+    assert model.name in message
+    assert "extra_payload" in message
+    assert "std::map<std::string, int>" in message
+
+
+@pytest.mark.parametrize("properties", [
+    ":ores.ts.domain.enabled: nil\n",
+    ":ores.ts.protocol.enabled: nil\n",
+])
+def test_a_model_property_cannot_silence_the_entity_domain_guard(
+    tmp_path, properties
+):
+    model = _write_tenant_type(
+        tmp_path, extra_column=UNMAPPED_COLUMN, extra_properties=properties)
+    with pytest.raises(ValueError) as excinfo:
+        _render_domain(model, tmp_path)
+    assert "extra_payload" in str(excinfo.value)
 
 
 def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):

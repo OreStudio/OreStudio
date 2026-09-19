@@ -2178,10 +2178,19 @@ def _ts_type(cpp_type: str) -> str | None:
 
 # Domain member types the protocol projection deliberately refuses -- they
 # are not operation-message types -- but the domain interface itself can
-# express. Both cross the wire as strings.
+# express. Each crosses the wire as a string, per its rfl reflector in
+# ores.utility/rfl/reflectors.hpp:
+#
+#   boost::uuids::uuid          ReflType std::string
+#   std::chrono::year_month_day ReflType std::string (ISO 8601 date)
+#   boost::asio::ip::address    ReflType std::string (IPv4 or IPv6)
+#
+# boost::asio::ip::tcp is not listed: it is an HTTP infrastructure type, not
+# a domain struct member, so it has no wire shape to project.
 _TS_DOMAIN_STRING_TYPES = frozenset({
     "boost::uuids::uuid",
     "std::chrono::year_month_day",
+    "boost::asio::ip::address",
 })
 
 
@@ -2192,10 +2201,11 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     so it is the member type (``{{{cpp_type}}}`` verbatim in
     ``cpp_domain_type_class.hpp.mustache``) that decides the interface
     field: an explicit ``std::optional<T>`` becomes ``T | null`` because
-    rfl::json writes null for it, a uuid and a date become ``string``, and
-    everything else is the protocol projection's answer. Returns ``None``
-    when no projection exists, and the caller emits no field rather than
-    inventing a type.
+    rfl::json writes null for it, a uuid, a date and an IP address become
+    ``string``, and everything else is the protocol projection's answer.
+    Returns ``None`` when no projection exists;
+    ``_reject_silent_entity_domain_ts_gap`` refuses the model rather than
+    let the template emit a member with an empty type.
     """
     cpp_type = (cpp_type or "").strip()
     if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
@@ -2597,6 +2607,86 @@ def _reject_silent_junction_ts_gap(
         f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
         "type in org_loader._ts_domain_type, or set ':ores.ts.domain.enabled: "
         "nil' in the file's :PROPERTIES: drawer to skip the TypeScript facet"
+    )
+
+
+def entity_domain_ts_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The entity members ``domain_types.ts.mustache`` states with a
+    ``{{ts_type}}``, in template order.
+
+    Mirrors the template's ``{{^has_domain_groups}}`` body: the primary key
+    and the natural keys unless the identity group carries them, then the
+    model's own columns. A grouped entity's body is its ``domain_groups``
+    members instead. Members the template does not state through
+    ``{{ts_type}}`` -- the derived prelude, a ``sql_only`` column, an
+    identity-group column -- are not listed: they cannot render an empty
+    type. A member with no ``cpp_type`` states nothing and keeps the empty
+    string, which the caller reports.
+    """
+    if entity.get("has_domain_groups"):
+        return [
+            {"name": group.get("member"),
+             "cpp_type": group.get("type_qualified"),
+             "ts_type": group.get("ts_type")}
+            for group in entity.get("domain_groups") or []
+        ]
+    fields: list[dict[str, Any]] = []
+    if not entity.get("has_identity_group"):
+        for column in (entity.get("primary_key") or {}).get("columns") or []:
+            fields.append(_entity_domain_ts_member(column, "column"))
+        for column in entity.get("natural_keys") or []:
+            fields.append(_entity_domain_ts_member(column, "column"))
+    for column in entity.get("columns") or []:
+        if column.get("is_identity_group_column") or column.get("sql_only"):
+            continue
+        fields.append(_entity_domain_ts_member(column, "name"))
+    return fields
+
+
+def _entity_domain_ts_member(
+    field: dict[str, Any], name_key: str
+) -> dict[str, Any]:
+    """One entity-domain member: its name, its C++ type, and the projection
+    already stored on the field dict, if any."""
+    member: dict[str, Any] = {
+        "name": field.get(name_key),
+        "cpp_type": (field.get("cpp_type") or "").strip(),
+    }
+    if field.get("ts_type"):
+        member["ts_type"] = field["ts_type"]
+    return member
+
+
+def _reject_silent_entity_domain_ts_gap(
+    path: Path | str, entity: dict[str, Any]
+) -> None:
+    """Reject an entity whose TypeScript domain interface cannot state a
+    member in full.
+
+    A member whose C++ type has no TypeScript projection renders
+    ``<member>: ;`` -- a module that does not compile -- so the entity must
+    map the type in ``org_loader._ts_domain_type``. A type with no wire
+    shape a TypeScript client can read is a reason to record in the model,
+    not to switch the facet off: unlike ``_reject_silent_ts_gap`` this guard
+    reads no ``:ores.*.enabled:`` property, because the project's direction
+    is that no facet is switched off by hand.
+    """
+    unmapped = [
+        member for member in entity_domain_ts_fields(entity)
+        if "ts_type" not in member
+    ]
+    if not unmapped:
+        return
+    listed = ", ".join(
+        f"{member['name']} ({member['cpp_type']})" if member["cpp_type"]
+        else f"{member['name']} (no cpp_type)"
+        for member in unmapped
+    )
+    raise ValueError(
+        f"{Path(path).name}: no TypeScript projection for {listed}; map the "
+        "type in org_loader._ts_domain_type, or record in the model why the "
+        "member has no wire shape a TypeScript client can read -- the entity "
+        "domain interface is not switched off by a model property"
     )
 
 

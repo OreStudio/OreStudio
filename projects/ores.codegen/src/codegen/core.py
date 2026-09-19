@@ -4416,6 +4416,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # by domain_types.ts.mustache; every other facet ignores them, so the
         # C++ output is untouched.
         from .org_loader import (  # deferred to avoid circular import
+            _reject_silent_entity_domain_ts_gap,
             _to_pascal_case,
             _ts_domain_type,
             entity_protocol_messages,
@@ -4442,6 +4443,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if domain_entity.get('has_audit_group'):
             domain_entity['audit_group_pascal'] = _to_pascal_case(
                 (domain_entity.get('audit_group_qualified') or '').split('::')[-1])
+        # A domain member the projection cannot state would render
+        # '<member>: ;', a module that does not compile. Only the TypeScript
+        # domain twin refuses the model; the C++ class has no such gap, so the
+        # check is scoped to its render.
+        if target_template == 'domain_types.ts.mustache':
+            _reject_silent_entity_domain_ts_gap(model_path, domain_entity)
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states.
         domain_entity['messages'] = entity_protocol_messages(domain_entity)

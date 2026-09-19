@@ -620,6 +620,7 @@ def run(argv, project_root: Path) -> int:
     test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
+    web_session_secret = _get_or_gen(existing, "ORES_WEB_SESSION_SECRET")
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
@@ -723,6 +724,9 @@ ORES_SITE_PORT={site_port}
 # The TypeScript web interface (ores.web). One process serves the browser
 # bundle and the HTTP API on this port.
 ORES_WEB_PORT={web_port}
+# Signs the browser session cookie. ores.web refuses to start without it, so
+# it is generated once per environment and preserved on re-run.
+ORES_WEB_SESSION_SECRET={web_session_secret}
 ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
 ORES_NATS_MONITOR_PORT={nats_monitor_port}

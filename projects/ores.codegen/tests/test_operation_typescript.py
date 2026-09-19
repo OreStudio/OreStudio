@@ -89,9 +89,13 @@ def test_a_timestamp_projects_onto_a_string():
 
 
 def test_a_type_with_no_projection_stays_none():
-    assert _ts_type("std::optional<ores::iam::domain::role>") is None
+    # A component domain type projects to the interface its entity emits,
+    # through an optional as well; a utility domain type has no facet output to
+    # name, so it stays a gap the guard refuses.
+    assert _ts_type("std::optional<ores::iam::domain::role>") == "Role | null"
     assert _ts_type("ores::utility::domain::hierarchy_node") is None
     assert _ts_type("std::vector<ores::utility::domain::hierarchy_node>") is None
+    assert _ts_type("std::map<std::string, int>") is None
 
 
 def test_message_names_are_pascal_cased(tmp_path):

@@ -249,3 +249,25 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
     assert "types: TenantType[];" in protocol
     assert "type: string;" in protocol
     assert 'get_tenant_types_request: "iam.v1.tenant_types.list",' in protocol
+
+
+@pytest.mark.parametrize("cpp_type, expected", [
+    # The fixed-width family and the floating types. Before these were
+    # mapped, an unqualified name fell through to the PascalCase fallback and
+    # a double rendered as ``Double``, a type that does not exist. Roughly
+    # fifty entity members carry one.
+    ("double", "number"),
+    ("float", "number"),
+    ("std::int8_t", "number"),
+    ("std::int64_t", "number"),
+    ("std::uint8_t", "number"),
+    ("std::uint16_t", "number"),
+    ("std::chrono::year_month_day", "string"),
+    # Nullability and collections compose.
+    ("std::optional<double>", "number | null"),
+    ("std::optional<std::int64_t>", "number | null"),
+    ("std::vector<double>", "number[]"),
+    ("std::vector<std::optional<double>>", "number | null[]"),
+])
+def test_the_numeric_family_and_its_compositions(cpp_type, expected):
+    assert _ts_domain_type(cpp_type) == expected

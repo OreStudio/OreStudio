@@ -51,14 +51,26 @@ messages and 5 entity models with 42. Six protocols carry a TypeScript twin
 today, 30 interfaces in all, so 108 messages have none, and five models opt the
 facet out.
 
-1. Add the TypeScript domain facet: one module per entity, from the entity
-   model, giving the types the protocol fields project onto.
-2. Map those domain types, and =std::chrono::system_clock::time_point=, in
-   =org_loader._ts_type=, then drop the five opt-outs and regenerate.
-3. Derive the standard CRUD message list in the loader and render the entity
-   protocol header and its TypeScript twin from it, keeping the C++ output
-   byte-identical.
-4. Make a protocol header without a TypeScript twin fail the drift check.
+1. *Done, =45d967c308=.* The =ores.ts.domain= facet, the =_ts_type= projection
+   for =ores::<component>::domain::<entity>= and a timestamp, and the loader-side
+   derivation of the standard CRUD list, rendered by both twins. The five
+   entity-derived protocols now have twins — =tenant=, =tenant_type=,
+   =tenant_status=, =account_type=, =account_contact_information=, 40 messages —
+   and the C++ came out byte-identical.
+2. *Next: the junction.* =account_party_protocol.hpp= comes from
+   =ores.iam.account_party_junction.org=, whose model type is =junction=. Neither
+   TypeScript facet admits =junction= yet, and the C++ template's junction block
+   derives =left.list_by=, =right.list_by=, =left.replace_by= and
+   =right.replace_by= pairs that the loader does not derive. The domain interface
+   for the junction type is needed too, so =ores.ts.domain= gains the model type
+   as well.
+3. Model IAM's six hand-written wire types — =account=, =login_info=,
+   =permission= and =role= as entities, =account_version= through the account
+   entity's version facet, and =session= with =session_statistics= as
+   message-only models — then delete the five opt-outs and the hand-written
+   headers and companions, re-pointing the handlers, service and shell.
+4. Make a protocol header without a TypeScript twin fail the drift check, and an
+   =:ores.ts.protocol.enabled:= key fail with it.
 
 * Notes
 

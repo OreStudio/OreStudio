@@ -211,6 +211,7 @@ that first consumed them are deleted; the generator still computes them,
 and the TypeScript UI archetype reads a subset. The widget-class values
 below (=QLabel=, =QLineEdit=, ...) are what the generator still derives
 for the widget column types.
+
 | Variable              | Description                                              | Example             |
 |-----------------------+----------------------------------------------------------+---------------------|
 | =label_widget=        | Qt widget class for the label/display cell.              | =QLabel=            |

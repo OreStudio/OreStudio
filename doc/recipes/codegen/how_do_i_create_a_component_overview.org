@@ -26,7 +26,7 @@ that is missing one?
   --title "ores.<comp>" \
   --description "<one-liner ≤ 120 chars>" \
   --brief "<short tagline that codegen reads from #+brief:>" \
-  --tags "qt,component"   # adjust tags to match the domain
+  --tags "refdata,component"   # adjust tags to match the domain
 #+end_src
 
 The script writes =projects/<comp>/modeling/component_overview.org=

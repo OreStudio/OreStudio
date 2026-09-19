@@ -408,8 +408,8 @@ Default: $T = S_e$, the entity's own supported set. The CLI
 # T = all sql archetypes
 ./projects/ores.codegen/codegen.sh generate --component refdata --address sql
 
-# T = all cpp.qt archetypes
-./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+# T = all cpp.presentation archetypes
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.presentation
 #+end_src
 
 There is no =--profile= flag; the entity's =ores.*= binding IS the

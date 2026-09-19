@@ -91,7 +91,7 @@ def _read_env(env_file: Path) -> dict:
 # All ports for an environment derive from a single base_port (spaced
 # BASE_PORT_STEP apart), so every port an environment owns is identifiable at a
 # glance from its base. These offsets are the single source of truth for that
-# layout; keep them in sync with the services and the Qt client.
+# layout; keep them in sync with the services.
 #
 # Kept below the kernel's ephemeral port range (see
 # /proc/sys/net/ipv4/ip_local_port_range, typically 32768-60999) so a fixed

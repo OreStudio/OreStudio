@@ -28,7 +28,7 @@ The title (first line) must follow this pattern:
 : =[component] <Imperative summary>=
 
 - **Component**: A short, lowercase slug in square brackets identifying the
-  primary area of change (e.g., =[doc]=, =[agile]=, =[site]=, =[qt]=,
+  primary area of change (e.g., =[doc]=, =[agile]=, =[site]=, =[build]=,
   =[vcpkg]=).
 - **Imperative Mood**: Use the imperative ("Add feature", "Fix bug") rather than
   descriptive ("Added feature", "Fixed bug").

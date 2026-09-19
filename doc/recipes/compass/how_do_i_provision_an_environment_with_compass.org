@@ -60,7 +60,7 @@ What it does:
 2. Scans sibling =ores_dev_*= and legacy =OreStudio.*= directories for used
    =ORES_BASE_PORT= values, then assigns the next free 1000-wide slot
    (50000, 51000, …). Every port for the environment derives from that one
-   base port — http/wt (+0..+3), site (+4), NATS client (+5), NATS monitor
+   base port — http (+0..+1), site (+4), NATS client (+5), NATS monitor
    (+6) — so all ports for an environment are identifiable at a glance from
    its base port alone.
 3. Runs =git worktree add ../ores_dev_festive_hawking origin/main=.

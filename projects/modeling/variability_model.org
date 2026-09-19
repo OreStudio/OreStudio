@@ -2,7 +2,7 @@
 :ID: 0BD6F9EC-34DD-44D9-8AA1-917EE5966396
 :END:
 #+title: ORE Studio Variability Model
-#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the ores.* physical-space graph as the activation catalogue, and the feature catalogue of authored configuration knobs (sql, qt, licence) — with the structural predicates that are deliberately excluded.
+#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the ores.* physical-space graph as the activation catalogue, and the feature catalogue of authored configuration knobs (licence, sql, presentation) — with the structural predicates that are deliberately excluded.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
@@ -93,7 +93,7 @@ as a Python accessor a reader can grep for, which is itself worth
 knowing before hunting for one: several features are never touched by
 name in =core.py= or =org_loader.py=, and are read instead purely by
 Mustache's own dotted-path section lookup, direct off the parsed
-model — =domain_entity.qt.has_change_reason_cache=, for instance,
+model — =domain_entity.hierarchy_name_field=, for instance,
 resolves entirely inside the template, with no corresponding
 Python-side =.get()= call to find. A computed predicate, by contrast,
 always shows up as a derivation in the source: =table['has_tenant_in_pk']=
@@ -395,7 +395,7 @@ authoring route exists:
   [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] literate approach.
 
 The feature bundles catalogued above are authored *on the model file*
-— in the =sql= / =qt= sections (JSON route) or the corresponding org
+— in the =sql= / =presentation= sections (JSON route) or the corresponding org
 headings (org-mode route). They travel with the element, which is why
 their natural scope is the element.
 

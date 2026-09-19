@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: AA24D1D3-60B0-4650-900A-57B496BE1657
+:END:
+#+title: ores.ts.domain
+#+description: Per-entity domain interfaces: the TypeScript shape of the object the C++ domain class declares.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.ts
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+This page is the node for the =ores.ts.domain= facet of the codegen
+template library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+One archetype: an interface per entity, named in PascalCase, with the
+entity's fields in the order the C++ domain class declares them and the
+field names in =snake_case= — they are the keys rfl::json writes.
+
+The interface is the object the protocol payloads carry, stated once. A
+protocol response that lists =tenant_type= rows references =TenantType=,
+so a UI reads a payload without restating the entity. The protocol
+facet's type projection maps =ores::<component>::domain::<entity>= onto
+this interface, so the two facets name one type.
+
+* What the facet emits, and what it does not
+
+The interface mirrors the C++ domain class's member list: the audited
+identity prelude (=version=, =tenant_id=, =workspace_id= when the model
+sets the flags), the primary key, the natural keys, the model's own
+columns, and the flat audit fields. A member whose C++ type has no
+TypeScript projection emits no field, following the same rule as
+=ores.ts.ui=: nothing is invented.
+
+A composed struct (=domain_groups=, =domain_identity_group=,
+=domain_audit_group=) reaches its fields through a group member, and the
+interface names that member's own interface. That field-group interface
+is not emitted here, so such an entity renders a reference with no
+module behind it; the field-group TypeScript domain layer is a separate
+piece of work.
+
+* Which entities emit
+
+A =domain_entity= model, which is every entity the C++ domain facet
+renders. A model with no =* Columns= section is refused upstream by the
+loader, so the archetype never sees one.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] | The domain interface for one entity. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's facet catalogue and shared Mustache conventions.
+- [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the sibling facet whose payload interfaces reference these types.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this facet's template may read.

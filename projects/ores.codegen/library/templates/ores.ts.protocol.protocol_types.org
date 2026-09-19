@@ -9,15 +9,29 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-18
-+#+updated: 2026-09-18
+#+updated: 2026-09-19
 
 Wire payload interfaces and NATS subject constants for one protocol. The
 TypeScript twin of [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]]: both render from
-the same operation model, so a field added to one appears in the other.
+the same model, so a field added to one appears in the other.
+
+An operation model declares its messages, and this template renders
+them. An entity model declares no messages, so the loader derives its
+standard CRUD set in =org_loader.entity_protocol_messages= — the same
+messages, in the same order, under the same conditionals as
+=cpp_protocol.hpp.mustache='s entity block. The C++ header still renders
+from the raw flags, so its output is unchanged; the derived list is the
+TypeScript twin's model.
 
 One exported interface per message, named in PascalCase. Field names stay
 snake_case, because they are the JSON keys =rfl::json= writes from the C++
 member names.
+
+An entity protocol carries the entity's domain type, so its module
+imports the interface =ores.ts.domain= emits for it. A field whose C++
+type has no TypeScript projection stops the model loading — see
+=org_loader._reject_silent_ts_gap= — rather than rendering an interface
+with the field missing.
 
 The =subjects= constant collects the NATS subjects a message carries. A
 message with no subject — a plain payload such as =party_summary= — gets an
@@ -35,6 +49,31 @@ The full template source. Edit here and re-tangle with
 #+begin_src mustache :tangle ts_protocol.ts.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.protocol.protocol_types.org. Edit the org source. }}
 {{{ts_license}}}
+{{#domain_entity}}
+import type { {{entity_pascal}} } from '../domain/{{entity_singular}}.js';
+
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+export interface {{name_pascal}} {
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+
+{{/messages}}
+export const subjects = {
+{{#messages}}
+{{#subject}}
+    {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+{{/domain_entity}}
 {{#operation}}
 {{#messages}}
 {{#comment}}
@@ -63,4 +102,5 @@ export const subjects = {
 * See also
 
 - [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the parent facet.
+- [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] — the interfaces an entity protocol imports.
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

@@ -123,6 +123,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review of the diff found no issue in the changed sources. The comment rules hold: no new comments, no edit-history narration. No generated file was hand-edited: the grants SQL came from the archetype, and the templates were left alone. | all changed sources | Accepted | Verdict: ready to merge. =misspell-fixer .= exits 0. |
 | 2 | Follow-up review after the marketdata grant and the compass binding were added: the resolver's first cut matched the wrong port field, because the web config's =port= is the NATS port, not the web port. Corrected and covered by four tests. | =projects/ores.compass/src/env_init.py= | Accepted | Fixed before the raise; =pytest test_env_init.py= is 8/8. |
+| 3 | Review round 1: =_resolve_web_env_id= compared =env_name= against declared ids without normalising hyphens. =compass env provision= requires a hyphen in the name and writes it verbatim to =ORES_ENV_NAME=, while every declared id uses underscores, so the id-match branch was dead for provisioned environments. | =projects/ores.compass/src/env_init.py= | Accepted | Fixed: the label is normalised through a shared =_underscored= helper, which the existing =label_lower= site now uses too. A hyphenated case was added to =test_env_init.py=; the file is 9/9 and the compass suite 214 passed. |
 
 * Result
 

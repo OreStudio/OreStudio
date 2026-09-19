@@ -1,0 +1,58 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: TypeScript
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.web/**"
+      - ".github/workflows/typescript.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/ores.web/**"
+      - ".github/workflows/typescript.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The component's checks are ctest entries, so the continuous and nightly
+  # builds already run them — but only after a full C++ build, and never on a
+  # pull request. This job answers the same two commands in about a minute,
+  # where the author can see them.
+  typescript:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: projects/ores.web
+      - name: Type check
+        run: npm run typecheck
+        working-directory: projects/ores.web
+      - name: Unit tests
+        run: npm test
+        working-directory: projects/ores.web

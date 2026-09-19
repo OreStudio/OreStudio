@@ -26,11 +26,11 @@ projects/ores.web holds the Volga prototype under ORE Studio naming, and the com
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BAAFD7B2-A37F-4ED8-A9F2-E2A997E3D488][Integrate the Volga TypeScript UI as ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-19                               |
 
 * Acceptance

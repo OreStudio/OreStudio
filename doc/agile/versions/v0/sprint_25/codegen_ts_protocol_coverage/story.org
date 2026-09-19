@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 18F49E14-F89E-4E01-B4B7-33928F3B094A
+:END:
+#+title: Story: Generate every protocol message as TypeScript
+#+description: Every drift-free component renders its protocol messages to generated C++ headers from the org models, but the TypeScript twin exists for six IAM protocols only. The other components have no TypeScript messages at all, and five IAM protocols switch the TypeScript facet off because their fields reference C++ domain types with no TypeScript projection. This story closes the gap so every message that renders to C++ also renders to TypeScript, one message type per header.
+#+type: story
+#+level: s2
+#+filetags: :codegen:typescript:protocol:iam:drift:sprint_25:v0:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bind every protocol message model to the TypeScript facet and extend the projection until it renders, so a message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-19                               |
+
+* Acceptance
+
+- Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
+- Each message type has its own header and its own model, so adding a message does not touch the others.
+- No IAM protocol switches the TypeScript facet off.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0B68BEC-A757-4A0F-8CB0-046C9E56D6E2][Scaffold story: Generate every protocol message as TypeScript]] | STARTED | 2026-09-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | BACKLOG | | | Initial task for: Generate every protocol message as TypeScript |
+
+* Decisions
+
+* Out of scope
+
+-

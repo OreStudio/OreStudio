@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B
+:END:
+#+title: Task: Generate the IAM protocol messages as TypeScript
+#+description: Initial task for: Generate every protocol message as TypeScript
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bind every protocol message model to the TypeScript facet and extend the projection until it renders, so a message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
+- Each message type has its own header and its own model, so adding a message does not touch the others.
+- No IAM protocol switches the TypeScript facet off.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

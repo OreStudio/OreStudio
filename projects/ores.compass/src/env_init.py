@@ -171,6 +171,18 @@ def _get_or_gen(existing: dict, key: str) -> str:
     return val if val else _gen_password()
 
 
+def _env_value(existing: dict, key: str, fallback: str) -> str:
+    """Value for a generated .env entry, in precedence order.
+
+    The checkout's own .env wins. The process environment is a fallback only
+    for a checkout that has no value yet (a fresh provision, or CI), because
+    an ORES_* exported by another worktree's shell must never rewrite this
+    checkout's identity: the database name and the NATS subject prefix decide
+    which environment a command touches, so a stale exported value can point
+    a command at another worktree's database."""
+    return existing.get(key) or os.environ.get(key) or fallback
+
+
 def _get_or_gen_uuid(existing: dict, key: str) -> str:
     val = existing.get(key)
     return val if val else _gen_uuid()
@@ -456,20 +468,17 @@ def run(argv, project_root: Path) -> int:
     # DB name: prefer explicit existing value (set by compass env provision or
     # a manual override), then derive from label_lower (fixes hyphen bug for
     # adjective-noun names like festive-hawking → ores_dev_festive_hawking).
-    db_name = (os.environ.get("ORES_DATABASE_NAME")
-               or existing.get("ORES_DATABASE_NAME")
-               or f"ores_dev_{label_lower}")
+    db_name = _env_value(existing, "ORES_DATABASE_NAME",
+                         f"ores_dev_{label_lower}")
 
     # NATS subject prefix: hyphens become dots (e.g. festive-hawking → ores.dev.festive.hawking).
-    nats_prefix = (os.environ.get("ORES_NATS_SUBJECT_PREFIX")
-                   or f"ores.dev.{env_name.replace('-', '.')}")
+    nats_prefix = _env_value(existing, "ORES_NATS_SUBJECT_PREFIX",
+                             f"ores.dev.{env_name.replace('-', '.')}")
 
     # NATS wire payload format: json or msgpack, decided once at process
     # startup (see ores::nats::wire_format). Preserve an existing choice on
     # re-run; default to msgpack for fresh environments.
-    nats_wire_format = (os.environ.get("ORES_NATS_WIRE_FORMAT")
-                        or existing.get("ORES_NATS_WIRE_FORMAT")
-                        or "msgpack")
+    nats_wire_format = _env_value(existing, "ORES_NATS_WIRE_FORMAT", "msgpack")
 
     # Ports: scan sibling environments to find the next free base_port slot,
     # then override with any value already in .env (pre-assigned by env
@@ -534,11 +543,11 @@ def run(argv, project_root: Path) -> int:
             print("Aborted.")
             return 1
 
-    # Postgres superuser password: env var > existing > prompt.
-    if os.environ.get("PGPASSWORD"):
-        pgpassword = os.environ["PGPASSWORD"]
-    elif existing.get("PGPASSWORD"):
-        pgpassword = existing["PGPASSWORD"]
+    # Postgres superuser password: existing > env var > prompt. The checkout's
+    # .env wins for the same reason as the identity values above; an exported
+    # PGPASSWORD is only a fallback where the checkout has none yet.
+    pgpassword = existing.get("PGPASSWORD") or os.environ.get("PGPASSWORD")
+    if pgpassword:
         print("Reusing existing PGPASSWORD.")
     else:
         import getpass
@@ -619,9 +628,7 @@ def run(argv, project_root: Path) -> int:
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
     web_session_secret = _get_or_gen(existing, "ORES_WEB_SESSION_SECRET")
-    web_bff_host = (os.environ.get("ORES_WEB_BFF_HOST")
-                    or existing.get("ORES_WEB_BFF_HOST")
-                    or "127.0.0.1")
+    web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}

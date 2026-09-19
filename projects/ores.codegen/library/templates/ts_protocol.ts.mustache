@@ -26,6 +26,12 @@ export const subjects = {
 } as const;
 {{/domain_entity}}
 {{#operation}}
+{{#domain_imports}}
+import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+{{/domain_imports}}
+{{#domain_imports}}
+
+{{/domain_imports}}
 {{#messages}}
 {{#comment}}
 {{{.}}}

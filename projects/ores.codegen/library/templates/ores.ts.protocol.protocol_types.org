@@ -28,10 +28,13 @@ snake_case, because they are the JSON keys =rfl::json= writes from the C++
 member names.
 
 An entity protocol carries the entity's domain type, so its module
-imports the interface =ores.ts.domain= emits for it. A field whose C++
-type has no TypeScript projection stops the model loading — see
-=org_loader._reject_silent_ts_gap= — rather than rendering an interface
-with the field missing.
+imports the interface =ores.ts.domain= emits for it. An operation
+protocol imports the same way when one of its fields names a domain
+type: the loader derives the distinct interfaces in
+=org_loader.ts_domain_imports=, and the module imports each one. A field
+whose C++ type has no TypeScript projection stops the model loading —
+see =org_loader._reject_silent_ts_gap= — rather than rendering an
+interface with the field missing.
 
 The =subjects= constant collects the NATS subjects a message carries. A
 message with no subject — a plain payload such as =party_summary= — gets an
@@ -75,6 +78,12 @@ export const subjects = {
 } as const;
 {{/domain_entity}}
 {{#operation}}
+{{#domain_imports}}
+import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+{{/domain_imports}}
+{{#domain_imports}}
+
+{{/domain_imports}}
 {{#messages}}
 {{#comment}}
 {{{.}}}
@@ -102,5 +111,5 @@ export const subjects = {
 * See also
 
 - [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the parent facet.
-- [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] — the interfaces an entity protocol imports.
+- [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] — the interfaces the protocols import.
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

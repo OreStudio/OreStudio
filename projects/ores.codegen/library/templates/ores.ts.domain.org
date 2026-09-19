@@ -2,9 +2,9 @@
 :ID: AA24D1D3-60B0-4650-900A-57B496BE1657
 :END:
 #+title: ores.ts.domain
-#+description: Per-entity domain interfaces: the TypeScript shape of the object the C++ domain class declares.
+#+description: Per-entity and per-junction domain interfaces: the TypeScript shape of the object the C++ domain class declares.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+facet_group: ores.ts
 #+filetags: :codegen:physical-space:typescript:
@@ -19,15 +19,18 @@ table to them.
 
 * Summary
 
-One archetype: an interface per entity, named in PascalCase, with the
-entity's fields in the order the C++ domain class declares them and the
-field names in =snake_case= — they are the keys rfl::json writes.
+One archetype: an interface per entity or junction, named in PascalCase,
+with the object's fields in the order the C++ domain class declares them
+and the field names in =snake_case= — they are the keys rfl::json writes.
 
 The interface is the object the protocol payloads carry, stated once. A
 protocol response that lists =tenant_type= rows references =TenantType=,
 so a UI reads a payload without restating the entity. The protocol
 facet's type projection maps =ores::<component>::domain::<entity>= onto
-this interface, so the two facets name one type.
+this interface, so the two facets name one type. A junction renders the
+same way and follows the C++ junction block: =version=, the tenant when
+the model sets it, the left and right columns, the model's own columns,
+then the audit tail.
 
 * What the facet emits, and what it does not
 
@@ -43,13 +46,20 @@ A composed struct (=domain_groups=, =domain_identity_group=,
 interface names that member's own interface. That field-group interface
 is not emitted here, so such an entity renders a reference with no
 module behind it; the field-group TypeScript domain layer is a separate
-piece of work.
+piece of work. A junction has no groups: its C++ class declares the
+audit tail as plain members, so the interface states them directly.
+
+A junction member whose C++ type has no TypeScript projection refuses
+the model, because the interface would carry the member with no type or
+drop it silently, and a UI that reads either one fails at run time. The
+guard is =org_loader._reject_silent_junction_ts_gap=.
 
 * Which entities emit
 
 A =domain_entity= model, which is every entity the C++ domain facet
 renders. A model with no =* Columns= section is refused upstream by the
-loader, so the archetype never sees one.
+loader, so the archetype never sees one. A =junction= model emits as
+well, with the field set the C++ junction block declares.
 
 * Archetypes
 

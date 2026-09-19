@@ -4510,6 +4510,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             'idx' in (col.get('generator_expr') or '')
             for col in junction.get('columns', [])
         )
+        # TypeScript domain member types, on the same field dicts the
+        # junction block of cpp_domain_type_class.hpp.mustache mirrors: the
+        # left and right columns and the junction's own columns. Read by
+        # domain_types.ts.mustache; every other facet ignores them, so the
+        # C++ output is untouched. The interface name is the PascalCase
+        # spelling of name_singular -- the name the protocol projection
+        # derives from ores::<component>::domain::<entity>.
+        from .org_loader import (  # deferred to avoid circular import
+            _reject_silent_junction_ts_gap,
+            _to_pascal_case,
+            _ts_domain_type,
+        )
+        for _side in (junction.get('left') or {}, junction.get('right') or {}):
+            _mapped = _ts_domain_type(_side.get('cpp_type'))
+            if _mapped:
+                _side['ts_type'] = _mapped
+        for _column in junction.get('columns') or []:
+            _mapped = _ts_domain_type(_column.get('cpp_type'))
+            if _mapped:
+                _column['ts_type'] = _mapped
+        if 'name_singular' in junction:
+            junction['name_pascal'] = _to_pascal_case(junction['name_singular'])
+        # A junction member the projection cannot state would render an
+        # interface with the member missing, which is a run-time failure in a
+        # UI that reads it. Only the TypeScript twin refuses the model; the
+        # C++ class has no such gap, so the check is scoped to its render.
+        if target_template == 'domain_types.ts.mustache':
+            _reject_silent_junction_ts_gap(model_path, junction)
         # Format description as comment block lines (for SQL)
         if 'description' in junction:
             junction['description_formatted'] = _format_description_as_comment(junction['description'])

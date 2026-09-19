@@ -2130,6 +2130,17 @@ _TS_DOMAIN_TYPE_RE = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*)$"
 )
 
+# The same qualified name inside a larger C++ type, e.g.
+# ``std::vector<ores::iam::domain::account_party>`` or
+# ``std::optional<ores::iam::domain::role>``. An operation field of one of
+# these types renders the entity's interface, so the module must import it;
+# see ``ts_domain_imports``. ``ores::utility::`` is excluded for the same
+# reason as above.
+_TS_DOMAIN_REF_RE = re.compile(
+    r"ores::(?!utility::)[A-Za-z_][A-Za-z0-9_]*::domain::"
+    r"([A-Za-z_][A-Za-z0-9_]*)"
+)
+
 
 def _to_pascal_case(name: str) -> str:
     """The interface name a snake_case message name renders to."""
@@ -2228,6 +2239,26 @@ def _ts_message(
     if subject:
         message["subject"] = subject
     return message
+
+
+def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The domain interfaces an operation's fields render, one entry each.
+
+    A field whose C++ type names ``ores::<component>::domain::<entity>`` --
+    on its own or inside a container -- renders that entity's interface, so
+    the module must import it or the name is undefined. Returns
+    ``{"entity": ..., "entity_pascal": ...}`` in entity-name order, so the
+    template emits one import per entity regardless of how many messages
+    reference it.
+    """
+    entities: set[str] = set()
+    for message in messages:
+        for field in message.get("fields") or []:
+            entities.update(_TS_DOMAIN_REF_RE.findall(field.get("cpp_type") or ""))
+    return [
+        {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
+        for entity in sorted(entities)
+    ]
 
 
 def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
@@ -2476,6 +2507,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
             entry["fields"] = fields
             messages.append(entry)
     op["messages"] = messages
+    op["domain_imports"] = ts_domain_imports(messages)
 
     _reject_silent_ts_gap(path, messages, doc.file_properties)
 
@@ -2510,6 +2542,61 @@ def _reject_silent_ts_gap(
         f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
         "type in org_loader._ts_type, or set ':ores.ts.protocol.enabled: nil' "
         "in the file's :PROPERTIES: drawer to skip the TypeScript facet"
+    )
+
+
+def junction_ts_fields(junction: dict[str, Any]) -> list[dict[str, Any]]:
+    """The junction members that need a TypeScript projection, in the order
+    ``domain_types.ts.mustache`` emits them.
+
+    The audit tail is hard-coded as strings by the template, so it is not
+    listed here. Only the left and right columns and the junction's own
+    columns carry a C++ type the projection may not reach. A member with no
+    ``cpp_type`` states nothing and is skipped.
+    """
+    fields: list[dict[str, Any]] = []
+    for key in ("left", "right"):
+        side = junction.get(key) or {}
+        cpp_type = (side.get("cpp_type") or "").strip()
+        if not cpp_type:
+            continue
+        field: dict[str, Any] = {"name": side.get("column") or key,
+                                 "cpp_type": cpp_type}
+        if side.get("ts_type"):
+            field["ts_type"] = side["ts_type"]
+        fields.append(field)
+    for column in junction.get("columns") or []:
+        cpp_type = (column.get("cpp_type") or "").strip()
+        if not cpp_type:
+            continue
+        field = {"name": column.get("name"), "cpp_type": cpp_type}
+        if column.get("ts_type"):
+            field["ts_type"] = column["ts_type"]
+        fields.append(field)
+    return fields
+
+
+def _reject_silent_junction_ts_gap(
+    path: Path | str, junction: dict[str, Any]
+) -> None:
+    """Reject a junction the TypeScript domain interface cannot state in full.
+
+    A member whose C++ type has no TypeScript projection renders an
+    interface with the member missing, so a UI reading it fails at run
+    time rather than at codegen. The model must either map the type or
+    switch the facet off in its own drawer -- the same rule
+    ``_reject_silent_ts_gap`` applies to an operation's messages.
+    """
+    unmapped = sorted({
+        field["cpp_type"] for field in junction_ts_fields(junction)
+        if "ts_type" not in field
+    })
+    if not unmapped:
+        return
+    raise ValueError(
+        f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
+        "type in org_loader._ts_domain_type, or set ':ores.ts.domain.enabled: "
+        "nil' in the file's :PROPERTIES: drawer to skip the TypeScript facet"
     )
 
 

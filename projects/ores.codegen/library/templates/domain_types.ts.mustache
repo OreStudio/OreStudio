@@ -58,3 +58,29 @@ export interface {{entity_pascal}} {
 {{/has_domain_groups}}
 }
 {{/domain_entity}}
+{{#junction}}
+/**
+ * The {{name_singular_words}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface {{name_pascal}} {
+    version: number;
+{{#has_tenant_id}}
+    tenant_id: string;
+{{/has_tenant_id}}
+    {{left.column}}: {{left.ts_type}};
+    {{right.column}}: {{right.ts_type}};
+{{#columns}}
+    {{name}}: {{ts_type}};
+{{/columns}}
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
+}
+{{/junction}}

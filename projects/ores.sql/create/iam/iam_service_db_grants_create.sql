@@ -231,6 +231,7 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
+select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- analytics_service: Analytics domain service

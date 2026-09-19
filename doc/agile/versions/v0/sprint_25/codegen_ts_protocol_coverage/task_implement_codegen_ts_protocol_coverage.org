@@ -107,6 +107,35 @@ IAM now regenerates at six technical spaces plus =ores.ts.domain=,
 at the six plus =ores.ts.ui= alone; the full set passes in about twenty
 seconds. The gate goes green on PR #2110 with all five checks.
 
+* The login_info preview
+
+Modelling =login_info= was previewed before anything was overwritten, and the
+preview stopped it. Two blockers, both real.
+
+- *The codegen cannot express a current-state entity.* The SQL template emits
+  =valid_from= and =valid_to= unconditionally, and =no_audit_columns= removes
+  only =version= and the audit tail, so generating =login_info= would replace
+  its hand-written table with a bi-temporal one: the primary key becomes
+  =(tenant_id, account_id, valid_from, valid_to)=, a GIST exclusion and two
+  checks appear, the insert trigger and its function are replaced, and
+  =login_info_locked_idx= — a partial index on =locked= — is dropped with no
+  replacement. None of the five =entity_org= shapes touches the temporal axis.
+  *Decided:* add a first-class current-state shape to the codegen rather than
+  migrate the table, so the table's behaviour does not change and the generator
+  gains the ability to express a table with no history.
+- *Entity domains are never gap-checked and the IP type has no projection.*
+  Generation emitted =last_ip: ;= because =_ts_domain_type= has no mapping for
+  =boost::asio::ip::address=, and only operation and junction models run the
+  silent-gap guard, so invalid TypeScript would have been committed. The
+  projection is =string=: the reflector at =ores.utility/rfl/reflectors.hpp=
+  143-159 writes =v.to_string()= through =ReflType = std::string=.
+
+A third finding waits for a decision rather than a fix: an entity-derived
+=login_info= protocol would emit subjects =iam.v1.login_info.*= while
+=account_messages.org= already declares =list_login_info_*= in
+=account_protocol.hpp=. The ownership gate does not cover it, because
+=account_messages= declares the entity =account=, not =login_info=.
+
 * Notes
 
 The message inventory is

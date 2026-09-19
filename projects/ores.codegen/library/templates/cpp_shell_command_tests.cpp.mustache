@@ -165,6 +165,7 @@ TEST_CASE("{{entity_singular}}_commands_process_delete_requires_a_logged_in_sess
     CHECK(command_feedback::failed());
 }
 
+{{^current_state}}
 TEST_CASE("{{entity_singular}}_commands_process_history_requires_a_logged_in_session", tags) {
     auto lg(make_logger(test_suite));
 
@@ -203,4 +204,5 @@ TEST_CASE("{{entity_singular}}_commands_process_history_rejects_a_version_withou
     CHECK(command_feedback::failed());
 }
 {{/has_audit_group}}
+{{/current_state}}
 {{/domain_entity}}

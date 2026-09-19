@@ -27,6 +27,9 @@ The shape-two units carry one more: the history verb rejects =--version=
 with no =--diff=. That check runs before the login guard, so the case
 needs no session.
 
+A =current_state= entity has no history verb at all, so it carries none
+of the history cases.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -223,6 +226,7 @@ TEST_CASE("{{entity_singular}}_commands_process_delete_requires_a_logged_in_sess
     CHECK(command_feedback::failed());
 }
 
+{{^current_state}}
 TEST_CASE("{{entity_singular}}_commands_process_history_requires_a_logged_in_session", tags) {
     auto lg(make_logger(test_suite));
 
@@ -261,6 +265,7 @@ TEST_CASE("{{entity_singular}}_commands_process_history_rejects_a_version_withou
     CHECK(command_feedback::failed());
 }
 {{/has_audit_group}}
+{{/current_state}}
 {{/domain_entity}}
 #+end_src
 

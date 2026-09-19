@@ -2,7 +2,7 @@
 :ID: 18F49E14-F89E-4E01-B4B7-33928F3B094A
 :END:
 #+title: Story: Generate every protocol message as TypeScript
-#+description: Every drift-free component renders its protocol messages to generated C++ headers from the org models, but the TypeScript twin exists for six IAM protocols only. The other components have no TypeScript messages at all, and five IAM protocols switch the TypeScript facet off because their fields reference C++ domain types with no TypeScript projection. This story closes the gap so every message that renders to C++ also renders to TypeScript, one message type per header.
+#+description: IAM only. Every NATS message IAM speaks must come from an org model and render to both C++ and TypeScript. Six protocols render TypeScript today and five switch the facet off because their fields reference hand-written C++ types with no model: account, account_version, login_info, permission, role, session and session_statistics. A full entity model covers the four with tables and a message-only model covers the rest, so no opt-out and no hand-written message struct remain.
 #+type: story
 #+level: s2
 #+filetags: :codegen:typescript:protocol:iam:drift:sprint_25:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Bind every protocol message model to the TypeScript facet and extend the projection until it renders, so a message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+IAM only, and 100% coverage. Every NATS message IAM speaks comes from an org model and renders to C++ and TypeScript from that one source. A full entity model generates the entity's facets; a message-only model generates the message types and nothing else. No IAM model switches a facet off, and no hand-written struct carries a message.
 
 * Status
 
@@ -30,7 +30,9 @@ Bind every protocol message model to the TypeScript facet and extend the project
 
 * Acceptance
 
-- Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
+- Every NATS message IAM speaks has an org model: an entity model where it has a table, a message-only model where it does not.
+- No IAM model switches a facet off, and no hand-written struct carries a message.
+- Every IAM protocol header has a TypeScript twin, and a check fails when one is missing.
 - One header per entity or protocol holds all its messages, and those messages come from exactly one model.
 - An entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
 - No model switches the TypeScript facet off, and no hand-written struct crosses the wire: every message type is either a modelled entity or a message-only model.
@@ -87,16 +89,16 @@ Bind every protocol message model to the TypeScript facet and extend the project
   never been modelled at all. The fifth, =account_party_messages=, refers to
   =ores::iam::domain::account_party=, which *is* generated, so it needs the
   projection rule and nothing else.
-- *The hand-written surface is the real backlog.* The repository holds 504
-  hand-written domain headers against 430 generated ones — trading 266, dq 106,
-  refdata 47, iam 29 — and 111 of those hand-written types are referenced by a
-  generated protocol header, so they cross the wire: trading 66, dq 26, iam 6,
-  refdata 6, compute 2, scheduler 2, and one each in assets, variability and
-  workspace. Every one of them has to become a model — an entity where it has a
-  table, a declared payload where it does not — before the last opt-out can go.
-  IAM is first because it is the smallest component that exercises both shapes:
-  full entities (=account=, =login_info=, =permission=, =role=) and message-only
-  types (=session=, =session_statistics=).
+- *The hand-written surface within IAM.* IAM declares six types that cross the
+  wire and have no model, and each blocks an opt-out: =account=, =login_info=,
+  =permission= and =role= are entities with hand-written tables and companions;
+  =account_version= is the account entity's version struct; =session= and
+  =session_statistics= have no table and are message-only. The two shapes cover
+  all six — an entity model for the four with tables, a message-only model for
+  the rest. The other components are out of scope for this story: 111
+  hand-written types cross the wire elsewhere (trading 66, dq 26, refdata 6,
+  compute 2, scheduler 2, and one each in assets, variability and workspace), and
+  each needs its own story.
 
 * Out of scope
 

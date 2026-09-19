@@ -30,7 +30,7 @@ import { z } from 'zod';
  * This file is what the code generator will emit for every entity. It is written
  * by hand once, for one entity, to prove the shape of the generated output and to
  * give the interface something real to render. See
- * `doc/entities/codegen-ts-ui-request.md`.
+ * `modeling/codegen_ts_ui_request.org`.
  */
 const text = z.string().default('');
 

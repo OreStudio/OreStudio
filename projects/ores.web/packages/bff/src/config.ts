@@ -32,7 +32,7 @@ import { z } from 'zod';
 
 const environmentSchema = z.object({
   /** Port the browser-facing HTTP server listens on. */
-  ORES_WEB_BFF_PORT: z.coerce.number().int().positive().default(8080),
+  ORES_WEB_PORT: z.coerce.number().int().positive().default(8080),
   ORES_WEB_BFF_HOST: z.string().default('127.0.0.1'),
 
   ORES_WEB_LOG_LEVEL: z.string().default('info'),
@@ -93,7 +93,7 @@ export function buildConfig(input: ConfigurationInput): Config {
   }
   const env = parsed.data;
   return {
-    port: env.ORES_WEB_BFF_PORT,
+    port: env.ORES_WEB_PORT,
     host: env.ORES_WEB_BFF_HOST,
     logLevel: env.ORES_WEB_LOG_LEVEL,
     session: {

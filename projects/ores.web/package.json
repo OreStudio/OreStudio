@@ -12,9 +12,9 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "start": "node --env-file=../../.env packages/bff/dist/main.js",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "dev": "npm run dev --workspace @ores/bff & npm run dev --workspace @ores/web",

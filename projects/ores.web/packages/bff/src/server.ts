@@ -20,9 +20,12 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
+import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import {
@@ -59,10 +62,8 @@ import {
   type PartySummary,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
-import {
-  tlsMaterialFor,
-  type LoadedSiteConfiguration,
-} from './site-config.js';
+import type { LoadedSiteConfiguration } from './site-config.js';
+import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
@@ -106,14 +107,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
       return injectedClient();
     }
     {
-      const tls = tlsMaterialFor(site.configuration, site.environment);
+      const broker = resolveBroker(site.configuration, site.environment);
       const transport = new NatsTransport({
-        server: `nats://${site.environment.host}:${site.environment.port}`,
-        subjectPrefix: site.environment.subjectPrefix,
+        server: broker.server,
+        subjectPrefix: broker.subjectPrefix,
         tls: {
-          ca: readPem(tls.ca, 'ORES_WEB_SITE_CONFIG tls.ca'),
-          cert: readPem(tls.cert, 'ORES_WEB_SITE_CONFIG tls.cert'),
-          key: readPem(tls.key, 'ORES_WEB_SITE_CONFIG tls.key'),
+          ca: readPem(broker.tls.ca, 'broker tls.ca'),
+          cert: readPem(broker.tls.cert, 'broker tls.cert'),
+          key: readPem(broker.tls.key, 'broker tls.key'),
         },
         name: 'ores.web.bff',
         // The C++ client's library defaults, made explicit so the behaviour is
@@ -720,6 +721,40 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     await sessions.destroyAll();
   });
 
+  /*
+   * The built interface is served by this process, so one port carries the API
+   * and the bundle. Vite is a development tool only. The directory is resolved
+   * from this module rather than the working directory, so the server may be
+   * started from anywhere.
+   */
+  const browserDirectory = browserBundleDirectory();
+  const browserBundle = existsSync(browserDirectory) ? browserDirectory : undefined;
+  if (browserBundle !== undefined) {
+    void server.register(fastifyStatic, { root: browserBundle });
+    server.log.info({ directory: browserBundle }, 'serving the browser bundle');
+  } else {
+    server.log.info(
+      { directory: browserDirectory },
+      'no browser bundle built, serving the API only',
+    );
+  }
+
+  // A screen's own URL is not a file, so anything the API does not own is
+  // answered with the bundle's entry point and the router takes it from there.
+  server.setNotFoundHandler(async (request, reply) => {
+    if (
+      browserBundle !== undefined &&
+      (request.method === 'GET' || request.method === 'HEAD') &&
+      !isApiPath(request.url)
+    ) {
+      return reply.sendFile('index.html');
+    }
+    return reply.status(404).send({
+      code: 'not-found',
+      message: `Route ${request.method}:${request.url} not found`,
+    });
+  });
+
   return server;
 }
 
@@ -738,6 +773,22 @@ function readPem(value: string, label: string): string {
   } catch (cause) {
     throw new Error(`Cannot read ${label} at ${value}`, { cause });
   }
+}
+
+/**
+ * Where the browser bundle is built.
+ *
+ * Resolved from this module, which sits one level below the package in both the
+ * source tree and the build output, so the same relative path works either way.
+ */
+export function browserBundleDirectory(): string {
+  return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'web', 'dist');
+}
+
+/** Whether a request belongs to the API rather than the interface's own routes. */
+function isApiPath(url: string): boolean {
+  const path = url.split('?')[0] ?? '';
+  return path === '/api' || path.startsWith('/api/');
 }
 
 export { SESSION_COOKIE };

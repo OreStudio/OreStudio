@@ -1,5 +1,5 @@
 {
-  "active": "festive_dijkstra",
+  "active": "",
   "environments": [
     {
       "id": "festive_dijkstra",
@@ -18,6 +18,7 @@
       "host": "localhost",
       "port": 20005,
       "subjectPrefix": "ores.dev.prime_origin",
+      "httpBaseUrl": "http://localhost:20000",
       "nonProduction": true
     },
     {
@@ -27,6 +28,7 @@
       "host": "localhost",
       "port": 20205,
       "subjectPrefix": "ores.dev.swift_curie",
+      "httpBaseUrl": "http://localhost:20200",
       "nonProduction": true
     },
     {
@@ -36,6 +38,7 @@
       "host": "192.168.1.22",
       "port": 20205,
       "subjectPrefix": "ores.dev.swift_curie",
+      "httpBaseUrl": "http://192.168.1.22:20200",
       "nonProduction": true
     },
     {
@@ -45,6 +48,7 @@
       "host": "localhost",
       "port": 20405,
       "subjectPrefix": "ores.dev.brave_hopper",
+      "httpBaseUrl": "http://localhost:20400",
       "nonProduction": true
     },
     {
@@ -54,6 +58,7 @@
       "host": "localhost",
       "port": 20605,
       "subjectPrefix": "ores.dev.bright_faraday",
+      "httpBaseUrl": "http://localhost:20600",
       "nonProduction": true
     },
     {
@@ -63,6 +68,7 @@
       "host": "localhost",
       "port": 20805,
       "subjectPrefix": "ores.dev.jolly_knuth",
+      "httpBaseUrl": "http://localhost:20800",
       "nonProduction": true
     },
     {
@@ -72,6 +78,7 @@
       "host": "localhost",
       "port": 21005,
       "subjectPrefix": "ores.dev.solid_dirac",
+      "httpBaseUrl": "http://localhost:21000",
       "nonProduction": true
     },
     {
@@ -81,6 +88,7 @@
       "host": "localhost",
       "port": 21205,
       "subjectPrefix": "ores.dev.merry_newton",
+      "httpBaseUrl": "http://localhost:21200",
       "nonProduction": true
     },
     {
@@ -90,6 +98,7 @@
       "host": "localhost",
       "port": 21405,
       "subjectPrefix": "ores.dev.eager_maxwell",
+      "httpBaseUrl": "http://localhost:21400",
       "nonProduction": true
     },
     {
@@ -99,13 +108,14 @@
       "host": "localhost",
       "port": 21605,
       "subjectPrefix": "ores.dev.clever_dijkstra",
+      "httpBaseUrl": "http://localhost:21600",
       "nonProduction": true
     }
   ],
   "tls": {
-    "ca": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ca.crt",
-    "cert": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ores.qt.client.crt",
-    "key": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ores.qt.client.key"
+    "ca": "../../build/keys/nats/ca.crt",
+    "cert": "../../build/keys/nats/ores.web.service.crt",
+    "key": "../../build/keys/nats/ores.web.service.key"
   },
   "developerTools": true,
   "developerAccounts": []

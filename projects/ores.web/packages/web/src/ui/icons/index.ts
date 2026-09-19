@@ -28,7 +28,7 @@
  * The names here are the concepts, and they are the vocabulary: a screen that
  * needs a "history" uses `history`, not a file path. That is what stops two
  * screens using different marks for one idea, which is the failure that costs
- * when there are hundreds of screens. See `doc/entities/icon-reference.md` for
+ * when there are hundreds of screens. See `modeling/icon_reference.org` for
  * the full list and what each is for.
  *
  * Every icon is imported so the bundler includes it. A missing import is a

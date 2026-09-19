@@ -36,16 +36,27 @@ import {
  * mistake fails the process with a readable message rather than surfacing as a
  * connection error on the first sign-in.
  *
- * The environment can be chosen on the command line for a one-off, or in the
- * file for a deployment:
+ * The environment can be chosen on the command line for a one-off, in an
+ * environment variable, or in the file for a deployment:
  *
  *   npm run dev:bff -- --env bright_hopper
+ *
+ * A checkout with no choice made anywhere serves its own environment, named by
+ * `ORES_ENV_NAME`, so the site follows the rest of the checkout rather than the
+ * file's `active` field.
  */
 
 /** Overrides the configuration file. Useful for a deployment or a test. */
 export const SITE_CONFIG_VARIABLE = 'ORES_WEB_SITE_CONFIG';
 /** Chooses the environment. Equivalent to `--env`. */
 export const ENVIRONMENT_VARIABLE = 'ORES_WEB_ENV';
+/**
+ * Names the checkout's own environment.
+ *
+ * It is the last choice before the file, so a site started in a checkout serves
+ * what the rest of that checkout serves without anybody naming it twice.
+ */
+export const ENVIRONMENT_NAME_VARIABLE = 'ORES_ENV_NAME';
 /** Overrides `developerTools`, so a deployment can turn it off without editing the file. */
 export const DEVELOPER_TOOLS_VARIABLE = 'ORES_WEB_DEVELOPER_TOOLS';
 
@@ -115,9 +126,8 @@ export function loadSiteConfiguration(options: LoadOptions = {}): LoadedSiteConf
   // environment needs no edit.
   const requested =
     options.environmentId ??
-    (environment[ENVIRONMENT_VARIABLE]?.trim().length
-      ? environment[ENVIRONMENT_VARIABLE]?.trim()
-      : undefined) ??
+    nonEmpty(environment[ENVIRONMENT_VARIABLE]) ??
+    checkoutEnvironment(environment) ??
     (configuration.active.length > 0 ? configuration.active : undefined);
 
   const chosen =
@@ -145,6 +155,22 @@ export function loadSiteConfiguration(options: LoadOptions = {}): LoadedSiteConf
     environment: chosen,
     source,
   };
+}
+
+/** Reads a variable, treating whitespace as absent. */
+function nonEmpty(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed !== undefined && trimmed.length > 0 ? trimmed : undefined;
+}
+
+/**
+ * The checkout's environment, as the file names it.
+ *
+ * The environment name uses dashes where the file's ids use underscores, so the
+ * name is translated rather than looked up as it stands.
+ */
+function checkoutEnvironment(environment: NodeJS.ProcessEnv): string | undefined {
+  return nonEmpty(environment[ENVIRONMENT_NAME_VARIABLE])?.replaceAll('-', '_');
 }
 
 /** Resolves the certificate material, letting an environment override the shared values. */

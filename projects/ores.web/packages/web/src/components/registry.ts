@@ -36,7 +36,7 @@
  * scale is visible. Their screens do not exist yet, so the interface says so
  * rather than offering a link that does nothing.
  *
- * Titles and descriptions are translation keys. See `doc/entities/component-specification.md`.
+ * Titles and descriptions are translation keys. See `modeling/component_specification.org`.
  */
 import type { ComponentDefinition, EntityDefinition, ResolvedEntity } from './types.js';
 

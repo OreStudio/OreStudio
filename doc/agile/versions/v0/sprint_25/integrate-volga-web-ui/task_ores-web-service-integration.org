@@ -97,3 +97,7 @@ The sandbox's user namespace makes the manager refuse =systemctl=, so compass
 grew =--use-busctl=, which reaches the same manager over the session bus. That
 transport is covered by =tests/test_systemctl_bus.py=, and the unit rendering
 by =tests/test_systemd_generate.py=.
+
+=compass services= gained an optional per-service selector on =start=, =stop=,
+=restart= and =status= while this was verified, so the interface can be
+cycled on its own without bouncing the other 23 units.

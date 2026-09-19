@@ -42,5 +42,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/signing_service_runner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/signing_service_runner_impl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/systemd_notify.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/wt_service_runner.hpp"
 )

@@ -225,7 +225,7 @@ def _log_last_line(log_file: Path) -> str:
     return lines[-1].decode("utf-8", errors="ignore") if lines else ""
 
 
-def _service_units(ctx):
+def _service_units(ctx, only=None):
     """(unit, log_basename) for every concrete systemd unit this
     environment's target aggregates -- NOT including nats-server, which
     has no readiness log file under systemd (see _nats_unit) and is
@@ -243,6 +243,8 @@ def _service_units(ctx):
     for d in systemd_generate.fetch_service_definitions(services):
         if not d["enabled"]:
             continue
+        if only is not None and d["service_name"] != only:
+            continue
         base = systemd_generate._unit_basename(d["service_name"], ctx.env_name)
         if d["desired_replicas"] > 1:
             units += [(f"{base}-{r}", f"{d['service_name']}.{r}.log")
@@ -250,6 +252,61 @@ def _service_units(ctx):
         else:
             units.append((base, f"{d['service_name']}.0.log"))
     return units
+
+
+def _registry_names(ctx):
+    services = systemd_generate.load_service_registry(ctx.root)
+    return [svc["name"] for svc in services]
+
+
+def _resolve_service(ctx, selector):
+    """Map what the user typed onto a registry service name.
+
+    Accepts the registry name (ores.web.service), a component short name
+    (web, ores.web, http.server), or a unit name already carrying this
+    environment's suffix (ores.web.service-eager_maxwell)."""
+    names = _registry_names(ctx)
+    suffix = f"-{ctx.env_name}"
+    stem = selector[: -len(suffix)] if selector.endswith(suffix) else selector
+    if stem.endswith(".service"):
+        stem = stem[: -len(".service")]
+    for candidate in (stem, f"ores.{stem}"):
+        for name in names:
+            if name == candidate or name == f"{candidate}.service":
+                return name
+    raise KeyError(selector)
+
+
+def _snapshot_logs(ctx, unit_pairs):
+    """Log sizes before a start, so a readiness line already on disk is not
+    mistaken for one this start produced."""
+    return {unit: ((ctx.log_dir / log).stat().st_size
+                   if (ctx.log_dir / log).exists() else 0)
+            for unit, log in unit_pairs}
+
+
+def _service_ready(ctx, unit_pairs, start_pos, timeout=300):
+    ready = _wait_for_logs(ctx, unit_pairs, "Service ready", timeout=timeout,
+                           start_pos=start_pos)
+    # Requires= means a unit whose FIRST start attempt fails (e.g. it
+    # briefly races a dependency) permanently fails that unit's start
+    # job -- systemd does NOT re-trigger it once the dependency's own
+    # Restart=always later succeeds. One reset-failed+start retry pass
+    # for anything still not ready and in a failed/inactive systemd
+    # state covers that race without masking a genuinely broken service
+    # (which will just fail the retry too).
+    broken = [unit for unit, ok in ready.items()
+              if not ok and _unit_active_state(unit) in ("failed", "inactive")]
+    if broken:
+        print(f"[retry: {len(broken)} unit(s) failed their first start "
+              f"attempt -- likely raced a dependency; retrying once]")
+        for unit in broken:
+            _systemctl(["reset-failed", f"{unit}.service"], check=False)
+            _systemctl(["start", f"{unit}.service"], check=False)
+        ready.update(_wait_for_logs(
+            ctx, [(u, log) for u, log in unit_pairs if u in broken],
+            "Service ready"))
+    return all(ready.values())
 
 
 def _nats_unit(ctx):
@@ -326,6 +383,9 @@ def _cmd_start(ctx, args):
     ctx.run_dir.mkdir(parents=True, exist_ok=True)
 
     start_ts = time.time()
+    if args.service:
+        return _start_one(ctx, args, start_ts)
+
     print("Starting ORE Studio services")
     print(f"  Preset : {ctx.preset}")
     print(f"  NATS   : {ctx.nats_url} (prefix: {ctx.nats_prefix})")
@@ -339,14 +399,7 @@ def _cmd_start(ctx, args):
     print()
 
     units = _service_units(ctx)
-    # Captured *before* `systemctl start` so a fast unit that logs
-    # "Service ready." before we ever get around to calling
-    # _wait_for_logs (e.g. while still waiting on the NATS port below)
-    # doesn't have its readiness line skipped by a start_pos taken too
-    # late -- see _wait_for_logs's own docstring.
-    start_pos = {unit: ((ctx.log_dir / log).stat().st_size
-                        if (ctx.log_dir / log).exists() else 0)
-                for unit, log in units}
+    start_pos = _snapshot_logs(ctx, units)
 
     print(f"[systemctl --user start {ctx.target_name}]")
     result = _systemctl(["start", ctx.target_name], check=False)
@@ -359,35 +412,68 @@ def _cmd_start(ctx, args):
         return 1
 
     # 300s: 20+ services all connecting to the DB at once (migrations,
-    # schema checks) can genuinely take several minutes to all settle,
-    # observed empirically -- the old controller-based start gave a
-    # single combined "All services started" wait of 120s for the same
-    # fleet, but that was one signal from one process; here every unit
-    # is checked independently and the slowest one sets the bar.
-    ready = _wait_for_logs(ctx, units, "Service ready", timeout=300,
-                           start_pos=start_pos)
-    # Requires= means a unit whose FIRST start attempt fails (e.g. it
-    # briefly races a dependency) permanently fails that unit's start
-    # job -- systemd does NOT re-trigger it once the dependency's own
-    # Restart=always later succeeds. One reset-failed+start retry pass
-    # for anything still not ready and in a failed/inactive systemd
-    # state covers that race without masking a genuinely broken service
-    # (which will just fail the retry too).
-    retry = [unit for unit, ok in ready.items()
-             if not ok and _unit_active_state(unit) in ("failed", "inactive")]
-    if retry:
-        print(f"[retry: {len(retry)} unit(s) failed their first start "
-              f"attempt -- likely raced a dependency; retrying once]")
-        for unit in retry:
-            _systemctl(["reset-failed", f"{unit}.service"], check=False)
-            _systemctl(["start", f"{unit}.service"], check=False)
-        retry_units = [(u, log) for u, log in units if u in retry]
-        ready.update(_wait_for_logs(ctx, retry_units, "Service ready"))
+    # schema checks) can genuinely take several minutes to all settle.
+    ok = _service_ready(ctx, units, start_pos)
 
-    ok = all(ready.values())
     print()
     print(f"Logs     : {ctx.log_dir}")
     print(f"Stop     : compass services stop")
+    print(f"Time     : {int(time.time() - start_ts)}s")
+    return 0 if ok else 1
+
+
+def _resolve_service_or_report(ctx, selector):
+    """(name, unit pairs) for a selector, or (None, None) after printing a
+    readable error naming what the registry does hold."""
+    try:
+        name = _resolve_service(ctx, selector)
+    except KeyError:
+        print(f"error: no service '{selector}' in the registry.",
+              file=sys.stderr)
+        print("       Known services: " + ", ".join(_registry_names(ctx)),
+              file=sys.stderr)
+        return None, None
+    units = _service_units(ctx, only=name)
+    if not units:
+        print(f"error: '{name}' is disabled in the registry.",
+              file=sys.stderr)
+        return None, None
+    return name, units
+
+
+def _start_one(ctx, args, start_ts):
+    """Start one registry service, leaving the rest of the fleet alone. Its
+    Requires= dependencies come up with it if they were down."""
+    name, units = _resolve_service_or_report(ctx, args.service)
+    if name is None:
+        return 1
+
+    print(f"Starting {name}")
+    print(f"  Preset : {ctx.preset}")
+    print()
+
+    print("[Generate + deploy systemd units]")
+    if systemd_generate.cmd_generate(ctx.root, ctx.env, None) != 0:
+        return 1
+    if systemd_generate.cmd_deploy(ctx.root, ctx.env, None) != 0:
+        return 1
+    print()
+
+    start_pos = _snapshot_logs(ctx, units)
+    print(f"[systemctl --user start {name}]")
+    for unit, _log in units:
+        result = _systemctl(["start", f"{unit}.service"], check=False)
+        if result.returncode != 0:
+            print(result.stderr, file=sys.stderr)
+            return 1
+    print()
+
+    if not _wait_for_listen(ctx.nats_port):
+        return 1
+
+    ok = _service_ready(ctx, units, start_pos)
+    print()
+    print(f"Logs     : {ctx.log_dir}")
     print(f"Time     : {int(time.time() - start_ts)}s")
     return 0 if ok else 1
 
@@ -397,6 +483,9 @@ def cmd_stop(ctx, args):
     if not ctx.env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
+
+    if args.service:
+        return _stop_one(ctx, args)
 
     print(f"[systemctl --user stop {ctx.target_name}]")
     # PartOf=<target> on every generated unit means stopping the target
@@ -409,6 +498,52 @@ def cmd_stop(ctx, args):
 
     print(f"Stopped  : {ctx.target_name} (and every unit it aggregates).")
     return 0
+
+
+def _stop_one(ctx, args):
+    """Stop one registry service, leaving the rest of the fleet alone."""
+    name, units = _resolve_service_or_report(ctx, args.service)
+    if name is None:
+        return 1
+
+    print(f"[systemctl --user stop {name}]")
+    for unit, _log in units:
+        result = _systemctl(["stop", f"{unit}.service"], check=False)
+        if result.returncode != 0 and "not loaded" not in (result.stderr or ""):
+            print(result.stderr, file=sys.stderr)
+            return 1
+
+    print(f"Stopped  : {name}.")
+    return 0
+
+
+def cmd_restart(ctx, args):
+    print(f"Restarting ORE Studio services ({ctx.preset})\n")
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+
+    if args.service:
+        name, units = _resolve_service_or_report(ctx, args.service)
+        if name is None:
+            return 1
+        start_pos = _snapshot_logs(ctx, units)
+        print(f"[systemctl --user restart {name}]")
+        for unit, _log in units:
+            result = _systemctl(["restart", f"{unit}.service"], check=False)
+            if result.returncode != 0:
+                print(result.stderr, file=sys.stderr)
+                return 1
+        return 0 if _service_ready(ctx, units, start_pos) else 1
+
+    units = _service_units(ctx)
+    start_pos = _snapshot_logs(ctx, units)
+    print(f"[systemctl --user restart {ctx.target_name}]")
+    result = _systemctl(["restart", ctx.target_name], check=False)
+    if result.returncode != 0 and "not loaded" not in (result.stderr or ""):
+        print(result.stderr, file=sys.stderr)
+        return 1
+    return 0 if _service_ready(ctx, units, start_pos) else 1
 
 
 def cmd_status(ctx, args):
@@ -446,9 +581,16 @@ def cmd_status(ctx, args):
                   f"{f'({last})' if last else ''}")
             starting += 1
 
-    _check(_nats_unit(ctx))
-    for unit, log_basename in _service_units(ctx):
-        _check(unit, ctx.log_dir / log_basename)
+    if args.service:
+        name, units = _resolve_service_or_report(ctx, args.service)
+        if name is None:
+            return 1
+        for unit, log_basename in units:
+            _check(unit, ctx.log_dir / log_basename)
+    else:
+        _check(_nats_unit(ctx))
+        for unit, log_basename in _service_units(ctx):
+            _check(unit, ctx.log_dir / log_basename)
 
     print(f"\nservices: running={running}  starting={starting}  "
           f"stopped={stopped}  missing={missing}")
@@ -549,6 +691,14 @@ def _common(parser):
              "refuses systemctl's connection.")
 
 
+def _service_argument(parser):
+    parser.add_argument(
+        "service", nargs="?", default=None,
+        help="Act on one registry service instead of the whole fleet. "
+             "Accepts the registry name (ores.web.service), a short name "
+             "(web), or the full unit name (ores.web.service-<env>).")
+
+
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="compass services",
@@ -559,15 +709,23 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     st = sub.add_parser("start", help="Generate+deploy systemd units, then "
                                       "systemctl --user start the fleet")
     _common(st)
+    _service_argument(st)
     st.add_argument("--log-level", default="trace")
 
     sp = sub.add_parser("stop", help="systemctl --user stop the fleet "
                                      "(cascades via PartOf=)")
     _common(sp)
+    _service_argument(sp)
+
+    sr = sub.add_parser("restart", help="systemctl --user restart the fleet, "
+                                        "or just one service")
+    _common(sr)
+    _service_argument(sr)
 
     su = sub.add_parser("status", help="Per-unit status from systemctl "
                                        "plus readiness log lines")
     _common(su)
+    _service_argument(su)
 
     tr = sub.add_parser("tree", help="Process tree for this environment: "
                                      "Claude session slice + fleet units "
@@ -596,5 +754,5 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     ctx = Ctx(project_root, env, args.preset)
 
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
-            "tree": cmd_tree, "top": cmd_top,
+            "restart": cmd_restart, "tree": cmd_tree, "top": cmd_top,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)

@@ -89,10 +89,14 @@ Bind every protocol message model to the TypeScript facet and extend the project
   projection rule and nothing else.
 - *The hand-written surface is the real backlog.* The repository holds 504
   hand-written domain headers against 430 generated ones — trading 266, dq 106,
-  refdata 47, iam 29 — so "every wire struct is modelled" is a programme, not an
-  IAM chore. IAM is the first component because it is the smallest that exercises
-  both shapes: full entities (=account=, =login_info=, =permission=, =role=) and
-  message-only types (=session=, =session_statistics=).
+  refdata 47, iam 29 — and 111 of those hand-written types are referenced by a
+  generated protocol header, so they cross the wire: trading 66, dq 26, iam 6,
+  refdata 6, compute 2, scheduler 2, and one each in assets, variability and
+  workspace. Every one of them has to become a model — an entity where it has a
+  table, a declared payload where it does not — before the last opt-out can go.
+  IAM is first because it is the smallest component that exercises both shapes:
+  full entities (=account=, =login_info=, =permission=, =role=) and message-only
+  types (=session=, =session_statistics=).
 
 * Out of scope
 

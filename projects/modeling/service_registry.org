@@ -353,22 +353,6 @@
 - --port {http_port}
 - --storage-dir ../storage
 
-* ores.wt.service
-:PROPERTIES:
-:description: Web UI server (Wt framework). Disabled by default: its Wt httpd crashes intermittently on startup with a fatal glibc pthread-priority-protect assertion (tpp.c) inside Wt's own threading internals, unrelated to ORE Studio code. Root cause needs a debugger session to pin down the exact call site.
-:replicas:    1
-:enabled:     false
-:depends_on:  ores.iam.service
-:END:
-
-** Extra args
-
-Bundled into one bullet (not one-flag-per-bullet like other entries):
-the leading =--= is Wt's own arg-separator token and must stay
-attached to the group that follows it as a single shell-quoted unit.
-
-- -- --http-address 0.0.0.0 --docroot . --http-port {wt_port}
-
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

@@ -70,9 +70,9 @@ the work.
    actual resolved value, not only the features the entity already
    sets: an unset feature that the profile fixes to a value is a real
    mismatch (the pilot's =leg_type= and =business_unit=: one was a
-   genuine gap, the other genuinely bespoke). The Qt half of a
-   profile is inert when the entity has no =** Qt= drawer — match on
-   the =root=/=sql= features alone in that case.
+   genuine gap, the other genuinely bespoke). The presentation
+   half of a profile is inert when the entity has no =** Presentation=
+   drawer — match on the =root=/=sql= features alone in that case.
 
 4. *Bind every matching entity.* Replace the explicit per-entity
    feature properties the profile covers with =:profile: <name>=, and

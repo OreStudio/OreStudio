@@ -2,7 +2,7 @@
 :ID: D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B
 :END:
 #+title: Profile: UUID-identified lookup
-#+description: UUID surrogate key, tenant scope, standard Qt tier, no parent or workspace relationship.
+#+description: UUID surrogate key, tenant scope, standard presentation tier, no parent or workspace relationship.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -20,13 +20,13 @@ The UUID-keyed counterpart of [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple 
 by a UUID surrogate key, tenant-scoped, with no parent and no workspace — the
 second-commonest shape in the codebase after =simple-lookup=. The difference
 from =simple-lookup= is the key type (UUID vs text natural key); every other
-dimension is the same: standard Qt tier (=has_change_reason_cache=,
+dimension is the same: standard presentation tier (=has_change_reason_cache=,
 =has_pagination=), tenant-scoped, no self-reference, no workspace.
 
 * Reference entity
 
 [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][pricing_model_config]] — a plain UUID-keyed, tenant-scoped entity with a human-meaningful
-natural key (=name=), no parent, and standard Qt affordances.
+natural key (=name=), no parent, and standard presentation affordances.
 
 * Assignments
 

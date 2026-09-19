@@ -18,16 +18,16 @@ How do I regenerate all the code for a domain entity?
 
 * Answer
 
-Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL and all C++ layers, including Qt), so there is no component-wide diff to scope or discard:
+Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL, all C++ layers, and the TypeScript UI metadata), so there is no component-wide diff to scope or discard:
 
 #+begin_src sh
 ./compass.sh codegen entity generate rounding_type
 #+end_src
 
-Pass =--address <address>= to restrict to one layer (e.g. =ores.cpp.qt=, =ores.sql.schema=) when you only touched one facet's inputs:
+Pass =--address <address>= to restrict to one layer (e.g. =ores.cpp.repository=, =ores.sql.schema=) when you only touched one facet's inputs:
 
 #+begin_src sh
-./compass.sh codegen entity generate book --address ores.cpp.qt
+./compass.sh codegen entity generate book --address ores.cpp.repository
 #+end_src
 
 Companion commands for the same entity-scoped workflow:
@@ -71,4 +71,3 @@ Per-layer recipes:
 - [[id:6779B755-0A34-4E31-A274-8D9B77DFFB01][How do I regenerate the C++ protocol layer for an entity?]]
 - [[id:F4BA8D44-6940-487D-B38D-9DD27556B80A][How do I regenerate the NATS eventing layer for an entity?]]
 - [[id:B8F158A2-3ECF-44A8-94A2-259DF7A2AF70][How do I regenerate the NATS handler layer for an entity?]]
-- [[id:F77B0DF6-DA37-41BB-B4B6-D0F14F12A084][How do I regenerate the Qt UI layer for an entity?]]

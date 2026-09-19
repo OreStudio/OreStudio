@@ -2,7 +2,7 @@
 :ID: BD750888-6B72-48C1-AE74-DDC535705022
 :END:
 #+title: ores.scheduler.job_definition
-#+description: Codegen entity model for the scheduler =job_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the scheduler =job_definition= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: scheduler
 #+filetags: :model:entity:scheduler:
@@ -31,10 +31,11 @@ generic CRUD-only stack (and silently wrong column types) that breaks
 all of the above. This model needs a proper resync -- correcting the
 column shapes to match the hand-written struct, then re-adding
 repository/messaging support for the four hand-written operations --
-before any facet of it can be regenerated safely. The Qt facet is
-equally excluded: its generated controllers/dialogs bind to the
-hand-maintained =scheduler_protocol.hpp= classes, so a Qt regen would
-emit code against a protocol surface that does not exist. Mirrors
+before any facet of it can be regenerated safely. The deleted Qt
+templates were excluded for the same reason: their generated
+controllers/dialogs bound to the hand-maintained
+=scheduler_protocol.hpp= classes, so a regen would have emitted code
+against a protocol surface that does not exist. Mirrors
 =party='s hand-maintained-SQL treatment in the refdata drift-fix task,
 but wider in scope (no facet is currently safe, not just SQL).
 
@@ -235,10 +236,10 @@ Payload for nats_publish action type.
   response shape differs from the generic one and would collide by
   name if paste-blocked in alongside it. Their protocol structs live
   in the separate, hand-maintained =scheduler_protocol.hpp=, consumed
-  not just by this component's own Qt UI (=JobDefinitionController=/
-  =JobDefinitionMdiWindow=/=JobDefinitionDetailDialog=/
-  =JobDefinitionAuditDialog=) and =registrar.cpp=, but cross-component
-  by =ores.reporting='s =report_scheduling_service=.
+  not just by =registrar.cpp= and the removed desktop client's UI
+  classes (=JobDefinitionController=/=JobDefinitionMdiWindow=/
+  =JobDefinitionDetailDialog=/=JobDefinitionAuditDialog=), but
+  cross-component by =ores.reporting='s =report_scheduling_service=.
 
 * See also
 

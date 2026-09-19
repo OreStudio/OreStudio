@@ -2,7 +2,7 @@
 :ID: 5A1341B7-1501-456E-8D8D-2E46D1B7BF0A
 :END:
 #+title: ores.refdata.business_centre
-#+description: Codegen entity model for the refdata business_centre table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata business_centre table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -20,7 +20,7 @@ calendar determination (e.g. "USNY" for New York, "GBLO" for London),
 using FpML-style codes. Each code is unique per tenant regardless of
 coding scheme (e.g. FpML vs ISDA) -- matching =party_id_scheme='s
 code-only primary key -- and optionally linked to a country for
-flag-icon display in the Qt UI. Referenced by =business_unit= as a
+flag-icon display in the UI. Referenced by =business_unit= as a
 soft FK.
 
 * Flags
@@ -236,8 +236,8 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 | source               | Source         | sourceEdit                | line_edit     |        |             | e.g. FpML                |              |                        |                              |                    |           |                               |                        |                           |                   |                      |                   |                  |                       |
 | description          | Description    | descriptionEdit           | line_edit     |        |             | Short description        |              |                        |                              |                    |           |                               |                        |                           |                   |                      |                   |                  |                       |
 | city_name            | City           | cityNameEdit               | line_edit     |        |             |                           |              |                        |                              |                    | true      |                               |                        |                           |                   |                      |                   |                  |                       |
-| coding_scheme_code   | Coding Scheme  | codingSchemeCombo          | dynamic_combo |        | true        |                           |              |                        | ores.qt/LookupFetcher.hpp   |                    |           | dq::domain::coding_scheme     | fetch_coding_schemes   | codingSchemeWatcher       | code              | description          | version           | coding schemes  | CodingSchemeCombo     |
-| country_alpha2_code  | Country        | countryAlpha2Combo         | flagged_combo |        |             |                           | country      | fetch_country_codes   | ores.qt/LookupFetcher.hpp   | true               |           |                               |                        |                           |                   |                      |                   |                  |                       |
+| coding_scheme_code   | Coding Scheme  | codingSchemeCombo          | dynamic_combo |        | true        |                           |              |                        |    |                    |           | dq::domain::coding_scheme     | fetch_coding_schemes   | codingSchemeWatcher       | code              | description          | version           | coding schemes  | CodingSchemeCombo     |
+| country_alpha2_code  | Country        | countryAlpha2Combo         | flagged_combo |        |             |                           | country      | fetch_country_codes   |    | true               |           |                               |                        |                           |                   |                      |                   |                  |                       |
 
 *** Columns
 

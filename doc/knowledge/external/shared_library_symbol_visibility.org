@@ -33,8 +33,8 @@ Correct visibility control solves three problems simultaneously:
 * Mechanism
 
 ORE Studio uses =boost/config.hpp= macros together with a per-library
-export header.  This is the same mechanism already used by
-=ores.qt.api= and is the canonical approach.
+export header.  This is the canonical approach for every shared library
+in the tree.
 
 ** The export header
 
@@ -140,16 +140,6 @@ Entity structs (DB row types) and mapper classes are internal
 implementation details and should *not* be exported unless a linker
 error proves otherwise.
 
-** Qt plugin DLLs (=ores.qt.X=)
-
-Qt plugin DLLs load via =QPluginLoader=.  The only required export is
-the Qt plugin factory function, which Qt's macro system handles
-automatically via =Q_PLUGIN_METADATA= and =Q_EXPORT_PLUGIN2=.
-
-Types shared *across* Qt plugins must live in =ores.qt.api= and be
-exported from there using =ORES_QT_API=.  Plugin-internal types are
-never exported.
-
 ** Service libraries and executables (=ores.X.service=)
 
 Each service project produces two targets: a shared library
@@ -181,20 +171,18 @@ needs*:
 
 | Consumer | Link against |
 |----------+-------------------------------|
-| Qt plugin | =ores.X.api= |
 | HTTP handler | =ores.X.api= |
-| Wt service | =ores.X.api= |
 | Service executable | =ores.X.core= (and thus =ores.X.api= transitively) |
 | CLI | =ores.X.core= (exercises DB directly) |
 | Test executable | =ores.X.core= or =ores.X.api= as needed |
 
-Linking a Qt plugin or HTTP handler directly to =ores.X.core= is an
-architectural violation: it bypasses the service boundary and couples
-UI/HTTP code to database implementation details.
+Linking an HTTP handler directly to =ores.X.core= is an architectural
+violation: it bypasses the service boundary and couples HTTP code to
+database implementation details.
 
 * See also
 
-- [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt QPluginLoader Architecture Migration]] — established the pattern in
-  =ores.qt.api=.
+- [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt QPluginLoader Architecture Migration]] — the retired desktop
+  client's plugin pattern, kept as history.
 - [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration Plan]] — phased rollout across all
   libraries.

@@ -340,7 +340,7 @@ compass add capture \
   --slug add_uptime_screen \
   --parent-dir doc/agile/product_backlog/next \
   --title "Add an uptime screen" \
-  --description "Surface live service health in the Qt UI." \
+  --description "Surface live service health in the shell UI." \
   --tags "ui,observability"
 #+end_src
 

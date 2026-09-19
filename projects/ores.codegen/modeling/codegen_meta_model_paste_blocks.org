@@ -23,7 +23,7 @@ other typed field:
 [[proj:projects/ores.codegen/modeling/codegen_meta_model_paste_blocks.png]]
 
 This page explains the mechanism once; every segment page that has
-concrete block kinds ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][Repository]], [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][Service]], [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][Protocol]], [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][NATS]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Qt]],
+concrete block kinds ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]], [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][Repository]], [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][Service]], [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][Protocol]], [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][NATS]],
 [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][Generator]]) links back here instead of re-explaining it, and hosts
 its own block kinds inline rather than in one central registry — a
 Repository paste block belongs on the Repository page,
@@ -146,7 +146,6 @@ facet whose generated file they inject into:
 - [[id:6DA1A686-76D9-4372-B6E2-A7282E8CFB47][C++ Service]] — extra includes, custom public methods, extra private members, constructor init, =.cpp= implementations.
 - [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] — custom message includes and types.
 - [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — handler early-exit override, extra includes, custom methods, extra private members.
-- [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]] — detail-dialog hierarchy tree seam, private members, header includes, composite child-entity tables seam, entity-set load hook.
 - [[id:C78B8646-350D-4BEA-8D9D-49F4F5DCA55E][C++ Generator]] — custom declarations and implementations.
 
 * See also

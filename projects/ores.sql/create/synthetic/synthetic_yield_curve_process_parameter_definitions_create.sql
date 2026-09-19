@@ -33,7 +33,7 @@
  * strongly-typed process-parameter structs of ores.analytics.quant
  * (two_factor_gaussian_params, vasicek_params, ...). The
  * (process_type_code, parameter_name) pair uniquely identifies a
- * parameter; four fields drive the Qt parameter table: display_name
+ * parameter; four fields drive the parameter table: display_name
  * (the English name), symbol (the Greek letter, where one is
  * conventional), short_label (the layperson name shown in Simple
  * mode) and description (the rich tooltip text). min_value/

@@ -2,7 +2,7 @@
 :ID: 4B17A175-E34F-45A2-AADB-D61517A53578
 :END:
 #+title: ores.analytics.pricing_model_product_parameter
-#+description: Codegen entity model for the analytics =pricing_model_product_parameter= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the analytics =pricing_model_product_parameter= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: analytics
 #+filetags: :model:entity:analytics:

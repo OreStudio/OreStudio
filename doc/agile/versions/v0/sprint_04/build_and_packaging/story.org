@@ -71,4 +71,4 @@ prebuilt Qt switch, Windows clang build breaks.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout.
 - [[id:AC14558D-A526-4BE2-ADB6-81BCFE0E7292][Build stabilisation]] (sprint 02) / [[id:D246FFBE-11EE-4FF9-9309-2A693E2476EF][Build stabilisation 3]] (sprint
   03) — predecessor build stories.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component where the shutdown crash lived.
+- 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — the Qt component where the shutdown crash lived.

@@ -13,7 +13,7 @@
 
 A /bundle/ is a named, ordered collection of DQ datasets
 (=ores_dq_dataset_bundles_tbl= + =..._bundle_members_tbl=) that a user
-installs into a party/tenant in one action from the Qt Librarian. Each
+installs into a party/tenant in one action from the librarian UI. Each
 member dataset has an /artefact type/ (=ores_dq_artefact_types_tbl=)
 that names the NATS subject of the target service's publish endpoint.
 Publishing a bundle starts a =bundle_publish_workflow= that fans out one
@@ -31,7 +31,7 @@ a bespoke per-source parser, and computed data (e.g. synthetic
 configs) needs bespoke value computation. What is *never*
 codegen-generated today, for any artefact type, is the target
 service's =publish_..._from_dq_fn= SQL function plus its NATS handler
-registration, and any Qt wizard config page.
+registration, and any publisher UI config page.
 
 * Detail
 
@@ -39,7 +39,7 @@ registration, and any Qt wizard config page.
 
 #+begin_example
   ┌─────────────────────────────────────────────────────────────────────┐
-  │ Qt Librarian (DataLibrarianWindow / PublishBundleWizard)             │
+  │ Librarian UI (went with the removed desktop client)                  │
   │  user picks a bundle, fills per-artefact-type params, clicks Apply  │
   │  → dq.v1.bundles.publish  {bundle_code, target_tenant_id, params}   │
   └───────────────────────────┬─────────────────────────────────────────┘
@@ -193,12 +193,11 @@ and migration history behind this rule.
 =publish_from_dq_handler= registration is hand-written C++, repeated
 per entity.
 
-** Stage 5 — Librarian UI (Qt)
+** Stage 5 — Librarian UI
 
-=DataLibrarianWindow= (=projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp=)
-lists bundles ("The Stacks") and their member datasets ("The
-Registry"). Selecting *Publish* opens =PublishBundleWizard=
-(=projects/ores.qt/refdata/src/PublishBundleWizard.cpp=), which walks
+=DataLibrarianWindow=, in the desktop client since removed, listed
+bundles ("The Stacks") and their member datasets ("The Registry").
+Selecting *Publish* opened =PublishBundleWizard=, which walked
 the user through per-artefact-type parameter pages before sending
 =dq.v1.bundles.publish=. Parameter pages are hand-coded per artefact
 type today (e.g. =LeiPartyConfigPage= for LEI's =root_lei= etc.) — the
@@ -315,13 +314,14 @@ pipeline order:
     per dataset, dispatching to #3's =target_subject= (i.e. #11's
     subscription).
 
-13. Librarian UI (generic — no bespoke wizard page needed here, unlike
-    LEI's =root_lei= parameters) — [[proj:projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp][~projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp~]]
-    lists the =risk_management= bundle for the user to select, and
-    [[proj:projects/ores.qt/refdata/src/PublishBundleWizard.cpp][~projects/ores.qt/refdata/src/PublishBundleWizard.cpp~]] sends
-    =dq.v1.bundles.publish= with =bundle_code = "risk_management"= when
-    the user clicks Apply — no per-entity code here at all, since
-    =report_definitions= needs no publish-time parameters (stage 5).
+13. Publish entry point (generic — no bespoke wizard page needed here,
+    unlike LEI's =root_lei= parameters). The UI lists the
+    =risk_management= bundle for the user to select, then sends
+    =dq.v1.bundles.publish= with =bundle_code = "risk_management"= on
+    Apply. No per-entity code is needed, since =report_definitions=
+    needs no publish-time parameters (stage 5). The screen that did
+    this, =DataLibrarianWindow=, went with the desktop client, so nothing
+    sends the request today.
 
 ** Codegen value assessment
 

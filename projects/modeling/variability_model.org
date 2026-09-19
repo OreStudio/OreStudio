@@ -2,7 +2,7 @@
 :ID: 0BD6F9EC-34DD-44D9-8AA1-917EE5966396
 :END:
 #+title: ORE Studio Variability Model
-#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the ores.* physical-space graph as the activation catalogue, and the feature catalogue of authored configuration knobs (sql, qt, licence) — with the structural predicates that are deliberately excluded.
+#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the ores.* physical-space graph as the activation catalogue, and the feature catalogue of authored configuration knobs (licence, sql, presentation) — with the structural predicates that are deliberately excluded.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
@@ -58,7 +58,8 @@ ORE Studio discharges the VMM's two responsibilities as follows:
 2. *Projection configuration* — tuning /how/ an enabled projection
    renders a fixed entity: naming, extensions, and feature toggles. ORE
    Studio realises this with a catalogue of *authored features* on the
-   model — the =ores.sql.schema=, =ores.cpp.qt= and licence features below.
+   model — the =ores.sql.schema=, =ores.presentation= and licence features
+   below.
 
 Both responsibilities are authored the same way, mechanically: as
 key-value pairs in an org-mode /property drawer/ — the =:PROPERTIES:
@@ -69,8 +70,8 @@ mechanism pervasively, and everywhere this document shows a
 =:some_property: value= line, it is this mechanism it is pointing at.
 A model file's top-level heading carries the property drawer that
 activation reads — its =ores.*= bindings, introduced below — and each
-facet-specific section of the same file, its =SQL= heading, its =Qt=
-heading, carries its own property drawer of the projection-configuration
+facet-specific section of the same file, its =SQL= heading, its
+=Presentation= drawer, carries its own property drawer of the projection-configuration
 features that facet's own templates read. =org_loader.py= parses these
 drawers directly when it loads a model; a feature's authored value lives
 nowhere else in the file, and nowhere else in the toolchain.
@@ -92,7 +93,7 @@ as a Python accessor a reader can grep for, which is itself worth
 knowing before hunting for one: several features are never touched by
 name in =core.py= or =org_loader.py=, and are read instead purely by
 Mustache's own dotted-path section lookup, direct off the parsed
-model — =domain_entity.qt.has_change_reason_cache=, for instance,
+model — =domain_entity.hierarchy_name_field=, for instance,
 resolves entirely inside the template, with no corresponding
 Python-side =.get()= call to find. A computed predicate, by contrast,
 always shows up as a derivation in the source: =table['has_tenant_in_pk']=
@@ -160,12 +161,12 @@ a point in physical space:
 |---------+-------+---------------|
 | =:ores.sql.enabled: false= | technical space | removes all SQL facets |
 | =:ores.cpp.enabled: false= | technical space | removes all C++ facets |
-| =:ores.cpp.qt.enabled: false= | facet | removes only =qt= |
+| =:ores.cpp.domain.enabled: false= | facet | removes only =domain= |
 | =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype |
 
 *Specificity resolution*: more-specific addresses override less-specific ones (depth-first).
-=:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= $\to S_e =$ all C++ except Qt — mirrors
-Dogen's property resolution exactly.
+=:ores.cpp.enabled: true= + =:ores.cpp.domain.enabled: false= $\to S_e =$ all C++ except that
+facet — mirrors Dogen's property resolution exactly.
 
 Entities with no =ores.*= properties: $S_e$ is every archetype the
 model-type filter admits — see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how a CLI invocation's
@@ -181,7 +182,7 @@ reads through. They are grouped into [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][
 "variability entity": a named set of features that configure one
 projection, corresponding one-to-one with the facet whose rendering it
 tunes — the =ores.sql.schema= bundle below configures exactly what the
-=ores.sql.schema= facet produces, and likewise for =ores.cpp.qt=. The
+=ores.sql.schema= facet produces, and likewise for =ores.presentation=. The
 =licence= bundle is the one exception, and deliberately so: licence
 decoration is not tied to any single facet's own semantics, so it
 stays a cross-facet bundle rather than living inside one.
@@ -229,19 +230,20 @@ table is the cross-facet index only.
 | =rls_party_isolation= | bool | false |
 | =rls_system_tenant_visible= | bool | false |
 
-** Bundle: =ores.cpp.qt= (Qt projection configuration)
+** Bundle: =ores.presentation= (presentation projection configuration)
 
-Authored on the model's =qt= section, read through in =codegen/core.py=
-and, for several knobs, directly by Mustache's dotted-path section lookup
-in the =library/templates/cpp_qt_*.mustache= templates (no explicit Python
-=.get()= call at all — see § "Telling variability from structure" above).
-These configure the Qt
-projection — window chrome, presentation and binding — without touching
-the domain object graph. (The many /computed/ =qt.*= values —
+Authored on the model's =** Presentation= drawer, read through in
+=codegen/core.py= and, for several knobs, directly by Mustache's
+dotted-path section lookup in the templates that project the drawer (no
+explicit Python =.get()= call at all — see § "Telling variability from
+structure" above). These configure the presentation projection — the
+columns, the detail fields, and how each is rendered — without touching
+the domain object graph. (The many /computed/ =presentation.*= values —
 =detail_fields=, =required_fields=, =has_badge_columns=, =domain_class=,
 =metadata_start_row=, the =is_*= widget predicates — are *not* features;
-see [[*Excluded: structural predicates][Excluded]].) Full narrative, the silent-omission failure mode, and a
-worked example: [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — C++ Qt]] — this table is the
+see [[*Excluded: structural predicates][Excluded]].) Full narrative, the
+silent-omission failure mode, and a worked example:
+[[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — Presentation]] — this table is the
 cross-facet index only.
 
 | Feature | Type | Default |
@@ -311,7 +313,7 @@ predicate. Which one applies depends on the model's metatype.
 
 | Group | Predicates | Computed from |
 |-------+------------+---------------|
-| Presence gates | =has_tenant_in_pk=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right=, =has_qt= | "does the entity have attribute / key X" — =has_qt= is truthiness of whether a =** Qt= heading was authored at all, not a settable value |
+| Presence gates | =has_tenant_in_pk=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right= | "does the entity have attribute / key X". The =** Presentation= drawer's own presence gates the same way: the projection keys off whether the drawer was authored at all, not off a settable value. |
 | Presence gates (=domain_entity=/=table= only) | =has_image_id=, =has_coding_scheme=, =has_nullable_coding_scheme= | computed in =core.py= from other fields (=image_id=, =coding_scheme=) — /for these two model types only/ |
 | Type predicates | =is_uuid=, =is_text=, =primary_key.is_uuid/is_text=, =left.is_uuid=, =right.is_uuid= | attribute SQL / C++ type |
 | Nullability predicates | =nullable=, =is_optional(_string/_uuid/_timestamp)=, =is_nullable_int/_string=, =is_already_optional=, =is_tristate= | attribute nullability |
@@ -326,7 +328,7 @@ that can be bound to logical elements... named after the ability they
 confer," composing Base → Component → Element scope. This entity's own
 =ores.*= facet address instantiates this at the activation half of the
 VMM. Profiles instantiate the other half: named bundles of *feature
-values* — the =ores.sql.schema=/=ores.cpp.qt= features above plus [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys
+values* — the =ores.sql.schema=/=ores.presentation= features above plus [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys
 and columns]]'s =has_tenant_id=/=has_workspace_id= — bound at element
 scope when authoring a new entity.
 
@@ -352,14 +354,14 @@ axes. Each axis has a small, closed vocabulary:
 |------+--------+----------------|
 | Tenancy scope | global / tenant / tenant-workspace | =has_tenant_id=, =has_workspace_id= ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) |
 | SQL tenant-scoping policy | standard / system-scoped / nullable-tenant | =system_scope=, =nullable_tenant_id= (=ores.sql.schema=; already an enumerated feature per the note above, not two independent booleans) |
-| Key shape | text-natural-key / uuid-surrogate-key | =has_uuid_primary_key= (=ores.cpp.qt=) |
-| Qt richness tier | none / basic / standard / rich | no =** Qt= heading authored at all, or one present plus an increasing set of =has_change_reason_cache=/=has_pagination=/=has_csv_xml_io=/=has_version_navigation=/=has_explorer_api=/=has_export_macro= (=ores.cpp.qt=) |
-| List mode | full-crud / readonly-paginated | =has_readonly_paginated_list= (=ores.cpp.qt=) |
-| Parent relationship | none / explorer-child / parent-scoped-list | =parent_entity_singular=+=has_explorer_api=, or =has_parent_scoped_list=+=parent_key_field=+=parent_key_param= (=ores.cpp.qt=; the two are mutually exclusive with each other but each independent of every other axis here — =has_parent_scoped_list= is only meaningful paired with =readonly-paginated= above, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]) |
+| Key shape | text-natural-key / uuid-surrogate-key | =has_uuid_primary_key= (=ores.presentation=) |
+| Presentation richness tier | none / basic / standard / rich | no =** Presentation= drawer authored at all, or one present plus an increasing set of =has_change_reason_cache=/=has_pagination=/=has_csv_xml_io=/=has_version_navigation=/=has_explorer_api=/=has_export_macro= (=ores.presentation=) |
+| List mode | full-crud / readonly-paginated | =has_readonly_paginated_list= (=ores.presentation=) |
+| Parent relationship | none / explorer-child / parent-scoped-list | =parent_entity_singular=+=has_explorer_api=, or =has_parent_scoped_list=+=parent_key_field=+=parent_key_param= (=ores.presentation=; the two are mutually exclusive with each other but each independent of every other axis here — =has_parent_scoped_list= is only meaningful paired with =readonly-paginated= above, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Presentation]]) |
 
-Full effect of every feature referenced above: the =ores.sql.schema=/=ores.cpp.qt=
+Full effect of every feature referenced above: the =ores.sql.schema=/=ores.presentation=
 bundle tables and their linked segment pages ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model
-— SQL]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — C++ Qt]]) — this section names axis
+— SQL]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — Presentation]]) — this section names axis
 values, it does not redefine what they do. The axes are a conceptual
 map of the space for a human reader; the concrete profile docs below
 express their assignments as literal feature names, not axis labels —
@@ -393,7 +395,7 @@ authoring route exists:
   [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] literate approach.
 
 The feature bundles catalogued above are authored *on the model file*
-— in the =sql= / =qt= sections (JSON route) or the corresponding org
+— in the =sql= / =presentation= sections (JSON route) or the corresponding org
 headings (org-mode route). They travel with the element, which is why
 their natural scope is the element.
 
@@ -401,12 +403,12 @@ their natural scope is the element.
 
 | MASD concept | MASD definition | ORE Studio equivalent |
 |--------------+-----------------+-----------------------|
-| Feature | Single configurable property (e.g. Dogen's generic =masd.cpp.hash.enabled=) | An authored feature on the model: a =ores.sql.schema= / =ores.cpp.qt= / licence feature |
-| Feature bundle | Cohesive group of features | =licence= / =ores.sql.schema= / =ores.cpp.qt= bundles |
+| Feature | Single configurable property (e.g. Dogen's generic =masd.cpp.hash.enabled=) | An authored feature on the model: a =ores.sql.schema= / =ores.presentation= / licence feature |
+| Feature bundle | Cohesive group of features | =licence= / =ores.sql.schema= / =ores.presentation= bundles |
 | Profile | Named bundle of feature values + activation | Split: activation is an =ores.*= facet address; feature values are authored per element |
 | Base profile | Product-wide defaults | A technical-space or root address (=ores.cpp=, =ores=) (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
-| Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation; authored =ores.sql.schema=/=ores.cpp.qt= features for projection configuration |
+| Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation; authored =ores.sql.schema=/=ores.presentation= features for projection configuration |
 | VMM | Meta-model of the full configuration space | =ores.*= physical-space graph (activation) + the feature catalogue (configuration) |
 | Configuration scope | Product / Component / Element | Activation: explicit per invocation. Configuration: features are authored at element scope |
 

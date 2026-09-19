@@ -2,7 +2,7 @@
 :ID: 645C63A6-6F1E-405F-8062-6C245C0C658C
 :END:
 #+title: Profile: Self-referencing hierarchy
-#+description: UUID surrogate key, standard Qt tier, self-referencing has_parent_id hierarchy.
+#+description: UUID surrogate key, standard presentation tier, self-referencing has_parent_id hierarchy.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -28,8 +28,7 @@ parent at all).
 
 [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][counterparty]] — a party-like entity that can have a parent counterparty
 (a self-referencing soft foreign key), rendered as a tree via SQL's
-=has_parent_id= hierarchy function and the Qt hierarchy-tree paste
-seam. Adopting this profile also requires authoring two structural
+=has_parent_id= hierarchy function. Adopting this profile also requires authoring two structural
 properties this table deliberately omits, because they are not
 features: =:parent_id_column:= (the self-referencing FK column name,
 e.g. =parent_counterparty_id=) and =:hierarchy_name_field:= (the

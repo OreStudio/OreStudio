@@ -2,7 +2,7 @@
 :ID: 2832C7CE-3AB8-4E1B-A707-F1CEBD022598
 :END:
 #+title: Codegen entity meta-model — C++ protocol
-#+description: The ores.cpp.protocol facet: request/response message struct definitions for an entity's NATS API — pure data shape, consumed by both the C++ NATS pipeline and the Qt layer.
+#+description: The ores.cpp.protocol facet: request/response message struct definitions for an entity's NATS API — pure data shape, consumed by the C++ NATS pipeline and by UI clients.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
@@ -19,7 +19,7 @@ Protocol is *data shape only* — the request/response message structs
 an entity's NATS API exchanges. It has no behaviour: no networking
 code, no dispatch logic. That belongs to [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]], which *consumes*
 these struct definitions on both the sending and receiving side.
-[[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s Naming/wiring knobs (=:get_request_class:=,
+[[id:483EBF89-6151-480E-8801-FC1ABB284A17][Presentation]]'s Naming/wiring knobs (=:get_request_class:=,
 =:save_message_type:=, etc.) also just reference class/type names
 that this facet defines.
 
@@ -134,4 +134,4 @@ struct get_party_composite_as_of_response {
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:B5D8D007-499C-4BFB-8D79-FDA1E33F9513][C++ NATS]] — consumes these message types on both the request and the changed-event side.
-- [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]] — references these class/subject names by name in its Naming/wiring knobs.
+- [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Presentation]] — references these class/subject names by name in its Naming/wiring knobs.

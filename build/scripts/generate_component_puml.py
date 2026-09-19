@@ -473,7 +473,8 @@ def _find_include_dir(project_name: str) -> Optional[Path]:
     """
     Find the header root for a project.
     Primary: include/<project_name>/
-    Fallback: any direct subdirectory of include/ (for projects like ores.qt.*)
+    Fallback: any direct subdirectory of include/ (for projects whose header
+    root is not named after the project)
     """
     project_root = PROJECTS_ROOT / project_name
     primary = project_root / "include" / project_name

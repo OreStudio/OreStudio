@@ -28,11 +28,11 @@ Answer: /What does this component do and why does it exist?/ Do not describe
 the technology stack; describe the /purpose/. A good summary can be read in
 isolation and still convey value.
 
-- Bad :: "This component uses Qt and NATS."
-- Good :: "=ores.qt.trading= provides the Qt UI for managing portfolios, books,
-  and trades. It renders instrument-specific forms for FX, rates, credit,
-  equity, and commodity trades, and drives the Portfolio Explorer and Org
-  Explorer MDI windows."
+- Bad :: "This component uses NATS and PostgreSQL."
+- Good :: "=ores.refdata.core= persists reference-data entities (currency,
+  country, rounding types) and answers CRUD requests over NATS. Services,
+  clients and scripts reach that data through it, never through the
+  database directly."
 
 *** Inputs
 
@@ -49,8 +49,8 @@ Examples:
 *** Outputs
 
 What does the component produce? This is the symmetric counterpart to Inputs.
-For a Qt plugin: rendered MDI windows, NATS request messages sent. For a
-service: persisted records, NATS response messages, emitted events.
+For a client library: NATS request messages sent. For a service:
+persisted records, NATS response messages, emitted events.
 
 *** Entry points
 
@@ -67,7 +67,7 @@ Use repo-relative paths so they remain clickable.
 List other ORE Studio components and significant third-party libraries this
 component links against. Use the component slug (=ores.refdata.api=) rather
 than the CMake target name (=ores.refdata.api.lib=). Omit ubiquitous
-transitive dependencies (=ores.logging=, =Qt6=) unless there is a specific
+transitive dependencies (=ores.logging=, =Boost=) unless there is a specific
 reason to call them out.
 
 The CMakeLists.txt =target_link_libraries= block is the authoritative source
@@ -77,8 +77,8 @@ for direct dependencies; copy the non-transient entries.
 
 This is the most valuable section for navigation and the most commonly left
 empty. Link to:
-- Sibling components (=ores.<domain>.api= for Qt plugins; =*.service= for
-  =*.core= components)
+- Sibling components (=ores.<domain>.api= above a =*.core=; =*.service=
+  above a =*.core=)
 - Knowledge documents that provide architectural depth
 - Recipes for operating on the component
 
@@ -105,8 +105,8 @@ next, without digging through the code.
 - /Over-long entries./ If the component section is growing past 100 lines,
   extract the depth into a linked knowledge document in =projects/<comp>/docs/=
   and keep the overview as an index.
-- /See also left empty./ At minimum, link from a Qt plugin to its domain API
-  (=ores.<domain>.api=) and back from the API to the Qt plugin.
+- /See also left empty./ At minimum, link from a =*.core= component to the
+  =*.api= it consumes, and back from the API to its consumers.
 - /File path links instead of id-links./ File paths break on rename.
   Always use =[[id:UUID][label]]=.
 - /Describing the implementation, not the contract./ Summary should describe
@@ -116,5 +116,4 @@ next, without digging through the code.
 
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the formal spec for component document structure.
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — the recipe that scaffolds the file.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — example of a complete component overview.
-- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — another example with a well-populated See also section.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — example of a complete component overview with a well-populated See also section.

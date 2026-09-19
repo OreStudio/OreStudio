@@ -2,7 +2,7 @@
 :ID: 26409919-470E-4820-B8C1-AC816181F894
 :END:
 #+title: Feature: has_pagination
-#+description: Retired behavioural toggle; Qt list views always paginate with a real total since 2026-09-04.
+#+description: Retired behavioural toggle; list views always paginate with a real total since 2026-09-04.
 #+type: feature
 #+level: cross
 #+filetags: :codegen:variability:feature:
@@ -25,10 +25,10 @@ this feature's value links here rather than restating its effect.
 * Effect
 
 Retired as a behavioural toggle on 2026-09-04 (task
-9FF6FAD3): the Qt client model template now generates the paginated
-fetch unconditionally. Every list request carries =offset=/=limit=
-and the model reports the server's =total_available_count=; every
-=MdiWindow= shows the pagination controls. The literal remains
+9FF6FAD3): the client model template generated the paginated fetch
+unconditionally. Every list request carried =offset=/=limit= and the
+model reported the server's =total_available_count=, and every list
+window showed the pagination controls. The literal remains
 accepted on entity orgs, and on the profiles listed below, as
 documentation only — setting or clearing it no longer changes
 generated behaviour, and no entity can silently truncate a list by

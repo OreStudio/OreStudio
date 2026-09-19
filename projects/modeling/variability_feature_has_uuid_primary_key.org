@@ -28,7 +28,7 @@ Client treats the primary key as a uuid for id handling (=random_generator()= bl
 
 * Structural consequence
 
-None in Qt itself — describes how the client treats whatever type SQL/Domain layers already declared for the PK, see [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] § Primary key.
+None in the UI itself — describes how the client treats whatever type SQL/Domain layers already declared for the PK, see [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] § Primary key.
 
 * Used by
 

@@ -2,7 +2,7 @@
 :ID: 0A22B752-D5CF-4B36-8429-2950130AAABD
 :END:
 #+title: How do I ready up an environment?
-#+description: Check whether the database is already recent before recreating it, start services, provision the Acme Corporation tenant yourself via ores.shell, and optionally start the Qt client — the shared sequence every verification/testing recipe builds on.
+#+description: Check whether the database is already recent before recreating it, start services, and provision the Acme Corporation tenant yourself via ores.shell — the shared sequence every verification/testing recipe builds on.
 #+type: recipe
 #+level: cross
 #+filetags: :ops:environment:recipe:
@@ -92,35 +92,29 @@ start the client?
    environment on the shared instance is usually holding excess
    connections; diagnose before assuming this environment is at fault.
 
-6. /Start the client — only if the caller needs a bare, unscripted
-   client/. Skip this step entirely if what you actually need is a
-   client with a test scenario preloaded (=--open-scenario=, an
-   absolute path via =realpath=) — start it directly with that flag
-   instead of starting a bare client here and restarting it later; see
-   [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]].
+6. /Start the shell — only if the caller needs an interactive session/.
+   Steps 1 to 5 leave the environment ready; this step is the bare,
+   unscripted entry point. Skip it when the caller drives the
+   environment some other way.
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client start --colour <colour>
+   ./projects/ores.compass/compass.sh shell
    #+end_src
 
-   Detached, with a distinct colour so it does not clash with other
-   environments' running instances. The instance name is always this
-   environment's own =ORES_CHECKOUT_LABEL= (e.g. =jolly_knuth=) — not
-   overridable — so the status bar and window title always show which
-   environment the client actually belongs to. Log in with the
-   =super_admin= credentials used in the provisioning step (or the
-   tenant admin credentials, once a tenant party is selected).
+   Log in with the =super_admin= credentials used in the provisioning
+   step (or the tenant admin credentials, once a tenant party is
+   selected). See [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][Devops Run Shell]].
 
 * Script
 
 No single wrapper script — each step delegates to its own =compass=
-subcommand (=services=, =db=, =shell -f=, =client=); this recipe is the
+subcommand (=services=, =db=, =shell -f=, =shell=); this recipe is the
 sequencing.
 
 * Tested by
 
 Manual: run the full sequence against a fresh checkout and confirm the
-client logs in and lists Acme Corporation party data.
+shell logs in and lists Acme Corporation party data.
 
 * See also
 
@@ -130,6 +124,6 @@ client logs in and lists Acme Corporation party data.
 - [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
-- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics for step 6's alternative.
+- [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][Devops Run Shell]] — the interactive surface step 6 launches.
 - [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] — calls this recipe.
 - [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — calls this recipe.

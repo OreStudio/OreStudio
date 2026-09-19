@@ -22,7 +22,7 @@
 =ores.marketdata.api= is a header-only library defining the shared contract for
 the market-data domain. It provides domain types for market series, observations,
 fixings, and import options, with JSON and table I/O via =rfl=, and the NATS
-protocol schemas consumed by =ores.marketdata.core= and Qt clients.
+protocol schemas consumed by =ores.marketdata.core= and UI clients.
 
 * Inputs
 

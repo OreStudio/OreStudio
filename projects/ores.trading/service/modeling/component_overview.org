@@ -30,7 +30,7 @@ is responsible only for bootstrap, dependency injection, and graceful shutdown.
 
 - Configuration file: NATS server URL, PostgreSQL connection string, logging
   settings, and environment name.
-- NATS request messages from Qt clients and peer services on the
+- NATS request messages from UI clients and peer services on the
   =ores.trading.*= subject hierarchy.
 
 * Outputs

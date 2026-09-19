@@ -214,6 +214,3 @@ handshake before login is attempted.
 | iam       | [[proj:projects/ores.iam/include/ores.iam/messaging/login_protocol.hpp]]                  | Protocol structs and serialisation           |
 | comms     | [[proj:projects/ores.comms/include/ores.comms/messaging/message_type.hpp]]                | Message type enum (0x2046, 0x2047)           |
 | comms     | [[proj:projects/ores.comms/src/service/auth_session_service.cpp]]                         | =update_session_party()= implementation      |
-| qt        | [[proj:projects/ores.qt/src/ClientManager.cpp]]                                           | Client-side party selection                  |
-| qt        | [[proj:projects/ores.qt/src/PartyPickerDialog.cpp]]                                       | Party picker UI                              |
-| qt        | [[proj:projects/ores.qt/src/LoginDialog.cpp]]                                             | =onLoginResult()= multi-party branch         |

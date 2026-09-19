@@ -37,4 +37,4 @@ not guesswork.
 
 * See also
 
-- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — how plugins contribute to the System menu via =setup_menus= / =create_menus=.
+- E81C7FEA-33E4-400A-839A-9D1618BED211 — how plugins contribute to the System menu via =setup_menus= / =create_menus=.

@@ -64,7 +64,7 @@ a sensible layout, and a coherent icon set.
 
 * See also
 
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the component model this story stood up. The model/view
+- 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — the component model this story stood up. The model/view
   pattern and FastTrack-derived settings hooks land here first and
   propagate to every later widget.
 - [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] (this sprint) — the first widget that

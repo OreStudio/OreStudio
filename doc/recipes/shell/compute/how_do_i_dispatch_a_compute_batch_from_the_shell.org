@@ -19,7 +19,7 @@ How do I dispatch a compute batch from the shell?
 
 * Answer
 
-Log in as the system super admin, then run =compute dispatch-batch= with the batch external reference, the job count, the app version id and the input =tar.gz= tarball. The command uploads the tarball verbatim (as the Qt UI does), marks the batch dispatched, and saves one workunit per job. Each save dispatches to the grid: the backend creates the result rows and publishes the assignments.
+Log in as the system super admin, then run =compute dispatch-batch= with the batch external reference, the job count, the app version id and the input =tar.gz= tarball. The command uploads the tarball verbatim, marks the batch dispatched, and saves one workunit per job. Each save dispatches to the grid: the backend creates the result rows and publishes the assignments.
 
 #+name: dispatch-compute-batch
 #+begin_src ores-shell :exports none

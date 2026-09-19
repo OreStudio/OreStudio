@@ -42,7 +42,7 @@
  * driven by TWO_FACTOR_GAUSSIAN may only carry values whose definitions
  * belong to TWO_FACTOR_GAUSSIAN. Both soft FKs are additionally
  * validated at insert time by the generated validation functions. No
- * standalone Qt layer: value rows are edited from inside the IR curve
+ * standalone UI: value rows are edited from inside the IR curve
  * generation config detail dialog, which reads definitions and value
  * rows via the normal codegen repositories.
  */

@@ -2,7 +2,7 @@
 :ID: EBFDA8AD-34C6-4A28-AAB2-89FD3D3E9808
 :END:
 #+title: ores.marketdata.client
-#+description: Client-side NATS wrapper for the marketdata service: FX spot/CRM subscriptions and request/response helpers used by non-Qt consumers.
+#+description: Client-side NATS wrapper for the marketdata service: FX spot/CRM subscriptions and request/response helpers used by non-UI consumers.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: 

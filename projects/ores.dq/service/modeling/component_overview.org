@@ -30,7 +30,7 @@ bootstrap, dependency injection, and graceful shutdown.
 
 - Configuration file: NATS server URL, PostgreSQL connection string, and
   environment settings.
-- NATS request messages from Qt clients and peer services (badge, dataset,
+- NATS request messages from UI clients and peer services (badge, dataset,
   change-management operations).
 
 * Outputs

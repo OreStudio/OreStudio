@@ -2,7 +2,7 @@
 :ID: 326b86e9-df52-4921-a875-e9f5cfec0e49
 :END:
 #+title: ores.trading.bond_instrument
-#+description: Codegen entity model for the trading =bond_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =bond_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

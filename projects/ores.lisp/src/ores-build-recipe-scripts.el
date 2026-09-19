@@ -26,7 +26,7 @@
 ;; runnable .ores artefact in the library folder
 ;; (projects/ores.shell/scripts/library/).  The recipe stays the thing a
 ;; human edits; the .ores is generated, carries a "do not edit" header,
-;; and is committed so the Qt script panel and `compass shell -f' can
+;; and is committed so `compass shell -f' can
 ;; load it directly.
 ;;
 ;; The output lands "elsewhere" from the source (in the library folder,
@@ -125,7 +125,7 @@ comment lines, which the shell's load command skips."
 
 Recipes end their ores-shell block with =exit= so org-babel's REPL
 terminates when the recipe is executed in Emacs.  A library script is
-run via the shell's load command (or the Qt panel), where =exit= would
+run via the shell's load command, where =exit= would
 close the whole shell — so it is dropped from the generated artefact."
   (with-temp-buffer
     (insert-file-contents script-file)

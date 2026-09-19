@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-libfort tabular rendering of entity collections. =domain= profile.  Qt SQL table adapter: maps one result-set row to the domain struct. Keeps Qt SQL dependency out of the domain type by confining it to the `table` facet.
+libfort tabular rendering of entity collections. =domain= profile.  Table adapter: maps a vector of domain objects to a libfort text table, and keeps the rendering dependency out of the domain type by confining it to the `table` facet.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

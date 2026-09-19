@@ -94,12 +94,11 @@ follows.
    about to check, without reading every step first.
 
    Fill in the =* Scenario Info= table before writing steps:
-   - *Target dialog* — the Qt dialog class(es) under test, *and* the
-     exact menu path to reach them (e.g. "=DayCountFractionTypeDetailDialog=
-     — Menu: Reference Data > Trading Conventions > Day Count Fraction
-     Types"). A bare class name forces the tester to hunt through menus
-     to find a screen that may not exist yet in their muscle memory;
-     the menu path is the whole reason this field exists.
+   - *Target surface* — the screen or command under test, *and* the exact
+     path to reach it (e.g. "=currency list — shell: refdata currencies=,
+     or Menu: Reference Data > Currencies once a client exists"). A bare
+     name forces the tester to hunt; the path is the whole reason this
+     field exists.
    - *Clients* — *genuinely empty* (no placeholder text at all, not even
      "single client") for one client; list every colour/label a
      multi-client scenario needs (e.g. "blue, red") only when the
@@ -159,36 +158,30 @@ follows.
    introduced — before writing steps, the same way CRUD/eventing/
    history above is the fixed checklist for an entity feature.
 
-5. /Start the client with the scenario pre-loaded/ and hand it to the
-   user — do not execute the scenario yourself, since it verifies a Qt
-   UI a human needs to drive. =--open-scenario= *requires an absolute
-   path* — a relative one silently fails to load the scenario, so
-   resolve it explicitly rather than typing a =doc/agile/...=-style
-   relative path by hand:
+5. /Hand the scenario to the user./ Do not execute it yourself: it
+   covers the parts a person has to drive, not the parts ctest already
+   covers. The scenario is an org file under the story directory,
+   scaffolded with =compass add test_scenario=.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client start --colour <colour> \
-     --open-scenario "$(realpath doc/agile/versions/<version>/<sprint>/<story-slug>/verify_<feature>.org)"
-   #+end_src
-
-   Tell the user the scenario is loaded in Scenario Runner (System >
-   Testing) and ask them to execute it, ticking each step as they go —
-   see [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] for the =--open-scenario= mechanics and why it must
-   be an absolute path.
+   The in-app Scenario Runner went with the Qt client, so nothing loads
+   a scenario by path any more. Drive the manual half against the
+   surfaces that exist: =compass shell -f <script>= for anything
+   scriptable, and the user for the rest. Ask the user to tick each
+   step in the scenario file as they go.
 
 * Script
 
 No single wrapper script — each step delegates to its own tool
 (=cmake=, =validate_schemas.sh=, =validate_docs.sh=, =compass db=,
-=compass shell -f=, =compass add test_scenario=, =compass client
-start=); this recipe is the sequencing. The [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] skill
+=compass shell -f=, =compass add test_scenario=); this recipe is the
+sequencing. The [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] skill
 executes it as one pass.
 
 * Tested by
 
 Manual: run the full sequence for a real feature branch and confirm the
-scenario opens pre-loaded in the client's Scenario Runner and the
-tester can tick through steps to a saved =* Results= section.
+tester can tick through the scenario's steps and record a =* Results=
+section.
 
 * See also
 
@@ -197,6 +190,5 @@ tester can tick through steps to a saved =* Results= section.
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
-- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]]
 - [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]]
 - [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] — the skill that executes this recipe.

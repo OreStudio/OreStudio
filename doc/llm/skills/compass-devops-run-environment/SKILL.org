@@ -14,7 +14,7 @@
 #+begin_export markdown
 ---
 name: compass-devops-run-environment
-description: Run the full environment-readying sequence: stop services, recreate the database, start services, provision the Acme Corporation tenant, and start the Qt client.
+description: Run the full environment-readying sequence: stop services, recreate the database, start services, and provision the Acme Corporation tenant.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export

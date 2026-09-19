@@ -22,7 +22,7 @@
 --     repository with no bespoke logic) is brought under codegen
 --     instead: the generated standard-CRUD service replaces it
 --   - Standard protocol conformance: a current-format model names the
---     standard codegen'd message class set in its Qt drawer
+--     standard codegen'd message class set in its presentation drawer
 --     (get/save/delete/history request, response and message_type per
 --     the refdata/dq convention) plus changed_event and change-reason
 --     keys per capability. A hand-crafted protocol (list_Xs_request
@@ -135,7 +135,7 @@ entity CodegenModel {
     -- no-match record keeps these values -- never silently dropped.
     needs: Set<FeatureAssignment>
     enabled_spaces: Set<PhysicalSpace>
-    -- Protocol conformance: the Qt drawer names the standard codegen'd
+    -- Protocol conformance: the presentation drawer names the standard codegen'd
     -- message class set (get/save/delete/history request, response and
     -- message_type per the refdata/dq convention). A hand-crafted
     -- protocol (list_Xs_request, missing delete classes) is false.
@@ -147,7 +147,7 @@ entity CodegenModel {
     -- change-reason cache (e.g. machine-written list-only entities:
     -- grid machinery writes results, no human edit flow).
     change_reason_exception: String?
-    -- The Qt drawer carries a changed_event class key for this entity.
+    -- The presentation drawer carries a changed_event class key for this entity.
     has_changed_event: Boolean
     -- Resolution of an orphan notify trigger: subscribed (a service
     -- consumes the channel) or removed (the trigger is dropped).
@@ -522,7 +522,7 @@ rule BringThinFacadeUnderCodegen {
 
 -- Protocol conformance: a hand-crafted message protocol (list_Xs
 -- request naming, a partial capability set, missing delete classes)
--- is drift in the model, not a design input. The model's Qt drawer is
+-- is drift in the model, not a design input. The model's presentation drawer is
 -- modernized to name the standard class set (get/save/delete/history
 -- request, response and message_type per the refdata/dq convention);
 -- protocol, handlers and services regenerate from those keys.
@@ -546,7 +546,7 @@ rule SaveCapableNeedsChangeReasonCache {
 }
 
 -- Eventing consistency: an entity with the eventing-integration-test
--- space enabled carries a changed_event class in its Qt drawer and a
+-- space enabled carries a changed_event class in its presentation drawer and a
 -- service subscription on its notify channel. An enabled entity
 -- without either is drift.
 rule EventingNeedsChangedEvent {

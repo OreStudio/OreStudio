@@ -2,7 +2,7 @@
 :ID: 8FB6949F-05C1-4867-91F3-B9B6FA2329EC
 :END:
 #+title: ores.refdata.counterparty
-#+description: Codegen entity model for the refdata =counterparty= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata =counterparty= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -288,10 +288,10 @@ std::nullopt
 |--------------------------+----------------------+-----------------------+---------------+--------+-------------+-------------------+-------------------+---------------------+--------------------------------+-----------------------------------+----------------------+-------------------------------+------------------------+-----------------------+--------------------+------------------------+--------------------+------------------------+----------------------------+---------------+---------------------|
 | short_code               | Short Code           | codeEdit              | line_edit     | true   | true        | Enter short code |                   |                     |                                |                                    |                      |                                |                        |                       |                    |                        |                    |                        |                            |               |                     |
 | full_name                | Full Name            | nameEdit              | line_edit     | false  | true        | Enter full name  |                   |                     |                                |                                    |                      |                                |                        |                       |                    |                        |                    |                        |                            |               |                     |
-| party_type               | Party Type           | partyTypeCombo        | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_type       |                      | ores.qt/LookupFetcher.hpp     | fetch_party_types      | partyTypeWatcher      | code               | description            | display_order      | party types            | PartyTypeCombo             | party_type    |                     |
-| status                   | Status               | statusCombo           | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_status     |                      | ores.qt/LookupFetcher.hpp     | fetch_party_statuses   | partyStatusWatcher    | code               | description            | display_order      | party statuses         | PartyStatusCombo           | party_status  |                     |
-| business_center_code     | Business Center      | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    |                      | ores.qt/LookupFetcher.hpp     |                        |                       |                    |                        |                    |                        |                            |               |                     |
-| parent_counterparty_id   | Parent Counterparty  | parentCounterpartyCombo | dynamic_combo | false | true        |                   |                   |                     |                                | refdata::domain::counterparty     | full_name            | ores.qt/LookupFetcher.hpp     | fetch_counterparties   | parentCounterpartyWatcher | id             | short_code             | version            | counterparties         | ParentCounterpartyCombo    |               | No Parent           |
+| party_type               | Party Type           | partyTypeCombo        | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_type       |                      |      | fetch_party_types      | partyTypeWatcher      | code               | description            | display_order      | party types            | PartyTypeCombo             | party_type    |                     |
+| status                   | Status               | statusCombo           | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_status     |                      |      | fetch_party_statuses   | partyStatusWatcher    | code               | description            | display_order      | party statuses         | PartyStatusCombo           | party_status  |                     |
+| business_center_code     | Business Center      | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    |                      |      |                        |                       |                    |                        |                    |                        |                            |               |                     |
+| parent_counterparty_id   | Parent Counterparty  | parentCounterpartyCombo | dynamic_combo | false | true        |                   |                   |                     |                                | refdata::domain::counterparty     | full_name            |      | fetch_counterparties   | parentCounterpartyWatcher | id             | short_code             | version            | counterparties         | ParentCounterpartyCombo    |               | No Parent           |
 
 *** Columns
 
@@ -435,99 +435,6 @@ via the =nats-sub-registrar= facet's custom-subscription paste point.
         nats.queue_subscribe(get_counterparty_composite_as_of_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
-#+end_src
-
-** Custom composite child-entity tables
-
-Embeds =counterparty_identifier= and =counterparty_contact_information= as
-editable tables in dedicated tabs — the composite children under temporal
-versioning (see the "Temporal composite entity versioning" architecture
-doc). The actual widget/NATS logic is hand-written (not generated) in
-=CounterpartyChildEntityTables=; these paste blocks just wire it into the
-generated dialog.
-
-#+begin_src cpp :name detail_dialog_header_includes :implements 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
-#include "ores.qt/CounterpartyChildEntityTables.hpp"
-#include "ores.qt/CounterpartyHierarchyTab.hpp"
-#+end_src
-
-#+begin_src cpp :name detail_dialog_private_members :implements F55CB64E-165A-4E15-A50A-5723C0320E97
-    CounterpartyChildEntityTables* childTables_{nullptr};
-    CounterpartyHierarchyTab* hierarchyTab_{nullptr};
-#+end_src
-
-#+begin_src cpp :name child_tables_setup :implements 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
-    childTables_ = new CounterpartyChildEntityTables(this);
-    childTables_->attachTo(tabWidget());
-#+end_src
-
-#+begin_src cpp :name hierarchy_tab_setup :implements 9B165431-2921-4CAC-A2E8-2C186741E523
-    hierarchyTab_ = new CounterpartyHierarchyTab(this);
-    hierarchyTab_->attachTo(tabWidget());
-#+end_src
-
-#+begin_src cpp :name reload_child_tables :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
-    updateFlagDisplay();
-    childTables_->reload(counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
-    hierarchyTab_->reload(counterparty_.id, clientManager_);
-#+end_src
-
-#+begin_src cpp :name child_tables_read_only :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
-    childTables_->setReadOnly(readOnly);
-#+end_src
-
-** Qt: auxiliary lookup toolbar buttons
-
-Cross-navigation from the Counterparties list window to the same
-three lookup entities Party links to —
-[[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]], [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]], and
-[[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] — via the identical seam
-[[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] implements.
-
-#+begin_src cpp :name mdi_window_signal :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A
-void showPartyTypesRequested();
-void showPartyStatusesRequested();
-void showPartyIdSchemesRequested();
-#+end_src
-
-#+begin_src cpp :name mdi_window_toolbar :implements 18B9ED63-78C2-4259-93AC-CCDFBC88EFBD
-{
-    toolbar_->addSeparator();
-    auto* partyTypesAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Party Types"));
-    partyTypesAction->setToolTip(tr("Open Party Types"));
-    connect(partyTypesAction, &QAction::triggered, this,
-            &CounterpartyMdiWindow::showPartyTypesRequested);
-
-    auto* partyStatusesAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor),
-        tr("Party Statuses"));
-    partyStatusesAction->setToolTip(tr("Open Party Statuses"));
-    connect(partyStatusesAction, &QAction::triggered, this,
-            &CounterpartyMdiWindow::showPartyStatusesRequested);
-
-    auto* partyIdSchemesAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
-        tr("Id Schemes"));
-    partyIdSchemesAction->setToolTip(tr("Open Party Id Schemes"));
-    connect(partyIdSchemesAction, &QAction::triggered, this,
-            &CounterpartyMdiWindow::showPartyIdSchemesRequested);
-}
-#+end_src
-
-#+begin_src cpp :name controller_signal :implements 66E078FB-D6A6-4DF6-814B-65995D948090
-void showPartyTypesRequested();
-void showPartyStatusesRequested();
-void showPartyIdSchemesRequested();
-#+end_src
-
-#+begin_src cpp :name controller_relay :implements 52E70F3B-5903-4359-91FB-B533054A18AC
-connect(listWindow_, &CounterpartyMdiWindow::showPartyTypesRequested,
-        this, &CounterpartyController::showPartyTypesRequested);
-connect(listWindow_, &CounterpartyMdiWindow::showPartyStatusesRequested,
-        this, &CounterpartyController::showPartyStatusesRequested);
-connect(listWindow_, &CounterpartyMdiWindow::showPartyIdSchemesRequested,
-        this, &CounterpartyController::showPartyIdSchemesRequested);
 #+end_src
 
 * See also

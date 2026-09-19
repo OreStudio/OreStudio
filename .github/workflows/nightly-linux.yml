@@ -148,13 +148,6 @@ jobs:
       - name: Install dev packages
         run: ./projects/ores.compass/compass.sh env install-packages --with-valgrind
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.8.3'
-          modules: 'qtcharts'
-          cache: true
-
       - name: Generate postgres password
         id: pg_password
         run: |

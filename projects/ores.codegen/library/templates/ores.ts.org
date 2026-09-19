@@ -17,7 +17,7 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-The TypeScript projection. The ores.qt UI moves to TypeScript, so it needs
+The TypeScript projection. The UI moves to TypeScript, so it needs
 the same message shapes the C++ services speak, without hand-copying them.
 Every facet here renders from the org models that already drive the C++
 facets, so the two projections cannot drift.

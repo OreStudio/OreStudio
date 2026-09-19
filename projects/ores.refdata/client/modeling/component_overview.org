@@ -26,7 +26,7 @@ by every rate-display surface, and the =currency_pair_convention_cache=:
 an in-process, per-tenant cache of currency-pair conventions loaded over
 NATS and reloaded on changed events. Its registrar wires the warm-up and
 the changed-event subscription at service startup. Consumers are the
-market-data client and the Qt market-data plugins. A load carries a
+market-data client and the removed market-data plugins. A load carries a
 Bearer token when the producer checks authorisation; pass an
 =ores.iam.client=-style token provider in that case.
 

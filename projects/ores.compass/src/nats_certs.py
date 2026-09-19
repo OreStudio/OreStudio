@@ -37,8 +37,7 @@ _SERVICES = [
     "ores.ore.service",
     "ores.workflow.service",
     "ores.http.server",
-    "ores.wt.service",
-    "ores.qt.client",
+    "ores.shell",
     "ores.compute.wrapper",
     "ores.analytics.service",
 ]

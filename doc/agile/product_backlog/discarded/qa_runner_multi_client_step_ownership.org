@@ -65,5 +65,5 @@ results, one tester's ticks silently overwrite the other's.
 * See also
 
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
-- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics.
+- A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2 — =--open-scenario= mechanics.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colour semantics; the stale-yellow reload convention the Reload button should reuse.

@@ -2,7 +2,7 @@
 :ID: AFB87F90-DA8A-45E1-8C84-CD4945B23485
 :END:
 #+title: ores.trading.bond_forward
-#+description: Codegen entity model for the trading =bond_forward= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =bond_forward= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

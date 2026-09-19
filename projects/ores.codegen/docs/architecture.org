@@ -176,7 +176,7 @@ The =*_table.json=/=*_table.org= =table= model type and its
 =sql_schema_create.mustache= template are retired; every SQL-only
 entity table now expresses the same shape (primary key, columns,
 validation function, insert trigger, coding scheme, image id) as a
-=domain_entity= model with no C++/Qt sections, rendered via
+=domain_entity= model with no C++ sections, rendered via
 =sql_schema_domain_entity_create.mustache=. The generator still shares
 the field-normalisation logic (=normalise_sql_table_context()= /
 =domain_entity_to_table_context()= in =core.py=/=org_loader.py=) — only
@@ -298,7 +298,7 @@ The =sql_catalog_populate.mustache= template generates SQL that:
 
 To add a new SQL-only entity table (the =table= model type's retired
 role) for an existing component, scaffold a =domain_entity= model
-(=compass add entity_org --component <name> ...=) with no =** Qt=
+(=compass add entity_org --component <name> ...=) with no =** Presentation=
 section instead — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
 
 To add a new facet or template:

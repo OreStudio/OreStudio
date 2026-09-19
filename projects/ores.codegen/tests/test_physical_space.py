@@ -35,29 +35,29 @@ from codegen.physical_space import (  # noqa: E402
 def graph():
     """A two-technical-space synthetic graph.
 
-    ores.cpp  → ores.cpp.domain (domain_entity), ores.cpp.qt (domain_entity)
+    ores.cpp  → ores.cpp.domain (domain_entity), ores.cpp.presentation (domain_entity)
     ores.sql  → ores.sql.schema (domain_entity, table)
     """
     g = Graph()
     g.ts_facets = {
-        "ores.cpp": ["ores.cpp.domain", "ores.cpp.qt"],
+        "ores.cpp": ["ores.cpp.domain", "ores.cpp.presentation"],
         "ores.sql": ["ores.sql.schema"],
     }
     g.facet_ts = {
         "ores.cpp.domain": "ores.cpp",
-        "ores.cpp.qt": "ores.cpp",
+        "ores.cpp.presentation": "ores.cpp",
         "ores.sql.schema": "ores.sql",
     }
     g.facet_model_types = {
         "ores.cpp.domain": ["domain_entity"],
-        "ores.cpp.qt": ["domain_entity"],
+        "ores.cpp.presentation": ["domain_entity"],
         "ores.sql.schema": ["domain_entity", "table"],
     }
     g.facet_archetypes = {
         "ores.cpp.domain": [{"address": "ores.cpp.domain.class_header",
                              "template": "d.mustache", "output": "d.hpp",
                              "model_types": ["domain_entity"]}],
-        "ores.cpp.qt": [{"address": "ores.cpp.qt.controller_header",
+        "ores.cpp.presentation": [{"address": "ores.cpp.presentation.history_field_mapper",
                          "template": "q.mustache", "output": "q.hpp",
                          "model_types": ["domain_entity"]}],
         "ores.sql.schema": [{"address": "ores.sql.schema.create",
@@ -72,7 +72,7 @@ def graph():
 def test_supported_default_is_all_model_type_admissible(graph):
     """No ores.* properties => every facet admitting the model type."""
     assert compute_supported_set({}, graph, "domain_entity") == frozenset(
-        {"ores.cpp.domain", "ores.cpp.qt", "ores.sql.schema"})
+        {"ores.cpp.domain", "ores.cpp.presentation", "ores.sql.schema"})
 
 
 def test_supported_filters_by_model_type(graph):
@@ -87,17 +87,17 @@ def test_disable_technical_space_removes_all_its_facets(graph):
 
 
 def test_disable_facet_removes_only_that_facet(graph):
-    s = compute_supported_set({"ores.cpp.qt.enabled": "false"}, graph, "domain_entity")
-    assert "ores.cpp.qt" not in s
+    s = compute_supported_set({"ores.cpp.presentation.enabled": "false"}, graph, "domain_entity")
+    assert "ores.cpp.presentation" not in s
     assert "ores.cpp.domain" in s
 
 
 def test_specificity_facet_override_beats_technical_space(graph):
-    """ores.cpp off + ores.cpp.qt on => qt kept, other cpp facets dropped."""
+    """ores.cpp off + ores.cpp.presentation on => it is kept, other cpp facets dropped."""
     s = compute_supported_set(
-        {"ores.cpp.enabled": "false", "ores.cpp.qt.enabled": "true"},
+        {"ores.cpp.enabled": "false", "ores.cpp.presentation.enabled": "true"},
         graph, "domain_entity")
-    assert "ores.cpp.qt" in s
+    assert "ores.cpp.presentation" in s
     assert "ores.cpp.domain" not in s
 
 
@@ -107,8 +107,8 @@ def test_root_disable_removes_everything(graph):
 
 def test_enabled_truthy_values(graph):
     """Only recognised truthy strings enable; anything else disables."""
-    assert "ores.cpp.qt" in compute_supported_set({"ores.cpp.qt.enabled": "TRUE"}, graph, "domain_entity")
-    assert "ores.cpp.qt" not in compute_supported_set({"ores.cpp.qt.enabled": "no"}, graph, "domain_entity")
+    assert "ores.cpp.presentation" in compute_supported_set({"ores.cpp.presentation.enabled": "TRUE"}, graph, "domain_entity")
+    assert "ores.cpp.presentation" not in compute_supported_set({"ores.cpp.presentation.enabled": "no"}, graph, "domain_entity")
 
 
 # --- target set (T) --------------------------------------------------------
@@ -122,11 +122,11 @@ def test_target_root_is_all_facets(graph):
 
 
 def test_target_technical_space_expands_to_its_facets(graph):
-    assert compute_target_set("ores.cpp", graph) == frozenset({"ores.cpp.domain", "ores.cpp.qt"})
+    assert compute_target_set("ores.cpp", graph) == frozenset({"ores.cpp.domain", "ores.cpp.presentation"})
 
 
 def test_target_facet_is_itself(graph):
-    assert compute_target_set("ores.cpp.qt", graph) == frozenset({"ores.cpp.qt"})
+    assert compute_target_set("ores.cpp.presentation", graph) == frozenset({"ores.cpp.presentation"})
 
 
 def test_target_unknown_address_raises(graph):
@@ -138,8 +138,8 @@ def test_target_unknown_address_raises(graph):
 
 def test_generation_set_is_intersection(graph):
     supported = compute_supported_set({}, graph, "domain_entity")
-    target = compute_target_set("ores.cpp.qt", graph)
-    assert resolve_generation_set(supported, target) == frozenset({"ores.cpp.qt"})
+    target = compute_target_set("ores.cpp.presentation", graph)
+    assert resolve_generation_set(supported, target) == frozenset({"ores.cpp.presentation"})
 
 
 def test_generation_set_empty_when_target_outside_supported(graph):
@@ -152,13 +152,13 @@ def test_generation_set_empty_when_target_outside_supported(graph):
 # --- address/model-type incompatibility (distinct from disablement) -------
 
 def test_address_supports_model_type_true_for_admitted_type(graph):
-    assert address_supports_model_type("ores.cpp.qt", "domain_entity", graph) is True
+    assert address_supports_model_type("ores.cpp.presentation", "domain_entity", graph) is True
 
 
 def test_address_supports_model_type_false_for_unadmitted_type(graph):
-    """'table' is only declared on ores.sql.schema; ores.cpp.qt admits only
+    """'table' is only declared on ores.sql.schema; ores.cpp.presentation admits only
     domain_entity, so it can never generate a table model."""
-    assert address_supports_model_type("ores.cpp.qt", "table", graph) is False
+    assert address_supports_model_type("ores.cpp.presentation", "table", graph) is False
 
 
 def test_address_supports_model_type_true_when_any_facet_under_ts_admits_it(graph):
@@ -191,13 +191,13 @@ def test_parse_default():
 def test_enabled_overrides_parses_dotted_and_hyphenated_keys():
     """Activation keys to archetype depth, incl. hyphenated facets, are read."""
     ov = _enabled_overrides({
-        "ores.cpp.qt.enabled": "false",
+        "ores.cpp.presentation.enabled": "false",
         "ores.cpp.service-app.enabled": "true",
         "ores.sql.populate.country.enabled": "true",
         "ID": "ignore-me",
     })
     assert ov == {
-        "ores.cpp.qt": False,
+        "ores.cpp.presentation": False,
         "ores.cpp.service-app": True,
         "ores.sql.populate.country": True,
     }

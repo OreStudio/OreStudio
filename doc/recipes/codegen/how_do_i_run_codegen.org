@@ -31,7 +31,7 @@ Resolve by name — no need to know the model file path or component:
 Examples:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --address ores.cpp.qt
+./compass.sh codegen entity generate country --address ores.cpp.repository
 ./compass.sh codegen entity generate country --address ores.sql.schema
 ./compass.sh codegen entity generate country --address ores
 #+end_src
@@ -42,8 +42,8 @@ is the graph root, so =--address ores= is equivalent.
 Preview what would change without writing:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --address ores.cpp.qt --diff
-./compass.sh codegen entity generate country --address ores.cpp.qt --dry-run
+./compass.sh codegen entity generate country --address ores.cpp.repository --diff
+./compass.sh codegen entity generate country --address ores.cpp.repository --dry-run
 #+end_src
 
 See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full workflow.
@@ -74,8 +74,8 @@ workflow) and =cmd_codegen= in
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --address ores.cpp.qt --dry-run=
-and verify twelve Qt file paths are printed without errors.
+Run =./compass.sh codegen entity generate country --address ores.cpp.repository
+--dry-run= and verify six repository file paths are printed without errors.
 
 * See also
 

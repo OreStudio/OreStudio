@@ -25,8 +25,8 @@ fixings) from the shell?
 The =marketdata import= command
 (=projects/ores.shell/src/app/commands/marketdata_commands.cpp=)
 sends the file content(s) as a single =import_market_data_request=
-over NATS (subject =marketdata.v1.import=), the same request the Qt
-=ImportTradeDialog= sends — reusing =import_service= as-is, no
+over NATS (subject =marketdata.v1.import=), the same request the removed desktop client's
+=ImportTradeDialog= sent — reusing =import_service= as-is, no
 server-side code specific to the shell.
 
 Expectations: the services are up (=compass services start=), a

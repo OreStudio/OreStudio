@@ -2,7 +2,7 @@
 :ID: 690BBD16-0C36-4D2C-9E2D-BC92AA93E5B2
 :END:
 #+title: Add a new entity across all layers
-#+description: Add a new domain entity with full-stack support: domain type, SQL schema, repository, service, Qt UI, CLI, HTTP, and tests.
+#+description: Add a new domain entity with full-stack support: domain type, SQL schema, repository, service, UI metadata, CLI, HTTP, and tests.
 #+type: runbook
 #+level: cross
 #+filetags: :llm:runbook:entity:domain:sql:qt:cli:http:
@@ -13,7 +13,7 @@ This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a
 
 * Goal
 
-Add a new domain entity (e.g. currency, counterparty, trade) with support across all layers: domain type, SQL schema, repository, service, Qt UI, CLI commands, HTTP endpoints, and unit tests.
+Add a new domain entity (e.g. currency, counterparty, trade) with support across all layers: domain type, SQL schema, repository, service, UI metadata, CLI commands, HTTP endpoints, and unit tests.
 
 * Preconditions
 
@@ -33,7 +33,7 @@ In execution order:
 
 4. /Wire the service layer./ Add NATS handlers and service methods following the protocol conventions in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 
-5. /Create the Qt UI./ Follow [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]: ClientModel → list window → detail dialog → history dialog. Use [[id:25167ED8-6CCC-43AC-9978-026E6AD581FC][How do I create entity UI?]].
+5. /Declare the UI metadata./ Fill in the =** Presentation= drawer of the entity model: =collection_name=, =key_field=, and the =*** Columns= and =*** Detail fields= tables. The =ores.ts.ui= facet emits the entity's TypeScript UI metadata to =projects/ores.typescript/src/<component>/ui/<entity>_ui.ts=, which the shared =DataTable= and =FieldControl= render. See [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
 
 6. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
 

@@ -162,7 +162,7 @@ What each System sees by default, counted from the levels the skills carry. Atte
 #+ATTR_HTML: :class hug-leading
 | Level | System | Horizon | Sees | Attenuation |
 |-------+--------+---------+------+-------------|
-| =s1= | Agent | Hours | 66 skills | advisory |
+| =s1= | Agent | Hours | 64 skills | advisory |
 | =s2= | Orchestrator | Days | 19 skills | advisory |
 | =s3= | Sprint Planner | Weeks | 21 skills | advisory |
 | =s3star= | Auditor | Continuous | 5 skills | binding |

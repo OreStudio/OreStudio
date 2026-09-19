@@ -2,7 +2,7 @@
 :ID: 9618DCF1-2FE8-4AE2-A841-F671A97E764E
 :END:
 #+title: Profile: Tenant-scoped junction
-#+description: Tenant-scoped many-to-many association table, no independent lifecycle or Qt surface of its own.
+#+description: Tenant-scoped many-to-many association table, no independent lifecycle or UI surface of its own.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -20,12 +20,12 @@ Models a plain many-to-many association between two entities (currency
 ↔ calendar, party ↔ country, tenor convention ↔ tenor, ...): a row is
 just a pair of foreign keys plus a scoping column, with no natural key
 of its own, no self-standing lifecycle, and — with one exception — no
-Qt surface. Junctions default =has_tenant_id= to /false/ (the opposite
+UI surface. Junctions default =has_tenant_id= to /false/ (the opposite
 of a =domain_entity=), so authoring it =true= is a genuine, recurring
 choice, not incidental boilerplate — the ~ores.refdata~ junction
 survey found 9 of 9 junctions sharing this exact value with nothing
 else varying. One of the 9,
-[[id:1DC67FAD-7543-4E63-A91D-9EE878A2EE8D][calendar_date]], additionally carries its own independent Qt list
+[[id:1DC67FAD-7543-4E63-A91D-9EE878A2EE8D][calendar_date]], additionally carries its own independent list
 drawer (it is a materialised fact table, not a pure link table) — that
 drawer sits alongside this profile's binding untouched, exactly as an
 entity's own extra features sit alongside

@@ -29,7 +29,7 @@ package "Inputs" #E8F4FD {
 }
 
 package "Generators" #F2F2F2 {
-    [codegen.py\n(C++ / SQL / Qt)] as gen
+    [codegen.py\n(C++ / SQL / TypeScript)] as gen
     [doc_generate.py\n(org documents)] as docgen
     [fpml_parser.py\n(FPML XML → JSON)] as fpml
     [plantuml_er_generate.py\n(ER diagrams)] as ergen
@@ -43,7 +43,7 @@ package "Shell Wrappers" #FFF8E8 {
 
 package "Outputs" #E8FDE8 {
     [SQL\n(DQ schemas, seed data)] as sql
-    [C++ Scaffolding\n(domain types, Qt UI)] as cpp
+    [C++ Scaffolding\n(domain types, UI metadata)] as cpp
     [v2 Org Documents\n(component / task / sprint)] as orgdocs
     [PlantUML ER Diagrams\n(database schema)] as erdiag
 }

@@ -72,12 +72,12 @@ that [[id:787A7429-71D5-4295-829B-A9B56275B1F8][project]] into one facet, or a s
 facets, as one unit. Every concrete metaclass is composed of zero or
 more segments, as drawn in the diagram above. =ores.codegen.entity='s
 =* SQL= heading and everything under it is one segment; so is the
-=** Qt= sub-heading under =* C++= and everything under it[fn:1] — see
+=** Presentation= sub-heading under =* C++= and everything under it[fn:1] — see
 [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] for =Entity='s segments drawn out in
 full.
 
 A segment exists so a reader (or an LLM) can find "everything about
-the data this metaclass needs in order to project into its Qt facet"
+the data this metaclass needs in order to project into its UI facet"
 in one page, without also needing to hold the rest of the metaclass's
 fields in view. A segment lives in [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]], but it is not itself
 an addressable unit there — the metaclass as a whole is; a segment is
@@ -91,7 +91,7 @@ project into.
 =Base='s one segment, =Common frontmatter=, is the first one worth
 documenting, because every metaclass's own frontmatter inherits from
 it — not because the rest of a metaclass's segments build on it; most
-segments (=SQL=, =Qt=, ...) are unrelated to frontmatter entirely.
+segments (=SQL=, =Presentation=, ...) are unrelated to frontmatter entirely.
 
 * Structural versus non-structural variability
 
@@ -184,7 +184,7 @@ bundling the logical element's shape, its authored [[id:CE95C751-2125-4BA9-A78D-
 any [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][protected regions]] (paste blocks) it needs. Read that section for
 *why* these documents look the way they do.
 
-[fn:1] It is confusing that segment names (=SQL=, =Qt=, ...) look
+[fn:1] It is confusing that segment names (=SQL=, =Presentation=, ...) look
 identical to [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] names. They are not a reference to the
 technical space itself — a segment is a logical-space grouping of
 fields, not a physical-space one. The name is shared only because the

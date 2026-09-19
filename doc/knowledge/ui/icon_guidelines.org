@@ -13,8 +13,12 @@
 ORE Studio's icon catalogue lives here as a single visual-language
 reference. Pick an icon by its semantic category, then match the
 variant (Regular for default / Filled for active) to the UI state.
-Qt and UI skills drive icon selection from this catalogue; for the broader
+UI skills drive icon selection from this catalogue; for the broader
 UI design context see [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+*The asset paths below point into the desktop client's =resources/icons/= tree,
+which went with that client. This page is the record of the intended icon set;
+it is not a live path list until a UI client carries the assets again.*
 
 * Icon System Overview
 

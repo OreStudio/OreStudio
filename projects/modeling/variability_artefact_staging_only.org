@@ -27,7 +27,7 @@ alongside the artefact table would produce an orphan nobody designed
 for -- a duplicate, wrongly-owned table with no reader or writer.
 
 Deliberately *enablement-only*: this profile carries no feature
-Assignments (no opinion on tenant scope, Qt tier, key shape -- those
+Assignments (no opinion on tenant scope, presentation tier, key shape -- those
 vary per entity). It exists to be bound *alongside* a shape profile
 (e.g. =:profile: simple-lookup, artefact-staging-only=), composing two
 orthogonal traits rather than duplicating one profile's shape logic

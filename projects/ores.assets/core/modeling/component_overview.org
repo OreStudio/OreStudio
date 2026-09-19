@@ -28,7 +28,7 @@ ships a synthetic-data generator for test and development use.
 
 * Inputs
 
-- NATS request messages from Qt clients (image create/update/query, tag
+- NATS request messages from UI clients (image create/update/query, tag
   operations, currency-image lookups) in the 0x4000–0x4FFF range.
 - PostgreSQL connections to =ores_assets_*= tables (=images=, =tags=,
   =image_tags=, =currency_images=) with temporal versioning.

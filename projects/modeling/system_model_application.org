@@ -2,52 +2,20 @@
 :ID: C9AD7DA5-D00E-4CA9-A978-E74F776E0F17
 :END:
 #+title: System Model: Application Layer
-#+description: Component inventory for the Application layer: Qt desktop, CLI, HTTP servers, Wt web frontend, compute engine, and orchestration controller.
+#+description: Component inventory for the Application layer: CLI, HTTP servers, shell REPL, compute engine, and Emacs tooling.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:architecture:application:system_model:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-09-19
 
 This page is part of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]. Application is where the system surfaces
-— the layer that composes everything below it into user-facing executables. Qt
-desktop and Wt web are both clients of the same domain services over [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]];
-the compute engine is a long-running service; the CLI is a batch operator. See
-[[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] for how the desktop client is decomposed into
-domain-specific plugins. To generate component diagrams, use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class
-Modeler]] skill.
+— the layer that composes everything below it into user-facing executables. The
+shell REPL and the CLI are clients of the same domain services over [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]];
+the compute engine is a long-running service. To generate component diagrams,
+use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill.
 
 * Detail
-
-** ores.qt
-
-Qt6 desktop GUI framework — MDI host application with a plugin
-architecture that loads domain-specific screens at startup. The host
-provides the MDI area, menu/toolbar construction, and an Emacs-like
-transient key-map; each plugin is an independent shared library compiled
-from its own CMake target.
-
-| Sub-component         | Role                                         | Dependencies |
-|-----------------------+----------------------------------------------+--------------|
-| [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]               | MDI host, menu/toolbar construction          | All layers   |
-| [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]           | Plugin API contract, IPlugin lifecycle       | [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]      |
-| [[id:621194C4-D438-4215-AE40-21FBE8FF0D85][ores.qt.refdata]]       | Currency, country, calendar CRUD screens     | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:3FA355D1-38FD-4E35-9E05-2185882B8AC1][ores.qt.trading]]       | Trade blotter, deal entry, instrument tables | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0][ores.qt.mktdata]]       | Curve/surface browser, fixings viewer        | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:970667D1-8BA8-4B49-B047-0D6D4C4CE498][ores.qt.analytics]]     | Reporting and analytics dashboards           | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:03EAE018-5E61-4005-AC9A-EFF827A46178][ores.qt.compute]]       | Compute job monitor, results viewer          | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:4092E7E6-C663-4E5E-B330-63BFECE7CA51][ores.qt.scheduler]]     | Scheduler task browser                       | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:B7269E9C-83B6-4D6C-80DE-D796AB89B1BD][ores.qt.workflow]]      | Workflow instance tracker                    | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:31D9C75A-DE71-4B98-9D33-D8ED86000C94][ores.qt.workspace]]     | Workspace management and isolation view      | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:DB5A4924-8F0A-440C-873E-D823F430043E][ores.qt.iam]]         | User/role management, feature flags          | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-| [[id:090E2CA3-11E7-4835-8F49-925DEB107660][ores.qt.dq]]            | Data catalogue, change-reason, coding-scheme, badge, LEI registry controllers | [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]]  |
-
-Related documents:
-
-- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — two-phase plugin loading, IPlugin contract, and MDI
-  host design.
-- [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — how the two-phase menu build sequence
-  constructs menus across all plugins.
 
 ** ores.cli
 
@@ -72,16 +40,6 @@ loop.
 | [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]]   | Boost.Beast/Asio async infrastructure       | [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]], Domain |
 | [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Wires all route handlers, runs event loop   | [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]]        |
 
-** ores.wt.service
-
-Wt C++ Web Toolkit frontend — account management, currency and country views,
-and feature flags. An alternative to the Qt desktop client, served as a web
-application using the same domain [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] services.
-
-| Sub-component    | Role                                         | Dependencies |
-|------------------+----------------------------------------------+--------------|
-| [[id:FE36240A-7A64-4332-9E82-8D976D458C73][ores.wt.service]]  | Wt web frontend, [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] domain client   | All layers   |
-
 ** ores.compute
 
 Distributed compute grid for ORE Engine risk runs. ores.compute.core
@@ -90,7 +48,7 @@ batch jobs to registered hosts, tracks execution state, and collects
 results. ores.compute.service is the NATS entrypoint for that
 orchestrator; ores.compute.wrapper executes each assigned run as a
 child process on a worker node; ores.compute.client uploads engine
-packages with hash verification for the shell and Qt.
+packages with hash verification for the shell.
 
 | Sub-component        | Role                                         | Dependencies                                       |
 |----------------------+----------------------------------------------+----------------------------------------------------|
@@ -136,5 +94,4 @@ production system; it automates the developer workflow inside Emacs.
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the index page with the four-layer architecture overview.
 - [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][System Model: Domain Layer]] — the layer below.
-- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — two-phase plugin loading, IPlugin contract, and MDI host design.
 - [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — compute architecture, run lifecycle, and chunking design.

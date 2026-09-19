@@ -42,14 +42,14 @@ everything.
 
 The hardest and most important edge is the one the rule /forbids/: the
 Domain must never depend on the Application. The financial model — the
-reason the system exists — cannot reach "up" to a Qt window or an HTTP
+reason the system exists — cannot reach "up" to a UI window or an HTTP
 handler. That single prohibition is what makes the next two decisions
 not just possible but necessary.
 
 ** The domain does not know its surfaces
 
-If the Domain cannot depend on the Application, how does a click in the
-Qt client ever run domain logic? Through [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][NATS]], not a function call.
+If the Domain cannot depend on the Application, how does a click in a
+UI ever run domain logic? Through [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][NATS]], not a function call.
 Each domain service owns a [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][subject namespace]] and answers requests on
 it; a surface publishes a request and awaits a reply, or subscribes to
 events, without holding a pointer to the service or even knowing what
@@ -69,8 +69,8 @@ knowing about the others.
 
 ** One domain, many surfaces
 
-ORE Studio deliberately offers the same capabilities through five
-surfaces — Qt desktop, CLI, shell REPL, Wt web, and HTTP. The
+ORE Studio deliberately offers the same capabilities through three
+surfaces: the CLI, the shell REPL, and HTTP. The
 temptation in any such system is to let logic leak into the surface
 that needs it first. The architecture refuses: the service layer is the
 single contract — the [[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]] makes it the one interface every

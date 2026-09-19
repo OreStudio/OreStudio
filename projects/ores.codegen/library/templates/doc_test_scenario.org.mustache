@@ -14,7 +14,7 @@
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
-This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title}}]] in [[id:{{story_id}}][{{story_title}}]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title}}]] in [[id:{{story_id}}][{{story_title}}]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
 
 * Before you start
 
@@ -36,46 +36,42 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 
 * Scenario Info
 
-# The QA Validation Runner treats *any* non-empty Clients cell below as
-# "this is a multi-client scenario" and then expects every step nested
-# one level deeper, under a per-client heading (Runner source:
-# QaValidationRunnerWidget.cpp, `multi_client =
-# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
-# genuinely blank — no placeholder text, not even "(single client)" —
-# for the common single-client case; a non-empty cell here with flat
-# `**` steps (no per-client `**`/`***` nesting) silently loads zero
-# steps. Only put text in it when the scenario truly needs several
-# running client instances at once (e.g. a NATS notification lands on
-# a second instance) — list the instance colours/labels, e.g. "blue,
-# red", and nest every step one level deeper under a `**` heading per
-# client as shown further down.
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
 
 | Field         | Value                                   |
 |---------------+------------------------------------------|
 | Verifies task | [[id:{{parent_id}}][{{parent_title}}]] |
 | Parent story  | [[id:{{story_id}}][{{story_title}}]]   |
-| Target dialog | (Qt dialog class under test, if any.)   |
+| Target screen | (UI screen under test, if any.)         |
 | Clients       |                                          |
 | State         | {{state}}                               |
 
 * Steps
 
 Each step is its own heading — the title should be five to seven
-words so it fits on one line in the QA Validation Runner's step list
+words so it fits on one line in the step list
 without wrapping or truncating (e.g. "Edit and save the record", not
 a full sentence describing the whole operation). The body below the
 title is a bullet-point checklist, not a prose paragraph: give the
 tester every piece of context needed to execute that one step without
 looking anything up elsewhere — what UI state must already exist,
 exactly what to click or type, and exactly what confirms the step
-passed. The panel writes each step's PASS/FAIL/PENDING outcome and
-notes back as a =*** Result= child heading directly under it.
+passed. Record each step's PASS/FAIL/PENDING outcome and notes as
+a =*** Result= child heading directly under it.
 
 ** Log in as <persona>
 
-# This must be the scenario's first step (the QA Validation Runner
-# panel doesn't track pass/fail for prose in * Context, only for
-# * Steps entries) -- name the *specific* persona this scenario
+# This must be the scenario's first step (only * Steps entries
+# carry a pass/fail outcome) -- name the *specific* persona this scenario
 # actually needs: the exact account to log in as and its password
 # (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
 # specific staff username -- see doc/agile/versions/.../

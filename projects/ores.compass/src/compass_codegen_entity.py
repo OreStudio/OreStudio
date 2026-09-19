@@ -458,7 +458,7 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     gp.add_argument("entity", help="Entity name or org-roam ID prefix.")
     gp.add_argument("--address", metavar="ADDRESS",
                     help="Physical-space address to generate (e.g. ores.sql.schema, "
-                         "ores.cpp.qt); omit for the entity's full supported set.")
+                         "ores.cpp.presentation); omit for the entity's full supported set.")
     gmode = gp.add_mutually_exclusive_group()
     gmode.add_argument("--dry-run", action="store_true",
                        help="Print output paths without writing.")
@@ -486,7 +486,7 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
                           "per-archetype ✅/❌ status and exclusion reasons.")
     ap_.add_argument("--address", metavar="ADDRESS",
                      help="Restrict to a technical space, facet, or archetype "
-                          "(e.g. ores.cpp, ores.cpp.qt, ores.cpp.qt.controller_header).")
+                          "(e.g. ores.cpp, ores.cpp.presentation,\n                          ores.cpp.presentation.history_field_mapper).")
 
     args = ap.parse_args(argv)
 

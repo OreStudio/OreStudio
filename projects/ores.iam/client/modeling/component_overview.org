@@ -4,7 +4,7 @@
 #+title: ores.iam.client
 #+name: iam.client
 #+full_name: ores.iam.client
-#+description: Client-side IAM library — session management and authentication helper for Qt and service consumers.
+#+description: Client-side IAM library — session management and authentication helper for UI and service consumers.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:client:component:
@@ -20,7 +20,7 @@
 * Summary
 
 =ores.iam.client= is a lightweight client-side library that manages IAM session
-state for Qt components and other service consumers. It provides a
+state for UI components and other service consumers. It provides a
 =service_token_provider= that holds an authenticated session token, handles
 token renewal, and supplies the token to outgoing NATS requests. It abstracts
 the IAM authentication protocol so consumers do not need to implement the

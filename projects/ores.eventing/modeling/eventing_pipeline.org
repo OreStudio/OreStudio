@@ -18,7 +18,7 @@ Every entity change in ORE Studio flows through a four-stage pipeline:
    publishes a typed in-process event to the =event_bus=.
 3. A subscriber in the service translates the in-process event to a NATS
    message and publishes it on a well-known subject.
-4. The Qt client (or any NATS subscriber) receives the NATS message and
+4. A UI client (or any NATS subscriber) receives the NATS message and
    reacts.
 
 The diagram below shows these four stages for a workspace change:
@@ -37,10 +37,10 @@ The diagram below shows these four stages for a workspace change:
   └───────────────────────────┬─────────────────────────────────────────┘
                               │  NATS publish/subscribe
   ┌───────────────────────────▼─────────────────────────────────────────┐
-  │ Qt client (ores.qt.workspace / WorkspaceController)                 │
-  │  subscribeToEvent("ores.workspace.workspace_changed")               │
-  │  → ClientManager::notificationReceived signal                       │
-  │  → onNotificationReceived → markAsStale()                          │
+  │ NATS subscriber (ores.shell, or a future UI client)                 │
+  │  subscribe("ores.workspace.workspace_changed")                      │
+  │  → onNotificationReceived                                           │
+  │  → markAsStale()                                                   │
   └─────────────────────────────────────────────────────────────────────┘
 #+end_example
 
@@ -143,48 +143,26 @@ event to JSON and publishes it to NATS on the subject given by
 
 The =entity_change_event= JSON sent on NATS has the same four fields as
 the PostgreSQL payload; it is the wire format shared by all downstream
-consumers including the Qt client.
+consumers including UI clients.
 
-* Stage 4 — Client pickup (Qt =ClientManager=)
+* Stage 4 — Client pickup
 
-The Qt client uses =subscribeToEvent(subject)= on =ClientManager= to
-register interest in a NATS subject.  On arrival the client library
-deserialises the payload and emits the =notificationReceived= signal with:
+The client-side half of this stage went with the desktop client, which
+registered interest with =subscribeToEvent(subject)= on its
+=ClientManager=. On arrival the client library deserialised the payload
+and emitted a =notificationReceived= signal carrying the event type, the
+change timestamp, the changed identifiers, and the tenant id. Controllers
+connected to that signal, filtered by event type, and marked the affected
+windows stale. Subscription was renewed on login and reconnect, and torn
+down in the controller destructor.
 
-| Parameter   | Type          | Content                          |
-|-------------+---------------+----------------------------------|
-| =eventType= | =QString=     | NATS subject (e.g. =ores.workspace.workspace_changed=) |
-| =timestamp= | =QDateTime=   | Change timestamp                 |
-| =entityIds= | =QStringList= | Identifiers of changed entities  |
-| =tenantId=  | =QString=     | Tenant UUID                      |
-
-Controllers connect to this signal and filter by =eventType=:
-
-#+begin_src cpp
-  constexpr std::string_view workspace_event_name =
-      eventing::domain::event_traits<workspace::eventing::workspace_changed_event>::name;
-
-  // In constructor:
-  connect(clientManager_, &ClientManager::notificationReceived,
-          this, &WorkspaceController::onNotificationReceived);
-  clientManager_->subscribeToEvent(std::string{workspace_event_name});
-
-  // Slot:
-  void WorkspaceController::onNotificationReceived(
-      const QString& eventType, ...) {
-      if (eventType != QString::fromStdString(std::string{workspace_event_name}))
-          return;
-      // mark windows stale ...
-  }
-#+end_src
-
-Subscription is renewed on =loggedIn= and =reconnected= signals.
-Unsubscription happens in the controller destructor.
+Nothing in the server half changed. A rebuilt UI client reimplements that
+contract against the same subjects.
 
 * Verifying eventing with =ores.shell=
 
 The =events= commands in [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] let you inspect and exercise the
-pipeline from the command line without building a Qt client.
+pipeline from the command line without building a UI client.
 
 ** List registered channels
 
@@ -203,8 +181,8 @@ did not call =register_mapping=.
 events listen ores.workspace.workspace_changed
 #+end_src
 
-Then perform a workspace create/edit in the Qt app; the shell should
-print a JSON notification within a second.  If nothing appears, check:
+Then perform a workspace create/edit by any write path; the shell
+should print a JSON notification within a second.  If nothing appears, check:
 
 1. The SQL trigger exists: =\df ores_workspaces_notify_fn= in =psql=.
 2. The service log shows "Entity change event pipeline started."
@@ -226,9 +204,10 @@ To wire eventing for a new entity, four artefacts are needed:
    =registrar::register_mapping<T>= and subscribe on the =event_bus=.
    Also add =ores.eventing.lib= to the service CMakeLists.
 
-4. *Qt subscription* — in the controller constructor/destructor, call
-   =subscribeToEvent= / =unsubscribeFromEvent=; implement
-   =onNotificationReceived= to mark windows stale.
+4. *Client subscription* — a UI client subscribes on construction and
+   login, unsubscribes on destruction, and marks the affected windows
+   stale when the event arrives. The removed desktop client's version of
+   this is in §Stage 4.
 
 * See also
 

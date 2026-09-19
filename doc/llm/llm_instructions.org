@@ -46,14 +46,14 @@ Read these first on a new contact:
 
 * Code style
 
-- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — naming (snake_case / CamelCase-Qt), include
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — naming (snake_case, include order), include
   order, comment quality, platform isolation, and all review categories.
 
 * Architecture
 
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] — four-layer architecture and component inventory.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — cross-cutting reference: entity patterns, SQL schema,
-  Qt/Wt patterns, CLI/shell patterns, unit-test conventions.
+  presentation patterns, CLI/shell patterns, unit-test conventions.
 
 * Documentation
 

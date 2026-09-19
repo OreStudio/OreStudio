@@ -27,8 +27,7 @@ to a whole component (every file plus the structure). Return to
 
 | Check               | Description                                              |
 |---------------------+----------------------------------------------------------|
-| snake_case (non-Qt) | Classes, methods, variables use snake_case.              |
-| CamelCase (Qt only) | =ores.qt= uses CamelCase per Qt convention.              |
+| snake_case          | Classes, methods, variables use snake_case.              |
 | File / class match  | File names match the class they declare.                 |
 | Namespace pattern   | =ores::component::facet= structure.                      |
 | Include order       | Standard library → third-party → project headers.        |

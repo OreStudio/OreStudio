@@ -38,7 +38,7 @@ public:
 };
 #+end_src
 
-There are no service-level behavioural knobs today (unlike [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]'s
+There are no service-level behavioural knobs today (unlike [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Presentation]]'s
 =has_change_reason_cache= and friends) — everything entity-specific
 at this layer is expressed as one of the paste blocks below.
 

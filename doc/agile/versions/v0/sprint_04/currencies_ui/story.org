@@ -64,7 +64,7 @@ data types will follow in the UI.
 
 * See also
 
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component that this story extends.
+- 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — the Qt component that this story extends.
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component for currencies.
 - [[id:AF70CDF6-071F-43A9-91BB-7EB9A59A550F][Currencies end-to-end]] (sprint 01) and [[id:ED5BC735-FB54-4CE0-9A08-6DAB88C242D0][Currencies temporal and
   export]] (sprint 02) — predecessor currency-thread stories.

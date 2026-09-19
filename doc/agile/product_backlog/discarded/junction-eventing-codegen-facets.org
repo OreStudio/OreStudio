@@ -27,7 +27,7 @@ in [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish
 fallback badge renders, and the running Qt client never picked it up --
 not even after reopening the affected list window. Root cause: unlike
 =badge_definition= (edited through the UI, which *does* propagate live
-to every other client via [[id:4FF4167B-D970-4383-A263-24E329C9AB95][BadgeCache's new subscribe-and-reload fix]]),
+to every other client via 4FF4167B-D970-4383-A263-24E329C9AB95),
 =badge_mapping= is a =#+type: ores.codegen.junction= model with no
 notify trigger, no changed-event type, and no event-registrar --
 there is structurally nothing to subscribe to.
@@ -50,7 +50,7 @@ artefacts, per [[id:4A7B2C8E-F391-4D5A-B6E0-1C9D3F7A5B2E][the Eventing Pipeline 
 3. A server-side event-mapping registrar wiring the Postgres channel
    to the NATS subject -- the [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] facet.
 4. A Qt-side subscription (hand-written per controller today, or via
-   the [[id:4FF4167B-D970-4383-A263-24E329C9AB95][subscribe-and-reload cache pattern]]).
+   the 4FF4167B-D970-4383-A263-24E329C9AB95).
 
 All three server-side facets (1-3) declare themselves against
 =#+type: ores.codegen.entity= only. The junction model type
@@ -95,7 +95,7 @@ place.
 - =badge_mapping= is regenerated as the first consumer (mirroring how
   =party_cache= was the first consumer of the entity-mirror cache
   facet): it gets a real =badge_mapping_changed_event=, and
-  =BadgeCache= (see [[id:4FF4167B-D970-4383-A263-24E329C9AB95][How does a Qt client cache stay fresh?]]) subscribes to
+  =BadgeCache= (see 4FF4167B-D970-4383-A263-24E329C9AB95) subscribes to
   it the same way it already subscribes to =badge_definition_changed=,
   so a mapping edit (through the UI, SQL, or any other path) refreshes
   every Qt client live, closing the gap the fallback-badge manual QA

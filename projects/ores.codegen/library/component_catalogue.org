@@ -11,7 +11,7 @@ JSON model support was decommissioned (all models migrated to org). Every
 component discovers models exclusively through its =modeling_dir= — org
 files whose frontmatter declares a codegen model type.
 
-=--address= selects the technical space (SQL vs C++ vs Qt) to generate; no
+=--address= selects the technical space (SQL vs C++ vs TypeScript) to generate; no
 separate per-address component entries are needed.
 
 * Components

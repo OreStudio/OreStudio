@@ -2837,29 +2837,6 @@ def _worktree_services_status(env_name):
         return None
 
 
-def _worktree_client_status(worktree_path, preset):
-    """Check for a running Qt client in the worktree's run directory.
-
-    Returns True if at least one ores.qt*.pid file points to a live process.
-    """
-    if not preset:
-        return False
-    run_dir = Path(worktree_path) / "build" / "output" / preset / "publish" / "run"
-    if not run_dir.is_dir():
-        return False
-    for pid_file in sorted(run_dir.glob("ores.qt*.pid")):
-        try:
-            pid = int(pid_file.read_text().strip())
-        except (OSError, ValueError):
-            continue
-        try:
-            os.kill(pid, 0)
-            return True
-        except OSError:
-            continue
-    return False
-
-
 def _read_env_map_for(worktree_path):
     """Read a worktree's .env into a key/value map; empty if missing."""
     env_file = Path(worktree_path) / ".env"
@@ -2938,13 +2915,9 @@ def cmd_fleet(args):
         pr = pr_map.get(branch) if branch else None
         env_name = _worktree_env_value(path, "ORES_ENV_NAME")
         services_status = None
-        client_status = None
         db_status = None
         if getattr(args, "status", False) and env_name:
             services_status = _worktree_services_status(env_name)
-            preset = _worktree_env_value(path, "ORES_PRESET")
-            if preset:
-                client_status = _worktree_client_status(path, preset)
             # Read full env for DB check
             env_map = _read_env_map_for(path)
             if env_map:
@@ -2968,7 +2941,6 @@ def cmd_fleet(args):
             "env_name": env_name,
             "scope": scope_map.get(env_name) if env_name else None,
             "services": services_status,
-            "client": client_status,
             "db": db_status,
         })
 
@@ -3006,7 +2978,6 @@ def cmd_fleet(args):
         if getattr(args, "status", False):
             svc = r.get("services")
             trow["services"] = "✓" if svc == "active" else ("—" if svc is None else svc)
-            trow["client"] = "✓" if r.get("client") else "—"
             trow["db"] = r.get("db") or "—"
         trows.append(trow)
 
@@ -3016,9 +2987,9 @@ def cmd_fleet(args):
     _MAX  = {"worktree": 28, "identity": 18, "type": 6,
               "branch": 38, "task": 38, "pr": 8, "scope": 14}
     if getattr(args, "status", False):
-        _COLS += ["services", "client", "db"]
-        _HDR.update({"services": "SERVICES", "client": "CLIENT", "db": "DB"})
-        _MAX.update({"services": 8, "client": 6, "db": 16})
+        _COLS += ["services", "db"]
+        _HDR.update({"services": "SERVICES", "db": "DB"})
+        _MAX.update({"services": 8, "db": 16})
     _COLS += ["sync"]
     _HDR["sync"] = "SYNC"
     _MAX["sync"] = 8
@@ -4955,7 +4926,7 @@ def cmd_env(argv):
     sub.add_parser("configure", help="Generate .env + NATS certs + IAM key "
                                      "(reuses existing secrets; --with-diff to show changes)")
     sub.add_parser("install-packages", help="Install system packages (baseline, "
-                                            "--with-qt, --with-valgrind, --full-install)")
+                                            "--with-valgrind, --full-install)")
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
     sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
     sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
@@ -5725,13 +5696,6 @@ def cmd_bearings(argv):
                   f"starting={_c['starting']} stopped={_c['stopped']} "
                   f"missing={_c['missing']}{_C_RESET}  "
                   f"(nats: {_st['nats']}){_hint}")
-            _clients = _csv.client_status(_ctx)
-            if _clients:
-                _desc = ", ".join(f"{n} PID {pid}" for n, pid in _clients)
-                print(f"  Client   : {_C_GREEN}running{_C_RESET}  ({_desc})")
-            else:
-                print(f"  Client   : not running  "
-                      f"({_ycmd('compass client start')})")
         except SystemExit:
             print("  Services : (no preset in .env — compass env configure)")
         # ── Genesis env check (when .env exists) ────────────────────────────
@@ -7275,7 +7239,7 @@ def cmd_codegen(argv):
 
     ap = _ap.ArgumentParser(
         prog="compass codegen",
-        description="ORE Studio code generation (SQL, C++, Qt).",
+        description="ORE Studio code generation (SQL, C++, TypeScript).",
     )
     ap.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging")
     sub = ap.add_subparsers(dest="subcmd", required=True)
@@ -7285,7 +7249,7 @@ def cmd_codegen(argv):
     gen_p.add_argument("--model", required=True, metavar="PATH",
                        help="Path to the model file")
     gen_p.add_argument("--address", required=True, metavar="ADDRESS",
-                       help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt)")
+                       help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.presentation)")
     gen_p.add_argument("--dry-run", action="store_true",
                        help="Print output paths without writing")
 
@@ -7297,7 +7261,7 @@ def cmd_codegen(argv):
     regen_scope.add_argument("--all", action="store_true",
                              help="Regenerate all components")
     regen_p.add_argument("--address", required=True, metavar="ADDRESS",
-                         help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.qt)")
+                         help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.presentation)")
     regen_p.add_argument("--entity", metavar="NAME[,NAME...]",
                          help="Restrict --component to a comma-separated list of entity names "
                               "(e.g. rounding_type,monetary_nature). Not valid with --all.")
@@ -7380,9 +7344,6 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "branches":
         import compass_branches
         sys.exit(compass_branches.run(sys.argv[2:], PROJECT_ROOT))
-    if len(sys.argv) >= 2 and sys.argv[1] == "client":
-        import compass_services
-        sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "claude":
         import compass_claude
         sys.exit(compass_claude.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
@@ -7437,7 +7398,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "image", "nats", "db", "sql", "services", "client", "claude", "test", "build",
+            "env", "image", "nats", "db", "sql", "services", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen", "branches",
             "skills",
@@ -7465,7 +7426,7 @@ def main():
         "  Build:     build\n"
         "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
         "  Site:      site\n"
-        "  Operate:   services, client, claude\n"
+        "  Operate:   services, claude\n"
         "  Shell:     shell\n"
         "  Review:    review\n"
         "  PR:        pr\n"
@@ -7483,7 +7444,6 @@ def main():
         "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
         "  sql:      alias for db sql — run SQL in the environment\n"
         "  services: start | stop | status | clear-logs (operate)\n"
-        "  client:   start | stop (operate)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
@@ -7545,7 +7505,7 @@ def main():
                               help="Output format: pretty (default) or json")
     fleet_parser.add_argument("--status", action="store_true",
                               help="Show per-environment operational status: "
-                                   "services, client, DB (opt-in — slow)")
+                                   "services, DB (opt-in — slow)")
 
     subparsers.add_parser("branches",
                           help="Report/prune git branches merged into origin/main; "
@@ -7579,9 +7539,6 @@ def main():
     subparsers.add_parser("services",
                           help="Operate: service lifecycle — start, stop, "
                                "status, clear-logs")
-    subparsers.add_parser("client",
-                          help="Operate: Qt client lifecycle — start (detached; "
-                               "--colour for parallel runs), stop")
     subparsers.add_parser("claude",
                           help="Launch Claude Code inside its own systemd "
                                "--user scope, so oomd can kill it without "

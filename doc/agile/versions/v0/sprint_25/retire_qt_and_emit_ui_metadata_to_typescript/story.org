@@ -21,11 +21,11 @@ The Qt client leaves the repository. Its metadata does not. The entity models ke
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The drawer is renamed, the Qt templates are gone, and ores.ts.ui emits a TypeScript metadata file per entity. |
-| Waiting on    | Nothing.                               |
-| Next          | PR 2: delete the ores.qt and ores.wt.service trees and the Qt vocabulary that describes them. |
+| Now           | PR 1 is merged. PR 2 deleted the ores.qt and ores.wt.service trees and the Qt vocabulary that described them. |
+| Waiting on    | The PR 2 review.                       |
+| Next          | Watch the CI jobs on PR 2, then merge.  |
 | Last touched  | 2026-09-19                               |
 
 * Acceptance
@@ -39,6 +39,7 @@ The Qt client leaves the repository. Its metadata does not. The entity models ke
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0DC6D0CB-D420-49B6-8751-43598610FEA4][Repurpose the presentation drawer into an ores.ts.ui facet]] | DONE | 2026-09-19 | 2026-09-19 | Rename the entity models' Qt drawer to Presentation, delete the Qt templates, and add an ores.ts.ui facet that emits one TypeScript metadata file per entity from the same org models the C++ headers use. |
+| [[id:E18B217F-DEE4-46BE-BE07-10F86AF727A1][Remove the ores.qt and ores.wt trees]] | DONE | 2026-09-19 | 2026-09-19 | Delete the ores.qt and ores.wt.service trees, the Qt and Wt recipes, skills and knowledge pages, and every build, CI, compass and certificate reference that names them. |
 
 * Decisions
 

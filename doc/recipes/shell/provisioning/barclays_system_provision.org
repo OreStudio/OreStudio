@@ -16,8 +16,9 @@ photos, GLEIF counterparties) — use it unless you have a specific
 reason to want Barclays' lighter-weight, GLEIF-only tenant instead
 (e.g. a scenario that doesn't need staff/business-unit structure).
 
-Reproduce, from the command line, what an operator does through the
-three Qt provisioning wizards — but sourced from the GLEIF golden copy
+Reproduce, from the command line, what an operator used to do through the
+three provisioning wizards of the removed desktop client — but sourced
+from the GLEIF golden copy
 rather than synthetic data. The =ores-shell= block below is tangled
 into the runnable script library as =barclays_system_provision.ores=.
 
@@ -78,7 +79,7 @@ generated from this recipe's =ores-shell= block by
 * Tested by
 
 Manual: =compass shell -f barclays_system_provision.ores= against a
-freshly recreated database, or via the Qt script library panel.
+freshly recreated database.
 
 * See also
 

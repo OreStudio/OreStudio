@@ -64,12 +64,12 @@ spans several.
 | =doc-=     | recipes, knowledge, manual, memory, search across documents  |
 | =code-=    | hand-written code: build, tests, review, investigation       |
 | =codegen-= | generated code: entities, components, schemas                |
-| =devops-=  | environment, database, services, shell, client, site         |
+| =devops-=  | environment, database, services, shell, site                 |
 | =skill-=   | the skills themselves (meta)                                 |
 
 =code-= vs =codegen-=: manual versus automatic. Writing a unit test
-by hand is =compass-code-add-tests=; scaffolding a Qt entity from a model
-is =compass-codegen-add-qt-entity=.
+by hand is =compass-code-add-tests=; scaffolding an entity from a model
+is =compass-codegen-add-entity=.
 
 Every entry above is preceded by =compass-=, so the domain is the *second*
 segment of an action's name: =compass-pr-merge=, =compass-agile-start-task=.

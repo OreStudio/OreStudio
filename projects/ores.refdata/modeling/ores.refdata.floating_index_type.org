@@ -2,7 +2,7 @@
 :ID: C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9
 :END:
 #+title: ores.refdata.floating_index_type
-#+description: Codegen entity model for the refdata floating_index_type table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata floating_index_type table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
@@ -17,8 +17,8 @@ Reference data table defining valid floating rate indices used in
 instrument floating leg definitions. Values are sourced from ORE
 ore_types.xsd.
 
-/2026-07-18 moved from =ores.trading= to =ores.refdata=/: the Qt UI
-already lived in =ores.qt/refdata='s =RefdataPlugin=, hand-wired
+/2026-07-18 moved from =ores.trading= to =ores.refdata=/: the desktop UI
+already lived in the removed client's =RefdataPlugin=, hand-wired
 outside codegen; the backend followed to match, same direction as
 Book/BusinessCentre's own moves to =ores.refdata=.
 

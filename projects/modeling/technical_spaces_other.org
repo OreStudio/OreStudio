@@ -45,14 +45,14 @@ proceeded:
 
 | Former asset | Now lives at |
 |---------------+---------------------------------------------------|
-| Detail dialog =.ui= | =ores.cpp.qt= (=ores.cpp.qt.detail_dialog_ui=) — grouped with the rest of the Qt ensemble it complements |
 | PlantUML ER    | [[id:528F99DD-FEE9-4007-A526-181DFAB21F5F][ores.plantuml]] (=ores.plantuml.er=) |
 | Shell service vars | [[id:3A0C1132-EE6A-46FF-85F6-1D12C79EA426][ores.shell]] (=ores.shell.service=) |
 
 Of these, only the PlantUML ER diagram and the shell service-vars
-templates are currently reachable via any address or code path; the
-history-dialog =.ui= form was retired with the generic
-=ores::qt::HistoryDialog=.
+templates are currently reachable via any address or code path. The
+detail-dialog =.ui= form was retired with the generic
+history-dialog class, and the facet that housed it went with the
+desktop client.
 
 ** Doc Technical Space
 

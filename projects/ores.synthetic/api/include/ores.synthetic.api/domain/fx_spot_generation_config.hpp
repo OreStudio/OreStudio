@@ -154,8 +154,8 @@ struct fx_spot_generation_config final {
      * @brief The folder this feed lives under (the instrument-type folder, e.g. "FX Rates", nested
      * under an asset-class folder under this feed's owning collection). Real, queryable hierarchy
      * position -- not parsed out of source_name, which stays a display/NATS-subject string.
-     * Nullable for now: only the publish-from-dq path populates it; manual creation (Qt's New FX
-     * Rate) doesn't yet resolve/create folders -- follow-up work.
+     * Nullable for now: only the publish-from-dq path populates it; manual creation (the New FX
+     * Rate action) doesn't yet resolve/create folders -- follow-up work.
      */
     std::optional<boost::uuids::uuid> folder_id;
 

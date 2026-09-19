@@ -2,7 +2,7 @@
 :ID: E6EEAC72-FD59-4277-BF33-E26F981262E0
 :END:
 #+title: Profile: FK-scoped child
-#+description: UUID surrogate key, tenant+workspace scope, basic Qt, explorer-child parent relationship.
+#+description: UUID surrogate key, tenant+workspace scope, basic presentation tier, explorer-child parent relationship.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:

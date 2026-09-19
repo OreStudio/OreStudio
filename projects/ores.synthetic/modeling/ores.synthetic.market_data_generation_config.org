@@ -321,8 +321,8 @@ entirely.
 |-------------+--------------+--------------+-----------+-------+-------------------+---------------------------------|
 | Name        | name         | Name         | string    | 200   |                   |                                 |
 | Description | description  | Description  | string    | 300   |                   |                                 |
-| Scope       | scope        | Scope        | string    | 90    | scopeLabel        | ores.qt/ScopeLabel.hpp          |
-| BindingMode | binding_mode | Binding Mode | string    | 100   | bindingModeLabel  | ores.qt/BindingModeLabel.hpp    |
+| Scope       | scope        | Scope        | string    | 90    | scopeLabel        |           |
+| BindingMode | binding_mode | Binding Mode | string    | 100   | bindingModeLabel  |     |
 | Enabled     | enabled      | Enabled      | bool      | 80    |                   |                                 |
 | Version     | version      | Version      | int       | 80    |                   |                                 |
 | ModifiedBy  | modified_by  | Modified By  | string    | 120   |                   |                                 |

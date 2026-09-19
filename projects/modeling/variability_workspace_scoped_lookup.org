@@ -2,7 +2,7 @@
 :ID: EB5118BB-925A-4414-AB38-FFF15DAFDF0C
 :END:
 #+title: Profile: Workspace-scoped lookup
-#+description: Text natural key, tenant+workspace scope, standard Qt tier with pagination and change-reason cache.
+#+description: Text natural key, tenant+workspace scope, standard presentation tier with pagination and change-reason cache.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:

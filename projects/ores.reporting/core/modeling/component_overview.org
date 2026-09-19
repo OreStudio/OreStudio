@@ -35,7 +35,7 @@ persists all report metadata to the =ores_reporting= schema.
 
 - Report-definition and run-instance records persisted to the =ores_reporting=
   schema.
-- ORE output files (NPV cube, cashflows) made available to Qt clients.
+- ORE output files (NPV cube, cashflows) made available to UI clients.
 - NATS response messages returned to callers.
 
 * Entry points

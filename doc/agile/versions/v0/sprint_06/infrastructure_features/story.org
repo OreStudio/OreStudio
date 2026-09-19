@@ -54,4 +54,4 @@ tests.
 * See also
 
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate the event bus extends.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — host of the system-tray code.
+- 25812E6F-7AD1-36E4-697B-EEC8015C4F1F — host of the system-tray code.

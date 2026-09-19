@@ -131,7 +131,7 @@ package "Infrastructure Layer" #F2F2F2 {
     note right of connections
     Server connection bookmarks: hierarchical
     folders, tags, AES-256-GCM credentials,
-    SQLite persistence. Used by Qt and shell.
+    SQLite persistence.
     end note
 
     component [ores.storage] as storage #F7E5FF
@@ -238,13 +238,6 @@ package "Application Layer" #F2F2F2 {
     directly against the database.
     end note
 
-    component [ores.qt] as qt #F7E5FF
-    note right of qt
-    Qt 6 MDI desktop app: currencies, accounts,
-    parties, trades via NATS. Composed of
-    ores.qt.* feature modules.
-    end note
-
     component [ores.http.core] as httpcore #F7E5FF
     note right of httpcore
     Concrete HTTP route handlers: IAM, assets,
@@ -256,13 +249,6 @@ package "Application Layer" #F2F2F2 {
     note right of httpserver
     HTTP server entrypoint: wires http.core routes
     and runs Boost.Asio event loop.
-    end note
-
-    component [ores.wt.service] as wt #F7E5FF
-    note right of wt
-    Wt C++ Web Toolkit frontend: account mgmt,
-    currency/country views, feature flags.
-    Alternative to Qt desktop.
     end note
 
     component [ores.compute.service] as compute #F7E5FF
@@ -350,24 +336,12 @@ cli --> database
 cli --> refdata
 cli --> ore
 
-qt --> nats
-qt --> iam
-qt --> refdata
-qt --> assets
-qt --> connections
-qt --> trading
-qt --> marketdata
-
 httpcore --> nats
 httpcore --> httpapi
 httpcore --> iam
 httpcore --> assets
 httpserver --> httpcore
 
-wt --> nats
-wt --> iam
-wt --> refdata
-wt --> variability
 
 compute --> nats
 compute --> scheduler

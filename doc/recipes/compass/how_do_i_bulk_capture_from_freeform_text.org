@@ -49,7 +49,7 @@ splitting, de-duplication, and canonicalisation.
 #+begin_example
 Capture the following notes:
 
-We should look at adding dark-mode support to the Qt UI — there have
+We should look at adding dark-mode support to the web UI — there have
 been a few user requests.  Also the CSV export in the reporting view
 is slow when there are more than 10k rows; worth investigating whether
 streaming the write helps.  And someone mentioned wanting an audit log

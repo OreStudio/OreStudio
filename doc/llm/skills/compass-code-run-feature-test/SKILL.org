@@ -52,7 +52,6 @@ steps, silently.
 * Reference
 
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]] — the =test_scenario= doc shape.
-- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — the sibling skill this one hands off to for =--open-scenario=.
 - [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]] — sibling skill sharing the same
   environment-readying recipe, applied to manual-chapter screenshots
   instead of feature verification.

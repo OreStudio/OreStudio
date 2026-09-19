@@ -100,11 +100,6 @@
   "Return path to publish directory for PRESET."
   (concat (ores/preset-output-path preset) "/publish"))
 
-(defun ores/preset-wt-resources (preset)
-  "Return path to Wt resources directory for PRESET."
-  (concat (ores/preset-output-path preset)
-          "/vcpkg_installed/x64-linux/share/Wt/resources"))
-
 ;; =============================================================================
 ;; Port allocation
 ;; =============================================================================
@@ -124,8 +119,6 @@
          (offset (cond
                   ((and (eq service-type 'http)    (eq build-type 'debug))   0)
                   ((and (eq service-type 'http)    (eq build-type 'release)) 1)
-                  ((and (eq service-type 'wt)      (eq build-type 'debug))   2)
-                  ((and (eq service-type 'wt)      (eq build-type 'release)) 3)
                   (t 0))))
     (+ base offset)))
 
@@ -148,20 +141,17 @@ Derived from ORES_*_SERVICE_DB_USER entries in the checkout .env."
                         (cons binary display)))))
                 (ores/load-dotenv-for-prodigy))))
 
-
 ;; =============================================================================
 ;; Tags
 ;; =============================================================================
 
 (prodigy-define-tag :name 'ores)
-(prodigy-define-tag :name 'ui)
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
 (prodigy-define-tag :name ores/checkout-tag)
 (prodigy-define-tag :name 'nats-server)
 (prodigy-define-tag :name 'nats-service)
 (prodigy-define-tag :name 'http-server)
-(prodigy-define-tag :name 'wt-server)
 (prodigy-define-tag :name 'compute-wrapper)
 
 ;; =============================================================================
@@ -209,63 +199,6 @@ Uses BASE directly; build type and checkout are already visible as tags."
                                              (plist-get args :output))
                          (prodigy-set-status (plist-get args :service) 'ready)))
           :stop-signal 'sigint
-          :kill-process-buffer-on-stop t))
-
-      (let ((qt-on-output (lambda (&rest args)
-                            (when (string-match-p "Starting ORE Studio Qt"
-                                                  (plist-get args :output))
-                              (prodigy-set-status (plist-get args :service) 'ready))))
-            (qt-args `(,@common-args "--log-to-console")))
-
-        ;; QT
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      qt-args
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv-for-prodigy)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
-
-        ;; QT Blue
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Blue" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.blue.log"
-                       "--instance-name" "Blue" "--instance-color" "2196F3")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv-for-prodigy)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
-
-        ;; QT Red
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Red" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.red.log"
-                       "--instance-name" "Red" "--instance-color" "F44336")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv-for-prodigy)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
-
-        ;; QT Green
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Green" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.green.log"
-                       "--instance-name" "Green" "--instance-color" "4CAF50")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv-for-prodigy)
-          :on-output qt-on-output
-          :stop-signal 'sigint
           :kill-process-buffer-on-stop t)))
 
     ;; Compute wrapper nodes (test grid — 5 local nodes)
@@ -307,21 +240,6 @@ Uses BASE directly; build type and checkout are already visible as tags."
                  "--port" ,(number-to-string (ores/get-port 'http build-type)))
       :tags    `(,@common-tags http-server)
       :env     (ores/load-dotenv-for-prodigy)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; WT Server
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio WT Server" preset)
-      :cwd     bin
-      :command (concat bin "/ores.wt.service")
-      :args    `(,@common-args
-                 "--http-address" "0.0.0.0" "--docroot" "."
-                 "--http-port" ,(number-to-string (ores/get-port 'wt build-type)))
-      :tags    `(,@common-tags wt-server)
-      :env     `(("WT_RESOURCES_DIR" ,(concat (ores/preset-publish-path preset)
-                                               "/../../vcpkg_installed/x64-linux/share/Wt/resources"))
-                 ,@(ores/load-dotenv-for-prodigy))
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)))
 

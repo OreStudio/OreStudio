@@ -43,7 +43,7 @@ never skips a rung below where it stops.
 | 1    | Did only the expected things change?            | The drift checks             | Always, after generating |
 | 2    | Does the behaviour do what it should?           | Catch2 unit and integration tests | Feature work |
 | 3    | Does the system do what the task claimed?       | A scripted =ores.shell= scenario | Every task and story |
-| 4    | Does the interface do what the system does?     | Qt verification              | Only when Qt is affected |
+| 4    | Does the interface do what the system does?     | In-app verification          | When a client UI exists (none today) |
 
 ** Rung 0: Generation
 
@@ -107,8 +107,12 @@ which is a gap worth closing on its own terms.
 
 ** Rung 4: The Interface
 
-Only when the work affects the Qt client. The rule that governs the
-choice of mechanism:
+There is no client UI today: the desktop client is removed, and
+=ores.typescript= holds UI metadata with no screens built on it yet. The
+rung stays in the ladder because the client that returns will need it,
+and the rule below is what governs it.
+
+The rule that governs the choice of mechanism:
 
 *Assert on state, not on pixels.* An agent needs a predicate it can
 evaluate. Widget state, model contents and signal emissions are
@@ -118,14 +122,12 @@ because an agent comparing images either accepts noise or rejects on it.
 
 That gives three layers, in preference order:
 
-1. *Widget-level tests* under Qt's own test framework, running with the
-   offscreen platform so they need no display and run in CI beside the
-   other tests. In-process, so they assert on state directly.
-2. *A scripted control surface inside the application*, the Qt sibling
+1. *In-process UI tests* under the client's own test framework, running
+   with an offscreen platform so they need no display and run in CI
+   beside the other tests. In-process, so they assert on state directly.
+2. *A scripted control surface inside the application*, the UI sibling
    of =ores.shell -f=: a driver that opens windows, invokes actions and
-   reports state, driven by a committed script. The application already
-   captures its own screenshots in-process, so the evidence trail comes
-   free.
+   reports state, driven by a committed script.
 3. *External screen automation* only for pixel-parity work — manual
    screenshots and visual comparison — where a human reviews the output
    anyway.

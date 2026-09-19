@@ -9,8 +9,8 @@
 #+created: 2026-07-16
 #+updated: 2026-07-16
 
-Reproduce, from the command line, the =majors= slice of what the Qt
-Cross-Rates Matrix window shows, via [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][the crm_commands shell
+Reproduce, from the command line, the =majors= slice of what the removed
+desktop client's cross-rates matrix window showed, via [[id:F4D45153-D81E-464D-8D9B-2DBFEE7CB670][the crm_commands shell
 command]]. The =ores-shell= block below is tangled into the runnable
 script library as =crm_rates_majors.ores=.
 
@@ -23,7 +23,7 @@ How do I view the majors CRM rates from ores.shell?
 The =crm rates= command
 (=projects/ores.shell/src/app/commands/crm_commands.cpp=) sends the
 same =get_crm_rates_request= (subject =marketdata.v1.crm.rates=) the
-Qt matrix window sends and formats through the same
+desktop client's matrix window sent and formatted through the same
 =crm_rate_formatter=. Runs in the logged-in account's own default
 party by default; expects the services up (=compass services
 start=) and a tenant/party provisioned (e.g. via the Acme Corporation

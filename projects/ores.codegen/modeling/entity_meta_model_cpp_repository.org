@@ -96,7 +96,7 @@ struct book_entity {
 * Table display
 
 An org table mapping column names to their display headers, consumed
-by more than one downstream facet (Qt list columns, CSV/XML export
+by more than one downstream facet (UI list columns, CSV/XML export
 column headers) wherever a human-readable label is needed for a raw
 column name:
 

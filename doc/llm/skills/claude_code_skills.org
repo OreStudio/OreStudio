@@ -111,9 +111,8 @@ Entities, components, and schemas produced by ores.codegen.
 |------+-------+-------------|
 | [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][compass-codegen-add-component]] | Codegen Add Component | Scaffold a new ORE Studio component (api/core/service) via codegen profiles. |
 | [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] | Codegen Add Entity | Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill. |
-| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][compass-codegen-add-qt-entity]] | Codegen Add QT Entity | Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and co... |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][compass-codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Codegen Add Surface Entity | Add an entity to a user-facing surface — the CLI, the HTTP API, the shell REPL, or the Wt web UI. One three... |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Codegen Add Surface Entity | Add an entity to a user-facing surface — the CLI, the HTTP API, or the shell REPL. One three-phase procedur... |
 | [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]] | Codegen Fix Drift | Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, b... |
 | [[id:B45805F2-BAD4-4879-A571-3C962C79670B][compass-codegen-sync-cmake-sources]] | compass-codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
 
@@ -130,8 +129,7 @@ Environment, database, services, shell, client, site.
 | [[id:3A869409-B8E7-420B-9BFA-0BAC9E9F804F][compass-devops-deprovision-environment]] | Deprovision a named environment | Use compass env deprovision to remove a named worktree and its directory. |
 | [[id:AA14F8A0-F037-4303-88D9-059771BD764D][compass-devops-provision-environment]] | Provision a new named environment | Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env. |
 | [[id:435BD960-CA83-4B1A-829D-F345181206B2][compass-devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
-| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][compass-devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour for parallel runs. |
-| [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][compass-devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, provision... |
+| [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][compass-devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, and provi... |
 | [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][compass-devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
 | [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][compass-devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
 | [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][compass-devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |

@@ -45,11 +45,9 @@ package "Foundation" {
 ' Skills for creating entity support across different layers
 ' =============================================================================
 package "Entity Creators" {
-    [qt-entity-creator] <<entity>> as qt
     [shell-entity-creator] <<entity>> as shell
     [http-entity-creator] <<entity>> as http
     [cli-entity-creator] <<entity>> as cli
-    [wt-entity-creator] <<entity>> as wt
 }
 
 ' =============================================================================
@@ -101,13 +99,6 @@ dtc --> fbm
 cc --> cmc
 cc --> cmake
 
-' Qt entity creator dependencies
-qt --> dtc
-qt --> bpd
-qt --> fbm
-qt --> icon
-qt --> puml
-
 ' Shell entity creator dependencies
 shell --> dtc
 shell --> bpd
@@ -125,10 +116,6 @@ cli --> dtc
 cli --> fbm
 cli --> ocr
 cli --> shell : "pattern reference"
-
-' Wt entity creator dependencies
-wt --> dtc
-wt --> fbm
 
 ' Recipe skill dependencies
 ra --> osr

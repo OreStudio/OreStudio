@@ -22,7 +22,7 @@ How do I add a new source file to a component?
 
 * Answer
 
-1. Add the =.cpp= (and, for a Qt AUTOMOC component, =.hpp=) file under
+1. Add the =.cpp= file under
    the component's =src/= or =tests/= directory as usual — nothing
    component-specific here.
 

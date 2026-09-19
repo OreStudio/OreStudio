@@ -586,5 +586,3 @@ The recommended order of implementation tasks (one story task per item):
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — the pattern used for typed feed config parameter serialisation (=market_feed_config= discriminator, type-specific NATS subjects, two-phase dispatch on read).
 - [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story tracking this PoC work.
 - [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — existing component overview.
-- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — IPlugin lifecycle and menu wiring conventions.
-- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, async-fetch, and MDI window patterns.

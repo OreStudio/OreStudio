@@ -3,7 +3,6 @@
 Ported from build/scripts/install_debian_packages.sh; behaviour is preserved:
 - Baseline packages (X11/GL headers, NATS, etc.) are always installed.
 - --full-install adds the complete developer toolchain.
-- --with-qt adds Qt6 dev packages (implied by --full-install).
 - --with-valgrind adds Valgrind.
 After a --full-install, setup_postgres_extensions.sh is run to add pg_cron,
 timescaledb, and pgmq.
@@ -78,28 +77,16 @@ _FULL = [
     "valgrind",
 ]
 
-_QT = [
-    "qt6-base-dev",
-    "qt6-tools-dev",
-    "qt6-l10n-tools",
-    "qt6-charts-dev",
-    "qt6-svg-dev",
-    "libqt6help6",
-]
-
 _MAX_RETRIES = 5
 _RETRY_DELAY = 5
 
 
-def install(project_root: Path, full: bool = False, with_qt: bool = False,
+def install(project_root: Path, full: bool = False,
             with_valgrind: bool = False) -> int:
     """Install system packages; return exit code."""
     packages = list(_BASELINE)
     if full:
         packages.extend(_FULL)
-        with_qt = True
-    if with_qt:
-        packages.extend(_QT)
     if with_valgrind and not full:
         packages.append("valgrind")
 
@@ -160,15 +147,11 @@ def run(argv: list, project_root: Path) -> int:
         description="Install system packages required to build OreStudio on Debian/Ubuntu.")
     parser.add_argument("--full-install", action="store_true",
                         help="Full developer environment: compilers, cmake, postgres, "
-                             "Qt6, valgrind, and postgres extensions. "
+                             "valgrind, and postgres extensions. "
                              "Use this on a fresh Debian/Ubuntu box.")
-    parser.add_argument("--with-qt", action="store_true",
-                        help="Add Qt6 dev packages (implied by --full-install). "
-                             "CI installs Qt via install-qt-action instead.")
     parser.add_argument("--with-valgrind", action="store_true",
                         help="Add Valgrind (without the rest of --full-install).")
     args = parser.parse_args(argv)
     return install(project_root,
                    full=args.full_install,
-                   with_qt=args.with_qt,
                    with_valgrind=args.with_valgrind)

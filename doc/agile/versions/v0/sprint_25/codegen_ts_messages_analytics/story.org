@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 10BEBDDC-208C-4F5C-B692-AAD62AD613CD
+:END:
+#+title: Story: Generate the analytics protocol messages as TypeScript
+#+description: Every analytics entity renders a C++ protocol header from its org model, and the TypeScript twin is missing for all four, because ores.ts.protocol admits operation models only. Bind the analytics models to the TypeScript protocol and domain facets and extend the projection until it renders, so every analytics message exists in both targets or not at all. This is the analytics slice of the cross-component TypeScript protocol coverage work.
+#+type: story
+#+level: s2
+#+filetags: :codegen:typescript:protocol:analytics:drift:sprint_25:v0:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every analytics entity renders a protocol header from its org model, and no analytics message renders as TypeScript. Bind the analytics models to the TypeScript protocol and domain facets and extend the projection until it renders, so an analytics message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Story scaffolded; the entity projection is the open question. |
+| Waiting on    | Who lands the entity projection that the IAM story also needs. |
+| Next          | Settle that split, then start the first task. |
+| Last touched  | 2026-09-19                               |
+
+* Acceptance
+
+- Every generated analytics protocol header has a TypeScript twin, and a check fails when one is missing.
+- An analytics entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AFF24396-1981-40E2-AA35-898584B76D70][Scaffold story: Generate the analytics protocol messages as TypeScript]] | STARTED | 2026-09-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3D67019D-294C-45E6-AB53-8E4A67B76E19][Generate the analytics protocol messages as TypeScript]] | BACKLOG | | | Initial task for: Generate the analytics protocol messages as TypeScript |
+
+* Decisions
+
+- *The analytics entities are drift-free at =origin/main=.*
+  =check_component_drift.py --component analytics-cpp= regenerates the whole
+  component and reports no drift, so the generated C++ protocols are a stable
+  input to project from.
+- *The binding mechanism is in place; the protocol facet is not.*
+  =compass codegen regenerate --component analytics-cpp --address ores.ts
+  --dry-run= writes four =generated/analytics/ui/*_ui.ts= modules and no
+  protocol module. =ores.ts.ui= declares
+  =model_types: domain_entity junction=, so an entity model binds to it today.
+  =ores.ts.protocol= declares =model_types: operation= alone, so no entity
+  model can reach it, whatever =:ores.*.enabled:= override the model carries.
+- *TypeScript has no domain layer.* Every analytics protocol response carries a
+  =std::vector<ores::analytics::domain::<entity>>= member, and
+  =org_loader._ts_type= projects only =std::string=, =bool=, =int= and
+  =std::uint64_t=. The entity interface must exist before the protocol
+  interfaces can reference it.
+- *The entity projection is shared with the IAM story.* The re-cut of
+  [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] reaches the same conclusion:
+  the facet needs generalising and the domain layer needs adding. Analytics is
+  the smaller proof of that path, so this story carries the generalisation and
+  the IAM story rebases onto it.
+
+* Out of scope
+
+- The other drift-free components. This story covers analytics alone.
+- The C++ output. Every analytics C++ file must come out byte-identical, which
+  the drift check proves.
+- The hand-written protocols in other components. Analytics has none, so
+  nothing needs porting to the operation model first.

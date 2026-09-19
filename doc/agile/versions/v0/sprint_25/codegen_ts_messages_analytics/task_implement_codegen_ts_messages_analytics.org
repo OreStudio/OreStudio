@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 3D67019D-294C-45E6-AB53-8E4A67B76E19
+:END:
+#+title: Task: Generate the analytics protocol messages as TypeScript
+#+description: Initial task for: Generate the analytics protocol messages as TypeScript
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_messages_analytics:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-19
+#+updated: 2026-09-19
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:10BEBDDC-208C-4F5C-B692-AAD62AD613CD][Generate the analytics protocol messages as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every analytics entity renders a protocol header from its org model, and no analytics message renders as TypeScript. Bind the analytics models to the TypeScript protocol and domain facets and extend the projection until it renders, so an analytics message exists in both targets or not at all. A check proves the two targets stay in step, and the generated tree regenerates with no diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:10BEBDDC-208C-4F5C-B692-AAD62AD613CD][Generate the analytics protocol messages as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-19                               |
+
+* Acceptance
+
+- Every generated analytics protocol header has a TypeScript twin, and a check fails when one is missing.
+- An analytics entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
+- The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

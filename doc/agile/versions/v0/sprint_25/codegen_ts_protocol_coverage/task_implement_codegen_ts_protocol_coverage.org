@@ -63,12 +63,30 @@ facet out.
    junction block was never in play: the operation model owns that header.
    Removing the opt-out also needed the operation's domain import, or the
    interface would have named a type it never imported.
-3. Model IAM's six hand-written wire types — =account=, =login_info=,
-   =permission= and =role= as entities, =account_version= through the account
-   entity's version facet, and =session= with =session_statistics= as
-   message-only models — then delete the remaining four opt-outs and the
-   hand-written headers and companions, re-pointing the handlers, service and
-   shell.
+3. Model IAM's seven hand-written wire types. Planning corrected two assumptions
+   and set the order below.
+   - *Shapes.* =account=, =login_info=, =permission= and =role= are entities —
+     each has a hand-written table. =account_version=, =session= and
+     =session_statistics= are message-only: the first has no table and there is
+     no version facet in the codegen at all (the story's "through the account
+     entity's version facet" was wrong), and the other two carry members that no
+     column has — =session= has =party_id=, =visible_party_ids= and =username=
+     with nothing behind them, and the sessions table is a Timescale hypertable
+     whose primary key is =(id, start_time)=.
+   - *Order.* First a codegen enabler, then =login_info= (smallest entity,
+     proves the soft-update path), then =permission= and =role=, then =session=
+     with =session_statistics= (removes one opt-out), and =account= with
+     =account_version= last, behind its own PR.
+   - *The enabler.* Two models render one header today: the entity or junction
+     block of =cpp_protocol.hpp.mustache= and an operation model for the same
+     entity both write =<entity>_protocol.hpp=, and whichever renders last wins.
+     Nothing may be modelled until one model owns the header.
+   - *The risk.* =account= is the aggregate the authentication surface uses. A
+     generated service, repository and handler write the same paths as
+     hand-written auth-critical code (=account_service.hpp=, 14 KB;
+     =account_handler.hpp=, 1200 lines), and its entity-derived CRUD set would
+     collide with the 28 command messages in =account_messages.org=. Both
+     =std::optional<uuid>= members need the reflect-cpp workaround re-verified.
 4. Make a protocol header without a TypeScript twin fail the drift check, and an
    =:ores.ts.protocol.enabled:= key fail with it.
 

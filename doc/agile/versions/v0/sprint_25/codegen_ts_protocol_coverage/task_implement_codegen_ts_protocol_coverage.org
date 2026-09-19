@@ -57,20 +57,37 @@ facet out.
    entity-derived protocols now have twins — =tenant=, =tenant_type=,
    =tenant_status=, =account_type=, =account_contact_information=, 40 messages —
    and the C++ came out byte-identical.
-2. *Next: the junction.* =account_party_protocol.hpp= comes from
-   =ores.iam.account_party_junction.org=, whose model type is =junction=. Neither
-   TypeScript facet admits =junction= yet, and the C++ template's junction block
-   derives =left.list_by=, =right.list_by=, =left.replace_by= and
-   =right.replace_by= pairs that the loader does not derive. The domain interface
-   for the junction type is needed too, so =ores.ts.domain= gains the model type
-   as well.
+2. *Done, =5e5c6a8155=.* The junction. =ores.ts.domain= admits =junction=, so
+   =AccountParty= is generated beside the entity interfaces, and the
+   =account_party_messages= opt-out is gone — the first of the five. The C++
+   junction block was never in play: the operation model owns that header.
+   Removing the opt-out also needed the operation's domain import, or the
+   interface would have named a type it never imported.
 3. Model IAM's six hand-written wire types — =account=, =login_info=,
    =permission= and =role= as entities, =account_version= through the account
    entity's version facet, and =session= with =session_statistics= as
-   message-only models — then delete the five opt-outs and the hand-written
-   headers and companions, re-pointing the handlers, service and shell.
+   message-only models — then delete the remaining four opt-outs and the
+   hand-written headers and companions, re-pointing the handlers, service and
+   shell.
 4. Make a protocol header without a TypeScript twin fail the drift check, and an
    =:ores.ts.protocol.enabled:= key fail with it.
+
+* Progress
+
+The drift gate regenerated TypeScript for every registered component once the
+facet admitted entities, and it stopped on =ores.refdata.business_unit=, whose
+response carries =ores::utility::domain::hierarchy_node= — a hand-written
+utility type with no projection. Fixed in =a302087bd9= by scoping the gate: a
+component is regenerated at a TypeScript facet only once that facet's output is
+committed for it. The facets and their output patterns are read from the
+template library, so a component joins the TypeScript side of the gate the
+moment its first generated file lands and no list needs maintaining. Every
+other technical space is regenerated for every component as before.
+
+IAM now regenerates at six technical spaces plus =ores.ts.domain=,
+=ores.ts.protocol= and =ores.ts.ui=, and reports no drift; refdata regenerates
+at the six plus =ores.ts.ui= alone; the full set passes in about twenty
+seconds. The gate goes green on PR #2110 with all five checks.
 
 * Notes
 

@@ -151,10 +151,12 @@ struct {{entity_singular}} final {
     std::string change_commentary;
 
 {{/has_audit_columns}}
+{{^current_state}}
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+{{/current_state}}
 {{/has_audit_group}}
 {{/has_domain_groups}}
 };

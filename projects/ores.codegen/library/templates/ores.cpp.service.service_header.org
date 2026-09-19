@@ -290,6 +290,7 @@ public:
      */
     void delete_{{entity_plural_short}}({{{primary_key.batch_params}}});
 
+{{^current_state}}
     /**
      * @brief Retrieves all historical versions of a {{entity_singular_words}}.
      */
@@ -304,6 +305,7 @@ public:
     std::vector<domain::{{entity_singular}}>
     get_{{entity_singular_short}}_history(const boost::uuids::uuid& {{primary_key.column}});
 {{/service_find_by_uuid}}
+{{/current_state}}
 {{#has_parent_id}}
 
     /**

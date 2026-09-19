@@ -3502,15 +3502,37 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
              or domain_entity['has_party_column'])
             and not any(fk.get('parent_is_party', False)
                         for fk in domain_entity.get('foreign_keys', []) or []))
+        # Current-state entity: a table with one row per key and no temporal
+        # (valid_from/valid_to) axis at all, opted into with
+        # :current_state: true in the * SQL ** Flags drawer. Distinct from
+        # :no_audit_columns:, which drops only the version + audit tail -- a
+        # hypertable keeps its valid_from/valid_to transaction-time window
+        # while carrying no audit stamps. The SQL and C++ projections both
+        # read this flag, so the two stay in step.
+        domain_entity['current_state'] = bool(
+            sql_section.get('current_state', False))
+        current_state = domain_entity['current_state']
         # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
         # is set but neither system_scope nor nullable_tenant_id overrides the PK.
+        # A current-state table keys on the model's own primary key alone --
+        # tenant_id stays a column, but out of the key.
         has_tenant_id = domain_entity.get('has_tenant_id', False)
         domain_entity['has_tenant_in_pk'] = (
             has_tenant_id
+            and not current_state
             and not sql_section.get('system_scope', False)
             and not sql_section.get('nullable_tenant_id', False)
             and not sql_section.get('hypertable', False)
         )
+        # The insert trigger validates (and, for the system scope, forces)
+        # tenant_id for any tenant-scoped table. The bi-temporal shape reached
+        # that guard through has_tenant_in_pk; a current-state table keeps
+        # tenant_id out of the key but still needs the same validation.
+        domain_entity['validates_tenant_on_insert'] = bool(
+            domain_entity['has_tenant_in_pk']
+            or (current_state and has_tenant_id
+                and not sql_section.get('system_scope', False)
+                and not sql_section.get('nullable_tenant_id', False)))
         # Hypertable: suppress GIST and version locking; add create_hypertable block.
         if sql_section.get('hypertable', False):
             sql_section['hypertable'] = True
@@ -3574,15 +3596,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 and len(rls_table_base) + longest_rls_suffix > 63):
             rls_table_base = rls_table_base[:63 - longest_rls_suffix]
         domain_entity['rls_table_base'] = rls_table_base
-        # GIST exclusion: suppressed for hypertables (incompatible); active otherwise
-        # for standard temporal entities with has_tenant_id.
+        # GIST exclusion: suppressed for hypertables (incompatible) and for
+        # current-state tables (there is no validity range to exclude on);
+        # active otherwise for standard temporal entities with has_tenant_id.
         domain_entity['has_gist_exclusion'] = (
-            not sql_section.get('hypertable', False)
+            not current_state
+            and not sql_section.get('hypertable', False)
             and sql_section.get('gist_exclusion', True)
         )
         # Audit columns (modified_by, performed_by, change_reason_code, change_commentary,
-        # version): suppressed for hypertable time-series entities via #+no_audit_columns.
-        domain_entity['has_audit_columns'] = not sql_section.get('no_audit_columns', False)
+        # version): suppressed for hypertable time-series entities via #+no_audit_columns,
+        # and always for a current-state entity, which carries no history at all.
+        domain_entity['has_audit_columns'] = (
+            not sql_section.get('no_audit_columns', False)
+            and not current_state
+        )
         # change_reason_code is validated automatically by the has_audit_columns block
         # below; suppress that auto-emission when the model's own insert_trigger
         # validations table already declares an explicit row for it, to avoid
@@ -3607,6 +3635,27 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         }
         for v in domain_entity.get('insert_trigger', {}).get('validations', []):
             v['nullable'] = _nullable_by_column.get(v.get('column'), False)
+        if current_state:
+            # A current-state table has no valid_to column, so an index's
+            # :current_only: predicate ("valid_to = infinity") cannot be
+            # emitted -- the whole table is already current-only. Keep any
+            # :where_extra: predicate the model declared.
+            for index in domain_entity.get('indexes', []) or []:
+                index['current_only'] = False
+            # A point-in-time read ("as of timepoint", window-overlap
+            # "list_by_as_of") has no meaning without a validity window;
+            # suppress both even if the model asked for them, so the
+            # repository/service cannot emit a query against absent columns.
+            domain_entity['has_as_of_lookup'] = False
+            sql_section.pop('has_list_by_as_of', None)
+            for fk in domain_entity.get('foreign_keys', []) or []:
+                fk.pop('list_by_as_of', None)
+            # The composite-entity touch function bumps a parent's version
+            # and closes its validity window; a current-state parent has
+            # neither, so the mechanism does not apply. The same goes for
+            # the hypertable soft-update/soft-delete trigger pair.
+            domain_entity['generate_touch_function'] = False
+            sql_section['bitemporal_soft_update'] = False
         # Mark last items in new iterable sql sub-sections for template rendering
         if 'fk_copy_validations' in sql_section:
             _mark_last_item(sql_section['fk_copy_validations'])
@@ -3621,6 +3670,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:
             _mark_last_item(sql_section['extra_delete_sets'])
+        # Row-selection fragment the repository templates splice into their
+        # sqlgen where() chains. A bi-temporal table reads only the open row
+        # (valid_to = infinity); a current-state table has no such column and
+        # reads the row itself, so the fragment is empty.
+        domain_entity['temporal_filter'] = (
+            '' if current_state else ' && "valid_to"_c == max.value()')
         # Add computed properties for primary key type detection. Applied to
         # both the top-level (back-compat, first-flagged-column) scalar dict
         # and, identically, to each entry of primary_key['columns'] -- a

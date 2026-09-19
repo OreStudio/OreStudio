@@ -114,6 +114,15 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
+# The history dialog's field mapper renders the domain type's recorded_at
+# member. A current-state entity has no recorded_at (or any other temporal
+# member), so the mapper has nothing to project; both of its archetypes are
+# excluded for a current-state entity.
+_NO_TEMPORAL_HISTORY_ARCHETYPES = frozenset({
+    "ores.cpp.presentation.history_field_mapper_header",
+    "ores.cpp.presentation.history_field_mapper_impl",
+})
+
 # The TypeScript UI metadata facet projects the presentation drawer's
 # column table. A model with no such table has no presentation metadata to
 # project, and an empty declaration would state that the entity has no
@@ -332,20 +341,28 @@ def resolve_targets(
             # regeneration that would overwrite a live legacy layer).
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_MESSAGING_FACETS}
+    no_temporal_archetypes: frozenset[str] = frozenset()
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})
+        sql_flags = entity.get("sql") or {}
         if (entity.get("domain_audit_group")
-                or (entity.get("sql") or {}).get("no_audit_columns")):
+                or sql_flags.get("no_audit_columns")
+                or sql_flags.get("current_state")):
             # Hard gate, mirroring the junction gate above: the generated
             # history provider needs the entity's version rows to carry a
             # flat actor (modified_by, recorded_at), which no_audit_columns
-            # entities (no stamps at all) and domain_audit_group entities
-            # (stamps folded into the audit member) both lack. Runs before
-            # the per-archetype override loop so an explicit
-            # :ores.*.enabled: override cannot re-admit a facet whose
-            # output cannot build for this entity.
+            # entities (no stamps at all), current_state entities (no
+            # history at all) and domain_audit_group entities (stamps folded
+            # into the audit member) all lack. Runs before the per-archetype
+            # override loop so an explicit :ores.*.enabled: override cannot
+            # re-admit a facet whose output cannot build for this entity.
             gen_facets = {f for f in gen_facets
                           if f not in _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS}
+        if sql_flags.get("current_state"):
+            # A current-state entity has no version rows, so the history
+            # dialog's field mapper (which reads the domain type's recorded_at
+            # member) has nothing to project and would not compile.
+            no_temporal_archetypes = _NO_TEMPORAL_HISTORY_ARCHETYPES
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.
@@ -385,6 +402,8 @@ def resolve_targets(
             if mts and model_type not in mts:
                 continue
             if not kind_matches(arch.get("kinds", []), component_kind):
+                continue
+            if arch["address"] in no_temporal_archetypes:
                 continue
             if not is_enabled(arch["address"], facet, ts, overrides,
                               arch.get("default_enabled", True)):

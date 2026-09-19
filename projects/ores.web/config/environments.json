@@ -1,0 +1,112 @@
+{
+  "active": "festive_dijkstra",
+  "environments": [
+    {
+      "id": "festive_dijkstra",
+      "displayName": "Festive Dijkstra",
+      "description": "Local development checkout on the standard developer ports.",
+      "host": "localhost",
+      "port": 21805,
+      "subjectPrefix": "ores.dev.festive.dijkstra",
+      "httpBaseUrl": "http://localhost:21800",
+      "nonProduction": true
+    },
+    {
+      "id": "prime_origin",
+      "displayName": "Prime Origin",
+      "description": "Long-running reference environment.",
+      "host": "localhost",
+      "port": 20005,
+      "subjectPrefix": "ores.dev.prime_origin",
+      "nonProduction": true
+    },
+    {
+      "id": "swift_curie_local",
+      "displayName": "Swift Curie",
+      "description": "Local checkout of the swift-curie environment.",
+      "host": "localhost",
+      "port": 20205,
+      "subjectPrefix": "ores.dev.swift_curie",
+      "nonProduction": true
+    },
+    {
+      "id": "swift_curie_newton",
+      "displayName": "Swift Curie (Newton)",
+      "description": "The same environment, served from the Newton host.",
+      "host": "192.168.1.22",
+      "port": 20205,
+      "subjectPrefix": "ores.dev.swift_curie",
+      "nonProduction": true
+    },
+    {
+      "id": "brave_hopper",
+      "displayName": "Brave Hopper",
+      "description": "",
+      "host": "localhost",
+      "port": 20405,
+      "subjectPrefix": "ores.dev.brave_hopper",
+      "nonProduction": true
+    },
+    {
+      "id": "bright_faraday",
+      "displayName": "Bright Faraday",
+      "description": "",
+      "host": "localhost",
+      "port": 20605,
+      "subjectPrefix": "ores.dev.bright_faraday",
+      "nonProduction": true
+    },
+    {
+      "id": "jolly_knuth",
+      "displayName": "Jolly Knuth",
+      "description": "",
+      "host": "localhost",
+      "port": 20805,
+      "subjectPrefix": "ores.dev.jolly_knuth",
+      "nonProduction": true
+    },
+    {
+      "id": "solid_dirac",
+      "displayName": "Solid Dirac",
+      "description": "",
+      "host": "localhost",
+      "port": 21005,
+      "subjectPrefix": "ores.dev.solid_dirac",
+      "nonProduction": true
+    },
+    {
+      "id": "merry_newton",
+      "displayName": "Merry Newton",
+      "description": "",
+      "host": "localhost",
+      "port": 21205,
+      "subjectPrefix": "ores.dev.merry_newton",
+      "nonProduction": true
+    },
+    {
+      "id": "eager_maxwell",
+      "displayName": "Eager Maxwell",
+      "description": "",
+      "host": "localhost",
+      "port": 21405,
+      "subjectPrefix": "ores.dev.eager_maxwell",
+      "nonProduction": true
+    },
+    {
+      "id": "clever_dijkstra",
+      "displayName": "Clever Dijkstra",
+      "description": "",
+      "host": "localhost",
+      "port": 21605,
+      "subjectPrefix": "ores.dev.clever_dijkstra",
+      "nonProduction": true
+    }
+  ],
+  "tls": {
+    "ca": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ca.crt",
+    "cert": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ores.qt.client.crt",
+    "key": "/mnt/development/OreStudio/ores_dev_festive_dijkstra/build/keys/nats/ores.qt.client.key"
+  },
+  "developerTools": true,
+  "developerAccounts": []
+}

@@ -1,0 +1,273 @@
+# Country against the specification: the gaps
+
+What the reference entity does not yet do that `entity-specification.md` says it
+should. Written down because an audit that lives only in a conversation is an
+audit that gets repeated.
+
+Produced by reading the specification in full against the implementation of
+`country` — the shared machinery, the country screens, the generated declaration,
+the BFF routes, the wire protocol and the verification — and judging every
+normative statement in the specification. Everything below is a finding from that
+reading. Nothing here is speculation.
+
+**Status vocabulary**, used throughout:
+
+| Status | Meaning |
+|---|---|
+| **met** | Implemented, and a check in `scripts/verify-country.ts` or a unit test exercises it |
+| **met, unverified** | Implemented, and nothing demonstrates it |
+| **partial** | Implemented with a gap |
+| **missing** | Not implemented |
+| **diverged** | Implemented differently from what the specification says |
+
+The largest category in the audit is **met, unverified**. Code exists; no check
+exercises it. The write path is gated behind `--write`, so the default run
+demonstrates only reads.
+
+---
+
+## Tier 1 — correctness, and what would embarrass the template
+
+These are the ones where being wrong is worse than being incomplete.
+
+**1. There is no route that returns one record.** `server.ts` has list, save,
+delete and history. The detail screen loads the first 500 rows and finds the
+record among them (`CountryDetailPage.tsx`), so a deep link to a record beyond
+that page is "not found". A bug that only appears once a collection is large,
+which is exactly when it matters.
+
+*Attempted and reverted.* Using the history endpoint instead — which takes the
+record's key and returns every version, the newest being the record — worked, and
+the deep link resolved. But it made the detail screen and the history screen share
+a React Query key, and the form could be seeded from a cached record belonging to
+an earlier life of the same code before the refetch landed, so an amend went out
+with a version the service had moved past and was refused with a conflict. Not
+reproducible through the API, so it is a browser staleness race. The change was
+reverted rather than left in.
+
+*Needs:* a real get-one route on the service, or query keys separated so the two
+screens cannot seed each other.
+
+**2. History's "Open this version" does not open that version.**
+`CountryHistoryPage.tsx` ignores the version and navigates to the current record.
+The whole point of the action is to read a past version. There is no read-only
+historical mode, so §6's read-only toolbar and the accounts shortcut in §8 are
+both absent.
+
+**3. Empty and error copy was hardcoded to accounts.** **Fixed** in `1eaf031`.
+
+**4. No negative-path verification.** No rejected or empty case, as §14 requires.
+None of empty, filtered-empty, error, loading-with-data or unauthorized is
+asserted, though §14 names all five.
+
+**5. Nothing asserts that a secret field never appears in a response.** §14 step
+10, unaddressed.
+
+---
+
+## Tier 2 — list-screen fundamentals every entity inherits
+
+Fix once and every entity benefits.
+
+**6. No sorting at all.** The specification says every column, on the underlying
+value rather than the displayed string. `DataTable.tsx` has no sort handler.
+
+**7. Column visibility and order are not remembered.** `shown` is plain component
+state. §5 asks for per-user persistence, and for the saved state to be versioned
+so a change to the column set does not restore an incompatible layout.
+
+**8. No keyboard shortcuts.** Enter to open, Delete to remove, and a focusable
+table. This was a deliberate addition over the Qt client, which the specification
+names as a gap worth closing, and it is not built.
+
+**9. The detail screen is not told the record moved.** `change-notification.md`
+says a form should say a newer version exists and offer to load it. Only the list
+listens for changes.
+
+**10. First-time loading renders an empty table.** `DataTable.tsx` skips the
+empty-state branch while loading and shows header-only rows, against §5's "never
+an empty table with no explanation".
+
+**11. Empty state does not offer Add.** The message is there; the action is only
+in the header.
+
+**12. Refresh does not reload from the first page, and the collection is not
+reset.** §5 says a reload returns to the first page.
+
+**13. No type filter on the list.** `CountryListPage.tsx` never passes
+`filterField`, so §13's search-and-filter pair is half done.
+
+**14. Display name is not the first column.** The flag and alpha2 code are.
+§5 says the display name is first and is the row's identity to a person.
+
+**15. Audit fields are incomplete as columns.** Only `version`, `modified_by` and
+`recorded_at` exist as hidden columns. §12 lists eight hidden by default,
+including `performed_by`, `change_reason_code`, `change_commentary` and
+`tenant_id`.
+
+**16. No copy action for the identifier.** §12 says the identifier is never shown
+but is available to copy. The mechanism does not exist.
+
+**17. Search loads the whole collection by setting the page size to the total.**
+This puts a value into the size selector that the selector does not offer, and it
+is not described anywhere. Above 1000 rows it silently searches only the first
+1000, with a count that says so.
+
+---
+
+## Tier 3 — the shared controls
+
+**18. Validation fires on submit and clears on the next keystroke.** The opposite
+of §6 and §13, which ask for blur and for a message that stays until the field is
+valid.
+
+**19. No unsaved-changes prompt.** The exact wording is in the catalogue and
+nothing reads it. Close is a Cancel with no check.
+
+**20. Save success has no confirmation.** §11 asks for a brief confirmation
+naming the record. The screen navigates to the record instead, and
+`feedback.saved` is unused.
+
+**21. A refusal is rendered as an error.** §11 says a refusal is shown as a
+refusal. A 409 goes through the error Notice.
+
+**22. Reason filter diverges.** Non-material reasons are removed rather than
+disabled with the specified tooltips; the rule is skipped entirely for deletes;
+and `image_id` is not part of the diff, so choosing a flag does not count as a
+change.
+
+**23. Field controls are partial.** `dynamic_combo` and `flagged_combo` render
+static options and ignore `lookup`; a foreign key is therefore not a searchable
+select, which §6 says it always must be. Tri-state is a button rather than a
+state, nullable spin boxes have no "(unset)", and there is no hint rendering, no
+focus-to-first-error, and no unmapped-lookup fallback pill.
+
+**24. Related and child records are absent entirely.** No Related tab, no generic
+child-table contract, none of §9. A decision rather than a task: if the next
+entities have children, this should be built before the second entity rather than
+after the fifth.
+
+---
+
+## Tier 4 — history
+
+**25. History edge cases are wrong.** There is no "(Initial version)" for the
+oldest entry; selecting the same version twice shows the out-of-order message
+rather than "(No field changes)"; the no-differences wording differs from the
+specification; and Revert is offered when the newer version is the current one,
+where reverting is a no-op.
+
+**26. Provenance is incomplete in history.** `performed_by` is carried and never
+rendered. The provenance exclusion from the diff covers three column names
+rather than the six provenance fields. Entries show a raw timestamp with no
+relative time and no full value on hover.
+
+**27. The recency highlight is not configurable, and uses different colour and
+timing.** §5 says a single gold on the text, six cycles at 500 ms, and worth
+making a setting. It is the accent blue on the background, three cycles at
+900 ms, and there is no setting. The "still stale" left border also fades with the
+tint, where `change-notification.md` says it should persist.
+
+---
+
+## Divergences
+
+These are places where the implementation does something other than the
+specification says — **but several are decisions, not defects**, and the
+specification is the thing that is out of date.
+
+### Decisions the specification does not know about
+
+| Divergence | Why it is right |
+|---|---|
+| Default page size 25, not 100 | Asked for, for readability |
+| The action is called "Reload", not "Refresh" | Asked for; it brings in changes rather than re-reading |
+| Per-row action menus, not a toolbar with selection | Idiomatic for the web, and the reason the toolbar's enablement rules do not exist |
+| Blue recency highlight, not gold | Chosen during the work |
+| Search reaches the whole collection, not the page | The page-scoped version returned "no results" for records that exist |
+
+**The specification should be corrected for all five**, or it will keep reading as
+a list of failures rather than a description of the product.
+
+### Divergences to settle
+
+| Divergence | Spec | Implementation |
+|---|---|---|
+| Route segment | plural collection, `/<collection>` | singular, `/refdata/country` |
+| Protocol file name | `<entity>_protocol.ts` | `country.ts` |
+| Reason dialog default | commit disabled until a reason is chosen | a reason is preselected, so that state is unreachable |
+| Reason dialog description | muted italic | faint, not italic |
+| Reason categories | `system` / `common` from the server | `appliesTo*` booleans; `categoryCode` fetched and unused |
+| Refresh icon | `arrow_clockwise` | `arrowSync`, which is not even vendored |
+| Close action | secondary, with icon `dismiss`, confirms if changed | text "Cancel", no icon, no confirmation |
+| Detail layout | dialog with a bottom `Delete` / `Close` / `Save` row | page with header actions |
+| Screens and API layer | no knowledge of wire field names | use `alpha2_code`, `image_id` and others directly |
+| Icon colour | `rgb(220, 220, 220)` | `currentColor`, `#e3e3e6` |
+| Save destination | back to the list, with a confirmation | to the record, with none |
+| History `Open` | opens the chosen version | opens the current record |
+
+---
+
+## Behaviour that is not in the specification at all
+
+A reader of `entity-specification.md` would not expect any of this. It is not
+wrong; it is undocumented, and either the specification should describe it or the
+behaviour should be reconsidered.
+
+- Per-row kebab menus with a danger-coloured Delete and a click-away overlay.
+- Search implemented by setting the page size to the collection total.
+- Change notification over a per-session SSE stream, with a `/api/events/watch`
+  handshake, a tenant-keyed shared subscription registry, and reference counting.
+  `change-notification.md` describes this; `entity-specification.md` does not
+  mention it.
+- Row recency derived from the rows' own `recorded_at` against the previous load,
+  rather than from the event time.
+- The stale badge fading after six seconds.
+- The history timeline windowed to seven entries, with step buttons and
+  `j`/`k`/arrow keys.
+- History deduplicating versions by version and content, which works around a
+  service data problem.
+- The flag picker, with "flag of" filtering, search and removal.
+- A "Choose columns" menu labelled "Provenance" in the table header.
+- The breadcrumb naming mechanism, which shows a record's name rather than its
+  identifier.
+- The BFF substituting `tenant_id` and `recorded_at` for a create, which is a
+  concrete application of the placeholder rule in §7 but is not described.
+- Translations catalogued for behaviour that does not exist: `history.initial`,
+  `feedback.saved`, `feedback.deleted`, `confirmation.unsavedTitle`,
+  `entity.changedBanner`, `audit.nonMaterial`.
+
+---
+
+## Open questions the audit could not settle
+
+Not gaps, but things this document cannot decide.
+
+**Version numbers restart when a record is deleted and created again.** A history
+spanning several lives of one record shows the same number more than once, and a
+comparison can read "v12 with v12". The versions differ; the numbering does not
+say so. Two answers — show the recorded time beside the number, or hide versions
+from earlier lives — and they are different products.
+
+**The system tenant's countries have no `image_id` at all**, while the acme
+tenant's all do and its flags render. So `super_admin` sees no flags. A populate
+job on the C++ side, and the last thing to settle before calling country signed
+off.
+
+**The services publish change events naming no records.** The event declares the
+fields and does not fill them in, so a count of changed records is a count of
+nothing. Counts need a server-side change; the blink does not.
+
+---
+
+## How to use this
+
+Work in tiers, and run the verification after each change rather than at the end.
+Several of these interact through shared state — the reverted attempt at gap 1 is
+the example — and a change that looks local can move a query key out from under
+another screen.
+
+Fix Tier 1 first: those are the ones where a second entity would inherit a
+correctness problem. Then Tier 2, once, because every entity inherits it. Then
+correct the specification for the decisions above, so the next reader is not
+auditing against a document that describes a product we chose not to build.

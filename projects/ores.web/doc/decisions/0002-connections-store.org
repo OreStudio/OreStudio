@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 7F1B2C44-9A3E-4D58-B6E1-2C7A5D9E4F80
+:END:
+#+title: The connections store was removed, and why
+#+description: Why a per-user store of environments and credentials was built and then deleted.
+#+type: decision
+#+level: cross
+#+filetags: :decision:architecture:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+
+* Status
+
+Superseded. The store was built, tested and then removed.
+
+* What was built
+
+A per-user SQLite store holding the environments a person connects to and the
+credentials saved for them, at =~/.config/ores.web/connections.db=. It had its own
+schema with migrations, scrypt and AES-256-GCM encryption for saved passwords, a
+master password with a verifier, folders, labels, snapshot export and import,
+and a full management interface. There was also a one-time migration that read
+the Qt client's store and re-encrypted its passwords under the new format.
+
+It worked. 85 tests covered it, and the migration carried 120 real connections
+across from the Qt client with their folders and labels intact.
+
+* Why it was removed
+
+The store answered the wrong question.
+
+It merged two concerns that belong to different people. *Where the application
+points* is an operator's decision, made once for a deployment. *Who you are* is
+an authentication concern, answered by a username and a password. The Qt client
+put both in one dialog because it was a desktop tool where the same person was
+often both. In a deployed web application they are different people, and the
+merged dialog was not intuitive for either of them.
+
+The symptom was visible in the data. Most of the connections, environments and
+saved passwords existed to support testing and development, not to serve a
+person signing in. That infrastructure had leaked into the main user journey.
+
+* What replaced it
+
+One configuration file declares every environment and which one a deployment
+serves. The environment is chosen at start, with =--env=, and appears in the
+interface as a label rather than a field.
+
+The sign-in request carries an identity and nothing else. The browser is not
+told the host, the port, the namespace or the certificates, so it cannot ask
+the server to connect anywhere. That is a security improvement as well as a
+usability one.
+
+* What was kept
+
+The migration tooling was removed with the store, because it existed to populate
+it. The migrated data remains in the historical commits if it is ever wanted.
+
+The developer surface survives as a deployment flag. This deployment has no
+personas, because the requirement was narrowed: a developer signs in as an ACME
+test account in exactly the way anyone else signs in. The flag remains so the
+list of test accounts can be offered when it is populated.
+
+* The general lesson
+
+A desktop client may reasonably fuse concerns that a deployed web application
+must separate. Porting the interface is not the same as porting the design.

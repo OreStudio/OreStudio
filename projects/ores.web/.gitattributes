@@ -1,0 +1,18 @@
+# Normalise line endings so a Linux CI checkout and a Windows editor agree.
+* text=auto eol=lf
+
+# Binary and generated artefacts that must not be line-ending converted.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Lockfiles are generated but reviewed, so they are not marked as generated.
+package-lock.json -diff linguist-generated=false
+
+# The decision records and any other org files are prose.
+*.org text
+*.md text

@@ -108,6 +108,7 @@ struct delete_{{entity_singular}}_response {
     std::string message;
 };
 
+{{^current_state}}
 struct get_{{entity_singular}}_history_request {
     using response_type = struct get_{{entity_singular}}_history_response;
     static constexpr std::string_view nats_subject =
@@ -122,6 +123,7 @@ struct get_{{entity_singular}}_history_response {
     bool success = false;
     std::string message;
 };
+{{/current_state}}
 
 {{#extra_list_requests}}
 struct get_{{entity_plural}}_{{name_suffix}}_request {
@@ -350,6 +352,7 @@ struct delete_{{entity_singular}}_response {
     std::string message;
 };
 
+{{^current_state}}
 struct get_{{entity_singular}}_history_request {
     using response_type = struct get_{{entity_singular}}_history_response;
     static constexpr std::string_view nats_subject =
@@ -362,6 +365,7 @@ struct get_{{entity_singular}}_history_response {
     bool success = false;
     std::string message;
 };
+{{/current_state}}
 
 }
 

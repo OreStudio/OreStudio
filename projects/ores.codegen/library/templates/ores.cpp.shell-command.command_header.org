@@ -101,6 +101,7 @@ public:
                                                   ores::nats::service::nats_client& session,
                                                   std::string {{primary_key.column}});
 
+{{^current_state}}
     /**
      * @brief Process the {{entity_singular_words}} history request.
 {{^has_audit_group}}
@@ -119,6 +120,7 @@ public:
         std::ostream& out, ores::nats::service::nats_client& session,
         const std::vector<std::string>& args);
 {{/has_audit_group}}
+{{/current_state}}
 };
 
 }

@@ -89,7 +89,7 @@ using namespace ores::logging;
  * @brief NATS message handler for {{entity_singular_words}} operations.
 {{#system_tenant_validation}}
  *
- * {{entity_plural_words_cap}} are system-owned global entities; list and history
+ * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
  * operations use the system tenant context.
 {{/system_tenant_validation}}
  */
@@ -233,6 +233,7 @@ public:
         }
     }
 
+{{^current_state}}
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -270,6 +271,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
+{{/current_state}}
 
     void remove(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
@@ -724,7 +726,7 @@ using namespace ores::logging;
  * @brief NATS message handler for {{entity_singular_words}} operations.
 {{#system_tenant_validation}}
  *
- * {{entity_plural_words_cap}} are system-owned global entities; list and history
+ * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
  * operations use the system tenant context.
 {{/system_tenant_validation}}
  */
@@ -825,6 +827,7 @@ public:
         }
     }
 
+{{^current_state}}
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -862,6 +865,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
+{{/current_state}}
 
     void remove(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)

@@ -2304,7 +2304,8 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     ``primary_key.columns`` and the messaging flags. ``single_delete`` and
     ``delete_request_extra_args`` are handler concerns -- the protocol
     template branches on neither -- so they are deliberately not read
-    here.
+    here. A ``current_state`` entity derives no history pair: it has no
+    valid_from/valid_to axis, so it has no history endpoint at all.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
@@ -2377,18 +2378,24 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                     _ts_field("message", "std::string")]),
     ]
 
-    messages += [
-        _ts_message(
-            f"get_{singular}_history_request",
-            response_type=f"get_{singular}_history_response",
-            subject=f"{component}.v1.{plural}.history",
-            fields=[_ts_field(pk.get("column", ""), "std::string")]),
-        _ts_message(
-            f"get_{singular}_history_response",
-            fields=[_ts_field("history", f"std::vector<{domain_type}>"),
-                    _ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
+    # A current-state entity carries no valid_from/valid_to axis, so it has no
+    # history endpoint. The C++ header omits the request/response pair under
+    # the same ``current_state`` flag; deriving the list here from that one
+    # flag keeps the TypeScript interfaces and subjects in step by
+    # construction rather than by a second, independent gate.
+    if not entity.get("current_state"):
+        messages += [
+            _ts_message(
+                f"get_{singular}_history_request",
+                response_type=f"get_{singular}_history_response",
+                subject=f"{component}.v1.{plural}.history",
+                fields=[_ts_field(pk.get("column", ""), "std::string")]),
+            _ts_message(
+                f"get_{singular}_history_response",
+                fields=[_ts_field("history", f"std::vector<{domain_type}>"),
+                        _ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+        ]
 
     for extra in entity.get("extra_list_requests") or []:
         suffix = extra["name_suffix"]

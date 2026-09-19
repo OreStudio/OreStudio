@@ -5,7 +5,9 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 {{^has_audit_group}}
+{{^current_state}}
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
+{{/current_state}}
 {{/has_audit_group}}
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
@@ -88,6 +90,7 @@ void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu,
         },
         "Delete {{entity_singular_words}} by {{primary_key.column}}");
 
+{{^current_state}}
 {{#has_audit_group}}
     {{entity_plural}}_menu->Insert(
         "history",
@@ -107,6 +110,7 @@ void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu,
         "<n> to pick one)",
         {"{{primary_key.column}} [--diff] [--version <n>]"});
 {{/has_audit_group}}
+{{/current_state}}
 
     root_menu.Insert(std::move({{entity_plural}}_menu));
 }
@@ -281,6 +285,7 @@ void {{entity_singular}}_commands::process_delete_{{entity_singular}}(
     }
 }
 
+{{^current_state}}
 {{#has_audit_group}}
 void {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
     std::ostream& out, nats_client& session, std::string {{primary_key.column}}) {
@@ -388,6 +393,7 @@ void {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
     out << result->history << std::endl;
 }
 {{/has_audit_group}}
+{{/current_state}}
 
 }
 {{/domain_entity}}

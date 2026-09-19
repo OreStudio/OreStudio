@@ -97,11 +97,11 @@ series_classifier::series_classifier(std::vector<domain::series_classification_r
     for (auto& rule : rules) {
         if (rule.asset_class_source != k_literal_source &&
             rule.asset_class_source != k_correlation_operands_source)
-            throw std::invalid_argument(
-                "series classification rule for '" + rule.series_type + "/" + rule.metric +
-                "' names the asset class source '" + rule.asset_class_source +
-                "'; the table allows only '" + std::string(k_literal_source) + "' and '" +
-                std::string(k_correlation_operands_source) + "'.");
+            throw std::invalid_argument("series classification rule for '" + rule.series_type +
+                                        "/" + rule.metric + "' names the asset class source '" +
+                                        rule.asset_class_source + "'; the table allows only '" +
+                                        std::string(k_literal_source) + "' and '" +
+                                        std::string(k_correlation_operands_source) + "'.");
 
         if (rule.asset_class_source == k_literal_source && !rule.asset_class_code)
             throw std::invalid_argument(
@@ -129,10 +129,8 @@ series_classification series_classifier::classify(const std::string& series_type
     return *result;
 }
 
-std::optional<series_classification>
-series_classifier::try_classify(const std::string& series_type,
-                                const std::string& metric,
-                                const std::string& qualifier) const {
+std::optional<series_classification> series_classifier::try_classify(
+    const std::string& series_type, const std::string& metric, const std::string& qualifier) const {
     const auto type = by_type_.find(series_type);
     if (type == by_type_.end())
         return std::nullopt;

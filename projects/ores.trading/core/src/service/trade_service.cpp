@@ -43,8 +43,8 @@ std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std:
 
 std::vector<domain::trade>
 trade_service::list_trades(std::uint32_t offset, std::uint32_t limit, const std::string& node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node_id"
-                               << " offset=" << offset << ", limit=" << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node_id" << " offset=" << offset
+                               << ", limit=" << limit;
     return repo_.read_latest_for_node_id(ctx_, offset, limit, node_id);
 }
 

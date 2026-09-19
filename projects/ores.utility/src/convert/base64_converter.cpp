@@ -18,12 +18,12 @@
  *
  */
 #include "ores.utility/convert/base64_converter.hpp"
+#include <limits>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <openssl/kdf.h>
 #include <openssl/rand.h>
-#include <limits>
 #include <stdexcept>
 
 namespace ores::utility::converter {

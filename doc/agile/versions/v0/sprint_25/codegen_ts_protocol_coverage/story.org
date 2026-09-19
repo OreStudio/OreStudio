@@ -33,7 +33,7 @@ Bind every protocol message model to the TypeScript facet and extend the project
 - Every generated protocol header has a TypeScript twin, and a check fails when one is missing.
 - One header per entity or protocol holds all its messages, and those messages come from exactly one model.
 - An entity has one TypeScript domain module, and the protocol interfaces reference it instead of restating its fields.
-- No IAM protocol switches the TypeScript facet off.
+- No model switches the TypeScript facet off, and no hand-written struct crosses the wire: every message type is either a modelled entity or a message-only model.
 - The generated tree regenerates with no diff, and ores.web typechecks with its suites passing.
 
 * Tasks
@@ -77,6 +77,22 @@ Bind every protocol message model to the TypeScript facet and extend the project
   template today. They move to the loader, which then renders both targets from
   the same list, so C++ and TypeScript cannot drift apart. The C++ output must
   come out byte-identical, which is what proves the move.
+- *The opt-out is a marker, never a resting state.* =_reject_silent_ts_gap=
+  refuses a model whose field carries no projection, so a field cannot disappear
+  from an interface without someone deciding it should. Five IAM models take the
+  opt-out, and each names a type with no model: =account= and =login_info=,
+  hand-written and both with tables; =account_version=, a version struct whose
+  entity is not modelled; =permission= and =role=, hand-written and both with
+  tables; and =session= with =session_statistics=, which are message-only and have
+  never been modelled at all. The fifth, =account_party_messages=, refers to
+  =ores::iam::domain::account_party=, which *is* generated, so it needs the
+  projection rule and nothing else.
+- *The hand-written surface is the real backlog.* The repository holds 504
+  hand-written domain headers against 430 generated ones — trading 266, dq 106,
+  refdata 47, iam 29 — so "every wire struct is modelled" is a programme, not an
+  IAM chore. IAM is the first component because it is the smallest that exercises
+  both shapes: full entities (=account=, =login_info=, =permission=, =role=) and
+  message-only types (=session=, =session_statistics=).
 
 * Out of scope
 

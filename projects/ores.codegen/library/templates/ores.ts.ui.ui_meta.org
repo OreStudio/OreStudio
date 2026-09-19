@@ -4,7 +4,7 @@
 #+title: ores.ts.ui.ui_meta
 #+description: Table columns and detail fields for one entity, as data.
 #+type: archetype
-#+output: projects/ores.typescript/src/{component}/ui/{entity}_ui.ts
+#+output: projects/ores.web/packages/web/src/generated/{component}/ui/{entity}_ui.ts
 #+facet: ores.ts.ui
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
@@ -53,7 +53,7 @@ The full template source. Edit here and re-tangle with
  * judgement the model does not carry. See {{ui_meta.entity_camel}}_field_groups.ts
  * beside this file.
  */
-import type { ColumnMeta, FieldMeta } from '../../ui-contract.js';
+import type { ColumnMeta, FieldMeta } from '../../../ui-contract.js';
 
 /**
  * The fields of a {{ui_meta.entity}}, in the order the model declares them.

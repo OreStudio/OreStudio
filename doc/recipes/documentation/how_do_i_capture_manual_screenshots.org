@@ -18,10 +18,10 @@ worked exemplar this recipe generalises from.
 
 *Capturing is currently blocked.* The [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner]] panel that
 took these captures was part of the Qt client, and that client is
-removed. No replacement exists yet: =ores.typescript= holds UI metadata
-only and ships no runnable screen. Steps 1, 4 and 5 below are unchanged
-and still correct for a capture taken by hand; steps 2 and 3 wait on a
-client to run them against.
+removed. A replacement now exists: =ores.web= is a TypeScript web client with
+runnable screens. The captures recorded here were taken with the desktop
+client, so steps 1, 4 and 5 below remain correct for a capture taken by
+hand, and steps 2 and 3 describe the runner that client provided.
 
 * Question
 

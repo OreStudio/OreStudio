@@ -146,7 +146,7 @@ screen.
 
 | Artefact | Archetype |
 |----------+-----------|
-| [[proj:projects/ores.typescript/src/refdata/ui/currency_ui.ts][currency_ui.ts]] | [[proj:projects/ores.codegen/library/templates/ts_ui.ts.mustache][ts_ui.ts.mustache]] |
+| [[proj:projects/ores.web/packages/web/src/generated/refdata/ui/currency_ui.ts][currency_ui.ts]] | [[proj:projects/ores.codegen/library/templates/ts_ui.ts.mustache][ts_ui.ts.mustache]] |
 
 * Other projections
 

@@ -123,6 +123,10 @@ BASE_PORT_STEP = 200
 EPHEMERAL_PORT_FLOOR = 32768
 HTTP_PORT_OFFSET_DEBUG = 0
 HTTP_PORT_OFFSET_RELEASE = 1
+# The TypeScript web interface (ores.web). Offset 2 held the retired Wt
+# client, so it is free again: the BFF listens here and serves both the HTTP
+# API and the built browser bundle.
+WEB_PORT_OFFSET = 2
 SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
@@ -488,6 +492,7 @@ def run(argv, project_root: Path) -> int:
     else:
         http_port = base_port + HTTP_PORT_OFFSET_DEBUG
     site_port = base_port + SITE_PORT_OFFSET
+    web_port = base_port + WEB_PORT_OFFSET
 
     nats_url = f"nats://localhost:{nats_port}"
     nats_monitor_url = f"http://localhost:{nats_monitor_port}"
@@ -715,6 +720,9 @@ ORES_COMPILER_CACHE={compiler_cache}
 ORES_HTTP_PORT={http_port}
 ORES_CONTROLLER_SERVICE_HTTP_PORT={http_port}
 ORES_SITE_PORT={site_port}
+# The TypeScript web interface (ores.web). One process serves the browser
+# bundle and the HTTP API on this port.
+ORES_WEB_PORT={web_port}
 ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
 ORES_NATS_MONITOR_PORT={nats_monitor_port}

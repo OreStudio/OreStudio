@@ -63,8 +63,14 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_eighteen_fleet_processes(services):
-    assert len(services) == 18
+def test_nineteen_fleet_processes(services):
+    assert len(services) == 19
+
+
+def test_node_service_carries_its_entry_point(services):
+    node = services["ores.web.service"]
+    assert node["runtime"] == "node"
+    assert node["entry_point"] == "packages/bff/dist/main.js"
 
 
 def test_db_grant_prefixes_still_round_trip(services):

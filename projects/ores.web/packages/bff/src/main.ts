@@ -80,6 +80,11 @@ async function main(): Promise<void> {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
   await server.listen({ port: config.port, host: config.host });
+
+  // `compass services start` reads the standard output log for this exact
+  // line to decide the service is ready, so it must follow the successful
+  // bind. See render_node_unit in projects/ores.compass/src/systemd_generate.py.
+  server.log.info('Service ready');
 }
 
 main().catch((error: unknown) => {

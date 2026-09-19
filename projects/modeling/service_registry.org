@@ -2,7 +2,7 @@
 :ID: DBB7FE01-0C33-4EF9-BB2A-039674E71AB1
 :END:
 #+title: Service registry
-#+description: Codegen service-registry model — catalogue of ORE Studio backend services and fleet processes, with two independent aspects per entry: DB access (psql var, IAM role, DDL grant prefixes) and deployment (replicas, enabled, startup dependencies, extra CLI args). Not every entry has both: the DB-access aspect only applies to services with their own NATS-domain-service role, while the deployment aspect applies to every process compass systemd generate needs to know about. Platform-agnostic by design: nothing in the deployment aspect is systemd-specific, so a future Windows-service or macOS-launchd generator can consume the same model.
+#+description: Codegen service-registry model — catalogue of ORE Studio backend services and fleet processes, with two independent aspects per entry: DB access (psql var, IAM role, DDL grant prefixes) and deployment (replicas, enabled, startup dependencies, execution runtime, extra CLI args). Not every entry has both: the DB-access aspect only applies to services with their own NATS-domain-service role, while the deployment aspect applies to every process compass systemd generate needs to know about. Platform-agnostic by design: nothing in the deployment aspect is systemd-specific, so a future Windows-service or macOS-launchd generator can consume the same model.
 #+type: ores.codegen.service_registry
 #+filetags: :codegen:service_registry:literate:
 #+created: 2026-06-02
@@ -352,6 +352,16 @@
 
 - --port {http_port}
 - --storage-dir ../storage
+
+* ores.web.service
+:PROPERTIES:
+:description: TypeScript web interface. One process serves the browser bundle and the HTTP API on ORES_WEB_PORT, and reaches the services over NATS.
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:runtime:     node
+:entry_point: packages/bff/dist/main.js
+:END:
 
 * ores.compute.wrapper
 :PROPERTIES:

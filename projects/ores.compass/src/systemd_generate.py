@@ -111,6 +111,8 @@ def fetch_service_definitions(services):
             "desired_replicas": svc["replicas"],
             "enabled": svc["enabled"],
             "args_template": args_template,
+            "runtime": svc.get("runtime", "native"),
+            "entry_point": svc.get("entry_point", ""),
         })
     return defs
 
@@ -202,6 +204,67 @@ StartLimitBurst=5
 Type=notify
 NotifyAccess=all
 EnvironmentFile={env_file}
+ExecStart=/bin/sh -c '{shell_cmd}'
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy={target_name}
+"""
+    return unit
+
+
+def render_node_unit(def_row, deps_on, checkout_root, env_name, target_name,
+                     preset):
+    """A TypeScript service: one Node process, one concrete unit per
+    environment.
+
+    Type=simple, not Type=notify: a Node process speaks no sd_notify
+    protocol, so systemd cannot wait for a readiness datagram. Readiness is
+    the 'Service ready' line the process logs once it has bound, which is
+    what `compass services start` polls for. systemd appends that output to
+    the same log file compass reads, so the application needs no logging
+    configuration of its own.
+
+    The per-service NATS certificate is exported in a shell wrapper rather
+    than passed with Environment=, because EnvironmentFile= wins over
+    Environment= and this checkout's .env carries the shared client
+    identity. This is the same idiom the compiled services use for their
+    own certificates."""
+    component = def_row["service_name"].removesuffix(".service")
+    component_dir = f"{checkout_root}/projects/{component}"
+    entry_point = f"{component_dir}/{def_row['entry_point']}"
+    env_file = f"{checkout_root}/.env"
+    keys_dir = f"{checkout_root}/build/keys/nats"
+    log_file = (f"{checkout_root}/build/output/{preset}/publish/log/"
+                f"{def_row['service_name']}.0.log")
+    node = shutil.which("node") or "/usr/bin/node"
+
+    after = [_unit_basename("nats-server", env_name) + ".service"] + \
+        [_unit_basename(d, env_name) + ".service" for d in deps_on]
+    after_line = " ".join(after)
+
+    shell_cmd = (
+        f'export ORES_NATS_TLS_CERT="{keys_dir}/{def_row["service_name"]}.crt"; '
+        f'export ORES_NATS_TLS_KEY="{keys_dir}/{def_row["service_name"]}.key"; '
+        f'exec "{node}" "{entry_point}"')
+
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=ORE Studio {def_row['service_name']} (environment {env_name})
+After={after_line}
+Requires={after_line}
+PartOf={target_name}
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory={component_dir}
+EnvironmentFile={env_file}
+StandardOutput=append:{log_file}
+StandardError=append:{log_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
@@ -406,7 +469,11 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
 
     for d in defs:
         deps_on = deps.get(d["service_name"], [])
-        if d["desired_replicas"] > 1:
+        if d.get("runtime") == "node":
+            write(_unit_basename(d["service_name"], env_name) + ".service",
+                  render_node_unit(d, deps_on, checkout_root, env_name,
+                                   target_name, env.get("ORES_PRESET", "")))
+        elif d["desired_replicas"] > 1:
             for name, content in render_wrapper_units(
                     d, deps_on, checkout_root, env_name, target_name):
                 write(name, content)
@@ -747,6 +814,11 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
     services = load_service_registry(project_root)
     defs = fetch_service_definitions(services)
     deps = fetch_dependencies(services)
+    node_services = [d["service_name"] for d in defs
+                     if d.get("runtime") == "node"]
+    if node_services:
+        print("  no Quadlet image yet for: " + ", ".join(node_services))
+    defs = [d for d in defs if d.get("runtime") != "node"]
 
     out_dir = project_root / "systemd/quadlet"
     out_dir.mkdir(parents=True, exist_ok=True)

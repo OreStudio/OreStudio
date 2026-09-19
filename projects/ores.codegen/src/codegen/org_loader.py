@@ -2457,6 +2457,7 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
 
 _SERVICE_REGISTRY_SCALARS = (
     "psql_var", "env_key", "iam_role", "description", "role", "email",
+    "runtime", "entry_point",
 )
 
 
@@ -2522,7 +2523,10 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
       ``** Execute prefixes`` sub-headings.
     - *Deployment* (every entry): ``:replicas:`` (int), ``:enabled:``
       (bool), optional ``:depends_on:`` (comma-separated service
-      names), plus an optional ``** Extra args`` sub-heading carrying
+      names), optional ``:runtime:`` (``native`` for a compiled binary,
+      the default, or ``node`` for a TypeScript service, which also
+      needs ``:entry_point:`` relative to its component directory), plus
+      an optional ``** Extra args`` sub-heading carrying
       genuinely per-service CLI flags as one bullet per flag. Consumed
       by ``compass systemd generate`` to render one concrete unit per
       (service, environment); deliberately platform-agnostic so a

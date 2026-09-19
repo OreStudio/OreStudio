@@ -40,6 +40,7 @@ _SERVICES = [
     "ores.shell",
     "ores.compute.wrapper",
     "ores.analytics.service",
+    "ores.web.service",
 ]
 
 _CA_DAYS = 365

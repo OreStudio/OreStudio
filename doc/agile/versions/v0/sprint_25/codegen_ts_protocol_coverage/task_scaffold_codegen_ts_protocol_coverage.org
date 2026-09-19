@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-19                               |
 
 * Acceptance
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2110][#2110]] | [codegen] Model every IAM NATS message and generate both targets |
 
 * Review
 
@@ -69,3 +69,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded. The story carries the problem across the drift-free components and
+the task carries IAM; both ride PR #2110, which is the single pull request for
+this work rather than a scaffold PR followed by a delivery PR.
+
+The story's acceptance asks that every wire-crossing message have an org model
+and both projections with no facet switched off, that one header per entity or
+protocol hold its messages and take them from exactly one model, that an entity
+have one TypeScript domain interface, and that the generated tree regenerate
+with no diff while =ores.web= typechecks. The task's plan records the IAM
+inventory — 138 messages across 16 headers — and the four slices that close it.

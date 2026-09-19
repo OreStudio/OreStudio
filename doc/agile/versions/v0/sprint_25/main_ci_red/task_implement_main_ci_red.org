@@ -8,7 +8,7 @@
 #+filetags: :main_ci_red:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/main-ci-red
-#+pr:
+#+pr: 2111
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2111][#2111]] | [build] Fix the Windows build, the SQL validation, and two failing units |
 
 * Review
 

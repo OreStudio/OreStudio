@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,20 +19,43 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.cpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.core/repository/login_info_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+import type { LoginInfo } from '../domain/login_info.js';
 
-namespace ores::iam::repository {
-
-std::ostream& operator<<(std::ostream& s, const login_info_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+export interface GetLoginInfoRequest {
+    offset: number;
+    limit: number;
 }
 
+export interface GetLoginInfoResponse {
+    login_info: LoginInfo[];
+    total_available_count: number;
+    success: boolean;
+    message: string;
 }
+
+export interface SaveLoginInfoRequest {
+    data: LoginInfo;
+}
+
+export interface SaveLoginInfoResponse {
+    success: boolean;
+    message: string;
+}
+
+export interface DeleteLoginInfoRequest {
+    ids: string[];
+}
+
+export interface DeleteLoginInfoResponse {
+    success: boolean;
+    message: string;
+}
+
+export const subjects = {
+    get_login_info_request: "iam.v1.login_info.list",
+    save_login_info_request: "iam.v1.login_info.save",
+    delete_login_info_request: "iam.v1.login_info.delete",
+} as const;

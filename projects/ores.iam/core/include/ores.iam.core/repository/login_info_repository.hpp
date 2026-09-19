@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -32,7 +39,7 @@
 namespace ores::iam::repository {
 
 /**
- * @brief Reads and writes login tracking information off of data storage.
+ * @brief Reads and writes login info to data storage.
  */
 class ORES_IAM_CORE_EXPORT login_info_repository {
 private:
@@ -46,7 +53,6 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit login_info_repository(context ctx);
 
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
@@ -54,44 +60,58 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes login information to database (insert only).
-     */
-    void write(const std::vector<domain::login_info>& login_infos);
-
-    /**
-     * @brief Updates existing login information in database.
-     */
-    void update(const domain::login_info& login_info);
-
-    /**
-     * @brief Reads login information, possibly filtered by account ID.
+     * @brief Writes login info to database.
      */
     /**@{*/
-    std::vector<domain::login_info> read();
-    std::vector<domain::login_info> read(const boost::uuids::uuid& account_id);
+    void write(context ctx, const domain::login_info& v);
+    void write(context ctx, const std::vector<domain::login_info>& v);
     /**@}*/
 
     /**
-     * @brief Reads login information with pagination support.
+     * @brief Reads latest login info, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::login_info> read_latest(context ctx);
+    std::vector<domain::login_info> read_latest(context ctx, const std::string& account_id);
+    /**@}*/
+
+    /**
+     * @brief Reads the login info rows for the given primary key.
+     *
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
+     */
+    std::vector<domain::login_info> read_all(context ctx, const std::string& account_id);
+
+
+    /**
+     * @brief Reads latest login info with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of login info within the specified range
      */
-    std::vector<domain::login_info> read(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::login_info>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of login info records.
-     * @return Total number of login info records
+     * @brief Gets the total count of active login info.
+     * @param ctx Repository context with database connection
+     * @return Total number of active login info
      */
-    std::uint32_t get_total_login_info_count();
+    std::uint32_t get_total_login_info_count(context ctx);
 
     /**
-     * @brief Removes login information for a specific account.
+     * @brief Deletes a login info permanently.
+     *
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
      */
-    void remove(const boost::uuids::uuid& account_id);
+    void remove(context ctx, const std::string& account_id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes login info permanently.
+     */
+    void remove(context ctx, const std::vector<std::string>& account_ids);
 };
 
 }

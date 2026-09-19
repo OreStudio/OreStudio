@@ -19,42 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.hpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
-#define ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+#ifndef ORES_IAM_SERVICE_MESSAGING_LOGIN_INFO_EVENT_REGISTRAR_HPP
+#define ORES_IAM_SERVICE_MESSAGING_LOGIN_INFO_EVENT_REGISTRAR_HPP
 
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
-#include <optional>
-#include <ostream>
-#include <string>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::iam::repository {
+namespace ores::iam::service::messaging {
 
-using db_timestamp = ores::database::repository::db_timestamp;
+[[nodiscard]] ores::eventing::service::subscription
+register_login_info_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                  ores::eventing::service::event_bus& event_bus,
+                                  ores::nats::service::client& nats);
 
-/**
- * @brief Represents a login info in the database.
- */
-struct login_info_entity {
-    constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_iam_login_info_tbl";
-
-    sqlgen::PrimaryKey<std::string> account_id;
-    std::string tenant_id;
-    std::string last_ip;
-    std::string last_attempt_ip;
-    int failed_logins = 0;
-    bool locked = false;
-    std::string last_login;
-    bool online = false;
-    bool password_reset_required = false;
-};
-
-std::ostream& operator<<(std::ostream& s, const login_info_entity& v);
-
-}
+} // namespace ores::iam::service::messaging
 
 #endif

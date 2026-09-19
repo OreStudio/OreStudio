@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-drop rule if exists ores_iam_login_info_delete_rule on "ores_iam_login_info_tbl";
-drop trigger if exists ores_iam_login_info_insert_trg on "ores_iam_login_info_tbl";
-drop function if exists ores_iam_login_info_insert_fn;
-drop table if exists "ores_iam_login_info_tbl";
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: domain_types.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+/**
+ * The login info wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface LoginInfo {
+    tenant_id: string;
+    account_id: string;
+    last_ip: string;
+    last_attempt_ip: string;
+    failed_logins: number;
+    locked: boolean;
+    last_login: string;
+    online: boolean;
+    password_reset_required: boolean;
+}

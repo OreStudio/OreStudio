@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_GENERATORS_LOGIN_INFO_GENERATOR_HPP
-#define ORES_IAM_GENERATORS_LOGIN_INFO_GENERATOR_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_GENERATORS_LOGIN_INFO_GENERATOR_HPP
+#define ORES_IAM_API_GENERATORS_LOGIN_INFO_GENERATOR_HPP
 
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/export.hpp"
@@ -34,10 +39,10 @@ ORES_IAM_API_EXPORT domain::login_info
 generate_synthetic_login_info(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic login_infos.
+ * @brief Generates N synthetic login_info.
  */
 ORES_IAM_API_EXPORT std::vector<domain::login_info>
-generate_synthetic_login_infos(std::size_t n, utility::generation::generation_context& ctx);
+generate_synthetic_login_info(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

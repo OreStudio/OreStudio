@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,33 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.core/repository/login_info_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/datetime.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::iam::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::login_info r;
-    using boost::uuids::uuid;
-    using namespace boost::asio;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.account_id = boost::lexical_cast<uuid>(v.account_id.value());
-    r.last_ip = ip::make_address(v.last_ip);
-    r.last_attempt_ip = ip::make_address(v.last_attempt_ip);
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
+    r.last_ip = boost::asio::ip::make_address(v.last_ip);
+    r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
     r.failed_logins = v.failed_logins;
-    r.locked = v.locked != 0;
-    r.last_login = timestamp_to_timepoint(v.last_login);
-    r.online = v.online != 0;
-    r.password_reset_required = v.password_reset_required != 0;
+    r.locked = v.locked;
+    r.last_login = timestamp_to_timepoint(std::string_view{v.last_login});
+    r.online = v.online;
+    r.password_reset_required = v.password_reset_required;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -53,13 +60,13 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     login_info_entity r;
+    r.account_id = boost::uuids::to_string(v.account_id);
     r.tenant_id = v.tenant_id.to_string();
-    r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.last_ip = v.last_ip.to_string();
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = datetime::to_db_string(v.last_login);
+    r.last_login = ores::platform::time::datetime::to_iso8601_utc(v.last_login);
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 

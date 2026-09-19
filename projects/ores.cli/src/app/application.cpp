@@ -414,21 +414,21 @@ void application::export_system_settings(const config::export_options& cfg) cons
 void application::export_login_info(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting login info.";
 
-    iam::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo;
     std::vector<iam::domain::login_info> infos;
 
     if (!cfg.key.empty()) {
         // Export specific login info by account ID
         try {
             const auto account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-            infos = repo.read(account_id);
+            infos = repo.read_latest(context_, boost::uuids::to_string(account_id));
         } catch (const boost::bad_lexical_cast&) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Invalid account ID: {}", cfg.key)));
         }
     } else {
         // Export all login info records
-        infos = repo.read();
+        infos = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -964,7 +964,7 @@ void application::delete_system_setting(const config::delete_options& cfg) const
 
 void application::delete_login_info(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting login info for account: " << cfg.key;
-    iam::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo;
 
     // Parse as UUID
     boost::uuids::uuid account_id;
@@ -975,7 +975,7 @@ void application::delete_login_info(const config::delete_options& cfg) const {
             application_exception(std::format("Invalid account ID: {}", cfg.key)));
     }
 
-    repo.remove(account_id);
+    repo.remove(context_, boost::uuids::to_string(account_id));
     output_stream_ << "Login info deleted successfully for account: "
                    << boost::uuids::to_string(account_id) << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted login info for account: "
@@ -1278,8 +1278,8 @@ void application::add_login_info(const config::add_login_info_options& cfg) cons
     record.last_login = std::chrono::system_clock::now();
 
     // Write to database
-    iam::repository::login_info_repository repo(context_);
-    repo.write({record});
+    iam::repository::login_info_repository repo;
+    repo.write(context_, record);
 
     output_stream_ << "Successfully added login info for account: "
                    << boost::uuids::to_string(account_id) << std::endl;

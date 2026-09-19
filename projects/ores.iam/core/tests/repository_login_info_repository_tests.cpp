@@ -49,11 +49,11 @@ TEST_CASE("write_login_infos", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    login_info_repository repo(h.context());
-    auto lis = generate_synthetic_login_infos(3, gen_ctx);
+    login_info_repository repo;
+    auto lis = generate_synthetic_login_info(3, gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Login infos: " << lis;
-    CHECK_NOTHROW(repo.write(lis));
+    CHECK_NOTHROW(repo.write(h.context(), lis));
 }
 
 TEST_CASE("read_login_infos", tags) {
@@ -62,15 +62,15 @@ TEST_CASE("read_login_infos", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    login_info_repository repo(h.context());
+    login_info_repository repo;
 
     auto li = generate_synthetic_login_info(gen_ctx);
     const auto target_account_id = li.account_id;
-    repo.write({li});
+    repo.write(h.context(), {li});
 
     BOOST_LOG_SEV(lg, debug) << "Target account ID: " << target_account_id;
 
-    auto read_lis = repo.read(target_account_id);
+    auto read_lis = repo.read_latest(h.context(), boost::uuids::to_string(target_account_id));
     BOOST_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
 
     REQUIRE(read_lis.size() == 1);
@@ -82,12 +82,12 @@ TEST_CASE("read_nonexistent_login_info", tags) {
 
     database_helper h;
 
-    login_info_repository repo(h.context());
+    login_info_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent account ID: " << nonexistent_id;
 
-    auto read_lis = repo.read(nonexistent_id);
+    auto read_lis = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
 
     CHECK(read_lis.size() == 0);

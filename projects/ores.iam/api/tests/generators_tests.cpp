@@ -237,7 +237,7 @@ TEST_CASE("login_info_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_login_infos(count, ctx);
+    auto items = generate_synthetic_login_info(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {

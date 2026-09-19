@@ -36,7 +36,7 @@ signup_service::signup_service(
     std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx)
-    , login_info_repo_(ctx)
+    , ctx_(ctx)
     , system_flags_(std::move(system_flags))
     , auth_service_(std::move(auth_service)) {}
 
@@ -133,17 +133,17 @@ signup_result signup_service::register_user(const std::string& username,
     account_repo_.write(accounts);
 
     // Create login tracking entry
-    domain::login_info li{.last_login = {},
-                          .account_id = id,
+    domain::login_info li{.account_id = id,
+                          .last_ip = {},
+                          .last_attempt_ip = {},
                           .failed_logins = 0,
                           .locked = false,
+                          .last_login = {},
                           .online = false,
-                          .password_reset_required = false,
-                          .last_ip = {},
-                          .last_attempt_ip = {}};
+                          .password_reset_required = false};
 
     std::vector<domain::login_info> login_infos{li};
-    login_info_repo_.write(login_infos);
+    login_info_repo_.write(ctx_, login_infos);
 
     // Assign the default Viewer role to the new account
     auto viewer_role = auth_service_->find_role_by_name(domain::roles::viewer);

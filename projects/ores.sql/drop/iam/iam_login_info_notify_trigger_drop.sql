@@ -18,7 +18,5 @@
  *
  */
 
-drop rule if exists ores_iam_login_info_delete_rule on "ores_iam_login_info_tbl";
-drop trigger if exists ores_iam_login_info_insert_trg on "ores_iam_login_info_tbl";
-drop function if exists ores_iam_login_info_insert_fn;
-drop table if exists "ores_iam_login_info_tbl";
+drop trigger if exists ores_iam_login_info_notify_trg on "ores_iam_login_info_tbl";
+drop function if exists ores_iam_login_info_notify_fn;

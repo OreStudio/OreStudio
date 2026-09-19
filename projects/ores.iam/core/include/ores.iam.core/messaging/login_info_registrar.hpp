@@ -19,42 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_entity.hpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
-#define ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+#ifndef ORES_IAM_CORE_MESSAGING_LOGIN_INFO_REGISTRAR_HPP
+#define ORES_IAM_CORE_MESSAGING_LOGIN_INFO_REGISTRAR_HPP
 
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
-#include <ostream>
-#include <string>
+#include <vector>
 
-namespace ores::iam::repository {
+namespace ores::iam::messaging {
 
-using db_timestamp = ores::database::repository::db_timestamp;
+std::vector<ores::nats::service::subscription>
+register_login_info_handlers(ores::nats::service::client& nats,
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-/**
- * @brief Represents a login info in the database.
- */
-struct login_info_entity {
-    constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_iam_login_info_tbl";
-
-    sqlgen::PrimaryKey<std::string> account_id;
-    std::string tenant_id;
-    std::string last_ip;
-    std::string last_attempt_ip;
-    int failed_logins = 0;
-    bool locked = false;
-    std::string last_login;
-    bool online = false;
-    bool password_reset_required = false;
-};
-
-std::ostream& operator<<(std::ostream& s, const login_info_entity& v);
-
-}
+} // namespace ores::iam::messaging
 
 #endif

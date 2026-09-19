@@ -178,7 +178,6 @@ service user can read or write another domain's tables directly.
 | =ores_<env>_readonly_user= | SELECT on all tables; used by reporting tools |
 | =ores_<env>_cli_user= | CLI surface DML |
 | =ores_<env>_shell_user= | Shell surface DML |
-| =ores_<env>_wt_user= | Wt (web) surface DML |
 | =ores_<env>_http_user= | HTTP surface DML |
 
 Row-Level Security enforces tenant isolation on top of these grants —

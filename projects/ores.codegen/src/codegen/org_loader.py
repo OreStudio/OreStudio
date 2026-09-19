@@ -2114,8 +2114,24 @@ _TS_SCALARS = {
     "std::string": "string",
     "bool": "boolean",
     "int": "number",
+    # The fixed-width family and the floating types. A missing entry is not
+    # harmless: an unqualified name falls through to the PascalCase fallback
+    # and renders a type that does not exist, which is how ``double`` came to
+    # emit ``Double`` on the roughly fifty members that carry one.
+    "float": "number",
+    "double": "number",
+    "std::int8_t": "number",
+    "std::int16_t": "number",
+    "std::int32_t": "number",
+    "std::int64_t": "number",
+    "std::uint8_t": "number",
+    "std::uint16_t": "number",
     "std::uint32_t": "number",
     "std::uint64_t": "number",
+    # Both cross the wire as a string, per their rfl reflectors in
+    # ores.utility/rfl/reflectors.hpp.
+    "boost::uuids::uuid": "string",
+    "std::chrono::year_month_day": "string",
 }
 
 # A domain member's fully qualified C++ name, e.g.
@@ -2161,6 +2177,11 @@ def _ts_type(cpp_type: str) -> str | None:
     An unqualified name is a message defined in the same protocol, so it
     takes the interface name the template will emit for it.
     """
+    if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
+        # rfl::json writes an unset optional as null, so the field is
+        # nullable rather than absent.
+        inner = _ts_type(cpp_type[len("std::optional<"):-1])
+        return f"{inner} | null" if inner else None
     if cpp_type.startswith("std::vector<") and cpp_type.endswith(">"):
         inner = _ts_type(cpp_type[len("std::vector<"):-1])
         return f"{inner}[]" if inner else None

@@ -387,8 +387,8 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
         record(seed_classifier().classify(type, "PROBE", "PROBE"));
     }
 
-    record(seed_classifier().classify(
-        "CORRELATION", "RATE", "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM"));
+    record(
+        seed_classifier().classify("CORRELATION", "RATE", "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM"));
     record(seed_classifier().classify(
         "GENERIC-MD", "EQUITY_OPTION", "PRICE/RIC:.SPX/USD/2025-10-03/3300/C"));
 
@@ -410,8 +410,8 @@ TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", ta
     for (const auto& [key, entry] : survey().entries) {
         if (entry.series_type != "CORRELATION")
             continue;
-        const auto c = seed_classifier().try_classify(
-            entry.series_type, entry.metric, entry.qualifier);
+        const auto c =
+            seed_classifier().try_classify(entry.series_type, entry.metric, entry.qualifier);
         REQUIRE(c);
         const auto slash = entry.qualifier.find('/');
         REQUIRE(slash != std::string::npos);
@@ -468,10 +468,9 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", tags) {
 
     // The one rule whose classes come from its key, and the one keyed by its
     // metric rather than by its type alone.
-    const auto correlation =
-        std::find_if(rules.begin(), rules.end(), [](const auto& rule) {
-            return rule.series_type == "CORRELATION";
-        });
+    const auto correlation = std::find_if(rules.begin(), rules.end(), [](const auto& rule) {
+        return rule.series_type == "CORRELATION";
+    });
     REQUIRE(correlation != rules.end());
     CHECK(correlation->asset_class_source == "correlation_operands");
     CHECK(correlation->series_subclass_code == "correlation");
@@ -610,8 +609,7 @@ TEST_CASE("classifier_rejects_an_asset_class_source_it_does_not_know", unit_tags
 
     try {
         const series_classifier classifier(rules);
-        FAIL("accepted an unknown source, known types: "
-             << classifier.known_series_types().size());
+        FAIL("accepted an unknown source, known types: " << classifier.known_series_types().size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
         CHECK(msg.find("magic") != std::string::npos);

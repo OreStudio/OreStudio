@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,26 +19,21 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.api/domain/permission_table_io.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include <ostream>
-
-namespace ores::iam::domain {
-
-namespace {
-
-void print_permission_table(std::ostream& s, const std::vector<permission>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
-
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<permission>& v) {
-    print_permission_table(s, v);
-    return s;
-}
-
+/**
+ * The permission wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface Permission {
+    tenant_id: string;
+    id: string;
+    code: string;
+    description: string;
+    recorded_at: string;
 }

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"

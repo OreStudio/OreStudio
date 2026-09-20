@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_PERMISSION_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_PERMISSION_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_PERMISSION_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_PERMISSION_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,8 +54,6 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit permission_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
@@ -58,44 +63,54 @@ public:
      * @brief Writes permissions to database.
      */
     /**@{*/
-    void write(const domain::permission& permission);
-    void write(const std::vector<domain::permission>& permissions);
+    void write(context ctx, const domain::permission& v);
+    void write(context ctx, const std::vector<domain::permission>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest permissions, possibly filtered by ID.
+     * @brief Reads latest permissions, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::permission> read_latest();
-    std::vector<domain::permission> read_latest(const boost::uuids::uuid& id);
+    std::vector<domain::permission> read_latest(context ctx);
+    std::vector<domain::permission> read_latest(context ctx, const std::string& id);
     /**@}*/
+
+    /**
+     * @brief Reads latest permissions filtered by code.
+     */
+    std::vector<domain::permission> read_latest_by_code(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads all permissions, possibly filtered by primary key.
+     */
+    std::vector<domain::permission> read_all(context ctx, const std::string& id);
+
 
     /**
      * @brief Reads latest permissions with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of permissions within the specified range
      */
-    std::vector<domain::permission> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::permission>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active permissions.
-     * @return Total number of permissions with valid_to == max_timestamp
+     * @param ctx Repository context with database connection
+     * @return Total number of active permissions
      */
-    std::uint32_t get_total_permission_count();
-
-    /**
-     * @brief Reads latest permission by code.
-     */
-    std::vector<domain::permission> read_latest_by_code(const std::string& code);
+    std::uint32_t get_total_permission_count(context ctx);
 
     /**
      * @brief Deletes a permission by closing its temporal validity.
      */
-    void remove(const boost::uuids::uuid& permission_id);
+    void remove(context ctx, const std::string& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes permissions by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

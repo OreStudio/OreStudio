@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"

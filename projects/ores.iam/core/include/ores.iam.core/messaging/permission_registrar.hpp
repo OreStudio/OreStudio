@@ -19,26 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.api/domain/permission_table_io.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include <ostream>
+#ifndef ORES_IAM_CORE_MESSAGING_PERMISSION_REGISTRAR_HPP
+#define ORES_IAM_CORE_MESSAGING_PERMISSION_REGISTRAR_HPP
 
-namespace ores::iam::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace {
+namespace ores::iam::messaging {
 
-void print_permission_table(std::ostream& s, const std::vector<permission>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
+std::vector<ores::nats::service::subscription>
+register_permission_handlers(ores::nats::service::client& nats,
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::iam::messaging
 
-std::ostream& operator<<(std::ostream& s, const std::vector<permission>& v) {
-    print_permission_table(s, v);
-    return s;
-}
-
-}
+#endif

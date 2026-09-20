@@ -20,6 +20,7 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
@@ -34,7 +35,7 @@ using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
-    : permission_repo_(ctx)
+    : ctx_(ctx)
     , role_repo_(ctx)
     , account_role_repo_(ctx)
     , role_permission_repo_(ctx)
@@ -48,13 +49,13 @@ authorization_service::authorization_service(context ctx, event_bus* event_bus)
 
 std::vector<domain::permission> authorization_service::list_permissions() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all permissions.";
-    return permission_repo_.read_latest();
+    return permission_repo_.read_latest(ctx_);
 }
 
 std::optional<domain::permission>
 authorization_service::find_permission_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding permission by code: " << code;
-    auto permissions = permission_repo_.read_latest_by_code(code);
+    auto permissions = permission_repo_.read_latest_by_code(ctx_, code);
     if (permissions.empty()) {
         return std::nullopt;
     }
@@ -80,7 +81,7 @@ domain::permission authorization_service::create_permission(const std::string& c
     perm.code = code;
     perm.description = description;
 
-    permission_repo_.write(perm);
+    permission_repo_.write(ctx_, perm);
 
     BOOST_LOG_SEV(lg(), info) << "Created permission: " << code << " with ID: " << perm.id;
     return perm;
@@ -190,7 +191,7 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
     codes.reserve(role_perms.size());
 
     for (const auto& rp : role_perms) {
-        auto perms = permission_repo_.read_latest(rp.permission_id);
+        auto perms = permission_repo_.read_latest(ctx_, boost::uuids::to_string(rp.permission_id));
         if (!perms.empty()) {
             codes.push_back(perms.front().code);
         }

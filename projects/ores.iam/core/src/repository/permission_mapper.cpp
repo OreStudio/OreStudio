@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/permission_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
@@ -34,8 +39,11 @@ domain::permission permission_mapper::map(const permission_entity& v) {
     domain::permission r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.code = v.code;
+
     r.description = v.description;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -45,9 +53,11 @@ permission_entity permission_mapper::map(const domain::permission& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     permission_entity r;
+    r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.id = boost::lexical_cast<std::string>(v.id);
+
     r.code = v.code;
+
     r.description = v.description;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

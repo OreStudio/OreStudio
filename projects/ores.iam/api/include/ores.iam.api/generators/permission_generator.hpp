@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_GENERATORS_PERMISSION_GENERATOR_HPP
-#define ORES_IAM_GENERATORS_PERMISSION_GENERATOR_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_GENERATORS_PERMISSION_GENERATOR_HPP
+#define ORES_IAM_API_GENERATORS_PERMISSION_GENERATOR_HPP
 
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/export.hpp"

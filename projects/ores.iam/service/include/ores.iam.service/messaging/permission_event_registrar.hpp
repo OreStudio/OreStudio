@@ -19,26 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.api/domain/permission_table_io.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include <ostream>
+#ifndef ORES_IAM_SERVICE_MESSAGING_PERMISSION_EVENT_REGISTRAR_HPP
+#define ORES_IAM_SERVICE_MESSAGING_PERMISSION_EVENT_REGISTRAR_HPP
 
-namespace ores::iam::domain {
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace {
+namespace ores::iam::service::messaging {
 
-void print_permission_table(std::ostream& s, const std::vector<permission>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
+[[nodiscard]] ores::eventing::service::subscription
+register_permission_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                  ores::eventing::service::event_bus& event_bus,
+                                  ores::nats::service::client& nats);
 
-}
+} // namespace ores::iam::service::messaging
 
-std::ostream& operator<<(std::ostream& s, const std::vector<permission>& v) {
-    print_permission_table(s, v);
-    return s;
-}
-
-}
+#endif

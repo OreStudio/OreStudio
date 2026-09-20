@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid_generators.hpp>

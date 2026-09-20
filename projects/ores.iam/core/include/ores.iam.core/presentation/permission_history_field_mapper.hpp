@@ -19,26 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.api/domain/permission_table_io.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include <ostream>
+#ifndef ORES_IAM_CORE_PRESENTATION_PERMISSION_HISTORY_FIELD_MAPPER_HPP
+#define ORES_IAM_CORE_PRESENTATION_PERMISSION_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::iam::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.core/export.hpp"
+#include <vector>
 
-namespace {
+namespace ores::iam::presentation {
 
-void print_permission_table(std::ostream& s, const std::vector<permission>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+/**
+ * @brief Renders a permission to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_IAM_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_permission_fields(const domain::permission& v);
+
 }
 
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<permission>& v) {
-    print_permission_table(s, v);
-    return s;
-}
-
-}
+#endif

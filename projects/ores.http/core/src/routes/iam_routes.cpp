@@ -22,7 +22,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_json.hpp"
 #include "ores.iam.api/domain/account_version.hpp"
-#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/role_json.hpp"

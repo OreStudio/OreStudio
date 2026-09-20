@@ -19,26 +19,28 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_history_field_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.api/domain/permission_table_io.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include <ostream>
+#include "ores.iam.core/presentation/permission_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
-namespace ores::iam::domain {
+namespace ores::iam::presentation {
 
-namespace {
+std::vector<ores::diff::domain::field_value> render_permission_fields(const domain::permission& v) {
+    using ores::diff::domain::field_value;
+    std::vector<field_value> fields;
 
-void print_permission_table(std::ostream& s, const std::vector<permission>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
+    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Code", .value = v.code});
+    fields.push_back({.name = "Description", .value = v.description});
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::recorded_at,
+                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<permission>& v) {
-    print_permission_table(s, v);
-    return s;
+    return fields;
 }
 
 }

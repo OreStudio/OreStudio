@@ -479,20 +479,20 @@ void application::export_roles(const config::export_options& cfg) const {
 void application::export_permissions(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting permissions.";
 
-    iam::repository::permission_repository repo(context_);
+    iam::repository::permission_repository repo;
     std::vector<iam::domain::permission> items;
 
     if (!cfg.key.empty()) {
         // Export specific permission by ID (UUID)
         try {
             const auto perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-            items = repo.read_latest(perm_id);
+            items = repo.read_latest(context_, boost::uuids::to_string(perm_id));
         } catch (const boost::bad_lexical_cast&) {
             // Try by code
-            items = repo.read_latest_by_code(cfg.key);
+            items = repo.read_latest_by_code(context_, cfg.key);
         }
     } else {
-        items = repo.read_latest();
+        items = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -1008,7 +1008,7 @@ void application::delete_role(const config::delete_options& cfg) const {
 
 void application::delete_permission(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting permission: " << cfg.key;
-    iam::repository::permission_repository repo(context_);
+    iam::repository::permission_repository repo;
 
     // Parse as UUID
     boost::uuids::uuid perm_id;
@@ -1016,7 +1016,7 @@ void application::delete_permission(const config::delete_options& cfg) const {
         perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
     } catch (const boost::bad_lexical_cast&) {
         // Try to find by code
-        const auto perms = repo.read_latest_by_code(cfg.key);
+        const auto perms = repo.read_latest_by_code(context_, cfg.key);
         if (perms.empty()) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Permission not found: {}", cfg.key)));
@@ -1024,7 +1024,7 @@ void application::delete_permission(const config::delete_options& cfg) const {
         perm_id = perms.front().id;
     }
 
-    repo.remove(perm_id);
+    repo.remove(context_, boost::uuids::to_string(perm_id));
     output_stream_ << "Permission deleted successfully: " << boost::uuids::to_string(perm_id)
                    << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted permission: " << boost::uuids::to_string(perm_id);
@@ -1320,8 +1320,8 @@ void application::add_permission(const config::add_permission_options& cfg) cons
     if (cfg.description)
         record.description = *cfg.description;
 
-    iam::repository::permission_repository repo(context_);
-    repo.write({record});
+    iam::repository::permission_repository repo;
+    repo.write(context_, {record});
 
     output_stream_ << "Successfully added permission: " << cfg.code << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added permission: " << cfg.code;

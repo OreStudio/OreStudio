@@ -42,11 +42,11 @@ codegen path rather than in this one table.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Implementation complete and verified.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -208,6 +208,13 @@ references, and the comment above that list now names it.
   tables, junction included, and the rollback restored them.
 - =ctest -R "marketdata|database|platform"= passed 7 of 7, covering
   =ores.database.tests= and all four marketdata suites.
+- The full preset suite passed 71 of 72. The single failure,
+  =ores.refdata.core.tests=, was terminated mid-test with its XML
+  truncated inside =write_book_publishes_nats_changed_event=, which is
+  the eventing integration flake family sprint 25 already tracks rather
+  than an assertion failure; re-run on its own it passed in 262s. The
+  run took 3506s against 1634s for the previous full run, on a host
+  whose load stayed above 10.
 
 *Scoping.* The three other refdata junctions with a =tenant_id= column,
 =currency_currency_groups=, =party_counterparties=, =party_countries= and

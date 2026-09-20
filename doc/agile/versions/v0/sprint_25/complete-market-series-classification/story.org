@@ -48,7 +48,7 @@ of the asset classes it relates.
 | [[id:1CBBD6A0-95F7-46E4-9DE9-AFDDA9FEB831][Give a market series a set of asset classes]] | DONE | 2026-09-17 | 2026-09-18 | Replace the single not-null market_series.asset_class column with an ores_marketdata_market_series_asset_classes_tbl junction, so a pairwise correlation can reference the two classes it relates. Update the classifier's consumers, the DQ publish path and the Qt market series grid, and confirm the refdata catalogue descriptions read correctly. |
 | [[id:B17CEB3E-0350-4E2B-83FD-E89BFE2476F3][Read and write the market series asset classes in Qt]] | BACKLOG | | | The Qt client reads and writes the market_series_asset_classes junction, so the market series grid shows the asset classes each series belongs to and the New Series form records them. Junction protocols are hand-written, so this carries its own protocol, client fetch and in-memory join. |
 | [[id:65572B8E-55B8-4988-AE63-A25EBAFD65CD][Register the unmapped series types in the key registry]] | DONE | 2026-09-18 | 2026-09-18 | Add series_key_registry entries for the eight ORE series types the corpus carries but the registry does not know: OI_FUTURE, SHAPE_PROFILE, BOND_OPTION, RATING, INDEX_CDS_TRANCHE, GENERIC-MD, CPR and FIXING. Without an entry a key folds its whole remainder into the qualifier and carries no point, so every distinct key becomes its own series with one observation. |
-| [[id:7E064C21-14EA-401C-A73D-35EA1743EED7][Complete the market series asset class junction]] | STARTED | 2026-09-20 | | The market_series_asset_classes junction carries neither the row level security its sibling data tables have nor a drop script. The junction template ignores the rls_tenant_isolation flag, so no junction in the tree is tenant isolated, and the table is absent from marketdata_drop.sql even though refdata hand-writes a drop file for its own junction. |
+| [[id:7E064C21-14EA-401C-A73D-35EA1743EED7][Complete the market series asset class junction]] | DONE | 2026-09-20 | 2026-09-20 | The market_series_asset_classes junction carries neither the row level security its sibling data tables have nor a drop script. The junction template ignores the rls_tenant_isolation flag, so no junction in the tree is tenant isolated, and the table is absent from marketdata_drop.sql even though refdata hand-writes a drop file for its own junction. |
 | [[id:FA45F2D4-860F-4B24-98BE-3D0B39DAF186][Handle compound keys in the generated eventing artefacts]] | BACKLOG | | | Two generated eventing artefacts mis-handle a compound natural key. The changed event template names the key vector after the first key column and pluralises it, so the series classification rule event carries series_types holding both the type and the metric. The generated eventing test matches a notification as a set rather than as an exact key, so a permutation of the key parts would also match. |
 
 * Decisions
@@ -93,8 +93,14 @@ row.
 Every tenant-scoped table enables row level security in its own model,
 through the =:rls_tenant_isolation:= flag, and the generated policy
 reads =ores_iam_current_tenant_id_fn()=. Both tables this story adds
-carry it. A junction does not, because the junction templates never
-read the flag; bringing them in step is its own task.
+carry it, and the junction carries it too: the junction create
+archetype now reads the flag, so a junction opts in exactly the way a
+domain entity does. The market series asset class junction is the only
+junction that needed to opt in, because the iam account party junction
+already has its policy in =iam_rls_policies_create.sql= and opting in
+again would have emitted a second one. No junction drop archetype
+exists, so a junction's drop file stays hand-written and is wired into
+its component's =_drop.sql= by hand.
 
 ** The correlation operand rule stays compiled
 

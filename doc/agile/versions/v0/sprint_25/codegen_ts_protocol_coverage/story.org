@@ -43,7 +43,7 @@ Every NATS message a drift-free component speaks comes from an org model and ren
 |------+-------+-------+-----+-------------|
 | [[id:C0B68BEC-A757-4A0F-8CB0-046C9E56D6E2][Scaffold story: Generate every protocol message as TypeScript]] | DONE | 2026-09-19 | 2026-09-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | DONE | 2026-09-19 | 2026-09-20 | Initial task for: Generate every protocol message as TypeScript |
-| [[id:07BCBE53-701D-4517-B5B2-C707DA6B7DF2][Generate the refdata protocol messages as TypeScript]] | STARTED | 2026-09-20 | | Make every ores.refdata type that crosses the wire come from an org codegen model, including junctions and message-only protocols, and render both C++ and TypeScript with no facet switched off. |
+| [[id:07BCBE53-701D-4517-B5B2-C707DA6B7DF2][Generate the refdata protocol messages as TypeScript]] | DONE | 2026-09-20 | 2026-09-20 | Make every ores.refdata type that crosses the wire come from an org codegen model, including junctions and message-only protocols, and render both C++ and TypeScript with no facet switched off. |
 | [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA][Let an entity model declare extra protocol messages]] | BACKLOG | | | An entity model derives its standard CRUD message set and can declare no others, so a message a model hand-writes in a paste block has a C++ header and no TypeScript twin. |
 
 * Decisions

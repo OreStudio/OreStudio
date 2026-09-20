@@ -49,6 +49,25 @@ export interface GetCalendarDatesByCalendarResponse {
     message: string;
 }
 
+export interface SaveCalendarDateRequest {
+    calendar_dates: CalendarDate[];
+}
+
+export interface SaveCalendarDateResponse {
+    success: boolean;
+    message: string;
+}
+
+export interface DeleteCalendarDateRequest {
+    calendar_codes: string[];
+    dates: string[];
+}
+
+export interface DeleteCalendarDateResponse {
+    success: boolean;
+    message: string;
+}
+
 export interface CountCalendarDatesByCalendarRequest {
     calendar_code: string;
 }
@@ -72,6 +91,8 @@ export interface CalendarDateView {
 export const subjects = {
     get_calendar_dates_request: "refdata.v1.calendar_dates.list",
     get_calendar_dates_by_calendar_request: "refdata.v1.calendar_dates.list_by_calendar_code",
+    save_calendar_date_request: "refdata.v1.calendar_dates.save",
+    delete_calendar_date_request: "refdata.v1.calendar_dates.delete",
     count_calendar_dates_by_calendar_request: "refdata.v1.calendar_dates.count_by_calendar_code",
     count_calendar_dates_by_date_request: "refdata.v1.calendar_dates.count_by_date",
 } as const;

@@ -26,11 +26,11 @@ Every ores.refdata NATS message and wire type has an org model and renders to bo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Implementation complete; awaiting PR review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Every ores.refdata NATS message and wire type has an org model and renders to bo
 - The refdata catalogue entry no longer excludes junction models, so all nine junctions regenerate and the drift gate checks them. *Done.*
 - Every refdata protocol header is generated and has a TypeScript twin; the protocol-twin coverage check fails when one is missing. *Done:* 96 headers in refdata and IAM, 77 of them refdata's.
 - No refdata model carries an ores.ts.protocol.enabled or other facet opt-out. *Done:* none exists.
-- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled. *Done:* every =*_protocol.hpp= in refdata is generated.
+- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled. *Done:* every =*_protocol.hpp= in refdata is generated. Two message pairs a paste block still declares are the exception; the Result and Notes record them and a follow-up task carries the fix.
 - The generated tree regenerates with no diff and ores.web typechecks with its suites passing. *Done.*
 - The build is green and the refdata suites pass. *Done.*
 
@@ -144,16 +144,25 @@ PR: the junction service did not stamp the caller's context onto a saved
 row, so the write endpoints would have failed the insert trigger's
 =modified_by= check, and the =read_only= guard had swallowed the =count_by=
 read verb in the handler and sub-registrar, leaving advertised subjects
-with no subscriber. =calendar_date= is now =:read_only:= as well: its
-narrative says its rows are materialised, never edited by hand.
+with no subscriber. =calendar_date= was tried as =:read_only:= too, since
+its narrative says its rows are materialised; it does not take the flag,
+because the materialisation service writes them through the repository
+and =:read_only:= suppresses the repository write. Its client-facing write
+verbs therefore stay, which is the third recorded finding below.
 
-Three findings are recorded rather than fixed here.
+Four findings are recorded rather than fixed here.
 
 - *Entity models cannot declare protocol messages.* The
   =composite_as_of= pairs in the =party= and =counterparty= models are
   raw C++ paste blocks, so both subjects have a C++ header and no
   TypeScript twin. Closing it needs a codegen feature; it is task
   [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA][Let an entity model declare extra protocol messages]].
+- *=calendar_date= has a write surface its narrative does not want.*
+  The generic protocol gives every readable junction save and delete, and
+  =calendar_date= is derived and browsed read-only. =:read_only:= cannot
+  express it: the flag also suppresses the repository write that
+  =calendar_materialisation_service= performs. Suppressing only the wire
+  verbs needs a facet-level knob the codegen does not have.
 - *Some refdata permissions are not seeded.* The generated handlers
   require =refdata::<resource>:write= and =:delete=, and
   =iam_permissions_populate.sql= seeds none for the new junction
@@ -191,7 +200,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Junction save dropped the server-side context stamp, so a saved row carried the client's =tenant_id= and =modified_by= and the insert trigger rejected it | =cpp_service.cpp.mustache= | Accept | The junction service now stores =ctx_= and stamps before =repo_.write=, as the entity path does. A codegen test pins it. |
 | 2 | The =read_only= guard swallowed the =count_by= read verb in the handler and sub-registrar, leaving advertised subjects with no subscriber | =ores.cpp.nats-handler...org=, =ores.cpp.nats-sub-registrar...org= | Accept | The guard now wraps only the write verbs; the counts render outside it. Verified on =tenor_convention_resolution=. |
-| 3 | =calendar_dates= gained a client save/remove surface although its rows are materialised | =ores.refdata.calendar_date.org= | Accept | Marked =:read_only:=, matching its narrative and the =tenor_convention_resolution= precedent. |
+| 3 | =calendar_dates= gained a client save/remove surface although its rows are materialised | =ores.refdata.calendar_date.org= | Follow-up | =:read_only:= also suppresses the repository write the materialisation service needs, so the flag does not fit. A surface-level suppression is the open design question; recorded in Notes. |
 | 4 | =refdata.v1.parties.composite_as_of= and its counterparty twin have no TypeScript twin | =ores.refdata.party.org=, =ores.refdata.counterparty.org= | Follow-up | An entity model cannot declare extra messages; filed as task [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA]]. |
 | 5 | The new junction write permissions are not seeded in =iam_permissions_populate.sql= | =iam_permissions_populate.sql= | Follow-up | Pre-existing and wider: =calendars=, =calendar_events= and =tenor_conventions= are unseeded too. Recorded in Notes. |
 | 6 | The junction batch save loops single-row writes, so it is not atomic | =cpp_nats_handler...org= | Follow-up | Recorded in Notes; the entity path writes the batch in one transaction. |

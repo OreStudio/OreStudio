@@ -36,9 +36,7 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Reads calendar dates from data storage. Read-only: this
- * junction's rows are managed via SQL provisioning, not application
- * writes.
+ * @brief Reads and writes calendar dates to data storage.
  */
 class ORES_REFDATA_CORE_EXPORT calendar_date_repository {
 private:
@@ -56,6 +54,9 @@ public:
     explicit calendar_date_repository(context ctx);
 
     std::string sql();
+
+    void write(const domain::calendar_date& calendar_date);
+    void write(const std::vector<domain::calendar_date>& calendar_dates);
 
     std::vector<domain::calendar_date> read_latest();
     std::vector<domain::calendar_date> read_latest(std::uint32_t offset, std::uint32_t limit);
@@ -84,6 +85,8 @@ public:
      */
     std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
 
+    void remove(const std::string& calendar_code, const std::string& date);
+    void remove_by_calendar(const std::string& calendar_code);
 
 private:
     context ctx_;

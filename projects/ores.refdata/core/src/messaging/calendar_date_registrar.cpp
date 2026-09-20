@@ -46,6 +46,13 @@ register_calendar_date_handlers(ores::nats::service::client& nats,
         get_calendar_dates_by_calendar_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_by_calendar(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(save_calendar_date_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_calendar_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->remove(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
         count_calendar_dates_by_calendar_request::nats_subject,
         queue_group,

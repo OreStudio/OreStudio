@@ -71,6 +71,33 @@ struct get_calendar_dates_by_calendar_response {
     std::string message;
 };
 
+struct save_calendar_date_request {
+    using response_type = struct save_calendar_date_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.save";
+    std::vector<ores::refdata::domain::calendar_date> calendar_dates;
+
+    static save_calendar_date_request from(std::vector<ores::refdata::domain::calendar_date> v) {
+        return {.calendar_dates = std::move(v)};
+    }
+};
+
+struct save_calendar_date_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_calendar_date_request {
+    using response_type = struct delete_calendar_date_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.delete";
+    std::vector<std::string> calendar_codes;
+    std::vector<std::string> dates;
+};
+
+struct delete_calendar_date_response {
+    bool success = false;
+    std::string message;
+};
+
 struct count_calendar_dates_by_calendar_request {
     using response_type = struct count_calendar_dates_by_calendar_response;
     static constexpr std::string_view nats_subject =

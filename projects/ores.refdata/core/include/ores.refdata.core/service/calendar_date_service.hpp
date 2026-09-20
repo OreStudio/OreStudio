@@ -99,6 +99,21 @@ public:
      * @brief Gets the total count of active calendar dates filtered by date.
      */
     std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
+    /**
+     * @brief Saves a calendar date (creates or updates).
+     *
+     * @param calendar_date The calendar date to save
+     */
+    void save_calendar_date(const domain::calendar_date& calendar_date);
+
+    /**
+     * @brief Removes a calendar date.
+     *
+     * @param calendar_code The calendar
+     * @param date The date
+     */
+    void remove_calendar_date(const std::string& calendar_code, const std::string& date);
+
 
 private:
     context ctx_;

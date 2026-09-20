@@ -138,6 +138,7 @@ public:
         const std::string& change_commentary);
 
 private:
+    context ctx_;
     repository::app_version_platform_repository repo_;
 };
 

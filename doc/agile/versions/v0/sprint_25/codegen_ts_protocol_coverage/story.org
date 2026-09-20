@@ -42,7 +42,7 @@ Every NATS message a drift-free component speaks comes from an org model and ren
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C0B68BEC-A757-4A0F-8CB0-046C9E56D6E2][Scaffold story: Generate every protocol message as TypeScript]] | DONE | 2026-09-19 | 2026-09-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | STARTED | 2026-09-19 | | Initial task for: Generate every protocol message as TypeScript |
+| [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | DONE | 2026-09-19 | 2026-09-20 | Initial task for: Generate every protocol message as TypeScript |
 
 * Decisions
 

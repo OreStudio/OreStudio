@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 51049C54-2E2B-4549-A036-C71FD9AA6376
+:END:
+#+title: Task: Retire the per-entity shell units the facet already generates
+#+description: Task for: Generate shell command units per component
+#+type: task
+#+level: s1
+#+filetags: :shell-command-codegen:sprint_25:v0:
+#+owner: marco
+#+branch: feature/shell-command-units-rollout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Nine of the hand-written units at the top level of ores.shell/application/src/app/commands/ map one-to-one to an entity model the ores.cpp.shell-command facet can already render: accounts, account parties, tenants, countries, currencies, parties, change reasons, change reason categories and variability settings. Generate them into a part per component, create those parts, delete the units they replace, and prove each one regenerates clean. This is the step trading already took, taken for the rest of the tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Each of the nine is generated into a component part of ores.shell and its hand-written predecessor is deleted.
+- Each generated unit regenerates as a no-op from its own model and the committed templates.
+- The shell drift gate covers the new parts.
+- The build and the shell suites pass with the fleet up.
+- Any entity needing a facet change to generate is moved to the accounting task with the reason written down.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

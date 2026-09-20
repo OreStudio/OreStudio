@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: E9196184-D9BE-4975-9953-F90842E550BB
+:END:
+#+title: Task: Account for every remaining hand-written shell unit
+#+description: Task for: Generate shell command units per component
+#+type: task
+#+level: s1
+#+filetags: :shell-command-codegen:sprint_25:v0:
+#+owner: marco
+#+branch: feature/shell-command-units-rollout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The other thirteen hand-written units are not per-entity CRUD: connection, navigation, orgmode, provision, rbac, script, subscription, reports, lei, bundles, crm, marketdata and workflow. Each is either a bespoke command module that belongs in a component part, a unit the facet could generate with a change, or something that genuinely stays hand-written. Write the inventory into this task, decide each one, implement the cheap ones, and leave nothing unaccounted for, so that the next person can read why a file is hand-written instead of working it out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Every one of the thirteen has a decision and a reason in this task.
+- Those that are bespoke are moved into the owning component part rather than sitting in the shared application.
+- Those the facet can reach are generated and their hand-written file deleted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

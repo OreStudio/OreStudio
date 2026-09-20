@@ -1991,6 +1991,13 @@ def web_declaration_projection(entity, model_path):
     history, and a read-only paginated list is the model saying the entity is
     not written from the interface. Deriving them from anything else -- a
     version column, say -- gets junctions and current-state entities wrong.
+
+    Remove and history are the routes the BFF derives from the entity's
+    primary key, while the path segment carries the natural key, so the
+    declaration states them only when the primary key is the natural key --
+    the condition ``bff_route_projection`` withholds those routes on. A
+    declaration that promised them otherwise would render actions the BFF
+    answers with 404.
     """
     if _ui_projection_entity(entity) is None:
         return None
@@ -2000,6 +2007,7 @@ def web_declaration_projection(entity, model_path):
     entity_singular = entity.get('entity_singular', 'unknown')
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
+    keyed_by_natural_key = _keyed_by_natural_key(entity)
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2013,8 +2021,10 @@ def web_declaration_projection(entity, model_path):
         'key_param': 'id',
         'can_create': _ui_bool(not read_only),
         'can_edit': _ui_bool(not read_only),
-        'can_remove': _ui_bool(not read_only),
-        'can_history': _ui_bool(bool(presentation.get('history_message_type'))),
+        'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
+        'can_history': _ui_bool(
+            bool(presentation.get('history_message_type'))
+            and keyed_by_natural_key),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2057,6 +2067,55 @@ def _string_vector_field_name(message):
     return None
 
 
+def _primary_key_columns(entity):
+    """The column names the entity's primary key is stated with, in order."""
+    primary_key = entity.get('primary_key') or {}
+    columns = [column.get('column')
+               for column in primary_key.get('columns') or []
+               if column.get('column')]
+    if not columns and primary_key.get('column'):
+        columns = [primary_key.get('column')]
+    return columns
+
+
+def _keyed_by_natural_key(entity):
+    """Whether the entity's primary key is exactly its presentation natural key.
+
+    The derived delete and history requests are keyed by the primary key,
+    while the route's path segment carries the natural key, so the two agree
+    only when the primary key is the natural key alone. The web declaration
+    and the BFF route descriptor read the condition here so neither can
+    promise a capability the other withholds.
+    """
+    natural_key = (entity.get('presentation') or {}).get('key_field', '')
+    return bool(natural_key) and _primary_key_columns(entity) == [natural_key]
+
+
+# The audit member every temporal domain type carries. The domain-type
+# templates name it directly; the BFF projection reads the name from here so
+# the descriptor and the wire shape are spelled in one place.
+_AUDIT_TIMESTAMP_FIELD = 'recorded_at'
+
+
+def _audit_timestamp_fields(entity):
+    """The audit timestamp members the entity's own domain type carries.
+
+    The web container seeds every member, so an audit timestamp arrives at
+    the save route as an empty string, which the service's decoder refuses.
+    The service stamps the real value; the save route only has to send a
+    value the decoder accepts. A current-state entity carries no such member,
+    and a composed entity carries it under its group member's name.
+    """
+    if entity.get('current_state'):
+        return []
+    prefix = entity.get('audit_prefix') or ''
+    if prefix:
+        return [prefix + _AUDIT_TIMESTAMP_FIELD]
+    if entity.get('has_audit_group') or entity.get('has_domain_groups'):
+        return []
+    return [_AUDIT_TIMESTAMP_FIELD]
+
+
 def bff_route_projection(entity, model_path):
     """The ores.ts.web BFF route descriptor's data for one entity, or None.
 
@@ -2075,8 +2134,15 @@ def bff_route_projection(entity, model_path):
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
     current-state entity derives no history pair, and no domain entity
-    derives a single-record get -- and ``has_get``/``has_history`` state
-    the same fact as TypeScript literals.
+    derives a single-record get -- and ``has_get``/``has_remove``/
+    ``has_history`` state the same fact as TypeScript literals.
+
+    The delete and history requests are keyed by the entity's primary key,
+    while the path segment is the natural key the web builds it from. The
+    two agree only when the primary key *is* the natural key, so the
+    projection states those routes only then. A descriptor that named a
+    primary-key field and sent it the natural key's value would match no row
+    on delete, or fail to decode on history.
 
     None when the derived set carries none of the required request roles --
     a defensive guard, since an enriched domain entity always derives them.
@@ -2106,28 +2172,43 @@ def bff_route_projection(entity, model_path):
     subjects_history = _protocol_subject_key(
         messages, f'get_{singular}_history_request')
 
+    natural_key = presentation.get('key_field', '')
+    keyed_by_natural_key = _keyed_by_natural_key(entity)
     list_response = _protocol_message(messages, f'get_{plural}_response')
     delete_request = _protocol_message(
         messages, f'delete_{singular}_request')
+    history_response = _protocol_message(
+        messages, f'get_{singular}_history_response')
+    delete_keys_field = _string_vector_field_name(delete_request) or ''
+    history_rows_field = _vector_field_name(history_response) or ''
+    has_remove = bool(delete_keys_field) and keyed_by_natural_key
+    has_history = bool(history_rows_field) and keyed_by_natural_key
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
         'entity_camel': _ui_camel(singular),
         'collection': presentation.get('collection_name', ''),
         'key': 'id',
-        'key_field': presentation.get('key_field', ''),
-        'delete_keys_field': _string_vector_field_name(delete_request) or '',
+        'key_field': natural_key,
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
-        'subjects_remove': subjects_remove,
         'has_get': _ui_bool(bool(subjects_get)),
-        'has_history': _ui_bool(bool(subjects_history)),
+        'has_remove': _ui_bool(has_remove),
+        'has_history': _ui_bool(has_history),
     }
     if subjects_get:
         projection['subjects_get'] = subjects_get
-    if subjects_history:
+    if has_remove:
+        projection['delete_keys_field'] = delete_keys_field
+        projection['subjects_remove'] = subjects_remove
+    if has_history:
         projection['subjects_history'] = subjects_history
+        projection['history_rows_field'] = history_rows_field
+    timestamp_fields = _audit_timestamp_fields(entity)
+    if timestamp_fields:
+        projection['timestamp_fields_block'] = ', '.join(
+            f"'{field}'" for field in timestamp_fields)
     return projection
 
 

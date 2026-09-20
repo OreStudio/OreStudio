@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 11ED9447-461D-4074-9663-E83190BA7371
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.iam.tenant
 #+description: Codegen entity model for the iam =tenant= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

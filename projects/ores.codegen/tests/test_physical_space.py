@@ -291,6 +291,21 @@ def test_load_graph_parses_live_nodes():
         assert arch["output"]
 
 
+def test_the_web_facet_is_opt_in():
+    """A model emits web declarations and routes only when it opts in.
+
+    The route descriptor imports the entity's generated protocol module, and a
+    component's other TypeScript facets say nothing about whether that module
+    exists. The facet is default-off so an unscoped regeneration cannot
+    materialise a route whose import does not exist.
+    """
+    g = load_graph(REPO_ROOT / "projects/ores.codegen/library/templates")
+    assert g.facet_default["ores.ts.web"] is False
+    assert "ores.ts.web" not in compute_supported_set({}, g, "domain_entity")
+    assert "ores.ts.web" in compute_supported_set(
+        {"ores.ts.web.enabled": "true"}, g, "domain_entity")
+
+
 def test_target_root_resolves_all_facets_on_live_graph():
     """Regression: ores.org is typed technical_space, so "ores" is also a
     ts_facets key with an empty list — facets_under must still expand the root

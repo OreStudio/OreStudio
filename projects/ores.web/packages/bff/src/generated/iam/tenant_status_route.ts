@@ -44,4 +44,6 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
     history: subjects.get_tenant_status_history_request,
   },
   rowsField: 'statuses',
+  historyRowsField: 'history',
+  timestampFields: ['recorded_at'],
 };

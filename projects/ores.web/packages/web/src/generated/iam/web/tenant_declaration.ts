@@ -42,8 +42,8 @@ export const tenantDescriptor: EntityDescriptor = {
     capabilities: {
         create: true,
         edit: true,
-        remove: true,
-        history: true,
+        remove: false,
+        history: false,
     },
     searchFields: [
         'code',

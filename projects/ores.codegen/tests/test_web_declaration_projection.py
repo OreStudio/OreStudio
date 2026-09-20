@@ -27,12 +27,19 @@ COUNTRY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.country.org"
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
 
-def _project(columns, **drawer):
-    """Project one hand-built entity, the way the enrichment leaves it."""
+def _project(columns, primary_key=None, **drawer):
+    """Project one hand-built entity, the way the enrichment leaves it.
+
+    The primary key defaults to the natural key the drawer states, so remove
+    and history are the routes the entity can drive unless a test overrides
+    the key.
+    """
     presentation = {"collection_name": "statuses", "columns": list(columns),
-                    **drawer}
+                    "key_field": "code", **drawer}
     entity = {"component": "refdata", "entity_singular": "book_status",
               "presentation": presentation}
+    entity["primary_key"] = primary_key or {
+        "column": "code", "columns": [{"column": "code"}]}
     return web_declaration_projection(entity, MODEL)
 
 
@@ -70,6 +77,34 @@ def test_history_is_read_from_the_history_message_not_from_a_version_column():
     """
     projection = _project([{"field": "code"}])
     assert projection["can_history"] == "false"
+
+
+def test_a_surrogate_primary_key_withholds_remove_and_history():
+    """The BFF derives delete and history from the primary key.
+
+    The route's path segment carries the natural key, so a declaration that
+    offered them would render actions the BFF does not serve. Create and edit
+    travel on the save route, which carries the whole record and is not keyed
+    by the path, so they stay.
+    """
+    projection = _project(
+        [{"field": "code"}],
+        history_message_type="get_book_status_history_request",
+        primary_key={"column": "id", "columns": [{"column": "id"}]})
+    assert projection["can_create"] == "true"
+    assert projection["can_edit"] == "true"
+    assert projection["can_remove"] == "false"
+    assert projection["can_history"] == "false"
+
+
+def test_a_natural_key_primary_key_keeps_remove_and_history():
+    """The primary key and the natural key agree, so both routes are drivable."""
+    projection = _project(
+        [{"field": "code"}],
+        history_message_type="get_book_status_history_request",
+        primary_key={"column": "code", "columns": [{"column": "code"}]})
+    assert projection["can_remove"] == "true"
+    assert projection["can_history"] == "true"
 
 
 def test_the_route_api_and_key_are_stated_rather_than_composed_by_a_screen():

@@ -29,10 +29,14 @@ element but the last carries a trailing comma, and Mustache offers a
 comma or a leading comma, never "a comma unless last".
 
 The capabilities are derived rather than declared. An entity can be
-created, amended and deleted unless its model says it is read-only, and
-it has history when the service has a history provider for it. A
-capability is a property of the model and the service, never a preference
-of the screen.
+created and amended unless its model says it is read-only, and it has
+history when the service has a history provider for it. Remove and
+history are the routes the BFF derives from the entity's primary key,
+while the path segment carries the natural key, so the declaration states
+them only when the primary key is the natural key; otherwise the BFF
+serves neither route and the action would answer not-found. A capability
+is a property of the model and the service, never a preference of the
+screen.
 
 Field grouping is deliberately absent for now: the entity meta-model can
 resolve a field group, but no entity model binds one yet, so there is

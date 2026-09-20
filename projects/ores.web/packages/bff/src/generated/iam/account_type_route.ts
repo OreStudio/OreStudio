@@ -44,4 +44,6 @@ export const accountTypeRoute: EntityRouteDescriptor = {
     history: subjects.get_account_type_history_request,
   },
   rowsField: 'types',
+  historyRowsField: 'history',
+  timestampFields: ['recorded_at'],
 };

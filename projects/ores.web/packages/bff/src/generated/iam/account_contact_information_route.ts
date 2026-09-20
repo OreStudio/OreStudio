@@ -36,12 +36,10 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   collection: 'account_contact_informations',
   key: 'id',
   keyField: 'email',
-  deleteKeysField: 'ids',
   subjects: {
     list: subjects.get_account_contact_informations_request,
     save: subjects.save_account_contact_information_request,
-    remove: subjects.delete_account_contact_information_request,
-    history: subjects.get_account_contact_information_history_request,
   },
   rowsField: 'account_contact_informations',
+  timestampFields: ['recorded_at'],
 };

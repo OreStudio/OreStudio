@@ -26,6 +26,7 @@ from codegen.org_loader import entity_protocol_messages  # noqa: E402
 
 MODEL = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book_status.org"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
+TENANT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant.org"
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
 
@@ -101,14 +102,71 @@ def test_a_current_state_entity_has_no_history_member():
     projection = bff_route_projection(_entity(current_state=True), MODEL)
     assert "subjects_history" not in projection
     assert projection["has_history"] == "false"
+    # The delete request is keyed by the natural key and still drivable.
+    assert "subjects_remove" in projection
+    assert projection["has_remove"] == "true"
 
 
-def test_a_uuid_key_deletes_by_ids():
-    projection = bff_route_projection(_entity(primary_key={
+def test_a_natural_key_primary_key_drives_delete_and_history():
+    """The path segment is the natural key and so is the request key."""
+    projection = bff_route_projection(_entity(), MODEL)
+    assert projection["has_remove"] == "true"
+    assert projection["has_history"] == "true"
+    assert "subjects_remove" in projection
+    assert "delete_keys_field" in projection
+    assert "subjects_history" in projection
+    assert projection["history_rows_field"] == "history"
+
+
+def test_a_surrogate_primary_key_withholds_delete_and_history():
+    """The requests are keyed by the surrogate primary key, not the natural key.
+
+    The path segment the web builds is the natural key, so a route keyed by the
+    surrogate would send a value the service matches nothing against, or cannot
+    decode at all. The routes that can be driven stay.
+    """
+    entity = _entity(primary_key={
         "column": "id",
         "columns": [{"column": "id", "is_uuid": True}],
-    }), MODEL)
-    assert projection["delete_keys_field"] == "ids"
+    })
+    projection = bff_route_projection(entity, MODEL)
+    assert projection["has_remove"] == "false"
+    assert projection["has_history"] == "false"
+    assert "subjects_remove" not in projection
+    assert "delete_keys_field" not in projection
+    assert "subjects_history" not in projection
+    assert "history_rows_field" not in projection
+    assert projection["subjects_list"] == "get_tenant_types_request"
+    assert projection["subjects_save"] == "save_tenant_type_request"
+
+
+def test_a_compound_primary_key_withholds_delete_and_history():
+    """The generic factory sends one key, and a compound key is more than one."""
+    entity = _entity(primary_key={
+        "column": "type",
+        "columns": [{"column": "type", "is_uuid": False},
+                    {"column": "name", "is_uuid": False}],
+    })
+    projection = bff_route_projection(entity, MODEL)
+    assert "subjects_remove" not in projection
+    assert "subjects_history" not in projection
+
+
+def test_the_save_states_the_audit_timestamp_field():
+    """The web seeds every member, so the save has to fill an empty timestamp."""
+    projection = bff_route_projection(_entity(), MODEL)
+    assert projection["timestamp_fields_block"] == "'recorded_at'"
+
+
+def test_a_grouped_audit_timestamp_is_stated_with_its_member_path():
+    projection = bff_route_projection(
+        _entity(has_audit_group=True, audit_prefix="audit."), MODEL)
+    assert projection["timestamp_fields_block"] == "'audit.recorded_at'"
+
+
+def test_a_current_state_entity_states_no_audit_timestamp_field():
+    projection = bff_route_projection(_entity(current_state=True), MODEL)
+    assert "timestamp_fields_block" not in projection
 
 
 def test_a_singular_plural_collision_does_not_invent_a_get():
@@ -160,9 +218,35 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "remove: subjects.delete_tenant_type_request," in rendered
     assert "history: subjects.get_tenant_type_history_request," in rendered
     assert "rowsField: 'types'," in rendered
+    assert "historyRowsField: 'history'," in rendered
+    assert "timestampFields: ['recorded_at']," in rendered
     # The descriptor holds values and no behaviour.
     assert "=>" not in rendered
     # No blank line left behind by the optional get member, which pystache
     # would emit if the template gated on the ``has_get`` string literal.
     assert ",\n\n" not in rendered
     assert "get: subjects." not in rendered
+
+
+def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
+    """A real model whose delete and history requests are keyed by its UUID."""
+    generate_from_model(
+        str(TENANT), CODEGEN / "library" / "data",
+        CODEGEN / "library" / "templates", tmp_path,
+        target_template="ts_bff_route.ts.mustache",
+        target_output="tenant_route.ts")
+    rendered = (tmp_path / "tenant_route.ts").read_text(encoding="utf-8")
+
+    assert "export const tenantRoute: EntityRouteDescriptor = {" in rendered
+    assert "keyField: 'code'," in rendered
+    assert "list: subjects.get_tenants_request," in rendered
+    assert "save: subjects.save_tenant_request," in rendered
+    assert "rowsField: 'tenants'," in rendered
+    assert "timestampFields: ['recorded_at']," in rendered
+    # The delete and history requests carry the UUID primary key, so neither
+    # route is stated and neither field is left behind.
+    assert "deleteKeysField" not in rendered
+    assert "remove: subjects." not in rendered
+    assert "history: subjects." not in rendered
+    assert "historyRowsField" not in rendered
+    assert ",\n\n" not in rendered

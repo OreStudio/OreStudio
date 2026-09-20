@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/refdata-codegen-followups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-20
 #+updated: 2026-09-20
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ An entity model can declare protocol messages beside its derived CRUD set, and b
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

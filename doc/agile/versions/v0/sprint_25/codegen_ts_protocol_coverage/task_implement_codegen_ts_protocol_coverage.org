@@ -155,6 +155,20 @@ rule, and the proof is the drafted =login_info= model: present in the modeling
 directory, the dry run must report its output and leave every file
 byte-identical.
 
+* login_info migrated
+
+=login_info= is an entity model as of =8798bc4237=, with the generator
+projection it needed (=9880bbce96=): the entity struct carries a =std::string=
+where the domain carries =boost::asio::ip::address=, and the mapper converts,
+mirroring what a timestamp already does. The generated SQL reproduces the
+hand-written table, nothing dropped, including the partial index on =locked=.
+
+Verified by building, which is the first time the current-state shape's C++ was
+compiled: the build is green, the API suite passes 510 assertions in 107 cases,
+and the IAM core suite passes 228 assertions in 96 cases. Five of those cases
+failed on the first run with =NATS connect failed= while the fleet was stopped;
+with the broker up they pass, so the failure was never the migration.
+
 * Notes
 
 The message inventory is

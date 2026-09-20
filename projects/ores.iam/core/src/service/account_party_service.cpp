@@ -33,10 +33,38 @@ std::vector<domain::account_party> account_party_service::list_account_parties()
     return repo_.read_latest();
 }
 
+std::vector<domain::account_party> account_party_service::list_account_parties(
+    std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all account parties with offset: " << offset
+                               << " limit: " << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t account_party_service::get_total_account_party_count() {
+    return repo_.get_total_account_party_count();
+}
+
 std::vector<domain::account_party>
 account_party_service::list_account_parties_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Listing account parties for account: " << account_id;
     return repo_.read_latest_by_account(account_id);
+}
+
+std::vector<domain::account_party> account_party_service::list_account_parties_by_account(
+    const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing account parties for account: " << account_id
+                               << " offset: " << offset << " limit: " << limit;
+    return repo_.read_latest_by_account(account_id, offset, limit);
+}
+
+std::uint32_t account_party_service::get_total_account_party_count_by_account(
+    const boost::uuids::uuid& account_id) {
+    return repo_.get_total_account_party_count_by_account(account_id);
+}
+
+std::uint32_t account_party_service::get_total_account_party_count_by_party(
+    const boost::uuids::uuid& party_id) {
+    return repo_.get_total_account_party_count_by_party(party_id);
 }
 
 void account_party_service::save_account_party(const domain::account_party& account_party) {
@@ -58,6 +86,23 @@ void account_party_service::remove_account_party(const boost::uuids::uuid& accou
     BOOST_LOG_SEV(lg(), debug) << "Removing account party: " << account_id << "/" << party_id;
     repo_.remove(account_id, party_id);
     BOOST_LOG_SEV(lg(), info) << "Removed account party: " << account_id << "/" << party_id;
+}
+
+void account_party_service::replace_account_parties_by_account(
+    const boost::uuids::uuid& account_id,
+    const std::vector<domain::account_party>& account_parties,
+    const std::string& modified_by,
+    const std::string& performed_by,
+    const std::string& change_reason_code,
+    const std::string& change_commentary) {
+    BOOST_LOG_SEV(lg(), debug) << "Replacing account parties for account: " << account_id;
+    repo_.replace_by_account(account_id,
+                             account_parties,
+                             modified_by,
+                             performed_by,
+                             change_reason_code,
+                             change_commentary);
+    BOOST_LOG_SEV(lg(), info) << "Replaced account parties for account: " << account_id;
 }
 
 }

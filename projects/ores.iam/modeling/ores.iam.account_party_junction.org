@@ -1,8 +1,11 @@
 :PROPERTIES:
+:ores.cpp.nats-handler.enabled: nil
+:ores.cpp.nats-sub-registrar.enabled: nil
+:ores.cpp.service.enabled: nil
 :ID: D96E6889-A53B-41AF-A7F5-A3497A188BA0
 :END:
 #+title: ores.iam.account_party
-#+description: Codegen junction model for account_parties.
+#+description: Codegen junction model for account_parties. Renders the generic junction protocol itself.
 #+type: ores.codegen.junction
 #+component: iam
 #+filetags: :model:junction:iam:
@@ -15,7 +18,7 @@
 #+schema: public
 #+has_tenant_id: true
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-09-20
 
 Junction table linking IAM accounts to parties. Each account can be
 associated with one or more parties, controlling which parties a user
@@ -34,6 +37,8 @@ can act on behalf of.
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up parties for an account
+:list_by:       true
+:replace_by:    true
 :END:
 
 ID of the IAM account.

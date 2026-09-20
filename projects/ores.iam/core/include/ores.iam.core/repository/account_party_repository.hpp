@@ -60,11 +60,47 @@ public:
     void write(const std::vector<domain::account_party>& account_parties);
 
     std::vector<domain::account_party> read_latest();
+    std::vector<domain::account_party> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active account parties.
+     */
+    std::uint32_t get_total_account_party_count();
     std::vector<domain::account_party> read_latest_by_account(const boost::uuids::uuid& account_id);
+    /**
+     * @brief Reads latest account parties filtered by account_id, with pagination.
+     */
+    std::vector<domain::account_party> read_latest_by_account(const boost::uuids::uuid& account_id,
+                                                              std::uint32_t offset,
+                                                              std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active account parties filtered by account_id.
+     */
+    std::uint32_t get_total_account_party_count_by_account(const boost::uuids::uuid& account_id);
+
     std::vector<domain::account_party> read_latest_by_party(const boost::uuids::uuid& party_id);
+
+    /**
+     * @brief Gets the total count of active account parties filtered by party_id.
+     */
+    std::uint32_t get_total_account_party_count_by_party(const boost::uuids::uuid& party_id);
 
     void remove(const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id);
     void remove_by_account(const boost::uuids::uuid& account_id);
+    /**
+     * @brief Replaces the active account parties for a account.
+     *
+     * Soft-closes the currently active rows for the given
+     * account and inserts the rows in @p account_parties,
+     * so the active set exactly matches the caller's list.
+     */
+    void replace_by_account(const boost::uuids::uuid& account_id,
+                            const std::vector<domain::account_party>& account_parties,
+                            const std::string& modified_by,
+                            const std::string& performed_by,
+                            const std::string& change_reason_code,
+                            const std::string& change_commentary);
 
 private:
     context ctx_;

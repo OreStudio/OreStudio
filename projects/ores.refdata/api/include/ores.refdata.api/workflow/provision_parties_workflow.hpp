@@ -40,12 +40,12 @@ namespace ores::refdata::workflow {
  * @brief Registers the provision_parties workflow definition.
  *
  * The provision_parties workflow has three steps per party:
- *   0. refdata.v1.parties.save      — create party record
- *   1. iam.v1.accounts.save         — create IAM account
- *   2. iam.v1.account-parties.save  — link account to party
+ *   0. refdata.v1.parties.save        — create party record
+ *   1. iam.v1.accounts.save           — create IAM account
+ *   2. iam.v1.account_parties.save    — associate account with party
  *
  * Compensation (reverse order):
- *   iam.v1.account-parties.delete
+ *   iam.v1.account_parties.delete
  *   iam.v1.accounts.delete
  *   refdata.v1.parties.delete
  *
@@ -160,8 +160,10 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "link_account_party";
             s.description = "Link the IAM account to the party record.";
-            s.command_subject = "iam.v1.account-parties.save";
-            s.compensation_subject = "iam.v1.account-parties.delete";
+            s.command_subject =
+                std::string(ores::iam::messaging::save_account_party_request::nats_subject);
+            s.compensation_subject =
+                std::string(ores::iam::messaging::delete_account_party_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
                                  const std::vector<std::string>& prev) -> std::string {
@@ -193,10 +195,9 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                     return "{}";
                 const auto& ap = cr->account_parties.front();
 
-                using key_t = ores::iam::messaging::account_party_key;
                 return rfl::json::write(ores::iam::messaging::delete_account_party_request{
-                    .keys = {key_t{.account_id = boost::uuids::to_string(ap.account_id),
-                                   .party_id = boost::uuids::to_string(ap.party_id)}}});
+                    .account_ids = {boost::uuids::to_string(ap.account_id)},
+                    .party_ids = {boost::uuids::to_string(ap.party_id)}});
             };
 
             steps.push_back(std::move(s));

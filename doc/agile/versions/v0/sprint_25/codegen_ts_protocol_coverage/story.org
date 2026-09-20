@@ -99,6 +99,18 @@ Every NATS message a drift-free component speaks comes from an org model and ren
   dq's 26 and trading's 66 are likely to be split by area rather than carried as
   a single task.
 
+- *An entity describes its table; a joined shape is a message.* =role='s
+  =permission_codes= is the codes of the permissions a role reaches through
+  =ores_iam_role_permissions_tbl= — a query result, not a property of a row. A
+  member with no column behind it forces an exception into the domain class, the
+  entity struct, the mapper, the JSON IO, the table IO, the repository, the
+  history mapper and the generator, and makes the entity's shape a lie about the
+  table. The projection already has a home on the wire, in the authorization
+  message; the join stays in the hand-written authorization handler; and the CLI
+  reads the composed message rather than the entity. The same rule is what made
+  =session= a message-only model rather than an entity, and it governs the
+  migrations still to come.
+
 * Out of scope
 
 -

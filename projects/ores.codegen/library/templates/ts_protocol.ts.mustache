@@ -2,6 +2,9 @@
 {{{ts_license}}}
 {{#domain_entity}}
 import type { {{entity_pascal}} } from '../domain/{{entity_singular}}.js';
+{{#extra_domain_imports}}
+import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+{{/extra_domain_imports}}
 {{#utility_imports}}
 import type { {{name_pascal}} } from '../../../{{module}}.js';
 {{/utility_imports}}

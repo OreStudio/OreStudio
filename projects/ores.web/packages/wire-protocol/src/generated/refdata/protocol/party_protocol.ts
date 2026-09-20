@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { Party } from '../domain/party.js';
+import type { PartyContactInformation } from '../domain/party_contact_information.js';
+import type { PartyIdentifier } from '../domain/party_identifier.js';
 import type { HierarchyNode } from '../../../utility/hierarchy.js';
 
 export interface GetPartiesRequest {

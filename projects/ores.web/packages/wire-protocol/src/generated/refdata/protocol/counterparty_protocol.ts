@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { Counterparty } from '../domain/counterparty.js';
+import type { CounterpartyContactInformation } from '../domain/counterparty_contact_information.js';
+import type { CounterpartyIdentifier } from '../domain/counterparty_identifier.js';
 import type { HierarchyNode } from '../../../utility/hierarchy.js';
 
 export interface GetCounterpartiesRequest {

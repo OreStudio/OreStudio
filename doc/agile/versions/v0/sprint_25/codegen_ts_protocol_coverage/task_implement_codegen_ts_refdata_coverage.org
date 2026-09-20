@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 07BCBE53-701D-4517-B5B2-C707DA6B7DF2
+:END:
+#+title: Task: Generate the refdata protocol messages as TypeScript
+#+description: Make every ores.refdata type that crosses the wire come from an org codegen model, including junctions and message-only protocols, and render both C++ and TypeScript with no facet switched off.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-ts-refdata-modelling
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every ores.refdata NATS message and wire type has an org model and renders to both C++ and TypeScript from that one source. The nine junction models regenerate their full C++ and TypeScript trees, the hand-written junction layers are gone, and the five hand-written protocol headers become models. ores.refdata commits its TypeScript tree, so the drift gate and the protocol-twin coverage gate both cover it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- The refdata catalogue entry no longer excludes junction models, so all nine junctions regenerate and the drift gate checks them.
+- Every refdata protocol header is generated and has a TypeScript twin; the protocol-twin coverage check fails when one is missing.
+- No refdata model carries an ores.ts.protocol.enabled or other facet opt-out.
+- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled.
+- The generated tree regenerates with no diff and ores.web typechecks with its suites passing.
+- The build is green and the refdata suites pass.
+
+* Plan
+
+Refdata's "drift free" status was false. The catalogue entry for the
+component carries =exclude_org_types=junction=, so =discover_models=
+skips all nine junction models. The drift gate and =codegen regenerate
+--component refdata= therefore never rendered them, and 168 junction
+files (149 changed, 19 created) sat unreconciled. Two further defects
+hid behind that exclusion: a junction model binds its profile with a
+file-level =#+profile:= keyword that the loader silently ignores, and
+the junction messaging gate drops the four =ores.cpp.*= facets but not
+=ores.ts.protocol=, so a junction without =:list_by:= renders a
+TypeScript protocol with no C++ header.
+
+The work is four slices.
+
+1. *Codegen enablers.* Remove =junction= from the refdata catalogue
+   entry, so the drift gate and component regeneration cover the nine
+   junctions. Make a file-level =#+profile:= fail loudly beside the
+   =:PROPERTIES:= form =_ensure_profile_binding= already rejects; the
+   keyword form is parsed into =frontmatter= and never reaches the
+   check, so the profile is dropped without a word. Make the junction
+   messaging gate cover both twins, so a junction can never render one
+   protocol without the other.
+2. *Junctions.* Bring the nine models to the IAM shape: the profile in
+   =* Flags=, =#+has_tenant_id:=, =:list_by:= and =:replace_by:= on the
+   side the UI reads, and the foreign-key section where the side
+   references a table. Delete the 63 hand-written junction domain files
+   (type, json_io, table, table_io) and regenerate. The two entity
+   protocols that paste junction payloads — =currency_protocol.hpp= and
+   =currency_pair_convention_protocol.hpp= — are re-pointed at the
+   generated types.
+3. *Hand-written protocols become models.* Five protocol headers are
+   hand-written and carry ten message structs. =calendar_date= and
+   =tenor_convention_resolution= are junctions whose models already
+   exist, so they need =:list_by:= and regeneration. =asset_class_info=,
+   =calendar_adjustment= and =calendar_materialisation= have no model at
+   all and become operation (message-only) models: the first two are
+   joined or computed shapes, so an entity would be a lie about a table,
+   and the third carries no payload type.
+4. *TypeScript.* Commit the refdata tree under
+   =projects/ores.web/packages/wire-protocol/src/generated/refdata/=.
+   Committing the first file is what makes the drift gate render the
+   component at both TypeScript facets and what makes the protocol-twin
+   coverage check police it. Then typecheck =ores.web= and run its
+   suites.
+
+Verification: the refdata component regenerates at every space with no
+drift, the coverage check reports every header paired and no opt-out,
+the build is green, and the refdata suites pass.
+
+Open for decision, recorded rather than hidden: three hand-written
+entity-shaped domain headers are off the wire and have no includer
+anywhere — =business_day_convention.hpp=, =compounding_method.hpp= and
+=day_count_fraction.hpp= (the last is a near-name collision with the
+generated =day_count_fraction_type=). They are not wire types, so this
+task neither models nor deletes them until that is settled.
+
+* Notes
+
+*Reconnaissance findings.* Counts at =0e76cb1255=: 70 =*_protocol.hpp=
+(65 generated, 5 hand-written), 307 domain headers (260 generated, 47
+hand-written; 15 declare a type and 32 are helpers), 76 models (65
+entity, 9 junction, 1 component, 1 module) and zero operation models.
+IAM, by comparison, has ten operation models. The 148 TypeScript files
+the refdata models resolve have never been generated.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

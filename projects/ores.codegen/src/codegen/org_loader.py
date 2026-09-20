@@ -1524,6 +1524,13 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # table. Applied last so every explicit value parsed above wins.
     _apply_profile(de)
 
+    # Messages the entity declares beside its derived CRUD set. The C++
+    # protocol header renders them at its paste point and the TypeScript
+    # twin appends them to the derived list, so one section feeds both.
+    declared = parse_declared_messages(doc.root)
+    if declared:
+        de["declared_messages"] = declared
+
     return {"domain_entity": de}
 
 
@@ -2516,6 +2523,11 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                         _ts_field(plural_short, f"std::vector<{domain_type}>")]),
         ]
 
+    # Messages the model declares itself, beside the derived CRUD set. The
+    # C++ header renders the same list at its paste point, so both twins
+    # come from this one section.
+    messages += entity.get("declared_messages") or []
+
     return messages
 
 
@@ -2649,6 +2661,61 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     return messages
 
 
+def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
+    """Read a ``* Messages`` section into the message shape both twins render.
+
+    The grammar is one ``**`` child per message, ``:subject:`` and
+    ``:response:`` in its drawer, an optional ``#+begin_src cpp :name
+    comment`` doc comment, and one ``***`` child per field carrying
+    ``:cpp_type:`` and an optional ``:default:``. An operation model uses
+    the section for its whole protocol; an entity model uses it to declare
+    messages beside its derived CRUD set, which the C++ header renders at
+    its paste point and the TypeScript twin renders from the same list.
+    """
+    messages: list[dict[str, Any]] = []
+    section = _section(root, "Messages")
+    if not section:
+        return messages
+    for node in section.children:
+        entry: dict[str, Any] = {
+            "name": node.title,
+            "name_pascal": _to_pascal_case(node.title),
+        }
+        props = {k.lower(): v for k, v in node.properties.items()}
+        if "subject" in props:
+            entry["subject"] = props["subject"]
+        # The org names the response; the template emits the C++ alias, so
+        # the model key takes the alias's own name.
+        if "response" in props:
+            entry["response_type"] = props["response"]
+        comment = node.src_blocks.get("comment")
+        if comment:
+            entry["comment"] = comment
+
+        fields: list[dict[str, Any]] = []
+        for field_node in node.children:
+            field_entry: dict[str, Any] = {"name": field_node.title}
+            field_props = {k.lower(): v for k, v in field_node.properties.items()}
+            if "cpp_type" in field_props:
+                field_entry["cpp_type"] = field_props["cpp_type"]
+                mapped = _ts_type(field_props["cpp_type"])
+                if mapped:
+                    field_entry["ts_type"] = mapped
+            if "default" in field_props:
+                field_entry["default"] = field_props["default"]
+            field_comment = field_node.src_blocks.get("comment")
+            # Always set the key: Mustache resolves a name it cannot find by
+            # walking up the context stack, so an absent ``comment`` would
+            # inherit the enclosing message's.
+            field_entry["comment"] = (
+                _indent_block(field_comment, 4) if field_comment else ""
+            )
+            fields.append(field_entry)
+        entry["fields"] = fields
+        messages.append(entry)
+    return messages
+
+
 def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode protocol-operation model.
 
@@ -2703,48 +2770,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     if inc:
         op["includes"] = _includes_from_named_block(inc)
 
-    messages: list[dict[str, Any]] = []
-    messages_section = _section(doc.root, "Messages")
-    if messages_section:
-        for node in messages_section.children:
-            entry: dict[str, Any] = {
-                "name": node.title,
-                "name_pascal": _to_pascal_case(node.title),
-            }
-            props = {k.lower(): v for k, v in node.properties.items()}
-            if "subject" in props:
-                entry["subject"] = props["subject"]
-            # The org names the response; the template emits the C++
-            # alias, so the model key takes the alias's own name.
-            if "response" in props:
-                entry["response_type"] = props["response"]
-            comment = node.src_blocks.get("comment")
-            if comment:
-                entry["comment"] = comment
-
-            fields: list[dict[str, Any]] = []
-            for field_node in node.children:
-                field_entry: dict[str, Any] = {"name": field_node.title}
-                field_props = {
-                    k.lower(): v for k, v in field_node.properties.items()
-                }
-                if "cpp_type" in field_props:
-                    field_entry["cpp_type"] = field_props["cpp_type"]
-                    mapped = _ts_type(field_props["cpp_type"])
-                    if mapped:
-                        field_entry["ts_type"] = mapped
-                if "default" in field_props:
-                    field_entry["default"] = field_props["default"]
-                field_comment = field_node.src_blocks.get("comment")
-                # Always set the key: Mustache resolves a name it cannot
-                # find by walking up the context stack, so an absent
-                # ``comment`` would inherit the enclosing message's.
-                field_entry["comment"] = (
-                    _indent_block(field_comment, 4) if field_comment else ""
-                )
-                fields.append(field_entry)
-            entry["fields"] = fields
-            messages.append(entry)
+    messages = parse_declared_messages(doc.root)
     op["messages"] = messages
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)

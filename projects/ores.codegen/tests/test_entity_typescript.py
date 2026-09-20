@@ -270,3 +270,49 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
 ])
 def test_the_numeric_family_and_its_compositions(cpp_type, expected):
     assert _ts_domain_type(cpp_type) == expected
+
+
+# An entity model may declare messages beside its derived CRUD set. The C++
+# header renders them where its paste point sits and the TypeScript twin
+# appends them to the derived list, so one section feeds both.
+PARTY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.party.org"
+
+
+def test_an_entity_declares_messages_beside_its_derived_set():
+    from codegen.core import load_model
+
+    entity = load_model(PARTY)["domain_entity"]
+    declared = entity["declared_messages"]
+    assert [m["name"] for m in declared] == [
+        "get_party_composite_as_of_request",
+        "get_party_composite_as_of_response",
+    ]
+    assert declared[0]["subject"] == "refdata.v1.parties.composite_as_of"
+    assert declared[0]["response_type"] == "get_party_composite_as_of_response"
+    assert [(f["name"], f.get("ts_type")) for f in declared[1]["fields"]] == [
+        ("success", "boolean"),
+        ("message", "string"),
+        ("party", "Party"),
+        ("identifiers", "PartyIdentifier[]"),
+        ("contacts", "PartyContactInformation[]"),
+    ]
+
+    names = [m["name"] for m in entity_protocol_messages(entity)]
+    assert names[-2:] == [
+        "get_party_composite_as_of_request",
+        "get_party_composite_as_of_response",
+    ]
+
+
+def test_a_declared_message_renders_on_both_twins(tmp_path):
+    for template, name in (
+        ("cpp_protocol.hpp.mustache", "party_protocol.hpp"),
+        ("ts_protocol.ts.mustache", "party_protocol.ts"),
+    ):
+        generate_from_model(
+            str(PARTY), CODEGEN / "library" / "data",
+            CODEGEN / "library" / "templates", tmp_path,
+            target_template=template, target_output=name)
+        rendered = (tmp_path / name).read_text(encoding="utf-8")
+        assert '"refdata.v1.parties.composite_as_of"' in rendered, name
+        assert "party;" in rendered or "party: Party;" in rendered, name

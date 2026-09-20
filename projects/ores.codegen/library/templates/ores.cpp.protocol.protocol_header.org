@@ -191,6 +191,26 @@ struct read_{{entity_plural}}_for_cache_response {
 
 {{/read_for_cache}}
 <<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
+{{#declared_messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+struct {{name}} {
+{{#response_type}}
+    using response_type = struct {{response_type}};
+{{/response_type}}
+{{#subject}}
+    static constexpr std::string_view nats_subject = "{{subject}}";
+{{/subject}}
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+{{/fields}}
+};
+
+{{/declared_messages}}
 }
 
 #endif

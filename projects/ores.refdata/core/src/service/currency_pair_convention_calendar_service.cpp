@@ -105,11 +105,19 @@ void currency_pair_convention_calendar_service::save_pair_convention_calendar(
 
 void currency_pair_convention_calendar_service::save_pair_convention_calendars(
     const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars) {
+    for (const auto& e : pair_convention_calendars) {
+        if (e.pair_code.empty()) {
+            throw std::invalid_argument("Pair cannot be empty.");
+        }
+        if (e.calendar_code.empty()) {
+            throw std::invalid_argument("Calendar cannot be empty.");
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << pair_convention_calendars.size()
                                << " currency pair convention calendars";
     auto ts = pair_convention_calendars;
-    for (auto& t : ts) {
-        stamp(t, ctx_);
+    for (auto& e : ts) {
+        stamp(e, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << pair_convention_calendars.size()

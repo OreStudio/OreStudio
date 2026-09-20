@@ -124,11 +124,19 @@ void party_counterparty_service::save_party_counterparty(
 
 void party_counterparty_service::save_party_counterparties(
     const std::vector<domain::party_counterparty>& party_counterparties) {
+    for (const auto& e : party_counterparties) {
+        if (e.party_id.is_nil()) {
+            throw std::invalid_argument("Party cannot be empty.");
+        }
+        if (e.counterparty_id.is_nil()) {
+            throw std::invalid_argument("Counterparty cannot be empty.");
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_counterparties.size()
                                << " party counterparties";
     auto ts = party_counterparties;
-    for (auto& t : ts) {
-        stamp_party_counterparty(t, ctx_);
+    for (auto& e : ts) {
+        stamp_party_counterparty(e, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << party_counterparties.size() << " party counterparties";

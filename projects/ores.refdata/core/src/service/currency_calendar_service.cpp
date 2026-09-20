@@ -99,10 +99,18 @@ void currency_calendar_service::save_currency_calendar(
 
 void currency_calendar_service::save_currency_calendars(
     const std::vector<domain::currency_calendar>& currency_calendars) {
+    for (const auto& e : currency_calendars) {
+        if (e.currency_iso_code.empty()) {
+            throw std::invalid_argument("Currency cannot be empty.");
+        }
+        if (e.calendar_code.empty()) {
+            throw std::invalid_argument("Calendar cannot be empty.");
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << currency_calendars.size() << " currency calendars";
     auto ts = currency_calendars;
-    for (auto& t : ts) {
-        stamp(t, ctx_);
+    for (auto& e : ts) {
+        stamp(e, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << currency_calendars.size() << " currency calendars";

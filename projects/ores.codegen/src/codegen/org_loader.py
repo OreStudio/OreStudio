@@ -294,6 +294,32 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
             "a frontmatter profile is silently ignored.")
 
 
+def _reject_junction_only_flags(doc: "OrgDocument", kind: str) -> None:
+    """Reject ``:client_read_only:`` outside a junction model.
+
+    The flag splits a junction's repository write surface from the verbs a
+    client reaches, and only :func:`load_org_junction_model` reads it. Every
+    other model type that declares it renders as though it had not, which is
+    the silent no-op the profile guard above rejects for ``:profile:``.
+
+    ``:read_only:`` is not in this set: a domain_entity honours it too, for a
+    table the application never writes.
+    """
+    cpp = _section(doc.root, "C++")
+    drawers = [("* Flags", _section(doc.root, "Flags"))]
+    if cpp:
+        drawers.append(("* C++ ** Flags", _section(cpp, "Flags")))
+    for where, section in drawers:
+        if section and any(
+                key.lower() == "client_read_only"
+                for key in section.properties):
+            raise ValueError(
+                f":client_read_only: found in {where} of a {kind} model — "
+                "only a junction separates a repository write surface from "
+                "the verbs a client reaches. Use :read_only: to suppress "
+                "every write, or model the table as a junction.")
+
+
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
     """An entity doc's effective ``ores.*.enabled`` overrides from the
     ``* Physical space`` table mechanism: its bound profile's table (if any)
@@ -1195,6 +1221,13 @@ def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
+# The paste point the C++ protocol header renders a model's extra messages
+# at, before it renders the ``* Messages`` section. A model that still feeds
+# the paste point and also declares messages would render them twice there,
+# while the TypeScript twin, which has no paste point, renders them once.
+PROTOCOL_MESSAGES_PASTE_KIND = "2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F"
+
+
 def _collect_implementations(root: OrgNode) -> dict[str, list[str]]:
     """Walk the tree and return ``{kind_uuid: [block_code, ...]}`` for every
     babel block carrying an ``:implements <UUID>`` header argument."""
@@ -1218,6 +1251,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     of codegen can consume it unchanged.
     """
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "domain_entity")
     de: dict[str, Any] = {}
 
     # Frontmatter contains entity-wide string keys.
@@ -1529,6 +1563,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # twin appends them to the derived list, so one section feeds both.
     declared = parse_declared_messages(doc.root)
     if declared:
+        if PROTOCOL_MESSAGES_PASTE_KIND in (de.get("implementations") or {}):
+            raise ValueError(
+                "a * Messages section and an :implements "
+                f"{PROTOCOL_MESSAGES_PASTE_KIND} block are both present — "
+                "the C++ protocol header renders the paste point and then the "
+                "declared messages, so the same structs would appear twice "
+                "while the TypeScript twin renders them once. Move the paste "
+                "block's messages into * Messages and delete the block.")
         de["declared_messages"] = declared
 
     return {"domain_entity": de}
@@ -1968,23 +2010,26 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     cpp_section = _section(doc.root, "C++")
     cpp_out: dict[str, Any] = {}
+    # Flags: lift directly onto junction (these are top-level in the
+    # JSON model), matching load_org_model()'s domain_entity Flags
+    # handling -- e.g. :subcomponent: for resolve_output_path()'s
+    # component_dir/component_include/... derivation.
+    flags = _section(cpp_section, "Flags") if cpp_section else None
+    if flags:
+        for k, v in flags.properties.items():
+            j[k.lower()] = _parse_typed(v)
+    # Two independent switches decide the write surface. ``read_only`` is the
+    # repository's: it suppresses write and remove, for a table provisioned
+    # outside the application. ``client_read_only`` leaves the repository
+    # writable for a server-side producer and suppresses only the verbs a
+    # client can reach, which the wire templates and the derived TypeScript
+    # list branch on through this derived flag. Derived outside the section
+    # guard: a junction with no C++ drawer declares neither flag, so its wire
+    # writes stay on, and a template that reads a missing key would treat the
+    # absence as off and silently drop the write surface.
+    j["wire_write_enabled"] = not (
+        j.get("read_only") or j.get("client_read_only"))
     if cpp_section:
-        # Flags: lift directly onto junction (these are top-level in the
-        # JSON model), matching load_org_model()'s domain_entity Flags
-        # handling -- e.g. :subcomponent: for resolve_output_path()'s
-        # component_dir/component_include/... derivation.
-        flags = _section(cpp_section, "Flags")
-        if flags:
-            for k, v in flags.properties.items():
-                j[k.lower()] = _parse_typed(v)
-        # Two independent switches decide the write surface. ``read_only``
-        # is the repository's: it suppresses write and remove, for a table
-        # provisioned outside the application. ``client_read_only`` leaves
-        # the repository writable for a server-side producer and suppresses
-        # only the verbs a client can reach, which the wire templates and
-        # the derived TypeScript list branch on through this derived flag.
-        j["wire_write_enabled"] = not (
-            j.get("read_only") or j.get("client_read_only"))
         dom = _section(cpp_section, "Domain includes")
         ent = _section(cpp_section, "Entity includes")
         if dom or ent:
@@ -2095,6 +2140,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "field group")
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
@@ -2766,6 +2812,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "operation")
     fm = doc.frontmatter
 
     op: dict[str, Any] = {}

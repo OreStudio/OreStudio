@@ -95,10 +95,18 @@ void currency_country_service::save_currency_country(
 
 void currency_country_service::save_currency_countries(
     const std::vector<domain::currency_country>& currency_countries) {
+    for (const auto& e : currency_countries) {
+        if (e.currency_iso_code.empty()) {
+            throw std::invalid_argument("Currency cannot be empty.");
+        }
+        if (e.country_alpha2_code.empty()) {
+            throw std::invalid_argument("Country cannot be empty.");
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << currency_countries.size() << " currency countries";
     auto ts = currency_countries;
-    for (auto& t : ts) {
-        stamp(t, ctx_);
+    for (auto& e : ts) {
+        stamp(e, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << currency_countries.size() << " currency countries";

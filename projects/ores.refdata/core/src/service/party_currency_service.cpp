@@ -121,10 +121,18 @@ void party_currency_service::save_party_currency(const domain::party_currency& p
 
 void party_currency_service::save_party_currencies(
     const std::vector<domain::party_currency>& party_currencies) {
+    for (const auto& e : party_currencies) {
+        if (e.party_id.is_nil()) {
+            throw std::invalid_argument("Party cannot be empty.");
+        }
+        if (e.currency_iso_code.empty()) {
+            throw std::invalid_argument("Currency cannot be empty.");
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_currencies.size() << " party currencies";
     auto ts = party_currencies;
-    for (auto& t : ts) {
-        stamp_party_currency(t, ctx_);
+    for (auto& e : ts) {
+        stamp_party_currency(e, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << party_currencies.size() << " party currencies";

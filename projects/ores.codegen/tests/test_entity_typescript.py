@@ -305,9 +305,23 @@ def test_an_entity_declares_messages_beside_its_derived_set():
 
 
 def test_a_declared_message_renders_on_both_twins(tmp_path):
-    for template, name in (
-        ("cpp_protocol.hpp.mustache", "party_protocol.hpp"),
-        ("ts_protocol.ts.mustache", "party_protocol.ts"),
+    for template, name, expected in (
+        ("cpp_protocol.hpp.mustache", "party_protocol.hpp", [
+            "struct get_party_composite_as_of_request {",
+            '    static constexpr std::string_view nats_subject = '
+            '"refdata.v1.parties.composite_as_of";',
+            "struct get_party_composite_as_of_response {",
+            "    ores::refdata::domain::party party;",
+            "    std::vector<ores::refdata::domain::party_identifier> identifiers;",
+            "    std::vector<ores::refdata::domain::party_contact_information> contacts;",
+        ]),
+        ("ts_protocol.ts.mustache", "party_protocol.ts", [
+            "export interface GetPartyCompositeAsOfRequest {",
+            "export interface GetPartyCompositeAsOfResponse {",
+            "    party: Party;",
+            "    identifiers: PartyIdentifier[];",
+            "    contacts: PartyContactInformation[];",
+        ]),
     ):
         generate_from_model(
             str(PARTY), CODEGEN / "library" / "data",
@@ -315,4 +329,26 @@ def test_a_declared_message_renders_on_both_twins(tmp_path):
             target_template=template, target_output=name)
         rendered = (tmp_path / name).read_text(encoding="utf-8")
         assert '"refdata.v1.parties.composite_as_of"' in rendered, name
-        assert "party;" in rendered or "party: Party;" in rendered, name
+        for fragment in expected:
+            assert fragment in rendered, f"{fragment!r} missing from {name}"
+
+
+def test_declared_messages_and_the_paste_point_are_mutually_exclusive(tmp_path):
+    """The C++ protocol header renders the paste point and then the declared
+    messages, while the TypeScript twin has no paste point and renders the
+    declared set once. A model that feeds both would ship the same structs
+    twice on the C++ side alone, so the loader refuses the combination."""
+    from codegen.org_loader import (
+        PROTOCOL_MESSAGES_PASTE_KIND,
+        org_document_to_model,
+        parse_org,
+    )
+
+    text = PARTY.read_text(encoding="utf-8") + (
+        "\n#+begin_src cpp :name protocol_messages"
+        f" :implements {PROTOCOL_MESSAGES_PASTE_KIND}\n"
+        "struct get_legacy_party_request {\n};\n#+end_src\n"
+    )
+
+    with pytest.raises(ValueError, match="Messages section"):
+        org_document_to_model(parse_org(text))

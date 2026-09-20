@@ -266,6 +266,42 @@ def test_the_batch_delete_refuses_mismatched_key_vectors(tmp_path):
     assert "i < req->widget_ids.size() && i < req->owner_ids.size()" not in handler
 
 
+def test_the_batch_save_rejects_a_row_the_single_save_rejects(tmp_path):
+    """Both save paths write the same rows, and the batch opens one
+    transaction. A key the single-row save refuses must therefore fail the
+    batch before the write, not surface as a database error that rolls the
+    whole transaction back.
+
+    The fixture declares no repository short name, so the rendered method
+    names are empty and the slice keys off the batch's vector parameter.
+    """
+    rendered = _render(tmp_path, "cpp_service.cpp.mustache",
+                       "widget_owner_service.cpp")
+    start = rendered.index("const std::vector<domain::widget_owner>& ")
+    end = rendered.index("repo_.write(ts);", start)
+    batch = rendered[start:end]
+
+    assert "for (const auto& e : " in batch
+    assert "if (e.widget_id.is_nil())" in batch
+    assert 'throw std::invalid_argument("Widget cannot be empty.");' in batch
+    assert "if (e.owner_id.is_nil())" in batch
+    assert 'throw std::invalid_argument("Owner cannot be empty.");' in batch
+
+
+def test_the_handler_hands_the_decoded_batch_to_one_service_call(tmp_path):
+    """The atomicity comes from the handler passing the whole decoded vector
+    to the batch save, which writes it in one transaction. A per-row loop in
+    the handler would reopen the per-row transaction the batch exists to
+    remove."""
+    handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache", "handler.hpp")
+    body = handler.index("decode<save_widget_owner_request>")
+    end = handler.index("void ", body)
+    save = handler[body:end]
+
+    assert save.count("svc.save_(") == 1
+    assert "for (" not in save
+
+
 # A read-only junction's rows are provisioned outside the application, so
 # it carries reads and counts and no write verb. The fixture keeps its
 # ``:replace_by:`` flag, so the suppression is proven to come from
@@ -391,3 +427,20 @@ def test_read_only_drops_the_repository_writes(tmp_path):
                          body=READ_ONLY_FIXTURE)
     assert "void write(" not in repository
     assert "void remove(" not in repository
+
+
+# Neither flag is declared without a * C++ drawer, so nothing suppresses the
+# write surface. The derived key must still be present: the C++ templates read
+# it, and Mustache treats a missing key as false.
+NO_CPP_FIXTURE = FIXTURE.split("* C++")[0]
+
+
+def test_a_junction_without_a_cpp_drawer_keeps_its_wire_writes(tmp_path):
+    model = tmp_path / "ores.widget.widget_owner_junction.org"
+    model.write_text(NO_CPP_FIXTURE, encoding="utf-8")
+    junction = load_org_junction_model(model)["junction"]
+
+    assert junction["wire_write_enabled"] is True
+    names = [m["name"] for m in junction_protocol_messages(junction)]
+    assert "save_widget_owner_request" in names
+    assert "delete_widget_owner_request" in names

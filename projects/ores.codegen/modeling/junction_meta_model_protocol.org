@@ -118,8 +118,48 @@ means adopting this design does not force a wire change on it.
   TypeScript facet for junctions was found, and the rule that a joined shape is a
   message.
 
+* What the IAM comparison found
+
+The protocol was implemented and exercised against IAM's =account_party_junction=,
+then compared with the operation model it would replace. The comparison stopped
+the replacement, and it corrected this design in three places.
+
+- **The set has no unscoped read.** The operation model's =get_account_parties=
+  is consumed by the shell's =account-parties list=, and there is no junction
+  equivalent: every read in the set above requires a side key. A listing needs a
+  paged read of the junction itself, so the set gains
+  =get_<junction>_request/response= -- the junction rows, =offset= and =limit=,
+  no key.
+- **A destructive replace is not the only way to write.** =save_account_party= is
+  a batch, additive upsert -- omitted rows survive -- and it carries
+  workflow-command semantics (idempotency, a tenant supplied by the caller) that a
+  generated handler does not have. =replace_by_<side>= is destructive and
+  =link_<singular>= is single-pair, so neither replaces it. The set needs either a
+  batch additive verb, =link_<junction>= taking many pairs, or an explicit
+  decision that a workflow-driven write stays an operation model. That is a real
+  choice, not a gap to close by default.
+- **Do not emit what has no referent or no server.** The view is emitted and
+  unreferenced, because the read response had to stay compatible for the two
+  junctions already using it -- and this junction declares no enrichment, so the
+  view would carry nothing extra even if referenced. The count is emitted for
+  every side, while the repository implements counts only for a =:list_by:= side.
+  Both should follow the rule the session surface taught: a declared-but-unused
+  message is a liability, and a verb without a server is a trap.
+
+Resolved in passing: =account_party_key= had one consumer, the refdata workflow's
+compensation, and =unlink_<singular>= carries the two keys inline, so it needs no
+counterpart.
+
 * Status
 
-Design only. Nothing here is implemented. The order that follows from it: the
-facet change first, then the template verbs and the view, then re-point the two
-junctions that already render a read.
+**Stage A is implemented** (the facet model type, the C++ verbs, the TypeScript
+branch, and the derived message list the two share), and it is committed. The two
+existing verbs are byte-identical, and the emission is unconditional, which
+regenerated compute's =app_version_platform= protocol additively -- the one file
+outside IAM, called out in the commit.
+
+**Stage B -- replacing IAM's operation model with the junction protocol -- is
+deliberately not done.** The gaps above are why. The order that closes them: add
+the unscoped paged read, decide the batch additive write, make the count follow
+the sides that have a server, and only then re-point the shell, the refdata
+workflow and the provisioning handler and remove the operation model.

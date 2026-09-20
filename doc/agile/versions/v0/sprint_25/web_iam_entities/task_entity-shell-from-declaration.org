@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: FEA81310-1D51-489D-8877-9362B74C191F
+:END:
+#+title: Task: Drive the entity screens from one declaration
+#+description: Task for: Implement every IAM entity in the web client
+#+type: task
+#+level: s1
+#+filetags: :web_iam_entities:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-iam-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shared shell renders an entity's list, detail and history screens from a single declaration plus the generated TypeScript metadata, so no entity owns page files or an API module of its own. Country is re-expressed as a declaration and its bespoke pages and api module are deleted. main.tsx stops naming entities: the route table comes from the registry, through the EntityRoutes component the specification names.
+
+The streamlining reaches the other layers, because a declaration that streamlines only the screens leaves the copy and paste in place:
+
+- One hook set -- useEntityList, useEntity, useSaveEntity, useDeleteEntity and useEntityHistory -- reading the protocol schemas, so the 206-line per-entity API module and its re-declared page schema go.
+- One BFF route factory for list, get, save, delete and history, so the four ordinary routes stop being rewritten per entity. Bespoke actions stay bespoke.
+- The Provenance, audit and state labels move to one generic key set, so =entity/EntityDetailPage.tsx= stops reading =account.fldVersion= and its siblings out of the account catalogue block.
+- =pages/AccountsPage.tsx= is deleted and the account is re-expressed on the shell, because the IAM component must not sit on the archetype the specification says not to keep. Whatever the account needs that the shell cannot yet do becomes an abstraction in the shell, not a bespoke page.
+
+This task is a prerequisite for every entity task after it. While it is open, each entity task would reproduce the footprint measured in the story and entrench the divergence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Adding an entity touches one declaration file and no shared component.
+- main.tsx contains no per-entity route.
+- Country's three screens are rendered by the shared shell, with no per-entity page component.
+- The React Query hooks are derived once from the declaration and the protocol schemas, not copied per entity.
+- The BFF has one route factory for the five ordinary operations, and only bespoke actions are written per entity.
+- No shared component names an entity: =grep= for an entity identifier under =entity/= returns nothing.
+- pages/AccountsPage.tsx is gone and the account renders through the shell.
+- Field grouping reaches the screens from one declared place. If it stays hand-written per entity, this task records why, because the generated metadata already claims a =<entity>_field_groups.ts= exists and none does.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

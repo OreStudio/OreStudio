@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: B3C0E7DC-0312-4F80-A85B-2EA2D8D01FD0
+:END:
+#+title: Task: The IAM account archetype: secrets, children, relationships and actions
+#+description: Task for: Implement every IAM entity in the web client
+#+type: task
+#+level: s1
+#+filetags: :web_iam_entities:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-iam-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement account as the richest IAM entity and the one entity_specification.org treats as its reference for what an entity screen contains. Secrets never leave the server. account_type and default_party_id are searchable selects, reports_to_account_id is a self-referencing select, the login-status panel is read-only, and the parties, roles and contact-information relationships are Related tabs. Lock, unlock and reset password are actions on the selection, after History.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- No secret field appears in any response the browser receives, and a check asserts it.
+- The four related sections work from declarations.
+- Lock, unlock and reset password work and are hidden where the server would refuse them.
+- Every create, amend and delete prompts for an audit reason.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

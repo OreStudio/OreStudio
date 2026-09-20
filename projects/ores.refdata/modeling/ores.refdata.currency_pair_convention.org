@@ -303,8 +303,6 @@ entity has no separate base/quote fields of its own.
 | spot_relative            | Spot Relative              | spotRelativeCheckBox         | check_box |        |             |                                       |                                                                                                |                                                       |  |  |  | Whether forward value dates for this pair are calculated relative to the spot date, rather than directly from the trade date. |
 | end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |                                                                                                |                                                       |  |  |  | Whether this pair follows the end-of-month rule: if the spot date falls on the last business day of a month, forward dates preserve month-end alignment. |
 
-** Custom repository methods
-
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

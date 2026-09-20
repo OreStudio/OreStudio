@@ -119,6 +119,7 @@ public:
 
 
 private:
+    context ctx_;
     repository::party_counterparty_repository repo_;
 };
 

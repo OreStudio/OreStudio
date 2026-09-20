@@ -141,7 +141,7 @@ and can use =timestamp= to query for changes since that point.
 
 A junction joins two entities, so its protocol is about a relationship
 rather than a row. Every junction model renders the same generated verb
-set; see [[id:818208C0-3465-4CEF-A8C8-62A460871B0C][Codegen junction
+set; see [[id:818208C0-3465-4CEF-A8C8-62A460871B2C][Codegen junction
 meta-model — the junction protocol]] for the design.
 
 | Verb | Subject | Notes |
@@ -151,17 +151,20 @@ meta-model — the junction protocol]] for the design.
 | =save_<junction>= | =refdata.v1.<junction_plural>.save= | Batch additive upsert |
 | =delete_<junction>= | =refdata.v1.<junction_plural>.delete= | Batch delete by the pair |
 | =count_<junction>_by_<side>= | =refdata.v1.<junction_plural>.count_by_<column>= | One per side |
-| =replace_<junction>_by_<side>= | =refdata.v1.<junction_plural>.replace_by_<column>= | Only where a side declares =:replace_by:= |
+| =replace_<junction>_by_<side>= | =refdata.v1.<junction_plural>.replace_by_<column>= | Only where a side declares =:replace_by:=; opt-in, and no refdata junction takes it |
 
 The junction plural is the model's =#+name=, in underscore form. Nine
-junctions render this set: =calendar_dates=, =currency_calendars=,
-=currency_countries=, =currency_currency_groups=,
+junctions render the base set -- the two reads, =save=, =delete= and the
+two counts -- each with a =:list_by:= read: =calendar_dates=,
+=currency_calendars=, =currency_countries=, =currency_currency_groups=,
 =currency_pair_convention_calendars=, =party_counterparties=,
 =party_countries=, =party_currencies= and
-=tenor_convention_resolutions=.
+=tenor_convention_resolutions=. No refdata junction declares
+=:replace_by:=, so no =replace_by= subject is generated here.
 
-=tenor_convention_resolution= is read-only: its rows are provisioned by
-SQL, so it renders the two reads and the two counts and no write verb.
+=calendar_date= and =tenor_convention_resolution= are read-only: their rows
+are provisioned outside the application, so they render the reads and the
+counts and no write verb.
 
 * Non-entity protocols
 

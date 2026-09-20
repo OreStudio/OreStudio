@@ -23,15 +23,19 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/party_currency_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 party_currency_service::party_currency_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::party_currency> party_currency_service::list_party_currencies() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party currencies";
@@ -81,7 +85,9 @@ void party_currency_service::save_party_currency(const domain::party_currency& p
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party currency: " << party_currency.party_id << "/"
                                << party_currency.currency_iso_code;
-    repo_.write(party_currency);
+    auto t = party_currency;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved party currency: " << party_currency.party_id << "/"
                               << party_currency.currency_iso_code;
 }

@@ -276,7 +276,11 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
     resolves the key from the * Flags drawer. A keyword profile is
     therefore not a second binding point but a silent no-op, which is
     worse: the model renders with the profile's defaults missing and no
-    diff, check or type can see it."""
+    diff, check or type can see it.
+
+    The entity, junction, field-group and operation loaders call this, as
+    does the physical-space override pass. A loader that resolves no
+    profile has nothing to reject."""
     if "profile" in doc.file_properties:
         raise ValueError(
             ":profile: found in file-level :PROPERTIES: drawer — "
@@ -2056,7 +2060,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         j["implementations"] = impls
 
     # Profile binding, mirroring org_document_to_model()'s domain_entity
-    # handling: a #+profile: frontmatter line resolves against the named
+    # handling: the * Flags drawer's :profile: resolves against the named
     # profile's own Assignments table as feature defaults.
     _apply_profile(j)
 
@@ -2075,6 +2079,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     sub-headings under ``* Fields``)."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
+    _ensure_profile_binding(doc)
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
@@ -2345,7 +2350,11 @@ def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for field in message.get("fields") or []:
             cpp_type = field.get("cpp_type") or ""
             for qualified, (pascal, module) in _TS_UTILITY_DOMAIN_TYPES.items():
-                if qualified in cpp_type:
+                # A word boundary, not a substring test: a registered name
+                # that prefixes another (``hierarchy_node`` against
+                # ``hierarchy_node_view``) must not import an interface the
+                # field never renders.
+                if re.search(re.escape(qualified) + r"(?![A-Za-z0-9_])", cpp_type):
                     found[pascal] = module
     return [
         {"name_pascal": pascal, "module": found[pascal]}
@@ -2677,6 +2686,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
+    _ensure_profile_binding(doc)
     fm = doc.frontmatter
 
     op: dict[str, Any] = {}

@@ -122,6 +122,7 @@ public:
 
 
 private:
+    context ctx_;
     repository::currency_pair_convention_calendar_repository repo_;
 };
 

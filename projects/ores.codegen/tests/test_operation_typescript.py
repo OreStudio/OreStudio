@@ -72,6 +72,10 @@ def test_scalars_and_vectors_project():
     assert _ts_type("bool") == "boolean"
     assert _ts_type("std::uint64_t") == "number"
     assert _ts_type("std::vector<std::string>") == "string[]"
+    # tenant_id's rfl reflector writes std::string, so a message-shaped
+    # model that carries the type its C++ domain struct declares projects
+    # it rather than tripping the silent-gap guard.
+    assert _ts_type("utility::uuid::tenant_id") == "string"
 
 
 def test_a_local_message_name_becomes_its_interface_name():

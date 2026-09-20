@@ -23,15 +23,19 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/party_counterparty_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 party_counterparty_service::party_counterparty_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::party_counterparty> party_counterparty_service::list_party_counterparties() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party counterparties";
@@ -84,7 +88,9 @@ void party_counterparty_service::save_party_counterparty(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party counterparty: " << party_counterparty.party_id
                                << "/" << party_counterparty.counterparty_id;
-    repo_.write(party_counterparty);
+    auto t = party_counterparty;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved party counterparty: " << party_counterparty.party_id << "/"
                               << party_counterparty.counterparty_id;
 }

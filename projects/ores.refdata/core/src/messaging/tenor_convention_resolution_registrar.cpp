@@ -47,6 +47,14 @@ std::vector<ores::nats::service::subscription> register_tenor_convention_resolut
         get_tenor_convention_resolutions_by_convention_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_by_convention(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_tenor_convention_resolutions_by_convention_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->count_by_convention(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(count_tenor_convention_resolutions_by_tenor_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->count_by_tenor(std::move(msg)); }));
     return subs;
 }
 

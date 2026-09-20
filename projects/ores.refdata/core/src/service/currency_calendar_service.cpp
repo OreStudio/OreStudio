@@ -23,14 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_calendar_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 currency_calendar_service::currency_calendar_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::currency_calendar> currency_calendar_service::list_currency_calendars() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all currency calendars";
@@ -85,7 +89,9 @@ void currency_calendar_service::save_currency_calendar(
     BOOST_LOG_SEV(lg(), debug) << "Saving currency calendar: "
                                << currency_calendar.currency_iso_code << "/"
                                << currency_calendar.calendar_code;
-    repo_.write(currency_calendar);
+    auto t = currency_calendar;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency calendar: " << currency_calendar.currency_iso_code
                               << "/" << currency_calendar.calendar_code;
 }

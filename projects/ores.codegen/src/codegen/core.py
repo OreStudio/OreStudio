@@ -4552,7 +4552,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # UI that reads it. Only the TypeScript twin refuses the model; the
         # C++ header has no such gap, so the check is scoped to its render.
         if target_template == 'ts_protocol.ts.mustache':
-            from .org_loader import _reject_silent_ts_gap, ts_utility_imports  # deferred
+            # Deferred import: org_loader imports this module at load time.
+            from .org_loader import _reject_silent_ts_gap, ts_utility_imports
             _reject_silent_ts_gap(
                 model_path, domain_entity['messages'], {})
             domain_entity['utility_imports'] = ts_utility_imports(
@@ -4647,7 +4648,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # UI that reads it. Only the TypeScript twin refuses the model; the
         # C++ header has no such gap, so the check is scoped to its render.
         if target_template == 'ts_protocol.ts.mustache':
-            from .org_loader import (  # deferred
+            # Deferred import: org_loader imports this module at load time.
+            from .org_loader import (
                 _reject_silent_ts_gap,
                 ts_utility_imports,
             )

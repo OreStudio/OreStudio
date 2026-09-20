@@ -44,22 +44,6 @@ std::string calendar_date_repository::sql() {
 calendar_date_repository::calendar_date_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void calendar_date_repository::write(const domain::calendar_date& calendar_date) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar date to database: "
-                               << calendar_date.calendar_code << "/" << calendar_date.date;
-    execute_write_query(
-        ctx_, calendar_date_mapper::map(calendar_date), lg(), "writing calendar date to database");
-}
-
-void calendar_date_repository::write(const std::vector<domain::calendar_date>& calendar_dates) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar dates to database. Count: "
-                               << calendar_dates.size();
-    execute_write_query(ctx_,
-                        calendar_date_mapper::map(calendar_dates),
-                        lg(),
-                        "writing calendar dates to database");
-}
-
 std::vector<domain::calendar_date> calendar_date_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
@@ -224,28 +208,6 @@ calendar_date_repository::get_total_calendar_date_count_by_date(const std::strin
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
     return count;
-}
-
-void calendar_date_repository::remove(const std::string& calendar_code, const std::string& date) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar date from database: " << calendar_code << "/"
-                               << date;
-
-    const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<calendar_date_entity> |
-        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code && "date"_c == date);
-
-    execute_delete_query(ctx_, query, lg(), "removing calendar date from database");
-}
-
-void calendar_date_repository::remove_by_calendar(const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all calendar dates from database: " << calendar_code;
-
-    const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<calendar_date_entity> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code);
-
-    execute_delete_query(ctx_, query, lg(), "removing all calendar dates from database");
 }
 
 }

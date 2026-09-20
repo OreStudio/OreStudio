@@ -118,6 +118,7 @@ public:
 
 
 private:
+    context ctx_;
     repository::party_country_repository repo_;
 };
 

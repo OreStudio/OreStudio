@@ -23,14 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/calendar_date_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 calendar_date_service::calendar_date_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates";
@@ -69,27 +73,6 @@ calendar_date_service::get_total_calendar_date_count_by_calendar(const std::stri
 std::uint32_t
 calendar_date_service::get_total_calendar_date_count_by_date(const std::string& date) {
     return repo_.get_total_calendar_date_count_by_date(date);
-}
-
-void calendar_date_service::save_calendar_date(const domain::calendar_date& calendar_date) {
-    if (calendar_date.calendar_code.empty()) {
-        throw std::invalid_argument("Calendar cannot be empty.");
-    }
-    if (!calendar_date.date.ok()) {
-        throw std::invalid_argument("Date cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar date: " << calendar_date.calendar_code << "/"
-                               << calendar_date.date;
-    repo_.write(calendar_date);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar date: " << calendar_date.calendar_code << "/"
-                              << calendar_date.date;
-}
-
-void calendar_date_service::remove_calendar_date(const std::string& calendar_code,
-                                                 const std::string& date) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar date: " << calendar_code << "/" << date;
-    repo_.remove(calendar_code, date);
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar date: " << calendar_code << "/" << date;
 }
 
 }

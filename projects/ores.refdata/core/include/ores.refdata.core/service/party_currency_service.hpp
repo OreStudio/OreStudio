@@ -118,6 +118,7 @@ public:
 
 
 private:
+    context ctx_;
     repository::party_currency_repository repo_;
 };
 

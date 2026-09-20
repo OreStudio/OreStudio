@@ -118,6 +118,7 @@ public:
 
 
 private:
+    context ctx_;
     repository::currency_calendar_repository repo_;
 };
 

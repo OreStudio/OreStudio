@@ -102,12 +102,14 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         delete_{{name_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+{{/read_only}}
     subs.push_back(nats.queue_subscribe(
         count_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->count_by_{{left.column_short}}(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         count_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->count_by_{{right.column_short}}(std::move(msg)); }));
+{{^read_only}}
 {{#left.replace_by}}
     subs.push_back(nats.queue_subscribe(
         replace_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,

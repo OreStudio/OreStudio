@@ -105,9 +105,10 @@ FIXTURE = """\
 """
 
 
-def _render(tmp_path: Path, target_template: str, target_output: str) -> str:
+def _render(tmp_path: Path, target_template: str, target_output: str,
+            body: str = FIXTURE) -> str:
     model = tmp_path / "ores.widget.widget_owner_junction.org"
-    model.write_text(FIXTURE, encoding="utf-8")
+    model.write_text(body, encoding="utf-8")
     generate_from_model(
         str(model), CODEGEN / "library" / "data",
         CODEGEN / "library" / "templates", tmp_path,
@@ -263,3 +264,58 @@ def test_the_batch_delete_refuses_mismatched_key_vectors(tmp_path):
 
     assert "req->widget_ids.size() != req->owner_ids.size()" in handler
     assert "i < req->widget_ids.size() && i < req->owner_ids.size()" not in handler
+
+
+# A read-only junction's rows are provisioned outside the application, so
+# it carries reads and counts and no write verb. The fixture keeps its
+# ``:replace_by:`` flag, so the suppression is proven to come from
+# ``:read_only:`` rather than from an absent opt-in.
+READ_ONLY_FIXTURE = FIXTURE.replace(
+    ":subcomponent: api\n",
+    ":subcomponent: api\n:read_only:       true\n",
+)
+
+
+def _read_only_junction(tmp_path: Path) -> dict:
+    model = tmp_path / "ores.widget.widget_owner_junction.org"
+    model.write_text(READ_ONLY_FIXTURE, encoding="utf-8")
+    return load_org_junction_model(model)["junction"]
+
+
+def test_a_read_only_junction_derives_no_write_verb(tmp_path):
+    junction = _read_only_junction(tmp_path)
+
+    names = [m["name"] for m in junction_protocol_messages(junction)]
+    assert not any(
+        name.startswith(("save_", "delete_", "replace_")) for name in names)
+    # The reads and the counts stay: the repository serves both, and a
+    # read-only row is still readable.
+    for expected in (
+        "get_widget_owners_request",
+        "get_widget_owners_by_widget_request",
+        "count_widget_owners_by_widget_request",
+        "count_widget_owners_by_owner_request",
+        "widget_owner_view",
+    ):
+        assert expected in names
+
+
+def test_a_read_only_junction_renders_no_write_verb_on_either_twin(tmp_path):
+    for template, name in (
+        ("cpp_protocol.hpp.mustache", "widget_owner_protocol.hpp"),
+        ("cpp_service.hpp.mustache", "widget_owner_service.hpp"),
+        ("cpp_service.cpp.mustache", "widget_owner_service.cpp"),
+        ("cpp_nats_handler.hpp.mustache", "widget_owner_handler.hpp"),
+        ("cpp_nats_registrar.cpp.mustache", "widget_owner_registrar.cpp"),
+        ("ts_protocol.ts.mustache", "widget_owner_protocol.ts"),
+    ):
+        rendered = _render(tmp_path, template, name, body=READ_ONLY_FIXTURE)
+        for verb in ("save_widget_owner", "delete_widget_owner",
+                     "remove_widget_owner", "replace_widget_owners"):
+            assert verb not in rendered, f"{verb} leaked into {name}"
+        # The count read survives on every twin that carries it. The
+        # service names it from the repository short name, which this
+        # fixture leaves unset, so match the column suffix both spellings
+        # share.
+        if template != "cpp_service.hpp.mustache":
+            assert "count_by_widget" in rendered, name

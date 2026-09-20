@@ -23,14 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_pair_convention_calendar_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 currency_pair_convention_calendar_service::currency_pair_convention_calendar_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::currency_pair_convention_calendar>
 currency_pair_convention_calendar_service::list_pair_convention_calendars() {
@@ -90,7 +94,9 @@ void currency_pair_convention_calendar_service::save_pair_convention_calendar(
     BOOST_LOG_SEV(lg(), debug) << "Saving currency pair convention calendar: "
                                << pair_convention_calendar.pair_code << "/"
                                << pair_convention_calendar.calendar_code;
-    repo_.write(pair_convention_calendar);
+    auto t = pair_convention_calendar;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency pair convention calendar: "
                               << pair_convention_calendar.pair_code << "/"
                               << pair_convention_calendar.calendar_code;

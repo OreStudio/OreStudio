@@ -94,9 +94,10 @@
 #include "ores.refdata.core/messaging/tenor_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
-// Entities without a per-entity sub-registrar: asset_class, business_centre
-// and business_unit_type have no codegen model; publish_from_dq is a
-// bespoke multi-subject workflow handler. These stay wired inline below.
+// Wired inline rather than through a generated sub-registrar: asset_class
+// is an operation protocol, business_centre and business_unit_type keep
+// their subjects here, and publish_from_dq is a bespoke multi-subject
+// workflow handler.
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"

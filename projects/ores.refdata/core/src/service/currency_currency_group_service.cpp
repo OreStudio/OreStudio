@@ -23,14 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_currency_group_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 currency_currency_group_service::currency_currency_group_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::currency_currency_group>
 currency_currency_group_service::list_currency_groups() {
@@ -84,7 +88,9 @@ void currency_currency_group_service::save_currency_group(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving currency group: " << currency_group.currency_iso_code
                                << "/" << currency_group.currency_group_code;
-    repo_.write(currency_group);
+    auto t = currency_group;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency group: " << currency_group.currency_iso_code << "/"
                               << currency_group.currency_group_code;
 }

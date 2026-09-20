@@ -103,6 +103,7 @@ public:
     std::uint32_t get_total_resolution_count_by_tenor(const std::string& tenor_code);
 
 private:
+    context ctx_;
     repository::tenor_convention_resolution_repository repo_;
 };
 

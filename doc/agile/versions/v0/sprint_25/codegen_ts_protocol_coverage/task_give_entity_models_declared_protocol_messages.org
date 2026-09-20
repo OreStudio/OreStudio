@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA
+:END:
+#+title: Task: Let an entity model declare extra protocol messages
+#+description: An entity model derives its standard CRUD message set and can declare no others, so a message a model hand-writes in a paste block has a C++ header and no TypeScript twin.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An entity model can declare protocol messages beside its derived CRUD set, and both targets render them from that one source. The composite_as_of pairs in ores.refdata.party and ores.refdata.counterparty move out of their paste blocks and gain TypeScript interfaces.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- An entity model's declared messages render in both the C++ protocol header and the TypeScript twin, from the loader's one derived list.
+- refdata.v1.parties.composite_as_of and refdata.v1.counterparties.composite_as_of have TypeScript interfaces and subjects.
+- The raw composite_as_of_messages paste blocks in the party and counterparty models are gone, and their consumers use the generated declarations.
+- The existing derived CRUD set and every other entity protocol regenerate byte-identically.
+- A test pins the declared-message path and its TypeScript projection.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

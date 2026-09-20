@@ -23,14 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_country_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 
 currency_country_service::currency_country_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx) {}
 
 std::vector<domain::currency_country> currency_country_service::list_currency_countries() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all currency countries";
@@ -81,7 +85,9 @@ void currency_country_service::save_currency_country(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving currency country: " << currency_country.currency_iso_code
                                << "/" << currency_country.country_alpha2_code;
-    repo_.write(currency_country);
+    auto t = currency_country;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency country: " << currency_country.currency_iso_code
                               << "/" << currency_country.country_alpha2_code;
 }

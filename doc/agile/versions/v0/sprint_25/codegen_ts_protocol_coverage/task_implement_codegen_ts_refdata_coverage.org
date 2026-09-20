@@ -66,9 +66,10 @@ The work is four slices.
    messaging gate cover both twins, so a junction can never render one
    protocol without the other.
 2. *Junctions.* Bring the nine models to the IAM shape: the profile in
-   =* Flags=, =#+has_tenant_id:=, =:list_by:= and =:replace_by:= on the
-   side the UI reads, and the foreign-key section where the side
-   references a table. Delete the 63 hand-written junction domain files
+   =* Flags=, =#+has_tenant_id:=, and =:list_by:= on the side the UI
+   reads, and the foreign-key section where the side references a table.
+   No junction takes =:replace_by:=, so no replacement verb renders.
+   Delete the 63 hand-written junction domain files
    (type, json_io, table, table_io) and regenerate. The two entity
    protocols that paste junction payloads — =currency_protocol.hpp= and
    =currency_pair_convention_protocol.hpp= — are re-pointed at the
@@ -129,11 +130,43 @@ reading the codegen and building:
   the write verbs on =read_only=, and the derived TypeScript message list
   drops them, so both twins carry the same set.
 
-*Closed for decision.* The three orphan headers in the Plan are
-untouched: they are not wire types, so they are out of this task's
-scope. A fourth utility type, =hierarchy_node=, was in scope because a
-protocol carries it, and it is now projected onto a shared
+*Dead hand-written headers.* Four headers declared an entity-shaped or
+constant-only type with no includer and no symbol use: the three orphan
+headers in the Plan, and =party_id_scheme_constants=. All four are
+deleted, with their CMake entries and their blocks in the hand-written
+API diagram. A fourth utility type, =hierarchy_node=, was in scope
+because a protocol carries it, and it is now projected onto a shared
 =HierarchyNode= interface in the wire-protocol package.
+
+*Local review.* Three passes over the change (codegen; models, services
+and =ores.ore=; TypeScript and docs). Two findings were fixed before the
+PR: the junction service did not stamp the caller's context onto a saved
+row, so the write endpoints would have failed the insert trigger's
+=modified_by= check, and the =read_only= guard had swallowed the =count_by=
+read verb in the handler and sub-registrar, leaving advertised subjects
+with no subscriber. =calendar_date= is now =:read_only:= as well: its
+narrative says its rows are materialised, never edited by hand.
+
+Three findings are recorded rather than fixed here.
+
+- *Entity models cannot declare protocol messages.* The
+  =composite_as_of= pairs in the =party= and =counterparty= models are
+  raw C++ paste blocks, so both subjects have a C++ header and no
+  TypeScript twin. Closing it needs a codegen feature; it is task
+  [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA][Let an entity model declare extra protocol messages]].
+- *Some refdata permissions are not seeded.* The generated handlers
+  require =refdata::<resource>:write= and =:delete=, and
+  =iam_permissions_populate.sql= seeds none for the new junction
+  resources. The gap is pre-existing and wider than this change:
+  =refdata::calendars=, =refdata::calendar_events= and
+  =refdata::tenor_conventions= are unseeded too, while
+  =contact_types= and =rounding_types= are seeded. SuperAdmin,
+  TenantAdmin and RefdataService pass on their wildcards; a narrow role
+  such as Operations does not.
+- *The junction batch save is not atomic.* The handler loops one
+  single-row save per element, and each opens its own transaction, where
+  the entity path writes the batch in one. A mid-batch failure leaves
+  earlier rows committed.
 
 * Test Scenarios
 
@@ -156,7 +189,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction save dropped the server-side context stamp, so a saved row carried the client's =tenant_id= and =modified_by= and the insert trigger rejected it | =cpp_service.cpp.mustache= | Accept | The junction service now stores =ctx_= and stamps before =repo_.write=, as the entity path does. A codegen test pins it. |
+| 2 | The =read_only= guard swallowed the =count_by= read verb in the handler and sub-registrar, leaving advertised subjects with no subscriber | =ores.cpp.nats-handler...org=, =ores.cpp.nats-sub-registrar...org= | Accept | The guard now wraps only the write verbs; the counts render outside it. Verified on =tenor_convention_resolution=. |
+| 3 | =calendar_dates= gained a client save/remove surface although its rows are materialised | =ores.refdata.calendar_date.org= | Accept | Marked =:read_only:=, matching its narrative and the =tenor_convention_resolution= precedent. |
+| 4 | =refdata.v1.parties.composite_as_of= and its counterparty twin have no TypeScript twin | =ores.refdata.party.org=, =ores.refdata.counterparty.org= | Follow-up | An entity model cannot declare extra messages; filed as task [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA]]. |
+| 5 | The new junction write permissions are not seeded in =iam_permissions_populate.sql= | =iam_permissions_populate.sql= | Follow-up | Pre-existing and wider: =calendars=, =calendar_events= and =tenor_conventions= are unseeded too. Recorded in Notes. |
+| 6 | The junction batch save loops single-row writes, so it is not atomic | =cpp_nats_handler...org= | Follow-up | Recorded in Notes; the entity path writes the batch in one transaction. |
+| 7 | Broken org link in the junction section | =ores.refdata.protocol.org= | Accept | Corrected. |
+| 8 | The doc and the Plan overstated the junction verb set, claiming =replace_by= and ten message structs | =ores.refdata.protocol.org=, task Plan and Result | Accept | Reworded; no refdata junction takes =:replace_by:=. |
+| 9 | Stale API diagram, stale registrar comment, empty model section, and stale comments in the loader and generator | =ores.refdata.api.puml=, =registrar.cpp=, =org_loader.py=, =generate.py= | Accept | All corrected. |
+| 10 | Missing tests for the =read_only= wire guard and the =tenant_id= projection | =tests/= | Accept | Added; the suite is 354. |
+| 11 | =_ensure_profile_binding= is not called by every reader | =org_loader.py= | Accept | Now also called from the field-group and operation loaders, and the docstring no longer overclaims. |
 
 * Result
 
@@ -178,11 +221,18 @@ alongside the generated one.
 The three protocol headers with no model at all became operation
 (message-only) models. =asset_class_info= is a joined catalogue row,
 =calendar_adjustment= a transient DTO with no table, and
-=calendar_materialisation= a command with no payload type; all ten of
-their message structs now come from one source and render to both
+=calendar_materialisation= a command with no payload type; the six message
+structs they carried now come from one source and render to both
 targets. The TypeScript tree the models resolve, 151 modules, is
 committed, so the drift gate and the protocol-twin coverage check now
 police the component.
+
+Recorded rather than hidden: two hand-written message pairs in the
+=party= and =counterparty= entity models keep a C++-only paste
+declaration, =refdata.v1.parties.composite_as_of= and its counterparty
+twin, so neither has a TypeScript interface. An entity model cannot yet
+declare extra protocol messages, so closing that gap needs the codegen
+feature and is follow-up work; see the task's * Notes.
 
 Verified: the full build is green; the four refdata suites and the three
 ores.ore suites pass; the codegen suite passes 352; =ores.web=

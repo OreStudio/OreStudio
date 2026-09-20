@@ -138,6 +138,67 @@ public:
         }
     }
 
+
+    void count_by_convention(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenor_convention_resolution_service svc(req_ctx);
+        if (auto req = decode<count_tenor_convention_resolutions_by_convention_request>(msg)) {
+            count_tenor_convention_resolutions_by_convention_response resp;
+            try {
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_resolution_count_by_convention(req->convention_code));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void count_by_tenor(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenor_convention_resolution_service svc(req_ctx);
+        if (auto req = decode<count_tenor_convention_resolutions_by_tenor_request>(msg)) {
+            count_tenor_convention_resolutions_by_tenor_response resp;
+            try {
+                resp.total_available_count =
+                    static_cast<int>(svc.get_total_resolution_count_by_tenor(req->tenor_code));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

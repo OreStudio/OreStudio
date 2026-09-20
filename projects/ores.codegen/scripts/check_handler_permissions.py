@@ -7,11 +7,12 @@ is false, and the check resolves the code against the rows
 denies every caller, administrator roles included, which reads as a broken
 feature rather than as a missing grant.
 
-The codes come from the generated handler headers, so a resource joins the
-check the moment its handler lands -- nothing here lists the resources. Only
-the components in ``REGISTRY`` are checked, because a component whose seeds
-are still incomplete would fail the tree for a gap that predates this check.
-A component joins the registry once its seeds are complete, which is the same
+The codes come from the handler files themselves, generated and
+hand-written alike, so a resource joins the check the moment its handler
+lands -- nothing here lists the resources. Only the components in
+``REGISTRY`` are checked, because a component whose seeds are still
+incomplete would fail the tree for a gap that predates this check. A
+component joins the registry once its seeds are complete, which is the same
 rollout rule the drift gate uses.
 
 Run::
@@ -43,9 +44,18 @@ SEED_RE = re.compile(r"'(?P<code>[a-z_]+::[a-z_]+:[a-z_-]+)'")
 
 
 def handler_headers(component: str) -> list[Path]:
-    """Every generated NATS handler header the component carries."""
+    """Every NATS handler file the component carries.
+
+    Both extensions: codegen writes its handlers as headers, but a
+    component also carries hand-written handlers whose methods check
+    permissions. A glob over ``*_handler.hpp`` alone would leave the
+    hand-written ones invisible, so a code only they check could stay
+    unseeded with the gate green.
+    """
     root = REPO_ROOT / "projects" / f"ores.{component}"
-    return sorted(root.rglob("messaging/*_handler.hpp"))
+    return sorted(
+        list(root.rglob("messaging/*_handler.hpp"))
+        + list(root.rglob("messaging/*_handler.cpp")))
 
 
 def required_codes(component: str) -> dict[str, set[str]]:

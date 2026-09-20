@@ -26,11 +26,11 @@ The codegen can suppress a junction's client-facing write verbs independently of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -73,3 +73,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A junction model declares =:client_read_only:= beside the repository's
+=:read_only:=, and the loader derives =wire_write_enabled= from the two.
+The five messaging templates and the derived TypeScript list branch on
+that one flag; the repository keeps its own =:read_only:= guard, so the
+two switches are independent.
+
+=ores.refdata.calendar_date= declares =:client_read_only:=. Its client
+save and delete are gone from the protocol, the service, the handler,
+the sub-registrar and the TypeScript twin, and its materialisation
+service still writes through the repository. =-tenor_convention_
+resolution= keeps =:read_only:= and renders no write verb anywhere. Tests
+pin both flags and their independence.

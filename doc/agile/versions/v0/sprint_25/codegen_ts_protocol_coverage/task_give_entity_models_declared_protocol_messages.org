@@ -26,11 +26,11 @@ An entity model can declare protocol messages beside its derived CRUD set, and b
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -73,3 +73,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An entity model reads the same top-level =* Messages= section an
+operation model uses, and the C++ header renders the declared messages
+where its paste point sits while the TypeScript twin appends them to the
+derived CRUD list. The parsing is shared with the operation loader rather
+than duplicated.
+
+=ores.refdata.party= and =ores.refdata.counterparty= move their
+=composite_as_of= pairs out of their paste blocks into =* Messages=.
+=refdata.v1.parties.composite_as_of= and
+=refdata.v1.counterparties.composite_as_of= now have TypeScript
+interfaces, the C++ output is unchanged but for one blank line, and two
+tests pin the derivation and both renders.

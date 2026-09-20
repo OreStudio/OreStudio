@@ -26,11 +26,11 @@ A junction's batch save writes its rows in one transaction, as the entity path d
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -72,3 +72,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The junction service gains the batch overload the entity path has, and
+the handler calls it once instead of looping one single-row save per
+element. Both the batch overload and the single save branch on
+=:party_id_is_target:=, so a target party survives either path.
+
+Verified by building refdata and compute, by the codegen suite, and by
+the drift gate over every space.

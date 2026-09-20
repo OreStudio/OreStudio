@@ -108,6 +108,13 @@ public:
     void save_currency_group(const domain::currency_currency_group& currency_group);
 
     /**
+     * @brief Saves a batch of currency groups in one transaction.
+     *
+     * @param currency_groups The currency groups to save
+     */
+    void save_currency_groups(const std::vector<domain::currency_currency_group>& currency_groups);
+
+    /**
      * @brief Removes a currency group.
      *
      * @param currency_iso_code The currency

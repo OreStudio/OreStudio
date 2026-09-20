@@ -101,6 +101,27 @@ void app_version_platform_service::save_app_version_platform(
                               << app_version_platform.platform_id;
 }
 
+void app_version_platform_service::save_app_version_platforms(
+    const std::vector<domain::app_version_platform>& app_version_platforms) {
+    for (const auto& e : app_version_platforms) {
+        if (e.app_version_id.is_nil()) {
+            throw std::invalid_argument("App Version cannot be empty.");
+        }
+        if (e.platform_id.is_nil()) {
+            throw std::invalid_argument("Platform cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << app_version_platforms.size()
+                               << " app version platforms";
+    auto ts = app_version_platforms;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << app_version_platforms.size()
+                              << " app version platforms";
+}
+
 void app_version_platform_service::remove_app_version_platform(
     const boost::uuids::uuid& app_version_id, const boost::uuids::uuid& platform_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing app version platform: " << app_version_id << "/"

@@ -157,8 +157,7 @@ public:
         if (auto req = decode<save_app_version_platform_request>(msg)) {
             save_app_version_platform_response resp;
             try {
-                for (const auto& row : req->app_version_platforms)
-                    svc.save_app_version_platform(row);
+                svc.save_app_version_platforms(req->app_version_platforms);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(app_version_platform_handler_lg(), error)

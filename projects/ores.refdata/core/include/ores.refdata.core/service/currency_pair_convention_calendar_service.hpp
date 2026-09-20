@@ -112,6 +112,14 @@ public:
         const domain::currency_pair_convention_calendar& pair_convention_calendar);
 
     /**
+     * @brief Saves a batch of currency pair convention calendars in one transaction.
+     *
+     * @param pair_convention_calendars The currency pair convention calendars to save
+     */
+    void save_pair_convention_calendars(
+        const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars);
+
+    /**
      * @brief Removes a currency pair convention calendar.
      *
      * @param pair_code The pair

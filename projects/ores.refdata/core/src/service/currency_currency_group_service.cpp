@@ -96,6 +96,25 @@ void currency_currency_group_service::save_currency_group(
                               << currency_group.currency_group_code;
 }
 
+void currency_currency_group_service::save_currency_groups(
+    const std::vector<domain::currency_currency_group>& currency_groups) {
+    for (const auto& e : currency_groups) {
+        if (e.currency_iso_code.empty()) {
+            throw std::invalid_argument("Currency cannot be empty.");
+        }
+        if (e.currency_group_code.empty()) {
+            throw std::invalid_argument("Group cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << currency_groups.size() << " currency groups";
+    auto ts = currency_groups;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << currency_groups.size() << " currency groups";
+}
+
 void currency_currency_group_service::remove_currency_group(
     const std::string& currency_iso_code, const std::string& currency_group_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency group: " << currency_iso_code << "/"

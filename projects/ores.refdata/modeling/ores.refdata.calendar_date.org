@@ -133,7 +133,8 @@ std::string("quantlib_computed")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:      api
+:client_read_only:  true
 :END:
 
 ** Domain includes

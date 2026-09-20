@@ -108,6 +108,13 @@ public:
     void save_party_currency(const domain::party_currency& party_currency);
 
     /**
+     * @brief Saves a batch of party currencies in one transaction.
+     *
+     * @param party_currencies The party currencies to save
+     */
+    void save_party_currencies(const std::vector<domain::party_currency>& party_currencies);
+
+    /**
      * @brief Removes a party currency.
      *
      * @param party_id The party

@@ -430,13 +430,20 @@ public:
 {{^right.is_uuid}}
         const std::string& {{right.column}});
 {{/right.is_uuid}}
-{{^read_only}}
+{{#wire_write_enabled}}
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
      *
      * @param {{name_singular_short}} The {{name_singular_words}} to save
      */
     void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
+
+    /**
+     * @brief Saves a batch of {{name_words}} in one transaction.
+     *
+     * @param {{name_short}} The {{name_words}} to save
+     */
+    void save_{{name_short}}(const std::vector<domain::{{name_singular}}>& {{name_short}});
 
     /**
      * @brief Removes a {{name_singular_words}}.
@@ -505,7 +512,7 @@ public:
         const std::string& change_reason_code,
         const std::string& change_commentary);
 {{/right.replace_by}}
-{{/read_only}}
+{{/wire_write_enabled}}
 
 private:
     context ctx_;

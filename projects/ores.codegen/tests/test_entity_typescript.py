@@ -270,3 +270,85 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
 ])
 def test_the_numeric_family_and_its_compositions(cpp_type, expected):
     assert _ts_domain_type(cpp_type) == expected
+
+
+# An entity model may declare messages beside its derived CRUD set. The C++
+# header renders them where its paste point sits and the TypeScript twin
+# appends them to the derived list, so one section feeds both.
+PARTY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.party.org"
+
+
+def test_an_entity_declares_messages_beside_its_derived_set():
+    from codegen.core import load_model
+
+    entity = load_model(PARTY)["domain_entity"]
+    declared = entity["declared_messages"]
+    assert [m["name"] for m in declared] == [
+        "get_party_composite_as_of_request",
+        "get_party_composite_as_of_response",
+    ]
+    assert declared[0]["subject"] == "refdata.v1.parties.composite_as_of"
+    assert declared[0]["response_type"] == "get_party_composite_as_of_response"
+    assert [(f["name"], f.get("ts_type")) for f in declared[1]["fields"]] == [
+        ("success", "boolean"),
+        ("message", "string"),
+        ("party", "Party"),
+        ("identifiers", "PartyIdentifier[]"),
+        ("contacts", "PartyContactInformation[]"),
+    ]
+
+    names = [m["name"] for m in entity_protocol_messages(entity)]
+    assert names[-2:] == [
+        "get_party_composite_as_of_request",
+        "get_party_composite_as_of_response",
+    ]
+
+
+def test_a_declared_message_renders_on_both_twins(tmp_path):
+    for template, name, expected in (
+        ("cpp_protocol.hpp.mustache", "party_protocol.hpp", [
+            "struct get_party_composite_as_of_request {",
+            '    static constexpr std::string_view nats_subject = '
+            '"refdata.v1.parties.composite_as_of";',
+            "struct get_party_composite_as_of_response {",
+            "    ores::refdata::domain::party party;",
+            "    std::vector<ores::refdata::domain::party_identifier> identifiers;",
+            "    std::vector<ores::refdata::domain::party_contact_information> contacts;",
+        ]),
+        ("ts_protocol.ts.mustache", "party_protocol.ts", [
+            "export interface GetPartyCompositeAsOfRequest {",
+            "export interface GetPartyCompositeAsOfResponse {",
+            "    party: Party;",
+            "    identifiers: PartyIdentifier[];",
+            "    contacts: PartyContactInformation[];",
+        ]),
+    ):
+        generate_from_model(
+            str(PARTY), CODEGEN / "library" / "data",
+            CODEGEN / "library" / "templates", tmp_path,
+            target_template=template, target_output=name)
+        rendered = (tmp_path / name).read_text(encoding="utf-8")
+        assert '"refdata.v1.parties.composite_as_of"' in rendered, name
+        for fragment in expected:
+            assert fragment in rendered, f"{fragment!r} missing from {name}"
+
+
+def test_declared_messages_and_the_paste_point_are_mutually_exclusive(tmp_path):
+    """The C++ protocol header renders the paste point and then the declared
+    messages, while the TypeScript twin has no paste point and renders the
+    declared set once. A model that feeds both would ship the same structs
+    twice on the C++ side alone, so the loader refuses the combination."""
+    from codegen.org_loader import (
+        PROTOCOL_MESSAGES_PASTE_KIND,
+        org_document_to_model,
+        parse_org,
+    )
+
+    text = PARTY.read_text(encoding="utf-8") + (
+        "\n#+begin_src cpp :name protocol_messages"
+        f" :implements {PROTOCOL_MESSAGES_PASTE_KIND}\n"
+        "struct get_legacy_party_request {\n};\n#+end_src\n"
+    )
+
+    with pytest.raises(ValueError, match="Messages section"):
+        org_document_to_model(parse_org(text))

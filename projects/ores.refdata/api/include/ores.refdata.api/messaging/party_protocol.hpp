@@ -140,6 +140,7 @@ struct get_party_composite_as_of_response {
     std::vector<ores::refdata::domain::party_identifier> identifiers;
     std::vector<ores::refdata::domain::party_contact_information> contacts;
 };
+
 }
 
 #endif

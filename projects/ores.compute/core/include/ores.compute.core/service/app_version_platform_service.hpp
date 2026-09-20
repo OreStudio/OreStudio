@@ -111,6 +111,14 @@ public:
     void save_app_version_platform(const domain::app_version_platform& app_version_platform);
 
     /**
+     * @brief Saves a batch of app version platforms in one transaction.
+     *
+     * @param app_version_platforms The app version platforms to save
+     */
+    void save_app_version_platforms(
+        const std::vector<domain::app_version_platform>& app_version_platforms);
+
+    /**
      * @brief Removes a app version platform.
      *
      * @param app_version_id The app version

@@ -213,6 +213,236 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::instrument_codes:write',  'Create and modify instrument codes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::instrument_codes:delete', 'Delete instrument codes');
 
+    -- Book purpose types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:read',                  'View book purpose types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:write',                 'Create and modify book purpose types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:delete',                'Delete book purpose types');
+
+    -- Business day convention types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:write',      'Create and modify business day convention types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:delete',     'Delete business day convention types');
+
+    -- Calendar events permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:read',                     'View calendar events');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:write',                    'Create and modify calendar events');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:delete',                   'Delete calendar events');
+
+    -- Calendar exceptions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_exceptions:read',                 'View calendar exceptions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_exceptions:write',                'Create and modify calendar exceptions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_exceptions:delete',               'Delete calendar exceptions');
+
+    -- Calendar rules permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_rules:read',                      'View calendar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_rules:write',                     'Create and modify calendar rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_rules:delete',                    'Delete calendar rules');
+
+    -- Calendar types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_types:read',                      'View calendar types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_types:write',                     'Create and modify calendar types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_types:delete',                    'Delete calendar types');
+
+    -- Calendars permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendars:read',                           'View calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendars:write',                          'Create and modify calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendars:delete',                         'Delete calendars');
+
+    -- Cds conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cds_conventions:read',                     'View cds conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cds_conventions:write',                    'Create and modify cds conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cds_conventions:delete',                   'Delete cds conventions');
+
+    -- Crm driver pairs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_driver_pairs:read',                    'View crm driver pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_driver_pairs:write',                   'Create and modify crm driver pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_driver_pairs:delete',                  'Delete crm driver pairs');
+
+    -- Crm enabled derived pairs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_enabled_derived_pairs:read',           'View crm enabled derived pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_enabled_derived_pairs:write',          'Create and modify crm enabled derived pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_enabled_derived_pairs:delete',         'Delete crm enabled derived pairs');
+
+    -- Crm topology configs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_topology_configs:read',                'View crm topology configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_topology_configs:write',               'Create and modify crm topology configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::crm_topology_configs:delete',              'Delete crm topology configs');
+
+    -- Currency calendars permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_calendars:read',                  'View currency calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_calendars:write',                 'Create and modify currency calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_calendars:delete',                'Delete currency calendars');
+
+    -- Currency countries permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_countries:read',                  'View currency countries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_countries:write',                 'Create and modify currency countries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_countries:delete',                'Delete currency countries');
+
+    -- Currency currency groups permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_currency_groups:read',            'View currency currency groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_currency_groups:write',           'Create and modify currency currency groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_currency_groups:delete',          'Delete currency currency groups');
+
+    -- Currency groups permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_groups:read',                     'View currency groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_groups:write',                    'Create and modify currency groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_groups:delete',                   'Delete currency groups');
+
+    -- Currency pair classifications permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_classifications:read',       'View currency pair classifications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_classifications:write',      'Create and modify currency pair classifications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_classifications:delete',     'Delete currency pair classifications');
+
+    -- Currency pair convention calendars permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_convention_calendars:read',  'View currency pair convention calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_convention_calendars:write', 'Create and modify currency pair convention calendars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_convention_calendars:delete', 'Delete currency pair convention calendars');
+
+    -- Currency pair conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_conventions:read',           'View currency pair conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_conventions:write',          'Create and modify currency pair conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pair_conventions:delete',         'Delete currency pair conventions');
+
+    -- Currency pairs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pairs:read',                      'View currency pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pairs:write',                     'Create and modify currency pairs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::currency_pairs:delete',                    'Delete currency pairs');
+
+    -- Curve roles permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_roles:read',                         'View curve roles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_roles:write',                        'Create and modify curve roles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_roles:delete',                       'Delete curve roles');
+
+    -- Day count fraction types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_count_fraction_types:read',            'View day count fraction types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_count_fraction_types:write',           'Create and modify day count fraction types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_count_fraction_types:delete',          'Delete day count fraction types');
+
+    -- Deposit conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::deposit_conventions:read',                 'View deposit conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::deposit_conventions:write',                'Create and modify deposit conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::deposit_conventions:delete',               'Delete deposit conventions');
+
+    -- Derivation kinds permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:read',                    'View derivation kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:write',                   'Create and modify derivation kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:delete',                  'Delete derivation kinds');
+
+    -- Diary entry types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:read',                   'View diary entry types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:write',                  'Create and modify diary entry types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:delete',                 'Delete diary entry types');
+
+    -- Floating index types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::floating_index_types:read',                'View floating index types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::floating_index_types:write',               'Create and modify floating index types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::floating_index_types:delete',              'Delete floating index types');
+
+    -- Fra conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fra_conventions:read',                     'View fra conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fra_conventions:write',                    'Create and modify fra conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fra_conventions:delete',                   'Delete fra conventions');
+
+    -- Ibor index conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ibor_index_conventions:read',              'View ibor index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ibor_index_conventions:write',             'Create and modify ibor index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ibor_index_conventions:delete',            'Delete ibor index conventions');
+
+    -- Ir curve bootstrap configs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_configs:read',          'View ir curve bootstrap configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_configs:write',         'Create and modify ir curve bootstrap configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_configs:delete',        'Delete ir curve bootstrap configs');
+
+    -- Ir curve bootstrap pillars permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:read',          'View ir curve bootstrap pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:write',         'Create and modify ir curve bootstrap pillars');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:delete',        'Delete ir curve bootstrap pillars');
+
+    -- Ledger feed types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:read',                   'View ledger feed types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:write',                  'Create and modify ledger feed types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:delete',                 'Delete ledger feed types');
+
+    -- Leg types permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:read',                           'View leg types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:write',                          'Create and modify leg types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:delete',                         'Delete leg types');
+
+    -- Ois conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ois_conventions:read',                     'View ois conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ois_conventions:write',                    'Create and modify ois conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ois_conventions:delete',                   'Delete ois conventions');
+
+    -- Overnight index conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::overnight_index_conventions:read',         'View overnight index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::overnight_index_conventions:write',        'Create and modify overnight index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::overnight_index_conventions:delete',       'Delete overnight index conventions');
+
+    -- Party counterparties permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_counterparties:read',                'View party counterparties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_counterparties:write',               'Create and modify party counterparties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_counterparties:delete',              'Delete party counterparties');
+
+    -- Party countries permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_countries:read',                     'View party countries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_countries:write',                    'Create and modify party countries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_countries:delete',                   'Delete party countries');
+
+    -- Party currencies permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_currencies:read',                    'View party currencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_currencies:write',                   'Create and modify party currencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_currencies:delete',                  'Delete party currencies');
+
+    -- Payment frequencies permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::payment_frequencies:read',                 'View payment frequencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::payment_frequencies:write',                'Create and modify payment frequencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::payment_frequencies:delete',               'Delete payment frequencies');
+
+    -- Swap conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_conventions:read',                    'View swap conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_conventions:write',                   'Create and modify swap conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_conventions:delete',                  'Delete swap conventions');
+
+    -- Tenor anchors permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:read',                       'View tenor anchors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:write',                      'Create and modify tenor anchors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:delete',                     'Delete tenor anchors');
+
+    -- Tenor conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_conventions:read',                   'View tenor conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_conventions:write',                  'Create and modify tenor conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_conventions:delete',                 'Delete tenor conventions');
+
+    -- Tenor kinds permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_kinds:read',                         'View tenor kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_kinds:write',                        'Create and modify tenor kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_kinds:delete',                       'Delete tenor kinds');
+
+    -- Tenor resolution algorithms permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_resolution_algorithms:read',         'View tenor resolution algorithms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_resolution_algorithms:write',        'Create and modify tenor resolution algorithms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_resolution_algorithms:delete',       'Delete tenor resolution algorithms');
+
+    -- Tenor schedules permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_schedules:read',                     'View tenor schedules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_schedules:write',                    'Create and modify tenor schedules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_schedules:delete',                   'Delete tenor schedules');
+
+    -- Tenor units permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_units:read',                         'View tenor units');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_units:write',                        'Create and modify tenor units');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_units:delete',                       'Delete tenor units');
+
+    -- Tenors permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenors:read',                              'View tenors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenors:write',                             'Create and modify tenors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenors:delete',                            'Delete tenors');
+
+    -- Zero conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::zero_conventions:read',                    'View zero conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::zero_conventions:write',                   'Create and modify zero conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::zero_conventions:delete',                  'Delete zero conventions');
+
     -- Refdata component wildcard
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::*', 'Full access to all reference data operations');
 

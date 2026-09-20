@@ -294,6 +294,32 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
             "a frontmatter profile is silently ignored.")
 
 
+def _reject_junction_only_flags(doc: "OrgDocument", kind: str) -> None:
+    """Reject ``:client_read_only:`` outside a junction model.
+
+    The flag splits a junction's repository write surface from the verbs a
+    client reaches, and only :func:`load_org_junction_model` reads it. Every
+    other model type that declares it renders as though it had not, which is
+    the silent no-op the profile guard above rejects for ``:profile:``.
+
+    ``:read_only:`` is not in this set: a domain_entity honours it too, for a
+    table the application never writes.
+    """
+    cpp = _section(doc.root, "C++")
+    drawers = [("* Flags", _section(doc.root, "Flags"))]
+    if cpp:
+        drawers.append(("* C++ ** Flags", _section(cpp, "Flags")))
+    for where, section in drawers:
+        if section and any(
+                key.lower() == "client_read_only"
+                for key in section.properties):
+            raise ValueError(
+                f":client_read_only: found in {where} of a {kind} model — "
+                "only a junction separates a repository write surface from "
+                "the verbs a client reaches. Use :read_only: to suppress "
+                "every write, or model the table as a junction.")
+
+
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
     """An entity doc's effective ``ores.*.enabled`` overrides from the
     ``* Physical space`` table mechanism: its bound profile's table (if any)
@@ -1195,6 +1221,13 @@ def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
+# The paste point the C++ protocol header renders a model's extra messages
+# at, before it renders the ``* Messages`` section. A model that still feeds
+# the paste point and also declares messages would render them twice there,
+# while the TypeScript twin, which has no paste point, renders them once.
+PROTOCOL_MESSAGES_PASTE_KIND = "2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F"
+
+
 def _collect_implementations(root: OrgNode) -> dict[str, list[str]]:
     """Walk the tree and return ``{kind_uuid: [block_code, ...]}`` for every
     babel block carrying an ``:implements <UUID>`` header argument."""
@@ -1218,6 +1251,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     of codegen can consume it unchanged.
     """
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "domain_entity")
     de: dict[str, Any] = {}
 
     # Frontmatter contains entity-wide string keys.
@@ -1523,6 +1557,21 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # supplies feature defaults from the named profile's own Assignments
     # table. Applied last so every explicit value parsed above wins.
     _apply_profile(de)
+
+    # Messages the entity declares beside its derived CRUD set. The C++
+    # protocol header renders them at its paste point and the TypeScript
+    # twin appends them to the derived list, so one section feeds both.
+    declared = parse_declared_messages(doc.root)
+    if declared:
+        if PROTOCOL_MESSAGES_PASTE_KIND in (de.get("implementations") or {}):
+            raise ValueError(
+                "a * Messages section and an :implements "
+                f"{PROTOCOL_MESSAGES_PASTE_KIND} block are both present — "
+                "the C++ protocol header renders the paste point and then the "
+                "declared messages, so the same structs would appear twice "
+                "while the TypeScript twin renders them once. Move the paste "
+                "block's messages into * Messages and delete the block.")
+        de["declared_messages"] = declared
 
     return {"domain_entity": de}
 
@@ -1961,15 +2010,26 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     cpp_section = _section(doc.root, "C++")
     cpp_out: dict[str, Any] = {}
+    # Flags: lift directly onto junction (these are top-level in the
+    # JSON model), matching load_org_model()'s domain_entity Flags
+    # handling -- e.g. :subcomponent: for resolve_output_path()'s
+    # component_dir/component_include/... derivation.
+    flags = _section(cpp_section, "Flags") if cpp_section else None
+    if flags:
+        for k, v in flags.properties.items():
+            j[k.lower()] = _parse_typed(v)
+    # Two independent switches decide the write surface. ``read_only`` is the
+    # repository's: it suppresses write and remove, for a table provisioned
+    # outside the application. ``client_read_only`` leaves the repository
+    # writable for a server-side producer and suppresses only the verbs a
+    # client can reach, which the wire templates and the derived TypeScript
+    # list branch on through this derived flag. Derived outside the section
+    # guard: a junction with no C++ drawer declares neither flag, so its wire
+    # writes stay on, and a template that reads a missing key would treat the
+    # absence as off and silently drop the write surface.
+    j["wire_write_enabled"] = not (
+        j.get("read_only") or j.get("client_read_only"))
     if cpp_section:
-        # Flags: lift directly onto junction (these are top-level in the
-        # JSON model), matching load_org_model()'s domain_entity Flags
-        # handling -- e.g. :subcomponent: for resolve_output_path()'s
-        # component_dir/component_include/... derivation.
-        flags = _section(cpp_section, "Flags")
-        if flags:
-            for k, v in flags.properties.items():
-                j[k.lower()] = _parse_typed(v)
         dom = _section(cpp_section, "Domain includes")
         ent = _section(cpp_section, "Entity includes")
         if dom or ent:
@@ -2080,6 +2140,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "field group")
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
@@ -2516,6 +2577,11 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                         _ts_field(plural_short, f"std::vector<{domain_type}>")]),
         ]
 
+    # Messages the model declares itself, beside the derived CRUD set. The
+    # C++ header renders the same list at its paste point, so both twins
+    # come from this one section.
+    messages += entity.get("declared_messages") or []
+
     return messages
 
 
@@ -2582,10 +2648,14 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
                         _ts_field("message", "std::string")]),
         ]
 
-    # A read-only junction's rows are provisioned outside the application,
-    # so it carries no write verb on either twin: the C++ block guards the
-    # same three on ``read_only``, and this list feeds both.
-    if not junction.get("read_only"):
+    # A junction with no client-facing write surface carries no write verb
+    # on either twin: the C++ block guards the same three, and this list
+    # feeds both. ``wire_write_enabled`` folds the repository's read_only
+    # together with the client-only switch; the fallback keeps a
+    # hand-built junction dict, as the tests use, on the read_only rule.
+    if junction.get(
+            "wire_write_enabled",
+            not (junction.get("read_only") or junction.get("client_read_only"))):
         messages += [
             _ts_message(
                 f"save_{singular}_request",
@@ -2649,6 +2719,61 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     return messages
 
 
+def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
+    """Read a ``* Messages`` section into the message shape both twins render.
+
+    The grammar is one ``**`` child per message, ``:subject:`` and
+    ``:response:`` in its drawer, an optional ``#+begin_src cpp :name
+    comment`` doc comment, and one ``***`` child per field carrying
+    ``:cpp_type:`` and an optional ``:default:``. An operation model uses
+    the section for its whole protocol; an entity model uses it to declare
+    messages beside its derived CRUD set, which the C++ header renders at
+    its paste point and the TypeScript twin renders from the same list.
+    """
+    messages: list[dict[str, Any]] = []
+    section = _section(root, "Messages")
+    if not section:
+        return messages
+    for node in section.children:
+        entry: dict[str, Any] = {
+            "name": node.title,
+            "name_pascal": _to_pascal_case(node.title),
+        }
+        props = {k.lower(): v for k, v in node.properties.items()}
+        if "subject" in props:
+            entry["subject"] = props["subject"]
+        # The org names the response; the template emits the C++ alias, so
+        # the model key takes the alias's own name.
+        if "response" in props:
+            entry["response_type"] = props["response"]
+        comment = node.src_blocks.get("comment")
+        if comment:
+            entry["comment"] = comment
+
+        fields: list[dict[str, Any]] = []
+        for field_node in node.children:
+            field_entry: dict[str, Any] = {"name": field_node.title}
+            field_props = {k.lower(): v for k, v in field_node.properties.items()}
+            if "cpp_type" in field_props:
+                field_entry["cpp_type"] = field_props["cpp_type"]
+                mapped = _ts_type(field_props["cpp_type"])
+                if mapped:
+                    field_entry["ts_type"] = mapped
+            if "default" in field_props:
+                field_entry["default"] = field_props["default"]
+            field_comment = field_node.src_blocks.get("comment")
+            # Always set the key: Mustache resolves a name it cannot find by
+            # walking up the context stack, so an absent ``comment`` would
+            # inherit the enclosing message's.
+            field_entry["comment"] = (
+                _indent_block(field_comment, 4) if field_comment else ""
+            )
+            fields.append(field_entry)
+        entry["fields"] = fields
+        messages.append(entry)
+    return messages
+
+
 def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode protocol-operation model.
 
@@ -2687,6 +2812,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
     _ensure_profile_binding(doc)
+    _reject_junction_only_flags(doc, "operation")
     fm = doc.frontmatter
 
     op: dict[str, Any] = {}
@@ -2703,48 +2829,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     if inc:
         op["includes"] = _includes_from_named_block(inc)
 
-    messages: list[dict[str, Any]] = []
-    messages_section = _section(doc.root, "Messages")
-    if messages_section:
-        for node in messages_section.children:
-            entry: dict[str, Any] = {
-                "name": node.title,
-                "name_pascal": _to_pascal_case(node.title),
-            }
-            props = {k.lower(): v for k, v in node.properties.items()}
-            if "subject" in props:
-                entry["subject"] = props["subject"]
-            # The org names the response; the template emits the C++
-            # alias, so the model key takes the alias's own name.
-            if "response" in props:
-                entry["response_type"] = props["response"]
-            comment = node.src_blocks.get("comment")
-            if comment:
-                entry["comment"] = comment
-
-            fields: list[dict[str, Any]] = []
-            for field_node in node.children:
-                field_entry: dict[str, Any] = {"name": field_node.title}
-                field_props = {
-                    k.lower(): v for k, v in field_node.properties.items()
-                }
-                if "cpp_type" in field_props:
-                    field_entry["cpp_type"] = field_props["cpp_type"]
-                    mapped = _ts_type(field_props["cpp_type"])
-                    if mapped:
-                        field_entry["ts_type"] = mapped
-                if "default" in field_props:
-                    field_entry["default"] = field_props["default"]
-                field_comment = field_node.src_blocks.get("comment")
-                # Always set the key: Mustache resolves a name it cannot
-                # find by walking up the context stack, so an absent
-                # ``comment`` would inherit the enclosing message's.
-                field_entry["comment"] = (
-                    _indent_block(field_comment, 4) if field_comment else ""
-                )
-                fields.append(field_entry)
-            entry["fields"] = fields
-            messages.append(entry)
+    messages = parse_declared_messages(doc.root)
     op["messages"] = messages
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)

@@ -24,8 +24,12 @@ paged unscoped read of the junction rows, a paged by-side read per
 =:list_by:= side that returns the =<junction>_view= payload, an opt-in
 whole-set replacement per =:replace_by:= side, a batch additive =save=, a
 batch =delete= by the pair, a count per side, and the view type. A junction
-that declares =:read_only:= renders no write verb -- no =save=, =delete= or
-=replace_by= -- because its rows are provisioned outside the application.
+that declares =:read_only:= or =:client_read_only:= renders no write verb --
+no =save=, =delete= or =replace_by=. The first also stops the repository
+writing, for a table provisioned outside the application; the second leaves
+the repository writable and stops the write surface short of it, at the
+service methods and the wire verbs, so a server-side producer writes through
+the repository rather than the service.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -191,6 +195,26 @@ struct read_{{entity_plural}}_for_cache_response {
 
 {{/read_for_cache}}
 <<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
+{{#declared_messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+struct {{name}} {
+{{#response_type}}
+    using response_type = struct {{response_type}};
+{{/response_type}}
+{{#subject}}
+    static constexpr std::string_view nats_subject = "{{subject}}";
+{{/subject}}
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+{{/fields}}
+};
+
+{{/declared_messages}}
 }
 
 #endif
@@ -272,7 +296,7 @@ struct get_{{name}}_by_{{right.column_short}}_response {
 };
 
 {{/right.list_by}}
-{{^read_only}}
+{{#wire_write_enabled}}
 struct save_{{name_singular}}_request {
     using response_type = struct save_{{name_singular}}_response;
     static constexpr std::string_view nats_subject =
@@ -340,7 +364,7 @@ struct replace_{{name}}_by_{{right.column_short}}_response {
 };
 
 {{/right.replace_by}}
-{{/read_only}}
+{{/wire_write_enabled}}
 struct count_{{name}}_by_{{left.column_short}}_request {
     using response_type = struct count_{{name}}_by_{{left.column_short}}_response;
     static constexpr std::string_view nats_subject =

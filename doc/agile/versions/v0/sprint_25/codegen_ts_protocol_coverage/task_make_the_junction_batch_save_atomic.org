@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 6C831761-BBC2-4584-A05F-DB0AFD98295D
+:END:
+#+title: Task: Make the junction batch save atomic
+#+description: The junction handler loops one single-row save per element and each opens its own transaction, so a mid-batch failure leaves earlier rows committed.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refdata-codegen-followups
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A junction's batch save writes its rows in one transaction, as the entity path does, and the handler calls it once.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- The junction service offers a batch save that writes the whole vector in one transaction.
+- The junction handler calls the batch save once instead of looping single-row saves.
+- A mid-batch failure leaves no row committed.
+- The generated tree regenerates with no diff and a test pins the batch path.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The junction service gains the batch overload the entity path has, and
+the handler calls it once instead of looping one single-row save per
+element. Both the batch overload and the single save branch on
+=:party_id_is_target:=, so a target party survives either path.
+
+Verified by building refdata and compute, by the codegen suite, and by
+the drift gate over every space.

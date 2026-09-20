@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { Party } from '../domain/party.js';
+import type { PartyContactInformation } from '../domain/party_contact_information.js';
+import type { PartyIdentifier } from '../domain/party_identifier.js';
 import type { HierarchyNode } from '../../../utility/hierarchy.js';
 
 export interface GetPartiesRequest {
@@ -86,6 +88,25 @@ export interface ReadPartiesForCacheResponse {
     parties: Party[];
 }
 
+/**
+ * @brief Reads a party as it stood at a specific version, together with its
+ * identifiers and contact information as they stood during that same
+ * version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+export interface GetPartyCompositeAsOfRequest {
+    id: string;
+    version: number;
+}
+
+export interface GetPartyCompositeAsOfResponse {
+    success: boolean;
+    message: string;
+    party: Party;
+    identifiers: PartyIdentifier[];
+    contacts: PartyContactInformation[];
+}
+
 export const subjects = {
     get_parties_request: "refdata.v1.parties.list",
     save_party_request: "refdata.v1.parties.save",
@@ -93,4 +114,5 @@ export const subjects = {
     get_party_history_request: "refdata.v1.parties.history",
     get_party_hierarchy_request: "refdata.v1.parties.hierarchy",
     read_parties_for_cache_request: "refdata.v1.parties.read",
+    get_party_composite_as_of_request: "refdata.v1.parties.composite_as_of",
 } as const;

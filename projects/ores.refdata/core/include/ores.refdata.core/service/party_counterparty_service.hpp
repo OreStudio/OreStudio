@@ -109,6 +109,14 @@ public:
     void save_party_counterparty(const domain::party_counterparty& party_counterparty);
 
     /**
+     * @brief Saves a batch of party counterparties in one transaction.
+     *
+     * @param party_counterparties The party counterparties to save
+     */
+    void
+    save_party_counterparties(const std::vector<domain::party_counterparty>& party_counterparties);
+
+    /**
      * @brief Removes a party counterparty.
      *
      * @param party_id The party

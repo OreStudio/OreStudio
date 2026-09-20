@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 8EA5A99A-2CC3-4BEE-B8AB-B80EEEB8256C
+:END:
+#+title: Task: Suppress a junction's write verbs without a read-only repository
+#+description: A junction whose rows the server writes but clients may not exposes save and delete, because the only switch is the repository-level read_only.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refdata-codegen-followups
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The codegen can suppress a junction's client-facing write verbs independently of the repository's read_only, so calendar_date stops exposing save and delete while the materialisation service keeps writing its rows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- A junction model can declare itself client-read-only, and the protocol, service, handler, sub-registrar and TypeScript twin render no write verb for it.
+- Its repository still serves write and remove, so the materialisation service keeps working.
+- calendar_date declares the flag and its client write surface is gone.
+- tenor_convention_resolution still renders no write verb anywhere.
+- A test pins the two flags' independence.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A junction model declares =:client_read_only:= beside the repository's
+=:read_only:=, and the loader derives =wire_write_enabled= from the two.
+The five messaging templates and the derived TypeScript list branch on
+that one flag; the repository keeps its own =:read_only:= guard, so the
+two switches are independent.
+
+=ores.refdata.calendar_date= declares =:client_read_only:=. Its client
+save and delete are gone from the protocol, the service, the handler,
+the sub-registrar and the TypeScript twin, and its materialisation
+service still writes through the repository. =-tenor_convention_
+resolution= keeps =:read_only:= and renders no write verb anywhere. Tests
+pin both flags and their independence.

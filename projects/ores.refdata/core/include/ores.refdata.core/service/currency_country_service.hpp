@@ -109,6 +109,13 @@ public:
     void save_currency_country(const domain::currency_country& currency_country);
 
     /**
+     * @brief Saves a batch of currency countries in one transaction.
+     *
+     * @param currency_countries The currency countries to save
+     */
+    void save_currency_countries(const std::vector<domain::currency_country>& currency_countries);
+
+    /**
      * @brief Removes a currency country.
      *
      * @param currency_iso_code The currency

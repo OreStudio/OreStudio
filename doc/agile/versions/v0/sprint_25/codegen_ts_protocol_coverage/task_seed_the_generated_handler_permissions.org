@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 8FC13043-A946-44B0-B601-D3D4ED722CC5
+:END:
+#+title: Task: Seed every permission the generated handlers require
+#+description: The generated handlers check refdata::<resource>:write and :delete, and iam_permissions_populate.sql seeds none of them for several resources, so a narrow role is refused.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refdata-codegen-followups
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+iam_permissions_populate.sql seeds the read, write and delete permission for every refdata resource a generated handler checks, and the roles that should hold them do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Every refdata resource named by a generated handler has its read, write and delete permission seeded.
+- The pre-existing gap closes for calendars, calendar_events, tenor_conventions and the nine junction resources.
+- The roles that held the parent entity's write permission keep the equivalent access.
+- A database recreated from the seed script grants the permissions, and the refdata suites pass against it.
+
+* Plan
+
+The generated handlers check =refdata::<resource>:write= and =:delete=,
+and the seed script covered only some of the resources. A comparison of
+the 137 permission strings the refdata handlers name against the 79
+seeded gave 138 missing rows across roughly 50 resources, most of them
+pre-existing: =calendars=, =calendar_events= and =tenor_conventions=
+among them, plus the nine junction resources the coverage work added.
+
+Add the missing read/write/delete rows in the same style as the existing
+ones, and give the Operations role the four currency-derived junction
+resources, so the calendar assignment it previously reached through
+=refdata::currencies:write= works again. The party-derived junctions
+stay with the roles that manage parties.
+
+* Notes
+
+The gap was measured, not guessed: the required set is every
+=has_permission= string in the generated refdata handlers, and the
+seeded set is every =refdata::= literal in the populate script. The
+comparison is reproducible in one command and is the check a future
+resource should be added through.
+
+The recreate surfaced an environment flake: the first run failed in
+=setup_schema.sql='s grant block with =tuple concurrently updated=, a
+Postgres catalog conflict, after the populate step had already
+succeeded. The second run completed clean.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every refdata resource a generated handler names now has its read, write
+and delete permission seeded: 138 rows were missing and are added, taking
+the refdata permission set from 79 to 217. The pre-existing gap closes
+for calendars, calendar_events, tenor_conventions, book_purpose_types,
+the CRM resources, the convention resources and the rest, and the nine
+junction resources are covered with them.
+
+The Operations role gains the four currency-derived junctions
+(currency_calendars, currency_countries, currency_currency_groups and
+currency_pair_convention_calendars), so the calendar assignment it used
+to reach through =refdata::currencies:write= works again. The
+party-derived junctions stay with the roles that manage parties.
+
+Verified against a database recreated from scratch: the seed applies,
+the permission set is 217 and the Operations role holds 17 grants, and
+the four refdata suites pass against it.

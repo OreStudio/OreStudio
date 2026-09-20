@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { Counterparty } from '../domain/counterparty.js';
+import type { CounterpartyContactInformation } from '../domain/counterparty_contact_information.js';
+import type { CounterpartyIdentifier } from '../domain/counterparty_identifier.js';
 import type { HierarchyNode } from '../../../utility/hierarchy.js';
 
 export interface GetCounterpartiesRequest {
@@ -76,10 +78,30 @@ export interface GetCounterpartyHierarchyResponse {
     roots: HierarchyNode[];
 }
 
+/**
+ * @brief Reads a counterparty as it stood at a specific version, together
+ * with its identifiers and contact information as they stood during that
+ * same version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+export interface GetCounterpartyCompositeAsOfRequest {
+    id: string;
+    version: number;
+}
+
+export interface GetCounterpartyCompositeAsOfResponse {
+    success: boolean;
+    message: string;
+    counterparty: Counterparty;
+    identifiers: CounterpartyIdentifier[];
+    contacts: CounterpartyContactInformation[];
+}
+
 export const subjects = {
     get_counterparties_request: "refdata.v1.counterparties.list",
     save_counterparty_request: "refdata.v1.counterparties.save",
     delete_counterparty_request: "refdata.v1.counterparties.delete",
     get_counterparty_history_request: "refdata.v1.counterparties.history",
     get_counterparty_hierarchy_request: "refdata.v1.counterparties.hierarchy",
+    get_counterparty_composite_as_of_request: "refdata.v1.counterparties.composite_as_of",
 } as const;

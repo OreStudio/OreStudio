@@ -4553,11 +4553,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # C++ header has no such gap, so the check is scoped to its render.
         if target_template == 'ts_protocol.ts.mustache':
             # Deferred import: org_loader imports this module at load time.
-            from .org_loader import _reject_silent_ts_gap, ts_utility_imports
+            from .org_loader import (  # noqa: PLC0415
+                _reject_silent_ts_gap,
+                ts_domain_imports,
+                ts_utility_imports,
+            )
             _reject_silent_ts_gap(
                 model_path, domain_entity['messages'], {})
             domain_entity['utility_imports'] = ts_utility_imports(
                 domain_entity['messages'])
+            # The template imports the entity's own interface. A message the
+            # model declares may name another domain type, which needs its
+            # own import or the interface references a name it never
+            # declares.
+            entity_name = domain_entity.get('entity_singular')
+            domain_entity['extra_domain_imports'] = [
+                imp for imp in ts_domain_imports(domain_entity['messages'])
+                if imp['entity'] != entity_name
+            ]
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models

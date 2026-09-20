@@ -202,6 +202,65 @@ std::nullopt
 | status                | ores_refdata_validate_party_status_fn |
 | business_center_code  | ores_refdata_validate_business_centre_fn |
 
+* Messages
+
+The =composite_as_of= pair, declared here so both the header and its
+TypeScript twin render it.
+
+** get_counterparty_composite_as_of_request
+:PROPERTIES:
+:subject: refdata.v1.counterparties.composite_as_of
+:response: get_counterparty_composite_as_of_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a counterparty as it stood at a specific version, together
+ * with its identifiers and contact information as they stood during that
+ * same version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** get_counterparty_composite_as_of_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** counterparty
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::counterparty
+:END:
+
+*** identifiers
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_identifier>
+:END:
+
+*** contacts
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::counterparty_contact_information>
+:END:
+
 * C++
 
 ** Flags
@@ -319,38 +378,16 @@ single-business-centre cell (e.g. Book's rates centre code column).
 
 ** Custom NATS protocol messages
 
-=counterparty= exposes a hand-crafted =composite_as_of= message pair: reads
-a counterparty as it stood at a specific version, together with its
-identifiers and contact information as they stood during that same
-version's window — see the "Temporal composite entity versioning"
-architecture doc.
+=counterparty= declares its =composite_as_of= message pair in the
+top-level =* Messages= section: reads a counterparty as it stood at a
+specific version, together with its identifiers and contact information
+as they stood during that same version's window — see the "Temporal
+composite entity versioning" architecture doc. The header and its
+TypeScript twin both render it from there.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
-#+end_src
-
-#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
-/**
- * @brief Reads a counterparty as it stood at a specific version, together
- * with its identifiers and contact information as they stood during that
- * same version's [valid_from, valid_to) window. See the "Temporal composite
- * entity versioning" architecture doc.
- */
-struct get_counterparty_composite_as_of_request {
-    using response_type = struct get_counterparty_composite_as_of_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.composite_as_of";
-    std::string id;
-    int version = 0;
-};
-
-struct get_counterparty_composite_as_of_response {
-    bool success = false;
-    std::string message;
-    ores::refdata::domain::counterparty counterparty;
-    std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
-    std::vector<ores::refdata::domain::counterparty_contact_information> contacts;
-};
 #+end_src
 
 ** Custom NATS handler methods

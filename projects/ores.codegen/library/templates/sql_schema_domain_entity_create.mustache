@@ -639,7 +639,9 @@ begin
     -- Close the current active row before inserting the new one
     update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = clock_timestamp()
-    where {{{domain_entity.primary_key.where_new}}}
+    where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
+      and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+      and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_new}}}
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < clock_timestamp();
 {{/domain_entity.current_state}}

@@ -253,3 +253,13 @@ def test_a_junction_without_name_singular_is_rejected(tmp_path):
 
     with pytest.raises(ValueError, match="name_singular"):
         load_org_junction_model(model)
+
+
+def test_the_batch_delete_refuses_mismatched_key_vectors(tmp_path):
+    """The two key vectors address each row by index, so a pair of different
+    lengths would silently drop the tail of the longer one and report success
+    for a batch it did not fully apply."""
+    handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache", "handler.hpp")
+
+    assert "req->widget_ids.size() != req->owner_ids.size()" in handler
+    assert "i < req->widget_ids.size() && i < req->owner_ids.size()" not in handler

@@ -301,12 +301,17 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (req->account_ids.size() != req->party_ids.size()) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn)
+                << msg.subject << " rejected: key vectors differ in length, "
+                << req->account_ids.size() << " and " << req->party_ids.size();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
         try {
             service::account_party_service svc(ctx);
             boost::uuids::string_generator sg;
-            for (std::size_t i = 0;
-                 i < req->account_ids.size() && i < req->party_ids.size();
-                 ++i)
+            for (std::size_t i = 0; i < req->account_ids.size(); ++i)
                 svc.remove_account_party(sg(req->account_ids[i]), sg(req->party_ids[i]));
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_account_party_response{.success = true});

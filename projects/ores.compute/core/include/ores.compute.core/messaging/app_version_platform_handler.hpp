@@ -189,11 +189,16 @@ public:
         }
         service::app_version_platform_service svc(req_ctx);
         if (auto req = decode<delete_app_version_platform_request>(msg)) {
+            if (req->app_version_ids.size() != req->platform_ids.size()) {
+                BOOST_LOG_SEV(app_version_platform_handler_lg(), warn)
+                    << msg.subject << " rejected: key vectors differ in length, "
+                    << req->app_version_ids.size() << " and " << req->platform_ids.size();
+                error_reply(nats_, msg, ores::service::error_code::bad_request);
+                return;
+            }
             delete_app_version_platform_response resp;
             try {
-                for (std::size_t i = 0;
-                     i < req->app_version_ids.size() && i < req->platform_ids.size();
-                     ++i) {
+                for (std::size_t i = 0; i < req->app_version_ids.size(); ++i) {
                     const auto app_version_id_key =
                         boost::lexical_cast<boost::uuids::uuid>(req->app_version_ids[i]);
                     const auto platform_id_key =

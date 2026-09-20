@@ -105,37 +105,73 @@ and can use =timestamp= to query for changes since that point.
 
 | Subject | Description |
 |---------+-------------|
-| =refdata.v1.contact-types.list= | Retrieve all contact types |
-| =refdata.v1.contact-types.save= | Create or update a contact type |
-| =refdata.v1.contact-types.delete= | Delete one or more contact types |
-| =refdata.v1.contact-types.history= | Retrieve version history for a contact type |
+| =refdata.v1.contact_types.list= | Retrieve all contact types |
+| =refdata.v1.contact_types.save= | Create or update a contact type |
+| =refdata.v1.contact_types.delete= | Delete one or more contact types |
+| =refdata.v1.contact_types.history= | Retrieve version history for a contact type |
 
 * Monetary Natures
 
 | Subject | Description |
 |---------+-------------|
-| =refdata.v1.monetary-natures.list= | Retrieve all monetary natures |
-| =refdata.v1.monetary-natures.save= | Create or update a monetary nature |
-| =refdata.v1.monetary-natures.delete= | Delete one or more monetary natures |
-| =refdata.v1.monetary-natures.history= | Retrieve version history for a monetary nature |
+| =refdata.v1.monetary_natures.list= | Retrieve all monetary natures |
+| =refdata.v1.monetary_natures.save= | Create or update a monetary nature |
+| =refdata.v1.monetary_natures.delete= | Delete one or more monetary natures |
+| =refdata.v1.monetary_natures.history= | Retrieve version history for a monetary nature |
 
 * Rounding Types
 
 | Subject | Description |
 |---------+-------------|
-| =refdata.v1.rounding-types.list= | Retrieve all rounding types |
-| =refdata.v1.rounding-types.save= | Create or update a rounding type |
-| =refdata.v1.rounding-types.delete= | Delete one or more rounding types |
-| =refdata.v1.rounding-types.history= | Retrieve version history for a rounding type |
+| =refdata.v1.rounding_types.list= | Retrieve all rounding types |
+| =refdata.v1.rounding_types.save= | Create or update a rounding type |
+| =refdata.v1.rounding_types.delete= | Delete one or more rounding types |
+| =refdata.v1.rounding_types.history= | Retrieve version history for a rounding type |
 
 * Business Centres
 
 | Subject | Description |
 |---------+-------------|
-| =refdata.v1.business-centres.list= | Retrieve all business centres |
-| =refdata.v1.business-centres.save= | Create or update a business centre |
-| =refdata.v1.business-centres.delete= | Delete one or more business centres |
-| =refdata.v1.business-centres.history= | Retrieve version history for a business centre |
+| =refdata.v1.business_centres.list= | Retrieve all business centres |
+| =refdata.v1.business_centres.save= | Create or update a business centre |
+| =refdata.v1.business_centres.delete= | Delete one or more business centres |
+| =refdata.v1.business_centres.history= | Retrieve version history for a business centre |
+
+* Junctions
+
+A junction joins two entities, so its protocol is about a relationship
+rather than a row. Every junction model renders the same generated verb
+set; see [[id:818208C0-3465-4CEF-A8C8-62A460871B0C][Codegen junction
+meta-model — the junction protocol]] for the design.
+
+| Verb | Subject | Notes |
+|------+---------+-------|
+| =get_<junction>= | =refdata.v1.<junction_plural>.list= | Paged read of the junction rows |
+| =get_<junction>_by_<side>= | =refdata.v1.<junction_plural>.list_by_<column>= | Returns the =<junction>_view= |
+| =save_<junction>= | =refdata.v1.<junction_plural>.save= | Batch additive upsert |
+| =delete_<junction>= | =refdata.v1.<junction_plural>.delete= | Batch delete by the pair |
+| =count_<junction>_by_<side>= | =refdata.v1.<junction_plural>.count_by_<column>= | One per side |
+| =replace_<junction>_by_<side>= | =refdata.v1.<junction_plural>.replace_by_<column>= | Only where a side declares =:replace_by:= |
+
+The junction plural is the model's =#+name=, in underscore form. Nine
+junctions render this set: =calendar_dates=, =currency_calendars=,
+=currency_countries=, =currency_currency_groups=,
+=currency_pair_convention_calendars=, =party_counterparties=,
+=party_countries=, =party_currencies= and
+=tenor_convention_resolutions=.
+
+=tenor_convention_resolution= is read-only: its rows are provisioned by
+SQL, so it renders the two reads and the two counts and no write verb.
+
+* Non-entity protocols
+
+Three protocols carry no entity, because no table backs them.
+
+| Protocol | Subject | Payload |
+|----------+---------+---------|
+| =asset_class= | =refdata.v1.asset-classes.list= | =asset_class_info=, a joined catalogue row |
+| =calendar_adjustment= | =refdata.v1.calendar_adjustments.export= | =calendar_adjustment=, a transient DTO built from calendar and calendar_exception rows |
+| =calendar_materialisation= | =refdata.v1.calendar_dates.regenerate= | A command with no payload type |
 
 * Useful Pages
 

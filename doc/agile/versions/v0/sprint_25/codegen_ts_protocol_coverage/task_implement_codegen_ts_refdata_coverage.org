@@ -28,19 +28,19 @@ Every ores.refdata NATS message and wire type has an org model and renders to bo
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; awaiting PR review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR.                          |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
 
-- The refdata catalogue entry no longer excludes junction models, so all nine junctions regenerate and the drift gate checks them.
-- Every refdata protocol header is generated and has a TypeScript twin; the protocol-twin coverage check fails when one is missing.
-- No refdata model carries an ores.ts.protocol.enabled or other facet opt-out.
-- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled.
-- The generated tree regenerates with no diff and ores.web typechecks with its suites passing.
-- The build is green and the refdata suites pass.
+- The refdata catalogue entry no longer excludes junction models, so all nine junctions regenerate and the drift gate checks them. *Done.*
+- Every refdata protocol header is generated and has a TypeScript twin; the protocol-twin coverage check fails when one is missing. *Done:* 96 headers in refdata and IAM, 77 of them refdata's.
+- No refdata model carries an ores.ts.protocol.enabled or other facet opt-out. *Done:* none exists.
+- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled. *Done:* every =*_protocol.hpp= in refdata is generated.
+- The generated tree regenerates with no diff and ores.web typechecks with its suites passing. *Done.*
+- The build is green and the refdata suites pass. *Done.*
 
 * Plan
 
@@ -108,6 +108,33 @@ entity, 9 junction, 1 component, 1 module) and zero operation models.
 IAM, by comparison, has ten operation models. The 148 TypeScript files
 the refdata models resolve have never been generated.
 
+*What the generator had to gain.* Three defects the exclusion hid, each
+invisible to a diff, a drift check and a typecheck, and found only by
+reading the codegen and building:
+
+- *A silently ignored profile binding.* =_ensure_profile_binding=
+  rejected a file-level =:profile:= in the =:PROPERTIES:= drawer, but a
+  =#+profile:= keyword is parsed into =frontmatter=, which no profile
+  consumer reads. The eight junctions using it resolved
+  =has_tenant_id=None= and would have regenerated without tenant
+  scoping. The keyword form now fails loudly beside the drawer form.
+- *Half a wire shape.* The junction messaging gate dropped the four
+  =ores.cpp.*= facets for a junction with no =:list_by:= but not
+  =ores.ts.protocol=, so a junction could render a TypeScript module
+  with no C++ header. The gate now covers the twin.
+- *A write surface for a read-only junction.* The repository honoured
+  =:read_only:= and suppressed write and remove, but the protocol,
+  service, handler and sub-registrar did not, so the generated service
+  called repository methods that do not exist. The five templates guard
+  the write verbs on =read_only=, and the derived TypeScript message list
+  drops them, so both twins carry the same set.
+
+*Closed for decision.* The three orphan headers in the Plan are
+untouched: they are not wire types, so they are out of this task's
+scope. A fourth utility type, =hierarchy_node=, was in scope because a
+protocol carries it, and it is now projected onto a shared
+=HierarchyNode= interface in the wire-protocol package.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -132,3 +159,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every ores.refdata protocol header is generated and has a TypeScript
+twin, and no refdata model switches a facet off. The count of
+hand-written protocol headers was five and is zero.
+
+The component's "drift free" status was a false negative. The catalogue
+entry excluded junction-typed models, so =discover_models= skipped all
+nine and no gate ever rendered them; 168 of their files (149 changed, 19
+created) were unreconciled. Removing the exclusion, moving the profile
+binding into =* Flags= and giving each junction a =:list_by:= read
+brought the whole stack into generation. The two entity models that
+hand-rolled calendar assignment lost it: their
+=get_currency_calendars_request= collided with the generated junction's
+struct of the same name, so the bespoke path could not have built
+alongside the generated one.
+
+The three protocol headers with no model at all became operation
+(message-only) models. =asset_class_info= is a joined catalogue row,
+=calendar_adjustment= a transient DTO with no table, and
+=calendar_materialisation= a command with no payload type; all ten of
+their message structs now come from one source and render to both
+targets. The TypeScript tree the models resolve, 151 modules, is
+committed, so the drift gate and the protocol-twin coverage check now
+police the component.
+
+Verified: the full build is green; the four refdata suites and the three
+ores.ore suites pass; the codegen suite passes 352; =ores.web=
+typechecks and its suites pass 43; the drift gate is clean over every
+space including =ores.ts.domain= and =ores.ts.protocol=, for refdata and
+for every other drift-free component; the coverage check reports all 96
+headers paired with no opt-out; and =validate_docs.sh= passes.

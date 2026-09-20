@@ -27,8 +27,7 @@ using namespace ores::logging;
 
 service_session_service::service_session_service(context ctx)
     : ctx_(std::move(ctx))
-    , session_repo_()
-    , account_repo_(ctx_) {
+    , session_repo_() {
 
     BOOST_LOG_SEV(lg(), debug) << "Service session service initialized";
 }
@@ -37,7 +36,7 @@ std::optional<domain::account>
 service_session_service::get_service_account(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Looking up service account: " << username;
 
-    auto accounts = account_repo_.read_latest_by_username(username);
+    auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Service account not found: " << username;
         return std::nullopt;
@@ -80,7 +79,7 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
                                << boost::uuids::to_string(account_id);
 
     // Verify account exists and is a service account
-    auto accounts = account_repo_.read_latest(account_id);
+    auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Account not found: " << boost::uuids::to_string(account_id);
         return std::nullopt;

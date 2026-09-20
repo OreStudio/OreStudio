@@ -347,26 +347,26 @@ void application::export_currencies(const config::export_options& cfg) const {
 
 void application::export_accounts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting accounts.";
-    iam::repository::account_repository repo(context_);
+    iam::repository::account_repository repo;
 
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg(), debug) << "Reading all versions for accounts.";
             // Note: account repository doesn't support reading all versions by username yet
             if (cfg.key.empty())
-                return repo.read_all();
+                return repo.read_all(context_);
             else
-                return repo.read_latest_by_username(cfg.key);
+                return repo.read_latest_by_username(context_, cfg.key);
         } else if (cfg.as_of.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
             if (cfg.key.empty())
-                return repo.read_latest();
+                return repo.read_latest(context_);
             else
-                return repo.read_latest_by_username(cfg.key);
+                return repo.read_latest_by_username(context_, cfg.key);
         }
         BOOST_LOG_SEV(lg(), debug) << "Reading accounts as of: " << cfg.as_of;
         // Note: account repository doesn't have read_at_timepoint yet
-        return repo.read_latest();
+        return repo.read_latest(context_);
     });
 
     const std::vector<iam::domain::account> accts(reader());
@@ -930,7 +930,7 @@ void application::delete_currency(const config::delete_options& cfg) const {
 
 void application::delete_account(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
-    iam::repository::account_repository repo(context_);
+    iam::repository::account_repository repo;
 
     // Try to parse as UUID first
     boost::uuids::uuid account_id;
@@ -940,7 +940,7 @@ void application::delete_account(const config::delete_options& cfg) const {
     } catch (const boost::bad_lexical_cast&) {
         // If not a UUID, treat as username and look it up
         BOOST_LOG_SEV(lg(), debug) << "Key is not a UUID, treating as username";
-        const auto accounts = repo.read_latest_by_username(cfg.key);
+        const auto accounts = repo.read_latest_by_username(context_, cfg.key);
         if (accounts.empty()) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Account not found: {}", cfg.key)));
@@ -949,7 +949,7 @@ void application::delete_account(const config::delete_options& cfg) const {
         BOOST_LOG_SEV(lg(), debug) << "Found account ID: " << boost::uuids::to_string(account_id);
     }
 
-    repo.remove(account_id);
+    repo.remove(context_, boost::uuids::to_string(account_id));
     output_stream_ << "Account deleted successfully: " << boost::uuids::to_string(account_id)
                    << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted account: " << boost::uuids::to_string(account_id);
@@ -1213,8 +1213,8 @@ void application::add_account(const config::add_account_options& cfg) const {
     if (bootstrap_svc.is_in_bootstrap_mode())
         output_stream_ << "System is currently in bootstrap mode." << std::endl;
 
-    iam::repository::account_repository repo(context_);
-    repo.write(account);
+    iam::repository::account_repository repo;
+    repo.write(context_, account);
 
     output_stream_ << "Successfully added account: " << account.username
                    << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;

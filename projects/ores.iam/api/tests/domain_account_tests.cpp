@@ -59,13 +59,13 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     CHECK(sut.email == "john.doe@example.com");
 }
 
-TEST_CASE("default_constructed_account_has_nil_image_id", tags) {
+TEST_CASE("default_constructed_account_has_no_image_id", tags) {
     auto lg(make_logger(test_suite));
 
     const account sut;
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
-    CHECK(sut.image_id.is_nil());
+    CHECK(!sut.image_id.has_value());
 }
 
 TEST_CASE("account_image_id_can_be_set", tags) {
@@ -75,7 +75,7 @@ TEST_CASE("account_image_id_can_be_set", tags) {
     sut.image_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
-    CHECK(!sut.image_id.is_nil());
+    CHECK(sut.image_id.has_value());
 }
 
 TEST_CASE("create_admin_account", tags) {

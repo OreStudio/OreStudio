@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -33,7 +39,7 @@
 namespace ores::iam::repository {
 
 /**
- * @brief Reads and writes accounts off of data storage.
+ * @brief Reads and writes accounts to data storage.
  */
 class ORES_IAM_CORE_EXPORT account_repository {
 private:
@@ -48,83 +54,80 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit account_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes accounts to database. Expects the account set to have
-     * unique IDs.
+     * @brief Writes accounts to database.
      */
     /**@{*/
-    void write(const domain::account& account);
-    void write(const std::vector<domain::account>& accounts);
+    void write(context ctx, const domain::account& v);
+    void write(context ctx, const std::vector<domain::account>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest accounts, possibly filtered by ID.
+     * @brief Reads latest accounts, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::account> read_latest();
-    std::vector<domain::account> read_latest(const boost::uuids::uuid& id);
+    std::vector<domain::account> read_latest(context ctx);
+    std::vector<domain::account> read_latest(context ctx, const std::string& id);
     /**@}*/
+
+    /**
+     * @brief Reads all accounts, possibly filtered by primary key.
+     */
+    std::vector<domain::account> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single account as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::account>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
 
     /**
      * @brief Reads latest accounts with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of accounts within the specified range
      */
-    std::vector<domain::account> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::account>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active accounts.
-     * @return Total number of accounts with valid_to == max_timestamp
+     * @param ctx Repository context with database connection
+     * @return Total number of active accounts
      */
-    std::uint32_t get_total_account_count();
+    std::uint32_t get_total_account_count(context ctx);
 
     /**
-     * @brief Reads all accounts, possibly filtered by ID.
+     * @brief Deletes a account by closing its temporal validity.
      */
-    /**@{*/
-    std::vector<domain::account> read_all();
-    std::vector<domain::account> read_all(const boost::uuids::uuid& id);
-    /**@}*/
+    void remove(context ctx, const std::string& id);
 
     /**
-     * @brief Reads the latest account by username.
+     * @brief Deletes accounts by closing their temporal validity.
      */
-    std::vector<domain::account> read_latest_by_username(const std::string& username);
+    void remove(context ctx, const std::vector<std::string>& ids);
 
-    /**
-     * @brief Reads the latest account by email.
-     */
-    std::vector<domain::account> read_latest_by_email(const std::string& email);
+    std::vector<domain::account> read_all(context ctx);
 
-    /**
-     * @brief Verifies service account credentials.
-     *
-     * Looks up the account by username and compares the SHA-256 hash of the
-     * supplied password against the stored service_password_hash.  Returns the
-     * account UUID on success, or nullopt if the account is not found, is a
-     * user account, or the password does not match.
-     */
-    std::optional<boost::uuids::uuid> check_service_credentials(const std::string& username,
+    std::vector<domain::account> read_latest_by_username(context ctx, const std::string& username);
+
+    std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
+
+    std::optional<boost::uuids::uuid> check_service_credentials(context ctx,
+                                                                const std::string& username,
                                                                 const std::string& password);
-
-    /**
-     * @brief Deletes an account by closing its temporal validity.
-     *
-     * Sets the valid_to timestamp to now, effectively "deleting" the account
-     * from the current point in time onwards while preserving history.
-     */
-    void remove(const boost::uuids::uuid& account_id);
-
-private:
-    context ctx_;
 };
 
 }

@@ -17,15 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/account_version_table_io.hpp"
-#include "ores.iam.api/domain/account_version_table.hpp"
-#include <ostream>
+#include "ores.iam.api/messaging/account_version_table.hpp"
+#include <fort.hpp>
 
-namespace ores::iam::domain {
+namespace ores::iam::messaging {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<account_version>& v) {
-    s << convert_to_table(v);
-    return s;
+std::string convert_to_table(const std::vector<account_version>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "Version" << "Username" << "Email" << "Change Reason" << "Modified By"
+          << "Recorded At" << "Change Summary" << fort::endr;
+
+    for (const auto& av : v) {
+        table << av.version_number << av.data.username << av.data.email
+              << av.data.change_reason_code << av.modified_by << av.recorded_at << av.change_summary
+              << fort::endr;
+    }
+    return table.to_string();
 }
 
 }

@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -1128,7 +1127,7 @@ public:
             account_version_history avh;
             int vnum = static_cast<int>(accounts.size());
             for (const auto& a : accounts) {
-                ores::iam::domain::account_version av;
+                ores::iam::messaging::account_version av;
                 av.data = a;
                 av.version_number = vnum--;
                 av.modified_by = a.modified_by;

@@ -19,31 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
-#define ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
+#include "ores.iam.core/messaging/account_history_provider_registrar.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.iam.core/presentation/account_history_field_mapper.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+namespace ores::iam::messaging {
 
-namespace ores::iam::generators {
-
-/**
- * @brief Generates a synthetic account.
- */
-ORES_IAM_API_EXPORT domain::account
-generate_synthetic_account(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic accounts.
- */
-ORES_IAM_API_EXPORT std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, utility::generation::generation_context& ctx);
-
+void register_account_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.iam.account",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::account_service svc(scoped_ctx);
+            auto versions = svc.get_account_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_account_fields);
+        });
 }
 
-#endif
+} // namespace ores::iam::messaging

@@ -19,31 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
-#define ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
+#ifndef ORES_IAM_SERVICE_MESSAGING_ACCOUNT_EVENT_REGISTRAR_HPP
+#define ORES_IAM_SERVICE_MESSAGING_ACCOUNT_EVENT_REGISTRAR_HPP
 
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::iam::generators {
+namespace ores::iam::service::messaging {
 
-/**
- * @brief Generates a synthetic account.
- */
-ORES_IAM_API_EXPORT domain::account
-generate_synthetic_account(utility::generation::generation_context& ctx);
+[[nodiscard]] ores::eventing::service::subscription
+register_account_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                               ores::eventing::service::event_bus& event_bus,
+                               ores::nats::service::client& nats);
 
-/**
- * @brief Generates N synthetic accounts.
- */
-ORES_IAM_API_EXPORT std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::iam::service::messaging
 
 #endif

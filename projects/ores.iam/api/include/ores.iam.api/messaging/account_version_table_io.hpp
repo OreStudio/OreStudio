@@ -17,29 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_HISTORY_HPP
-#define ORES_IAM_DOMAIN_ACCOUNT_VERSION_HISTORY_HPP
+#ifndef ORES_IAM_MESSAGING_ACCOUNT_VERSION_TABLE_IO_HPP
+#define ORES_IAM_MESSAGING_ACCOUNT_VERSION_TABLE_IO_HPP
 
-#include "ores.iam.api/domain/account_version.hpp"
-#include <string>
+#include "ores.iam.api/export.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include <iosfwd>
 #include <vector>
 
-namespace ores::iam::domain {
+namespace ores::iam::messaging {
 
 /**
- * @brief Contains the full version history for an account.
+ * @brief Dumps the account version object to a stream in table format.
  */
-struct account_version_history final {
-    /**
-     * @brief Username of the account.
-     */
-    std::string username;
-
-    /**
-     * @brief All versions of this account, ordered from newest to oldest.
-     */
-    std::vector<account_version> versions;
-};
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<account_version>& v);
 
 }
 

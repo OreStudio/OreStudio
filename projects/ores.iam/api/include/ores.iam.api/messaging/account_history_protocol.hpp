@@ -25,15 +25,45 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/account_version.hpp"
+#include "ores.iam.api/domain/account.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::iam::messaging {
 
+/**
+ * @brief One version of an account, with the metadata a history view
+ * renders beside it.
+ */
+struct account_version {
+    /**
+     * @brief The account data at this version.
+     */
+    ores::iam::domain::account data;
+    /**
+     * @brief Version number (1-based, higher is newer).
+     */
+    int version_number = 0;
+    /**
+     * @brief Username of the person who recorded this version in the system.
+     */
+    std::string modified_by;
+    /**
+     * @brief Timestamp when this version was recorded in the system.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+    /**
+     * @brief Summary of changes made in this version.
+     *
+     * Examples: "Created account", "Modified 2 fields", "Updated email".
+     */
+    std::string change_summary;
+};
+
 struct account_version_history {
-    std::vector<ores::iam::domain::account_version> versions;
+    std::vector<account_version> versions;
 };
 
 struct get_account_history_request {

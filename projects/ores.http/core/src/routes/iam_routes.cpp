@@ -21,7 +21,6 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_json.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/role.hpp"
@@ -898,8 +897,10 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         const auto full_name = existing ? existing->full_name : std::string{};
         const auto job_title = existing ? existing->job_title : std::string{};
         const auto reports_to_account_id =
-            existing ? existing->reports_to_account_id : boost::uuids::nil_uuid();
-        const auto image_id = existing ? existing->image_id : boost::uuids::nil_uuid();
+            existing && existing->reports_to_account_id ? *existing->reports_to_account_id
+                                                        : boost::uuids::nil_uuid();
+        const auto image_id = existing && existing->image_id ? *existing->image_id
+                                                             : boost::uuids::nil_uuid();
 
         bool success =
             account_service_.update_account(uuid,
@@ -951,7 +952,7 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
         resp.message = "History retrieved successfully";
 
         for (const auto& account : accounts) {
-            iam::domain::account_version ver;
+            iam::messaging::account_version ver;
             ver.data = account;
             ver.version_number = account.version; // Use database version field
             ver.modified_by = account.modified_by;

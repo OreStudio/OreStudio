@@ -600,9 +600,9 @@ public:
             return;
         }
         try {
-            repository::account_repository account_repo(ctx_);
+            repository::account_repository account_repo;
             const auto account_id =
-                account_repo.check_service_credentials(req->username, req->password);
+                account_repo.check_service_credentials(ctx_, req->username, req->password);
             if (!account_id) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Service login failed: invalid credentials for " << req->username;

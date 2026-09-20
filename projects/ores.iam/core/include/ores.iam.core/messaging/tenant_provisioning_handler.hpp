@@ -1128,7 +1128,7 @@ private:
         auto accounts_resp = client.request(accounts_req);
         for (const auto& a : accounts_resp.accounts) {
             const auto it = photo_key_by_username.find(a.username);
-            if (it == photo_key_by_username.end() || !a.image_id.is_nil())
+            if (it == photo_key_by_username.end() || a.image_id.has_value())
                 continue;
 
             auto image_id = copy_template_image(client, ctx, tenant_id, it->second, username);
@@ -1142,9 +1142,8 @@ private:
             update_req.default_party_id =
                 a.default_party_id ? boost::uuids::to_string(*a.default_party_id) : "";
             update_req.job_title = a.job_title;
-            update_req.reports_to_account_id = a.reports_to_account_id.is_nil() ?
-                                                   "" :
-                                                   boost::uuids::to_string(a.reports_to_account_id);
+            update_req.reports_to_account_id =
+                a.reports_to_account_id ? boost::uuids::to_string(*a.reports_to_account_id) : "";
             update_req.image_id = boost::uuids::to_string(*image_id);
             update_req.change_reason_code = "system.external_data_import";
             update_req.change_commentary = "Attached staff photo during Acme provisioning";

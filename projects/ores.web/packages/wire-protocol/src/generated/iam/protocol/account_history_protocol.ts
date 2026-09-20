@@ -1,6 +1,6 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,47 +17,56 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
-#define ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
-
-#include "ores.iam.api/domain/account.hpp"
-#include <chrono>
-#include <string>
-
-namespace ores::iam::domain {
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_protocol.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+import type { Account } from '../domain/account.js';
 
 /**
- * @brief Represents a specific version of an account with metadata.
+ * @brief One version of an account, with the metadata a history view
+ * renders beside it.
  */
-struct account_version final {
+export interface AccountVersion {
     /**
      * @brief The account data at this version.
      */
-    account data;
-
+    data: Account;
     /**
      * @brief Version number (1-based, higher is newer).
      */
-    int version_number;
-
+    version_number: number;
     /**
      * @brief Username of the person who recorded this version in the system.
      */
-    std::string modified_by;
-
+    modified_by: string;
     /**
      * @brief Timestamp when this version was recorded in the system.
      */
-    std::chrono::system_clock::time_point recorded_at;
-
+    recorded_at: string;
     /**
      * @brief Summary of changes made in this version.
      *
-     * Examples: "Created account", "Modified 2 fields", "Updated email"
+     * Examples: "Created account", "Modified 2 fields", "Updated email".
      */
-    std::string change_summary;
-};
-
+    change_summary: string;
 }
 
-#endif
+export interface AccountVersionHistory {
+    versions: AccountVersion[];
+}
+
+export interface GetAccountHistoryRequest {
+    username: string;
+}
+
+export interface GetAccountHistoryResponse {
+    success: boolean;
+    message: string;
+    history: AccountVersionHistory;
+}
+
+export const subjects = {
+    get_account_history_request: "iam.v1.accounts.history",
+} as const;

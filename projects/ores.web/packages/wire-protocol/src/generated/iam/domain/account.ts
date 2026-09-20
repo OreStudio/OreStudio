@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,31 +19,35 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
-#define ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
-
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
-
-namespace ores::iam::generators {
-
 /**
- * @brief Generates a synthetic account.
+ * The account wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
  */
-ORES_IAM_API_EXPORT domain::account
-generate_synthetic_account(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic accounts.
- */
-ORES_IAM_API_EXPORT std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, utility::generation::generation_context& ctx);
-
+export interface Account {
+    version: number;
+    tenant_id: string;
+    id: string;
+    username: string;
+    account_type: string;
+    full_name: string;
+    password_hash: string;
+    password_salt: string;
+    totp_secret: string;
+    email: string;
+    default_party_id: string | null;
+    image_id: string | null;
+    job_title: string;
+    reports_to_account_id: string | null;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }
-
-#endif

@@ -287,8 +287,8 @@ public:
                 tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
 
             // Look up account by username in the target tenant
-            repository::account_repository acct_repo(tenant_ctx);
-            auto accounts = acct_repo.read_latest_by_username(username);
+            repository::account_repository acct_repo;
+            auto accounts = acct_repo.read_latest_by_username(tenant_ctx, username);
             if (accounts.empty()) {
                 reply(nats_,
                       msg,
@@ -378,8 +378,8 @@ public:
                 tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
 
             // Look up account by username in the target tenant
-            repository::account_repository acct_repo(tenant_ctx);
-            auto accounts = acct_repo.read_latest_by_username(username);
+            repository::account_repository acct_repo;
+            auto accounts = acct_repo.read_latest_by_username(tenant_ctx, username);
             if (accounts.empty()) {
                 reply(nats_,
                       msg,

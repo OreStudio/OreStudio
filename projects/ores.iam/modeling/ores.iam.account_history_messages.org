@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.ts.protocol.enabled: nil
 :ID: 13C6E76E-B616-49D5-ABC7-A8A70C7ADA61
 :END:
 #+title: ores.iam.account_history_messages
@@ -12,14 +11,22 @@
 #+brief: account_history protocol messages.
 #+filetags: :model:operation:iam:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-20
 
 The account_history protocol messages.
+
+=account_version= is a payload, not a domain entity: no =account_version=
+table exists and the codegen has no version facet, so the type that a
+versioned account history carries is declared here, beside the messages
+that use it, and rendered to C++ and TypeScript from this one source.
+Its =data= member is the generated account entity, so the account's own
+shape stays owned by =ores.iam.account=.
 
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.iam.api/domain/account_version.hpp"
+#include "ores.iam.api/domain/account.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -27,11 +34,78 @@ The account_history protocol messages.
 
 * Messages
 
+** account_version
+
+#+begin_src cpp :name comment
+/**
+ * @brief One version of an account, with the metadata a history view
+ * renders beside it.
+ */
+#+end_src
+
+*** data
+:PROPERTIES:
+:cpp_type: ores::iam::domain::account
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account data at this version.
+ */
+#+end_src
+
+*** version_number
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Version number (1-based, higher is newer).
+ */
+#+end_src
+
+*** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Username of the person who recorded this version in the system.
+ */
+#+end_src
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Timestamp when this version was recorded in the system.
+ */
+#+end_src
+
+*** change_summary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Summary of changes made in this version.
+ *
+ * Examples: "Created account", "Modified 2 fields", "Updated email".
+ */
+#+end_src
+
 ** account_version_history
 
 *** versions
 :PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::account_version>
+:cpp_type: std::vector<account_version>
 :END:
 
 ** get_account_history_request
@@ -62,4 +136,3 @@ The account_history protocol messages.
 :PROPERTIES:
 :cpp_type: account_version_history
 :END:
-

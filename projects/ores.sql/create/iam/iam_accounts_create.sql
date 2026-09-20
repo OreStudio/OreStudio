@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,19 +17,64 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Account Table
+ *
+ * An account that can authenticate against the system: one row per user,
+ * service, algorithm or LLM identity, carrying the password material, the
+ * TOTP secret, the email address and the optional profile and reporting
+ * links. The table is bi-temporal and audited (see
+ * projects/ores.sql/create/iam/iam_accounts_create.sql): it carries
+ * version, the four audit columns and the valid_from/valid_to pair
+ * with the GIST exclusion, so the model takes the ordinary audited shape
+ * and needs no shape flag.
+ *
+ * The table is a composite parent: ores_iam_accounts_touch_version_fn
+ * lets a child entity (account contact information, party association)
+ * bump this account's own version when the child is written. The model
+ * declares :generate_touch_function: true, which renders that function
+ * under its existing name rather than leaving it hand-written.
+ *
+ * The model describes the table and nothing else. Two columns need care:
+ *
+ * - service_password_hash is a real column with no domain member: it is
+ *   reached only by check_service_credentials and never travels on the
+ *   wire, so it is declared :sql_only: true and the generated domain
+ *   struct omits it while the entity struct and the mapper keep it.
+ * - image_id and reports_to_account_id are nullable UUID soft
+ *   references. The hand-written domain struct represented both as a plain
+ *   boost::uuids::uuid with a nil sentinel, on the claim that a second
+ *   std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+ *   aggregate serialisation for multi-element vectors. Re-verified under
+ *   the generated estate: all three nullable UUIDs are modelled as
+ *   std::optional<boost::uuids::uuid>, and the api suite's multi-element
+ *   JSON and table tests plus the core repository's five-account round trip
+ *   pass, so the workaround is not needed here.
+ *
+ * Two behavioural facets are switched off, each with a reason:
+ *
+ * - The entity's CRUD handler and sub-registrar, because the hand-written
+ *   account_handler already owns every iam.v1.accounts.* subject.
+ * - The generated CRUD service, because the hand-written account_service
+ *   is the authentication surface (login, lock, unlock, password change
+ *   and reset, party selection, service-credential check) and the
+ *   generated service's get_account_history(id) collides in name and
+ *   signature with the hand-written get_account_history(username) while
+ *   meaning a different read. The generated account_protocol.hpp is
+ *   suppressed by the same one-owner gate that the operation model already
+ *   satisfies.
+ */
 
--- =============================================================================
--- User accounts with authentication credentials.
--- Supports optimistic locking via version field.
--- Username and email unique for current records.
--- =============================================================================
-
-create table if not exists ores_iam_accounts_tbl (
+create table if not exists "ores_iam_accounts_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "account_type" text not null default 'user',
     "username" text not null,
+    "account_type" text not null default 'user',
     "full_name" text null,
     "password_hash" text not null,
     "password_salt" text not null,
@@ -41,9 +86,9 @@ create table if not exists ores_iam_accounts_tbl (
     "job_title" text null,
     "reports_to_account_id" uuid null,
     "modified_by" text not null,
+    "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
-    "performed_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (tenant_id, id, valid_from, valid_to),
@@ -55,113 +100,60 @@ create table if not exists ores_iam_accounts_tbl (
     check ("valid_from" < "valid_to")
 );
 
+-- Unique username for active records
 create unique index if not exists accounts_username_uniq_idx
-on ores_iam_accounts_tbl (tenant_id, username)
+on "ores_iam_accounts_tbl" (tenant_id, username)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists accounts_email_uniq_idx
-on ores_iam_accounts_tbl (tenant_id, email)
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists accounts_version_uniq_idx
+on "ores_iam_accounts_tbl" (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists accounts_id_uniq_idx
+on "ores_iam_accounts_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists accounts_tenant_idx
-on ores_iam_accounts_tbl (tenant_id)
+on "ores_iam_accounts_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists accounts_version_uniq_idx
-on ores_iam_accounts_tbl (id, version)
+-- Unique email for active records
+create unique index if not exists accounts_email_uniq_idx
+on "ores_iam_accounts_tbl" (tenant_id, email)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_iam_accounts_insert_fn()
-returns trigger
-security definer
-set search_path = public
-as $$
-declare
-    current_version integer;
-begin
-    -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
-    -- Validate account_type
-    new.account_type := ores_iam_validate_account_type_fn(new.tenant_id, new.account_type);
-
-    -- Validate image_id, if set (soft FK: no real FK given the temporal key shape)
-    if new.image_id is not null and not exists (
-        select 1 from ores_assets_images_tbl
-        where tenant_id = new.tenant_id
-          and image_id = new.image_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid image_id: %. Image must exist.', new.image_id
-        using errcode = '23503';
-    end if;
-
-    -- Validate reports_to_account_id, if set (soft self-reference: no real
-    -- FK given the temporal key shape). A nil check is not needed here --
-    -- the domain layer uses nil_uuid() as its own "unset" sentinel and
-    -- never sends a nil uuid through as a set value.
-    if new.reports_to_account_id is not null and not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = new.tenant_id
-          and id = new.reports_to_account_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid reports_to_account_id: %. Account must exist.',
-            new.reports_to_account_id
-        using errcode = '23503';
-    end if;
-
-    select version into current_version
-    from ores_iam_accounts_tbl
-    where tenant_id = new.tenant_id
-    and id = new.id
-    and valid_to = ores_utility_infinity_timestamp_fn()
-    for update;
-
-    if found then
-        if new.version != 0 and new.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
-                using errcode = 'P0002';
-        end if;
-        new.version = current_version + 1;
-
-        -- clock_timestamp(), not current_timestamp: current_timestamp is
-        -- frozen for the whole transaction, so a same-transaction
-        -- multi-write to this row (e.g. this composite entity's parent
-        -- touched twice by two different children in one transaction)
-        -- would collide with itself. clock_timestamp() always advances.
-        -- See ores_refdata_parties_insert_fn for the same pattern.
-        update ores_iam_accounts_tbl
-        set valid_to = clock_timestamp()
-        where tenant_id = new.tenant_id
-        and id = new.id
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < clock_timestamp();
-    else
-        new.version = 1;
-    end if;
-
-    new.valid_from = clock_timestamp();
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
-    return new;
-end;
-$$ language plpgsql;
-
-create or replace trigger ores_iam_accounts_insert_trg
-before insert on ores_iam_accounts_tbl
-for each row
-execute function ores_iam_accounts_insert_fn();
-
--- Bumps an account's own version when a child entity (e.g. account
--- contact information) is written -- composite entity versioning, same
--- pattern as ores_refdata_parties_touch_version_fn. See the "Temporal
--- composite entity versioning" architecture doc.
+-- =============================================================================
+-- Touch-version function for account
+-- Bumps this entity's version without changing any of its own columns,
+-- called by a child entity's insert trigger / delete rule when that
+-- child is flagged :bump_parent_version: true against this entity. See
+-- the "Temporal composite entity versioning" architecture doc.
+--
+-- Deliberately does NOT duplicate the version/valid_from/valid_to
+-- management here: it fetches the current row, resets version to the
+-- 0 sentinel, and re-inserts — the table's own insert trigger (below)
+-- then performs the exact same close-current/bump-version dance a
+-- normal application save does. This also sidesteps a real footgun:
+-- current_timestamp is frozen for the whole transaction, so a
+-- same-transaction bulk import (parent + child created together, as
+-- GLEIF provisioning does) would otherwise make the just-inserted
+-- parent row's own valid_from collide with this function's close
+-- timestamp.
+--
+-- Defined before the insert trigger/delete rule below (not after):
+-- for a self-referencing entity (this entity is its own composite
+-- parent, e.g. a portfolio tree), the delete rule calling this
+-- function lives in the *same* file. PostgreSQL parses CREATE RULE
+-- eagerly, so the function must already exist by then -- unlike a
+-- PL/pgSQL function body (e.g. the insert trigger function), which is
+-- opaque at CREATE time and only resolves calls at execution.
+--
+-- p_reason_code is passed through as-is (already a validated code from
+-- the child's own row); p_child_entity distinguishes which child
+-- triggered the bump in the free-text commentary.
+-- =============================================================================
 create or replace function ores_iam_accounts_touch_version_fn(
     p_tenant_id uuid,
     p_id uuid,
@@ -177,9 +169,12 @@ begin
     -- for update: takes the same row lock the parent's own insert
     -- trigger takes, so the snapshot in rec can't be based on a
     -- business-column value a concurrent direct edit is about to
-    -- change.
+    -- change — without this, that concurrent edit could be silently
+    -- reverted once this function's later insert proceeds. See the
+    -- "Temporal composite entity versioning" architecture doc,
+    -- Concurrency section.
     select * into rec
-    from ores_iam_accounts_tbl
+    from "ores_iam_accounts_tbl"
     where tenant_id = p_tenant_id
       and id = p_id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -195,7 +190,99 @@ begin
     rec.change_reason_code := p_reason_code;
     rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
 
-    insert into ores_iam_accounts_tbl
+    insert into "ores_iam_accounts_tbl"
     select (rec).*;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace function ores_iam_accounts_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate image_id (optional soft FK to ores_assets_images_tbl)
+    if NEW.image_id is not null then
+        if not exists (
+            select 1 from ores_assets_images_tbl
+            where tenant_id = NEW.tenant_id
+              and image_id = NEW.image_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate reports_to_account_id (optional soft FK to ores_iam_accounts_tbl)
+    if NEW.reports_to_account_id is not null then
+        if not exists (
+            select 1 from ores_iam_accounts_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.reports_to_account_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid reports_to_account_id: %. Account must exist.', NEW.reports_to_account_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate account_type
+    NEW.account_type := ores_iam_validate_account_type_fn(NEW.tenant_id, NEW.account_type);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
+    select version into current_version
+    from "ores_iam_accounts_tbl"
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        update "ores_iam_accounts_tbl"
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_iam_accounts_insert_trg
+before insert on "ores_iam_accounts_tbl"
+for each row execute function ores_iam_accounts_insert_fn();
+
+create or replace rule ores_iam_accounts_delete_rule as
+on delete to "ores_iam_accounts_tbl" do instead (
+    update "ores_iam_accounts_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);

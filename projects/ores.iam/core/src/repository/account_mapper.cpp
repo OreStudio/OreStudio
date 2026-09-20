@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/account_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
@@ -33,33 +38,34 @@ domain::account account_mapper::map(const account_entity& v) {
 
     domain::account r;
     r.version = v.version;
-    r.modified_by = v.modified_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.performed_by = v.performed_by;
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.account_type = v.account_type;
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.username = v.username;
+
+    r.account_type = v.account_type;
     r.full_name = v.full_name.value_or("");
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
-    if (v.default_party_id) {
-        r.default_party_id = boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id);
-    }
-    if (v.image_id) {
-        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
-    }
-    if (v.job_title) {
-        r.job_title = *v.job_title;
-    }
-    if (v.reports_to_account_id) {
-        r.reports_to_account_id = boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id);
-    }
+    r.default_party_id =
+        v.default_party_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id)) :
+            std::nullopt;
+    r.image_id = v.image_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
+                     std::nullopt;
+    r.job_title = v.job_title.value_or("");
+    r.reports_to_account_id =
+        v.reports_to_account_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id)) :
+            std::nullopt;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
-    // Note: r.image_id/r.reports_to_account_id default to nil_uuid() when unset
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,35 +75,31 @@ account_entity account_mapper::map(const domain::account& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     account_entity r;
-    r.id = boost::lexical_cast<std::string>(v.id);
+    r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.account_type = v.account_type;
+
     r.username = v.username;
-    if (!v.full_name.empty()) {
-        r.full_name = v.full_name;
-    }
+
+    r.account_type = v.account_type;
+    r.full_name = v.full_name.empty() ? std::nullopt : std::optional(v.full_name);
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
-    if (v.default_party_id) {
-        r.default_party_id = boost::lexical_cast<std::string>(*v.default_party_id);
-    }
-    if (!v.image_id.is_nil()) {
-        r.image_id = boost::lexical_cast<std::string>(v.image_id);
-    }
-    if (!v.job_title.empty()) {
-        r.job_title = v.job_title;
-    }
-    if (!v.reports_to_account_id.is_nil()) {
-        r.reports_to_account_id = boost::lexical_cast<std::string>(v.reports_to_account_id);
-    }
+    r.default_party_id = v.default_party_id.has_value() ?
+                             std::optional(boost::uuids::to_string(*v.default_party_id)) :
+                             std::nullopt;
+    r.image_id =
+        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.job_title = v.job_title.empty() ? std::nullopt : std::optional(v.job_title);
+    r.reports_to_account_id = v.reports_to_account_id.has_value() ?
+                                  std::optional(boost::uuids::to_string(*v.reports_to_account_id)) :
+                                  std::nullopt;
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.performed_by = v.performed_by;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

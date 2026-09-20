@@ -19,30 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_generator.hpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
-#define ORES_IAM_API_GENERATORS_ACCOUNT_GENERATOR_HPP
+#ifndef ORES_IAM_CORE_PRESENTATION_ACCOUNT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_IAM_CORE_PRESENTATION_ACCOUNT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.iam.core/export.hpp"
 #include <vector>
 
-namespace ores::iam::generators {
+namespace ores::iam::presentation {
 
 /**
- * @brief Generates a synthetic account.
+ * @brief Renders a account to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_IAM_API_EXPORT domain::account
-generate_synthetic_account(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic accounts.
- */
-ORES_IAM_API_EXPORT std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, utility::generation::generation_context& ctx);
+[[nodiscard]] ORES_IAM_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_account_fields(const domain::account& v);
 
 }
 

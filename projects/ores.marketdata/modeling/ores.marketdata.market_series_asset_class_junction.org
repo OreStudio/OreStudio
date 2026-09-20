@@ -72,6 +72,7 @@ std::string("interest_rates")
 ** Flags
 :PROPERTIES:
 :tablename: ores_marketdata_market_series_asset_classes_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

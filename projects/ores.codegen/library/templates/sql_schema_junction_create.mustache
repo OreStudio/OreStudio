@@ -178,3 +178,24 @@ do instead
   and {{/junction.has_tenant_id}}{{junction.left.column}} = old.{{junction.left.column}}
   and {{junction.right.column}} = old.{{junction.right.column}}
   and valid_to = ores_utility_infinity_timestamp_fn();
+{{#junction.sql.rls_tenant_isolation}}
+
+-- =============================================================================
+-- Row-level security: tenant isolation for {{junction.name_title}}
+{{#junction.sql.rls_system_tenant_visible}}
+-- System-tenant sessions may also read every tenant's rows.
+{{/junction.sql.rls_system_tenant_visible}}
+-- =============================================================================
+alter table "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" enable row level security;
+
+create policy {{junction.name}}_tbl_tenant_isolation_policy
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
+);
+{{/junction.sql.rls_tenant_isolation}}

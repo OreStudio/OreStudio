@@ -154,3 +154,17 @@ do instead
   and market_series_id = old.market_series_id
   and asset_class_code = old.asset_class_code
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Market Series Asset Class
+-- =============================================================================
+alter table "ores_marketdata_market_series_asset_classes_tbl" enable row level security;
+
+create policy market_series_asset_classes_tbl_tenant_isolation_policy
+on "ores_marketdata_market_series_asset_classes_tbl"
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

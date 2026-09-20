@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2CD9F675-CD64-4215-864B-1E949CD2E823
+:END:
+#+title: The junction RLS policy name has no identifier-length guard
+#+description: The junction create archetype composes its tenant isolation policy name in mustache as {{junction.name}}_tbl_tenant_isolation_policy, because load_org_junction_model never derives an rls_table_base the way the domain entity path does in core.py. PostgreSQL truncates identifiers at 63 bytes with a NOTICE rather than an error, so a junction whose name pushes the policy name past 63 bytes silently gets a different policy name than the template intends, and two long junctions could collide on one truncated name. The longest junction today is currency_pair_convention_calendars at 62 bytes, one under the limit, and it does not opt into RLS, so nothing is broken yet. The fix is to derive rls_table_base for junctions next to sql_name_base and truncate it with the _tbl_tenant_isolation_policy suffix reserved, mirroring the domain path's longest_rls_suffix budget.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

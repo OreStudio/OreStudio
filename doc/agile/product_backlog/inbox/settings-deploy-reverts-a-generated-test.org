@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8B61F956-013F-4693-8B3A-1D9680C4C2B3
+:END:
+#+title: The settings deploy reverts a generated compass test
+#+description: compass build --direct settings tangles projects/ores.compass/tests/test_deny_bare_stash_hook.py from doc/llm/claude_code_settings.org, so deploying settings regenerates that file. Commit 20cd5089d5 added test_compass_does_not_run_a_denied_stash and the ast import to the tangled file and never updated the org block, so main's committed test and its source disagree. A settings deploy therefore deletes 38 lines, including the regression test that rebuilds every git stash command from compass.py and judges it with the hook's own denied — the test guarding the capture PR flow fix that same commit made. The bearings NEXT ACTION 'refresh .claude/settings.json' triggers it, and the loss reads as an unrelated working-tree edit, which also makes check_component_drift.py --all report the dirty file. Fix is to move the added test into the org source block at doc/llm/claude_code_settings.org line 996, re-deploy, and confirm the file is byte-identical.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

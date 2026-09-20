@@ -8,7 +8,7 @@
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-ts-iam-modelling
-#+pr: 2110
+#+pr: 2113
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -250,6 +250,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2113][#2113]] | [codegen] Model every IAM wire type and render both targets |
 | [[https://github.com/OreStudio/OreStudio/pull/2110][#2110]] | [codegen] Model every IAM NATS message and generate both targets |
 
 * Review

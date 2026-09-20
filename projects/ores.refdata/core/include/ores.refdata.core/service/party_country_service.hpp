@@ -108,6 +108,13 @@ public:
     void save_party_country(const domain::party_country& party_country);
 
     /**
+     * @brief Saves a batch of party countries in one transaction.
+     *
+     * @param party_countries The party countries to save
+     */
+    void save_party_countries(const std::vector<domain::party_country>& party_countries);
+
+    /**
      * @brief Removes a party country.
      *
      * @param party_id The party

@@ -152,8 +152,7 @@ public:
         if (auto req = decode<save_party_currency_request>(msg)) {
             save_party_currency_response resp;
             try {
-                for (const auto& row : req->party_currencies)
-                    svc.save_party_currency(row);
+                svc.save_party_currencies(req->party_currencies);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_currency_handler_lg(), error)

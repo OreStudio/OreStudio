@@ -664,8 +664,7 @@ public:
         if (auto req = decode<save_{{name_singular}}_request>(msg)) {
             save_{{name_singular}}_response resp;
             try {
-                for (const auto& row : req->{{name}})
-                    svc.save_{{name_singular_short}}(row);
+                svc.save_{{name_short}}(req->{{name}});
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)

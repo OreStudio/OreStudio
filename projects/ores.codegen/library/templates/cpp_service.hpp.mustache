@@ -439,6 +439,13 @@ public:
     void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
 
     /**
+     * @brief Saves a batch of {{name_words}} in one transaction.
+     *
+     * @param {{name_short}} The {{name_words}} to save
+     */
+    void save_{{name_short}}(const std::vector<domain::{{name_singular}}>& {{name_short}});
+
+    /**
      * @brief Removes a {{name_singular_words}}.
      *
      * @param {{left.column}} The {{left.column_title_lower}}

@@ -103,6 +103,19 @@ void currency_pair_convention_calendar_service::save_pair_convention_calendar(
                               << pair_convention_calendar.calendar_code;
 }
 
+void currency_pair_convention_calendar_service::save_pair_convention_calendars(
+    const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << pair_convention_calendars.size()
+                               << " currency pair convention calendars";
+    auto ts = pair_convention_calendars;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << pair_convention_calendars.size()
+                              << " currency pair convention calendars";
+}
+
 void currency_pair_convention_calendar_service::remove_pair_convention_calendar(
     const std::string& pair_code, const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention calendar: " << pair_code << "/"

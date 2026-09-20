@@ -152,8 +152,7 @@ public:
         if (auto req = decode<save_party_country_request>(msg)) {
             save_party_country_response resp;
             try {
-                for (const auto& row : req->party_countries)
-                    svc.save_party_country(row);
+                svc.save_party_countries(req->party_countries);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_country_handler_lg(), error)

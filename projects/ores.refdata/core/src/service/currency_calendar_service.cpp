@@ -97,6 +97,17 @@ void currency_calendar_service::save_currency_calendar(
                               << "/" << currency_calendar.calendar_code;
 }
 
+void currency_calendar_service::save_currency_calendars(
+    const std::vector<domain::currency_calendar>& currency_calendars) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << currency_calendars.size() << " currency calendars";
+    auto ts = currency_calendars;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << currency_calendars.size() << " currency calendars";
+}
+
 void currency_calendar_service::remove_currency_calendar(const std::string& currency_iso_code,
                                                          const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency calendar: " << currency_iso_code << "/"

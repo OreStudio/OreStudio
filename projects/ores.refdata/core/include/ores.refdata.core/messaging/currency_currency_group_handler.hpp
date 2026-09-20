@@ -151,8 +151,7 @@ public:
         if (auto req = decode<save_currency_currency_group_request>(msg)) {
             save_currency_currency_group_response resp;
             try {
-                for (const auto& row : req->currency_currency_groups)
-                    svc.save_currency_group(row);
+                svc.save_currency_groups(req->currency_currency_groups);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(currency_currency_group_handler_lg(), error)

@@ -122,6 +122,18 @@ void party_counterparty_service::save_party_counterparty(
                               << party_counterparty.counterparty_id;
 }
 
+void party_counterparty_service::save_party_counterparties(
+    const std::vector<domain::party_counterparty>& party_counterparties) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_counterparties.size()
+                               << " party counterparties";
+    auto ts = party_counterparties;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << party_counterparties.size() << " party counterparties";
+}
+
 void party_counterparty_service::remove_party_counterparty(
     const boost::uuids::uuid& party_id, const boost::uuids::uuid& counterparty_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party counterparty: " << party_id << "/"

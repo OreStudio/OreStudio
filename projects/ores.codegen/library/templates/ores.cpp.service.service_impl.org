@@ -454,6 +454,17 @@ void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{nam
                               << "/" << {{name_singular_short}}.{{right.column}};
 }
 
+void {{name_singular}}_service::save_{{name_short}}(
+    const std::vector<domain::{{name_singular}}>& {{name_short}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << {{name_short}}.size() << " {{name_words}}";
+    auto ts = {{name_short}};
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << {{name_short}}.size() << " {{name_words}}";
+}
+
 {{#left.is_uuid}}
 void {{name_singular}}_service::remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
 {{/left.is_uuid}}

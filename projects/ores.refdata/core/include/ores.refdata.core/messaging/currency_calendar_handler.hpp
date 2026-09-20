@@ -150,8 +150,7 @@ public:
         if (auto req = decode<save_currency_calendar_request>(msg)) {
             save_currency_calendar_response resp;
             try {
-                for (const auto& row : req->currency_calendars)
-                    svc.save_currency_calendar(row);
+                svc.save_currency_calendars(req->currency_calendars);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(currency_calendar_handler_lg(), error)

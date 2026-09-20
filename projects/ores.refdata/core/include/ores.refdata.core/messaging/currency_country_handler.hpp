@@ -150,8 +150,7 @@ public:
         if (auto req = decode<save_currency_country_request>(msg)) {
             save_currency_country_response resp;
             try {
-                for (const auto& row : req->currency_countries)
-                    svc.save_currency_country(row);
+                svc.save_currency_countries(req->currency_countries);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(currency_country_handler_lg(), error)

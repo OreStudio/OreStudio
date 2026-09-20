@@ -119,6 +119,17 @@ void party_country_service::save_party_country(const domain::party_country& part
                               << party_country.country_alpha2_code;
 }
 
+void party_country_service::save_party_countries(
+    const std::vector<domain::party_country>& party_countries) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_countries.size() << " party countries";
+    auto ts = party_countries;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << party_countries.size() << " party countries";
+}
+
 void party_country_service::remove_party_country(const boost::uuids::uuid& party_id,
                                                  const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party country: " << party_id << "/"

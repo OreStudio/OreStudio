@@ -108,6 +108,13 @@ public:
     void save_currency_calendar(const domain::currency_calendar& currency_calendar);
 
     /**
+     * @brief Saves a batch of currency calendars in one transaction.
+     *
+     * @param currency_calendars The currency calendars to save
+     */
+    void save_currency_calendars(const std::vector<domain::currency_calendar>& currency_calendars);
+
+    /**
      * @brief Removes a currency calendar.
      *
      * @param currency_iso_code The currency

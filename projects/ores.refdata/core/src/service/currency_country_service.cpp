@@ -93,6 +93,17 @@ void currency_country_service::save_currency_country(
                               << "/" << currency_country.country_alpha2_code;
 }
 
+void currency_country_service::save_currency_countries(
+    const std::vector<domain::currency_country>& currency_countries) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << currency_countries.size() << " currency countries";
+    auto ts = currency_countries;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << currency_countries.size() << " currency countries";
+}
+
 void currency_country_service::remove_currency_country(const std::string& currency_iso_code,
                                                        const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency country: " << currency_iso_code << "/"

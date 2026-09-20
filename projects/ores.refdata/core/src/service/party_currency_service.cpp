@@ -119,6 +119,17 @@ void party_currency_service::save_party_currency(const domain::party_currency& p
                               << party_currency.currency_iso_code;
 }
 
+void party_currency_service::save_party_currencies(
+    const std::vector<domain::party_currency>& party_currencies) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_currencies.size() << " party currencies";
+    auto ts = party_currencies;
+    for (auto& t : ts) {
+        stamp(t, ctx_);
+    }
+    repo_.write(ts);
+    BOOST_LOG_SEV(lg(), info) << "Saved " << party_currencies.size() << " party currencies";
+}
+
 void party_currency_service::remove_party_currency(const boost::uuids::uuid& party_id,
                                                    const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party currency: " << party_id << "/"

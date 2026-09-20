@@ -155,8 +155,7 @@ public:
         if (auto req = decode<save_party_counterparty_request>(msg)) {
             save_party_counterparty_response resp;
             try {
-                for (const auto& row : req->party_counterparties)
-                    svc.save_party_counterparty(row);
+                svc.save_party_counterparties(req->party_counterparties);
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_counterparty_handler_lg(), error)

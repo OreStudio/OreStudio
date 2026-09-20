@@ -92,11 +92,13 @@ def main() -> int:
     if violations:
         print(f"\n{len(violations)} unseeded handler permission(s).")
         return 1
-    total = sum(
-        len(codes) for component in REGISTRY
-        for codes in required_codes(component).values())
+    # Distinct codes, not (file, code) pairs: two handlers may check the
+    # same code -- a resource's save and delete methods share its :write.
+    codes = set().union(*(
+        found for component in REGISTRY
+        for found in required_codes(component).values()))
     print(f"handler permissions are seeded ({len(REGISTRY)} component(s), "
-          f"{total} code(s)).")
+          f"{len(codes)} distinct code(s)).")
     return 0
 
 

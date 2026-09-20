@@ -209,6 +209,8 @@ via its "Verifies task" field.
 | 9 | Stale API diagram, stale registrar comment, empty model section, and stale comments in the loader and generator | =ores.refdata.api.puml=, =registrar.cpp=, =org_loader.py=, =generate.py= | Accept | All corrected. |
 | 10 | Missing tests for the =read_only= wire guard and the =tenant_id= projection | =tests/= | Accept | Added; the suite is 354. |
 | 11 | =_ensure_profile_binding= is not called by every reader | =org_loader.py= | Accept | Now also called from the field-group and operation loaders, and the docstring no longer overclaims. |
+| 12 | The generated junction service calls the generic =stamp()=, which overwrites any =party_id= from the JWT context; for =party_country=, =party_currency= and =party_counterparty= that field is the association's client-supplied target | =ores.cpp.service.service_impl.org= | Accept | A junction model declares =:party_id_is_target:=, and the service emits a bespoke =stamp_<singular>= that leaves =party_id= alone, mirroring =ores.iam='s =stamp_account_party=. The three refdata junctions declare it. |
+| 13 | =(ctx_(std::move(ctx)), repo_(ctx))= reads the moved-from parameter, because =ctx_= is declared before =repo_= | =ores.cpp.service.service_impl.org= | Accept | The constructor now passes the initialised =ctx_= member. A test pins it. |
 
 * Result
 

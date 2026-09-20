@@ -32,9 +32,10 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 calendar_date_service::calendar_date_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates";

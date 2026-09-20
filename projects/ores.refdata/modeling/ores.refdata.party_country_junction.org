@@ -86,6 +86,7 @@ std::string("US")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:party_id_is_target: true
 :END:
 
 ** Domain includes

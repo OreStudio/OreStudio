@@ -32,9 +32,10 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 currency_pair_convention_calendar_service::currency_pair_convention_calendar_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::currency_pair_convention_calendar>
 currency_pair_convention_calendar_service::list_pair_convention_calendars() {

@@ -33,9 +33,10 @@ namespace ores::compute::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 app_version_platform_service::app_version_platform_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::app_version_platform>
 app_version_platform_service::list_app_version_platforms() {

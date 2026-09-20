@@ -32,9 +32,10 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 currency_calendar_service::currency_calendar_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::currency_calendar> currency_calendar_service::list_currency_calendars() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all currency calendars";

@@ -33,9 +33,36 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+namespace {
+
+/**
+ * @brief Stamps a party country row without touching its party_id.
+ *
+ * This junction's party_id names the association's target, which the
+ * client supplies, not the caller's own scope. The generic stamp()
+ * matches any field of that name by reflection and overwrites it with
+ * the caller's current party, which would silently replace the requested
+ * association. Mirrors ores.iam's stamp_account_party.
+ */
+void stamp_party_country(domain::party_country& row, const ores::database::context& ctx) {
+    row.tenant_id = ctx.tenant_id().to_string();
+    const auto& actor = ctx.actor();
+    const auto& svc = ctx.service_account();
+    if (!actor.empty())
+        row.modified_by = actor;
+    else if (!svc.empty())
+        row.modified_by = svc;
+    if (!svc.empty())
+        row.performed_by = svc;
+    if (row.change_reason_code.empty())
+        row.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
+}
+
+} // namespace
+
 party_country_service::party_country_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::party_country> party_country_service::list_party_countries() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party countries";
@@ -86,7 +113,7 @@ void party_country_service::save_party_country(const domain::party_country& part
     BOOST_LOG_SEV(lg(), debug) << "Saving party country: " << party_country.party_id << "/"
                                << party_country.country_alpha2_code;
     auto t = party_country;
-    stamp(t, ctx_);
+    stamp_party_country(t, ctx_);
     repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved party country: " << party_country.party_id << "/"
                               << party_country.country_alpha2_code;

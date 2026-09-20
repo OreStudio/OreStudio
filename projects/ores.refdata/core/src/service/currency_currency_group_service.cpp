@@ -32,9 +32,10 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 currency_currency_group_service::currency_currency_group_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::currency_currency_group>
 currency_currency_group_service::list_currency_groups() {

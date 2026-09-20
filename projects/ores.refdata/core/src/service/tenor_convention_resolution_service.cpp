@@ -32,9 +32,10 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 using ores::service::messaging::stamp;
 
+
 tenor_convention_resolution_service::tenor_convention_resolution_service(context ctx)
     : ctx_(std::move(ctx))
-    , repo_(ctx) {}
+    , repo_(ctx_) {}
 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_service::list_resolutions() {

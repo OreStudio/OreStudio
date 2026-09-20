@@ -319,3 +319,38 @@ def test_a_read_only_junction_renders_no_write_verb_on_either_twin(tmp_path):
         # share.
         if template != "cpp_service.hpp.mustache":
             assert "count_by_widget" in rendered, name
+
+
+# A junction whose party_id names the association's target, not the caller's
+# own scope. The generic stamp() matches any field of that name and
+# overwrites it from the JWT context, which would replace the requested
+# association; the codegen emits a bespoke stamp instead.
+PARTY_TARGET_FIXTURE = FIXTURE.replace(
+    ":subcomponent: api\n",
+    ":subcomponent: api\n:party_id_is_target: true\n",
+)
+
+
+def test_a_target_party_id_is_not_stamped_from_the_context(tmp_path):
+    rendered = _render(tmp_path, "cpp_service.cpp.mustache",
+                       "widget_owner_service.cpp", body=PARTY_TARGET_FIXTURE)
+    assert "void stamp_widget_owner(" in rendered
+    assert "stamp_widget_owner(t, ctx_);" in rendered
+    # The generic helper, which would clobber the target, is not called.
+    assert "stamp(t, ctx_);" not in rendered
+
+
+def test_an_ordinary_junction_keeps_the_generic_stamp(tmp_path):
+    rendered = _render(tmp_path, "cpp_service.cpp.mustache",
+                       "widget_owner_service.cpp")
+    assert "stamp(t, ctx_);" in rendered
+    assert "void stamp_widget_owner(" not in rendered
+
+
+def test_the_service_constructs_its_repository_from_the_stored_context(tmp_path):
+    rendered = _render(tmp_path, "cpp_service.cpp.mustache",
+                       "widget_owner_service.cpp")
+    # ctx_ is declared before repo_ in the header, so it is initialised
+    # first and repo_ must read it rather than the moved-from parameter.
+    assert "repo_(ctx_)" in rendered
+    assert "repo_(ctx)" not in rendered

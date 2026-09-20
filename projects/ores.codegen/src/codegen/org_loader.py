@@ -1977,6 +1977,14 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         if flags:
             for k, v in flags.properties.items():
                 j[k.lower()] = _parse_typed(v)
+        # Two independent switches decide the write surface. ``read_only``
+        # is the repository's: it suppresses write and remove, for a table
+        # provisioned outside the application. ``client_read_only`` leaves
+        # the repository writable for a server-side producer and suppresses
+        # only the verbs a client can reach, which the wire templates and
+        # the derived TypeScript list branch on through this derived flag.
+        j["wire_write_enabled"] = not (
+            j.get("read_only") or j.get("client_read_only"))
         dom = _section(cpp_section, "Domain includes")
         ent = _section(cpp_section, "Entity includes")
         if dom or ent:
@@ -2594,10 +2602,14 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
                         _ts_field("message", "std::string")]),
         ]
 
-    # A read-only junction's rows are provisioned outside the application,
-    # so it carries no write verb on either twin: the C++ block guards the
-    # same three on ``read_only``, and this list feeds both.
-    if not junction.get("read_only"):
+    # A junction with no client-facing write surface carries no write verb
+    # on either twin: the C++ block guards the same three, and this list
+    # feeds both. ``wire_write_enabled`` folds the repository's read_only
+    # together with the client-only switch; the fallback keeps a
+    # hand-built junction dict, as the tests use, on the read_only rule.
+    if junction.get(
+            "wire_write_enabled",
+            not (junction.get("read_only") or junction.get("client_read_only"))):
         messages += [
             _ts_message(
                 f"save_{singular}_request",

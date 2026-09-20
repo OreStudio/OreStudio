@@ -412,7 +412,7 @@ std::uint32_t {{name_singular}}_service::get_total_{{name_singular_short}}_count
     return repo_.get_total_{{name_singular_short}}_count_by_{{right.column_short}}({{right.column}});
 }
 
-{{^read_only}}
+{{#wire_write_enabled}}
 void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}}) {
 {{#left.is_uuid}}
     if ({{name_singular_short}}.{{left.column}}.is_nil()) {
@@ -519,7 +519,7 @@ void {{name_singular}}_service::replace_{{name_short}}_by_{{right.column_short}}
 }
 
 {{/right.replace_by}}
-{{/read_only}}
+{{/wire_write_enabled}}
 }
 {{/junction}}
 #+end_src

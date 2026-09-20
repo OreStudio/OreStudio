@@ -354,3 +354,40 @@ def test_the_service_constructs_its_repository_from_the_stored_context(tmp_path)
     # first and repo_ must read it rather than the moved-from parameter.
     assert "repo_(ctx_)" in rendered
     assert "repo_(ctx)" not in rendered
+
+
+# ``client_read_only`` is the other half of the pair: the rows have a
+# server-side producer, so the repository stays writable, but a client
+# reaches no write verb. ``read_only`` stops the repository too.
+CLIENT_READ_ONLY_FIXTURE = FIXTURE.replace(
+    ":subcomponent: api\n",
+    ":subcomponent: api\n:client_read_only: true\n",
+)
+
+
+def test_client_read_only_hides_the_wire_writes_and_keeps_the_repository(tmp_path):
+    model = tmp_path / "ores.widget.widget_owner_junction.org"
+    model.write_text(CLIENT_READ_ONLY_FIXTURE, encoding="utf-8")
+    junction = load_org_junction_model(model)["junction"]
+    assert junction["client_read_only"] is True
+    assert junction["wire_write_enabled"] is False
+
+    names = [m["name"] for m in junction_protocol_messages(junction)]
+    assert not any(
+        name.startswith(("save_", "delete_", "replace_")) for name in names)
+
+    # The repository is the difference between the two flags: it keeps its
+    # writes here, where a :read_only: junction would have dropped them.
+    repository = _render(tmp_path, "cpp_domain_type_repository.hpp.mustache",
+                         "widget_owner_repository.hpp",
+                         body=CLIENT_READ_ONLY_FIXTURE)
+    assert "void write(" in repository
+    assert "void remove(" in repository
+
+
+def test_read_only_drops_the_repository_writes(tmp_path):
+    repository = _render(tmp_path, "cpp_domain_type_repository.hpp.mustache",
+                         "widget_owner_repository.hpp",
+                         body=READ_ONLY_FIXTURE)
+    assert "void write(" not in repository
+    assert "void remove(" not in repository

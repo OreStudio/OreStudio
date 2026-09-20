@@ -95,21 +95,21 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
         get_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->list_by_{{right.column_short}}(std::move(msg)); }));
 {{/right.list_by}}
-{{^read_only}}
+{{#wire_write_enabled}}
     subs.push_back(nats.queue_subscribe(
         save_{{name_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_{{name_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-{{/read_only}}
+{{/wire_write_enabled}}
     subs.push_back(nats.queue_subscribe(
         count_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->count_by_{{left.column_short}}(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         count_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->count_by_{{right.column_short}}(std::move(msg)); }));
-{{^read_only}}
+{{#wire_write_enabled}}
 {{#left.replace_by}}
     subs.push_back(nats.queue_subscribe(
         replace_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
@@ -120,7 +120,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
         replace_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->replace_by_{{right.column_short}}(std::move(msg)); }));
 {{/right.replace_by}}
-{{/read_only}}
+{{/wire_write_enabled}}
     return subs;
 }
 

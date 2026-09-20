@@ -455,7 +455,7 @@ public:
 {{^right.is_uuid}}
         const std::string& {{right.column}});
 {{/right.is_uuid}}
-{{^read_only}}
+{{#wire_write_enabled}}
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
      *
@@ -530,7 +530,7 @@ public:
         const std::string& change_reason_code,
         const std::string& change_commentary);
 {{/right.replace_by}}
-{{/read_only}}
+{{/wire_write_enabled}}
 
 private:
     context ctx_;

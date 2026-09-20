@@ -1409,56 +1409,17 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
         co_return auth.error();
     }
 
-    try {
-        auto account_id_str = req.get_query_param("account_id");
-        auto start_str = req.get_query_param("start");
-        auto end_str = req.get_query_param("end");
-
-        boost::uuids::uuid target_account_id = auth->account_id;
-        bool aggregate_mode = false;
-
-        if (account_id_str.empty()) {
-            // No account specified - aggregate mode for admin, own account for others
-            if (auth->is_admin) {
-                aggregate_mode = true;
-            }
-        } else {
-            auto requested_id = boost::uuids::string_generator()(account_id_str);
-            if (!auth->is_admin && requested_id != auth->account_id) {
-                co_return http_response::forbidden("Cannot view other users' statistics");
-            }
-            target_account_id = requested_id;
-        }
-
-        // TODO: Parse start/end from query params if provided
-        (void)start_str;
-        (void)end_str;
-
-        // Query statistics from database. The continuous aggregates the
-        // statistics are computed from (ores_iam_session_stats_*_vw) are not
-        // reachable from the generated session repository, and the
-        // hand-written read that preceded it queried a table that does not
-        // exist (ores_iam_session_stats_tbl -- the schema creates the views,
-        // never that table). The response keeps its shape and returns no
-        // rows until the aggregate read is modelled.
-        std::vector<iam::messaging::session_statistics> stats;
-        if (aggregate_mode) {
-            BOOST_LOG_SEV(lg(), info) << "Aggregate session statistics not yet modelled";
-        } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Session statistics not yet modelled for account "
-                << boost::uuids::to_string(target_account_id);
-        }
-
-        iam::messaging::get_session_statistics_response resp;
-        resp.statistics = std::move(stats);
-        resp.success = true;
-
-        co_return http_response::json(rfl::json::write(resp));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get session statistics error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
+    // Nothing can answer this request yet. The daily aggregate is the
+    // ores_iam_session_stats_daily_vw continuous aggregate, which the schema
+    // creates only under the Timescale licence, and the hand-written read this
+    // replaced queried ores_iam_session_stats_tbl, which no schema ever
+    // created. The request says so rather than replying with an empty list
+    // that reads as "no sessions in range".
+    BOOST_LOG_SEV(lg(), warn)
+        << "Session statistics are not modelled; refusing the request";
+    co_return http_response::error(
+        http_status::not_implemented,
+        "Session statistics are not modelled yet");
 }
 
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {

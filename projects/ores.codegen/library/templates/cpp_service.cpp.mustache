@@ -430,7 +430,12 @@ void {{name_singular}}_service::save_{{name_short}}(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{name_short}}.size() << " {{name_words}}";
     auto ts = {{name_short}};
     for (auto& t : ts) {
+{{#party_id_is_target}}
+        stamp_{{name_singular}}(t, ctx_);
+{{/party_id_is_target}}
+{{^party_id_is_target}}
         stamp(t, ctx_);
+{{/party_id_is_target}}
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << {{name_short}}.size() << " {{name_words}}";

@@ -128,7 +128,7 @@ void party_counterparty_service::save_party_counterparties(
                                << " party counterparties";
     auto ts = party_counterparties;
     for (auto& t : ts) {
-        stamp(t, ctx_);
+        stamp_party_counterparty(t, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << party_counterparties.size() << " party counterparties";

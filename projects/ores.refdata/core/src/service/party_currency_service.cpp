@@ -124,7 +124,7 @@ void party_currency_service::save_party_currencies(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_currencies.size() << " party currencies";
     auto ts = party_currencies;
     for (auto& t : ts) {
-        stamp(t, ctx_);
+        stamp_party_currency(t, ctx_);
     }
     repo_.write(ts);
     BOOST_LOG_SEV(lg(), info) << "Saved " << party_currencies.size() << " party currencies";

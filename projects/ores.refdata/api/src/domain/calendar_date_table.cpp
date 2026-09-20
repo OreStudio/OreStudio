@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.api/domain/calendar_date_table.hpp"
 #include <fort.hpp>
 
@@ -30,7 +35,7 @@ std::string convert_to_table(const std::vector<calendar_date>& v) {
     table << fort::header << "Calendar" << "Date" << "Business Day" << "Source" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& cd : v) {
+    for ([[maybe_unused]] const auto& cd : v) {
         table << cd.calendar_code << cd.date << (cd.is_business_day ? "true" : "false") << cd.source
               << cd.modified_by << cd.version << fort::endr;
     }

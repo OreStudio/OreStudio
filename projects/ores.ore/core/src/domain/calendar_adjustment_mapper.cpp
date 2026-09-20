@@ -32,10 +32,10 @@ constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
 } // namespace
 
-refdata::domain::calendar_adjustment calendar_adjustment_mapper::map(const newcalendar& v) {
+refdata::messaging::calendar_adjustment calendar_adjustment_mapper::map(const newcalendar& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar: " << std::string(v.name);
 
-    refdata::domain::calendar_adjustment r;
+    refdata::messaging::calendar_adjustment r;
     r.calendar_name = std::string(v.name);
 
     if (v.BaseCalendar)
@@ -63,11 +63,11 @@ refdata::domain::calendar_adjustment calendar_adjustment_mapper::map(const newca
     return r;
 }
 
-std::vector<refdata::domain::calendar_adjustment>
+std::vector<refdata::messaging::calendar_adjustment>
 calendar_adjustment_mapper::map(const calendaradjustment& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar adjustments. Total: " << v.Calendar.size();
 
-    std::vector<refdata::domain::calendar_adjustment> r;
+    std::vector<refdata::messaging::calendar_adjustment> r;
     r.reserve(v.Calendar.size());
     std::ranges::transform(v.Calendar, std::back_inserter(r), [](const auto& c) { return map(c); });
 
@@ -75,7 +75,7 @@ calendar_adjustment_mapper::map(const calendaradjustment& v) {
     return r;
 }
 
-newcalendar calendar_adjustment_mapper::reverse(const refdata::domain::calendar_adjustment& v) {
+newcalendar calendar_adjustment_mapper::reverse(const refdata::messaging::calendar_adjustment& v) {
     BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping calendar: " << v.calendar_name;
 
     newcalendar r;
@@ -102,7 +102,7 @@ newcalendar calendar_adjustment_mapper::reverse(const refdata::domain::calendar_
 }
 
 calendaradjustment
-calendar_adjustment_mapper::reverse(const std::vector<refdata::domain::calendar_adjustment>& v) {
+calendar_adjustment_mapper::reverse(const std::vector<refdata::messaging::calendar_adjustment>& v) {
     BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping " << v.size() << " calendar adjustments.";
 
     calendaradjustment r;

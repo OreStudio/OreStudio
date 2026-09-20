@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_table.hpp"
 #include <fort.hpp>
 
@@ -29,7 +34,7 @@ std::string convert_to_table(const std::vector<currency_pair_convention_calendar
 
     table << fort::header << "Pair" << "Calendar" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& pcc : v) {
+    for ([[maybe_unused]] const auto& pcc : v) {
         table << pcc.pair_code << pcc.calendar_code << pcc.modified_by << pcc.version << fort::endr;
     }
     return table.to_string();

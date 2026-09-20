@@ -23,7 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
@@ -42,11 +42,11 @@ private:
     }
 
 public:
-    static refdata::domain::calendar_adjustment map(const newcalendar& v);
-    static std::vector<refdata::domain::calendar_adjustment> map(const calendaradjustment& v);
+    static refdata::messaging::calendar_adjustment map(const newcalendar& v);
+    static std::vector<refdata::messaging::calendar_adjustment> map(const calendaradjustment& v);
 
-    static newcalendar reverse(const refdata::domain::calendar_adjustment& v);
-    static calendaradjustment reverse(const std::vector<refdata::domain::calendar_adjustment>& v);
+    static newcalendar reverse(const refdata::messaging::calendar_adjustment& v);
+    static calendaradjustment reverse(const std::vector<refdata::messaging::calendar_adjustment>& v);
 };
 
 }

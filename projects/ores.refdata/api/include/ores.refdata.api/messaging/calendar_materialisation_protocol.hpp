@@ -17,13 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
-#define ORES_REFDATA_API_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REFDATA_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
+#define ORES_REFDATA_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
 
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <string_view>
 
 namespace ores::refdata::messaging {
 
@@ -33,16 +37,12 @@ namespace ores::refdata::messaging {
  * Extends (never rewrites below the existing watermark) a single
  * calendar's materialised calendar_dates, or every calendar's, up to
  * end_year. No cron job triggers this -- it is user- or save-action-
- * triggered only (see the parent task's plan).
+ * triggered only.
  */
 struct regenerate_calendar_dates_request {
     using response_type = struct regenerate_calendar_dates_response;
     static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.regenerate";
-
-    /// Calendar to regenerate; absent means every calendar.
     std::optional<std::string> calendar_code;
-    /// Last year (inclusive) to materialise up to; absent falls back to
-    /// the calendar.materialisation.end_horizon system setting.
     std::optional<int> end_year;
 };
 

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 98C698D3-22C2-462A-A864-3072CA6AECD2
+:END:
+#+title: ores.refdata.asset_class_messages
+#+description: Codegen operation model for the asset_class protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: asset_class
+#+namespace: ores::refdata::messaging
+#+brief: Asset class catalogue protocol messages.
+#+filetags: :model:operation:refdata:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+The asset class catalogue protocol messages.
+
+=asset_class_info= is a joined shape: the =asset_class_code= entity holds
+the code, name and description, and the coding scheme lives beside it.
+The rows are read by a hand-written repository, so the shape is a message
+payload and not an entity -- there is no table that carries
+=coding_scheme_code=.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** asset_class_info
+
+#+begin_src cpp :name comment
+/**
+ * @brief An asset class entry from the refdata catalogue.
+ *
+ * Carries the code, human-readable description and coding scheme so
+ * callers can build display labels and filter values without
+ * hard-coding them.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Unique asset class code, e.g. "fx", "rates", "commodity".
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Display label, e.g. "FX", "Rates".
+
+*** coding_scheme_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Coding scheme the code belongs to, e.g. "ORE_ASSET_CLASS".
+
+** get_asset_classes_request
+:PROPERTIES:
+:subject: refdata.v1.asset-classes.list
+:response: get_asset_classes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request published asset class entries from the refdata service.
+ *
+ * An optional coding_scheme_code filter narrows the result to a single
+ * coding scheme. If empty, all schemes are returned.
+ */
+#+end_src
+
+*** coding_scheme_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional filter; empty means all schemes.
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 200
+:END:
+
+** get_asset_classes_response
+
+*** asset_classes
+:PROPERTIES:
+:cpp_type: std::vector<asset_class_info>
+:END:
+
+*** total_available_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

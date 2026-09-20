@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
@@ -70,6 +75,46 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest() {
         "Reading latest calendar dates");
 }
 
+std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::uint32_t offset,
+                                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("calendar_code"_c, "date"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+        ctx_,
+        query,
+        [](const auto& entities) { return calendar_date_mapper::map(entities); },
+        lg(),
+        "Reading latest calendar dates (paginated).");
+}
+
+std::uint32_t calendar_date_repository::get_total_calendar_date_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count: " << count;
+    return count;
+}
+
 std::vector<domain::calendar_date>
 calendar_date_repository::read_latest_by_calendar(const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar dates. Calendar: " << calendar_code;
@@ -81,12 +126,14 @@ calendar_date_repository::read_latest_by_calendar(const std::string& calendar_co
                              "valid_to"_c == max.value()) |
                        order_by("date"_c);
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
         lg(),
         "Reading latest calendar dates by calendar.");
+
+    return rows;
 }
 
 std::vector<domain::calendar_date>
@@ -100,12 +147,14 @@ calendar_date_repository::read_latest_by_date(const std::string& date) {
         where("tenant_id"_c == tid && "date"_c == date && "valid_to"_c == max.value()) |
         order_by("calendar_code"_c);
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
         lg(),
         "Reading latest calendar dates by date.");
+
+    return rows;
 }
 
 std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_calendar(
@@ -120,12 +169,14 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_cale
                              "valid_to"_c == max.value()) |
                        order_by("date"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
         lg(),
         "Reading latest calendar dates by calendar (paginated).");
+
+    return rows;
 }
 
 std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calendar(
@@ -149,6 +200,29 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calenda
 
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by calendar: " << count;
+    return count;
+}
+
+std::uint32_t
+calendar_date_repository::get_total_calendar_date_count_by_date(const std::string& date) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Date: " << date;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "date"_c == date && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
     return count;
 }
 

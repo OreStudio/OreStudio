@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
 #include <vector>
@@ -73,7 +73,7 @@ public:
      * @throws std::runtime_error if a requested calendar_code does not
      * exist, or its base_calendar_code chain has a cycle.
      */
-    std::vector<domain::calendar_adjustment>
+    std::vector<messaging::calendar_adjustment>
     assemble(const std::vector<std::string>& calendar_codes = {});
 
 private:

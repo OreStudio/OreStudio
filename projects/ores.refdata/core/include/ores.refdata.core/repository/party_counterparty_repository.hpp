@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_REPOSITORY_HPP
 
@@ -56,10 +61,34 @@ public:
     void write(const std::vector<domain::party_counterparty>& party_counterparties);
 
     std::vector<domain::party_counterparty> read_latest();
+    std::vector<domain::party_counterparty> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party counterparties.
+     */
+    std::uint32_t get_total_party_counterparty_count();
     std::vector<domain::party_counterparty>
     read_latest_by_party(const boost::uuids::uuid& party_id);
+    /**
+     * @brief Reads latest party counterparties filtered by party_id, with pagination.
+     */
+    std::vector<domain::party_counterparty> read_latest_by_party(const boost::uuids::uuid& party_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party counterparties filtered by party_id.
+     */
+    std::uint32_t get_total_party_counterparty_count_by_party(const boost::uuids::uuid& party_id);
+
     std::vector<domain::party_counterparty>
     read_latest_by_counterparty(const boost::uuids::uuid& counterparty_id);
+
+    /**
+     * @brief Gets the total count of active party counterparties filtered by counterparty_id.
+     */
+    std::uint32_t
+    get_total_party_counterparty_count_by_counterparty(const boost::uuids::uuid& counterparty_id);
 
     void remove(const boost::uuids::uuid& party_id, const boost::uuids::uuid& counterparty_id);
     void remove_by_party(const boost::uuids::uuid& party_id);

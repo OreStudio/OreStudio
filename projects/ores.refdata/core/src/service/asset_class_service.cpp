@@ -23,7 +23,7 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-std::vector<domain::asset_class_info> asset_class_service::list_asset_classes(
+std::vector<messaging::asset_class_info> asset_class_service::list_asset_classes(
     const std::string& coding_scheme, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing asset classes. scheme=" << coding_scheme;
     return repo_.read_latest(ctx_, coding_scheme, offset, limit);

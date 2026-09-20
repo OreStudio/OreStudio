@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_RESOLUTION_REPOSITORY_HPP
 
@@ -54,10 +59,35 @@ public:
     std::string sql();
 
     std::vector<domain::tenor_convention_resolution> read_latest();
+    std::vector<domain::tenor_convention_resolution> read_latest(std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions.
+     */
+    std::uint32_t get_total_resolution_count();
     std::vector<domain::tenor_convention_resolution>
     read_latest_by_convention(const std::string& convention_code);
+    /**
+     * @brief Reads latest tenor convention resolutions filtered by convention_code, with
+     * pagination.
+     */
+    std::vector<domain::tenor_convention_resolution> read_latest_by_convention(
+        const std::string& convention_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions filtered by
+     * convention_code.
+     */
+    std::uint32_t get_total_resolution_count_by_convention(const std::string& convention_code);
+
     std::vector<domain::tenor_convention_resolution>
     read_latest_by_tenor(const std::string& tenor_code);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions filtered by tenor_code.
+     */
+    std::uint32_t get_total_resolution_count_by_tenor(const std::string& tenor_code);
 
 
 private:

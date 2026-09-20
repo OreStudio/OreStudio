@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_SERVICE_CALENDAR_DATE_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_CALENDAR_DATE_SERVICE_HPP
 
@@ -61,6 +66,17 @@ public:
     std::vector<domain::calendar_date> list_calendar_dates();
 
     /**
+     * @brief Lists calendar dates with pagination.
+     */
+    std::vector<domain::calendar_date> list_calendar_dates(std::uint32_t offset,
+                                                           std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active calendar dates.
+     */
+    std::uint32_t get_total_calendar_date_count();
+
+    /**
      * @brief Lists calendar dates for a specific calendar.
      *
      * @param calendar_code The calendar to filter by
@@ -80,6 +96,10 @@ public:
     std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
 
     /**
+     * @brief Gets the total count of active calendar dates filtered by date.
+     */
+    std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
+    /**
      * @brief Saves a calendar date (creates or updates).
      *
      * @param calendar_date The calendar date to save
@@ -93,6 +113,7 @@ public:
      * @param date The date
      */
     void remove_calendar_date(const std::string& calendar_code, const std::string& date);
+
 
 private:
     repository::calendar_date_repository repo_;

@@ -17,25 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_ASSET_CLASS_INFO_HPP
-#define ORES_REFDATA_API_DOMAIN_ASSET_CLASS_INFO_HPP
-
-#include <string>
-
-namespace ores::refdata::domain {
-
 /**
- * @brief An asset class entry from the refdata catalogue.
- *
- * Carries the code, human-readable description and coding scheme so callers
- * can build display labels and filter values without hard-coding them.
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
  */
-struct asset_class_info {
-    std::string code;               ///< e.g. "fx", "rates", "Commodity"
-    std::string description;        ///< Display label, e.g. "FX", "Rates"
-    std::string coding_scheme_code; ///< e.g. "ORE_ASSET_CLASS", "FPML_ASSET_CLASS"
-};
+#ifndef ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_REGISTRAR_HPP
+#define ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_REGISTRAR_HPP
 
-}
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::refdata::messaging {
+
+std::vector<ores::nats::service::subscription> register_currency_pair_convention_calendar_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::refdata::messaging
 
 #endif

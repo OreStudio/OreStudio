@@ -31,10 +31,10 @@ using namespace ores::logging;
 
 namespace {
 
-domain::calendar_adjustment
+messaging::calendar_adjustment
 to_adjustment(const domain::calendar& c,
               const std::vector<domain::calendar_exception>& exceptions) {
-    domain::calendar_adjustment adj;
+    messaging::calendar_adjustment adj;
     adj.calendar_name = c.code;
     adj.base_calendar = c.base_calendar_code;
     for (const auto& e : exceptions) {
@@ -56,7 +56,7 @@ to_adjustment(const domain::calendar& c,
 calendar_adjustment_export_service::calendar_adjustment_export_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::calendar_adjustment>
+std::vector<messaging::calendar_adjustment>
 calendar_adjustment_export_service::assemble(const std::vector<std::string>& calendar_codes) {
     repository::calendar_repository calendar_repo;
     repository::calendar_exception_repository exception_repo;
@@ -80,7 +80,7 @@ calendar_adjustment_export_service::assemble(const std::vector<std::string>& cal
     // chain, deduplicated -- so a chain of user templates based on other
     // user templates always has its BaseCalendar already defined earlier
     // in the assembled list, and a shared base is never emitted twice.
-    std::vector<domain::calendar_adjustment> ordered;
+    std::vector<messaging::calendar_adjustment> ordered;
     std::unordered_set<std::string> emitted;
     std::unordered_set<std::string> in_progress;
 

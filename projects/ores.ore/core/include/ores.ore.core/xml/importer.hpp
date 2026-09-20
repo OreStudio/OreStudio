@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
@@ -88,7 +88,7 @@ public:
      * @param ca Calendar adjustment to validate
      * @return Empty string if valid, otherwise error message
      */
-    static std::string validate_calendar_adjustment(const refdata::domain::calendar_adjustment& ca);
+    static std::string validate_calendar_adjustment(const refdata::messaging::calendar_adjustment& ca);
 
     /**
      * @brief Imports calendar adjustments from an ORE calendaradjustment XML file.
@@ -99,7 +99,7 @@ public:
      * @param path Path to the calendaradjustment.xml file
      * @return Vector of calendar adjustments, one per @c <Calendar> element
      */
-    static std::vector<refdata::domain::calendar_adjustment>
+    static std::vector<refdata::messaging::calendar_adjustment>
     import_calendar_adjustments(const std::filesystem::path& path);
 
     /**

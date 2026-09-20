@@ -78,7 +78,7 @@ std::vector<currency> importer::import_currency_config(const std::filesystem::pa
     return r;
 }
 
-std::string importer::validate_calendar_adjustment(const refdata::domain::calendar_adjustment& ca) {
+std::string importer::validate_calendar_adjustment(const refdata::messaging::calendar_adjustment& ca) {
     std::ostringstream errors;
 
     if (ca.calendar_name.empty())
@@ -87,7 +87,7 @@ std::string importer::validate_calendar_adjustment(const refdata::domain::calend
     return errors.str();
 }
 
-std::vector<refdata::domain::calendar_adjustment>
+std::vector<refdata::messaging::calendar_adjustment>
 importer::import_calendar_adjustments(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 

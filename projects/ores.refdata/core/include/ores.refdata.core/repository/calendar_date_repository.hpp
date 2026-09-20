@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CALENDAR_DATE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CALENDAR_DATE_REPOSITORY_HPP
 
@@ -54,6 +59,12 @@ public:
     void write(const std::vector<domain::calendar_date>& calendar_dates);
 
     std::vector<domain::calendar_date> read_latest();
+    std::vector<domain::calendar_date> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active calendar dates.
+     */
+    std::uint32_t get_total_calendar_date_count();
     std::vector<domain::calendar_date> read_latest_by_calendar(const std::string& calendar_code);
     /**
      * @brief Reads latest calendar dates filtered by calendar_code, with pagination.
@@ -66,7 +77,13 @@ public:
      * @brief Gets the total count of active calendar dates filtered by calendar_code.
      */
     std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
+
     std::vector<domain::calendar_date> read_latest_by_date(const std::string& date);
+
+    /**
+     * @brief Gets the total count of active calendar dates filtered by date.
+     */
+    std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
 
     void remove(const std::string& calendar_code, const std::string& date);
     void remove_by_calendar(const std::string& calendar_code);

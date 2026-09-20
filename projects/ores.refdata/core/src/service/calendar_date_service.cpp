@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/service/calendar_date_service.hpp"
 #include <stdexcept>
 
@@ -30,6 +35,17 @@ calendar_date_service::calendar_date_service(context ctx)
 std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates";
     return repo_.read_latest();
+}
+
+std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates with offset: " << offset
+                               << " limit: " << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t calendar_date_service::get_total_calendar_date_count() {
+    return repo_.get_total_calendar_date_count();
 }
 
 std::vector<domain::calendar_date>
@@ -48,6 +64,11 @@ std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates_by
 std::uint32_t
 calendar_date_service::get_total_calendar_date_count_by_calendar(const std::string& calendar_code) {
     return repo_.get_total_calendar_date_count_by_calendar(calendar_code);
+}
+
+std::uint32_t
+calendar_date_service::get_total_calendar_date_count_by_date(const std::string& date) {
+    return repo_.get_total_calendar_date_count_by_date(date);
 }
 
 void calendar_date_service::save_calendar_date(const domain::calendar_date& calendar_date) {

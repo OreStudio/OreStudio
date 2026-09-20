@@ -25,7 +25,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::vector<domain::asset_class_info> asset_class_repository::read_latest(
+std::vector<messaging::asset_class_info> asset_class_repository::read_latest(
     context ctx, const std::string& coding_scheme, std::uint32_t offset, std::uint32_t limit) {
 
     BOOST_LOG_SEV(lg(), debug) << "Reading asset classes. scheme=" << coding_scheme
@@ -57,12 +57,12 @@ std::vector<domain::asset_class_info> asset_class_repository::read_latest(
     const auto rows =
         execute_parameterized_multi_column_query(ctx, sql, params, lg(), "Reading asset classes");
 
-    std::vector<domain::asset_class_info> result;
+    std::vector<messaging::asset_class_info> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         if (row.size() < 3)
             continue;
-        domain::asset_class_info info;
+        messaging::asset_class_info info;
         info.code = row[0].value_or("");
         info.description = row[1].value_or("");
         info.coding_scheme_code = row[2].value_or("");

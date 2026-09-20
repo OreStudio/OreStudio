@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_REPOSITORY_HPP
 
@@ -56,10 +61,37 @@ public:
     write(const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars);
 
     std::vector<domain::currency_pair_convention_calendar> read_latest();
+    std::vector<domain::currency_pair_convention_calendar> read_latest(std::uint32_t offset,
+                                                                       std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active currency pair convention calendars.
+     */
+    std::uint32_t get_total_pair_convention_calendar_count();
     std::vector<domain::currency_pair_convention_calendar>
     read_latest_by_pair(const std::string& pair_code);
+    /**
+     * @brief Reads latest currency pair convention calendars filtered by pair_code, with
+     * pagination.
+     */
+    std::vector<domain::currency_pair_convention_calendar>
+    read_latest_by_pair(const std::string& pair_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active currency pair convention calendars filtered by
+     * pair_code.
+     */
+    std::uint32_t get_total_pair_convention_calendar_count_by_pair(const std::string& pair_code);
+
     std::vector<domain::currency_pair_convention_calendar>
     read_latest_by_calendar(const std::string& calendar_code);
+
+    /**
+     * @brief Gets the total count of active currency pair convention calendars filtered by
+     * calendar_code.
+     */
+    std::uint32_t
+    get_total_pair_convention_calendar_count_by_calendar(const std::string& calendar_code);
 
     void remove(const std::string& pair_code, const std::string& calendar_code);
     void remove_by_pair(const std::string& pair_code);

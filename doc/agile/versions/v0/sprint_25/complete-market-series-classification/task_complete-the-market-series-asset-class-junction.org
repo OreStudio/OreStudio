@@ -8,7 +8,7 @@
 #+filetags: :complete-market-series-classification:sprint_25:v0:
 #+owner: marco
 #+branch: feature/market-series-asset-class-junction-rls-drop
-#+pr:
+#+pr: 2112
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2112][#2112]] | [codegen,sql] Honour tenant isolation in the junction template |
 
 * Review
 

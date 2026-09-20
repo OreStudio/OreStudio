@@ -107,18 +107,18 @@ export function registerEntityRoutes(
     };
   });
 
-  if (descriptor.subjects.get !== undefined && descriptor.getRequest !== undefined) {
+  const { get: getSubject } = descriptor.subjects;
+  const { getRequest, getResponse, getView } = descriptor;
+  if (getSubject !== undefined && getRequest !== undefined && getResponse !== undefined) {
     server.get(keyPath, async (request: FastifyRequest) => {
       const session = requireSession(request);
       const key = readKey(request, descriptor.key);
       const response = (await session.client.callAuthenticated(
-        descriptor.subjects.get as string,
-        descriptor.getRequest?.(key),
-        descriptor.getResponse,
+        getSubject,
+        getRequest(key),
+        getResponse,
       )) as Record<string, unknown>;
-      const row = (descriptor.getView ?? descriptor.view)(
-        response['data'] as never,
-      );
+      const row = (getView ?? descriptor.view)(response['data'] as never);
       return { row };
     });
   }
@@ -153,14 +153,16 @@ export function registerEntityRoutes(
     return { ok: true, message: response.message };
   });
 
-  if (descriptor.subjects.history !== undefined && descriptor.historyRequest !== undefined) {
+  const { history: historySubject } = descriptor.subjects;
+  const { historyRequest, historyResponse } = descriptor;
+  if (historySubject !== undefined && historyRequest !== undefined && historyResponse !== undefined) {
     server.get(`${keyPath}/history`, async (request: FastifyRequest) => {
       const session = requireSession(request);
       const key = readKey(request, descriptor.key);
       const response = (await session.client.callAuthenticated(
-        descriptor.subjects.history as string,
-        descriptor.historyRequest?.(key),
-        descriptor.historyResponse,
+        historySubject,
+        historyRequest(key),
+        historyResponse,
       )) as { history: readonly unknown[]; message: string };
 
       /*

@@ -25,6 +25,7 @@
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"

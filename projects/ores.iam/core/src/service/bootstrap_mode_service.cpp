@@ -20,6 +20,7 @@
 
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include <algorithm>
 
 namespace ores::iam::service {

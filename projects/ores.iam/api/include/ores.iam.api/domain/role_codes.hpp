@@ -17,24 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
- * To modify, update the template and regenerate.
- */
-#ifndef ORES_IAM_API_DOMAIN_ROLE_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_ROLE_JSON_IO_HPP
-
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
+#ifndef ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
+#define ORES_IAM_API_DOMAIN_ROLE_CODES_HPP
 
 namespace ores::iam::domain {
 
 /**
- * @brief Dumps the role to a stream in JSON format.
+ * @brief Well-known role names used throughout the system.
+ *
+ * These names must match the rows seeded in ores_iam_roles_tbl. They lived in
+ * the hand-written role.hpp; that header is now generated from the role
+ * entity model, and codegen has no way to express "also emit this extra
+ * namespace of constants", so a regeneration would silently drop them. They
+ * therefore live in this own hand-maintained header, beside the generated
+ * role.hpp, following the permission_codes.hpp precedent.
  */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const role& v);
+namespace roles {
+constexpr auto super_admin = "SuperAdmin";
+constexpr auto tenant_admin = "TenantAdmin";
+constexpr auto trading = "Trading";
+constexpr auto sales = "Sales";
+constexpr auto operations = "Operations";
+constexpr auto support = "Support";
+constexpr auto viewer = "Viewer";
+}
 
 }
 

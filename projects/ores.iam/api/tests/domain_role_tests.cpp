@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
@@ -38,7 +38,6 @@ using ores::utility::faker::datetime;
 
 using ores::iam::domain::role;
 using namespace ores::iam::domain::roles;
-using namespace ores::iam::domain::permissions;
 using namespace ores::logging;
 
 TEST_CASE("create_role_with_valid_fields", tags) {
@@ -51,15 +50,12 @@ TEST_CASE("create_role_with_valid_fields", tags) {
     sut.description = "SuperAdmin role with full system access";
     sut.modified_by = "system";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
-    sut.permission_codes = {all};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "SuperAdmin");
     CHECK(!sut.description.empty());
     CHECK(sut.modified_by == "system");
-    CHECK(sut.permission_codes.size() == 1);
-    CHECK(sut.permission_codes[0] == "*");
 }
 
 TEST_CASE("create_trading_role", tags) {
@@ -72,12 +68,9 @@ TEST_CASE("create_trading_role", tags) {
     sut.description = "Trading role with currency management permissions";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 10, 30);
-    sut.permission_codes = {
-        currencies_create, currencies_read, currencies_update, currencies_delete};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Trading");
-    CHECK(sut.permission_codes.size() == 4);
 }
 
 TEST_CASE("create_sales_role", tags) {
@@ -90,11 +83,9 @@ TEST_CASE("create_sales_role", tags) {
     sut.description = "Sales role with read-only access";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 11);
-    sut.permission_codes = {currencies_read, accounts_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Sales");
-    CHECK(sut.permission_codes.size() == 2);
 }
 
 TEST_CASE("create_operations_role", tags) {
@@ -107,11 +98,9 @@ TEST_CASE("create_operations_role", tags) {
     sut.description = "Operations role with system monitoring capabilities";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 11, 30);
-    sut.permission_codes = {accounts_read, flags_read, login_info_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Operations");
-    CHECK(sut.permission_codes.size() == 3);
 }
 
 TEST_CASE("create_support_role", tags) {
@@ -124,12 +113,9 @@ TEST_CASE("create_support_role", tags) {
     sut.description = "Support role with account management capabilities";
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
-    sut.permission_codes = {
-        accounts_read, accounts_unlock, accounts_reset_password, login_info_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Support");
-    CHECK(sut.permission_codes.size() == 4);
 }
 
 TEST_CASE("role_with_specific_uuid", tags) {
@@ -145,7 +131,6 @@ TEST_CASE("role_with_specific_uuid", tags) {
     sut.description = "A custom role for testing";
     sut.modified_by = "tester";
     sut.recorded_at = datetime::make_timepoint(2025, 2, 1, 9);
-    sut.permission_codes = {currencies_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version == 2);
@@ -162,7 +147,6 @@ TEST_CASE("role_serialization_to_json", tags) {
     sut.description = "Role for serialization testing";
     sut.modified_by = "serializer";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 20, 14);
-    sut.permission_codes = {accounts_read, currencies_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     std::ostringstream os;
@@ -174,20 +158,17 @@ TEST_CASE("role_serialization_to_json", tags) {
     CHECK(json_output.find("serialization testing") != std::string::npos);
 }
 
-TEST_CASE("role_with_empty_permissions", tags) {
+TEST_CASE("role_fields_default_to_empty", tags) {
     auto lg(make_logger(test_suite));
 
     role sut;
-    sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
-    sut.name = "EmptyRole";
-    sut.description = "Role with no permissions";
-    sut.modified_by = "admin";
-    sut.recorded_at = datetime::make_timepoint(2025, 1, 25, 8);
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
-    CHECK(sut.name == "EmptyRole");
-    CHECK(sut.permission_codes.empty());
+    CHECK(sut.name.empty());
+    CHECK(sut.description.empty());
+    CHECK(sut.modified_by.empty());
+    CHECK(sut.change_reason_code.empty());
+    CHECK(sut.change_commentary.empty());
 }
 
 TEST_CASE("create_role_with_faker", tags) {
@@ -200,13 +181,6 @@ TEST_CASE("create_role_with_faker", tags) {
     sut.description = std::string(faker::lorem::sentence());
     sut.modified_by = std::string(faker::internet::username());
     sut.recorded_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28));
-
-    const std::vector<std::string> available_permissions = {
-        accounts_read, currencies_read, flags_read};
-    const int num_permissions = faker::number::integer(1, 3);
-    for (int i = 0; i < num_permissions; ++i) {
-        sut.permission_codes.push_back(available_permissions[faker::number::integer(0, 2)]);
-    }
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version >= 1);
@@ -214,7 +188,6 @@ TEST_CASE("create_role_with_faker", tags) {
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(!sut.permission_codes.empty());
 }
 
 TEST_CASE("create_multiple_random_roles", tags) {
@@ -231,7 +204,6 @@ TEST_CASE("create_multiple_random_roles", tags) {
         sut.modified_by =
             std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
-        sut.permission_codes = {accounts_read};
         BOOST_LOG_SEV(lg, info) << "Role " << i << ":" << sut;
 
         CHECK(sut.version >= 1);

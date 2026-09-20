@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,26 +17,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_ROLE_HPP
-#define ORES_IAM_DOMAIN_ROLE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_DOMAIN_ROLE_HPP
+#define ORES_IAM_API_DOMAIN_ROLE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
-#include <vector>
+#include <string_view>
 
 namespace ores::iam::domain {
 
 /**
- * @brief Represents a named collection of permissions that can be assigned
- * to accounts.
+ * @brief A named collection of permissions that can be assigned to accounts.
  *
- * Roles provide a way to group related permissions together for easier
- * management. For example, a "Trading" role might include permissions to
- * read and execute trades, while a "Support" role might have read-only
- * access to most resources.
+ * A named collection of permissions that can be assigned to accounts. Roles
+ * group related permissions for easier management: a "Trading" role might
+ * include permissions to read and execute trades, while a "Support" role
+ * might have read-only access to most resources.
+ *
+ * The table is bi-temporal and audited (see
+ * projects/ores.sql/create/iam/iam_roles_create.sql): it carries
+ * version, the four audit columns and the valid_from/valid_to pair
+ * with the GIST exclusion and the delete rule, so the model takes the
+ * ordinary audited shape and needs no shape flag.
+ *
+ * The model describes the table alone. The hand-written domain struct also
+ * carried a std::vector<std::string> permission_codes that no column
+ * backs -- it is denormalised from ores_iam_role_permissions_tbl by an
+ * RBAC join. A joined shape is a message or a query result, never an entity
+ * member, so the member is not modelled and the generated role.hpp
+ * replaces it; the join itself stays in the hand-written authorization
+ * layer.
+ *
+ * The entity's CRUD handler and sub-registrar are switched off below: the
+ * hand-written role_handler already owns the iam.v1.roles.* subjects for
+ * the authorization protocol, and the generated role_handler.hpp would
+ * overwrite it. The generated role_protocol.hpp still declares the entity
+ * CRUD messages; only the competing handler is suppressed.
  */
 struct role final {
     /**
@@ -55,7 +78,9 @@ struct role final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique name for the role (e.g., "Trading", "Sales", "Admin").
+     * @brief Unique name for the role within its tenant (for example "Trading", "Sales", "Admin").
+     * It is the natural key, so the generated table adds the partial unique index on (tenant_id,
+     * name) the hand-written table already had.
      */
     std::string name;
 
@@ -70,6 +95,11 @@ struct role final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
      *
      * References change_reasons table (soft FK).
@@ -82,35 +112,19 @@ struct role final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
-
-    /**
-     * @brief Permission codes granted to this role.
-     *
-     * This is a denormalized list of permission codes for convenience.
-     * The authoritative source is the role_permissions junction table.
-     */
-    std::vector<std::string> permission_codes;
 };
 
 /**
- * @brief Well-known role names used throughout the system.
+ * @brief Dispatch-key identifier for role, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
  */
-namespace roles {
-constexpr auto super_admin = "SuperAdmin";
-constexpr auto tenant_admin = "TenantAdmin";
-constexpr auto trading = "Trading";
-constexpr auto sales = "Sales";
-constexpr auto operations = "Operations";
-constexpr auto support = "Support";
-constexpr auto viewer = "Viewer";
+[[nodiscard]] constexpr std::string_view entity_type_of(const role&) {
+    return "ores.iam.role";
 }
 
 }

@@ -25,7 +25,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
-#include <sstream>
 
 namespace ores::iam::repository {
 
@@ -196,18 +195,6 @@ account_role_repository::read_roles_with_permissions(const boost::uuids::uuid& a
             r.name = *row[2];
             r.description = *row[3];
             r.modified_by = *row[4];
-
-            // Parse comma-separated permission codes
-            if (row[5]) {
-                const auto& codes_str = *row[5];
-                if (!codes_str.empty()) {
-                    std::istringstream iss(codes_str);
-                    std::string code;
-                    while (std::getline(iss, code, ',')) {
-                        r.permission_codes.push_back(code);
-                    }
-                }
-            }
             result.push_back(std::move(r));
         }
     }

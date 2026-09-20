@@ -57,13 +57,13 @@ TEST_CASE("write_single_role_permission", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     permission_repository perm_repo;
     role_permission_repository repo(h.context());
 
     auto r = generate_synthetic_role(ctx);
     auto p = generate_synthetic_permission(ctx);
-    role_repo.write(r);
+    role_repo.write(h.context(), r);
     perm_repo.write(h.context(), p);
 
     role_permission rp;
@@ -82,13 +82,13 @@ TEST_CASE("read_latest_role_permissions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     permission_repository perm_repo;
     role_permission_repository repo(h.context());
 
     auto r = generate_synthetic_role(ctx);
     auto p = generate_synthetic_permission(ctx);
-    role_repo.write(r);
+    role_repo.write(h.context(), r);
     perm_repo.write(h.context(), p);
 
     role_permission rp;
@@ -109,14 +109,14 @@ TEST_CASE("read_latest_role_permissions_by_role", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     permission_repository perm_repo;
     role_permission_repository repo(h.context());
 
     auto r = generate_synthetic_role(ctx);
     auto p1 = generate_synthetic_permission(ctx);
     auto p2 = generate_synthetic_permission(ctx);
-    role_repo.write(r);
+    role_repo.write(h.context(), r);
     perm_repo.write(h.context(), p1);
     perm_repo.write(h.context(), p2);
 

@@ -36,7 +36,6 @@ namespace reason = ores::dq::domain::change_reason_constants;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
     : ctx_(ctx)
-    , role_repo_(ctx)
     , account_role_repo_(ctx)
     , role_permission_repo_(ctx)
     , event_bus_(event_bus) {
@@ -93,42 +92,25 @@ domain::permission authorization_service::create_permission(const std::string& c
 
 std::vector<domain::role> authorization_service::list_roles() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all roles.";
-    auto roles = role_repo_.read_latest();
-
-    // Batch fetch all role-permission mappings in a single query
-    auto role_perm_map = role_permission_repo_.read_all_role_permission_codes();
-
-    // Populate permission_codes for each role from the pre-fetched map
-    for (auto& role : roles) {
-        const auto role_id_str = boost::lexical_cast<std::string>(role.id);
-        if (auto it = role_perm_map.find(role_id_str); it != role_perm_map.end()) {
-            role.permission_codes = std::move(it->second);
-        }
-    }
-
-    return roles;
+    return role_repo_.read_latest(ctx_);
 }
 
 std::optional<domain::role> authorization_service::find_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding role by ID: " << role_id;
-    auto roles = role_repo_.read_latest(role_id);
+    auto roles = role_repo_.read_latest(ctx_, boost::lexical_cast<std::string>(role_id));
     if (roles.empty()) {
         return std::nullopt;
     }
-    auto role = roles.front();
-    role.permission_codes = get_role_permissions(role.id);
-    return role;
+    return roles.front();
 }
 
 std::optional<domain::role> authorization_service::find_role_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Finding role by name: " << name;
-    auto roles = role_repo_.read_latest_by_name(name);
+    auto roles = role_repo_.read_latest_by_name(ctx_, name);
     if (roles.empty()) {
         return std::nullopt;
     }
-    auto role = roles.front();
-    role.permission_codes = get_role_permissions(role.id);
-    return role;
+    return roles.front();
 }
 
 domain::role authorization_service::create_role(const std::string& name,
@@ -165,9 +147,8 @@ domain::role authorization_service::create_role(const std::string& name,
     role.name = name;
     role.description = description;
     role.modified_by = modified_by;
-    role.permission_codes = permission_codes;
 
-    role_repo_.write(role);
+    role_repo_.write(ctx_, role);
 
     // Create role-permission mappings
     for (const auto& perm : resolved_perms) {

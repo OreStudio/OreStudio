@@ -57,13 +57,13 @@ TEST_CASE("write_single_account_role", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
     auto r = generate_synthetic_role(ctx);
     acc_repo.write(acc);
-    role_repo.write(r);
+    role_repo.write(h.context(), r);
 
     auto ar = generate_synthetic_account_role(ctx);
     ar.account_id = acc.id;
@@ -81,13 +81,13 @@ TEST_CASE("read_latest_account_roles", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
     auto r = generate_synthetic_role(ctx);
     acc_repo.write(acc);
-    role_repo.write(r);
+    role_repo.write(h.context(), r);
 
     auto ar = generate_synthetic_account_role(ctx);
     ar.account_id = acc.id;
@@ -107,15 +107,15 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    role_repository role_repo(h.context());
+    role_repository role_repo;
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
     auto r1 = generate_synthetic_role(ctx);
     auto r2 = generate_synthetic_role(ctx);
     acc_repo.write(acc);
-    role_repo.write(r1);
-    role_repo.write(r2);
+    role_repo.write(h.context(), r1);
+    role_repo.write(h.context(), r2);
 
     auto ar1 = generate_synthetic_account_role(ctx);
     ar1.account_id = acc.id;

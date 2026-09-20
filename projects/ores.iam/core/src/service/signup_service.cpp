@@ -19,6 +19,7 @@
  */
 #include "ores.iam.core/service/signup_service.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"

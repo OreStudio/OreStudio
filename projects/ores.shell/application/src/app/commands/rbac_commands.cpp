@@ -189,12 +189,6 @@ void rbac_commands::process_get_role(std::ostream& out,
     out << "Modified By:   " << found_role.modified_by << std::endl;
     out << "Recorded At:   " << found_role.recorded_at << std::endl;
     out << std::endl;
-    out << "Permissions (" << found_role.permission_codes.size() << "):" << std::endl;
-    out << "-------------" << std::endl;
-    for (const auto& code : found_role.permission_codes) {
-        out << "  - " << code << std::endl;
-    }
-    out << std::endl;
 }
 
 void rbac_commands::process_assign_role(std::ostream& out,

@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,6 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-drop trigger if exists ores_iam_roles_notify_trg on "ores_iam_roles_tbl";
-drop function if exists ores_iam_roles_notify_fn;
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: domain_types.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+/**
+ * The role wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
+ */
+export interface Role {
+    version: number;
+    tenant_id: string;
+    id: string;
+    name: string;
+    description: string;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
+}

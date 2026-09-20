@@ -19,39 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_mapper.hpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_CORE_REPOSITORY_ROLE_MAPPER_HPP
-#define ORES_IAM_CORE_REPOSITORY_ROLE_MAPPER_HPP
+#ifndef ORES_IAM_CORE_PRESENTATION_ROLE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_IAM_CORE_PRESENTATION_ROLE_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.iam.core/repository/role_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
 
-namespace ores::iam::repository {
+namespace ores::iam::presentation {
 
 /**
- * @brief Maps role domain entities to data storage layer and vice-versa.
+ * @brief Renders a role to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-class ORES_IAM_CORE_EXPORT role_mapper {
-private:
-    inline static std::string_view logger_name = "ores.iam.repository.role_mapper";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    static domain::role map(const role_entity& v);
-    static role_entity map(const domain::role& v);
-
-    static std::vector<domain::role> map(const std::vector<role_entity>& v);
-    static std::vector<role_entity> map(const std::vector<domain::role>& v);
-};
+[[nodiscard]] ORES_IAM_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_role_fields(const domain::role& v);
 
 }
 

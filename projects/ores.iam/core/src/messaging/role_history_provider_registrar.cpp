@@ -19,23 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_DOMAIN_ROLE_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_ROLE_JSON_IO_HPP
+#include "ores.iam.core/messaging/role_history_provider_registrar.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.iam.core/presentation/role_history_field_mapper.hpp"
+#include "ores.iam.core/service/role_service.hpp"
 
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
+namespace ores::iam::messaging {
 
-namespace ores::iam::domain {
-
-/**
- * @brief Dumps the role to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const role& v);
-
+void register_role_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.iam.role",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::role_service svc(scoped_ctx);
+            auto versions = svc.get_role_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_role_fields);
+        });
 }
 
-#endif
+} // namespace ores::iam::messaging

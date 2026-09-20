@@ -305,6 +305,19 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(list_roles.build());
     registry->register_route(list_roles.build());
 
+    // Registered before /roles/{id}: a trailing {id} compiles to a greedy
+    // match, so the narrower path must win the router's first-match scan.
+    auto get_role_perms =
+        router->get("/api/v1/roles/{id}/permissions")
+            .summary("Get role permissions")
+            .description("Get the permission codes granted to a role")
+            .tags({"rbac"})
+            .auth_required()
+            .response<iam::messaging::get_role_permissions_response>()
+            .handler([this](const http_request& req) { return handle_get_role_permissions(req); });
+    router->add_route(get_role_perms.build());
+    registry->register_route(get_role_perms.build());
+
     auto get_role = router->get("/api/v1/roles/{id}")
                         .summary("Get role")
                         .description("Get a specific role by ID")
@@ -1174,6 +1187,28 @@ asio::awaitable<http_response> iam_routes::handle_get_role(const http_request& r
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Get role error: " << e.what();
+        co_return http_response::internal_error(e.what());
+    }
+}
+
+asio::awaitable<http_response> iam_routes::handle_get_role_permissions(const http_request& req) {
+    BOOST_LOG_SEV(lg(), debug) << "Handling get role permissions request";
+
+    try {
+        auto role_id = req.get_path_param("id");
+        if (role_id.empty()) {
+            co_return http_response::bad_request("Role ID required");
+        }
+
+        auto role_uuid = boost::uuids::string_generator()(role_id);
+        auto permission_codes = auth_service_->get_role_permissions(role_uuid);
+
+        iam::messaging::get_role_permissions_response resp;
+        resp.permission_codes = permission_codes;
+
+        co_return http_response::json(rfl::json::write(resp));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Get role permissions error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }

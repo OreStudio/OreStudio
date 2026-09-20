@@ -51,6 +51,10 @@ The authorization protocol messages.
 :END:
 
 ** get_role_request
+:PROPERTIES:
+:subject: iam.v1.roles.get
+:response: get_role_response
+:END:
 
 *** identifier
 :PROPERTIES:
@@ -217,6 +221,24 @@ The authorization protocol messages.
 :END:
 
 ** get_account_permissions_response
+
+*** permission_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** get_role_permissions_request
+:PROPERTIES:
+:subject: iam.v1.roles.permissions
+:response: get_role_permissions_response
+:END:
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_role_permissions_response
 
 *** permission_codes
 :PROPERTIES:

@@ -106,6 +106,14 @@ export interface GetAccountPermissionsResponse {
     permission_codes: string[];
 }
 
+export interface GetRolePermissionsRequest {
+    role_id: string;
+}
+
+export interface GetRolePermissionsResponse {
+    permission_codes: string[];
+}
+
 export interface SuggestRoleCommandsRequest {
     username: string;
     tenant_id: string;
@@ -118,10 +126,12 @@ export interface SuggestRoleCommandsResponse {
 
 export const subjects = {
     list_roles_request: "iam.v1.roles.list",
+    get_role_request: "iam.v1.roles.get",
     assign_role_request: "iam.v1.roles.assign",
     assign_role_by_name_request: "iam.v1.roles.assign-by-name",
     revoke_role_request: "iam.v1.roles.revoke",
     revoke_role_by_name_request: "iam.v1.roles.revoke-by-name",
     get_account_roles_request: "iam.v1.roles.by-account",
+    get_role_permissions_request: "iam.v1.roles.permissions",
     suggest_role_commands_request: "iam.v1.roles.suggest-commands",
 } as const;

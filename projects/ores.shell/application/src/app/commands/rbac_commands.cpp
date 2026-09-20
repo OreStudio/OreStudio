@@ -189,6 +189,21 @@ void rbac_commands::process_get_role(std::ostream& out,
     out << "Modified By:   " << found_role.modified_by << std::endl;
     out << "Recorded At:   " << found_role.recorded_at << std::endl;
     out << std::endl;
+
+    iam::messaging::get_role_permissions_request perms_req;
+    perms_req.role_id = boost::uuids::to_string(found_role.id);
+
+    auto perms = do_auth_request<iam::messaging::get_role_permissions_response>(
+        out, session, iam::messaging::get_role_permissions_request::nats_subject, perms_req);
+    if (!perms)
+        return;
+
+    out << "Permissions (" << perms->permission_codes.size() << "):" << std::endl;
+    out << "-------------" << std::endl;
+    for (const auto& code : perms->permission_codes) {
+        out << "  - " << code << std::endl;
+    }
+    out << std::endl;
 }
 
 void rbac_commands::process_assign_role(std::ostream& out,

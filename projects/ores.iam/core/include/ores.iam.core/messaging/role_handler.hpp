@@ -83,6 +83,48 @@ public:
         }
     }
 
+    void get(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
+        auto req = decode<get_role_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::authorization_service svc(ctx);
+
+            // A UUID identifier is a role id; anything else is a role name.
+            std::optional<boost::uuids::uuid> role_id;
+            try {
+                boost::uuids::string_generator sg;
+                role_id = sg(req->identifier);
+            } catch (const std::exception&) {
+            }
+
+            auto found = role_id ? svc.find_role(*role_id) : svc.find_role_by_name(req->identifier);
+
+            get_role_response resp;
+            if (found) {
+                resp.found = true;
+                resp.role = std::move(found);
+            } else {
+                resp.error_message = "Role not found: " + req->identifier;
+            }
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, std::move(resp));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_role_response{.error_message = e.what()});
+        }
+    }
+
     void assign(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<assign_role_request>(msg);
@@ -169,6 +211,34 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_roles_response{});
+        }
+    }
+
+    void permissions(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
+        auto req = decode<get_role_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::authorization_service svc(ctx);
+            boost::uuids::string_generator sg;
+            auto codes = svc.get_role_permissions(sg(req->role_id));
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_role_permissions_response{.permission_codes = std::move(codes)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_role_permissions_response{});
         }
     }
 

@@ -2449,50 +2449,49 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return messages
 
 
-def _junction_payload_field(column: dict[str, Any]) -> dict[str, Any]:
-    """One junction payload column as a derived protocol field.
-
-    The ``ts_type`` core.py stamps on the column with the domain projection
-    (uuid, date and IP become ``string``) wins over the protocol
-    projection's answer, so a link request states the same member type the
-    domain interface does.
-    """
-    cpp_type = column.get("cpp_type") or "std::string"
-    field: dict[str, Any] = {"name": column["name"], "cpp_type": cpp_type,
-                             "comment": ""}
-    mapped = column.get("ts_type") or _ts_type(cpp_type)
-    if mapped:
-        field["ts_type"] = mapped
-    return field
-
-
 def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive a junction's generic relationship protocol message list.
 
     The list is the model of the ``{{#junction}}`` block of
-    ``cpp_protocol.hpp.mustache``: a paged by-side read and an opt-in
-    whole-set replacement per side, a single-pair link and unlink, a count
-    per side, and the ``<junction>_view`` payload that enriches the junction
-    row with the other side's display fields. The two twins render from this
-    one list, so a field added to one appears in the other.
+    ``cpp_protocol.hpp.mustache``, which is the entity protocol's shape
+    plus the relationship verbs: a paged unscoped read of the junction rows
+    (the entity-mirroring read a listing calls), a paged by-side read per
+    ``:list_by:`` side returning the ``<junction>_view`` payload, a paged
+    ``:replace_by:`` whole-set replacement per side, a batch additive
+    ``save`` that leaves omitted rows alone, a batch ``delete`` by the
+    pair, a count per side -- both sides, because the repository serves
+    both -- and the view the by-side read returns. The two twins render
+    from this one list, so a field added to one appears in the other.
 
     Must be called on the enriched junction, after ``core.generate_from_model``
     has stamped the sides' ``is_uuid``/``is_date`` flags, the columns'
     ``ts_type`` and the repository key aliases. The by-side read and the
-    replacement keep the subjects and field shapes the C++ block already
-    emitted, so a junction that renders them today is unaffected by the added
-    verbs.
+    replacement keep the subjects they already emitted, so a junction that
+    renders them today keeps addressing the same endpoint.
     """
     component = junction.get("component", "")
     name = junction.get("name", "")
     singular = junction.get("name_singular", "")
     domain_type = f"ores::{component}::domain::{singular}"
-    columns = junction.get("columns") or []
     actor_fields = ("modified_by", "performed_by", "change_reason_code",
                     "change_commentary")
     sides = (junction.get("left") or {}, junction.get("right") or {})
 
-    messages: list[dict[str, Any]] = []
+    messages: list[dict[str, Any]] = [
+        _ts_message(
+            f"get_{name}_request",
+            response_type=f"get_{name}_response",
+            subject=f"{component}.v1.{name}.list",
+            fields=[_ts_field("offset", "std::uint32_t"),
+                    _ts_field("limit", "std::uint32_t")]),
+        _ts_message(
+            f"get_{name}_response",
+            fields=[_ts_field(name, f"std::vector<{domain_type}>"),
+                    _ts_field("total_available_count", "int"),
+                    _ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
     for side in sides:
         short = side.get("column_short", "")
         if not side.get("list_by"):
@@ -2507,11 +2506,34 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
                         _ts_field("limit", "std::uint32_t")]),
             _ts_message(
                 f"get_{name}_by_{short}_response",
-                fields=[_ts_field(name, f"std::vector<{domain_type}>"),
+                fields=[_ts_field(name, f"std::vector<{singular}_view>"),
                         _ts_field("total_available_count", "int"),
                         _ts_field("success", "bool"),
                         _ts_field("message", "std::string")]),
         ]
+
+    messages += [
+        _ts_message(
+            f"save_{singular}_request",
+            response_type=f"save_{singular}_response",
+            subject=f"{component}.v1.{name}.save",
+            fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
+        _ts_message(
+            f"save_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+        _ts_message(
+            f"delete_{singular}_request",
+            response_type=f"delete_{singular}_response",
+            subject=f"{component}.v1.{name}.delete",
+            fields=[_ts_field(f"{side['column']}s",
+                              "std::vector<std::string>") for side in sides]),
+        _ts_message(
+            f"delete_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
     for side in sides:
         short = side.get("column_short", "")
         if not side.get("replace_by"):
@@ -2529,33 +2551,6 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
                 fields=[_ts_field("success", "bool"),
                         _ts_field("message", "std::string")]),
         ]
-
-    link_fields = [_ts_field(sides[0]["column"], "std::string"),
-                   _ts_field(sides[1]["column"], "std::string")]
-    link_fields += [_junction_payload_field(column) for column in columns]
-    messages += [
-        _ts_message(
-            f"link_{singular}_request",
-            response_type=f"link_{singular}_response",
-            subject=f"{component}.v1.{name}.link_{singular}",
-            fields=link_fields + [_ts_field(f, "std::string")
-                                  for f in actor_fields]),
-        _ts_message(
-            f"link_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-        _ts_message(
-            f"unlink_{singular}_request",
-            response_type=f"unlink_{singular}_response",
-            subject=f"{component}.v1.{name}.unlink_{singular}",
-            fields=[_ts_field(sides[0]["column"], "std::string"),
-                    _ts_field(sides[1]["column"], "std::string")]
-                   + [_ts_field(f, "std::string") for f in actor_fields]),
-        _ts_message(
-            f"unlink_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
 
     for side in sides:
         short = side.get("column_short", "")

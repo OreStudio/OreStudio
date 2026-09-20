@@ -20,12 +20,11 @@ Model flags consumed by this template:
   caches. Requires =has_tenant_id=.
 
 For a junction model the block renders the generic relationship protocol: a
-paged by-side read per side, an opt-in whole-set replacement per side, a
-single-pair =link= and =unlink=, a count per side, and the
-=<junction>_view= payload that enriches the junction row with the other
-side's display fields. The by-side read and the replacement keep the
-subjects and shapes they already emitted, so a junction that renders them
-today is unaffected by the added verbs.
+paged unscoped read of the junction rows, a paged by-side read per
+=:list_by:= side that returns the =<junction>_view= payload, an opt-in
+whole-set replacement per =:replace_by:= side, a batch additive =save=, a
+batch =delete= by the pair, a count per side, and the view type. The
+by-side read and the replacement keep the subjects they already emitted.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -206,6 +205,36 @@ struct read_{{entity_plural}}_for_cache_response {
 
 namespace ores::{{component}}::messaging {
 
+/**
+ * @brief The {{name_singular_words}} row enriched with the joined row's
+ * display fields, so a screen needs one request for the whole set rather
+ * than one per row. The by-side read returns this view.
+ */
+struct {{name_singular}}_view {
+    ores::{{component}}::domain::{{name_singular}} {{name_singular}};
+{{#left.enrich_code}}
+    std::string {{left.column_short}}_code;
+{{/left.enrich_code}}
+{{#right.enrich_code}}
+    std::string {{right.column_short}}_code;
+{{/right.enrich_code}}
+};
+
+struct get_{{name}}_request {
+    using response_type = struct get_{{name}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_{{name}}_response {
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
 {{#left.list_by}}
 struct get_{{name}}_by_{{left.column_short}}_request {
     using response_type = struct get_{{name}}_by_{{left.column_short}}_response;
@@ -217,7 +246,7 @@ struct get_{{name}}_by_{{left.column_short}}_request {
 };
 
 struct get_{{name}}_by_{{left.column_short}}_response {
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    std::vector<{{name_singular}}_view> {{name}};
     int total_available_count = 0;
     bool success = false;
     std::string message;
@@ -235,13 +264,42 @@ struct get_{{name}}_by_{{right.column_short}}_request {
 };
 
 struct get_{{name}}_by_{{right.column_short}}_response {
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    std::vector<{{name_singular}}_view> {{name}};
     int total_available_count = 0;
     bool success = false;
     std::string message;
 };
 
 {{/right.list_by}}
+struct save_{{name_singular}}_request {
+    using response_type = struct save_{{name_singular}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.save";
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+
+    static save_{{name_singular}}_request from(std::vector<ores::{{component}}::domain::{{name_singular}}> v) {
+        return {.{{name}} = std::move(v)};
+    }
+};
+
+struct save_{{name_singular}}_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_{{name_singular}}_request {
+    using response_type = struct delete_{{name_singular}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.delete";
+    std::vector<std::string> {{left.column}}s;
+    std::vector<std::string> {{right.column}}s;
+};
+
+struct delete_{{name_singular}}_response {
+    bool success = false;
+    std::string message;
+};
+
 {{#left.replace_by}}
 struct replace_{{name}}_by_{{left.column_short}}_request {
     using response_type = struct replace_{{name}}_by_{{left.column_short}}_response;
@@ -280,55 +338,6 @@ struct replace_{{name}}_by_{{right.column_short}}_response {
 };
 
 {{/right.replace_by}}
-/**
- * @brief Opens one pair in the relation, creating the row when the pair is
- * not already open and leaving it unchanged when it is.
- *
- * Link is the incremental verb: a screen toggling one association does not
- * rewrite the whole set to change it, and does not need to know whether the
- * pair already exists.
- */
-struct link_{{name_singular}}_request {
-    using response_type = struct link_{{name_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.link_{{name_singular}}";
-    std::string {{left.column}};
-    std::string {{right.column}};
-{{#columns}}
-    {{{cpp_type}}} {{name}};
-{{/columns}}
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct link_{{name_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-/**
- * @brief Closes one pair in the relation, leaving every other pair of the
- * set untouched.
- */
-struct unlink_{{name_singular}}_request {
-    using response_type = struct unlink_{{name_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.unlink_{{name_singular}}";
-    std::string {{left.column}};
-    std::string {{right.column}};
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct unlink_{{name_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
 struct count_{{name}}_by_{{left.column_short}}_request {
     using response_type = struct count_{{name}}_by_{{left.column_short}}_response;
     static constexpr std::string_view nats_subject =
@@ -349,21 +358,6 @@ struct count_{{name}}_by_{{right.column_short}}_request {
 
 struct count_{{name}}_by_{{right.column_short}}_response {
     int total_available_count = 0;
-};
-
-/**
- * @brief The {{name_singular_words}} row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row.
- */
-struct {{name_singular}}_view {
-    ores::{{component}}::domain::{{name_singular}} {{name_singular}};
-{{#left.enrich_code}}
-    std::string {{left.column_short}}_code;
-{{/left.enrich_code}}
-{{#right.enrich_code}}
-    std::string {{right.column_short}}_code;
-{{/right.enrich_code}}
 };
 }
 

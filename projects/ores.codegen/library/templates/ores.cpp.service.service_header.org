@@ -381,6 +381,17 @@ public:
     std::vector<domain::{{name_singular}}> list_{{name_short}}();
 
     /**
+     * @brief Lists {{name_words}} with pagination.
+     */
+    std::vector<domain::{{name_singular}}>
+    list_{{name_short}}(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active {{name_words}}.
+     */
+    std::uint32_t get_total_{{name_singular_short}}_count();
+
+    /**
      * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}.
      *
      * @param {{left.column}} The {{left.column_title_lower}} to filter by
@@ -407,6 +418,7 @@ public:
                                                 std::uint32_t offset, std::uint32_t limit);
 {{/left.is_uuid}}
 
+{{/left.list_by}}
     /**
      * @brief Gets the total count of active {{name_words}} filtered by {{left.column}}.
      */
@@ -418,7 +430,6 @@ public:
         const std::string& {{left.column}});
 {{/left.is_uuid}}
 
-{{/left.list_by}}
 {{#right.list_by}}
     /**
      * @brief Lists {{name_words}} for a specific {{right.column_title_lower}}, with pagination.
@@ -433,6 +444,7 @@ public:
                                                  std::uint32_t offset, std::uint32_t limit);
 {{/right.is_uuid}}
 
+{{/right.list_by}}
     /**
      * @brief Gets the total count of active {{name_words}} filtered by {{right.column}}.
      */
@@ -443,8 +455,6 @@ public:
 {{^right.is_uuid}}
         const std::string& {{right.column}});
 {{/right.is_uuid}}
-
-{{/right.list_by}}
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
      *

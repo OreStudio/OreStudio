@@ -2,7 +2,7 @@
 :ID: 818208C0-3465-4CEF-A8C8-62A460871B2C
 :END:
 #+title: Codegen junction meta-model — the junction protocol
-#+description: The generic message set a junction model renders: by-side reads, set replacement, single-pair link and unlink, counts, and the view payload that enriches the other side. Design only, not yet implemented.
+#+description: The generic message set a junction model renders: an unscoped paged read, view-returning by-side reads, batch save and delete, an opt-in set replacement, and a count per side. Adopted on IAM's junction.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:junction:protocol:
@@ -17,10 +17,15 @@ that set changes. The C++ protocol template already emits a thin version of that
 -- =list_by= and =replace_by= per side -- and two junctions in the estate use it:
 compute's =app_version_platform= (both) and dq's =dataset_bundle_member=
 (=list_by=). It is not finished: the verb set is incomplete, the TypeScript facet
-does not serve junctions at all, and IAM's one junction was given an operation
+did not serve junctions at all, and IAM's one junction was given an operation
 model whose CRUD vocabulary is entity-shaped rather than relational. This page
 designs the generic set once, so every junction renders the same protocol and no
 junction needs a bespoke model to be usable from the UI.
+
+The verb set is the entity protocol's shape plus the relationship verbs. The
+first design also carried =link= and =unlink=; the revision removed them, because
+=save= and =delete= are the same operations with better names and because they
+are the only pair that cannot carry the junction's payload columns.
 
 * What a junction row is
 
@@ -37,30 +42,40 @@ because the junction row is what the relationship owns.
 
 | Verb | Request | Response | Emitted when |
 |------+---------+----------+--------------|
-| =get_<junction>_by_<side>= | the side's column, =offset=, =limit= | the view list, =total_available_count=, =success=, =message= | always, once per side |
+| =get_<junction>= | =offset=, =limit= | the junction rows, =total_available_count=, =success=, =message= | always |
+| =get_<junction>_by_<side>= | the side's column, =offset=, =limit= | the view list, =total_available_count=, =success=, =message= | where the side declares =:list_by:= |
+| =save_<junction>= | the junction rows | =success=, =message= | always |
+| =delete_<junction>= | one key vector per side | =success=, =message= | always |
 | =replace_<junction>_by_<side>= | the side's column, the junction rows, the four actor fields | =success=, =message= | where the side declares =:replace_by:= |
-| =link_<junction_singular>= | left column, right column, the junction's payload columns, the actor fields | =success=, =message= | always |
-| =unlink_<junction_singular>= | left column, right column, the actor fields | =success=, =message= | always |
 | =count_<junction>_by_<side>= | the side's column | =total_available_count= | always, once per side |
-| =exists_<junction_singular>= | left column, right column | =linked= | only when a consumer needs it; the by-side read answers it today |
 
 Decisions inside the set:
 
+- **The unscoped read mirrors the entity read.** =get_<junction>= returns the
+  junction rows, paged, so a listing has a verb that needs no side key. It is the
+  entity protocol's =get_<entity>= in junction form.
 - **Reads carry the junction rows, not the keys.** The row is the relationship's
   own data, and a caller that wants only the other side's identity can read that
   from the rows.
-- **One view type, not a per-junction one.** =<junction>_view= is the junction row
-  plus the other side's display fields, so a screen does not issue a request per
-  row. It is the same shape the session surface reached for, with the difference
-  that here it is *referenced by the read response* rather than declared and left
-  unused.
+- **The by-side read returns the view.** =<junction>_view= is the junction row plus
+  the other side's display fields, so a screen does not issue a request per row. An
+  emitted-but-unreferenced message is a liability -- the =session_view= mistake --
+  so the one read that can enrich returns it, and the view is referenced by
+  construction.
+- **save is the batch additive write.** =save_<junction>= upserts the pairs in the
+  request and leaves an omitted row alone. It mirrors the entity save, it carries
+  the junction's payload columns, and it is the write a workflow-driven caller
+  needs.
+- **delete is the batch key delete.** =delete_<junction>= removes the pairs its key
+  vectors name. It mirrors the entity delete, and it is the compensation a batch
+  save needs.
 - **Replacement is a whole-set operation and is opt-in.** =replace_by= closes what
   the request omits and opens what it names, inside one transaction, which is what
   the estate's soft close already expresses. It is destructive by nature, so a
   side declares =:replace_by:= to have it.
-- **Link and unlink are the incremental verbs.** A screen toggling one row should
-  not rewrite the set to change it, and should not need to know whether the pair
-  already exists.
+- **Every count has a server.** The protocol emits =count_<junction>_by_<side>= for
+  both sides, and the repository, service and handler serve both. A count the
+  repository does not serve is a verb a caller can reach and no server answers.
 - **Tenant scope never crosses the wire.** It comes from the caller's context, as
   the generated repository already does for every entity.
 - **The actor fields stay on the write requests**, matching the existing template
@@ -68,21 +83,31 @@ Decisions inside the set:
 
 * Naming and subjects
 
-Verbs follow the existing =<component>.v1.<junction_plural>.<verb>= shape, and the
-existing subjects for the two verbs already implemented are
-=.list_by_<column>= and =.replace_by_<column>=. The =account_party= operation
-model's =iam.v1.account-parties.by-account= is the outlier; it should not be
-copied, and the project should settle whether the read subject keeps the
-=list_by_= spelling or moves to match the =get_..._by_= verb.
+The verb is =get_<junction>_by_<side>= and the subject stays
+=<component>.v1.<junction_plural>.list_by_<column>=. The verb names the read;
+the subject keeps the spelling the junctions already in the estate address, so
+those endpoints do not move. The unscoped read, the save and the delete follow
+the entity subjects: =.list=, =.save= and =.delete=. The count subject is
+=.count_by_<column>=.
+
+The =account_party= operation model hyphenated its subjects
+(=iam.v1.account-parties.*=), while every generated junction subject uses the
+underscore form of the junction's name. IAM's junction now renders the generic
+protocol, so those four subjects move to the generated spelling
+(=iam.v1.account_parties.*=). Nothing outside the repository addresses them:
+the shell, the refdata workflow and the IAM registrar all read the subject from
+the generated request struct. The rename is called out in the commit and here
+rather than made silently.
 
 * What stays bespoke, and how the two coexist
 
 A genuine command that is not a relationship operation stays in an operation
-model, and the existing ownership gate already arbitrates between the two: it
-keys on the component and the entity, so a junction whose entity an operation
-model declares keeps that model's protocol, and a junction without one takes the
-generic set. That is exactly why =account_party= behaves as it does today, and it
-means adopting this design does not force a wire change on it.
+model, and the ownership gate arbitrates between the two: it keys on the
+component and the entity, so a junction whose entity an operation model declares
+keeps that model's protocol, and a junction without one takes the generic set.
+IAM's =account_party_junction= used that gate until the revision settled the set;
+it now renders the generic protocol, and the gate remains for a future junction
+that needs a bespoke command.
 
 * What the codegen needs
 
@@ -91,24 +116,27 @@ means adopting this design does not force a wire change on it.
    =domain_entity schema junction operation=. Adding =junction= is the same
    one-line change that entities needed, and it is also what removes the
    coverage gate's known junction exception.
-2. The C++ junction block gains the verbs it lacks -- =link=, =unlink=, =count=,
-   paging on the read -- and emits the view type; the TypeScript template gains a
-   ={{#junction}}= branch rendering the same set from the same model.
-3. Nothing per junction is needed in a template: the payload columns are already
-   in the model, and the verb set is derived from the sides and their flags.
+2. The C++ junction block gains the verbs the entity shape has -- the unscoped
+   read, the batch save, the batch delete, a count per side -- returns the view
+   from the by-side read, and drops the single-pair link and unlink; the
+   TypeScript template's ={{#junction}}= branch renders the same set from the same
+   model.
+3. Nothing per junction is needed in a template: the payload columns ride on the
+   saved rows, and the verb set is derived from the sides and their flags.
 
-* What to verify before implementing
+* What the first comparison had to verify, and how it resolved
 
-- The two junctions that already render a read would gain a view payload in the
-  response. Whether that is a compatible change depends on their consumers
-  (compute's is described as the desktop console and the repository tests), so
-  the change should re-point those consumers in the same commit.
+- The two junctions that already render a read gain a view payload in the
+  response. That is a wire change: compute's desktop console reads the row out of
+  the view, and its repository tests are untouched because the repository still
+  returns domain rows. dq's committed read is hand-maintained rather than
+  template-rendered, so the change reaches it when dq adopts the template.
 - =replace_by='s semantics against the current hand-written behaviour: the estate
-  soft-closes, so a replacement that omits a pair leaves the old row closed
-  rather than deleted. That is the intended reading here, and worth stating in
-  the template so nobody later mistakes it for an omission.
-- Whether the by-side read needs paging in practice: the current emitted read has
-  =offset= and =limit=, and no verb in the estate consumes them yet.
+  soft-closes, so a replacement that omits a pair leaves the old row closed rather
+  than deleted. The template states that reading.
+- Whether the by-side read needs paging in practice: it keeps =offset= and
+  =limit=, and the new unscoped read pages too, which is what caps a listing that
+  previously returned everything.
 
 * See also
 
@@ -118,48 +146,48 @@ means adopting this design does not force a wire change on it.
   TypeScript facet for junctions was found, and the rule that a joined shape is a
   message.
 
-* What the IAM comparison found
+* What the IAM comparison found, and how the revision closed it
 
 The protocol was implemented and exercised against IAM's =account_party_junction=,
 then compared with the operation model it would replace. The comparison stopped
-the replacement, and it corrected this design in three places.
+the replacement and named three gaps. The revision closes them, then adopts the
+protocol on IAM.
 
-- **The set has no unscoped read.** The operation model's =get_account_parties=
-  is consumed by the shell's =account-parties list=, and there is no junction
-  equivalent: every read in the set above requires a side key. A listing needs a
-  paged read of the junction itself, so the set gains
-  =get_<junction>_request/response= -- the junction rows, =offset= and =limit=,
-  no key.
-- **A destructive replace is not the only way to write.** =save_account_party= is
-  a batch, additive upsert -- omitted rows survive -- and it carries
-  workflow-command semantics (idempotency, a tenant supplied by the caller) that a
-  generated handler does not have. =replace_by_<side>= is destructive and
-  =link_<singular>= is single-pair, so neither replaces it. The set needs either a
-  batch additive verb, =link_<junction>= taking many pairs, or an explicit
-  decision that a workflow-driven write stays an operation model. That is a real
-  choice, not a gap to close by default.
-- **Do not emit what has no referent or no server.** The view is emitted and
-  unreferenced, because the read response had to stay compatible for the two
-  junctions already using it -- and this junction declares no enrichment, so the
-  view would carry nothing extra even if referenced. The count is emitted for
-  every side, while the repository implements counts only for a =:list_by:= side.
-  Both should follow the rule the session surface taught: a declared-but-unused
-  message is a liability, and a verb without a server is a trap.
+- **The set had no unscoped read.** The operation model's =get_account_parties= is
+  consumed by the shell's =account-parties list=, and no verb in the first set
+  answered it. Resolved: =get_<junction>= returns the junction rows, paged.
+- **A destructive replace is not the only way to write.** =save_account_party= is a
+  batch, additive upsert -- omitted rows survive -- and it carries workflow-command
+  semantics (idempotency, a tenant supplied by the caller) that a generated handler
+  does not have. Resolved: =save_<junction>= is the batch additive verb, with
+  =delete_<junction>= as its compensation, and the workflow-command wrapping stays
+  in the hand-written handler.
+- **Do not emit what has no referent or no server.** The view was emitted and
+  unreferenced, and the count was emitted for every side while the repository
+  served counts only for a =:list_by:= side. Resolved: the by-side read returns the
+  view, and the repository, service and handler serve both counts.
 
-Resolved in passing: =account_party_key= had one consumer, the refdata workflow's
-compensation, and =unlink_<singular>= carries the two keys inline, so it needs no
-counterpart.
+=link= and =unlink= did not survive the revision. They are redundant with =save=
+and =delete=, and they are the only pair that cannot carry the junction's payload
+columns. =account_party_key= has no counterpart: the delete request carries its
+two key vectors, so it needs no bespoke key type.
 
 * Status
 
-**Stage A is implemented** (the facet model type, the C++ verbs, the TypeScript
-branch, and the derived message list the two share), and it is committed. The two
-existing verbs are byte-identical, and the emission is unconditional, which
-regenerated compute's =app_version_platform= protocol additively -- the one file
-outside IAM, called out in the commit.
+**The protocol is revised and adopted on IAM's junction.** The verb set is the
+entity shape plus the relationship verbs -- =get_<junction>=,
+=get_<junction>_by_<side>= returning the view, =save_<junction>=,
+=delete_<junction>=, =replace_<junction>_by_<side>= and
+=count_<junction>_by_<side>= -- rendered for both twins from
+=org_loader.junction_protocol_messages= and the C++ junction block. The service,
+handler and registrar templates serve every verb, both counts included.
 
-**Stage B -- replacing IAM's operation model with the junction protocol -- is
-deliberately not done.** The gaps above are why. The order that closes them: add
-the unscoped paged read, decide the batch additive write, make the count follow
-the sides that have a server, and only then re-point the shell, the refdata
-workflow and the provisioning handler and remove the operation model.
+IAM's =account_party_junction= declares =:list_by:= and =:replace_by:= on its
+account side, renders the protocol itself, and keeps its hand-written service,
+handler and registrar for the workflow-command path. The
+=ores.iam.account_party_messages= operation model and its nine messages are
+removed. The generated output outside IAM that changes is compute's
+=app_version_platform= protocol and its generated junction stack, whose by-side
+read now returns the view; its shell consumer is re-pointed. dq's
+=dataset_bundle_member= protocol is hand-maintained, so the same view change
+reaches it when dq adopts the template.

@@ -33,7 +33,6 @@ CODEGEN = REPO_ROOT / "projects/ores.codegen"
 IAM_MODELING = REPO_ROOT / "projects/ores.iam/modeling"
 TENANT_TYPE = IAM_MODELING / "ores.iam.tenant_type.org"
 ACCOUNT_PARTY_JUNCTION = IAM_MODELING / "ores.iam.account_party_junction.org"
-ACCOUNT_PARTY_MESSAGES = IAM_MODELING / "ores.iam.account_party_messages.org"
 
 PROTOCOL_TEMPLATES = frozenset({
     "cpp_protocol.hpp.mustache",
@@ -113,38 +112,29 @@ def test_deleting_the_operation_model_restores_the_derived_protocol(tmp_path):
     assert PROTOCOL_TEMPLATES <= _templates(entity)
 
 
-def test_the_operation_model_owns_the_real_account_party_protocol(tmp_path):
-    """The pair the rule exists for: the real junction and its real
-    operation model. The committed junction declares no list read, so the
-    messaging gate already drops its protocol; the fixture adds one, which
-    makes the junction's own derived protocol renderable and lets the
-    ownership rule decide instead."""
-    text = ACCOUNT_PARTY_JUNCTION.read_text(encoding="utf-8")
-    marker = ":column:        account_id"
-    assert marker in text
+def test_the_real_account_party_junction_now_owns_its_protocol(tmp_path):
+    """The pair the rule existed for is retired. The real junction declares
+    its list read and has no operation model, so it renders its own protocol
+    -- and it still keeps its hand-written messaging stack, whose facets the
+    model disables."""
     junction = tmp_path / "ores.iam.account_party_junction.org"
-    junction.write_text(
-        text.replace(marker, marker + "\n:list_by:       account_id", 1),
-        encoding="utf-8")
-    operation = tmp_path / "ores.iam.account_party_messages.org"
-    shutil.copy(ACCOUNT_PARTY_MESSAGES, operation)
+    junction.write_text(ACCOUNT_PARTY_JUNCTION.read_text(encoding="utf-8"),
+                        encoding="utf-8")
     _reload_owners()
 
-    owned = _templates(junction)
-    assert "cpp_protocol.hpp.mustache" not in owned
-    # The junction keeps the rest of the messaging stack the list read admits.
-    assert "cpp_nats_handler.hpp.mustache" in owned
+    templates = _templates(junction)
+    assert PROTOCOL_TEMPLATES <= templates
+    # The hand-written service, handler and registrar stay: their generated
+    # facets are disabled in the model.
+    assert "cpp_service.hpp.mustache" not in templates
+    assert "cpp_nats_handler.hpp.mustache" not in templates
+    assert "cpp_nats_registrar.cpp.mustache" not in templates
 
-    operation.unlink()
-    _reload_owners()
-    assert "cpp_protocol.hpp.mustache" in _templates(junction)
 
-
-def test_the_iam_owner_map_names_the_real_operation_model():
+def test_the_iam_owner_map_no_longer_names_account_party():
     owners = _operation_protocol_owners(str(IAM_MODELING))
-    assert owners[("iam", "account_party")] == "ores.iam.account_party_messages.org"
-    # An entity with no operation model is absent, so its derived header
-    # stays: tenant_type, and the four neighbours the defect named.
-    for unowned in ("tenant_type", "tenant", "tenant_status",
+    # The junction renders the generic protocol, so no operation model owns
+    # it, and an entity with no operation model is absent too.
+    for unowned in ("account_party", "tenant_type", "tenant", "tenant_status",
                     "account_type", "account_contact_information"):
         assert ("iam", unowned) not in owners

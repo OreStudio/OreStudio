@@ -114,7 +114,11 @@ std::optional<std::vector<compute::domain::app_version_platform>> existing_platf
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp || !resp->success)
         return std::nullopt;
-    return resp->app_version_platforms;
+    std::vector<compute::domain::app_version_platform> rows;
+    rows.reserve(resp->app_version_platforms.size());
+    for (auto& view : resp->app_version_platforms)
+        rows.push_back(std::move(view.app_version_platform));
+    return rows;
 }
 
 std::optional<boost::uuids::uuid>

@@ -303,6 +303,13 @@ public:
 {{/read_only}}
     std::vector<domain::{{name_singular}}> read_latest();
     std::vector<domain::{{name_singular}}>
+    read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active {{name_words}}.
+     */
+    std::uint32_t get_total_{{name_singular_short}}_count();
+    std::vector<domain::{{name_singular}}>
 {{#left.is_uuid}}
     read_latest_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
 {{/left.is_uuid}}
@@ -322,6 +329,7 @@ public:
     read_latest_by_{{left.column_short}}(const std::string& {{left.column}},
                                         std::uint32_t offset, std::uint32_t limit);
 {{/left.is_uuid}}
+{{/left.list_by}}
 
     /**
      * @brief Gets the total count of active {{name_words}} filtered by {{left.column}}.
@@ -333,7 +341,7 @@ public:
 {{^left.is_uuid}}
         const std::string& {{left.column}});
 {{/left.is_uuid}}
-{{/left.list_by}}
+
     std::vector<domain::{{name_singular}}>
 {{#right.is_uuid}}
     read_latest_by_{{right.column_short}}(const boost::uuids::uuid& {{right.column}});
@@ -354,6 +362,7 @@ public:
     read_latest_by_{{right.column_short}}(const std::string& {{right.column}},
                                          std::uint32_t offset, std::uint32_t limit);
 {{/right.is_uuid}}
+{{/right.list_by}}
 
     /**
      * @brief Gets the total count of active {{name_words}} filtered by {{right.column}}.
@@ -365,7 +374,6 @@ public:
 {{^right.is_uuid}}
         const std::string& {{right.column}});
 {{/right.is_uuid}}
-{{/right.list_by}}
 
 {{^read_only}}
 {{#left.is_uuid}}

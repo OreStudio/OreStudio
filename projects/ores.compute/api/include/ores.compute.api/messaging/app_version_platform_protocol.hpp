@@ -32,6 +32,30 @@
 
 namespace ores::compute::messaging {
 
+/**
+ * @brief The app version platform row enriched with the joined row's
+ * display fields, so a screen needs one request for the whole set rather
+ * than one per row. The by-side read returns this view.
+ */
+struct app_version_platform_view {
+    ores::compute::domain::app_version_platform app_version_platform;
+    std::string platform_code;
+};
+
+struct get_app_version_platforms_request {
+    using response_type = struct get_app_version_platforms_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_app_version_platforms_response {
+    std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
 struct get_app_version_platforms_by_app_version_request {
     using response_type = struct get_app_version_platforms_by_app_version_response;
     static constexpr std::string_view nats_subject =
@@ -42,8 +66,36 @@ struct get_app_version_platforms_by_app_version_request {
 };
 
 struct get_app_version_platforms_by_app_version_response {
-    std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
+    std::vector<app_version_platform_view> app_version_platforms;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
+struct save_app_version_platform_request {
+    using response_type = struct save_app_version_platform_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.save";
+    std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
+
+    static save_app_version_platform_request
+    from(std::vector<ores::compute::domain::app_version_platform> v) {
+        return {.app_version_platforms = std::move(v)};
+    }
+};
+
+struct save_app_version_platform_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_app_version_platform_request {
+    using response_type = struct delete_app_version_platform_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.delete";
+    std::vector<std::string> app_version_ids;
+    std::vector<std::string> platform_ids;
+};
+
+struct delete_app_version_platform_response {
     bool success = false;
     std::string message;
 };
@@ -61,54 +113,6 @@ struct replace_app_version_platforms_by_app_version_request {
 };
 
 struct replace_app_version_platforms_by_app_version_response {
-    bool success = false;
-    std::string message;
-};
-
-/**
- * @brief Opens one pair in the relation, creating the row when the pair is
- * not already open and leaving it unchanged when it is.
- *
- * Link is the incremental verb: a screen toggling one association does not
- * rewrite the whole set to change it, and does not need to know whether the
- * pair already exists.
- */
-struct link_app_version_platform_request {
-    using response_type = struct link_app_version_platform_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.link_app_version_platform";
-    std::string app_version_id;
-    std::string platform_id;
-    std::string package_uri;
-    std::string sha256;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct link_app_version_platform_response {
-    bool success = false;
-    std::string message;
-};
-
-/**
- * @brief Closes one pair in the relation, leaving every other pair of the
- * set untouched.
- */
-struct unlink_app_version_platform_request {
-    using response_type = struct unlink_app_version_platform_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app_version_platforms.unlink_app_version_platform";
-    std::string app_version_id;
-    std::string platform_id;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct unlink_app_version_platform_response {
     bool success = false;
     std::string message;
 };
@@ -133,16 +137,6 @@ struct count_app_version_platforms_by_platform_request {
 
 struct count_app_version_platforms_by_platform_response {
     int total_available_count = 0;
-};
-
-/**
- * @brief The app version platform row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row.
- */
-struct app_version_platform_view {
-    ores::compute::domain::app_version_platform app_version_platform;
-    std::string platform_code;
 };
 }
 

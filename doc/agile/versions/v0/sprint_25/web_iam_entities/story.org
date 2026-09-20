@@ -265,6 +265,20 @@ worse than absent generated code because it looks like progress.
 
 Three separate gaps, each a generator fix rather than a model fix.
 
+**Resolved on the same day, for the record.** Gap 1 below was not a generator
+gap: =ores.ts.domain= emits its files correctly, and =--all= had simply aborted
+before reaching those components, so their protocol modules imported a domain
+module that had not been generated yet. Regenerating per component gives
+analytics, compute, marketdata, ore, reporting and scheduler their domain files
+and the imports resolve. Gap 3 is fixed: =ores::utility::domain::hierarchy_node=
+projects to a hand-written =HierarchyNode=, whose import the protocol template
+emits, and refdata's sixty-five protocol modules now generate and typecheck.
+
+Gap 2, the trading field-group composition, remains open, and two more were found
+while doing this: =cron_expression= is another hand-written utility type with no
+projection, and =domain::scope= and =domain::binding_mode= are nested domain enums
+that project to nothing. All three are the same shape of fix.
+
 **1. The domain facet is withheld where the protocol facet still emits an import.**
 =ores.ts.domain= emits nothing for analytics, compute, marketdata, ore and
 scheduler, while =ores.ts.protocol= emits modules for them that open with

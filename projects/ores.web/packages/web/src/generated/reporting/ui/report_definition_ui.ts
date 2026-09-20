@@ -32,8 +32,8 @@
  * <entity>.type.<value> for a combo option.
  *
  * Field grouping into tabs is deliberately absent: it is a domain
- * judgement the model does not carry. See reportDefinition_field_groups.ts
- * beside this file.
+ * judgement the model does not carry, so regeneration cannot invent it.
+ * An entity that needs tabs states them as its descriptor's `fieldGroups`.
  */
 import type { ColumnMeta, FieldMeta } from '../../../ui-contract.js';
 

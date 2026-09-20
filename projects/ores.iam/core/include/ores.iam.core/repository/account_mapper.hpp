@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,19 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_ACCOUNT_MAPPER_HPP
-#define ORES_IAM_REPOSITORY_ACCOUNT_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_MAPPER_HPP
+#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_MAPPER_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::repository {
 
 /**
- * @brief Maps domain model entities to data storage layer and vice-versa.
+ * @brief Maps account domain entities to data storage layer and vice-versa.
  */
-class account_mapper {
+class ORES_IAM_CORE_EXPORT account_mapper {
 private:
     inline static std::string_view logger_name = "ores.iam.repository.account_mapper";
 

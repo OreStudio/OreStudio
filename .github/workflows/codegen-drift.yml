@@ -69,6 +69,15 @@ jobs:
       - name: Check generated output matches the models
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --all
+      # Protocol twin coverage: every protocol header the TypeScript
+      # projection has reached must have its *_protocol.ts twin, and no
+      # model may carry the :ores.ts.protocol.enabled: opt-out. The drift
+      # step above proves a committed file matches its model; it cannot
+      # see a header whose twin was never generated, because both files
+      # are valid artefacts of the same model.
+      - name: Check every protocol header has a TypeScript twin
+        run: |
+          python3 projects/ores.codegen/scripts/check_protocol_twin_coverage.py
 
   # Model drift: an entity names a profile and then declares a feature
   # the profile fixes to another value, so the binding promises a

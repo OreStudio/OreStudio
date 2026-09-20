@@ -57,7 +57,7 @@ struct provision_party_input {
  * Each element of @p parties triggers a 3-step saga:
  *   1. refdata.v1.parties.save
  *   2. iam.v1.accounts.save
- *   3. iam.v1.account-parties.save
+ *   3. iam.v1.account_parties.save
  *
  * On failure the executor compensates completed steps in reverse order.
  */

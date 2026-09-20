@@ -22,6 +22,8 @@ Model flags consumed by this template:
 
 - =no_history= (bool, Flags) — skip the history subject subscription.
   Set on entities whose service has no =get_<entity>_history= method.
+  A =current_state= entity also skips it: it has no history endpoint at
+  all, so the template gates the subscription on =current_state= too.
 - =list_only= (bool, Flags) — wire only the list subject.
   Set on read-only lookup entities.
 - =read_for_cache= (bool, Flags) — wire the generated
@@ -94,9 +96,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         delete_{{entity_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
 {{^no_history}}
+{{^current_state}}
     subs.push_back(nats.queue_subscribe(
         get_{{entity_singular}}_history_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+{{/current_state}}
 {{/no_history}}
 {{/list_only}}
 {{#extra_list_requests}}
@@ -139,6 +143,9 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<{{name_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
+    subs.push_back(nats.queue_subscribe(
+        get_{{name}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
 {{#left.list_by}}
     subs.push_back(nats.queue_subscribe(
         get_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
@@ -149,6 +156,18 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
         get_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->list_by_{{right.column_short}}(std::move(msg)); }));
 {{/right.list_by}}
+    subs.push_back(nats.queue_subscribe(
+        save_{{name_singular}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_{{name_singular}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->count_by_{{left.column_short}}(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->count_by_{{right.column_short}}(std::move(msg)); }));
 {{#left.replace_by}}
     subs.push_back(nats.queue_subscribe(
         replace_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
@@ -199,9 +218,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         delete_{{entity_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
 {{^no_history}}
+{{^current_state}}
     subs.push_back(nats.queue_subscribe(
         get_{{entity_singular}}_history_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+{{/current_state}}
 {{/no_history}}
 {{/list_only}}
 {{#extra_list_requests}}

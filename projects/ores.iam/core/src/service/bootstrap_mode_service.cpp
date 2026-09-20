@@ -20,6 +20,7 @@
 
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include <algorithm>
 
 namespace ores::iam::service {
@@ -30,8 +31,7 @@ namespace reason = ores::dq::domain::change_reason_constants;
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
                                                std::string tenant_id,
                                                std::shared_ptr<authorization_service> auth_service)
-    : account_repo_(ctx)
-    , system_settings_service_(ctx, std::move(tenant_id))
+    : system_settings_service_(ctx, std::move(tenant_id))
     , auth_service_(std::move(auth_service))
     , ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
@@ -50,7 +50,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
     BOOST_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
 
     // Check if any account has the SuperAdmin role via RBAC
-    auto accounts = account_repo_.read_latest();
+    auto accounts = account_repo_.read_latest(ctx_);
     auto super_admin_role = auth_service_->find_role_by_name(domain::roles::super_admin);
     bool super_admin_exists = false;
 

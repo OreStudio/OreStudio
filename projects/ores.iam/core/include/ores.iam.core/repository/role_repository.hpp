@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_ROLE_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_ROLE_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_ROLE_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ROLE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,8 +54,6 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit role_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
@@ -58,52 +63,61 @@ public:
      * @brief Writes roles to database.
      */
     /**@{*/
-    void write(const domain::role& role);
-    void write(const std::vector<domain::role>& roles);
+    void write(context ctx, const domain::role& v);
+    void write(context ctx, const std::vector<domain::role>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest roles, possibly filtered by ID.
+     * @brief Reads latest roles, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::role> read_latest();
-    std::vector<domain::role> read_latest(const boost::uuids::uuid& id);
+    std::vector<domain::role> read_latest(context ctx);
+    std::vector<domain::role> read_latest(context ctx, const std::string& id);
     /**@}*/
+
+    /**
+     * @brief Reads all roles, possibly filtered by primary key.
+     */
+    std::vector<domain::role> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single role as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::role>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest roles with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of roles within the specified range
      */
-    std::vector<domain::role> read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::role> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active roles.
-     * @return Total number of roles with valid_to == max_timestamp
+     * @param ctx Repository context with database connection
+     * @return Total number of active roles
      */
-    std::uint32_t get_total_role_count();
-
-    /**
-     * @brief Reads latest role by name.
-     */
-    std::vector<domain::role> read_latest_by_name(const std::string& name);
-
-    /**
-     * @brief Reads multiple roles by their IDs in a single query.
-     *
-     * Uses IN clause to efficiently fetch multiple roles at once,
-     * avoiding N+1 query issues.
-     */
-    std::vector<domain::role> read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids);
+    std::uint32_t get_total_role_count(context ctx);
 
     /**
      * @brief Deletes a role by closing its temporal validity.
      */
-    void remove(const boost::uuids::uuid& role_id);
+    void remove(context ctx, const std::string& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes roles by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::role> read_latest_by_name(context ctx, const std::string& name);
 };
 
 }

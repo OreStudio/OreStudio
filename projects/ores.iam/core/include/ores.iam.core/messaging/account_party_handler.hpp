@@ -32,6 +32,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <cstddef>
 #include <stdexcept>
 
 namespace ores::iam::messaging {
@@ -109,6 +110,12 @@ public:
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(account_party_handler_lg(), msg);
+        auto req = decode<get_account_parties_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -117,16 +124,19 @@ public:
                 return;
             }
             service::account_party_service svc(*ctx_expected);
-            auto aps = svc.list_account_parties();
             get_account_parties_response resp;
-            resp.total_available_count = static_cast<int>(aps.size());
-            resp.account_parties = std::move(aps);
+            resp.account_parties = svc.list_account_parties(req->offset, req->limit);
+            resp.total_available_count = static_cast<int>(svc.get_total_account_party_count());
+            resp.success = true;
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_parties_response{});
+            get_account_parties_response resp;
+            resp.success = false;
+            resp.message = e.what();
+            reply(nats_, msg, resp);
         }
     }
 
@@ -136,6 +146,7 @@ public:
         auto req = decode<get_account_parties_by_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         try {
@@ -147,15 +158,27 @@ public:
             }
             service::account_party_service svc(*ctx_expected);
             boost::uuids::string_generator sg;
-            auto aps = svc.list_account_parties_by_account(sg(req->account_id));
+            const auto account_id = sg(req->account_id);
+            auto aps = svc.list_account_parties_by_account(account_id, req->offset, req->limit);
             get_account_parties_by_account_response resp;
-            resp.account_parties = std::move(aps);
+            resp.account_parties.reserve(aps.size());
+            for (auto& ap : aps) {
+                account_party_view view;
+                view.account_party = std::move(ap);
+                resp.account_parties.push_back(std::move(view));
+            }
+            resp.total_available_count =
+                static_cast<int>(svc.get_total_account_party_count_by_account(account_id));
+            resp.success = true;
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_parties_by_account_response{});
+            get_account_parties_by_account_response resp;
+            resp.success = false;
+            resp.message = e.what();
+            reply(nats_, msg, resp);
         }
     }
 
@@ -278,17 +301,125 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (req->account_ids.size() != req->party_ids.size()) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn)
+                << msg.subject << " rejected: key vectors differ in length, "
+                << req->account_ids.size() << " and " << req->party_ids.size();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
         try {
             service::account_party_service svc(ctx);
             boost::uuids::string_generator sg;
-            for (const auto& key : req->keys)
-                svc.remove_account_party(sg(key.account_id), sg(key.party_id));
+            for (std::size_t i = 0; i < req->account_ids.size(); ++i)
+                svc.remove_account_party(sg(req->account_ids[i]), sg(req->party_ids[i]));
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_account_party_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, delete_account_party_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void replace_by_account(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
+        auto req = decode<replace_account_parties_by_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:update")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        try {
+            service::account_party_service svc(ctx);
+            boost::uuids::string_generator sg;
+            svc.replace_account_parties_by_account(sg(req->account_id),
+                                                   req->account_parties,
+                                                   req->modified_by,
+                                                   req->performed_by,
+                                                   req->change_reason_code,
+                                                   req->change_commentary);
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, replace_account_parties_by_account_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_party_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  replace_account_parties_by_account_response{.success = false,
+                                                              .message = e.what()});
+        }
+    }
+
+    void count_by_account(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
+        auto req = decode<count_account_parties_by_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            service::account_party_service svc(*ctx_expected);
+            boost::uuids::string_generator sg;
+            count_account_parties_by_account_response resp;
+            resp.total_available_count = static_cast<int>(
+                svc.get_total_account_party_count_by_account(sg(req->account_id)));
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_party_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, count_account_parties_by_account_response{.total_available_count = 0});
+        }
+    }
+
+    void count_by_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
+        auto req = decode<count_account_parties_by_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            service::account_party_service svc(*ctx_expected);
+            boost::uuids::string_generator sg;
+            count_account_parties_by_party_response resp;
+            resp.total_available_count = static_cast<int>(
+                svc.get_total_account_party_count_by_party(sg(req->party_id)));
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_party_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, count_account_parties_by_party_response{.total_available_count = 0});
         }
     }
 

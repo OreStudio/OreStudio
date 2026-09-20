@@ -61,10 +61,28 @@ public:
     void write(const std::vector<domain::market_series_asset_class>& asset_classes);
 
     std::vector<domain::market_series_asset_class> read_latest();
+    std::vector<domain::market_series_asset_class> read_latest(std::uint32_t offset,
+                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active asset classes.
+     */
+    std::uint32_t get_total_asset_class_count();
     std::vector<domain::market_series_asset_class>
     read_latest_by_series(const boost::uuids::uuid& market_series_id);
+
+    /**
+     * @brief Gets the total count of active asset classes filtered by market_series_id.
+     */
+    std::uint32_t get_total_asset_class_count_by_series(const boost::uuids::uuid& market_series_id);
+
     std::vector<domain::market_series_asset_class>
     read_latest_by_asset_class(const std::string& asset_class_code);
+
+    /**
+     * @brief Gets the total count of active asset classes filtered by asset_class_code.
+     */
+    std::uint32_t get_total_asset_class_count_by_asset_class(const std::string& asset_class_code);
 
     void remove(const boost::uuids::uuid& market_series_id, const std::string& asset_class_code);
     void remove_by_series(const boost::uuids::uuid& market_series_id);

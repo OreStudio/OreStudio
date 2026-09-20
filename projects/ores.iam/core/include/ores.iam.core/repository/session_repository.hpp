@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_SESSION_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_SESSION_REPOSITORY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_SESSION_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_SESSION_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -33,10 +39,7 @@
 namespace ores::iam::repository {
 
 /**
- * @brief Repository for session persistence and querying.
- *
- * Handles CRUD operations for session records stored in a TimescaleDB
- * hypertable. Supports time-range queries and statistics aggregation.
+ * @brief Reads and writes sessions to data storage.
  */
 class ORES_IAM_CORE_EXPORT session_repository {
 private:
@@ -50,7 +53,6 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit session_repository(context ctx);
 
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
@@ -58,143 +60,89 @@ public:
     std::string sql();
 
     /**
-     * @brief Creates a new session record.
+     * @brief Writes sessions to database.
      */
-    void create(const domain::session& session);
+    /**@{*/
+    void write(context ctx, const domain::session& v);
+    void write(context ctx, const std::vector<domain::session>& v);
+    /**@}*/
 
     /**
-     * @brief Updates an existing session record.
-     *
-     * Typically used to set end_time and final byte counts.
+     * @brief Reads latest sessions, possibly filtered by primary key.
      */
-    void update(const domain::session& session);
+    /**@{*/
+    std::vector<domain::session> read_latest(context ctx);
+    std::vector<domain::session>
+    read_latest(context ctx, const std::string& id, const std::string& start_time);
+    /**@}*/
 
     /**
-     * @brief Updates byte counts for an active session.
+     * @brief Reads the session rows for the given primary key.
      *
-     * @param session_id The session UUID
-     * @param start_time The session start time (required for hypertable lookup)
-     * @param bytes_sent New total bytes sent
-     * @param bytes_received New total bytes received
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
      */
-    void update_bytes(const boost::uuids::uuid& session_id,
+    std::vector<domain::session>
+    read_all(context ctx, const std::string& id, const std::string& start_time);
+
+
+    /**
+     * @brief Reads latest sessions with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::session>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active sessions.
+     * @param ctx Repository context with database connection
+     * @return Total number of active sessions
+     */
+    std::uint32_t get_total_session_count(context ctx);
+
+    /**
+     * @brief Deletes a session permanently.
+     *
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
+     */
+    void remove(context ctx, const std::string& id, const std::string& start_time);
+
+    /**
+     * @brief Deletes sessions permanently.
+     */
+    void remove(context ctx,
+                const std::vector<std::string>& ids,
+                const std::vector<std::string>& start_times);
+
+    std::optional<domain::session> read(context ctx, const boost::uuids::uuid& session_id);
+
+    void update_bytes(context ctx,
+                      const boost::uuids::uuid& session_id,
                       const std::chrono::system_clock::time_point& start_time,
                       std::uint64_t bytes_sent,
                       std::uint64_t bytes_received);
 
-    /**
-     * @brief Ends a session by setting the end_time.
-     *
-     * @param session_id The session UUID
-     * @param start_time The session start time (required for hypertable lookup)
-     * @param end_time The session end time
-     * @param bytes_sent Final bytes sent count
-     * @param bytes_received Final bytes received count
-     */
-    void end_session(const boost::uuids::uuid& session_id,
+    void end_session(context ctx,
+                     const boost::uuids::uuid& session_id,
                      const std::chrono::system_clock::time_point& start_time,
                      const std::chrono::system_clock::time_point& end_time,
                      std::uint64_t bytes_sent,
                      std::uint64_t bytes_received);
 
-    /**
-     * @brief Reads a session by ID.
-     */
-    std::optional<domain::session> read(const boost::uuids::uuid& session_id);
-
-    /**
-     * @brief Reads all sessions for an account.
-     *
-     * @param account_id The account UUID
-     * @param limit Maximum number of sessions to return (0 = no limit)
-     * @param offset Number of sessions to skip
-     * @return Sessions ordered by start_time descending (newest first)
-     */
-    std::vector<domain::session> read_by_account(const boost::uuids::uuid& account_id,
+    std::vector<domain::session> read_by_account(context ctx,
+                                                 const boost::uuids::uuid& account_id,
                                                  std::uint32_t limit = 0,
                                                  std::uint32_t offset = 0);
 
-    /**
-     * @brief Reads active (non-ended) sessions for an account.
-     */
-    std::vector<domain::session> read_active_by_account(const boost::uuids::uuid& account_id);
+    std::vector<domain::session> read_active_by_account(context ctx,
+                                                        const boost::uuids::uuid& account_id);
 
-    /**
-     * @brief Counts active sessions for an account.
-     */
-    std::uint32_t count_active_by_account(const boost::uuids::uuid& account_id);
+    std::uint32_t count_by_account(context ctx, const boost::uuids::uuid& account_id);
 
-    /**
-     * @brief Counts all sessions (active and inactive) for an account.
-     *
-     * Used for pagination when listing session history.
-     */
-    std::uint32_t count_by_account(const boost::uuids::uuid& account_id);
-
-    /**
-     * @brief Reads sessions within a time range.
-     *
-     * @param start Start of time range
-     * @param end End of time range
-     * @param limit Maximum number of sessions to return
-     */
-    std::vector<domain::session>
-    read_by_time_range(const std::chrono::system_clock::time_point& start,
-                       const std::chrono::system_clock::time_point& end,
-                       std::uint32_t limit = 1000);
-
-    /**
-     * @brief Reads all active sessions across all accounts.
-     */
-    std::vector<domain::session> read_all_active();
-
-    /**
-     * @brief Counts all active sessions.
-     */
-    std::uint32_t count_all_active();
-
-    /**
-     * @brief Closes all sessions that have no end_time set.
-     *
-     * Called on server startup to mark sessions from a previous server run
-     * (which were never properly closed) as ended. Without this, sessions
-     * appear as "Active" indefinitely after a crash or restart, and their
-     * chart data shows "no data yet" because in-memory samples are lost.
-     *
-     * @param closed_at Timestamp to use as the end_time for orphaned sessions.
-     */
-    void close_orphaned_sessions(const std::chrono::system_clock::time_point& closed_at);
-
-    /**
-     * @brief Reads daily session statistics for an account.
-     *
-     * Uses the pre-computed continuous aggregate for fast queries.
-     *
-     * @param account_id The account UUID
-     * @param start Start of time range
-     * @param end End of time range
-     */
-    std::vector<domain::session_statistics>
-    read_daily_statistics(const boost::uuids::uuid& account_id,
-                          const std::chrono::system_clock::time_point& start,
-                          const std::chrono::system_clock::time_point& end);
-
-    /**
-     * @brief Reads aggregate daily statistics across all accounts.
-     */
-    std::vector<domain::session_statistics>
-    read_aggregate_daily_statistics(const std::chrono::system_clock::time_point& start,
-                                    const std::chrono::system_clock::time_point& end);
-
-    /**
-     * @brief Removes all sessions for an account.
-     *
-     * Used when deleting an account.
-     */
-    void remove_by_account(const boost::uuids::uuid& account_id);
-
-private:
-    context ctx_;
+    std::vector<domain::session> read_all_active(context ctx);
 };
 
 }

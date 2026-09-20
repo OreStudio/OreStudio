@@ -83,6 +83,46 @@ std::vector<domain::app_version_platform> app_version_platform_repository::read_
 }
 
 std::vector<domain::app_version_platform>
+app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("app_version_id"_c, "platform_id"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+        ctx_,
+        query,
+        [](const auto& entities) { return app_version_platform_mapper::map(entities); },
+        lg(),
+        "Reading latest app version platforms (paginated).");
+}
+
+std::uint32_t app_version_platform_repository::get_total_app_version_platform_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count: " << count;
+    return count;
+}
+
+std::vector<domain::app_version_platform>
 app_version_platform_repository::read_latest_by_app_version(
     const boost::uuids::uuid& app_version_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest app version platforms. App Version: "
@@ -234,6 +274,32 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by app_version: "
                                << count;
+    return count;
+}
+
+std::uint32_t app_version_platform_repository::get_total_app_version_platform_count_by_platform(
+    const boost::uuids::uuid& platform_id) {
+    const auto platform_id_str = boost::uuids::to_string(platform_id);
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count. Platform: "
+                               << platform_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "platform_id"_c == platform_id_str &&
+              "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by platform: " << count;
     return count;
 }
 

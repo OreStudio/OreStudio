@@ -41,6 +41,9 @@ The full template source. Edit here and re-tangle with
 {{#has_enum_columns}}
 #include <rfl/enums.hpp>
 {{/has_enum_columns}}
+{{#has_inet_columns}}
+#include <boost/asio/ip/address.hpp>
+{{/has_inet_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -73,6 +76,9 @@ domain::{{entity_singular}}
 {{#is_int}}
     r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
 {{/is_int}}
+{{#is_timestamp}}
+    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}.value()});
+{{/is_timestamp}}
 {{/primary_key.columns}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
@@ -98,6 +104,7 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
 {{#is_uuid}}
     r.{{{group_prefix}}}{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
@@ -128,6 +135,9 @@ domain::{{entity_singular}}
 {{#is_required_timestamp}}
     r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
+{{/is_required_inet}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}
@@ -157,6 +167,7 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_simple}}
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
     r.{{{audit_prefix}}}modified_by = v.modified_by;
@@ -164,7 +175,9 @@ domain::{{entity_singular}}
     r.{{{audit_prefix}}}change_reason_code = v.change_reason_code;
     r.{{{audit_prefix}}}change_commentary = v.change_commentary;
 {{/has_audit_columns}}
+{{^current_state}}
     r.{{{audit_prefix}}}recorded_at = timestamp_to_timepoint(v.valid_from);
+{{/current_state}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -185,6 +198,9 @@ domain::{{entity_singular}}
 {{#is_int}}
     r.{{column}} = std::to_string(v.{{{group_prefix}}}{{column}});
 {{/is_int}}
+{{#is_timestamp}}
+    r.{{column}} = ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{column}});
+{{/is_timestamp}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();
@@ -213,6 +229,7 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
 {{#is_uuid}}
     r.{{name}} = boost::uuids::to_string(v.{{{group_prefix}}}{{name}});
 {{/is_uuid}}
@@ -246,6 +263,9 @@ domain::{{entity_singular}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{name}});
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
+{{/is_required_inet}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
 {{#render_is_optional_string}}
@@ -275,6 +295,7 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_simple}}
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
     r.modified_by = v.{{{audit_prefix}}}modified_by;

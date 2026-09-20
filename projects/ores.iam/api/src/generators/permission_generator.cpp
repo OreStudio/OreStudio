@@ -17,9 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/generators/permission_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::iam::generators {
 
@@ -27,15 +36,17 @@ using ores::utility::generation::generation_keys;
 
 domain::permission generate_synthetic_permission(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::permission r;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.code = "test::" + ctx.alphanumeric(6) + "_" + std::to_string(idx) + ":read";
-    r.description = "Synthetic test permission";
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string("test::") + ctx.alphanumeric(6) + ":read" + "-" + std::to_string(idx);
+    r.description = std::string("Synthetic test permission");
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
@@ -43,7 +54,7 @@ std::vector<domain::permission>
 generate_synthetic_permissions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::permission> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_permission(ctx));
     return r;
 }

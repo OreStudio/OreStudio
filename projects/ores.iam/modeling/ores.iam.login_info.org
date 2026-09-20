@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: 8A507DA9-1FFE-4DD3-992F-7359F5531253
+:END:
+#+title: ores.iam.login_info
+#+description: Login tracking and security state for an account: last login, failed attempts, lock and online flags, and the last two IP addresses.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: login_info
+#+entity_plural: login_info
+#+entity_title: Login Info
+#+brief: Login tracking and security state for an account.
+#+created: 2026-09-19
+#+updated: 2026-09-19
+
+Login tracking and security state for one account: the last successful
+login, the running failed-attempt count, the lock and online flags, the
+forced password-reset flag, and the IP address of the last success and
+the last attempt. One row per account, keyed by =account_id=.
+
+The table is current-state (see
+=projects/ores.sql/create/iam/iam_login_info_create.sql=): it carries no
+=valid_from=/=valid_to=, no GIST exclusion, no =version= column and no
+audit tail, unlike the bi-temporal tables every other =domain_entity= in
+this component generates. The =:current_state:= flag in the =* SQL **
+Flags= drawer selects that shape. Three suppressions keep the generated
+DDL at exactly the constraints the hand-written table has:
+=:skip_uuid_check:= on =account_id= drops the nil-UUID check,
+=:skip_check:= on the account foreign key drops the account existence
+check, and the =* SQL ** Indexes= drawer restates the three hand-written
+indexes so none is lost.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: true
+:END:
+
+* Natural keys
+
+* Columns
+
+** account_id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The account this login state belongs to. It is the primary key, so the
+table holds exactly one row per account.
+
+** last_ip
+:PROPERTIES:
+:type:     inet
+:cpp_type: boost::asio::ip::address
+:nullable: false
+:END:
+
+IP address the account last logged in from successfully.
+
+#+begin_src cpp :name generator
+boost::asio::ip::make_address("127.0.0.1")
+#+end_src
+
+** last_attempt_ip
+:PROPERTIES:
+:type:     inet
+:cpp_type: boost::asio::ip::address
+:nullable: false
+:END:
+
+IP address of the most recent login attempt, successful or failed.
+
+#+begin_src cpp :name generator
+boost::asio::ip::make_address("127.0.0.1")
+#+end_src
+
+** failed_logins
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+Count of consecutive failed login attempts since the last success.
+
+** locked
+:PROPERTIES:
+:type:          integer
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Flag indicating whether the account is locked for security reasons.
+
+** last_login
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+Timestamp of the last successful login.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** online
+:PROPERTIES:
+:type:          integer
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Flag indicating whether the account is currently logged in.
+
+** password_reset_required
+:PROPERTIES:
+:type:          integer
+:cpp_type:      bool
+:nullable:      false
+:default:       0
+:default_value: false
+:END:
+
+Flag indicating the user must change their password on the next login.
+
+Set by an admin when resetting a password; cleared after the user sets
+a new one.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:         ores_iam_login_info_tbl
+:no_audit_columns:  true
+:current_state:     true
+:END:
+
+** Indexes
+
+| name       | columns    | unique | current_only | where_extra |
+|------------+------------+--------+--------------+-------------|
+| tenant     | tenant_id  | false  | false        |             |
+| account_id | account_id | false  | false        |             |
+| locked     | locked     | false  | false        | locked = 0  |
+
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:skip_check:    true
+:error_message: Invalid account_id: %. No active account found with this id.
+:END:
+
+Soft foreign key to the owning account.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: login_info
+:entity_plural_short:   login_info
+:entity_singular_words: login info
+:entity_plural_words:   login info
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: li
+:END:
+
+** Table display
+
+| column                  | header              |
+|-------------------------+---------------------|
+| account_id              | Account             |
+| last_login              | Last Login          |
+| failed_logins           | Failed Logins       |
+| locked                  | Locked              |
+| online                  | Online              |
+| password_reset_required | Password Reset Req. |
+| last_ip                 | Last IP             |
+| last_attempt_ip         | Last Attempt IP     |
+
+** Paste blocks
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.

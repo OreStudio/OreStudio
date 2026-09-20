@@ -75,7 +75,7 @@ public:
     std::optional<domain::session>
     start_service_session(const std::string& username,
                           const std::string& client_identifier,
-                          domain::session_protocol protocol = domain::session_protocol::binary);
+                          const std::string& protocol = "binary");
 
     /**
      * @brief Starts a session for a service account by account ID.
@@ -89,7 +89,7 @@ public:
     std::optional<domain::session>
     start_service_session(const boost::uuids::uuid& account_id,
                           const std::string& client_identifier,
-                          domain::session_protocol protocol = domain::session_protocol::binary);
+                          const std::string& protocol = "binary");
 
     /**
      * @brief Ends a service session.
@@ -115,6 +115,7 @@ public:
     std::optional<domain::account> get_service_account(const std::string& username);
 
 private:
+    context ctx_;
     repository::session_repository session_repo_;
     repository::account_repository account_repo_;
     utility::uuid::uuid_v7_generator uuid_generator_;

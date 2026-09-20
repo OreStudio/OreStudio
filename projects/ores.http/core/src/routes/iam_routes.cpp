@@ -21,10 +21,10 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_json.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
-#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
@@ -88,7 +88,7 @@ iam_routes::iam_routes(database::context ctx,
                        std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
-    , session_repo_(ctx_)
+    , session_repo_()
     , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions))
     , auth_service_(std::move(auth_service))
@@ -304,6 +304,19 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(list_roles.build());
     registry->register_route(list_roles.build());
 
+    // Registered before /roles/{id}: a trailing {id} compiles to a greedy
+    // match, so the narrower path must win the router's first-match scan.
+    auto get_role_perms =
+        router->get("/api/v1/roles/{id}/permissions")
+            .summary("Get role permissions")
+            .description("Get the permission codes granted to a role")
+            .tags({"rbac"})
+            .auth_required()
+            .response<iam::messaging::get_role_permissions_response>()
+            .handler([this](const http_request& req) { return handle_get_role_permissions(req); });
+    router->add_route(get_role_perms.build());
+    registry->register_route(get_role_perms.build());
+
     auto get_role = router->get("/api/v1/roles/{id}")
                         .summary("Get role")
                         .description("Get a specific role by ID")
@@ -493,7 +506,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         sess.account_id = account.id;
         sess.start_time = std::chrono::system_clock::now();
         sess.client_ip = ip_address;
-        sess.protocol = iam::domain::session_protocol::http;
+        sess.protocol = "http";
 
         // Extract User-Agent and HTTP version from request
         auto user_agent = req.get_header("User-Agent");
@@ -516,7 +529,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
 
         // Persist session to database
         try {
-            session_repo_.create(sess);
+            session_repo_.write(ctx_, sess);
             BOOST_LOG_SEV(lg(), debug)
                 << "HTTP session persisted: " << boost::uuids::to_string(sess.id);
         } catch (const std::exception& e) {
@@ -601,10 +614,10 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
                 auto now = std::chrono::system_clock::now();
 
                 // We need the start_time to update the session. Read it first.
-                auto session = session_repo_.read(session_id);
+                auto session = session_repo_.read(ctx_, session_id);
                 if (session) {
                     session_repo_.end_session(
-                        session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
+                        ctx_, session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
                     BOOST_LOG_SEV(lg(), debug)
                         << "HTTP session ended: " << *req.authenticated_user->session_id;
                 }
@@ -884,8 +897,10 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         const auto full_name = existing ? existing->full_name : std::string{};
         const auto job_title = existing ? existing->job_title : std::string{};
         const auto reports_to_account_id =
-            existing ? existing->reports_to_account_id : boost::uuids::nil_uuid();
-        const auto image_id = existing ? existing->image_id : boost::uuids::nil_uuid();
+            existing && existing->reports_to_account_id ? *existing->reports_to_account_id
+                                                        : boost::uuids::nil_uuid();
+        const auto image_id = existing && existing->image_id ? *existing->image_id
+                                                             : boost::uuids::nil_uuid();
 
         bool success =
             account_service_.update_account(uuid,
@@ -937,7 +952,7 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
         resp.message = "History retrieved successfully";
 
         for (const auto& account : accounts) {
-            iam::domain::account_version ver;
+            iam::messaging::account_version ver;
             ver.data = account;
             ver.version_number = account.version; // Use database version field
             ver.modified_by = account.modified_by;
@@ -1177,6 +1192,28 @@ asio::awaitable<http_response> iam_routes::handle_get_role(const http_request& r
     }
 }
 
+asio::awaitable<http_response> iam_routes::handle_get_role_permissions(const http_request& req) {
+    BOOST_LOG_SEV(lg(), debug) << "Handling get role permissions request";
+
+    try {
+        auto role_id = req.get_path_param("id");
+        if (role_id.empty()) {
+            co_return http_response::bad_request("Role ID required");
+        }
+
+        auto role_uuid = boost::uuids::string_generator()(role_id);
+        auto permission_codes = auth_service_->get_role_permissions(role_uuid);
+
+        iam::messaging::get_role_permissions_response resp;
+        resp.permission_codes = permission_codes;
+
+        co_return http_response::json(rfl::json::write(resp));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Get role permissions error: " << e.what();
+        co_return http_response::internal_error(e.what());
+    }
+}
+
 asio::awaitable<http_response> iam_routes::handle_list_permissions(const http_request&) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list permissions request";
 
@@ -1345,8 +1382,8 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         }
 
         // Query sessions from database
-        auto sessions_list = session_repo_.read_by_account(target_account_id, limit, offset);
-        auto total_count = session_repo_.count_by_account(target_account_id);
+        auto sessions_list = session_repo_.read_by_account(ctx_, target_account_id, limit, offset);
+        auto total_count = session_repo_.count_by_account(ctx_, target_account_id);
 
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
                                   << " sessions for account "
@@ -1372,58 +1409,17 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
         co_return auth.error();
     }
 
-    try {
-        auto account_id_str = req.get_query_param("account_id");
-        auto start_str = req.get_query_param("start");
-        auto end_str = req.get_query_param("end");
-
-        boost::uuids::uuid target_account_id = auth->account_id;
-        bool aggregate_mode = false;
-
-        if (account_id_str.empty()) {
-            // No account specified - aggregate mode for admin, own account for others
-            if (auth->is_admin) {
-                aggregate_mode = true;
-            }
-        } else {
-            auto requested_id = boost::uuids::string_generator()(account_id_str);
-            if (!auth->is_admin && requested_id != auth->account_id) {
-                co_return http_response::forbidden("Cannot view other users' statistics");
-            }
-            target_account_id = requested_id;
-        }
-
-        // Parse time range (default to last 30 days)
-        auto now = std::chrono::system_clock::now();
-        auto start_time = now - std::chrono::hours(24 * 30);
-        auto end_time = now;
-
-        // TODO: Parse start/end from query params if provided
-        (void)start_str;
-        (void)end_str;
-
-        // Query statistics from database
-        std::vector<iam::domain::session_statistics> stats;
-        if (aggregate_mode) {
-            stats = session_repo_.read_aggregate_daily_statistics(start_time, end_time);
-            BOOST_LOG_SEV(lg(), info)
-                << "Retrieved " << stats.size() << " aggregate statistics entries";
-        } else {
-            stats = session_repo_.read_daily_statistics(target_account_id, start_time, end_time);
-            BOOST_LOG_SEV(lg(), info)
-                << "Retrieved " << stats.size() << " statistics entries for account "
-                << boost::uuids::to_string(target_account_id);
-        }
-
-        iam::messaging::get_session_statistics_response resp;
-        resp.statistics = std::move(stats);
-        resp.success = true;
-
-        co_return http_response::json(rfl::json::write(resp));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get session statistics error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
+    // Nothing can answer this request yet. The daily aggregate is the
+    // ores_iam_session_stats_daily_vw continuous aggregate, which the schema
+    // creates only under the Timescale licence, and the hand-written read this
+    // replaced queried ores_iam_session_stats_tbl, which no schema ever
+    // created. The request says so rather than replying with an empty list
+    // that reads as "no sessions in range".
+    BOOST_LOG_SEV(lg(), warn)
+        << "Session statistics are not modelled; refusing the request";
+    co_return http_response::error(
+        http_status::not_implemented,
+        "Session statistics are not modelled yet");
 }
 
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {
@@ -1439,12 +1435,12 @@ asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http
 
         if (auth->is_admin) {
             // Admin gets all active sessions
-            active_sessions = session_repo_.read_all_active();
+            active_sessions = session_repo_.read_all_active(ctx_);
             BOOST_LOG_SEV(lg(), info)
                 << "Retrieved " << active_sessions.size() << " active sessions (admin view)";
         } else {
             // Non-admin gets only their own active sessions
-            active_sessions = session_repo_.read_active_by_account(auth->account_id);
+            active_sessions = session_repo_.read_active_by_account(ctx_, auth->account_id);
             BOOST_LOG_SEV(lg(), info)
                 << "Retrieved " << active_sessions.size() << " active sessions for account "
                 << boost::uuids::to_string(auth->account_id);

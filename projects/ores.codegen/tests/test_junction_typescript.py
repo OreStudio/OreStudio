@@ -4,13 +4,12 @@ Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_junction_typescript.py
 
-A junction model declares no messages: its protocol header comes from a
-separate operation model, and ``ores.ts.domain`` emits the interface that
-operation protocol imports. The interface must mirror the C++ junction
-class member for member, because the protocol payloads carry the object
-and a divergence is a wire shape only one side knows. The drift gate
-compares the emitted files byte for byte, which catches a change to the
-output but not a wrong derivation, so these cases pin the projection to
+A junction model declares no messages: its protocol comes from the same model,
+and ``ores.ts.domain`` emits the interface that protocol imports. The interface
+must mirror the C++ junction class member for member, because the protocol
+payloads carry the object and a divergence is a wire shape only one side knows.
+The drift gate compares the emitted files byte for byte, which catches a change
+to the output but not a wrong derivation, so these cases pin the projection to
 the C++ block's fields.
 
 The guard that refuses a junction with an unprojectable member is pinned
@@ -30,14 +29,11 @@ from codegen.org_loader import (  # noqa: E402
     _ts_domain_type,
     junction_ts_fields,
     load_org_junction_model,
-    load_org_operation_model,
     ts_domain_imports,
 )
 
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 ACCOUNT_PARTY = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_junction.org"
-ACCOUNT_PARTY_MESSAGES = (
-    REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_messages.org")
 
 
 def _junction(**overrides):
@@ -54,13 +50,12 @@ def _junction(**overrides):
 
 
 def test_the_account_party_twin_matches_the_cpp_class(tmp_path):
-    for model, template, name in (
-        (ACCOUNT_PARTY, "domain_types.ts.mustache", "account_party.ts"),
-        (ACCOUNT_PARTY_MESSAGES, "ts_protocol.ts.mustache",
-         "account_party_protocol.ts"),
+    for template, name in (
+        ("domain_types.ts.mustache", "account_party.ts"),
+        ("ts_protocol.ts.mustache", "account_party_protocol.ts"),
     ):
         generate_from_model(
-            str(model), CODEGEN / "library" / "data",
+            str(ACCOUNT_PARTY), CODEGEN / "library" / "data",
             CODEGEN / "library" / "templates", tmp_path,
             target_template=template, target_output=name)
 
@@ -76,9 +71,9 @@ def test_the_account_party_twin_matches_the_cpp_class(tmp_path):
     assert "party_id: string;" in domain
 
 
-def test_the_operation_protocol_imports_the_interface_it_carries(tmp_path):
+def test_the_junction_protocol_imports_the_interface_it_carries(tmp_path):
     generate_from_model(
-        str(ACCOUNT_PARTY_MESSAGES), CODEGEN / "library" / "data",
+        str(ACCOUNT_PARTY), CODEGEN / "library" / "data",
         CODEGEN / "library" / "templates", tmp_path,
         target_template="ts_protocol.ts.mustache",
         target_output="account_party_protocol.ts")
@@ -86,9 +81,17 @@ def test_the_operation_protocol_imports_the_interface_it_carries(tmp_path):
     protocol = (tmp_path / "account_party_protocol.ts").read_text(encoding="utf-8")
     assert ("import type { AccountParty } from '../domain/account_party.js';"
             in protocol)
+    # The unscoped read carries the junction rows; the by-side read carries
+    # the view that wraps them.
     assert "account_parties: AccountParty[];" in protocol
-    assert "keys: AccountPartyKey[];" in protocol
-    assert 'get_account_parties_by_account_request: "iam.v1.account-parties.by-account",' in protocol
+    assert "account_parties: AccountPartyView[];" in protocol
+    assert "account_party: AccountParty;" in protocol
+    assert "account_ids: string[];" in protocol
+    assert "party_ids: string[];" in protocol
+    assert ('get_account_parties_request: "iam.v1.account_parties.list",'
+            in protocol)
+    assert ('get_account_parties_by_account_request: '
+            '"iam.v1.account_parties.list_by_account_id",' in protocol)
 
 
 def test_junction_member_types_project():
@@ -122,11 +125,7 @@ def test_a_fully_projected_junction_passes_the_guard():
                             "cpp_type": "int", "ts_type": "number"}]))
 
 
-def test_an_operation_imports_each_domain_interface_once():
-    operation = load_org_operation_model(ACCOUNT_PARTY_MESSAGES)["operation"]
-    assert operation["domain_imports"] == [
-        {"entity": "account_party", "entity_pascal": "AccountParty"}]
-
+def test_domain_imports_are_each_emitted_once():
     messages = [
         {"fields": [
             {"cpp_type": "std::vector<ores::iam::domain::account_party>"},

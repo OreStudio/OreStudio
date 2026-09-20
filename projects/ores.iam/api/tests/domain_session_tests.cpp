@@ -19,7 +19,9 @@
  */
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -34,7 +36,7 @@ const std::string tags("[domain]");
 }
 
 using ores::iam::domain::session;
-using ores::iam::domain::session_statistics;
+using ores::iam::messaging::session_statistics;
 using namespace ores::logging;
 
 TEST_CASE("create_session_with_valid_fields", tags) {
@@ -62,7 +64,7 @@ TEST_CASE("create_session_with_valid_fields", tags) {
     CHECK(sut.country_code == "US");
 }
 
-TEST_CASE("session_is_active_when_no_end_time", tags) {
+TEST_CASE("session_is_active_when_end_time_empty", tags) {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -74,9 +76,8 @@ TEST_CASE("session_is_active_when_no_end_time", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Active session: " << sut;
 
-    CHECK(sut.is_active() == true);
-    CHECK(!sut.end_time.has_value());
-    CHECK(!sut.duration().has_value());
+    CHECK(sut.end_time.empty());
+    CHECK(sut.protocol == "binary");
 }
 
 TEST_CASE("session_is_inactive_when_end_time_set", tags) {
@@ -86,33 +87,14 @@ TEST_CASE("session_is_inactive_when_end_time_set", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.account_id = boost::uuids::random_generator()();
     sut.start_time = std::chrono::system_clock::now() - std::chrono::hours(1);
-    sut.end_time = std::chrono::system_clock::now();
+    sut.end_time = ores::platform::time::datetime::to_iso8601_utc(
+        std::chrono::system_clock::now());
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 
     BOOST_LOG_SEV(lg, info) << "Ended session: " << sut;
 
-    CHECK(sut.is_active() == false);
-    CHECK(sut.end_time.has_value());
-    CHECK(sut.duration().has_value());
-}
-
-TEST_CASE("session_duration_calculation", tags) {
-    auto lg(make_logger(test_suite));
-
-    session sut;
-    sut.id = boost::uuids::random_generator()();
-    sut.account_id = boost::uuids::random_generator()();
-    sut.start_time = std::chrono::system_clock::now();
-    sut.end_time = sut.start_time + std::chrono::seconds(3600);
-    sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
-    sut.client_identifier = "Test Client";
-
-    BOOST_LOG_SEV(lg, info) << "Session with duration: " << sut;
-
-    auto duration = sut.duration();
-    CHECK(duration.has_value());
-    CHECK(duration.value().count() == 3600);
+    CHECK(!sut.end_time.empty());
 }
 
 TEST_CASE("session_with_ipv6_address", tags) {
@@ -220,7 +202,8 @@ TEST_CASE("create_multiple_random_sessions", tags) {
             std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
         if (faker::datatype::boolean()) {
-            sut.end_time = sut.start_time + std::chrono::minutes(faker::number::integer(1, 480));
+            sut.end_time = ores::platform::time::datetime::to_iso8601_utc(
+                sut.start_time + std::chrono::minutes(faker::number::integer(1, 480)));
         }
 
         sut.client_ip = boost::asio::ip::make_address(faker::internet::ipv4());
@@ -233,13 +216,6 @@ TEST_CASE("create_multiple_random_sessions", tags) {
         BOOST_LOG_SEV(lg, info) << "Session " << i << ": " << sut;
 
         CHECK(!sut.client_identifier.empty());
-
-        if (sut.end_time.has_value()) {
-            CHECK(!sut.is_active());
-            CHECK(sut.duration().has_value());
-        } else {
-            CHECK(sut.is_active());
-        }
     }
 }
 
@@ -258,38 +234,13 @@ TEST_CASE("create_session_statistics_with_valid_fields", tags) {
     sut.avg_bytes_received = 209715.2;
     sut.unique_countries = 3;
 
-    BOOST_LOG_SEV(lg, info) << "Session statistics: " << sut;
+    BOOST_LOG_SEV(lg, info) << "Session statistics count: " << sut.session_count;
 
     CHECK(sut.session_count == 10);
     CHECK(sut.avg_duration_seconds == 1800.0);
     CHECK(sut.total_bytes_sent == 1048576);
     CHECK(sut.total_bytes_received == 2097152);
     CHECK(sut.unique_countries == 3);
-}
-
-TEST_CASE("session_statistics_serialization_to_json", tags) {
-    auto lg(make_logger(test_suite));
-
-    session_statistics sut;
-    sut.period_start = std::chrono::system_clock::now() - std::chrono::hours(24);
-    sut.period_end = std::chrono::system_clock::now();
-    sut.session_count = 100;
-    sut.avg_duration_seconds = 3600.0;
-    sut.total_bytes_sent = 10000000;
-    sut.total_bytes_received = 20000000;
-    sut.avg_bytes_sent = 100000.0;
-    sut.avg_bytes_received = 200000.0;
-    sut.unique_countries = 10;
-
-    BOOST_LOG_SEV(lg, info) << "Session statistics: " << sut;
-
-    std::ostringstream os;
-    os << sut;
-    const std::string json_output = os.str();
-
-    CHECK(!json_output.empty());
-    CHECK(json_output.find("100") != std::string::npos);
-    CHECK(json_output.find("10000000") != std::string::npos);
 }
 
 TEST_CASE("create_session_statistics_with_faker", tags) {
@@ -310,7 +261,7 @@ TEST_CASE("create_session_statistics_with_faker", tags) {
         static_cast<double>(sut.total_bytes_received) / static_cast<double>(sut.session_count);
     sut.unique_countries = faker::number::integer<uint32_t>(1, 50);
 
-    BOOST_LOG_SEV(lg, info) << "Faker session statistics: " << sut;
+    BOOST_LOG_SEV(lg, info) << "Faker session statistics count: " << sut.session_count;
 
     CHECK(sut.session_count >= 1);
     CHECK(sut.avg_duration_seconds >= 60.0);

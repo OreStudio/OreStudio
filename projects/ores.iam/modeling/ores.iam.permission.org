@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 76B113F4-410A-4DE5-9757-A4E263B7B8E7
+:END:
+#+title: ores.iam.permission
+#+description: Codegen entity model for the iam permission table. Drives the C++ domain class, mapper, repository, service, generator, protocol, TypeScript metadata, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: permission
+#+entity_plural: permissions
+#+entity_title: Permission
+#+brief: An atomic permission that can be granted to roles.
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+An atomic permission that can be granted to roles. Permissions follow the
+hierarchical naming convention =component::resource:action= (for example
+=iam::accounts:create=; ="*"= grants everything and =component::*= grants
+every action within one component).
+
+The table is temporal (see
+=projects/ores.sql/create/iam/iam_permissions_create.sql=): it carries
+=valid_from=/=valid_to=, the GIST exclusion and the delete rule, but it has
+no =version= column and no audit tail -- permissions are system-defined
+constants seeded from bootstrap data, not user-editable records, so they
+need no change tracking. The =:no_audit_columns:= flag in the =* SQL **
+Flags= drawer selects exactly that shape: it drops the version column and
+the four audit columns while keeping the transaction-time window. The
+=:skip_uuid_check:= suppression on =id= drops the nil-UUID check the
+hand-written table never had.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: true
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Unique identifier for the permission.
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Permission code following the format "component::resource:action".
+
+Examples: "iam::accounts:create", "refdata::currencies:read". Use "*" for
+the wildcard that grants every permission, and "component::*" for every
+permission within one component.
+
+#+begin_src cpp :name generator
+std::string("test::") + ctx.alphanumeric(6) + ":read"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable description of what this permission allows.
+
+#+begin_src cpp :name generator
+std::string("Synthetic test permission")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_iam_permissions_tbl
+:no_audit_columns: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:                api
+:service_find_by_code_column: code
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: permission
+:entity_plural_short:   permissions
+:entity_singular_words: permission
+:entity_plural_words:   permissions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID (UUID)   |
+| code        | Code        |
+| description | Description |
+
+** Paste blocks
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.

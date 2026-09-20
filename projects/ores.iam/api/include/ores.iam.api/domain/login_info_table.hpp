@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,17 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_LOGIN_INFO_TABLE_HPP
-#define ORES_IAM_DOMAIN_LOGIN_INFO_TABLE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_DOMAIN_LOGIN_INFO_TABLE_HPP
+#define ORES_IAM_API_DOMAIN_LOGIN_INFO_TABLE_HPP
 
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/export.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::iam::domain {
 
 /**
- * @brief Converts login_info to table format.
+ * @brief Converts login_info to the table format.
  */
 ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<login_info>& v);
 

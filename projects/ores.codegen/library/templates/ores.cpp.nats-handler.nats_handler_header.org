@@ -89,7 +89,7 @@ using namespace ores::logging;
  * @brief NATS message handler for {{entity_singular_words}} operations.
 {{#system_tenant_validation}}
  *
- * {{entity_plural_words_cap}} are system-owned global entities; list and history
+ * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
  * operations use the system tenant context.
 {{/system_tenant_validation}}
  */
@@ -233,6 +233,7 @@ public:
         }
     }
 
+{{^current_state}}
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -270,6 +271,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
+{{/current_state}}
 
     void remove(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
@@ -449,6 +451,7 @@ private:
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HANDLER_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HANDLER_HPP
 
+#include <cstddef>
 #include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -492,6 +495,40 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
           {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
 
+    void list(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<get_{{name}}_request>(msg)) {
+            get_{{name}}_response resp;
+            try {
+                resp.{{name}} = svc.list_{{name_short}}(req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.get_total_{{name_singular_short}}_count());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
 {{#left.list_by}}
     void list_by_{{left.column_short}}(ores::nats::message msg) {
         BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
@@ -507,8 +544,8 @@ public:
         if (auto req = decode<get_{{name}}_by_{{left.column_short}}_request>(msg)) {
             get_{{name}}_by_{{left.column_short}}_response resp;
             try {
-                resp.{{name}} = svc.list_{{name_short}}_by_{{left.column_short}}(
 {{#left.is_uuid}}
+                auto rows = svc.list_{{name_short}}_by_{{left.column_short}}(
                     boost::lexical_cast<boost::uuids::uuid>(req->{{left.column}}),
                     req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
@@ -516,10 +553,22 @@ public:
                         boost::lexical_cast<boost::uuids::uuid>(req->{{left.column}})));
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+                auto rows = svc.list_{{name_short}}_by_{{left.column_short}}(
                     req->{{left.column}}, req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
-                    svc.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(req->{{left.column}}));
+                    svc.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+                        req->{{left.column}}));
 {{/left.is_uuid}}
+                resp.{{name}}.reserve(rows.size());
+                for (auto& row : rows) {
+                    {{name_singular}}_view view;
+                    view.{{name_singular}} = std::move(row);
+{{#right.enrich_code}}
+                    view.{{right.column_short}}_code =
+                        view.{{name_singular}}.{{right.column_short}}_code;
+{{/right.enrich_code}}
+                    resp.{{name}}.push_back(std::move(view));
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
@@ -553,8 +602,8 @@ public:
         if (auto req = decode<get_{{name}}_by_{{right.column_short}}_request>(msg)) {
             get_{{name}}_by_{{right.column_short}}_response resp;
             try {
-                resp.{{name}} = svc.list_{{name_short}}_by_{{right.column_short}}(
 {{#right.is_uuid}}
+                auto rows = svc.list_{{name_short}}_by_{{right.column_short}}(
                     boost::lexical_cast<boost::uuids::uuid>(req->{{right.column}}),
                     req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
@@ -562,10 +611,22 @@ public:
                         boost::lexical_cast<boost::uuids::uuid>(req->{{right.column}})));
 {{/right.is_uuid}}
 {{^right.is_uuid}}
+                auto rows = svc.list_{{name_short}}_by_{{right.column_short}}(
                     req->{{right.column}}, req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
-                    svc.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(req->{{right.column}}));
+                    svc.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+                        req->{{right.column}}));
 {{/right.is_uuid}}
+                resp.{{name}}.reserve(rows.size());
+                for (auto& row : rows) {
+                    {{name_singular}}_view view;
+                    view.{{name_singular}} = std::move(row);
+{{#left.enrich_code}}
+                    view.{{left.column_short}}_code =
+                        view.{{name_singular}}.{{left.column_short}}_code;
+{{/left.enrich_code}}
+                    resp.{{name}}.push_back(std::move(view));
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
@@ -584,6 +645,181 @@ public:
     }
 
 {{/right.list_by}}
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "{{component}}::{{name}}:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<save_{{name_singular}}_request>(msg)) {
+            save_{{name_singular}}_response resp;
+            try {
+                for (const auto& row : req->{{name}})
+                    svc.save_{{name_singular_short}}(row);
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "{{component}}::{{name}}:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<delete_{{name_singular}}_request>(msg)) {
+            if (req->{{left.column}}s.size() != req->{{right.column}}s.size()) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                    << msg.subject << " rejected: key vectors differ in length, "
+                    << req->{{left.column}}s.size() << " and "
+                    << req->{{right.column}}s.size();
+                error_reply(nats_, msg, ores::service::error_code::bad_request);
+                return;
+            }
+            delete_{{name_singular}}_response resp;
+            try {
+                for (std::size_t i = 0; i < req->{{left.column}}s.size(); ++i) {
+{{#left.is_uuid}}
+                    const auto {{left.column}}_key =
+                        boost::lexical_cast<boost::uuids::uuid>(req->{{left.column}}s[i]);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+                    const auto& {{left.column}}_key = req->{{left.column}}s[i];
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+                    const auto {{right.column}}_key =
+                        boost::lexical_cast<boost::uuids::uuid>(req->{{right.column}}s[i]);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+                    const auto& {{right.column}}_key = req->{{right.column}}s[i];
+{{/right.is_uuid}}
+                    svc.remove_{{name_singular_short}}({{left.column}}_key, {{right.column}}_key);
+                }
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void count_by_{{left.column_short}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<count_{{name}}_by_{{left.column_short}}_request>(msg)) {
+            count_{{name}}_by_{{left.column_short}}_response resp;
+            try {
+{{#left.is_uuid}}
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+                        boost::lexical_cast<boost::uuids::uuid>(req->{{left.column}})));
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+                        req->{{left.column}}));
+{{/left.is_uuid}}
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void count_by_{{right.column_short}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{name_singular}}_service svc(req_ctx);
+        if (auto req = decode<count_{{name}}_by_{{right.column_short}}_request>(msg)) {
+            count_{{name}}_by_{{right.column_short}}_response resp;
+            try {
+{{#right.is_uuid}}
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+                        boost::lexical_cast<boost::uuids::uuid>(req->{{right.column}})));
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+                        req->{{right.column}}));
+{{/right.is_uuid}}
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
 {{#left.replace_by}}
     void replace_by_{{left.column_short}}(ores::nats::message msg) {
         BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
@@ -724,7 +960,7 @@ using namespace ores::logging;
  * @brief NATS message handler for {{entity_singular_words}} operations.
 {{#system_tenant_validation}}
  *
- * {{entity_plural_words_cap}} are system-owned global entities; list and history
+ * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
  * operations use the system tenant context.
 {{/system_tenant_validation}}
  */
@@ -825,6 +1061,7 @@ public:
         }
     }
 
+{{^current_state}}
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -862,6 +1099,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
+{{/current_state}}
 
     void remove(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)

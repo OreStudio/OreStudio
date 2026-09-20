@@ -214,6 +214,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         delete_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
             aph->remove(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        replace_account_parties_by_account_request::nats_subject,
+        qg,
+        [aph](ores::nats::message msg) { aph->replace_by_account(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_account_parties_by_account_request::nats_subject,
+        qg,
+        [aph](ores::nats::message msg) { aph->count_by_account(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        count_account_parties_by_party_request::nats_subject,
+        qg,
+        [aph](ores::nats::message msg) { aph->count_by_party(std::move(msg)); }));
 
     // --- Sessions ---
     auto sh = std::make_shared<session_handler>(nats, ctx, signer);
@@ -237,6 +249,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             rh->list(std::move(msg));
         }));
     subs.push_back(
+        nats.queue_subscribe(get_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->get(std::move(msg));
+        }));
+    subs.push_back(
         nats.queue_subscribe(assign_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->assign(std::move(msg));
         }));
@@ -247,6 +263,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_account_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->by_account(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->permissions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         assign_role_by_name_request::nats_subject, qg, [rh](ores::nats::message msg) {

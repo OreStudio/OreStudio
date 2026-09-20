@@ -171,6 +171,7 @@ The bundle as a feature model:
 
 | Feature | Type | Default | Effect |
 |---------+------+---------+--------|
+| =:current_state:= | bool | false | Table holds one row per key and no history at all: no =valid_from=/=valid_to=, no GIST exclusion, no temporal checks, no =version= or audit tail, and the model's own primary key. Because it has no temporal axis it has no history surface either: no history endpoint, no history request/response messages and no history subscription. A current-state entity still validates its =tenant_id= on insert, and keeps any =** Indexes= it declares (without a =valid_to= predicate). *Structural consequence:* removes the temporal axis. |
 | =:system_scope:= | bool | false | Table is system-tenant-scoped: =tenant_id= defaults to the system tenant and the insert trigger forces it. *Structural consequence:* changes the =tenant_id= column default. |
 | =:nullable_tenant_id:= | bool | false | =tenant_id= is nullable (system records carry NULL); selects the nullable-tenant validation and index variants. *Structural consequence:* changes =tenant_id= nullability. |
 | =:extra_checks:= | collection<string> | ∅ | Additional =CHECK= constraints to emit on the table. |
@@ -182,6 +183,30 @@ The bundle as a feature model:
 | =:rls_tenant_isolation:= | bool | false | Emit =enable row level security= + a permissive tenant-isolation policy (T1) as a trailer of the create file, and its drop in the drop file. |
 | =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
 | =:rls_system_tenant_visible:= | bool | false | Widen the tenant-isolation policy body to own-tenant *or* system-tenant (T2); requires =:rls_tenant_isolation:=. |
+
+*Current-state is a distinct axis from =:no_audit_columns:=.* A
+=:no_audit_columns:= entity (a TimescaleDB hypertable) drops only the
+=version= column and the audit tail; it keeps =valid_from=/=valid_to= as its
+transaction-time window, and its reads still filter on =valid_to=. A
+=:current_state:= entity drops the whole temporal axis: the SQL create has no
+=valid_from=/=valid_to=, no GIST exclusion and no temporal check, and its
+primary key is the model's own key (for =login_info=, =account_id=), not
+=(tenant_id, key, valid_from, valid_to)=. It has no history surface: the
+service declares no =get_<entity>_history=, the C++ and TypeScript protocol
+headers state no history request/response pair and no history subject, the
+NATS registrar subscribes to no history subject, and the shell-command and
+presentation history facets omit the history verb and field mapper. The C++
+domain type then has no =recorded_at= and the repository upserts
+(=insert_or_replace=) and hard-deletes instead of closing a validity window, so
+a caller must not expect version rows from =read_all= or a soft delete from
+=remove=. The insert trigger still
+validates =tenant_id=, and the hand-written table's indexes and constraints
+carry over through the =** Indexes= and =** Checks= sections (plus the
+per-column =:skip_uuid_check:= / =:skip_empty_check:= and per-FK =:skip_check:=
+suppressions), which is how the =iam_login_info= table keeps
+=login_info_locked_idx= and avoids gaining a nil-UUID check it never had.
+The feature is authored in the =* SQL ** Flags= drawer, beside the other SQL
+projection knobs above.
 
 *Tenant-scoping is a policy, not three booleans.* =:system_scope:= and
 =:nullable_tenant_id:= are mutually exclusive with the default

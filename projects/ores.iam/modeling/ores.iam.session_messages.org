@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.ts.protocol.enabled: nil
 :ID: 6C8974B6-3D65-4F75-959A-AFCD1C7826CF
 :END:
 #+title: ores.iam.session_messages
@@ -12,20 +11,133 @@
 #+brief: session protocol messages.
 #+filetags: :model:operation:iam:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-20
 
 The session protocol messages.
+
+The session itself is an entity (=ores.iam.session=): the list and active
+responses carry =ores::iam::domain::session=, the generated table type.
+Two shapes no table backs live here instead:
+
+- =session_statistics= is a computed shape, aggregated from the sessions
+  hypertable by the continuous aggregates in
+  =projects/ores.sql/create/iam/iam_session_stats_create.sql=. There is no
+  =session_statistics= table, so it is a message payload.
+- =session_view= is the denormalised, party-scoped projection of a
+  session: the entity plus =party_id=, =visible_party_ids= and =username=.
+  None of those three has a column, so none may be an entity member; they
+  are message fields here, beside the entity they annotate.
 
 * Includes
 
 #+begin_src cpp :name includes
 #include "ores.iam.api/domain/session.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <string>
 #include <vector>
 #+end_src
 
 * Messages
+
+** session_statistics
+
+#+begin_src cpp :name comment
+/**
+ * @brief Aggregated session statistics for a time period, computed from
+ * the sessions hypertable's continuous aggregates.
+ */
+#+end_src
+
+*** period_start
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** period_end
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** account_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** session_count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** avg_duration_seconds
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** total_bytes_sent
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** total_bytes_received
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** avg_bytes_sent
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** avg_bytes_received
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** unique_countries
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+** session_view
+
+#+begin_src cpp :name comment
+/**
+ * @brief A session with its party-scoped context.
+ *
+ * The session is the entity; party_id, visible_party_ids and username are
+ * the denormalised fields reached through the account-party association.
+ * They are message fields because no column backs them.
+ */
+#+end_src
+
+*** session
+:PROPERTIES:
+:cpp_type: ores::iam::domain::session
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** visible_party_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
 
 ** list_sessions_request
 :PROPERTIES:
@@ -119,7 +231,7 @@ The session protocol messages.
 
 *** statistics
 :PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::session_statistics>
+:cpp_type: std::vector<session_statistics>
 :END:
 
 *** success
@@ -132,4 +244,3 @@ The session protocol messages.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
-

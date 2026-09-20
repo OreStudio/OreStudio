@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,48 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/generators/account_generator.hpp"
-#include "ores.utility/faker/totp.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::account generate_synthetic_account(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
+
     domain::account r;
     r.version = 0;
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
-    r.modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-
-    // Use a UUID-based suffix to prevent duplicate key violations when many
-    // accounts are written within the same test tenant in a single test run.
-    const auto id_str = boost::uuids::to_string(r.id);
-    const auto suffix = id_str.substr(24);
-
-    auto first = std::string(faker::person::firstName());
-    auto last = std::string(faker::person::lastName());
-    r.username = faker::internet::username(first, last) + "_" + suffix;
-    auto email = std::string(faker::internet::email(first, last));
-    const auto at_pos = email.find('@');
-    if (at_pos != std::string::npos)
-        email.insert(at_pos, "_" + suffix);
-    r.email = std::move(email);
-
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.username = std::string(faker::internet::username(std::string(faker::person::firstName()),
+                                                       std::string(faker::person::lastName()))) +
+                 "-" + std::to_string(idx);
+    r.account_type = std::string("user");
+    r.full_name =
+        std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
     r.password_hash = ctx.alphanumeric(64);
     r.password_salt = ctx.alphanumeric(32);
-
-    using utility::faker::totp;
-    r.totp_secret = totp::totp_secret();
-
+    r.totp_secret = ctx.alphanumeric(32);
+    r.email = std::string(faker::internet::email(std::string(faker::person::firstName()),
+                                                 std::string(faker::person::lastName()))) +
+              "-" + std::to_string(idx);
+    r.job_title = faker::person::jobTitle();
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }

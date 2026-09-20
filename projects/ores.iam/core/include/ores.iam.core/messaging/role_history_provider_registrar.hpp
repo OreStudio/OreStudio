@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,24 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/account_version_table.hpp"
-#include <fort.hpp>
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_provider_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_MESSAGING_ROLE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_IAM_CORE_MESSAGING_ROLE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-namespace ores::iam::domain {
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-std::string convert_to_table(const std::vector<account_version>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+namespace ores::iam::messaging {
 
-    table << fort::header << "Version" << "Username" << "Email" << "Change Reason" << "Modified By"
-          << "Recorded At" << "Change Summary" << fort::endr;
+void register_role_history_provider(ores::history::service::dispatch_registry& registry);
 
-    for (const auto& av : v) {
-        table << av.version_number << av.data.username << av.data.email
-              << av.data.change_reason_code << av.modified_by << av.recorded_at << av.change_summary
-              << fort::endr;
-    }
-    return table.to_string();
-}
+} // namespace ores::iam::messaging
 
-}
+#endif

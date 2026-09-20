@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
-#+branch: feature/codegen-ts-protocol-coverage
-#+pr: 2110
+#+branch: feature/codegen-ts-iam-modelling
+#+pr: 2113
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-19
@@ -29,11 +29,11 @@ exists in both or in neither, and no IAM protocol switches the facet off.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-19                               |
 
 * Acceptance
@@ -63,14 +63,56 @@ facet out.
    junction block was never in play: the operation model owns that header.
    Removing the opt-out also needed the operation's domain import, or the
    interface would have named a type it never imported.
-3. Model IAM's six hand-written wire types — =account=, =login_info=,
-   =permission= and =role= as entities, =account_version= through the account
-   entity's version facet, and =session= with =session_statistics= as
-   message-only models — then delete the remaining four opt-outs and the
-   hand-written headers and companions, re-pointing the handlers, service and
-   shell.
+3. Model IAM's seven hand-written wire types. Planning corrected two assumptions
+   and set the order below.
+   - *Shapes.* =account=, =login_info=, =permission=, =role= and =session= are
+     entities — each has a hand-written table. =account_version= and
+     =session_statistics= are message-only: the first has no table and there is
+     no version facet in the codegen at all (the story's "through the account
+     entity's version facet" was wrong), and the second is computed from
+     continuous aggregates rather than stored.
+   - *Session is an entity, revised.* An earlier reading made it message-only
+     because =party_id=, =visible_party_ids= and =username= have no column. The
+     rule that an entity describes its table settles it the other way: the
+     sessions table exists, so those three become message fields and the entity
+     is the table. Its shape is =:current_state:= — the table has no
+     =valid_from=/=valid_to= and a primary key of =(id, start_time)= — together
+     with the hypertable flag, and =end_time= is =text not null default ''=
+     rather than a nullable timestamp, which the entity mirrors the way the
+     =inet= column is mirrored.
+   - *Order.* First a codegen enabler, then =login_info= (smallest entity,
+     proves the soft-update path), then =permission= and =role=, then =session=
+     with =session_statistics= (removes one opt-out), and =account= with
+     =account_version= last, behind its own PR.
+   - *The enabler.* Two models render one header today: the entity or junction
+     block of =cpp_protocol.hpp.mustache= and an operation model for the same
+     entity both write =<entity>_protocol.hpp=, and whichever renders last wins.
+     Nothing may be modelled until one model owns the header.
+   - *Account's approach.* Its two headline risks have answers. The protocol
+     collision is already gone: =account_messages= declares the entity
+     =account=, so the ownership gate suppresses the entity-derived header and
+     one model owns it. The custom auth logic — =account_service.cpp= is 634
+     lines and its header 346, and the handler carries login, lock, TOTP,
+     password reset and party selection — has a home because paste anchors exist
+     in the service, handler, protocol, repository and domain templates, so
+     custom code survives the generated files replacing the hand-written ones.
+     Still to re-verify: the two =std::optional<uuid>= members the hand-written
+     header documents as corrupting JSON and table serialisation, and the SQL
+     the generated table must reproduce (the touch function, the partial unique
+     indexes on username and email, the image and self-reference checks, RLS).
 4. Make a protocol header without a TypeScript twin fail the drift check, and an
    =:ores.ts.protocol.enabled:= key fail with it.
+
+   Designed, so the last step is mechanical: a new
+   =projects/ores.codegen/scripts/check_protocol_twin_coverage.py=, run by the
+   same workflow as the drift gate. For every component whose TypeScript
+   protocol output is committed, each generated =<entity>_protocol.hpp= must
+   have its =<entity>_protocol.ts= twin, and no model may carry
+   =:ores.ts.protocol.enabled:=. Scoping it by committed output is what keeps it
+   honest while the other components are unmigrated: a component joins the check
+   when its first twin lands, exactly as it joins the TypeScript side of the
+   drift gate. Failing on the opt-out key is the part that stops a later
+   migration taking the shortcut.
 
 * Progress
 
@@ -88,6 +130,68 @@ IAM now regenerates at six technical spaces plus =ores.ts.domain=,
 =ores.ts.protocol= and =ores.ts.ui=, and reports no drift; refdata regenerates
 at the six plus =ores.ts.ui= alone; the full set passes in about twenty
 seconds. The gate goes green on PR #2110 with all five checks.
+
+* The login_info preview
+
+Modelling =login_info= was previewed before anything was overwritten, and the
+preview stopped it. Two blockers, both real.
+
+- *The codegen cannot express a current-state entity.* The SQL template emits
+  =valid_from= and =valid_to= unconditionally, and =no_audit_columns= removes
+  only =version= and the audit tail, so generating =login_info= would replace
+  its hand-written table with a bi-temporal one: the primary key becomes
+  =(tenant_id, account_id, valid_from, valid_to)=, a GIST exclusion and two
+  checks appear, the insert trigger and its function are replaced, and
+  =login_info_locked_idx= — a partial index on =locked= — is dropped with no
+  replacement. None of the five =entity_org= shapes touches the temporal axis.
+  *Decided:* add a first-class current-state shape to the codegen rather than
+  migrate the table, so the table's behaviour does not change and the generator
+  gains the ability to express a table with no history.
+- *Entity domains are never gap-checked and the IP type has no projection.*
+  Generation emitted =last_ip: ;= because =_ts_domain_type= has no mapping for
+  =boost::asio::ip::address=, and only operation and junction models run the
+  silent-gap guard, so invalid TypeScript would have been committed. The
+  projection is =string=: the reflector at =ores.utility/rfl/reflectors.hpp=
+  143-159 writes =v.to_string()= through =ReflType = std::string=.
+
+A third finding waits for a decision rather than a fix: an entity-derived
+=login_info= protocol would emit subjects =iam.v1.login_info.*= while
+=account_messages.org= already declares =list_login_info_*= in
+=account_protocol.hpp=. The ownership gate does not cover it, because
+=account_messages= declares the entity =account=, not =login_info=.
+
+* The check that changed the tree
+
+The drift check regenerates in place and then compares, so it writes what it is
+meant to be checking. While a drafted =login_info= model sat in
+=projects/ores.iam/modeling/=, an in-place =--all= run regenerated that entity
+for real: sixteen hand-written files overwritten and thirteen new ones created,
+all restored by hand. The draft then had to be shuffled between =build/output/=
+and =modeling/= to keep the check safe, and one agent lost it to a temporary
+directory being wiped.
+
+A check that mutates what it checks is the defect; moving the file was the
+workaround. =check_component_drift.py= gains =--dry-run=: it generates every
+component into a temporary root, reports what would change or would be created,
+writes nothing, and exits non-zero when anything differs. A drafted model can
+then stay where it is. The memory =generate_one_entity_at_a_time= carries the
+rule, and the proof is the drafted =login_info= model: present in the modeling
+directory, the dry run must report its output and leave every file
+byte-identical.
+
+* login_info migrated
+
+=login_info= is an entity model as of =8798bc4237=, with the generator
+projection it needed (=9880bbce96=): the entity struct carries a =std::string=
+where the domain carries =boost::asio::ip::address=, and the mapper converts,
+mirroring what a timestamp already does. The generated SQL reproduces the
+hand-written table, nothing dropped, including the partial index on =locked=.
+
+Verified by building, which is the first time the current-state shape's C++ was
+compiled: the build is green, the API suite passes 510 assertions in 107 cases,
+and the IAM core suite passes 228 assertions in 96 cases. Five of those cases
+failed on the first run with =NATS connect failed= while the fleet was stopped;
+with the broker up they pass, so the failure was never the migration.
 
 * Notes
 
@@ -146,6 +250,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2113][#2113]] | [codegen] Model every IAM wire type and render both targets |
 | [[https://github.com/OreStudio/OreStudio/pull/2110][#2110]] | [codegen] Model every IAM NATS message and generate both targets |
 
 * Review
@@ -156,24 +261,43 @@ via its "Verifies task" field.
 
 * Result
 
-Part of the task shipped in PR #2110, which is why the task stays STARTED rather
-than closing here. Its acceptance — every IAM protocol header with both targets
-and no facet switched off — is not met yet.
+Delivered in PR #2113, across two pull requests: #2110 carried the first three
+slices and this one the migrations.
 
-Shipped. An entity model renders its protocol as TypeScript: the =ores.ts.domain=
-facet, the =_ts_type= projection for =ores::<component>::domain::<entity>= and
-timestamps, and the standard CRUD message list derived once in the loader so
-both twins render from it. That gave =tenant=, =tenant_type=, =tenant_status=,
-=account_type= and =account_contact_information= their twins. Junction models
-gained the same treatment, which removed the =account_party= opt-out. The drift
-gate now regenerates a component at a TypeScript facet only once that facet's
-output is committed for it. Twelve of IAM's sixteen protocol headers have both
-targets now, up from six, and the C++ output is byte-identical throughout.
+Every IAM NATS message now comes from an org model and renders to C++ and
+TypeScript from that one source, with no facet switched off. The five
+=:ores.ts.protocol.enabled:= opt-outs are gone; the count was five and is zero.
+=account=, =login_info=, =permission=, =role= and =session= are entity models,
+=account_version= and =session_statistics= are message payloads, and the
+hand-written wire types they replaced are gone.
 
-Remaining. The four opt-outs — =account_messages=, =account_history_messages=,
-=authorization_messages= and =session_messages= — are all blocked on the six
-hand-written wire types that have no org model: =account=, =account_version=,
-=login_info=, =permission=, =role=, and =session= with =session_statistics=.
-Modelling them, deleting their hand-written headers and companions, and
-re-pointing the account handlers, the IAM service and the shell is the rest of
-the task.
+The work produced as much in the generator as in the models. A current-state
+entity shape now exists, because a table with no history could not be expressed
+and IAM's =login_info= is one. Five generator defects were found — the =inet=
+entity member, the history surface for a current-state entity, a soft close that
+ignored the tenant, a compound timestamp key, and =sql_only= reaching the mapper
+— and every one of them was invisible to a diff, a drift check and a typecheck.
+Only building and running the tests found them, which is the argument for the
+way this was done. The drift check also gained =--dry-run=, after an in-place
+=--all= run overwrote sixteen hand-written files while a drafted model sat in a
+modeling directory; a check that writes is a check that damages.
+
+The rule that settled the hardest question is recorded in the story: an entity
+describes its table, and a joined or denormalised shape is a message. =role='s
+=permission_codes= was the case, and the codes are now served by a message keyed
+by role id with no entity embedded.
+
+Verified: the build is green; the six IAM and shell suites pass with the fleet
+up; the drift gate is clean in both scopes; the codegen suite passes 342; the
+TypeScript typecheck is clean over the generated tree; and the restored role
+permissions were confirmed through a scripted shell session rather than an
+assertion.
+
+Open, recorded rather than hidden: the coverage gate's rule one will need an
+exemption for junction models before the next component joins, since the
+TypeScript protocol facet does not serve them; =session_view= is declared but
+unreferenced; the generated notify trigger fires on the session heartbeat update
+path; the licence-gated Timescale retention policy is not generated and is inert
+under this environment's licence; and the new REST route could not be exercised
+through an authenticated call, because this environment's HTTP login rejects the
+shell credentials.

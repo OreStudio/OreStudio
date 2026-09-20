@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,13 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Role Table
+ *
+ * A named collection of permissions that can be assigned to accounts. Roles
+ * group related permissions for easier management: a "Trading" role might
+ * include permissions to read and execute trades, while a "Support" role
+ * might have read-only access to most resources.
+ *
+ * The table is bi-temporal and audited (see
+ * projects/ores.sql/create/iam/iam_roles_create.sql): it carries
+ * version, the four audit columns and the valid_from/valid_to pair
+ * with the GIST exclusion and the delete rule, so the model takes the
+ * ordinary audited shape and needs no shape flag.
+ *
+ * The model describes the table alone. The hand-written domain struct also
+ * carried a std::vector<std::string> permission_codes that no column
+ * backs -- it is denormalised from ores_iam_role_permissions_tbl by an
+ * RBAC join. A joined shape is a message or a query result, never an entity
+ * member, so the member is not modelled and the generated role.hpp
+ * replaces it; the join itself stays in the hand-written authorization
+ * layer.
+ *
+ * The entity's CRUD handler and sub-registrar are switched off below: the
+ * hand-written role_handler already owns the iam.v1.roles.* subjects for
+ * the authorization protocol, and the generated role_handler.hpp would
+ * overwrite it. The generated role_protocol.hpp still declares the entity
+ * CRUD messages; only the competing handler is suppressed.
+ */
 
--- =============================================================================
--- Named roles for grouping permissions.
--- Examples: admin, viewer, editor.
--- =============================================================================
-
-create table if not exists ores_iam_roles_tbl (
+create table if not exists "ores_iam_roles_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -44,16 +71,22 @@ create table if not exists ores_iam_roles_tbl (
     check ("valid_from" < "valid_to")
 );
 
+-- Unique name for active records
 create unique index if not exists roles_name_uniq_idx
-on ores_iam_roles_tbl (tenant_id, name)
+on "ores_iam_roles_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists roles_version_uniq_idx
+on "ores_iam_roles_tbl" (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists roles_id_uniq_idx
+on "ores_iam_roles_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists roles_tenant_idx
-on ores_iam_roles_tbl (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create unique index if not exists roles_version_uniq_idx
-on ores_iam_roles_tbl (id, version)
+on "ores_iam_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_iam_roles_insert_fn()
@@ -62,54 +95,59 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
     select version into current_version
-    from ores_iam_roles_tbl
-    where tenant_id = new.tenant_id
-    and id = new.id
-    and valid_to = ores_utility_infinity_timestamp_fn()
+    from "ores_iam_roles_tbl"
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
-
-        update ores_iam_roles_tbl
-        set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-        and id = new.id
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        update "ores_iam_roles_tbl"
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
-    return new;
+    return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_iam_roles_insert_trg
-before insert on ores_iam_roles_tbl
-for each row
-execute function ores_iam_roles_insert_fn();
+before insert on "ores_iam_roles_tbl"
+for each row execute function ores_iam_roles_insert_fn();
 
 create or replace rule ores_iam_roles_delete_rule as
-on delete to ores_iam_roles_tbl
-do instead
-  update ores_iam_roles_tbl
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and id = old.id
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_iam_roles_tbl" do instead (
+    update "ores_iam_roles_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);

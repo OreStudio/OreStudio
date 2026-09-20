@@ -68,6 +68,17 @@ public:
     std::vector<domain::app_version_platform> list_app_version_platforms();
 
     /**
+     * @brief Lists app version platforms with pagination.
+     */
+    std::vector<domain::app_version_platform> list_app_version_platforms(std::uint32_t offset,
+                                                                         std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active app version platforms.
+     */
+    std::uint32_t get_total_app_version_platform_count();
+
+    /**
      * @brief Lists app version platforms for a specific app version.
      *
      * @param app_version_id The app version to filter by
@@ -87,6 +98,11 @@ public:
     std::uint32_t
     get_total_app_version_platform_count_by_app_version(const boost::uuids::uuid& app_version_id);
 
+    /**
+     * @brief Gets the total count of active app version platforms filtered by platform_id.
+     */
+    std::uint32_t
+    get_total_app_version_platform_count_by_platform(const boost::uuids::uuid& platform_id);
     /**
      * @brief Saves a app version platform (creates or updates).
      *

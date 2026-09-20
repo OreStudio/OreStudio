@@ -200,10 +200,9 @@ TEST_CASE("session_generator_produces_valid_instance", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.client_identifier.empty());
-    CHECK(!sut.username.empty());
     CHECK(sut.client_version_major == 1);
     CHECK(sut.country_code == "GB");
-    CHECK(sut.protocol == ores::iam::domain::session_protocol::binary);
+    CHECK(sut.protocol == "binary");
 }
 
 TEST_CASE("session_generator_produces_multiple_instances", tags) {
@@ -237,7 +236,7 @@ TEST_CASE("login_info_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_login_infos(count, ctx);
+    auto items = generate_synthetic_login_info(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {

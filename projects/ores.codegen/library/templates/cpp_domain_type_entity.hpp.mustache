@@ -63,6 +63,9 @@ struct {{entity_singular}}_entity {
 {{#is_required_timestamp}}
     std::string {{name}};
 {{/is_required_timestamp}}
+{{#is_required_inet}}
+    std::string {{name}};
+{{/is_required_inet}}
 {{#is_nullable_string}}
     std::optional<std::string> {{name}};
 {{/is_nullable_string}}
@@ -90,8 +93,10 @@ struct {{entity_singular}}_entity {
     std::string change_reason_code;
     std::string change_commentary;
 {{/has_audit_columns}}
+{{^current_state}}
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+{{/current_state}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);

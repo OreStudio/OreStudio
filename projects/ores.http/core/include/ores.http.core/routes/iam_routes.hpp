@@ -77,6 +77,7 @@ struct ORES_HTTP_CORE_EXPORT auth_result {
  * RBAC:
  * - GET /api/v1/roles - list_roles_request
  * - GET /api/v1/roles/{id} - get_role_request
+ * - GET /api/v1/roles/{id}/permissions - get_role_permissions_request
  * - GET /api/v1/permissions - list_permissions_request
  * - POST /api/v1/accounts/{id}/roles - assign_role_request
  * - DELETE /api/v1/accounts/{id}/roles/{roleId} - revoke_role_request
@@ -169,6 +170,9 @@ private:
 
     boost::asio::awaitable<http::domain::http_response>
     handle_get_role(const http::domain::http_request& req);
+
+    boost::asio::awaitable<http::domain::http_response>
+    handle_get_role_permissions(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_list_permissions(const http::domain::http_request& req);

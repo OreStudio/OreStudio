@@ -18,11 +18,11 @@
  *
  */
 #include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.iam.api/domain/account_table_io.hpp"         // IWYU pragma: keep.
-#include "ores.iam.api/domain/account_version_table_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/login_info_table_io.hpp"      // IWYU pragma: keep.
+#include "ores.iam.api/domain/account_table_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/domain/login_info_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -541,11 +541,12 @@ void accounts_commands::process_list_sessions(std::ostream& out,
 
     for (const auto& s : sessions) {
         out << "  Start: " << format_time(s.start_time);
-        if (s.end_time) {
-            out << " - End: " << format_time(*s.end_time);
-            if (auto dur = s.duration()) {
-                out << " (" << format_duration(*dur) << ")";
-            }
+        if (!s.end_time.empty()) {
+            const auto end = ores::platform::time::datetime::from_iso8601_utc(s.end_time);
+            out << " - End: " << format_time(end);
+            const auto dur =
+                std::chrono::duration_cast<std::chrono::seconds>(end - s.start_time);
+            out << " (" << format_duration(dur) << ")";
         } else {
             out << " [ACTIVE]";
         }
@@ -593,9 +594,6 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
 
     for (const auto& s : sessions) {
         out << "  Started: " << format_time(s.start_time);
-        if (auto dur = s.duration()) {
-            out << " (running for " << format_duration(*dur) << ")";
-        }
         out << std::endl;
         out << "    IP: " << s.client_ip.to_string();
         if (!s.country_code.empty()) {

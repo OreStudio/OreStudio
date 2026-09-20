@@ -25,6 +25,31 @@ export const subjects = {
 {{/messages}}
 } as const;
 {{/domain_entity}}
+{{#junction}}
+import type { {{name_pascal}} } from '../domain/{{name_singular}}.js';
+
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+export interface {{name_pascal}} {
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+
+{{/messages}}
+export const subjects = {
+{{#messages}}
+{{#subject}}
+    {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+{{/junction}}
 {{#operation}}
 {{#domain_imports}}
 import type { {{entity_pascal}} } from '../domain/{{entity}}.js';

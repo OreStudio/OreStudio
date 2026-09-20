@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,20 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
 create or replace function ores_iam_roles_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     entity_name text := 'ores.iam.role';
     change_timestamp timestamptz := NOW();
-    changed_id text;
+    changed_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := OLD.id::text;
+        changed_id := OLD.id;
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := NEW.id::text;
+        changed_id := NEW.id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 

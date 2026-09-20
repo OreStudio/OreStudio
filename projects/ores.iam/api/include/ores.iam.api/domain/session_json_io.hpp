@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_DOMAIN_SESSION_JSON_IO_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
+#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
 
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/export.hpp"
@@ -27,14 +32,9 @@
 namespace ores::iam::domain {
 
 /**
- * @brief Dumps the session object to a stream in JSON format.
+ * @brief Dumps the session to a stream in JSON format.
  */
 ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
-
-/**
- * @brief Dumps the session_statistics object to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session_statistics& v);
 
 }
 

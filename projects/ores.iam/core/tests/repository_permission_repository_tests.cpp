@@ -49,11 +49,11 @@ TEST_CASE("write_single_permission", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    permission_repository repo(h.context());
+    permission_repository repo;
     auto p = generate_synthetic_permission(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
-    CHECK_NOTHROW(repo.write(p));
+    CHECK_NOTHROW(repo.write(h.context(), p));
 }
 
 TEST_CASE("read_latest_permissions", tags) {
@@ -62,13 +62,13 @@ TEST_CASE("read_latest_permissions", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    permission_repository repo(h.context());
+    permission_repository repo;
     auto p = generate_synthetic_permission(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
-    repo.write(p);
+    repo.write(h.context(), p);
 
-    auto read_perms = repo.read_latest();
+    auto read_perms = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     CHECK(!read_perms.empty());
@@ -80,16 +80,16 @@ TEST_CASE("read_latest_permission_by_id", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    permission_repository repo(h.context());
+    permission_repository repo;
     auto p = generate_synthetic_permission(gen_ctx);
     const auto target_id = p.id;
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
-    repo.write(p);
+    repo.write(h.context(), p);
 
     BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
-    auto read_perms = repo.read_latest(target_id);
+    auto read_perms = repo.read_latest(h.context(), boost::uuids::to_string(target_id));
     BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     REQUIRE(read_perms.size() == 1);
@@ -102,12 +102,12 @@ TEST_CASE("read_nonexistent_permission", tags) {
 
     database_helper h;
 
-    permission_repository repo(h.context());
+    permission_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_perms = repo.read_latest(nonexistent_id);
+    auto read_perms = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     CHECK(read_perms.size() == 0);

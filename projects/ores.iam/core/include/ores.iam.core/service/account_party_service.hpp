@@ -63,12 +63,41 @@ public:
     std::vector<domain::account_party> list_account_parties();
 
     /**
+     * @brief Lists account parties with pagination.
+     */
+    std::vector<domain::account_party> list_account_parties(std::uint32_t offset,
+                                                            std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active account parties.
+     */
+    std::uint32_t get_total_account_party_count();
+
+    /**
      * @brief Lists account parties for a specific account.
      *
      * @param account_id The account to filter by
      */
     std::vector<domain::account_party>
     list_account_parties_by_account(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Lists account parties for a specific account, with pagination.
+     */
+    std::vector<domain::account_party>
+    list_account_parties_by_account(const boost::uuids::uuid& account_id,
+                                    std::uint32_t offset,
+                                    std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active account parties for an account.
+     */
+    std::uint32_t get_total_account_party_count_by_account(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Gets the total count of active account parties for a party.
+     */
+    std::uint32_t get_total_account_party_count_by_party(const boost::uuids::uuid& party_id);
 
     /**
      * @brief Saves a account party (creates or updates).
@@ -85,6 +114,21 @@ public:
      */
     void remove_account_party(const boost::uuids::uuid& account_id,
                               const boost::uuids::uuid& party_id);
+
+    /**
+     * @brief Replaces the active account parties for an account.
+     *
+     * Soft-closes the currently active rows for the given account and
+     * inserts the rows in @p account_parties, so the active set exactly
+     * matches the caller's list.
+     */
+    void replace_account_parties_by_account(
+        const boost::uuids::uuid& account_id,
+        const std::vector<domain::account_party>& account_parties,
+        const std::string& modified_by,
+        const std::string& performed_by,
+        const std::string& change_reason_code,
+        const std::string& change_commentary);
 
 private:
     repository::account_party_repository repo_;

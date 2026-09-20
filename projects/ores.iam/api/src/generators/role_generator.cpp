@@ -17,9 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/generators/role_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::iam::generators {
 
@@ -27,21 +36,22 @@ using ores::utility::generation::generation_keys;
 
 domain::role generate_synthetic_role(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::role r;
     r.version = 0;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.name = "Role_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);
-    r.description = "Synthetic test role";
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.name = std::string("Role_") + ctx.alphanumeric(6) + "-" + std::to_string(idx);
+    r.description = std::string("Synthetic test role");
     r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
-    r.performed_by = modified_by;
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
@@ -50,7 +60,7 @@ std::vector<domain::role> generate_synthetic_roles(std::size_t n,
                                                    utility::generation::generation_context& ctx) {
     std::vector<domain::role> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_role(ctx));
     return r;
 }

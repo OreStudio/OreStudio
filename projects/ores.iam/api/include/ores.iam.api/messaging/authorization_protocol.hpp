@@ -50,6 +50,8 @@ struct list_permissions_response {
 };
 
 struct get_role_request {
+    using response_type = struct get_role_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.get";
     std::string identifier;
 };
 
@@ -122,6 +124,16 @@ struct get_account_permissions_request {
 };
 
 struct get_account_permissions_response {
+    std::vector<std::string> permission_codes;
+};
+
+struct get_role_permissions_request {
+    using response_type = struct get_role_permissions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions";
+    std::string role_id;
+};
+
+struct get_role_permissions_response {
     std::vector<std::string> permission_codes;
 };
 

@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -113,6 +114,16 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
+# The history surface that assumes version rows and the audit tail. A
+# current-state entity has neither, so the history dialog's field mapper (which
+# projects recorded_at) and the eventing integration test (which asserts version
+# growth and a soft delete, and reads change_commentary) cannot compile for it.
+_NO_TEMPORAL_HISTORY_ARCHETYPES = frozenset({
+    "ores.cpp.presentation.history_field_mapper_header",
+    "ores.cpp.presentation.history_field_mapper_impl",
+    "ores.cpp.eventing-integration-test.nats_integration_test",
+})
+
 # The TypeScript UI metadata facet projects the presentation drawer's
 # column table. A model with no such table has no presentation metadata to
 # project, and an empty declaration would state that the entity has no
@@ -123,6 +134,65 @@ _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
 _UI_META_FACETS = frozenset({
     "ores.ts.ui",
 })
+
+# One model owns an entity's protocol header. C++ and TypeScript read the
+# messages from one model, so an operation model that declares an entity's
+# messages renders ``<entity>_protocol`` and the entity or junction model
+# must not render a second, competing header at the same output path, where
+# the last writer would silently discard the other. Without an operation
+# model, the entity keeps its derived CRUD header.
+_PROTOCOL_FACETS = frozenset({
+    "ores.cpp.protocol",
+    "ores.ts.protocol",
+})
+
+
+@lru_cache(maxsize=None)
+def _operation_protocol_owners(modeling_dir: str) -> dict[tuple[str, str], str]:
+    """The protocols operation models own, keyed by (component, entity).
+
+    Read from the component's modeling directory. The template graph
+    describes facets, not models, so there is no in-memory registry of
+    operation models to consult; the directory holds the component's model
+    files, and the scan filters them with the same frontmatter type test the
+    regeneration uses (``manifest.is_codegen_entity_org``). Cached per
+    directory: the codegen resolves one model at a time, so a component run
+    reads its operation files once per process rather than once per model.
+
+    The value is the operation model's file name, for the log line a
+    suppressed render prints. Callers must not mutate the result.
+    """
+    directory = Path(modeling_dir)
+    # discover_models() reads these two levels; keep them in step.
+    candidates = sorted(set(directory.glob("*.org")) | set(directory.glob("*/*.org")))
+    owners: dict[tuple[str, str], str] = {}
+    for candidate in candidates:
+        if not candidate.is_file() or not _is_codegen_entity_org(candidate):
+            continue
+        if get_model_type(candidate.name, candidate) != "operation":
+            continue
+        operation = load_model(candidate).get("operation") or {}
+        component = operation.get("component")
+        entity_singular = operation.get("entity_singular")
+        if component and entity_singular:
+            owners.setdefault((component, entity_singular), candidate.name)
+    return owners
+
+
+def _protocol_entity_name(model_data: dict, model_type: str) -> str | None:
+    """The name an entity or junction contributes to ``<entity>_protocol``.
+
+    Mirrors the ``{entity}`` substitution in ``resolve_output_path`` -- a
+    junction names its singular in ``name_singular``, a domain entity in
+    ``entity_singular`` -- so ownership compares the same name the two
+    models would write to the same output path.
+    """
+    if model_type == "domain_entity":
+        return (model_data.get("domain_entity") or {}).get("entity_singular")
+    if model_type == "junction":
+        junction = model_data.get("junction") or {}
+        return junction["name_singular"]
+    return None
 
 
 def _hosted_subcomponents(component_org: Path) -> list[str]:
@@ -236,6 +306,23 @@ def resolve_targets(
 
     model_data = load_model(model_path)
     if model_type in ("domain_entity", "junction"):
+        entity = model_data.get(model_type) or {}
+        owner = _operation_protocol_owners(str(model_path.parent)).get(
+            (entity.get("component"), _protocol_entity_name(model_data, model_type)))
+        owned = (_PROTOCOL_FACETS & gen_facets) if owner else frozenset()
+        if owned:
+            # Hard gate, like the messaging and history-provider gates
+            # below: the operation model owns the entity's protocol, so an
+            # explicit :ores.*.protocol.enabled: override must not re-admit
+            # a second, competing header. It runs before the junction
+            # messaging gate so the log names ownership for a junction that
+            # gate would also have dropped.
+            log.info(
+                "%s: operation model %s owns this entity's protocol; not "
+                "rendering %s",
+                model_path.name, owner, ", ".join(sorted(owned)))
+            gen_facets = gen_facets - owned
+    if model_type in ("domain_entity", "junction"):
         ent = model_data.get(model_type) or {}
         if not ((ent.get("presentation") or {}).get("columns")):
             # Hard gate, like the messaging and history-provider gates
@@ -255,20 +342,28 @@ def resolve_targets(
             # regeneration that would overwrite a live legacy layer).
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_MESSAGING_FACETS}
+    no_temporal_archetypes: frozenset[str] = frozenset()
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})
+        sql_flags = entity.get("sql") or {}
         if (entity.get("domain_audit_group")
-                or (entity.get("sql") or {}).get("no_audit_columns")):
+                or sql_flags.get("no_audit_columns")
+                or sql_flags.get("current_state")):
             # Hard gate, mirroring the junction gate above: the generated
             # history provider needs the entity's version rows to carry a
             # flat actor (modified_by, recorded_at), which no_audit_columns
-            # entities (no stamps at all) and domain_audit_group entities
-            # (stamps folded into the audit member) both lack. Runs before
-            # the per-archetype override loop so an explicit
-            # :ores.*.enabled: override cannot re-admit a facet whose
-            # output cannot build for this entity.
+            # entities (no stamps at all), current_state entities (no
+            # history at all) and domain_audit_group entities (stamps folded
+            # into the audit member) all lack. Runs before the per-archetype
+            # override loop so an explicit :ores.*.enabled: override cannot
+            # re-admit a facet whose output cannot build for this entity.
             gen_facets = {f for f in gen_facets
                           if f not in _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS}
+        if sql_flags.get("current_state"):
+            # A current-state entity has no version rows, so the history
+            # dialog's field mapper (which reads the domain type's recorded_at
+            # member) has nothing to project and would not compile.
+            no_temporal_archetypes = _NO_TEMPORAL_HISTORY_ARCHETYPES
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.
@@ -309,6 +404,8 @@ def resolve_targets(
                 continue
             if not kind_matches(arch.get("kinds", []), component_kind):
                 continue
+            if arch["address"] in no_temporal_archetypes:
+                continue
             if not is_enabled(arch["address"], facet, ts, overrides,
                               arch.get("default_enabled", True)):
                 continue
@@ -342,6 +439,7 @@ def _generate_single(
     base_dir: Path,
     address: str | None = None,
     component_mode: bool = False,
+    output_root: Path | None = None,
 ) -> int:
     if not model_path.exists():
         log.error("Model file not found: %s", model_path)
@@ -384,6 +482,14 @@ def _generate_single(
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
 
+    # Archetype #+output: paths are repository-root-relative. A caller may
+    # redirect them to an isolated root (check_component_drift --dry-run) so a
+    # render never writes into the repository. The library paths stay real, so
+    # the resolved units -- and therefore the dry-run -- are the same as the
+    # in-place run.
+    if output_root is None:
+        output_root = project_root
+
     # Data-scope (populate/seed) models carry no payload of their own: each
     # archetype names a dataset-relative #+data_source: (the JSON payload),
     # and the dataset model supplies the output prefix. We render each unit
@@ -398,7 +504,7 @@ def _generate_single(
     written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
-        output_path = project_root / unit["output"]
+        output_path = output_root / unit["output"]
         if dry_run:
             print(str(output_path))
             continue

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,11 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_LOGIN_INFO_ENTITY_HPP
-#define ORES_IAM_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+#define ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::iam::repository {
@@ -29,7 +36,7 @@ namespace ores::iam::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents login tracking information in the database.
+ * @brief Represents a login info in the database.
  */
 struct login_info_entity {
     constexpr static const char* schema = "public";
@@ -39,11 +46,11 @@ struct login_info_entity {
     std::string tenant_id;
     std::string last_ip;
     std::string last_attempt_ip;
-    int failed_logins;
-    int locked;
-    db_timestamp last_login = "9999-12-31 23:59:59";
-    int online;
-    int password_reset_required;
+    int failed_logins = 0;
+    bool locked = false;
+    std::string last_login;
+    bool online = false;
+    bool password_reset_required = false;
 };
 
 std::ostream& operator<<(std::ostream& s, const login_info_entity& v);

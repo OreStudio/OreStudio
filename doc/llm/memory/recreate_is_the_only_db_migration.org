@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 31FC81F6-07EC-412F-8AED-1EC12A31040F
+:END:
+#+title: Recreating the database is the only migration
+#+description: Generated grants and row-level security only reach a live database when compass db recreate runs; no build or CI check applies them.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :database:sql:grants:rls:hygiene:memory:feedback:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+Treat compass db recreate as the only thing that applies a change to generated SQL. Recreating is not a reset you do only when the schema is corrupt; it is how a grant, a row-level security policy or a new table reaches a running database.
+
+*Why:* On 2026-09-20 the eager_maxwell database had been provisioned from 34e64c0451 at 10:54 on 2026-09-19. Commit 5557444cdc added ores_ore_ to the marketdata service's select prefixes at 17:28 that day, and 9b07e08d21 added the junction row-level-security trailer at 01:51 the next day. Neither reached the database, because the schema is applied by a script that runs once at provisioning and generated grants are not migrations. ores.marketdata.service died at startup with 'permission denied for table ores_ore_series_key_shapes_tbl' and stayed dead for a day while all six CI checks were green, and ores_marketdata_market_series_asset_classes_tbl was the only one of nine junctions with no tenant isolation.
+
+*How to apply:* Run compass db status and read the drift line before trusting a green build, and run compass db recreate after pulling a commit that touches projects/ores.sql, projects/modeling/service_registry.org, or a sql_schema_* template. Run it from the branch you are testing: a branch behind origin/main recreates the old schema, so rebase first. Stop the fleet before recreating and start it after, because the build must precede the fleet start for the new binaries to be the ones on trial. Each environment has its own database, so a recreate drops only that environment's data and roles.

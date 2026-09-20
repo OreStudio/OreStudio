@@ -49,11 +49,11 @@ TEST_CASE("write_single_role", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    role_repository repo(h.context());
+    role_repository repo;
     auto r = generate_synthetic_role(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;
-    CHECK_NOTHROW(repo.write(r));
+    CHECK_NOTHROW(repo.write(h.context(), r));
 }
 
 TEST_CASE("read_latest_roles", tags) {
@@ -62,13 +62,13 @@ TEST_CASE("read_latest_roles", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    role_repository repo(h.context());
+    role_repository repo;
     auto r = generate_synthetic_role(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;
-    repo.write(r);
+    repo.write(h.context(), r);
 
-    auto read_roles = repo.read_latest();
+    auto read_roles = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     CHECK(!read_roles.empty());
@@ -80,16 +80,16 @@ TEST_CASE("read_latest_role_by_id", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    role_repository repo(h.context());
+    role_repository repo;
     auto r = generate_synthetic_role(gen_ctx);
     const auto target_id = r.id;
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;
-    repo.write(r);
+    repo.write(h.context(), r);
 
     BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
-    auto read_roles = repo.read_latest(target_id);
+    auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(target_id));
     BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     REQUIRE(read_roles.size() == 1);
@@ -102,12 +102,12 @@ TEST_CASE("read_nonexistent_role", tags) {
 
     database_helper h;
 
-    role_repository repo(h.context());
+    role_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_roles = repo.read_latest(nonexistent_id);
+    auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     CHECK(read_roles.size() == 0);

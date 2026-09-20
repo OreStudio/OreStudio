@@ -4,7 +4,7 @@
 #+title: ores.ts.protocol
 #+description: Wire payload interfaces and NATS subject constants.
 #+type: facet
-#+model_types: domain_entity operation
+#+model_types: domain_entity junction operation
 #+level: cross
 #+facet_group: ores.ts
 #+filetags: :codegen:physical-space:typescript:
@@ -22,8 +22,10 @@ table to them.
 One template: a TypeScript module per protocol, holding one exported
 interface per message and one =subjects= constant naming the NATS
 subjects. The template's model types match its C++ sibling's: an
-=operation= model declares its messages, and a =domain_entity= model
-gets the standard CRUD set the C++ entity block derives.
+=operation= model declares its messages, a =domain_entity= model
+gets the standard CRUD set the C++ entity block derives, and a
+=junction= model gets the generic relationship protocol the C++
+junction block derives.
 
 The facet refuses a model whose fields reference a type with no
 TypeScript counterpart, because a field that vanishes from an interface

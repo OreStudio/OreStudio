@@ -72,6 +72,7 @@
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/permission_table.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/role_table.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
@@ -346,26 +347,26 @@ void application::export_currencies(const config::export_options& cfg) const {
 
 void application::export_accounts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting accounts.";
-    iam::repository::account_repository repo(context_);
+    iam::repository::account_repository repo;
 
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg(), debug) << "Reading all versions for accounts.";
             // Note: account repository doesn't support reading all versions by username yet
             if (cfg.key.empty())
-                return repo.read_all();
+                return repo.read_all(context_);
             else
-                return repo.read_latest_by_username(cfg.key);
+                return repo.read_latest_by_username(context_, cfg.key);
         } else if (cfg.as_of.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
             if (cfg.key.empty())
-                return repo.read_latest();
+                return repo.read_latest(context_);
             else
-                return repo.read_latest_by_username(cfg.key);
+                return repo.read_latest_by_username(context_, cfg.key);
         }
         BOOST_LOG_SEV(lg(), debug) << "Reading accounts as of: " << cfg.as_of;
         // Note: account repository doesn't have read_at_timepoint yet
-        return repo.read_latest();
+        return repo.read_latest(context_);
     });
 
     const std::vector<iam::domain::account> accts(reader());
@@ -414,21 +415,21 @@ void application::export_system_settings(const config::export_options& cfg) cons
 void application::export_login_info(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting login info.";
 
-    iam::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo;
     std::vector<iam::domain::login_info> infos;
 
     if (!cfg.key.empty()) {
         // Export specific login info by account ID
         try {
             const auto account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-            infos = repo.read(account_id);
+            infos = repo.read_latest(context_, boost::uuids::to_string(account_id));
         } catch (const boost::bad_lexical_cast&) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Invalid account ID: {}", cfg.key)));
         }
     } else {
         // Export all login info records
-        infos = repo.read();
+        infos = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -447,20 +448,20 @@ void application::export_login_info(const config::export_options& cfg) const {
 void application::export_roles(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting roles.";
 
-    iam::repository::role_repository repo(context_);
+    iam::repository::role_repository repo;
     std::vector<iam::domain::role> items;
 
     if (!cfg.key.empty()) {
         // Export specific role by ID (UUID)
         try {
             const auto role_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-            items = repo.read_latest(role_id);
+            items = repo.read_latest(context_, boost::uuids::to_string(role_id));
         } catch (const boost::bad_lexical_cast&) {
             // Try by name
-            items = repo.read_latest_by_name(cfg.key);
+            items = repo.read_latest_by_name(context_, cfg.key);
         }
     } else {
-        items = repo.read_latest();
+        items = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -479,20 +480,20 @@ void application::export_roles(const config::export_options& cfg) const {
 void application::export_permissions(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting permissions.";
 
-    iam::repository::permission_repository repo(context_);
+    iam::repository::permission_repository repo;
     std::vector<iam::domain::permission> items;
 
     if (!cfg.key.empty()) {
         // Export specific permission by ID (UUID)
         try {
             const auto perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-            items = repo.read_latest(perm_id);
+            items = repo.read_latest(context_, boost::uuids::to_string(perm_id));
         } catch (const boost::bad_lexical_cast&) {
             // Try by code
-            items = repo.read_latest_by_code(cfg.key);
+            items = repo.read_latest_by_code(context_, cfg.key);
         }
     } else {
-        items = repo.read_latest();
+        items = repo.read_latest(context_);
     }
 
     // Output in the requested format
@@ -929,7 +930,7 @@ void application::delete_currency(const config::delete_options& cfg) const {
 
 void application::delete_account(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
-    iam::repository::account_repository repo(context_);
+    iam::repository::account_repository repo;
 
     // Try to parse as UUID first
     boost::uuids::uuid account_id;
@@ -939,7 +940,7 @@ void application::delete_account(const config::delete_options& cfg) const {
     } catch (const boost::bad_lexical_cast&) {
         // If not a UUID, treat as username and look it up
         BOOST_LOG_SEV(lg(), debug) << "Key is not a UUID, treating as username";
-        const auto accounts = repo.read_latest_by_username(cfg.key);
+        const auto accounts = repo.read_latest_by_username(context_, cfg.key);
         if (accounts.empty()) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Account not found: {}", cfg.key)));
@@ -948,7 +949,7 @@ void application::delete_account(const config::delete_options& cfg) const {
         BOOST_LOG_SEV(lg(), debug) << "Found account ID: " << boost::uuids::to_string(account_id);
     }
 
-    repo.remove(account_id);
+    repo.remove(context_, boost::uuids::to_string(account_id));
     output_stream_ << "Account deleted successfully: " << boost::uuids::to_string(account_id)
                    << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted account: " << boost::uuids::to_string(account_id);
@@ -964,7 +965,7 @@ void application::delete_system_setting(const config::delete_options& cfg) const
 
 void application::delete_login_info(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting login info for account: " << cfg.key;
-    iam::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo;
 
     // Parse as UUID
     boost::uuids::uuid account_id;
@@ -975,7 +976,7 @@ void application::delete_login_info(const config::delete_options& cfg) const {
             application_exception(std::format("Invalid account ID: {}", cfg.key)));
     }
 
-    repo.remove(account_id);
+    repo.remove(context_, boost::uuids::to_string(account_id));
     output_stream_ << "Login info deleted successfully for account: "
                    << boost::uuids::to_string(account_id) << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted login info for account: "
@@ -984,7 +985,7 @@ void application::delete_login_info(const config::delete_options& cfg) const {
 
 void application::delete_role(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting role: " << cfg.key;
-    iam::repository::role_repository repo(context_);
+    iam::repository::role_repository repo;
 
     // Parse as UUID
     boost::uuids::uuid role_id;
@@ -992,7 +993,7 @@ void application::delete_role(const config::delete_options& cfg) const {
         role_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
     } catch (const boost::bad_lexical_cast&) {
         // Try to find by name
-        const auto roles = repo.read_latest_by_name(cfg.key);
+        const auto roles = repo.read_latest_by_name(context_, cfg.key);
         if (roles.empty()) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Role not found: {}", cfg.key)));
@@ -1000,7 +1001,7 @@ void application::delete_role(const config::delete_options& cfg) const {
         role_id = roles.front().id;
     }
 
-    repo.remove(role_id);
+    repo.remove(context_, boost::uuids::to_string(role_id));
     output_stream_ << "Role deleted successfully: " << boost::uuids::to_string(role_id)
                    << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted role: " << boost::uuids::to_string(role_id);
@@ -1008,7 +1009,7 @@ void application::delete_role(const config::delete_options& cfg) const {
 
 void application::delete_permission(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting permission: " << cfg.key;
-    iam::repository::permission_repository repo(context_);
+    iam::repository::permission_repository repo;
 
     // Parse as UUID
     boost::uuids::uuid perm_id;
@@ -1016,7 +1017,7 @@ void application::delete_permission(const config::delete_options& cfg) const {
         perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
     } catch (const boost::bad_lexical_cast&) {
         // Try to find by code
-        const auto perms = repo.read_latest_by_code(cfg.key);
+        const auto perms = repo.read_latest_by_code(context_, cfg.key);
         if (perms.empty()) {
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Permission not found: {}", cfg.key)));
@@ -1024,7 +1025,7 @@ void application::delete_permission(const config::delete_options& cfg) const {
         perm_id = perms.front().id;
     }
 
-    repo.remove(perm_id);
+    repo.remove(context_, boost::uuids::to_string(perm_id));
     output_stream_ << "Permission deleted successfully: " << boost::uuids::to_string(perm_id)
                    << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted permission: " << boost::uuids::to_string(perm_id);
@@ -1212,8 +1213,8 @@ void application::add_account(const config::add_account_options& cfg) const {
     if (bootstrap_svc.is_in_bootstrap_mode())
         output_stream_ << "System is currently in bootstrap mode." << std::endl;
 
-    iam::repository::account_repository repo(context_);
-    repo.write(account);
+    iam::repository::account_repository repo;
+    repo.write(context_, account);
 
     output_stream_ << "Successfully added account: " << account.username
                    << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;
@@ -1278,8 +1279,8 @@ void application::add_login_info(const config::add_login_info_options& cfg) cons
     record.last_login = std::chrono::system_clock::now();
 
     // Write to database
-    iam::repository::login_info_repository repo(context_);
-    repo.write({record});
+    iam::repository::login_info_repository repo;
+    repo.write(context_, record);
 
     output_stream_ << "Successfully added login info for account: "
                    << boost::uuids::to_string(account_id) << std::endl;
@@ -1297,15 +1298,14 @@ void application::add_role(const config::add_role_options& cfg) const {
     record.modified_by = cfg.modified_by;
     record.performed_by = cfg.modified_by;
     record.recorded_at = std::chrono::system_clock::now();
-    record.permission_codes = cfg.permission_codes;
 
     if (cfg.change_reason_code)
         record.change_reason_code = *cfg.change_reason_code;
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    iam::repository::role_repository repo(context_);
-    repo.write({record});
+    iam::repository::role_repository repo;
+    repo.write(context_, {record});
 
     output_stream_ << "Successfully added role: " << cfg.name << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added role: " << cfg.name;
@@ -1320,8 +1320,8 @@ void application::add_permission(const config::add_permission_options& cfg) cons
     if (cfg.description)
         record.description = *cfg.description;
 
-    iam::repository::permission_repository repo(context_);
-    repo.write({record});
+    iam::repository::permission_repository repo;
+    repo.write(context_, {record});
 
     output_stream_ << "Successfully added permission: " << cfg.code << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added permission: " << cfg.code;

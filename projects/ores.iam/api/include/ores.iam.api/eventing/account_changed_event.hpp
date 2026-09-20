@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_EVENTING_ACCOUNT_CHANGED_EVENT_HPP
-#define ORES_IAM_EVENTING_ACCOUNT_CHANGED_EVENT_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_changed_event.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_EVENTING_ACCOUNT_CHANGED_EVENT_HPP
+#define ORES_IAM_API_EVENTING_ACCOUNT_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -30,24 +35,17 @@ namespace ores::iam::eventing {
 /**
  * @brief Domain event indicating that account data has changed.
  *
- * This event is published when any account entity is created, updated, or
- * deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any account entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct account_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief IDs of accounts that changed.
-     *
-     * Contains the UUIDs (as strings) of accounts that were created, updated,
-     * or deleted. May contain multiple IDs for batch operations.
+     * @brief Changed account UUIDs (as strings).
      */
     std::vector<std::string> account_ids;
 

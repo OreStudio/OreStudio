@@ -23,6 +23,16 @@ messages, in the same order, under the same conditionals as
 from the raw flags, so its output is unchanged; the derived list is the
 TypeScript twin's model.
 
+A junction model declares no messages either: the loader derives the generic
+relationship protocol in =org_loader.junction_protocol_messages= from the
+junction's two sides, their =:list_by:= and =:replace_by:= flags, and the
+sides' =:enrich_code:= declarations. It is the entity protocol's shape plus
+the relationship verbs: the unscoped paged read, a by-side read per
+=:list_by:= side that returns the view, a batch additive =save=, a batch
+=delete= by the pair, an opt-in =replace_by_<side>=, a count per side, and
+the =<junction>_view= type. The C++ header's junction block states the same
+set, so the two twins cannot drift apart on a field.
+
 One exported interface per message, named in PascalCase. Field names stay
 snake_case, because they are the JSON keys =rfl::json= writes from the C++
 member names.
@@ -77,6 +87,31 @@ export const subjects = {
 {{/messages}}
 } as const;
 {{/domain_entity}}
+{{#junction}}
+import type { {{name_pascal}} } from '../domain/{{name_singular}}.js';
+
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+export interface {{name_pascal}} {
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+
+{{/messages}}
+export const subjects = {
+{{#messages}}
+{{#subject}}
+    {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+{{/junction}}
 {{#operation}}
 {{#domain_imports}}
 import type { {{entity_pascal}} } from '../domain/{{entity}}.js';

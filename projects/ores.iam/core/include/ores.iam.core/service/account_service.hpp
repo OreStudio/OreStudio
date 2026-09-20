@@ -337,6 +337,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
+    database::context ctx_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };
 

@@ -1,0 +1,502 @@
+:PROPERTIES:
+:ores.cpp.nats-handler.enabled: nil
+:ores.cpp.nats-sub-registrar.enabled: nil
+:ores.cpp.service.enabled: nil
+:ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
+:END:
+#+title: ores.iam.account
+#+description: Codegen entity model for the iam accounts table. Drives the C++ domain type, mapper, repository, generator, eventing, TypeScript metadata, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: account
+#+entity_plural: accounts
+#+entity_title: Account
+#+brief: An account that can authenticate against the system.
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+An account that can authenticate against the system: one row per user,
+service, algorithm or LLM identity, carrying the password material, the
+TOTP secret, the email address and the optional profile and reporting
+links. The table is bi-temporal and audited (see
+=projects/ores.sql/create/iam/iam_accounts_create.sql=): it carries
+=version=, the four audit columns and the =valid_from=/=valid_to= pair
+with the GIST exclusion, so the model takes the ordinary audited shape
+and needs no shape flag.
+
+The table is a composite parent: =ores_iam_accounts_touch_version_fn=
+lets a child entity (account contact information, party association)
+bump this account's own version when the child is written. The model
+declares =:generate_touch_function: true=, which renders that function
+under its existing name rather than leaving it hand-written.
+
+The model describes the table and nothing else. Two columns need care:
+
+- =service_password_hash= is a real column with no domain member: it is
+  reached only by =check_service_credentials= and never travels on the
+  wire, so it is declared =:sql_only: true= and the generated domain
+  struct omits it while the entity struct and the mapper keep it.
+- =image_id= and =reports_to_account_id= are nullable UUID soft
+  references. The hand-written domain struct represented both as a plain
+  =boost::uuids::uuid= with a nil sentinel, on the claim that a second
+  =std::optional<boost::uuids::uuid>= member corrupts reflect-cpp
+  aggregate serialisation for multi-element vectors. Re-verified under
+  the generated estate: all three nullable UUIDs are modelled as
+  =std::optional<boost::uuids::uuid>=, and the api suite's multi-element
+  JSON and table tests plus the core repository's five-account round trip
+  pass, so the workaround is not needed here.
+
+Two behavioural facets are switched off, each with a reason:
+
+- The entity's CRUD handler and sub-registrar, because the hand-written
+  =account_handler= already owns every =iam.v1.accounts.*= subject.
+- The generated CRUD service, because the hand-written =account_service=
+  is the authentication surface (login, lock, unlock, password change
+  and reset, party selection, service-credential check) and the
+  generated service's =get_account_history(id)= collides in name and
+  signature with the hand-written =get_account_history(username)= while
+  meaning a different read. The generated =account_protocol.hpp= is
+  suppressed by the same one-owner gate that the operation model already
+  satisfies.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:has_tenant_id:    true
+:generate_touch_function: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Unique identifier for the account.
+
+** account_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'user'
+:default_value: std::string("user")
+:END:
+
+Account type classification. Determines account capabilities: =user=
+accounts can login with password, while =service=, =algorithm= and
+=llm= accounts authenticate via sessions.
+
+#+begin_src cpp :name generator
+std::string("user")
+#+end_src
+
+** username
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Unique username for login purposes. It is the natural key, so the
+generated table adds the partial unique index on =(tenant_id, username)=
+the hand-written table already had.
+
+#+begin_src cpp :name generator
+std::string(faker::internet::username(std::string(faker::person::firstName()), std::string(faker::person::lastName())))
+#+end_src
+
+** full_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The account holder's full (real) name. Not every account represents a
+person (service, algorithm and llm accounts leave this empty), and this
+is the only place a human account's real name is recorded.
+
+#+begin_src cpp :name generator
+std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName())
+#+end_src
+
+** password_hash
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Hashed password for secure authentication.
+
+#+begin_src cpp :name generator
+ctx.alphanumeric(64)
+#+end_src
+
+** password_salt
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Salt used in password hashing for additional security.
+
+#+begin_src cpp :name generator
+ctx.alphanumeric(32)
+#+end_src
+
+** service_password_hash
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:sql_only: true
+:END:
+
+SHA-256 hash of a service account's password, stored as hex. It is
+reached only by =check_service_credentials= and never travels on the
+wire, so it is a SQL-only column: the generated domain struct omits it
+and the entity struct and mapper keep it.
+
+** totp_secret
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Time-based One-Time Password secret for two-factor authentication.
+
+#+begin_src cpp :name generator
+ctx.alphanumeric(32)
+#+end_src
+
+** email
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:unique:   true
+:END:
+
+Email address associated with the account. It is unique within a
+tenant, so the generated table adds the partial unique index on
+=(tenant_id, email)= the hand-written table already had.
+
+#+begin_src cpp :name generator
+std::string(faker::internet::email(std::string(faker::person::firstName()), std::string(faker::person::lastName())))
+#+end_src
+
+** default_party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Party to log into automatically when quick-login is enabled. Soft
+reference to a party owned by ores.refdata; unset means the account must
+always go through the party picker.
+
+** image_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Profile picture for this account. Soft reference to an image owned by
+ores.assets; unset means the account has no profile picture.
+
+** job_title
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Job title / functional role of the person holding this account (for
+example "Head of Desk", "Senior Trader"). Distinct from the RBAC role
+assignments, which grant coarse permission sets rather than describe
+what the person actually does.
+
+#+begin_src cpp :name generator
+faker::person::jobTitle()
+#+end_src
+
+** reports_to_account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The account this person reports to, capturing the functional reporting
+line. Soft self-reference to another row in this same table; unset means
+no reporting line is recorded.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_accounts_tbl
+:END:
+
+* Foreign keys
+
+** image_id
+:PROPERTIES:
+:table:          ores_assets_images_tbl
+:target_column:  image_id
+:nullable:       true
+:error_message:  Invalid image_id: %. Image must exist.
+:END:
+
+Profile picture for this account, validated against the images table
+when set.
+
+** reports_to_account_id
+:PROPERTIES:
+:table:          ores_iam_accounts_tbl
+:target_column:  id
+:nullable:       true
+:error_message:  Invalid reports_to_account_id: %. Account must exist.
+:END:
+
+Reporting line, validated against this same table when set.
+
+* Insert trigger
+
+** Validations
+
+| column       | validation_function               |
+|--------------+-----------------------------------|
+| account_type | ores_iam_validate_account_type_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: account
+:entity_plural_short:   accounts
+:entity_singular_words: account
+:entity_plural_words:   accounts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/PrimaryKey.hpp"
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: a
+:END:
+
+** Table display
+
+| column            | header        |
+|-------------------+---------------|
+| id                | ID (UUID)     |
+| username          | Username      |
+| full_name         | Full Name     |
+| email             | Email         |
+| job_title         | Job Title     |
+| change_reason_code | Change Reason |
+| modified_by       | Modified By   |
+| recorded_at       | Recorded At   |
+| version           | Version       |
+
+** Paste blocks
+
+*** read_all
+:PROPERTIES:
+:ID: 1F5C9A26-7E4B-4D31-8A02-6C3E9D5B7A14
+:END:
+
+Reads every version of every account. The generated CRUD set reads all
+versions of one account by primary key, which is what the history path
+needs; the CLI export and the repository test read the whole table, so
+that unfiltered read stays declared here, unscoped by tenant exactly as
+the hand-written repository was.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::account> read_all(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::account> account_repository::read_all(context ctx) {
+    const auto query = sqlgen::read<std::vector<account_entity>> | order_by("valid_from"_c.desc());
+
+    return execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading all accounts.");
+}
+#+end_src
+
+*** read_latest_by_username
+:PROPERTIES:
+:ID: 3E7A1C94-5B2D-4F68-9A03-1C6E8B4D7F20
+:END:
+
+Reads the latest active account with the given username. The generated
+CRUD set reads by primary key only, and the login and password-reset
+paths address the row by username, so the read stays declared here.
+Deliberately unscoped by tenant, exactly as the hand-written repository
+was: the login flow resolves the account before the tenant is known.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::account> read_latest_by_username(context ctx, const std::string& username);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::account>
+account_repository::read_latest_by_username(context ctx, const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("username"_c == username && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
+
+    return execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest account by username");
+}
+#+end_src
+
+*** read_latest_by_email
+:PROPERTIES:
+:ID: 8D2F6B41-9C3E-4A57-B0D8-2F5A7C1E9B36
+:END:
+
+Reads the latest active account with the given email. The password-reset
+and self-service paths address the row by email, so the read stays
+declared here rather than forcing those callers onto a full table scan.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::account>
+account_repository::read_latest_by_email(context ctx, const std::string& email) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("email"_c == email && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
+
+    return execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest account by email");
+}
+#+end_src
+
+*** check_service_credentials
+:PROPERTIES:
+:ID: 6A1E4D83-2F7B-4C95-8E30-4B9D6A2F5C17
+:END:
+
+Verifies a non-human account's credentials without loading the account
+through the domain type: the stored hash is a SQL-only column, so the
+comparison runs against the entity. Returns the account UUID on success,
+or nullopt when the account is absent, is a user account, or the SHA-256
+of the supplied password does not match.
+
+#+begin_src cpp :name includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <array>
+#include <format>
+#include <openssl/evp.h>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::optional<boost::uuids::uuid> check_service_credentials(context ctx,
+                                                                const std::string& username,
+                                                                const std::string& password);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<boost::uuids::uuid>
+account_repository::check_service_credentials(context ctx,
+                                              const std::string& username,
+                                              const std::string& password) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("username"_c == username && "valid_to"_c == max.value()) | limit(1);
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    if (!r || r->empty())
+        return std::nullopt;
+
+    const auto& entity = r->front();
+    if (entity.account_type == "user") {
+        BOOST_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
+        return std::nullopt;
+    }
+
+    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
+    unsigned int digest_len = 0;
+    EVP_Digest(password.data(), password.size(), digest.data(), &digest_len, EVP_sha256(), nullptr);
+
+    std::string computed_hash;
+    computed_hash.reserve(digest_len * 2);
+    for (unsigned int i = 0; i < digest_len; ++i)
+        computed_hash += std::format("{:02x}", digest[i]);
+
+    if (!entity.service_password_hash.has_value() ||
+        computed_hash != entity.service_password_hash.value()) {
+        BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
+        return std::nullopt;
+    }
+
+    return boost::lexical_cast<boost::uuids::uuid>(entity.id.value());
+}
+#+end_src
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.

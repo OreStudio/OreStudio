@@ -115,6 +115,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
+    database::context ctx_;
     std::shared_ptr<variability::service::system_settings_service> system_flags_;
     std::shared_ptr<authorization_service> auth_service_;
     utility::uuid::uuid_v7_generator uuid_generator_;

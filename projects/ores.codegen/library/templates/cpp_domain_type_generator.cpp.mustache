@@ -75,14 +75,35 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{group_prefix}}}{{column}} = 0;
 {{/generator_expr}}
 {{/is_int}}
+{{#is_timestamp}}
+{{#generator_expr}}
+    r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{{group_prefix}}}{{column}} = ctx.past_timepoint();
+{{/generator_expr}}
+{{/is_timestamp}}
+{{#is_date}}
+{{#generator_expr}}
+    r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{{group_prefix}}}{{column}} = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+{{/generator_expr}}
+{{/is_date}}
 {{^is_uuid}}
 {{^is_int}}
+{{^is_timestamp}}
+{{^is_date}}
 {{#generator_expr}}
     r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{{group_prefix}}}{{column}} = std::string(faker::word::noun());
 {{/generator_expr}}
+{{/is_date}}
+{{/is_timestamp}}
 {{/is_int}}
 {{/is_uuid}}
 {{/primary_key.extra_columns}}
@@ -170,7 +191,9 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{audit_prefix}}}change_reason_code = "system.test";
     r.{{{audit_prefix}}}change_commentary = "Synthetic test data";
 {{/has_audit_columns}}
+{{^current_state}}
     r.{{{audit_prefix}}}recorded_at = ctx.past_timepoint();
+{{/current_state}}
     return r;
 }
 

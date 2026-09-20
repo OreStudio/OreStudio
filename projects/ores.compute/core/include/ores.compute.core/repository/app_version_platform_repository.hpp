@@ -61,6 +61,13 @@ public:
     void write(const std::vector<domain::app_version_platform>& app_version_platforms);
 
     std::vector<domain::app_version_platform> read_latest();
+    std::vector<domain::app_version_platform> read_latest(std::uint32_t offset,
+                                                          std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active app version platforms.
+     */
+    std::uint32_t get_total_app_version_platform_count();
     std::vector<domain::app_version_platform>
     read_latest_by_app_version(const boost::uuids::uuid& app_version_id);
     /**
@@ -74,8 +81,15 @@ public:
      */
     std::uint32_t
     get_total_app_version_platform_count_by_app_version(const boost::uuids::uuid& app_version_id);
+
     std::vector<domain::app_version_platform>
     read_latest_by_platform(const boost::uuids::uuid& platform_id);
+
+    /**
+     * @brief Gets the total count of active app version platforms filtered by platform_id.
+     */
+    std::uint32_t
+    get_total_app_version_platform_count_by_platform(const boost::uuids::uuid& platform_id);
 
     void remove(const boost::uuids::uuid& app_version_id, const boost::uuids::uuid& platform_id);
     void remove_by_app_version(const boost::uuids::uuid& app_version_id);

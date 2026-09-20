@@ -214,6 +214,7 @@ private:
      */
     void publish_account_permissions_changed(const boost::uuids::uuid& account_id);
 
+    context ctx_;
     repository::permission_repository permission_repo_;
     repository::role_repository role_repo_;
     repository::account_role_repository account_role_repo_;

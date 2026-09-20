@@ -51,11 +51,11 @@ def _make_templates(templates_dir):
 
 
 def _make_junction_model(dirpath):
-    """A minimal junction model — load_org_junction_model() never raises,
-    so this exercises the empty-units branch without any validation noise."""
+    """A minimal junction model, enough to route without validation noise."""
     path = dirpath / "foo_bar_junction.org"
     _write(dirpath, path.name,
            "#+title: ores.refdata.foo_bar_junction\n"
+           "#+name_singular: foo_bar\n"
            "* Left\n:PROPERTIES:\n:column: foo_id\n:type: uuid\n:END:\n"
            "* Right\n:PROPERTIES:\n:column: bar_id\n:type: uuid\n:END:\n")
     return path

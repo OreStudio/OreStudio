@@ -1878,6 +1878,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         for k, v in flags.properties.items():
             j[k.lower()] = _parse_typed(v)
 
+    if not j.get("name_singular"):
+        raise ValueError(
+            f"{path}: a junction must declare :name_singular:. The singular "
+            f"names the generated header, the C++ types and the protocol "
+            f"messages, and no rule derives it from the plural name safely."
+        )
+
     body = _strip_body(doc.root)
     if body:
         j["description"] = body
@@ -2114,8 +2121,24 @@ _TS_SCALARS = {
     "std::string": "string",
     "bool": "boolean",
     "int": "number",
+    # The fixed-width family and the floating types. A missing entry is not
+    # harmless: an unqualified name falls through to the PascalCase fallback
+    # and renders a type that does not exist, which is how ``double`` came to
+    # emit ``Double`` on the roughly fifty members that carry one.
+    "float": "number",
+    "double": "number",
+    "std::int8_t": "number",
+    "std::int16_t": "number",
+    "std::int32_t": "number",
+    "std::int64_t": "number",
+    "std::uint8_t": "number",
+    "std::uint16_t": "number",
     "std::uint32_t": "number",
     "std::uint64_t": "number",
+    # Both cross the wire as a string, per their rfl reflectors in
+    # ores.utility/rfl/reflectors.hpp.
+    "boost::uuids::uuid": "string",
+    "std::chrono::year_month_day": "string",
 }
 
 # A domain member's fully qualified C++ name, e.g.
@@ -2161,6 +2184,11 @@ def _ts_type(cpp_type: str) -> str | None:
     An unqualified name is a message defined in the same protocol, so it
     takes the interface name the template will emit for it.
     """
+    if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
+        # rfl::json writes an unset optional as null, so the field is
+        # nullable rather than absent.
+        inner = _ts_type(cpp_type[len("std::optional<"):-1])
+        return f"{inner} | null" if inner else None
     if cpp_type.startswith("std::vector<") and cpp_type.endswith(">"):
         inner = _ts_type(cpp_type[len("std::vector<"):-1])
         return f"{inner}[]" if inner else None
@@ -2178,10 +2206,19 @@ def _ts_type(cpp_type: str) -> str | None:
 
 # Domain member types the protocol projection deliberately refuses -- they
 # are not operation-message types -- but the domain interface itself can
-# express. Both cross the wire as strings.
+# express. Each crosses the wire as a string, per its rfl reflector in
+# ores.utility/rfl/reflectors.hpp:
+#
+#   boost::uuids::uuid          ReflType std::string
+#   std::chrono::year_month_day ReflType std::string (ISO 8601 date)
+#   boost::asio::ip::address    ReflType std::string (IPv4 or IPv6)
+#
+# boost::asio::ip::tcp is not listed: it is an HTTP infrastructure type, not
+# a domain struct member, so it has no wire shape to project.
 _TS_DOMAIN_STRING_TYPES = frozenset({
     "boost::uuids::uuid",
     "std::chrono::year_month_day",
+    "boost::asio::ip::address",
 })
 
 
@@ -2192,10 +2229,11 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     so it is the member type (``{{{cpp_type}}}`` verbatim in
     ``cpp_domain_type_class.hpp.mustache``) that decides the interface
     field: an explicit ``std::optional<T>`` becomes ``T | null`` because
-    rfl::json writes null for it, a uuid and a date become ``string``, and
-    everything else is the protocol projection's answer. Returns ``None``
-    when no projection exists, and the caller emits no field rather than
-    inventing a type.
+    rfl::json writes null for it, a uuid, a date and an IP address become
+    ``string``, and everything else is the protocol projection's answer.
+    Returns ``None`` when no projection exists;
+    ``_reject_silent_entity_domain_ts_gap`` refuses the model rather than
+    let the template emit a member with an empty type.
     """
     cpp_type = (cpp_type or "").strip()
     if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
@@ -2273,7 +2311,8 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     ``primary_key.columns`` and the messaging flags. ``single_delete`` and
     ``delete_request_extra_args`` are handler concerns -- the protocol
     template branches on neither -- so they are deliberately not read
-    here.
+    here. A ``current_state`` entity derives no history pair: it has no
+    valid_from/valid_to axis, so it has no history endpoint at all.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
@@ -2346,18 +2385,24 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                     _ts_field("message", "std::string")]),
     ]
 
-    messages += [
-        _ts_message(
-            f"get_{singular}_history_request",
-            response_type=f"get_{singular}_history_response",
-            subject=f"{component}.v1.{plural}.history",
-            fields=[_ts_field(pk.get("column", ""), "std::string")]),
-        _ts_message(
-            f"get_{singular}_history_response",
-            fields=[_ts_field("history", f"std::vector<{domain_type}>"),
-                    _ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
+    # A current-state entity carries no valid_from/valid_to axis, so it has no
+    # history endpoint. The C++ header omits the request/response pair under
+    # the same ``current_state`` flag; deriving the list here from that one
+    # flag keeps the TypeScript interfaces and subjects in step by
+    # construction rather than by a second, independent gate.
+    if not entity.get("current_state"):
+        messages += [
+            _ts_message(
+                f"get_{singular}_history_request",
+                response_type=f"get_{singular}_history_response",
+                subject=f"{component}.v1.{plural}.history",
+                fields=[_ts_field(pk.get("column", ""), "std::string")]),
+            _ts_message(
+                f"get_{singular}_history_response",
+                fields=[_ts_field("history", f"std::vector<{domain_type}>"),
+                        _ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+        ]
 
     for extra in entity.get("extra_list_requests") or []:
         suffix = extra["name_suffix"]
@@ -2407,6 +2452,132 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                         _ts_field("message", "std::string"),
                         _ts_field(plural_short, f"std::vector<{domain_type}>")]),
         ]
+
+    return messages
+
+
+def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive a junction's generic relationship protocol message list.
+
+    The list is the model of the ``{{#junction}}`` block of
+    ``cpp_protocol.hpp.mustache``, which is the entity protocol's shape
+    plus the relationship verbs: a paged unscoped read of the junction rows
+    (the entity-mirroring read a listing calls), a paged by-side read per
+    ``:list_by:`` side returning the ``<junction>_view`` payload, a paged
+    ``:replace_by:`` whole-set replacement per side, a batch additive
+    ``save`` that leaves omitted rows alone, a batch ``delete`` by the
+    pair, a count per side -- both sides, because the repository serves
+    both -- and the view the by-side read returns. The two twins render
+    from this one list, so a field added to one appears in the other.
+
+    Must be called on the enriched junction, after ``core.generate_from_model``
+    has stamped the sides' ``is_uuid``/``is_date`` flags, the columns'
+    ``ts_type`` and the repository key aliases. The by-side read and the
+    replacement keep the subjects they already emitted, so a junction that
+    renders them today keeps addressing the same endpoint.
+    """
+    component = junction.get("component", "")
+    name = junction.get("name", "")
+    singular = junction.get("name_singular", "")
+    domain_type = f"ores::{component}::domain::{singular}"
+    actor_fields = ("modified_by", "performed_by", "change_reason_code",
+                    "change_commentary")
+    sides = (junction.get("left") or {}, junction.get("right") or {})
+
+    messages: list[dict[str, Any]] = [
+        _ts_message(
+            f"get_{name}_request",
+            response_type=f"get_{name}_response",
+            subject=f"{component}.v1.{name}.list",
+            fields=[_ts_field("offset", "std::uint32_t"),
+                    _ts_field("limit", "std::uint32_t")]),
+        _ts_message(
+            f"get_{name}_response",
+            fields=[_ts_field(name, f"std::vector<{domain_type}>"),
+                    _ts_field("total_available_count", "int"),
+                    _ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
+    for side in sides:
+        short = side.get("column_short", "")
+        if not side.get("list_by"):
+            continue
+        messages += [
+            _ts_message(
+                f"get_{name}_by_{short}_request",
+                response_type=f"get_{name}_by_{short}_response",
+                subject=f"{component}.v1.{name}.list_by_{side['column']}",
+                fields=[_ts_field(side["column"], "std::string"),
+                        _ts_field("offset", "std::uint32_t"),
+                        _ts_field("limit", "std::uint32_t")]),
+            _ts_message(
+                f"get_{name}_by_{short}_response",
+                fields=[_ts_field(name, f"std::vector<{singular}_view>"),
+                        _ts_field("total_available_count", "int"),
+                        _ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+        ]
+
+    messages += [
+        _ts_message(
+            f"save_{singular}_request",
+            response_type=f"save_{singular}_response",
+            subject=f"{component}.v1.{name}.save",
+            fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
+        _ts_message(
+            f"save_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+        _ts_message(
+            f"delete_{singular}_request",
+            response_type=f"delete_{singular}_response",
+            subject=f"{component}.v1.{name}.delete",
+            fields=[_ts_field(f"{side['column']}s",
+                              "std::vector<std::string>") for side in sides]),
+        _ts_message(
+            f"delete_{singular}_response",
+            fields=[_ts_field("success", "bool"),
+                    _ts_field("message", "std::string")]),
+    ]
+
+    for side in sides:
+        short = side.get("column_short", "")
+        if not side.get("replace_by"):
+            continue
+        messages += [
+            _ts_message(
+                f"replace_{name}_by_{short}_request",
+                response_type=f"replace_{name}_by_{short}_response",
+                subject=f"{component}.v1.{name}.replace_by_{side['column']}",
+                fields=[_ts_field(side["column"], "std::string"),
+                        _ts_field(name, f"std::vector<{domain_type}>")]
+                       + [_ts_field(f, "std::string") for f in actor_fields]),
+            _ts_message(
+                f"replace_{name}_by_{short}_response",
+                fields=[_ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+        ]
+
+    for side in sides:
+        short = side.get("column_short", "")
+        messages += [
+            _ts_message(
+                f"count_{name}_by_{short}_request",
+                response_type=f"count_{name}_by_{short}_response",
+                subject=f"{component}.v1.{name}.count_by_{side['column']}",
+                fields=[_ts_field(side["column"], "std::string")]),
+            _ts_message(
+                f"count_{name}_by_{short}_response",
+                fields=[_ts_field("total_available_count", "int")]),
+        ]
+
+    view_fields = [_ts_field(singular, domain_type)]
+    for side in sides:
+        if side.get("enrich_code"):
+            view_fields.append(
+                _ts_field(f"{side['column_short']}_code", "std::string"))
+    messages.append(_ts_message(f"{singular}_view", fields=view_fields))
 
     return messages
 
@@ -2597,6 +2768,86 @@ def _reject_silent_junction_ts_gap(
         f"{Path(path).name}: no TypeScript projection for {unmapped}; map the "
         "type in org_loader._ts_domain_type, or set ':ores.ts.domain.enabled: "
         "nil' in the file's :PROPERTIES: drawer to skip the TypeScript facet"
+    )
+
+
+def entity_domain_ts_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The entity members ``domain_types.ts.mustache`` states with a
+    ``{{ts_type}}``, in template order.
+
+    Mirrors the template's ``{{^has_domain_groups}}`` body: the primary key
+    and the natural keys unless the identity group carries them, then the
+    model's own columns. A grouped entity's body is its ``domain_groups``
+    members instead. Members the template does not state through
+    ``{{ts_type}}`` -- the derived prelude, a ``sql_only`` column, an
+    identity-group column -- are not listed: they cannot render an empty
+    type. A member with no ``cpp_type`` states nothing and keeps the empty
+    string, which the caller reports.
+    """
+    if entity.get("has_domain_groups"):
+        return [
+            {"name": group.get("member"),
+             "cpp_type": group.get("type_qualified"),
+             "ts_type": group.get("ts_type")}
+            for group in entity.get("domain_groups") or []
+        ]
+    fields: list[dict[str, Any]] = []
+    if not entity.get("has_identity_group"):
+        for column in (entity.get("primary_key") or {}).get("columns") or []:
+            fields.append(_entity_domain_ts_member(column, "column"))
+        for column in entity.get("natural_keys") or []:
+            fields.append(_entity_domain_ts_member(column, "column"))
+    for column in entity.get("columns") or []:
+        if column.get("is_identity_group_column") or column.get("sql_only"):
+            continue
+        fields.append(_entity_domain_ts_member(column, "name"))
+    return fields
+
+
+def _entity_domain_ts_member(
+    field: dict[str, Any], name_key: str
+) -> dict[str, Any]:
+    """One entity-domain member: its name, its C++ type, and the projection
+    already stored on the field dict, if any."""
+    member: dict[str, Any] = {
+        "name": field.get(name_key),
+        "cpp_type": (field.get("cpp_type") or "").strip(),
+    }
+    if field.get("ts_type"):
+        member["ts_type"] = field["ts_type"]
+    return member
+
+
+def _reject_silent_entity_domain_ts_gap(
+    path: Path | str, entity: dict[str, Any]
+) -> None:
+    """Reject an entity whose TypeScript domain interface cannot state a
+    member in full.
+
+    A member whose C++ type has no TypeScript projection renders
+    ``<member>: ;`` -- a module that does not compile -- so the entity must
+    map the type in ``org_loader._ts_domain_type``. A type with no wire
+    shape a TypeScript client can read is a reason to record in the model,
+    not to switch the facet off: unlike ``_reject_silent_ts_gap`` this guard
+    reads no ``:ores.*.enabled:`` property, because the project's direction
+    is that no facet is switched off by hand.
+    """
+    unmapped = [
+        member for member in entity_domain_ts_fields(entity)
+        if "ts_type" not in member
+    ]
+    if not unmapped:
+        return
+    listed = ", ".join(
+        f"{member['name']} ({member['cpp_type']})" if member["cpp_type"]
+        else f"{member['name']} (no cpp_type)"
+        for member in unmapped
+    )
+    raise ValueError(
+        f"{Path(path).name}: no TypeScript projection for {listed}; map the "
+        "type in org_loader._ts_domain_type, or record in the model why the "
+        "member has no wire shape a TypeScript client can read -- the entity "
+        "domain interface is not switched off by a model property"
     )
 
 

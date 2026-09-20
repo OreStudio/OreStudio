@@ -40,6 +40,18 @@ app_version_platform_service::list_app_version_platforms() {
 }
 
 std::vector<domain::app_version_platform>
+app_version_platform_service::list_app_version_platforms(std::uint32_t offset,
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all app version platforms with offset: " << offset
+                               << " limit: " << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t app_version_platform_service::get_total_app_version_platform_count() {
+    return repo_.get_total_app_version_platform_count();
+}
+
+std::vector<domain::app_version_platform>
 app_version_platform_service::list_app_version_platforms_by_app_version(
     const boost::uuids::uuid& app_version_id) {
     BOOST_LOG_SEV(lg(), debug) << "Listing app version platforms for app version: "
@@ -58,6 +70,11 @@ app_version_platform_service::list_app_version_platforms_by_app_version(
 std::uint32_t app_version_platform_service::get_total_app_version_platform_count_by_app_version(
     const boost::uuids::uuid& app_version_id) {
     return repo_.get_total_app_version_platform_count_by_app_version(app_version_id);
+}
+
+std::uint32_t app_version_platform_service::get_total_app_version_platform_count_by_platform(
+    const boost::uuids::uuid& platform_id) {
+    return repo_.get_total_app_version_platform_count_by_platform(platform_id);
 }
 
 void app_version_platform_service::save_app_version_platform(

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/domain/login_info_table_io.hpp"
 #include "ores.iam.api/domain/login_info_table.hpp"
 #include <ostream>
 
 namespace ores::iam::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<login_info>& v) {
+namespace {
+
+void print_login_info_table(std::ostream& s, const std::vector<login_info>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<login_info>& v) {
+    print_login_info_table(s, v);
     return s;
 }
 

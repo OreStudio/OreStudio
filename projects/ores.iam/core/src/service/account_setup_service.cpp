@@ -19,6 +19,7 @@
  */
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
 

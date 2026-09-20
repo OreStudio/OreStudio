@@ -1,0 +1,103 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.iam.core/service/role_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
+#include <stdexcept>
+
+using ores::service::messaging::stamp;
+
+namespace ores::iam::service {
+
+using namespace ores::logging;
+
+role_service::role_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+std::vector<domain::role> role_service::list_roles(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all roles";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t role_service::count_roles() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total roles count";
+    return repo_.get_total_role_count(ctx_);
+}
+
+
+std::optional<domain::role> role_service::get_role_at_version(const std::string& id,
+                                                              std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting role at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::role> role_service::get_role(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting role. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+void role_service::save_role(const domain::role& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Role id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving role. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved role. " << "id: " << v.id;
+}
+
+void role_service::save_roles(const std::vector<domain::role>& roles) {
+    for (const auto& e : roles) {
+        if (e.id.is_nil())
+            throw std::invalid_argument("Role id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " roles";
+    auto ts = roles;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ctx_, ts);
+}
+
+void role_service::delete_role(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed role. " << "id: " << id;
+}
+
+void role_service::delete_roles(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
+std::vector<domain::role> role_service::get_role_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for role. " << "id: " << id;
+    return repo_.read_all(ctx_, id);
+}
+
+}

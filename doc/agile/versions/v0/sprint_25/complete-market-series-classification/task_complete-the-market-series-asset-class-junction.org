@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-18
-#+updated: 2026-09-18
+#+updated: 2026-09-20
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -44,10 +44,10 @@ codegen path rather than in this one table.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2B0C9FD5-2FA3-4759-9BE9-B344E19CA88C][Complete the market series classification]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete and verified.   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-18                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-09-20                               |
 
 * Acceptance
 
@@ -151,3 +151,67 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. Two defects, one codegen cause, and both consumers are fixed.
+
+*Template.* =ores.sql.schema.junction_create.org= now emits the tenant
+isolation trailer, gated on ={{#junction.sql.rls_tenant_isolation}}= and
+mirroring =ores.sql.schema.domain_entity_create.org=: =alter table ...
+enable row level security= plus the permissive
+=..._tbl_tenant_isolation_policy=, with the system-tenant widening the
+domain template also carries. The mustache was re-tangled with =compass
+build --direct tangle_codegen_templates=; source and mustache each moved
+21 lines and nothing else in the template library changed.
+
+*Model.* =ores.marketdata.market_series_asset_class_junction.org= gains
+=:rls_tenant_isolation: true= in its =* SQL / ** Flags= drawer. It is the
+only junction that gains a policy. Just two junction models are
+tenant-scoped at all: this one, and =ores.iam.account_party_junction=,
+which already carries its policy in =iam_rls_policies_create.sql=. That
+one does not opt in, so no policy is duplicated.
+
+*Drop.* No junction drop archetype exists, so
+=marketdata_market_series_asset_class_drop.sql= is hand-written in the
+shape of its sibling =marketdata_market_series_drop.sql=: policy, rule,
+trigger, function, table. It is named for the create file's basename, the
+shape iam's junction drop already uses; refdata's junction drops use the
+plural instead, so the tree is not uniform. It is wired into
+=marketdata_drop.sql= ahead of =market_series=, which the junction
+references, and the comment above that list now names it.
+
+*Evidence.*
+
+- Regenerating marketdata changed exactly one artefact: the junction's
+  create file, plus the 14-line trailer. No other file in the component
+  drifted.
+- =check_component_drift.py --all= reported no drift, with regenerated
+  output matching the checked-in tree; =check_model_drift.py= found no
+  model drift; =check_populate_references.py= resolved every reference.
+- The schema validator reported 0 warnings. The two this table raised on
+  main, =DROP_001= and =RLS_001=, are both gone.
+- =compass db recreate -y -k= finished with exit 0, so the whole
+  create-then-populate path accepts the table. The FOMC populate still
+  writes its two system-tenant junction rows under the new =with check=.
+- On the live database =relrowsecurity= is true and
+  =market_series_asset_classes_tbl_tenant_isolation_policy= exists. As
+  =ores_swift_curie_marketdata_service=, a session claiming the system
+  tenant sees both rows; one claiming a foreign tenant sees none; one
+  claiming no tenant sees none; and an update moving a row to another
+  tenant fails with =new row violates row-level security policy=. The
+  blocked write left the table unchanged.
+- The drop chain was executed, not just read. Running
+  =marketdata_drop.sql= inside a transaction dropped all seven marketdata
+  tables, junction included, and the rollback restored them.
+- =ctest -R "marketdata|database|platform"= passed 7 of 7, covering
+  =ores.database.tests= and all four marketdata suites.
+
+*Scoping.* The three other refdata junctions with a =tenant_id= column,
+=currency_currency_groups=, =party_counterparties=, =party_countries= and
+=party_currencies=, are stale relative to their models: their
+=#+profile:= binding sits in front matter, which the junction loader
+cannot read. They keep their central RLS policies either way, and the gap
+stays filed at
+=doc/agile/product_backlog/inbox/refdata-junction-profile-binding-ignored.org=.
+Nothing in this task changes them.
+
+Nothing is outstanding on this task. The branch has no CI run yet.

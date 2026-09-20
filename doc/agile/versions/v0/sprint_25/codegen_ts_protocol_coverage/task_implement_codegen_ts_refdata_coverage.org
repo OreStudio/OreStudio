@@ -8,7 +8,7 @@
 #+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-ts-refdata-modelling
-#+pr:
+#+pr: 2114
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-20
@@ -192,7 +192,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2114][#2114]] | [codegen] Render the whole refdata wire estate to both targets |
 
 * Review
 

@@ -430,6 +430,7 @@ public:
 {{^right.is_uuid}}
         const std::string& {{right.column}});
 {{/right.is_uuid}}
+{{^read_only}}
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
      *
@@ -504,8 +505,10 @@ public:
         const std::string& change_reason_code,
         const std::string& change_commentary);
 {{/right.replace_by}}
+{{/read_only}}
 
 private:
+    context ctx_;
     repository::{{name_singular}}_repository repo_;
 };
 

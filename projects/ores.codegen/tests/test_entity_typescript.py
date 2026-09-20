@@ -167,14 +167,13 @@ def test_a_read_for_cache_pair_is_derived_only_when_flagged():
     assert [f["name"] for f in request["fields"]] == ["tenant_id"]
 
 
-def test_a_type_with_no_projection_keeps_the_gap_open():
-    """The hierarchy response carries a type with no TypeScript twin, so
-    the gap check must still see the field rather than a silent omission."""
+def test_a_registered_utility_type_projects_on_the_hierarchy_response():
+    """The hierarchy response carries the shared utility interface, so the
+    derived field names it rather than leaving a gap the guard refuses."""
     messages = _by_name(entity_protocol_messages(_entity(has_parent_id=True)))
     hierarchy = messages["get_tenant_type_hierarchy_response"]
     roots = {f["name"]: f for f in hierarchy["fields"]}["roots"]
-    assert "cpp_type" in roots
-    assert "ts_type" not in roots
+    assert roots["ts_type"] == "HierarchyNode[]"
 
 
 def test_domain_member_types_project():

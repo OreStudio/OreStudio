@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_MESSAGING_TENOR_CONVENTION_RESOLUTION_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_TENOR_CONVENTION_RESOLUTION_HANDLER_HPP
 
@@ -29,6 +34,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <cstddef>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -44,12 +50,11 @@ inline auto& tenor_convention_resolution_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for tenor convention resolutions. Hand-authored (read-only): see
- * ores.refdata.tenor_convention_resolution.org and the story on adding junction C++ codegen
- * support.
+ * @brief NATS message handler for tenor convention resolutions operations.
  */
 class tenor_convention_resolution_handler {
 public:
@@ -71,10 +76,11 @@ public:
         }
         const auto& req_ctx = *req_ctx_expected;
         service::tenor_convention_resolution_service svc(req_ctx);
-        get_tenor_convention_resolutions_response resp;
         if (auto req = decode<get_tenor_convention_resolutions_request>(msg)) {
+            get_tenor_convention_resolutions_response resp;
             try {
-                resp.resolutions = svc.list_resolutions();
+                resp.tenor_convention_resolutions = svc.list_resolutions(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.get_total_resolution_count());
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
@@ -82,15 +88,115 @@ public:
                 resp.success = false;
                 resp.message = e.what();
             }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void list_by_convention(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenor_convention_resolution_service svc(req_ctx);
+        if (auto req = decode<get_tenor_convention_resolutions_by_convention_request>(msg)) {
+            get_tenor_convention_resolutions_by_convention_response resp;
+            try {
+                auto rows = svc.list_resolutions_by_convention(
+                    req->convention_code, req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_resolution_count_by_convention(req->convention_code));
+                resp.tenor_convention_resolutions.reserve(rows.size());
+                for (auto& row : rows) {
+                    tenor_convention_resolution_view view;
+                    view.tenor_convention_resolution = std::move(row);
+                    resp.tenor_convention_resolutions.push_back(std::move(view));
+                }
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+
+    void count_by_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenor_convention_resolution_service svc(req_ctx);
+        if (auto req = decode<count_tenor_convention_resolutions_by_convention_request>(msg)) {
+            count_tenor_convention_resolutions_by_convention_response resp;
+            try {
+                resp.total_available_count = static_cast<int>(
+                    svc.get_total_resolution_count_by_convention(req->convention_code));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void count_by_tenor(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenor_convention_resolution_service svc(req_ctx);
+        if (auto req = decode<count_tenor_convention_resolutions_by_tenor_request>(msg)) {
+            count_tenor_convention_resolutions_by_tenor_response resp;
+            try {
+                resp.total_available_count =
+                    static_cast<int>(svc.get_total_resolution_count_by_tenor(req->tenor_code));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.total_available_count = 0;
+            }
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

@@ -602,6 +602,7 @@ public:
     }
 
 {{/right.list_by}}
+{{^read_only}}
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -698,6 +699,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
+{{/read_only}}
 
     void count_by_{{left.column_short}}(ores::nats::message msg) {
         BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
@@ -777,6 +779,7 @@ public:
         }
     }
 
+{{^read_only}}
 {{#left.replace_by}}
     void replace_by_{{left.column_short}}(ores::nats::message msg) {
         BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
@@ -869,6 +872,7 @@ public:
     }
 
 {{/right.replace_by}}
+{{/read_only}}
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

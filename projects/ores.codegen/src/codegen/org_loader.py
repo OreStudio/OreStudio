@@ -267,13 +267,31 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
 
     Two binding points with different behaviour is a footgun -- a single,
     canonical place is simpler and already the convention every entity
-    model follows. Every reader calls this so a file-level :profile: fails
-    loudly on all paths, not just the physical-space override pass."""
+    model follows. Every reader calls this so a misplaced :profile: fails
+    loudly on all paths, not just the physical-space override pass.
+
+    Both misplaced spellings are rejected. The drawer spelling lands in
+    ``file_properties``; the ``#+profile:`` keyword spelling lands in
+    ``frontmatter``, where nothing reads it -- every profile consumer
+    resolves the key from the * Flags drawer. A keyword profile is
+    therefore not a second binding point but a silent no-op, which is
+    worse: the model renders with the profile's defaults missing and no
+    diff, check or type can see it.
+
+    The entity, junction, field-group and operation loaders call this, as
+    does the physical-space override pass. A loader that resolves no
+    profile has nothing to reject."""
     if "profile" in doc.file_properties:
         raise ValueError(
             ":profile: found in file-level :PROPERTIES: drawer — "
             "move it to the * Flags section's :PROPERTIES: drawer instead. "
             "Only * Flags is the canonical binding point for profiles.")
+    if any(key.lower() == "profile" for key in doc.frontmatter):
+        raise ValueError(
+            "#+profile: found in the file frontmatter — "
+            "move it to the * Flags section's :PROPERTIES: drawer instead. "
+            "Only * Flags is the canonical binding point for profiles, and "
+            "a frontmatter profile is silently ignored.")
 
 
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
@@ -2042,7 +2060,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         j["implementations"] = impls
 
     # Profile binding, mirroring org_document_to_model()'s domain_entity
-    # handling: a #+profile: frontmatter line resolves against the named
+    # handling: the * Flags drawer's :profile: resolves against the named
     # profile's own Assignments table as feature defaults.
     _apply_profile(j)
 
@@ -2061,6 +2079,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     sub-headings under ``* Fields``)."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
+    _ensure_profile_binding(doc)
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
@@ -2138,6 +2157,9 @@ _TS_SCALARS = {
     # Both cross the wire as a string, per their rfl reflectors in
     # ores.utility/rfl/reflectors.hpp.
     "boost::uuids::uuid": "string",
+    # tenant_id's reflector writes std::string too (reflectors.hpp), and a
+    # message-shaped model carries the type the domain struct declares.
+    "utility::uuid::tenant_id": "string",
     "std::chrono::year_month_day": "string",
 }
 
@@ -2147,11 +2169,23 @@ _TS_SCALARS = {
 # name one type. ``ores::utility::`` is excluded: its domain types --
 # ``hierarchy_node`` is the one a protocol carries -- are hand-written
 # utility types with no entity model behind them, so there is no facet
-# output to reference and the gap stays open.
+# output to reference. Those go through ``_TS_UTILITY_DOMAIN_TYPES``
+# instead.
 _TS_DOMAIN_TYPE_RE = re.compile(
     r"^ores::(?!utility::)[A-Za-z_][A-Za-z0-9_]*::domain::"
     r"([A-Za-z_][A-Za-z0-9_]*)$"
 )
+
+# Hand-written utility domain types that cross the wire, mapped to the
+# TypeScript interface and the module in the wire-protocol package that
+# declares it. They have no codegen component, so there is no
+# ``ores.ts.domain`` facet to emit them and no per-component domain module
+# to import from; the generated protocol imports the shared module the same
+# way it imports an entity interface. An unlisted utility type still has no
+# projection, which is what keeps the gap loud.
+_TS_UTILITY_DOMAIN_TYPES = {
+    "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
+}
 
 # The same qualified name inside a larger C++ type, e.g.
 # ``std::vector<ores::iam::domain::account_party>`` or
@@ -2199,6 +2233,9 @@ def _ts_type(cpp_type: str) -> str | None:
     domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
     if domain:
         return _to_pascal_case(domain.group(1))
+    utility = _TS_UTILITY_DOMAIN_TYPES.get(cpp_type)
+    if utility:
+        return utility[0]
     if "::" not in cpp_type:
         return _to_pascal_case(cpp_type)
     return None
@@ -2296,6 +2333,32 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
         for entity in sorted(entities)
+    ]
+
+
+def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The shared utility interfaces a protocol's fields render, one each.
+
+    A field whose C++ type names a registered
+    ``ores::utility::domain::<type>`` -- on its own or inside a container --
+    renders that type's hand-written interface, so the module must import it
+    from the wire-protocol package's shared ``utility/`` directory. Returns
+    ``{"name_pascal": ..., "module": ...}`` in interface-name order.
+    """
+    found: dict[str, str] = {}
+    for message in messages:
+        for field in message.get("fields") or []:
+            cpp_type = field.get("cpp_type") or ""
+            for qualified, (pascal, module) in _TS_UTILITY_DOMAIN_TYPES.items():
+                # A word boundary, not a substring test: a registered name
+                # that prefixes another (``hierarchy_node`` against
+                # ``hierarchy_node_view``) must not import an interface the
+                # field never renders.
+                if re.search(re.escape(qualified) + r"(?![A-Za-z0-9_])", cpp_type):
+                    found[pascal] = module
+    return [
+        {"name_pascal": pascal, "module": found[pascal]}
+        for pascal in sorted(found)
     ]
 
 
@@ -2519,45 +2582,49 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
                         _ts_field("message", "std::string")]),
         ]
 
-    messages += [
-        _ts_message(
-            f"save_{singular}_request",
-            response_type=f"save_{singular}_response",
-            subject=f"{component}.v1.{name}.save",
-            fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
-        _ts_message(
-            f"save_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-        _ts_message(
-            f"delete_{singular}_request",
-            response_type=f"delete_{singular}_response",
-            subject=f"{component}.v1.{name}.delete",
-            fields=[_ts_field(f"{side['column']}s",
-                              "std::vector<std::string>") for side in sides]),
-        _ts_message(
-            f"delete_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
-
-    for side in sides:
-        short = side.get("column_short", "")
-        if not side.get("replace_by"):
-            continue
+    # A read-only junction's rows are provisioned outside the application,
+    # so it carries no write verb on either twin: the C++ block guards the
+    # same three on ``read_only``, and this list feeds both.
+    if not junction.get("read_only"):
         messages += [
             _ts_message(
-                f"replace_{name}_by_{short}_request",
-                response_type=f"replace_{name}_by_{short}_response",
-                subject=f"{component}.v1.{name}.replace_by_{side['column']}",
-                fields=[_ts_field(side["column"], "std::string"),
-                        _ts_field(name, f"std::vector<{domain_type}>")]
-                       + [_ts_field(f, "std::string") for f in actor_fields]),
+                f"save_{singular}_request",
+                response_type=f"save_{singular}_response",
+                subject=f"{component}.v1.{name}.save",
+                fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
             _ts_message(
-                f"replace_{name}_by_{short}_response",
+                f"save_{singular}_response",
+                fields=[_ts_field("success", "bool"),
+                        _ts_field("message", "std::string")]),
+            _ts_message(
+                f"delete_{singular}_request",
+                response_type=f"delete_{singular}_response",
+                subject=f"{component}.v1.{name}.delete",
+                fields=[_ts_field(f"{side['column']}s",
+                                  "std::vector<std::string>") for side in sides]),
+            _ts_message(
+                f"delete_{singular}_response",
                 fields=[_ts_field("success", "bool"),
                         _ts_field("message", "std::string")]),
         ]
+
+        for side in sides:
+            short = side.get("column_short", "")
+            if not side.get("replace_by"):
+                continue
+            messages += [
+                _ts_message(
+                    f"replace_{name}_by_{short}_request",
+                    response_type=f"replace_{name}_by_{short}_response",
+                    subject=f"{component}.v1.{name}.replace_by_{side['column']}",
+                    fields=[_ts_field(side["column"], "std::string"),
+                            _ts_field(name, f"std::vector<{domain_type}>")]
+                           + [_ts_field(f, "std::string") for f in actor_fields]),
+                _ts_message(
+                    f"replace_{name}_by_{short}_response",
+                    fields=[_ts_field("success", "bool"),
+                            _ts_field("message", "std::string")]),
+            ]
 
     for side in sides:
         short = side.get("column_short", "")
@@ -2619,6 +2686,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
+    _ensure_profile_binding(doc)
     fm = doc.frontmatter
 
     op: dict[str, Any] = {}
@@ -2679,6 +2747,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
             messages.append(entry)
     op["messages"] = messages
     op["domain_imports"] = ts_domain_imports(messages)
+    op["utility_imports"] = ts_utility_imports(messages)
 
     _reject_silent_ts_gap(path, messages, doc.file_properties)
 

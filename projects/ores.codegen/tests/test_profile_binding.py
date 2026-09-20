@@ -280,3 +280,30 @@ def test_file_level_profile_rejected_in_all_readers(tmp_path):
     )
     with pytest.raises(ValueError, match="file-level"):
         load_org_junction_model(p)
+
+
+def test_frontmatter_profile_rejected_in_all_readers(tmp_path):
+    # The ``#+profile:`` keyword spelling lands in the document's
+    # frontmatter, where no profile consumer looks -- they all resolve the
+    # key from the * Flags drawer. Ignoring it is worse than rejecting it,
+    # because the model then renders with the profile's defaults missing
+    # and nothing sees the change. It must fail loudly on every read path.
+    import pytest
+
+    entity = parse_org(
+        ":PROPERTIES:\n:ID: TEST0000-0000-0000-0000-000000000000\n:END:\n"
+        "#+entity_plural: things\n#+profile: simple-lookup\n\n"
+    )
+    with pytest.raises(ValueError, match="frontmatter"):
+        org_document_to_model(entity)
+    with pytest.raises(ValueError, match="frontmatter"):
+        read_physical_space_overrides(entity)
+
+    p = tmp_path / "j.org"
+    p.write_text(
+        ":PROPERTIES:\n:ID: TEST0001-0000-0000-0000-000000000000\n:END:\n"
+        "#+type: ores.codegen.junction\n#+profile: tenant-scoped-junction\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="frontmatter"):
+        load_org_junction_model(p)

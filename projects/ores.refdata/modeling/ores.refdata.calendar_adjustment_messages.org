@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: D2EA779C-B12F-4F01-94EB-A42439C23B82
+:END:
+#+title: ores.refdata.calendar_adjustment_messages
+#+description: Codegen operation model for the calendar_adjustment export protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: calendar_adjustment
+#+namespace: ores::refdata::messaging
+#+brief: Calendar adjustment export protocol messages.
+#+filetags: :model:operation:refdata:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+The calendar adjustment export protocol messages.
+
+=calendar_adjustment= patches an ORE built-in calendar with institution-
+or date-specific exceptions. It is assembled server-side from the
+=calendar= and =calendar_exception= rows and is never itself persisted, so
+no table backs it and the shape is a message payload rather than an
+entity.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** calendar_adjustment
+
+#+begin_src cpp :name comment
+/**
+ * @brief Overrides applied to a named ORE calendar.
+ *
+ * A calendar adjustment patches a built-in calendar with institution-
+ * or date-specific exceptions: additional holidays, and additional
+ * business days. Dates are ISO-8601 strings ("YYYY-MM-DD") verbatim
+ * from the source file, so a round trip preserves them exactly.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default: utility::uuid::tenant_id::system()
+:END:
+
+*** calendar_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+ORE calendar name, e.g. "DKK", "Japan", "CHF", "XNYS". This is the
+natural key, and it maps to a QuantLib calendar identifier.
+
+*** base_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Optional base calendar this one derives from. When present, the adjusted
+calendar inherits all holidays from the named base calendar before
+applying the additional overrides.
+
+*** additional_holidays
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+ISO-8601 dates to treat as holidays in addition to the built-in rules.
+
+*** additional_business_days
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+ISO-8601 dates to treat as business days despite the built-in rules.
+
+*** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** performed_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+** get_calendar_adjustments_request
+:PROPERTIES:
+:subject: refdata.v1.calendar_adjustments.export
+:response: get_calendar_adjustments_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Requests the transient calendar_adjustment DTOs ORE needs for
+ * source='user' calendar templates, assembled server-side from
+ * calendar + calendar_exception rows -- never itself persisted. The
+ * caller turns the response into a CalendarAdjustments XML file.
+ */
+#+end_src
+
+*** calendar_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Calendars to assemble entries for; empty means every active
+source='user' calendar. A source='quantlib' code here is silently
+skipped, not an error.
+
+** get_calendar_adjustments_response
+
+*** adjustments
+:PROPERTIES:
+:cpp_type: std::vector<calendar_adjustment>
+:END:
+
+Base-first (dependency) order -- safe to write out as-is.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

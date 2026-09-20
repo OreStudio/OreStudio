@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_CALENDAR_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_CALENDAR_REPOSITORY_HPP
 
@@ -55,10 +60,33 @@ public:
     void write(const std::vector<domain::currency_calendar>& currency_calendars);
 
     std::vector<domain::currency_calendar> read_latest();
+    std::vector<domain::currency_calendar> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active currency calendars.
+     */
+    std::uint32_t get_total_currency_calendar_count();
     std::vector<domain::currency_calendar>
     read_latest_by_currency(const std::string& currency_iso_code);
+    /**
+     * @brief Reads latest currency calendars filtered by currency_iso_code, with pagination.
+     */
+    std::vector<domain::currency_calendar> read_latest_by_currency(
+        const std::string& currency_iso_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active currency calendars filtered by currency_iso_code.
+     */
+    std::uint32_t
+    get_total_currency_calendar_count_by_currency(const std::string& currency_iso_code);
+
     std::vector<domain::currency_calendar>
     read_latest_by_calendar(const std::string& calendar_code);
+
+    /**
+     * @brief Gets the total count of active currency calendars filtered by calendar_code.
+     */
+    std::uint32_t get_total_currency_calendar_count_by_calendar(const std::string& calendar_code);
 
     void remove(const std::string& currency_iso_code, const std::string& calendar_code);
     void remove_by_currency(const std::string& currency_iso_code);

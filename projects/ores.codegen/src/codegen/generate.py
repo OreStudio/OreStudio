@@ -90,14 +90,17 @@ def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
 
 
 # A junction's messaging layer exists to serve parent-scoped list reads
-# (:list_by: on a junction side). With no :list_by: declared, the four
-# facets would emit a stack nothing subscribes to: a registrar shell,
-# an unreachable service, and a protocol nobody reads.
+# (:list_by: on a junction side). With no :list_by: declared, the facets
+# would emit a stack nothing subscribes to: a registrar shell, an
+# unreachable service, and a protocol nobody reads. The TypeScript
+# protocol is the C++ header's twin and belongs in the set, so a junction
+# renders both halves of its wire shape or neither.
 _JUNCTION_MESSAGING_FACETS = frozenset({
     "ores.cpp.nats-handler",
     "ores.cpp.nats-sub-registrar",
     "ores.cpp.protocol",
     "ores.cpp.service",
+    "ores.ts.protocol",
 })
 
 # The per-entity history-provider registrar renders every version's actor

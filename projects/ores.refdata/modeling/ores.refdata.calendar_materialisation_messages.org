@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 9AE59F6F-1349-43B3-9BE3-C8AEB80FEC7E
+:END:
+#+title: ores.refdata.calendar_materialisation_messages
+#+description: Codegen operation model for the calendar materialisation command protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: calendar_materialisation
+#+namespace: ores::refdata::messaging
+#+brief: Calendar materialisation command protocol messages.
+#+filetags: :model:operation:refdata:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+The on-demand calendar materialisation command.
+
+The command extends a calendar's materialised =calendar_dates= up to a
+year. It is a command, not a row: it carries no payload type and no
+entity backs it, so both messages are message-only.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#+end_src
+
+* Messages
+
+** regenerate_calendar_dates_request
+:PROPERTIES:
+:subject: refdata.v1.calendar_dates.regenerate
+:response: regenerate_calendar_dates_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief On-demand "regenerate up to <year>" command for calendar_dates.
+ *
+ * Extends (never rewrites below the existing watermark) a single
+ * calendar's materialised calendar_dates, or every calendar's, up to
+ * end_year. No cron job triggers this -- it is user- or save-action-
+ * triggered only.
+ */
+#+end_src
+
+*** calendar_code
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Calendar to regenerate; absent means every calendar.
+
+*** end_year
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+
+Last year (inclusive) to materialise up to; absent falls back to the
+calendar.materialisation.end_horizon system setting.
+
+** regenerate_calendar_dates_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rows_written
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:

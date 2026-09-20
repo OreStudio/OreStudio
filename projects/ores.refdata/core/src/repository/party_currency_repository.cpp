@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
@@ -73,6 +78,46 @@ std::vector<domain::party_currency> party_currency_repository::read_latest() {
         "Reading latest party currencies");
 }
 
+std::vector<domain::party_currency> party_currency_repository::read_latest(std::uint32_t offset,
+                                                                           std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_currency_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("party_id"_c, "currency_iso_code"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    return execute_read_query<party_currency_entity, domain::party_currency>(
+        ctx_,
+        query,
+        [](const auto& entities) { return party_currency_mapper::map(entities); },
+        lg(),
+        "Reading latest party currencies (paginated).");
+}
+
+std::uint32_t party_currency_repository::get_total_party_currency_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<party_currency_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party currencies count: " << count;
+    return count;
+}
+
 std::vector<domain::party_currency>
 party_currency_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Party: " << party_id;
@@ -85,12 +130,14 @@ party_currency_repository::read_latest_by_party(const boost::uuids::uuid& party_
         where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
         order_by("currency_iso_code"_c);
 
-    return execute_read_query<party_currency_entity, domain::party_currency>(
+    auto rows = execute_read_query<party_currency_entity, domain::party_currency>(
         ctx_,
         query,
         [](const auto& entities) { return party_currency_mapper::map(entities); },
         lg(),
         "Reading latest party currencies by party.");
+
+    return rows;
 }
 
 std::vector<domain::party_currency>
@@ -105,12 +152,86 @@ party_currency_repository::read_latest_by_currency(const std::string& currency_i
                              "valid_to"_c == max.value()) |
                        order_by("party_id"_c);
 
-    return execute_read_query<party_currency_entity, domain::party_currency>(
+    auto rows = execute_read_query<party_currency_entity, domain::party_currency>(
         ctx_,
         query,
         [](const auto& entities) { return party_currency_mapper::map(entities); },
         lg(),
         "Reading latest party currencies by currency.");
+
+    return rows;
+}
+
+std::vector<domain::party_currency> party_currency_repository::read_latest_by_party(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    const auto party_id_str = boost::uuids::to_string(party_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Party: " << party_id
+                               << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<party_currency_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+        order_by("currency_iso_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    auto rows = execute_read_query<party_currency_entity, domain::party_currency>(
+        ctx_,
+        query,
+        [](const auto& entities) { return party_currency_mapper::map(entities); },
+        lg(),
+        "Reading latest party currencies by party (paginated).");
+
+    return rows;
+}
+
+std::uint32_t party_currency_repository::get_total_party_currency_count_by_party(
+    const boost::uuids::uuid& party_id) {
+    const auto party_id_str = boost::uuids::to_string(party_id);
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count. Party: "
+                               << party_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<party_currency_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party currencies count by party: " << count;
+    return count;
+}
+
+std::uint32_t party_currency_repository::get_total_party_currency_count_by_currency(
+    const std::string& currency_iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count. Currency: "
+                               << currency_iso_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<party_currency_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party currencies count by currency: " << count;
+    return count;
 }
 
 void party_currency_repository::remove(const boost::uuids::uuid& party_id,

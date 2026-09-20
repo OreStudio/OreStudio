@@ -43,9 +43,13 @@
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_calendar_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_country_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_currency_group_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_group_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_classification_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_pair_convention_calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
@@ -65,6 +69,9 @@
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
+#include "ores.refdata.core/messaging/party_counterparty_registrar.hpp"
+#include "ores.refdata.core/messaging/party_country_registrar.hpp"
+#include "ores.refdata.core/messaging/party_currency_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/party_registrar.hpp"
@@ -79,6 +86,7 @@
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_convention_resolution_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_resolution_algorithm_registrar.hpp"
@@ -86,16 +94,10 @@
 #include "ores.refdata.core/messaging/tenor_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
-// tenor_convention_resolution is a junction: codegen doesn't generate a
-// service/protocol/handler/sub-registrar for it (see the story on adding
-// junction C++ support). Hand-authored, read-only (list only), wired
-// inline below alongside the other no-sub-registrar entities.
-#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
-#include "ores.refdata.core/messaging/tenor_convention_resolution_handler.hpp"
-
-// Entities without a per-entity sub-registrar: asset_class, business_centre
-// and business_unit_type have no codegen model; publish_from_dq is a
-// bespoke multi-subject workflow handler. These stay wired inline below.
+// Wired inline rather than through a generated sub-registrar: asset_class
+// is an operation protocol, business_centre and business_unit_type keep
+// their subjects here, and publish_from_dq is a bespoke multi-subject
+// workflow handler.
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
@@ -221,9 +223,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
     append(register_crm_topology_config_handlers(nats, ctx, verifier));
     append(register_currency_handlers(nats, ctx, verifier));
+    append(register_currency_calendar_handlers(nats, ctx, verifier));
+    append(register_currency_country_handlers(nats, ctx, verifier));
+    append(register_currency_currency_group_handlers(nats, ctx, verifier));
     append(register_currency_group_handlers(nats, ctx, verifier));
     append(register_currency_market_tier_handlers(nats, ctx, verifier));
     append(register_currency_pair_classification_handlers(nats, ctx, verifier));
+    append(register_currency_pair_convention_calendar_handlers(nats, ctx, verifier));
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));
     append(register_currency_pair_handlers(nats, ctx, verifier));
     append(register_day_count_fraction_type_handlers(nats, ctx, verifier));
@@ -242,6 +248,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_overnight_index_convention_handlers(nats, ctx, verifier));
     append(register_party_handlers(nats, ctx, verifier));
     append(register_party_contact_information_handlers(nats, ctx, verifier));
+    append(register_party_counterparty_handlers(nats, ctx, verifier));
+    append(register_party_country_handlers(nats, ctx, verifier));
+    append(register_party_currency_handlers(nats, ctx, verifier));
     append(register_party_id_scheme_handlers(nats, ctx, verifier));
     append(register_payment_frequency_handlers(nats, ctx, verifier));
     append(register_party_identifier_handlers(nats, ctx, verifier));
@@ -256,24 +265,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_tenor_handlers(nats, ctx, verifier));
     append(register_tenor_anchor_handlers(nats, ctx, verifier));
     append(register_tenor_convention_handlers(nats, ctx, verifier));
+    append(register_tenor_convention_resolution_handlers(nats, ctx, verifier));
     append(register_tenor_kind_handlers(nats, ctx, verifier));
     append(register_curve_role_handlers(nats, ctx, verifier));
     append(register_tenor_unit_handlers(nats, ctx, verifier));
     append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
     append(register_tenor_schedule_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
-
-    // ----------------------------------------------------------------
-    // Tenor convention resolutions (junction — no codegen-generated
-    // service/protocol/handler/sub-registrar; hand-authored, read-only).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<tenor_convention_resolution_handler>(nats, ctx, verifier);
-        subs.push_back(
-            nats.queue_subscribe(get_tenor_convention_resolutions_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    }
 
     // ----------------------------------------------------------------
     // Business unit types (no codegen model).

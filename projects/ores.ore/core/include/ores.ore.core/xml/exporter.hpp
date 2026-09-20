@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <filesystem>
@@ -64,7 +64,7 @@ public:
     static std::string export_currency_config(const std::vector<refdata::domain::currency>& v);
 
     static std::string
-    export_calendar_adjustments(const std::vector<refdata::domain::calendar_adjustment>& v);
+    export_calendar_adjustments(const std::vector<refdata::messaging::calendar_adjustment>& v);
 
     static std::string export_conventions(const domain::mapped_conventions& mc);
 

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTRY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTRY_REPOSITORY_HPP
 
@@ -55,9 +60,32 @@ public:
     void write(const std::vector<domain::party_country>& party_countries);
 
     std::vector<domain::party_country> read_latest();
+    std::vector<domain::party_country> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party countries.
+     */
+    std::uint32_t get_total_party_country_count();
     std::vector<domain::party_country> read_latest_by_party(const boost::uuids::uuid& party_id);
+    /**
+     * @brief Reads latest party countries filtered by party_id, with pagination.
+     */
+    std::vector<domain::party_country> read_latest_by_party(const boost::uuids::uuid& party_id,
+                                                            std::uint32_t offset,
+                                                            std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party countries filtered by party_id.
+     */
+    std::uint32_t get_total_party_country_count_by_party(const boost::uuids::uuid& party_id);
+
     std::vector<domain::party_country>
     read_latest_by_country(const std::string& country_alpha2_code);
+
+    /**
+     * @brief Gets the total count of active party countries filtered by country_alpha2_code.
+     */
+    std::uint32_t get_total_party_country_count_by_country(const std::string& country_alpha2_code);
 
     void remove(const boost::uuids::uuid& party_id, const std::string& country_alpha2_code);
     void remove_by_party(const boost::uuids::uuid& party_id);

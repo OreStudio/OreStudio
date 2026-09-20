@@ -18,7 +18,7 @@ separate per-address component entries are needed.
 
 | name | modeling_dir | exclude_org_types |
 |------+--------------+--------------------|
-| refdata | projects/ores.refdata/modeling | junction |
+| refdata | projects/ores.refdata/modeling | |
 | reporting | projects/ores.reporting/modeling | |
 | trade | projects/ores.trading/modeling | |
 | dq | projects/ores.dq/modeling | |

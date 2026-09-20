@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.api/domain/tenor_convention_resolution_table.hpp"
 #include <fort.hpp>
 #include <sstream>
@@ -43,7 +48,7 @@ std::string convert_to_table(const std::vector<tenor_convention_resolution>& v) 
     table << fort::header << "Convention" << "Tenor" << "Anchor Override" << "Offset Unit"
           << "Offset Multiplier" << "Schedule" << "Schedule Step Count" << fort::endr;
 
-    for (const auto& r : v) {
+    for ([[maybe_unused]] const auto& r : v) {
         table << r.convention_code << r.tenor_code << opt_str(r.anchor_override)
               << opt_str(r.offset_unit) << opt_str(r.offset_multiplier) << opt_str(r.schedule_code)
               << opt_str(r.schedule_step_count) << fort::endr;

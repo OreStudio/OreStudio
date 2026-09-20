@@ -23,15 +23,20 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.core/service/app_version_platform_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::compute::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
+
 
 app_version_platform_service::app_version_platform_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx_) {}
 
 std::vector<domain::app_version_platform>
 app_version_platform_service::list_app_version_platforms() {
@@ -88,7 +93,9 @@ void app_version_platform_service::save_app_version_platform(
     BOOST_LOG_SEV(lg(), debug) << "Saving app version platform: "
                                << app_version_platform.app_version_id << "/"
                                << app_version_platform.platform_id;
-    repo_.write(app_version_platform);
+    auto t = app_version_platform;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved app version platform: "
                               << app_version_platform.app_version_id << "/"
                               << app_version_platform.platform_id;

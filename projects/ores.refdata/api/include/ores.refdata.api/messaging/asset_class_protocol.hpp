@@ -17,31 +17,48 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
-#define ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REFDATA_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
+#define ORES_REFDATA_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/asset_class_info.hpp"
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
 /**
+ * @brief An asset class entry from the refdata catalogue.
+ *
+ * Carries the code, human-readable description and coding scheme so
+ * callers can build display labels and filter values without
+ * hard-coding them.
+ */
+struct asset_class_info {
+    std::string code;
+    std::string description;
+    std::string coding_scheme_code;
+};
+
+/**
  * @brief Request published asset class entries from the refdata service.
  *
- * An optional @c coding_scheme_code filter narrows the result to a single
- * coding scheme (e.g. "ORE_ASSET_CLASS"). If empty, all schemes are returned.
+ * An optional coding_scheme_code filter narrows the result to a single
+ * coding scheme. If empty, all schemes are returned.
  */
 struct get_asset_classes_request {
     using response_type = struct get_asset_classes_response;
     static constexpr std::string_view nats_subject = "refdata.v1.asset-classes.list";
-    std::string coding_scheme_code; ///< Optional filter; empty = all schemes
+    std::string coding_scheme_code;
     int offset = 0;
     int limit = 200;
 };
 
 struct get_asset_classes_response {
-    std::vector<ores::refdata::domain::asset_class_info> asset_classes;
+    std::vector<asset_class_info> asset_classes;
     int total_available_count = 0;
     bool success = false;
     std::string message;

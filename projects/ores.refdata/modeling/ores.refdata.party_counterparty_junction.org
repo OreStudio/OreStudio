@@ -13,13 +13,18 @@
 #+brief: Links a party to a counterparty it can see.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
+#+has_tenant_id: true
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-09-20
 
 Junction table controlling which counterparties are visible to which parties.
 Counterparty identity is shared at tenant level; this junction controls
 party-level visibility.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -29,6 +34,7 @@ party-level visibility.
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up counterparties visible to a party
+:list_by:       true
 :END:
 
 ID of the party.
@@ -80,6 +86,7 @@ ctx.generate_uuid()
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:party_id_is_target: true
 :END:
 
 ** Domain includes

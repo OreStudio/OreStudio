@@ -17,26 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
-#define ORES_REFDATA_CORE_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REFDATA_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
+#define ORES_REFDATA_SERVICE_TENOR_CONVENTION_RESOLUTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
-#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::refdata::service {
 
 /**
- * @brief Service for reading tenor convention resolutions. Read-only: this junction's rows are
- * reference data managed via Foundation-layer SQL provisioning -- see
- * ores.refdata.tenor_convention_resolution.org. Hand-authored to fill the gap while junction
- * codegen doesn't generate a service/protocol/handler layer -- see the story on retiring the
- * legacy codegen profile system and adding junction C++ support.
+ * @brief Service for managing tenor convention resolutions.
+ *
+ * This service provides functionality for:
+ * - Managing tenor convention resolutions (CRUD operations)
  */
-class ORES_REFDATA_CORE_EXPORT tenor_convention_resolution_service {
+class tenor_convention_resolution_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.tenor_convention_resolution_service";
@@ -50,14 +54,56 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a tenor_convention_resolution_service with required repositories.
+     *
+     * @param ctx The database context.
+     */
     explicit tenor_convention_resolution_service(context ctx);
 
     /**
-     * @brief Lists every active resolution row for the tenant.
+     * @brief Lists all tenor convention resolutions.
      */
     std::vector<domain::tenor_convention_resolution> list_resolutions();
 
+    /**
+     * @brief Lists tenor convention resolutions with pagination.
+     */
+    std::vector<domain::tenor_convention_resolution> list_resolutions(std::uint32_t offset,
+                                                                      std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions.
+     */
+    std::uint32_t get_total_resolution_count();
+
+    /**
+     * @brief Lists tenor convention resolutions for a specific convention.
+     *
+     * @param convention_code The convention to filter by
+     */
+    std::vector<domain::tenor_convention_resolution>
+    list_resolutions_by_convention(const std::string& convention_code);
+
+    /**
+     * @brief Lists tenor convention resolutions for a specific convention, with pagination.
+     */
+    std::vector<domain::tenor_convention_resolution> list_resolutions_by_convention(
+        const std::string& convention_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions filtered by
+     * convention_code.
+     */
+    std::uint32_t get_total_resolution_count_by_convention(const std::string& convention_code);
+
+    /**
+     * @brief Gets the total count of active tenor convention resolutions filtered by tenor_code.
+     */
+    std::uint32_t get_total_resolution_count_by_tenor(const std::string& tenor_code);
+
 private:
+    context ctx_;
     repository::tenor_convention_resolution_repository repo_;
 };
 

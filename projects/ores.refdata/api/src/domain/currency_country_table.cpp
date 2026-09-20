@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.api/domain/currency_country_table.hpp"
 #include <fort.hpp>
 
@@ -29,7 +34,7 @@ std::string convert_to_table(const std::vector<currency_country>& v) {
 
     table << fort::header << "Currency" << "Country" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& cc : v) {
+    for ([[maybe_unused]] const auto& cc : v) {
         table << cc.currency_iso_code << cc.country_alpha2_code << cc.modified_by << cc.version
               << fort::endr;
     }

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_API_MESSAGING_CALENDAR_DATE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CALENDAR_DATE_PROTOCOL_HPP
 
@@ -26,6 +31,29 @@
 #include <vector>
 
 namespace ores::refdata::messaging {
+
+/**
+ * @brief The calendar date row enriched with the joined row's
+ * display fields, so a screen needs one request for the whole set rather
+ * than one per row. The by-side read returns this view.
+ */
+struct calendar_date_view {
+    ores::refdata::domain::calendar_date calendar_date;
+};
+
+struct get_calendar_dates_request {
+    using response_type = struct get_calendar_dates_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_calendar_dates_response {
+    std::vector<ores::refdata::domain::calendar_date> calendar_dates;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
 
 struct get_calendar_dates_by_calendar_request {
     using response_type = struct get_calendar_dates_by_calendar_response;
@@ -37,12 +65,59 @@ struct get_calendar_dates_by_calendar_request {
 };
 
 struct get_calendar_dates_by_calendar_response {
-    std::vector<ores::refdata::domain::calendar_date> calendar_dates;
+    std::vector<calendar_date_view> calendar_dates;
     int total_available_count = 0;
     bool success = false;
     std::string message;
 };
 
+struct save_calendar_date_request {
+    using response_type = struct save_calendar_date_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.save";
+    std::vector<ores::refdata::domain::calendar_date> calendar_dates;
+
+    static save_calendar_date_request from(std::vector<ores::refdata::domain::calendar_date> v) {
+        return {.calendar_dates = std::move(v)};
+    }
+};
+
+struct save_calendar_date_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_calendar_date_request {
+    using response_type = struct delete_calendar_date_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.delete";
+    std::vector<std::string> calendar_codes;
+    std::vector<std::string> dates;
+};
+
+struct delete_calendar_date_response {
+    bool success = false;
+    std::string message;
+};
+
+struct count_calendar_dates_by_calendar_request {
+    using response_type = struct count_calendar_dates_by_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.calendar_dates.count_by_calendar_code";
+    std::string calendar_code;
+};
+
+struct count_calendar_dates_by_calendar_response {
+    int total_available_count = 0;
+};
+
+struct count_calendar_dates_by_date_request {
+    using response_type = struct count_calendar_dates_by_date_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.count_by_date";
+    std::string date;
+};
+
+struct count_calendar_dates_by_date_response {
+    int total_available_count = 0;
+};
 }
 
 #endif

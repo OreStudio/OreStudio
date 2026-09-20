@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/asset_class_info.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/asset_class_repository.hpp"
 #include <string>
@@ -46,7 +46,7 @@ public:
     explicit asset_class_service(context ctx)
         : ctx_(std::move(ctx)) {}
 
-    std::vector<domain::asset_class_info> list_asset_classes(const std::string& coding_scheme = {},
+    std::vector<messaging::asset_class_info> list_asset_classes(const std::string& coding_scheme = {},
                                                              std::uint32_t offset = 0,
                                                              std::uint32_t limit = 200);
 

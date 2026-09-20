@@ -17,19 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/service/calendar_date_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
+
 
 calendar_date_service::calendar_date_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx))
+    , repo_(ctx_) {}
 
 std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates";
     return repo_.read_latest();
+}
+
+std::vector<domain::calendar_date> calendar_date_service::list_calendar_dates(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all calendar dates with offset: " << offset
+                               << " limit: " << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t calendar_date_service::get_total_calendar_date_count() {
+    return repo_.get_total_calendar_date_count();
 }
 
 std::vector<domain::calendar_date>
@@ -50,6 +71,11 @@ calendar_date_service::get_total_calendar_date_count_by_calendar(const std::stri
     return repo_.get_total_calendar_date_count_by_calendar(calendar_code);
 }
 
+std::uint32_t
+calendar_date_service::get_total_calendar_date_count_by_date(const std::string& date) {
+    return repo_.get_total_calendar_date_count_by_date(date);
+}
+
 void calendar_date_service::save_calendar_date(const domain::calendar_date& calendar_date) {
     if (calendar_date.calendar_code.empty()) {
         throw std::invalid_argument("Calendar cannot be empty.");
@@ -59,7 +85,9 @@ void calendar_date_service::save_calendar_date(const domain::calendar_date& cale
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving calendar date: " << calendar_date.calendar_code << "/"
                                << calendar_date.date;
-    repo_.write(calendar_date);
+    auto t = calendar_date;
+    stamp(t, ctx_);
+    repo_.write(t);
     BOOST_LOG_SEV(lg(), info) << "Saved calendar date: " << calendar_date.calendar_code << "/"
                               << calendar_date.date;
 }

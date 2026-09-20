@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/asset_class_info.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
 #include <vector>
@@ -53,7 +53,7 @@ public:
      * @param offset         Pagination offset.
      * @param limit          Maximum number of rows to return.
      */
-    std::vector<domain::asset_class_info> read_latest(context ctx,
+    std::vector<messaging::asset_class_info> read_latest(context ctx,
                                                       const std::string& coding_scheme = {},
                                                       std::uint32_t offset = 0,
                                                       std::uint32_t limit = 200);

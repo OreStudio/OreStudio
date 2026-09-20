@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/messaging/calendar_date_registrar.hpp"
 #include "ores.refdata.api/messaging/calendar_date_protocol.hpp"
 #include "ores.refdata.core/messaging/calendar_date_handler.hpp"
@@ -34,10 +39,28 @@ register_calendar_date_handlers(ores::nats::service::client& nats,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<calendar_date_handler>(nats, std::move(ctx), std::move(verifier));
+    subs.push_back(nats.queue_subscribe(get_calendar_dates_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_calendar_dates_by_calendar_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_by_calendar(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(save_calendar_date_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_calendar_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->remove(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        count_calendar_dates_by_calendar_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->count_by_calendar(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(count_calendar_dates_by_date_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->count_by_date(std::move(msg)); }));
     return subs;
 }
 

@@ -13,9 +13,9 @@
 #+brief: One materialised (calendar, date) holiday/business-day fact, computed from a calendar template's rules and exceptions.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
+#+has_tenant_id: true
 #+created: 2026-07-25
-#+updated: 2026-07-25
+#+updated: 2026-09-20
 
 One row per (=calendar_code=, =date=), produced by the calendar
 materialisation service instantiating a
@@ -27,6 +27,11 @@ consumer that needs "is date D a business day for calendar C" --
 the UI (calendar detail screens, the holiday-aware date picker) and
 ORE Studio's own tenor/schedule date-math -- so the answer is
 consistent and never requires a live rule evaluation.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:

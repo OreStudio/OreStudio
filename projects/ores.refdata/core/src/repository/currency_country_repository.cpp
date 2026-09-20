@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.core/repository/currency_country_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
@@ -75,6 +80,46 @@ std::vector<domain::currency_country> currency_country_repository::read_latest()
 }
 
 std::vector<domain::currency_country>
+currency_country_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_country_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("currency_iso_code"_c, "country_alpha2_code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<currency_country_entity, domain::currency_country>(
+        ctx_,
+        query,
+        [](const auto& entities) { return currency_country_mapper::map(entities); },
+        lg(),
+        "Reading latest currency countries (paginated).");
+}
+
+std::uint32_t currency_country_repository::get_total_currency_country_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<currency_country_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count: " << count;
+    return count;
+}
+
+std::vector<domain::currency_country>
 currency_country_repository::read_latest_by_currency(const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
                                << currency_iso_code;
@@ -86,12 +131,14 @@ currency_country_repository::read_latest_by_currency(const std::string& currency
                              "valid_to"_c == max.value()) |
                        order_by("country_alpha2_code"_c);
 
-    return execute_read_query<currency_country_entity, domain::currency_country>(
+    auto rows = execute_read_query<currency_country_entity, domain::currency_country>(
         ctx_,
         query,
         [](const auto& entities) { return currency_country_mapper::map(entities); },
         lg(),
         "Reading latest currency countries by currency.");
+
+    return rows;
 }
 
 std::vector<domain::currency_country>
@@ -107,12 +154,86 @@ currency_country_repository::read_latest_by_country(const std::string& country_a
               "valid_to"_c == max.value()) |
         order_by("currency_iso_code"_c);
 
-    return execute_read_query<currency_country_entity, domain::currency_country>(
+    auto rows = execute_read_query<currency_country_entity, domain::currency_country>(
         ctx_,
         query,
         [](const auto& entities) { return currency_country_mapper::map(entities); },
         lg(),
         "Reading latest currency countries by country.");
+
+    return rows;
+}
+
+std::vector<domain::currency_country> currency_country_repository::read_latest_by_currency(
+    const std::string& currency_iso_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
+                               << currency_iso_code << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_country_entity>> |
+                       where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("country_alpha2_code"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    auto rows = execute_read_query<currency_country_entity, domain::currency_country>(
+        ctx_,
+        query,
+        [](const auto& entities) { return currency_country_mapper::map(entities); },
+        lg(),
+        "Reading latest currency countries by currency (paginated).");
+
+    return rows;
+}
+
+std::uint32_t currency_country_repository::get_total_currency_country_count_by_currency(
+    const std::string& currency_iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Currency: "
+                               << currency_iso_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::select_from<currency_country_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count by currency: " << count;
+    return count;
+}
+
+std::uint32_t currency_country_repository::get_total_currency_country_count_by_country(
+    const std::string& country_alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Country: "
+                               << country_alpha2_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<currency_country_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "country_alpha2_code"_c == country_alpha2_code &&
+              "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active currency countries count by country: " << count;
+    return count;
 }
 
 void currency_country_repository::remove(const std::string& currency_iso_code,

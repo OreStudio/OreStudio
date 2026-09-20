@@ -1,0 +1,253 @@
+:PROPERTIES:
+:ID: 07BCBE53-701D-4517-B5B2-C707DA6B7DF2
+:END:
+#+title: Task: Generate the refdata protocol messages as TypeScript
+#+description: Make every ores.refdata type that crosses the wire come from an org codegen model, including junctions and message-only protocols, and render both C++ and TypeScript with no facet switched off.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-ts-refdata-modelling
+#+pr: 2114
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every ores.refdata NATS message and wire type has an org model and renders to both C++ and TypeScript from that one source. The nine junction models regenerate their full C++ and TypeScript trees, the hand-written junction layers are gone, and the five hand-written protocol headers become models. ores.refdata commits its TypeScript tree, so the drift gate and the protocol-twin coverage gate both cover it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- The refdata catalogue entry no longer excludes junction models, so all nine junctions regenerate and the drift gate checks them. *Done.*
+- Every refdata protocol header is generated and has a TypeScript twin; the protocol-twin coverage check fails when one is missing. *Done:* 96 headers in refdata and IAM, 77 of them refdata's.
+- No refdata model carries an ores.ts.protocol.enabled or other facet opt-out. *Done:* none exists.
+- The five hand-written refdata protocol headers and every hand-written junction layer are deleted, with their messages modelled. *Done:* every =*_protocol.hpp= in refdata is generated. Two message pairs a paste block still declares are the exception; the Result and Notes record them and a follow-up task carries the fix.
+- The generated tree regenerates with no diff and ores.web typechecks with its suites passing. *Done.*
+- The build is green and the refdata suites pass. *Done.*
+
+* Plan
+
+Refdata's "drift free" status was false. The catalogue entry for the
+component carries =exclude_org_types=junction=, so =discover_models=
+skips all nine junction models. The drift gate and =codegen regenerate
+--component refdata= therefore never rendered them, and 168 junction
+files (149 changed, 19 created) sat unreconciled. Two further defects
+hid behind that exclusion: a junction model binds its profile with a
+file-level =#+profile:= keyword that the loader silently ignores, and
+the junction messaging gate drops the four =ores.cpp.*= facets but not
+=ores.ts.protocol=, so a junction without =:list_by:= renders a
+TypeScript protocol with no C++ header.
+
+The work is four slices.
+
+1. *Codegen enablers.* Remove =junction= from the refdata catalogue
+   entry, so the drift gate and component regeneration cover the nine
+   junctions. Make a file-level =#+profile:= fail loudly beside the
+   =:PROPERTIES:= form =_ensure_profile_binding= already rejects; the
+   keyword form is parsed into =frontmatter= and never reaches the
+   check, so the profile is dropped without a word. Make the junction
+   messaging gate cover both twins, so a junction can never render one
+   protocol without the other.
+2. *Junctions.* Bring the nine models to the IAM shape: the profile in
+   =* Flags=, =#+has_tenant_id:=, and =:list_by:= on the side the UI
+   reads, and the foreign-key section where the side references a table.
+   No junction takes =:replace_by:=, so no replacement verb renders.
+   Delete the 63 hand-written junction domain files
+   (type, json_io, table, table_io) and regenerate. The two entity
+   protocols that paste junction payloads — =currency_protocol.hpp= and
+   =currency_pair_convention_protocol.hpp= — are re-pointed at the
+   generated types.
+3. *Hand-written protocols become models.* Five protocol headers are
+   hand-written and carry ten message structs. =calendar_date= and
+   =tenor_convention_resolution= are junctions whose models already
+   exist, so they need =:list_by:= and regeneration. =asset_class_info=,
+   =calendar_adjustment= and =calendar_materialisation= have no model at
+   all and become operation (message-only) models: the first two are
+   joined or computed shapes, so an entity would be a lie about a table,
+   and the third carries no payload type.
+4. *TypeScript.* Commit the refdata tree under
+   =projects/ores.web/packages/wire-protocol/src/generated/refdata/=.
+   Committing the first file is what makes the drift gate render the
+   component at both TypeScript facets and what makes the protocol-twin
+   coverage check police it. Then typecheck =ores.web= and run its
+   suites.
+
+Verification: the refdata component regenerates at every space with no
+drift, the coverage check reports every header paired and no opt-out,
+the build is green, and the refdata suites pass.
+
+Open for decision, recorded rather than hidden: three hand-written
+entity-shaped domain headers are off the wire and have no includer
+anywhere — =business_day_convention.hpp=, =compounding_method.hpp= and
+=day_count_fraction.hpp= (the last is a near-name collision with the
+generated =day_count_fraction_type=). They are not wire types, so this
+task neither models nor deletes them until that is settled.
+
+* Notes
+
+*Reconnaissance findings.* Counts at =0e76cb1255=: 70 =*_protocol.hpp=
+(65 generated, 5 hand-written), 307 domain headers (260 generated, 47
+hand-written; 15 declare a type and 32 are helpers), 76 models (65
+entity, 9 junction, 1 component, 1 module) and zero operation models.
+IAM, by comparison, has ten operation models. The 148 TypeScript files
+the refdata models resolve have never been generated.
+
+*What the generator had to gain.* Three defects the exclusion hid, each
+invisible to a diff, a drift check and a typecheck, and found only by
+reading the codegen and building:
+
+- *A silently ignored profile binding.* =_ensure_profile_binding=
+  rejected a file-level =:profile:= in the =:PROPERTIES:= drawer, but a
+  =#+profile:= keyword is parsed into =frontmatter=, which no profile
+  consumer reads. The eight junctions using it resolved
+  =has_tenant_id=None= and would have regenerated without tenant
+  scoping. The keyword form now fails loudly beside the drawer form.
+- *Half a wire shape.* The junction messaging gate dropped the four
+  =ores.cpp.*= facets for a junction with no =:list_by:= but not
+  =ores.ts.protocol=, so a junction could render a TypeScript module
+  with no C++ header. The gate now covers the twin.
+- *A write surface for a read-only junction.* The repository honoured
+  =:read_only:= and suppressed write and remove, but the protocol,
+  service, handler and sub-registrar did not, so the generated service
+  called repository methods that do not exist. The five templates guard
+  the write verbs on =read_only=, and the derived TypeScript message list
+  drops them, so both twins carry the same set.
+
+*Dead hand-written headers.* Four headers declared an entity-shaped or
+constant-only type with no includer and no symbol use: the three orphan
+headers in the Plan, and =party_id_scheme_constants=. All four are
+deleted, with their CMake entries and their blocks in the hand-written
+API diagram. A fourth utility type, =hierarchy_node=, was in scope
+because a protocol carries it, and it is now projected onto a shared
+=HierarchyNode= interface in the wire-protocol package.
+
+*Local review.* Three passes over the change (codegen; models, services
+and =ores.ore=; TypeScript and docs). Two findings were fixed before the
+PR: the junction service did not stamp the caller's context onto a saved
+row, so the write endpoints would have failed the insert trigger's
+=modified_by= check, and the =read_only= guard had swallowed the =count_by=
+read verb in the handler and sub-registrar, leaving advertised subjects
+with no subscriber. =calendar_date= was tried as =:read_only:= too, since
+its narrative says its rows are materialised; it does not take the flag,
+because the materialisation service writes them through the repository
+and =:read_only:= suppresses the repository write. Its client-facing write
+verbs therefore stay, which is the third recorded finding below.
+
+Four findings are recorded rather than fixed here.
+
+- *Entity models cannot declare protocol messages.* The
+  =composite_as_of= pairs in the =party= and =counterparty= models are
+  raw C++ paste blocks, so both subjects have a C++ header and no
+  TypeScript twin. Closing it needs a codegen feature; it is task
+  [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA][Let an entity model declare extra protocol messages]].
+- *=calendar_date= has a write surface its narrative does not want.*
+  The generic protocol gives every readable junction save and delete, and
+  =calendar_date= is derived and browsed read-only. =:read_only:= cannot
+  express it: the flag also suppresses the repository write that
+  =calendar_materialisation_service= performs. Suppressing only the wire
+  verbs needs a facet-level knob the codegen does not have.
+- *Some refdata permissions are not seeded.* The generated handlers
+  require =refdata::<resource>:write= and =:delete=, and
+  =iam_permissions_populate.sql= seeds none for the new junction
+  resources. The gap is pre-existing and wider than this change:
+  =refdata::calendars=, =refdata::calendar_events= and
+  =refdata::tenor_conventions= are unseeded too, while
+  =contact_types= and =rounding_types= are seeded. SuperAdmin,
+  TenantAdmin and RefdataService pass on their wildcards; a narrow role
+  such as Operations does not.
+- *The junction batch save is not atomic.* The handler loops one
+  single-row save per element, and each opens its own transaction, where
+  the entity path writes the batch in one. A mid-batch failure leaves
+  earlier rows committed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2114][#2114]] | [codegen] Render the whole refdata wire estate to both targets |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Junction save dropped the server-side context stamp, so a saved row carried the client's =tenant_id= and =modified_by= and the insert trigger rejected it | =cpp_service.cpp.mustache= | Accept | The junction service now stores =ctx_= and stamps before =repo_.write=, as the entity path does. A codegen test pins it. |
+| 2 | The =read_only= guard swallowed the =count_by= read verb in the handler and sub-registrar, leaving advertised subjects with no subscriber | =ores.cpp.nats-handler...org=, =ores.cpp.nats-sub-registrar...org= | Accept | The guard now wraps only the write verbs; the counts render outside it. Verified on =tenor_convention_resolution=. |
+| 3 | =calendar_dates= gained a client save/remove surface although its rows are materialised | =ores.refdata.calendar_date.org= | Follow-up | =:read_only:= also suppresses the repository write the materialisation service needs, so the flag does not fit. A surface-level suppression is the open design question; recorded in Notes. |
+| 4 | =refdata.v1.parties.composite_as_of= and its counterparty twin have no TypeScript twin | =ores.refdata.party.org=, =ores.refdata.counterparty.org= | Follow-up | An entity model cannot declare extra messages; filed as task [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA]]. |
+| 5 | The new junction write permissions are not seeded in =iam_permissions_populate.sql= | =iam_permissions_populate.sql= | Follow-up | Pre-existing and wider: =calendars=, =calendar_events= and =tenor_conventions= are unseeded too. Recorded in Notes. |
+| 6 | The junction batch save loops single-row writes, so it is not atomic | =cpp_nats_handler...org= | Follow-up | Recorded in Notes; the entity path writes the batch in one transaction. |
+| 7 | Broken org link in the junction section | =ores.refdata.protocol.org= | Accept | Corrected. |
+| 8 | The doc and the Plan overstated the junction verb set, claiming =replace_by= and ten message structs | =ores.refdata.protocol.org=, task Plan and Result | Accept | Reworded; no refdata junction takes =:replace_by:=. |
+| 9 | Stale API diagram, stale registrar comment, empty model section, and stale comments in the loader and generator | =ores.refdata.api.puml=, =registrar.cpp=, =org_loader.py=, =generate.py= | Accept | All corrected. |
+| 10 | Missing tests for the =read_only= wire guard and the =tenant_id= projection | =tests/= | Accept | Added; the suite is 354. |
+| 11 | =_ensure_profile_binding= is not called by every reader | =org_loader.py= | Accept | Now also called from the field-group and operation loaders, and the docstring no longer overclaims. |
+| 12 | The generated junction service calls the generic =stamp()=, which overwrites any =party_id= from the JWT context; for =party_country=, =party_currency= and =party_counterparty= that field is the association's client-supplied target | =ores.cpp.service.service_impl.org= | Accept | A junction model declares =:party_id_is_target:=, and the service emits a bespoke =stamp_<singular>= that leaves =party_id= alone, mirroring =ores.iam='s =stamp_account_party=. The three refdata junctions declare it. |
+| 13 | =(ctx_(std::move(ctx)), repo_(ctx))= reads the moved-from parameter, because =ctx_= is declared before =repo_= | =ores.cpp.service.service_impl.org= | Accept | The constructor now passes the initialised =ctx_= member. A test pins it. |
+
+* Result
+
+Every ores.refdata protocol header is generated and has a TypeScript
+twin, and no refdata model switches a facet off. The count of
+hand-written protocol headers was five and is zero.
+
+The component's "drift free" status was a false negative. The catalogue
+entry excluded junction-typed models, so =discover_models= skipped all
+nine and no gate ever rendered them; 168 of their files (149 changed, 19
+created) were unreconciled. Removing the exclusion, moving the profile
+binding into =* Flags= and giving each junction a =:list_by:= read
+brought the whole stack into generation. The two entity models that
+hand-rolled calendar assignment lost it: their
+=get_currency_calendars_request= collided with the generated junction's
+struct of the same name, so the bespoke path could not have built
+alongside the generated one.
+
+The three protocol headers with no model at all became operation
+(message-only) models. =asset_class_info= is a joined catalogue row,
+=calendar_adjustment= a transient DTO with no table, and
+=calendar_materialisation= a command with no payload type; the six message
+structs they carried now come from one source and render to both
+targets. The TypeScript tree the models resolve, 151 modules, is
+committed, so the drift gate and the protocol-twin coverage check now
+police the component.
+
+Recorded rather than hidden: two hand-written message pairs in the
+=party= and =counterparty= entity models keep a C++-only paste
+declaration, =refdata.v1.parties.composite_as_of= and its counterparty
+twin, so neither has a TypeScript interface. An entity model cannot yet
+declare extra protocol messages, so closing that gap needs the codegen
+feature and is follow-up work; see the task's * Notes.
+
+Verified: the full build is green; the four refdata suites and the three
+ores.ore suites pass; the codegen suite passes 352; =ores.web=
+typechecks and its suites pass 43; the drift gate is clean over every
+space including =ores.ts.domain= and =ores.ts.protocol=, for refdata and
+for every other drift-free component; the coverage check reports all 96
+headers paired with no opt-out; and =validate_docs.sh= passes.

@@ -8,7 +8,7 @@
 #+filetags: :web_iam_entities:sprint_25:v0:
 #+owner: marco
 #+branch: feature/web-iam-entities
-#+pr:
+#+pr: 2116
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-20
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2116][#2116]] | [web] Drive the IAM entity screens from one declaration |
 
 * Review
 

@@ -1963,14 +1963,28 @@ def ui_meta_projection(entity, model_path):
     }
 
 
+def _ui_projection_entity(entity):
+    """The entity a screen projection may read, or None when it has no table.
+
+    Two projections render one entity's screen set -- the web declaration
+    and the BFF route descriptor -- and both are withheld for a model with
+    no column table, for the same reason ``ui_meta_projection`` is: an
+    entity with no columns has no table to draw and no fields to show, so
+    it has no screen set to declare. The condition lives here once so the
+    two cannot disagree about whether the entity has screens at all, and
+    ``resolve_targets`` withholds the whole facet on it.
+    """
+    if not (entity.get('presentation') or {}).get('columns'):
+        return None
+    return entity
+
+
 def web_declaration_projection(entity, model_path):
     """The ores.ts.web template's data for one entity, or None.
 
     ``entity`` is a loaded ``domain_entity`` or ``junction`` dict, enriched
-    first. None when the entity has no column table, the same condition
-    ``ui_meta_projection`` uses and for the same reason: an entity with no
-    columns has no table to draw and no fields to show, so it has no screen set
-    to declare. ``resolve_targets`` withholds the facet there.
+    first. None when the entity has no column table, the condition
+    ``_ui_projection_entity`` states and the BFF route projection shares.
 
     The capabilities are read off the enriched presentation rather than guessed:
     a history message type exists exactly when the service serves the entity's
@@ -1978,10 +1992,10 @@ def web_declaration_projection(entity, model_path):
     not written from the interface. Deriving them from anything else -- a
     version column, say -- gets junctions and current-state entities wrong.
     """
+    if _ui_projection_entity(entity) is None:
+        return None
     presentation = entity.get('presentation') or {}
     columns = presentation.get('columns') or []
-    if not columns:
-        return None
     component = entity.get('component', '')
     entity_singular = entity.get('entity_singular', 'unknown')
     read_only = bool(presentation.get('has_readonly_paginated_list'))
@@ -2005,6 +2019,116 @@ def web_declaration_projection(entity, model_path):
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
     }
+
+
+def _protocol_message(messages, name):
+    """The derived protocol message with this exact name, or None."""
+    for message in messages:
+        if message.get('name') == name:
+            return message
+    return None
+
+
+def _protocol_subject_key(messages, name):
+    """The ``subjects`` key a request message contributes, or None.
+
+    The key is the message's own name: ``ts_protocol.ts.mustache`` emits
+    one ``subjects`` member per message that carries a subject, keyed by
+    the message name. A message with no subject is a plain payload, so it
+    contributes no key and the descriptor must not name it.
+    """
+    message = _protocol_message(messages, name)
+    return name if message and message.get('subject') else None
+
+
+def _vector_field_name(message):
+    """The name of a message's first vector field, or None."""
+    for field in (message or {}).get('fields') or []:
+        if str(field.get('cpp_type', '')).startswith('std::vector<'):
+            return field.get('name')
+    return None
+
+
+def _string_vector_field_name(message):
+    """The name of a message's field holding a vector of strings, or None."""
+    for field in (message or {}).get('fields') or []:
+        if field.get('cpp_type') == 'std::vector<std::string>':
+            return field.get('name')
+    return None
+
+
+def bff_route_projection(entity, model_path):
+    """The ores.ts.web BFF route descriptor's data for one entity, or None.
+
+    ``entity`` is the enriched ``domain_entity`` the web declaration is
+    projected from. Withheld under the same condition
+    ``_ui_projection_entity`` states, so the declaration and the route
+    cannot disagree about whether the entity has a screen set.
+
+    The roles are read off the derived CRUD messages, not assumed from the
+    entity's shape: ``entity_protocol_messages`` names the list request
+    ``get_<plural>_request`` and the save, delete and history requests
+    after the singular, and the descriptor names exactly the ``subjects``
+    keys the generated protocol module exports, so a rename moves both.
+
+    Every ``subjects_*`` value is the protocol module's own member name,
+    which is what the template writes after ``subjects.``. The optional
+    roles are omitted when the derived set has no such request -- a
+    current-state entity derives no history pair, and no domain entity
+    derives a single-record get -- and ``has_get``/``has_history`` state
+    the same fact as TypeScript literals.
+
+    None when the derived set carries none of the required request roles --
+    a defensive guard, since an enriched domain entity always derives them.
+    The operation-owned case is withheld before rendering, in
+    ``resolve_targets``, because the replacement protocol module there need
+    not export the derived names.
+    """
+    if _ui_projection_entity(entity) is None:
+        return None
+    singular = entity.get('entity_singular')
+    if not singular:
+        return None
+    presentation = entity.get('presentation') or {}
+    plural = entity.get('entity_plural', singular + 's')
+    messages = entity.get('messages') or []
+
+    subjects_list = _protocol_subject_key(messages, f'get_{plural}_request')
+    subjects_save = _protocol_subject_key(messages, f'save_{singular}_request')
+    subjects_remove = _protocol_subject_key(
+        messages, f'delete_{singular}_request')
+    if not (subjects_list and subjects_save and subjects_remove):
+        return None
+    # An entity whose singular and plural are spelled alike has one
+    # ``get_<name>_request`` and it is the list request, not a read of one.
+    subjects_get = (_protocol_subject_key(messages, f'get_{singular}_request')
+                    if singular != plural else None)
+    subjects_history = _protocol_subject_key(
+        messages, f'get_{singular}_history_request')
+
+    list_response = _protocol_message(messages, f'get_{plural}_response')
+    delete_request = _protocol_message(
+        messages, f'delete_{singular}_request')
+    projection = {
+        'component': entity.get('component', ''),
+        'entity': singular,
+        'entity_camel': _ui_camel(singular),
+        'collection': presentation.get('collection_name', ''),
+        'key': 'id',
+        'key_field': presentation.get('key_field', ''),
+        'delete_keys_field': _string_vector_field_name(delete_request) or '',
+        'rows_field': _vector_field_name(list_response) or '',
+        'subjects_list': subjects_list,
+        'subjects_save': subjects_save,
+        'subjects_remove': subjects_remove,
+        'has_get': _ui_bool(bool(subjects_get)),
+        'has_history': _ui_bool(bool(subjects_history)),
+    }
+    if subjects_get:
+        projection['subjects_get'] = subjects_get
+    if subjects_history:
+        projection['subjects_history'] = subjects_history
+    return projection
 
 
 def _ui_bool(value):
@@ -4885,6 +5009,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         web_declaration = web_declaration_projection(ui_entity, model_path)
         if web_declaration:
             data['web_declaration'] = web_declaration
+        # The BFF route descriptor, from the same enriched entity and under
+        # the same gate. It names the subjects the entity's own generated
+        # protocol module exports, so it is rendered beside it and not into
+        # a hand-written table that can drift from the model.
+        bff_route = bff_route_projection(ui_entity, model_path)
+        if bff_route:
+            data['bff_route'] = bff_route
 
     # Process each associated template
     for template_name in templates_to_process:

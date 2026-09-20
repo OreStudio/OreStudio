@@ -9,7 +9,7 @@
 #+facet_group: ores.ts
 #+filetags: :codegen:physical-space:typescript:
 #+created: 2026-09-20
-#+updated: 2026-09-20
+#+updated: 2026-09-21
 
 This page is the node for the =ores.ts.web= facet of the codegen template
 library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
@@ -19,11 +19,13 @@ table to them.
 
 * Summary
 
-One declaration per entity, emitted beside the entity's protocol and
-presentation metadata, saying where its screens live, what it can do and
-what the list searches across. The shared shell renders the screens from
-it, so the web client has no per-entity TypeScript at all: the model is
-the entity's only artefact on this side.
+One declaration and one BFF route descriptor per entity, emitted beside
+the entity's protocol and presentation metadata: where its screens live,
+what it can do, what the list searches across, and how the BFF reaches the
+service. The shared shell renders the screens from the declaration, and the
+BFF registers its generic route factory from the descriptor, so neither
+side holds per-entity TypeScript: the model is the entity's only artefact
+on this side.
 
 This is the =ores.ts.ui= idea carried further. That facet emits what a
 table and a form need in order to draw; this one emits everything a
@@ -56,6 +58,12 @@ The declaration does not carry the wire field names either: those come
 from the protocol module beside it, which is generated from the same
 model, so the two cannot disagree.
 
+The route descriptor holds values too: the collection, the natural key,
+the array fields a batch delete and a list response use, and the subjects
+the requests travel on. It imports those subjects from the entity's own
+generated protocol module rather than restating them, so the descriptor
+and the wire shape cannot disagree either.
+
 * Which entities emit
 
 A model whose presentation drawer carries a column table, which is the
@@ -65,11 +73,19 @@ set to declare. The facet is withheld for those models in =resolve_targets=
 before the per-archetype =enabled= overrides, so an override cannot
 re-admit it.
 
+Two cases narrow the descriptor further. A junction's delete request names
+one array per side and the generic factory sends a single key, so junction
+routes stay hand-written and the archetype admits =domain_entity= only. An
+operation model that owns the entity's protocol emits a different message
+set at the same path, so the descriptor is withheld for that entity as
+well; the declaration still renders, because it names no subject.
+
 * Archetypes
 
 | Archetype | Description |
 |-----------+-------------|
 | [[id:e1526f95-6b47-4abb-9a56-f27262e3d2b8][ores.ts.web.entity_declaration]] | One entity's screens: route, API path, key, capabilities, search fields and field grouping. |
+| [[id:6a28993e-6f1f-4fc4-a5e5-f0eda941cbfc][ores.ts.web.bff_route]] | One entity's BFF route descriptor: the collection, the key and the subjects its routes travel on. |
 
 * See also
 

@@ -18,18 +18,8 @@
  *
  */
 
--- Drop observations, fixings and the asset-class junction before series
--- (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_observation_lineages_notify_trigger_drop.sql
-\ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_asset_class_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
-\ir ./marketdata_series_classification_rules_drop.sql
+drop policy if exists market_series_asset_classes_tbl_tenant_isolation_policy on "ores_marketdata_market_series_asset_classes_tbl";
+drop rule if exists ores_marketdata_market_series_asset_classes_delete_rule on "ores_marketdata_market_series_asset_classes_tbl";
+drop trigger if exists ores_marketdata_market_series_asset_classes_insert_trg on "ores_marketdata_market_series_asset_classes_tbl";
+drop function if exists ores_marketdata_market_series_asset_classes_insert_fn;
+drop table if exists "ores_marketdata_market_series_asset_classes_tbl";

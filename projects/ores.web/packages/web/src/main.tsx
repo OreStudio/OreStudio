@@ -28,7 +28,7 @@ import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage, PlannedPage } from './components/pages/HomePage.js';
 import { ComponentPage } from './components/pages/ComponentPage.js';
-import { COMPONENTS, PLATFORM_COMPONENTS } from './components/registry.js';
+import { COMPONENTS, PLATFORM_COMPONENTS, iamComponent } from './components/registry.js';
 import { humanise } from './components/labels.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { SignUpPage } from './pages/SignUpPage.js';
@@ -38,6 +38,8 @@ import { AccountsPage } from './pages/AccountsPage.js';
 import { CountryListPage } from './components/refdata/entities/country/CountryListPage.js';
 import { CountryDetailPage } from './components/refdata/entities/country/CountryDetailPage.js';
 import { CountryHistoryPage } from './components/refdata/entities/country/CountryHistoryPage.js';
+import { entityRoutes } from './entity/entityRoutes.js';
+import { tenantTypeDescriptor } from './generated/iam/web/tenant_type_declaration.js';
 import './styles.css';
 
 /**
@@ -143,6 +145,14 @@ function App(): ReactNode {
           <Route path="/refdata/country/:id" element={<CountryDetailPage mode="read" />} />
           <Route path="/refdata/country/:id/edit" element={<CountryDetailPage mode="edit" />} />
           <Route path="/refdata/country/:id/history" element={<CountryHistoryPage />} />
+
+          {/*
+            An entity on the shared machinery is one declaration and one line
+            here. The factory reads the declaration: the paths, the screens and
+            which of the five routes exist are all derived, so adding an entity is
+            a model change rather than five more routes.
+          */}
+          {entityRoutes(tenantTypeDescriptor, iamComponent.path)}
         </Route>
       ) : (
         <>

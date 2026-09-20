@@ -67,7 +67,12 @@ const historySchema = z.object({
   message: z.string().optional(),
 });
 
-const entitySchema = z.object({ row: rowSchema });
+/**
+ * How many rows a single-record read will scan for its key.
+ *
+ * The same ceiling the list screen loads under. See `useEntity`.
+ */
+const LOAD_ONE_CEILING = 1000;
 
 export interface EntityListQuery {
   /** One-based, because that is what the paging control shows. */
@@ -127,8 +132,17 @@ export function useEntityList(
 /**
  * One record, by its natural key.
  *
- * The list used to be the only way in, so a deep link to a record past the first
- * page was "not found" -- a defect that appears only once a collection is large.
+ * Read from the list rather than from a single-record endpoint, because the
+ * entity protocol defines no single-record read: the model derives a list, a
+ * save, a delete and a history, and nothing that answers for one record. The
+ * BFF's factory serves `GET /api/<collection>/<key>` only where the model does
+ * declare one, so asking for it here would 404 on every entity that does not.
+ *
+ * The ceiling is the one the list screen already loads under, and a collection
+ * larger than it answers "not found" for a record past the ceiling. That is the
+ * defect a real single-record read would remove. This is an honest stand-in for
+ * one, not the finished shape: when the model gains a single-record read, this
+ * becomes a direct fetch again and the ceiling goes.
  */
 export function useEntity(
   descriptor: EntityDescriptor,
@@ -139,10 +153,13 @@ export function useEntity(
     enabled: key !== undefined && key.length > 0,
     queryFn: async () => {
       const body = await request(
-        `${descriptor.apiBase}/${encodeURIComponent(key ?? '')}`,
+        `${descriptor.apiBase}?offset=0&limit=${String(LOAD_ONE_CEILING)}`,
         { method: 'GET' },
       );
-      return entitySchema.parse(body).row;
+      const page = pageSchema.parse(body);
+      return page.rows.find(
+        (row) => row[descriptor.meta.keyField] === key,
+      );
     },
   });
 }

@@ -73,7 +73,13 @@ export const iamComponent: ComponentDefinition = {
     entity('account', 'personAccounts'),
     entity('role', 'keyMultiple', planned),
     entity('tenant', 'buildingSkyscraper', planned),
-    entity('tenantType', 'classification', planned),
+    /*
+     * The route segment is the generated descriptor's (`tenant_type`), which is
+     * not the kebab-case of the identifier. The sidebar, the breadcrumbs and the
+     * router each derive the entity's path from this one value, so they agree
+     * only while it is the descriptor's.
+     */
+    entity('tenantType', 'classification', { path: 'tenant_type' }),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

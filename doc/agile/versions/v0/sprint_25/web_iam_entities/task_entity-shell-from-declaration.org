@@ -13,21 +13,23 @@
 #+blocked_since:
 #+created: 2026-09-20
 #+updated: 2026-09-20
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The shared shell renders an entity's list, detail and history screens from a single declaration plus the generated TypeScript metadata, so no entity owns page files or an API module of its own. Country is re-expressed as a declaration and its bespoke pages and api module are deleted. main.tsx stops naming entities: the route table comes from the registry, through the EntityRoutes component the specification names.
+The shared shell renders an entity's list, detail and history screens from generated metadata, so no entity owns page files, an API module or any other TypeScript of its own. Codegen emits the entity's web declaration from the model, the way =ores.cpp.shell-command= already emits a shell command unit into the owning component's part. Country is the first entity through it and its bespoke files are deleted. main.tsx stops naming entities: the route table comes from the registry, through the EntityRoutes component the specification names.
 
 The streamlining reaches the other layers, because a declaration that streamlines only the screens leaves the copy and paste in place:
 
 - One hook set -- useEntityList, useEntity, useSaveEntity, useDeleteEntity and useEntityHistory -- reading the protocol schemas, so the 206-line per-entity API module and its re-declared page schema go.
-- One BFF route factory for list, get, save, delete and history, so the four ordinary routes stop being rewritten per entity. Bespoke actions stay bespoke.
+- One BFF route factory for list, get, save, delete and history, so the four ordinary routes stop being rewritten per entity. Its per-entity descriptor is generated, not typed. Bespoke actions stay bespoke.
 - The Provenance, audit and state labels move to one generic key set, so =entity/EntityDetailPage.tsx= stops reading =account.fldVersion= and its siblings out of the account catalogue block.
 - =pages/AccountsPage.tsx= is deleted and the account is re-expressed on the shell, because the IAM component must not sit on the archetype the specification says not to keep. Whatever the account needs that the shell cannot yet do becomes an abstraction in the shell, not a bespoke page.
+
+**The generator is part of this task, not a follow-up.** A shell with no generator leaves the hand-writing in place and a generator with no shell emits files nothing consumes, so they are the same job. The archetypes land under =ores.ts.ui= or a sibling =ores.ts.web= facet, beside =ui_meta=, with their output under =packages/web/src/generated/<component>/= and their enablement driven by the entity's profile. The drift gate must cover them, so a hand edit to a generated file fails the build rather than accumulating.
 
 This task is a prerequisite for every entity task after it. While it is open, each entity task would reproduce the footprint measured in the story and entrench the divergence.
 
@@ -35,11 +37,11 @@ This task is a prerequisite for every entity task after it. While it is open, ea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
-| Now          | Not yet started.                       |
+| Now          | Started. The BFF route factory is written; the facet and the screens are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Generate the entity's web declaration, then build the shell around it. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -52,6 +54,9 @@ This task is a prerequisite for every entity task after it. While it is open, ea
 - No shared component names an entity: =grep= for an entity identifier under =entity/= returns nothing.
 - pages/AccountsPage.tsx is gone and the account renders through the shell.
 - Field grouping reaches the screens from one declared place. If it stays hand-written per entity, this task records why, because the generated metadata already claims a =<entity>_field_groups.ts= exists and none does.
+- Adding an entity requires no hand-written TypeScript at all: =grep= for the entity's name under =packages/web/src= and =packages/bff/src=, excluding =generated/=, returns only the generated declaration and the catalogue.
+- The archetypes are a facet, so binding a profile is what turns them on, and the drift gate covers their output. A hand edit to a generated file fails the build.
+- The =ores.shell= precedent is matched or beaten: the shell has 49 generated command units against 24 hand-written ones, and the web should reach zero hand-written per-entity files rather than half-way.
 
 * Plan
 

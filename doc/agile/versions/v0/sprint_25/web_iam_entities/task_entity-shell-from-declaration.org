@@ -39,9 +39,9 @@ This task is a prerequisite for every entity task after it. While it is open, ea
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
-| Now          | Started. The BFF route factory is written; the facet and the screens are next. |
+| Now          | Started. The BFF route factory and the ores.ts.web facet are in; the shell and the hooks are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Generate the entity's web declaration, then build the shell around it. |
+| Next         | Build the shell against an IAM lookup -- tenant_type is the simplest, and its protocol, domain and metadata are all generated -- then convert country. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -65,6 +65,35 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+**The first entity through the shell is an IAM lookup, not country.** Found on
+2026-09-20 while starting the shell, and it reorders the work.
+
+The generated TypeScript is not uniformly distributed. Measured:
+
+| Component | Wire protocol and domain generated | UI metadata generated |
+|---+---+---|
+| iam | yes, and only iam | yes |
+| refdata, compute, analytics, marketdata, reporting, synthetic | no | yes |
+
+So =country= has a generated =country_ui.ts= and a /hand-written/ protocol: its
+schemas and subjects live in =wire-protocol/src/entities/country.ts=, 254 lines
+that codegen has not produced for refdata. Building the shell against country
+would therefore have the generated declaration import hand-written schemas and
+would leave hand-written code in the middle of the first slice, which is the
+thing this task exists to remove.
+
+An IAM lookup has the whole stack generated: =tenant_type= has
+=generated/iam/domain/tenant_type.ts=, =generated/iam/protocol/tenant_type_protocol.ts=
+with its four subjects, and =web/src/generated/iam/ui/tenant_type_ui.ts=. It is
+the smallest entity in the tree for which a declaration, an API module, a screen
+set and the BFF routes can all be generated end to end.
+
+Country is still the target and still gets converted; it moves after, and its
+conversion carries refdata's protocol generation with it. That is the same
+conclusion the story's classification reaches from the other direction: IAM is
+the component whose TypeScript is generated, which is why the story is scoped to
+it.
 
 * Test Scenarios
 

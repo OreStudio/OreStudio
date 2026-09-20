@@ -95,6 +95,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
         get_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->list_by_{{right.column_short}}(std::move(msg)); }));
 {{/right.list_by}}
+{{^read_only}}
     subs.push_back(nats.queue_subscribe(
         save_{{name_singular}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->save(std::move(msg)); }));
@@ -117,6 +118,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
         replace_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->replace_by_{{right.column_short}}(std::move(msg)); }));
 {{/right.replace_by}}
+{{/read_only}}
     return subs;
 }
 

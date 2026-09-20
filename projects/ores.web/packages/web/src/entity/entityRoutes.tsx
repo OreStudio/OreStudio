@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { Route } from 'react-router';
+import { assertWiredPath } from '../components/registry.js';
 import { EntityDetailContainer } from './EntityDetailContainer.js';
 import { EntityHistoryContainer } from './EntityHistoryContainer.js';
 import { EntityListContainer } from './EntityListContainer.js';
@@ -47,6 +48,7 @@ export function entityRoutes(
   descriptor: EntityDescriptor,
   componentPath: string,
 ): readonly ReactNode[] {
+  assertWiredPath(descriptor);
   const base = `/${componentPath}/${descriptor.routeSegment}`;
   const record = `${base}/:${descriptor.keyParam}`;
 

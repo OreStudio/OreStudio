@@ -4140,9 +4140,8 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     else:
         # Several tasks may share one feature branch, which is what --branch is
         # for, so an existing branch is the expected case rather than a failure.
-        # Creating it unconditionally made the second task of a shared branch
-        # fail with "a branch named ... already exists", and the caller had to
-        # rewrite #+branch: by hand afterwards.
+        # The branch is reused when it exists and created from the base when it
+        # does not.
         existing = subprocess.run(
             ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"],
             cwd=str(PROJECT_ROOT), capture_output=True, text=True)

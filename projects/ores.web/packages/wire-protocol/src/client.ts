@@ -181,13 +181,6 @@ export class OresClient {
   }
 
   /**
-   * Sends `login` and classifies the reply.
-   *
-   * The server uses a nil `selected_party_id` to mean "party picker
-   * outstanding", so the caller must resolve that before calling anything
-   * authenticated.
-   */
-  /**
    * Whether the deployment still needs provisioning.
    *
    * Asked before a login, not after it. A deployment in bootstrap mode has no
@@ -211,6 +204,13 @@ export class OresClient {
     };
   }
 
+  /**
+   * Sends `login` and classifies the reply.
+   *
+   * The server uses a nil `selected_party_id` to mean "party picker
+   * outstanding", so the caller must resolve that before calling anything
+   * authenticated.
+   */
   async login(credentials: LoginCredentials): Promise<LoginOutcome> {
     const body = loginRequestSchema.parse(credentials);
     const reply = await this.#call(SUBJECTS.login, body, loginResponseSchema, {

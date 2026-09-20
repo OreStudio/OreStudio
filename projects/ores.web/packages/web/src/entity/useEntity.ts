@@ -33,10 +33,10 @@ import type { EntityDescriptor } from './descriptor.js';
 /**
  * One hook set for every entity.
  *
- * The entity's API module used to be written per entity: a schema for the page
- * shape, a row projection, and four hooks, about two hundred lines each. None of
- * it was the entity's own -- the page shape is the BFF's contract, the projection
- * is the column metadata's, and the hooks are the same four calls.
+ * A schema for the page shape, a row projection, and the four calls a screen
+ * makes. None of it belongs to one entity -- the page shape is the BFF's
+ * contract, the projection is the column metadata's, and the calls are the same
+ * four for every entity.
  *
  * What is per entity is the declaration, which is generated. Everything in this
  * file is written once.
@@ -44,8 +44,8 @@ import type { EntityDescriptor } from './descriptor.js';
  * The row is validated as an open record rather than against a per-entity schema.
  * That is deliberate: the BFF has already parsed the service's response against
  * the schema codegen generated from the entity's model, so re-validating the same
- * shape here would be a second declaration of one contract, which is exactly the
- * drift this replaces. What the browser does validate is the envelope, because
+ * shape here would be a second declaration of one contract, which is the drift
+ * this design avoids. What the browser does validate is the envelope, because
  * that is this layer's own contract with the BFF.
  */
 export type EntityRow = Readonly<Record<string, unknown>>;
@@ -87,8 +87,6 @@ export interface EntityPage {
 
 export interface EntityWrite {
   readonly data: Readonly<Record<string, unknown>>;
-  readonly reason: string;
-  readonly commentary?: string;
 }
 
 /**
@@ -130,6 +128,18 @@ export function useEntityList(
 }
 
 /**
+ * Whether a row's natural key is the one the route asked for.
+ *
+ * A key read from the URL is always a string, while a row may hold a number: the
+ * model can declare a numeric natural key, and the protocol carries it as a
+ * number. Comparing the two as text matches a numeric key against the string the
+ * route carries without loosening the match for a key that is already a string.
+ */
+function keyMatches(value: unknown, key: string): boolean {
+  return typeof value === 'string' ? value === key : String(value) === key;
+}
+
+/**
  * One record, by its natural key.
  *
  * Read from the list rather than from a single-record endpoint, because the
@@ -158,7 +168,7 @@ export function useEntity(
       );
       const page = pageSchema.parse(body);
       return page.rows.find(
-        (row) => row[descriptor.meta.keyField] === key,
+        (row) => keyMatches(row[descriptor.meta.keyField], key ?? ''),
       );
     },
   });
@@ -193,8 +203,6 @@ export function useSaveEntity(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             data: write.data,
-            reason: write.reason,
-            commentary: write.commentary ?? '',
           }),
         }),
       ),
@@ -208,18 +216,13 @@ export function useSaveEntity(
 
 export function useDeleteEntity(
   descriptor: EntityDescriptor,
-): UseMutationResult<unknown, Error, { readonly key: string; readonly reason: string; readonly commentary?: string }> {
+): UseMutationResult<unknown, Error, { readonly key: string }> {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (input) =>
       writeSchema.parse(
         await request(`${descriptor.apiBase}/${encodeURIComponent(input.key)}`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reason: input.reason,
-            commentary: input.commentary ?? '',
-          }),
         }),
       ),
     onSuccess: () => {

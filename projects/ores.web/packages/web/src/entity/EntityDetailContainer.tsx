@@ -92,9 +92,9 @@ export function EntityDetailContainer({
    * Seed from the record as it arrives.
    *
    * Keyed on the version as well as the identity, because a save produces a new
-   * version of the same record and the form has to follow it. Keying on identity
-   * alone left the screen showing the values from before the save, which reads as
-   * a save that did not happen.
+   * version of the same record and the form has to follow it. Identity alone is
+   * unchanged by a save, so it cannot tell the record before the save from the
+   * record after it, and the form would keep showing the earlier values.
    *
    * Guarded by `touched` so a fetch cannot overwrite what somebody has typed.
    */
@@ -146,8 +146,8 @@ export function EntityDetailContainer({
   function submit(result: ChangeReasonResult): void {
     setFailure(undefined);
     /*
-     * The reason and the commentary are carried in the record as well as beside
-     * it, because the service stamps the audit from the record it decodes.
+     * The reason and the commentary are carried in the record, because the
+     * service stamps the audit from the record it decodes.
      */
     const data: Record<string, unknown> = {
       ...(mode === 'create' || record === undefined ? blankValues(descriptor) : record),
@@ -162,7 +162,7 @@ export function EntityDetailContainer({
     }
 
     save.mutate(
-      { data, reason: result.reasonCode, commentary: result.commentary },
+      { data },
       {
         onSuccess: () => {
           setStage(undefined);
@@ -177,13 +177,11 @@ export function EntityDetailContainer({
     );
   }
 
-  function confirmDelete(result: ChangeReasonResult): void {
+  function confirmDelete(): void {
     setFailure(undefined);
     remove.mutate(
       {
         key: String(values[descriptor.meta.keyField] ?? ''),
-        reason: result.reasonCode,
-        commentary: result.commentary,
       },
       {
         onSuccess: () => {

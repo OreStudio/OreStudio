@@ -21,7 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ChangeReasonDialog, type ChangeReasonResult } from './ChangeReasonDialog.js';
+import { ChangeReasonDialog } from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityListPage } from './EntityListPage.js';
 import { entityBasePath, entityRecordPath } from './entityPaths.js';
@@ -33,11 +33,10 @@ import type { EntityDescriptor } from './descriptor.js';
 /**
  * The list of any entity, driven by its declaration.
  *
- * This is what an entity used to write for itself. The screen is the shared one
- * and the data is the shared hooks; what is here is the wiring between them, and
- * it reads entirely from the descriptor. Paging, searching, the create action,
- * the row actions and the two-step delete are the same for every entity, so they
- * are written once.
+ * The screen is the shared one and the data is the shared hooks; what is here is
+ * the wiring between them, and it reads entirely from the descriptor. Paging,
+ * searching, the create action, the row actions and the two-step delete are the
+ * same for every entity, so they are written once.
  *
  * A capability the entity does not declare produces no action. The list does not
  * ask whether it should offer Edit: the declaration has already answered.
@@ -74,12 +73,12 @@ export function EntityListContainer({
   /** The record's identity, which is the field the declaration freezes. */
   const keyOf = (row: EntityRow): string => String(row[descriptor.meta.keyField] ?? '');
 
-  function confirmDelete(result: ChangeReasonResult): void {
+  function confirmDelete(): void {
     const row = target;
     if (row === undefined) return;
     setFailure(undefined);
     remove.mutate(
-      { key: keyOf(row), reason: result.reasonCode, commentary: result.commentary },
+      { key: keyOf(row) },
       {
         onSuccess: () => {
           setTarget(undefined);

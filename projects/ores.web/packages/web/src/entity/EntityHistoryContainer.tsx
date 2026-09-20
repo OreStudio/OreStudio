@@ -78,8 +78,6 @@ export function EntityHistoryContainer({
           change_reason_code: result.reasonCode,
           change_commentary: result.commentary,
         },
-        reason: result.reasonCode,
-        commentary: result.commentary,
       },
       {
         onSuccess: () => {

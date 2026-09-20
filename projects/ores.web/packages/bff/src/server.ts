@@ -564,10 +564,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
       countryHistoryResponseSchema,
     );
     /*
-     * The service returns newest first and that is what a person wants: what
-     * changed last is the question being asked. It is passed through rather than
-     * reordered, because reversing it here quietly made the screen compare the
-     * two oldest versions as though they were the current pair.
+     * The service returns the versions newest first, which is how a person
+     * reads a history: what changed last is the question being asked. The
+     * rows are passed through in that order.
      */
     return {
       versions: response.history.map(mapCountry),
@@ -578,10 +577,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
   /**
    * The IAM entities, registered from their generated route descriptors.
    *
-   * Each of these used to be four handlers written out here by hand with the
-   * field names changed, which is how two entities of one kind end up behaving
-   * differently. The descriptor states the collection, the key and the subjects;
-   * the factory states the envelopes. Neither states a function.
+   * The descriptor states the collection, the key and the subjects; the factory
+   * states the envelopes. Neither states a function.
    */
   for (const route of [
     accountContactInformationRoute,

@@ -21,12 +21,14 @@ on:  # yamllint disable-line rule:truthy
     paths:
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
+      - "projects/ores.sql/populate/**"
 
   pull_request:
     branches: ["main"]
     paths:
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
+      - "projects/ores.sql/populate/**"
 
   workflow_dispatch:
 
@@ -95,3 +97,23 @@ jobs:
       - name: Check models agree with the profiles they bind to
         run: |
           python3 projects/ores.codegen/scripts/check_model_drift.py --summary
+
+  # Handler permissions: a generated handler checks
+  # has_permission(req_ctx, "<code>"), and iam_permissions_populate.sql
+  # decides who holds that code. A code no seed defines refuses every
+  # caller, so the feature reads as broken rather than as unseeded. Reads
+  # the generated headers and the seeds only, so it needs neither codegen
+  # nor a formatter. Only the components whose seeds are complete are
+  # checked; see the registry in the script.
+  permissions:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every handler permission is seeded
+        run: |
+          python3 projects/ores.codegen/scripts/check_handler_permissions.py

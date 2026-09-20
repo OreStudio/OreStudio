@@ -113,6 +113,14 @@ lifecycle is ordered this way.
      =setup_schema.sql=, so the GRANT block never runs and the database
      stays half-built. Run it when anything under =projects/ores.sql/*=
      or =projects/ores.seeder/*= changed.
+   - *handler permission seeding*:
+     =python3 projects/ores.codegen/scripts/check_handler_permissions.py=.
+     It reads every =has_permission(req_ctx, "<code>")= code from the
+     generated handler headers of the components whose seeds are complete,
+     and fails when =iam_permissions_populate.sql= defines none of them: an
+     unseeded code refuses every caller, administrators included. Run it when
+     anything under =projects/*/modeling/*=, =projects/ores.sql/populate/*=
+     or =projects/ores.codegen/*= changed.
    - *Compass test suite*:
      =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
    - *CDash experimental* (code class; visibility only):

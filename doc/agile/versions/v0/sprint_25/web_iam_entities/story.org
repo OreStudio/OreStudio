@@ -256,7 +256,52 @@ shell emits files nothing consumes. The second task closes the correctness gaps 
 generated screens would otherwise inherit. The entity tasks are grouped by kind, not
 by entity, so that a kind is proven once and then repeated by binding a profile.
 
+* Three generator gaps the TypeScript rollout hits
+
+Found on 2026-09-20 by regenerating every TS facet for every component, which is
+the step the BFF route descriptor and the screens both need. The regeneration was
+reverted: the output does not compile, and generated code that does not compile is
+worse than absent generated code because it looks like progress.
+
+Three separate gaps, each a generator fix rather than a model fix.
+
+**1. The domain facet is withheld where the protocol facet still emits an import.**
+=ores.ts.domain= emits nothing for analytics, compute, marketdata, ore and
+scheduler, while =ores.ts.protocol= emits modules for them that open with
+=import ... from '../domain/<entity>.js'=. Twenty of the twenty-eight protocol
+errors are that import resolving to nothing. Either the protocol import is
+conditional on the domain interface existing, or the domain gate is wrong; either
+way the two facets disagree about whether the component has domain types.
+
+**2. The domain facet cannot express field-group composition.**
+Fifty-eight errors in trading, all of the same shape: the emitted interface
+references =AuditRecord=, =InstrumentIdentity=, =TradeIdentity=, =TradeParties=,
+=TradeClassification=, =TradeLifecycle= and =ProductType=, and no module defines
+any of them. A composed entity's domain class folds its field groups into member
+types, and the domain template emits the member but not the type. The field-group
+models exist; what is missing is a domain projection for the group itself.
+
+**3. =hierarchy_node= has no TypeScript projection.**
+=ores::utility::domain::hierarchy_node= is deliberately excluded from the domain
+projection by =_TS_DOMAIN_TYPE_RE=, which refuses =ores::utility::= outright, and
+the gap guard then refuses =refdata.business_unit= and =synthetic.folder= rather
+than emit a silent hole. It is a four-member recursive tree --
+=id=, =name=, =parent_id=, =children= -- so the projection is easy; the open
+question is where the shared interface lives, since =ores.utility= has no entity
+models and therefore no generated domain module to put it in.
+
+**Also found, and independent of the above:** four models fail validation with
+"Missing primary key: no field in 'Columns' is flagged =:primary_key: true=" --
+=database_info=, =workflow_instance=, =workflow_step= and =workspace=. That is a
+model question rather than a generator one, but it stops a component-wide
+regeneration just as firmly.
+
+None of these is a reason to abandon the rollout; they are the reasons it is
+component by component rather than one switch. The gaps are worth their own
+tasks under whichever story owns the TypeScript projection.
+
 * Classification of the IAM wire types
+
 
 From the generated TypeScript for the component: eleven domain types and two
 relationships served by messages. Grouped by the shape they have rather than by the

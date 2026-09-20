@@ -103,6 +103,17 @@ facet out.
 4. Make a protocol header without a TypeScript twin fail the drift check, and an
    =:ores.ts.protocol.enabled:= key fail with it.
 
+   Designed, so the last step is mechanical: a new
+   =projects/ores.codegen/scripts/check_protocol_twin_coverage.py=, run by the
+   same workflow as the drift gate. For every component whose TypeScript
+   protocol output is committed, each generated =<entity>_protocol.hpp= must
+   have its =<entity>_protocol.ts= twin, and no model may carry
+   =:ores.ts.protocol.enabled:=. Scoping it by committed output is what keeps it
+   honest while the other components are unmigrated: a component joins the check
+   when its first twin lands, exactly as it joins the TypeScript side of the
+   drift gate. Failing on the opt-out key is the part that stops a later
+   migration taking the shortcut.
+
 * Progress
 
 The drift gate regenerated TypeScript for every registered component once the

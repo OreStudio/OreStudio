@@ -45,6 +45,9 @@ Every NATS message a drift-free component speaks comes from an org model and ren
 | [[id:9EE6D3B0-6C66-4DA5-B438-6F4C36192A5B][Generate the IAM protocol messages as TypeScript]] | DONE | 2026-09-19 | 2026-09-20 | Initial task for: Generate every protocol message as TypeScript |
 | [[id:07BCBE53-701D-4517-B5B2-C707DA6B7DF2][Generate the refdata protocol messages as TypeScript]] | DONE | 2026-09-20 | 2026-09-20 | Make every ores.refdata type that crosses the wire come from an org codegen model, including junctions and message-only protocols, and render both C++ and TypeScript with no facet switched off. |
 | [[id:5BF445FD-80CB-4E8E-9C79-E5FD074AE9FA][Let an entity model declare extra protocol messages]] | STARTED | 2026-09-20 | | An entity model derives its standard CRUD message set and can declare no others, so a message a model hand-writes in a paste block has a C++ header and no TypeScript twin. |
+| [[id:8EA5A99A-2CC3-4BEE-B8AB-B80EEEB8256C][Suppress a junction's write verbs without a read-only repository]] | BACKLOG | | | A junction whose rows the server writes but clients may not exposes save and delete, because the only switch is the repository-level read_only. |
+| [[id:6C831761-BBC2-4584-A05F-DB0AFD98295D][Make the junction batch save atomic]] | BACKLOG | | | The junction handler loops one single-row save per element and each opens its own transaction, so a mid-batch failure leaves earlier rows committed. |
+| [[id:8FC13043-A946-44B0-B601-D3D4ED722CC5][Seed every permission the generated handlers require]] | BACKLOG | | | The generated handlers check refdata::<resource>:write and :delete, and iam_permissions_populate.sql seeds none of them for several resources, so a narrow role is refused. |
 
 * Decisions
 

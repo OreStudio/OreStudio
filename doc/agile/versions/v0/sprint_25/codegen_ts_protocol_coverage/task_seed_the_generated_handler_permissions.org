@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 8FC13043-A946-44B0-B601-D3D4ED722CC5
+:END:
+#+title: Task: Seed every permission the generated handlers require
+#+description: The generated handlers check refdata::<resource>:write and :delete, and iam_permissions_populate.sql seeds none of them for several resources, so a narrow role is refused.
+#+type: task
+#+level: s1
+#+filetags: :codegen_ts_protocol_coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refdata-codegen-followups
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+iam_permissions_populate.sql seeds the read, write and delete permission for every refdata resource a generated handler checks, and the roles that should hold them do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Generate every protocol message as TypeScript]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Every refdata resource named by a generated handler has its read, write and delete permission seeded.
+- The pre-existing gap closes for calendars, calendar_events, tenor_conventions and the nine junction resources.
+- The roles that held the parent entity's write permission keep the equivalent access.
+- A database recreated from the seed script grants the permissions, and the refdata suites pass against it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

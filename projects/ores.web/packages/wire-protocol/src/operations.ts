@@ -49,6 +49,18 @@ export const SUBJECTS = {
   httpInfo: 'http-server.v1.info.get',
 } as const;
 
+/**
+ * Whether the deployment still needs provisioning.
+ *
+ * The IAM service answers the flag and leaves the sentence to the caller: a
+ * deployment in bootstrap mode has no accounts to sign in with, so the words
+ * that say so are the interface's, not the wire's.
+ */
+export const bootstrapStatusResponseSchema = z.object({
+  is_in_bootstrap_mode: z.boolean().default(false),
+  message: z.string().default(''),
+});
+
 const uuidLike = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
 
 /**

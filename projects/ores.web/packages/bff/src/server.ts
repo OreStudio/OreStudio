@@ -73,7 +73,7 @@ import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
-import { invalidCredentials, invalidRequest, notAuthenticated, toHttpFailure, HttpFailure } from './errors.js';
+import { bootstrapRequired, invalidCredentials, invalidRequest, notAuthenticated, toHttpFailure, HttpFailure } from './errors.js';
 
 /**
  * The browser-facing HTTP server.
@@ -312,6 +312,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const { client, connect } = createClient();
     try {
       await connect();
+
+      /*
+       * Asked before the credentials are used, because a deployment in
+       * bootstrap mode has no accounts and a rejected login would send somebody
+       * hunting for a password that cannot exist. The Qt client checked the
+       * same thing in the same place: before the form, not after it.
+       */
+      const bootstrap = await client.bootstrapStatus();
+      if (bootstrap.isInBootstrapMode) {
+        await client.close().catch(() => undefined);
+        throw bootstrapRequired();
+      }
+
       const outcome = await client.login({
         principal: parsed.data.username,
         password: parsed.data.password,

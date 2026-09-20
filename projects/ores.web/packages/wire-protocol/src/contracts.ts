@@ -126,6 +126,7 @@ export const apiErrorSchema = z.object({
     'session-expired',
     'forbidden',
     'invalid-request',
+    'bootstrap-mode',
     'upstream-unavailable',
     'upstream-timeout',
     'internal',

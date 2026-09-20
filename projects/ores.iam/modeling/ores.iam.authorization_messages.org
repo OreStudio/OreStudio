@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.ts.protocol.enabled: nil
 :ID: C47A4410-8624-431C-98FE-D05304CEC6D8
 :END:
 #+title: ores.iam.authorization_messages

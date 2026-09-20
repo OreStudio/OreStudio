@@ -20,6 +20,8 @@ which is why compute's repository tests are untouched by the wire change.
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
@@ -239,3 +241,15 @@ def test_a_junction_without_replace_emits_no_replacement_verb(tmp_path):
     # Both counts stay: the repository serves both.
     assert "count_widget_owners_by_widget_request" in names
     assert "count_widget_owners_by_owner_request" in names
+
+
+def test_a_junction_without_name_singular_is_rejected(tmp_path):
+    """The singular names the header, the C++ types and the messages, and no
+    rule derives it from the plural safely, so its absence is an error rather
+    than a guess."""
+    model = tmp_path / "ores.widget.widget_owner_junction.org"
+    model.write_text(FIXTURE.replace("#+name_singular: widget_owner\n", ""),
+                     encoding="utf-8")
+
+    with pytest.raises(ValueError, match="name_singular"):
+        load_org_junction_model(model)

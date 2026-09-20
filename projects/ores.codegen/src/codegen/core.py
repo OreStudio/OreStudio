@@ -751,7 +751,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         junction = model_data['junction']
         path_vars = _component_path_vars(junction)
         junction_name = junction.get('name', 'unknown')
-        name_singular = junction.get('name_singular', junction_name.rstrip('s'))
+        name_singular = junction['name_singular']
         entity_pascal = snake_to_pascal(name_singular)
 
         for placeholder, value in path_vars.items():

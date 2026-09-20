@@ -1878,6 +1878,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         for k, v in flags.properties.items():
             j[k.lower()] = _parse_typed(v)
 
+    if not j.get("name_singular"):
+        raise ValueError(
+            f"{path}: a junction must declare :name_singular:. The singular "
+            f"names the generated header, the C++ types and the protocol "
+            f"messages, and no rule derives it from the plural name safely."
+        )
+
     body = _strip_body(doc.root)
     if body:
         j["description"] = body

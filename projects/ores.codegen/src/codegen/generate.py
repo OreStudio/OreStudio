@@ -191,7 +191,7 @@ def _protocol_entity_name(model_data: dict, model_type: str) -> str | None:
         return (model_data.get("domain_entity") or {}).get("entity_singular")
     if model_type == "junction":
         junction = model_data.get("junction") or {}
-        return junction.get("name_singular") or (junction.get("name") or "").rstrip("s")
+        return junction["name_singular"]
     return None
 
 

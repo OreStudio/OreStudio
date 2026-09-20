@@ -39,6 +39,12 @@ PROTOCOL_TEMPLATES = frozenset({
     "ts_protocol.ts.mustache",
 })
 
+# The BFF route descriptor imports the subjects of the entity's generated
+# protocol. The operation-owned module need not export the derived names, so
+# the descriptor is dropped with the protocol facets while the declaration,
+# which names no subject, stays.
+BFF_ROUTE_TEMPLATE = "ts_bff_route.ts.mustache"
+
 # A minimal but complete operation model for tenant_type: the ownership
 # rule reads only the frontmatter (component, entity_singular), so one
 # message with one mapped field is enough to make it load.
@@ -110,6 +116,32 @@ def test_deleting_the_operation_model_restores_the_derived_protocol(tmp_path):
     operation.unlink()
     _reload_owners()
     assert PROTOCOL_TEMPLATES <= _templates(entity)
+
+
+def test_an_owned_protocol_drops_the_bff_route_descriptor(tmp_path):
+    """The descriptor would import subjects the owned module may not export."""
+    entity = _copy_tenant_type(tmp_path)
+    (tmp_path / "ores.iam.tenant_type_messages.org").write_text(
+        TENANT_TYPE_MESSAGES, encoding="utf-8")
+    _reload_owners()
+
+    templates = _templates(entity)
+    assert BFF_ROUTE_TEMPLATE not in templates
+    # The declaration names no subject, so the operation's ownership does
+    # not touch it; only the descriptor is dropped.
+    assert "ts_web_declaration.ts.mustache" in templates
+
+
+def test_deleting_the_operation_model_restores_the_bff_route(tmp_path):
+    entity = _copy_tenant_type(tmp_path)
+    operation = tmp_path / "ores.iam.tenant_type_messages.org"
+    operation.write_text(TENANT_TYPE_MESSAGES, encoding="utf-8")
+    _reload_owners()
+    assert BFF_ROUTE_TEMPLATE not in _templates(entity)
+
+    operation.unlink()
+    _reload_owners()
+    assert BFF_ROUTE_TEMPLATE in _templates(entity)
 
 
 def test_the_real_account_party_junction_now_owns_its_protocol(tmp_path):

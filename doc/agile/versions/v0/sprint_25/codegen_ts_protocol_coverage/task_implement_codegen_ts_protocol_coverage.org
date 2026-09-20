@@ -88,12 +88,18 @@ facet out.
      block of =cpp_protocol.hpp.mustache= and an operation model for the same
      entity both write =<entity>_protocol.hpp=, and whichever renders last wins.
      Nothing may be modelled until one model owns the header.
-   - *The risk.* =account= is the aggregate the authentication surface uses. A
-     generated service, repository and handler write the same paths as
-     hand-written auth-critical code (=account_service.hpp=, 14 KB;
-     =account_handler.hpp=, 1200 lines), and its entity-derived CRUD set would
-     collide with the 28 command messages in =account_messages.org=. Both
-     =std::optional<uuid>= members need the reflect-cpp workaround re-verified.
+   - *Account's approach.* Its two headline risks have answers. The protocol
+     collision is already gone: =account_messages= declares the entity
+     =account=, so the ownership gate suppresses the entity-derived header and
+     one model owns it. The custom auth logic — =account_service.cpp= is 634
+     lines and its header 346, and the handler carries login, lock, TOTP,
+     password reset and party selection — has a home because paste anchors exist
+     in the service, handler, protocol, repository and domain templates, so
+     custom code survives the generated files replacing the hand-written ones.
+     Still to re-verify: the two =std::optional<uuid>= members the hand-written
+     header documents as corrupting JSON and table serialisation, and the SQL
+     the generated table must reproduce (the touch function, the partial unique
+     indexes on username and email, the image and self-reference checks, RLS).
 4. Make a protocol header without a TypeScript twin fail the drift check, and an
    =:ores.ts.protocol.enabled:= key fail with it.
 

@@ -267,13 +267,27 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
 
     Two binding points with different behaviour is a footgun -- a single,
     canonical place is simpler and already the convention every entity
-    model follows. Every reader calls this so a file-level :profile: fails
-    loudly on all paths, not just the physical-space override pass."""
+    model follows. Every reader calls this so a misplaced :profile: fails
+    loudly on all paths, not just the physical-space override pass.
+
+    Both misplaced spellings are rejected. The drawer spelling lands in
+    ``file_properties``; the ``#+profile:`` keyword spelling lands in
+    ``frontmatter``, where nothing reads it -- every profile consumer
+    resolves the key from the * Flags drawer. A keyword profile is
+    therefore not a second binding point but a silent no-op, which is
+    worse: the model renders with the profile's defaults missing and no
+    diff, check or type can see it."""
     if "profile" in doc.file_properties:
         raise ValueError(
             ":profile: found in file-level :PROPERTIES: drawer — "
             "move it to the * Flags section's :PROPERTIES: drawer instead. "
             "Only * Flags is the canonical binding point for profiles.")
+    if any(key.lower() == "profile" for key in doc.frontmatter):
+        raise ValueError(
+            "#+profile: found in the file frontmatter — "
+            "move it to the * Flags section's :PROPERTIES: drawer instead. "
+            "Only * Flags is the canonical binding point for profiles, and "
+            "a frontmatter profile is silently ignored.")
 
 
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:

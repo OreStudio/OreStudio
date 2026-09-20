@@ -13,9 +13,9 @@
 #+brief: Links a currency to a holiday calendar used for its spot/settlement date computation.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
+#+has_tenant_id: true
 #+created: 2026-07-15
-#+updated: 2026-07-15
+#+updated: 2026-09-20
 
 Many-to-many junction between currency and calendar: a currency's
 spot/settlement date computation can depend on more than one calendar
@@ -23,6 +23,11 @@ spot/settlement date computation can depend on more than one calendar
 [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][currency's]] free-text
 =holiday_calendar= column with a proper FK relationship to
 [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]].
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -32,6 +37,7 @@ spot/settlement date computation can depend on more than one calendar
 :type:          text
 :cpp_type:      std::string
 :index_comment: Index for looking up calendars used by a currency
+:list_by:       true
 :END:
 
 ISO 4217 alpha-3 code of the currency.

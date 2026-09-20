@@ -13,13 +13,18 @@
 #+brief: Links a party to a country it can see.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
+#+has_tenant_id: true
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-09-20
 
 Junction table controlling which countries are visible to which parties.
 Country definitions are shared at tenant level; this junction controls
 party-level visibility.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -29,6 +34,7 @@ party-level visibility.
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up countries visible to a party
+:list_by:       true
 :END:
 
 ID of the party.

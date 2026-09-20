@@ -13,9 +13,9 @@
 #+brief: Links a currency to a country that issues it.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
+#+has_tenant_id: true
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-09-20
 
 Many-to-many junction between currency and country: a currency can be
 issued by more than one country (e.g. EUR spans DE, FR, IT, ES, ...).
@@ -23,6 +23,11 @@ Independent reference data in its own right, not a prerequisite for
 [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][the calendar entity]], which
 carries its own country_code rather than deriving a currency's
 calendars transitively through this junction.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -32,6 +37,7 @@ calendars transitively through this junction.
 :type:          text
 :cpp_type:      std::string
 :index_comment: Index for looking up countries that issue a currency
+:list_by:       true
 :END:
 
 ISO 4217 alpha-3 code of the currency.

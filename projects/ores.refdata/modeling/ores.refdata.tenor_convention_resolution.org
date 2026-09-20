@@ -12,9 +12,10 @@
 #+brief: Joins a tenor convention to the tenors valid under it, with an optional per-tenor anchor override.
 #+product: ores
 #+schema: public
+#+has_tenant_id: true
 #+filetags: :model:junction:refdata:tenor:
 #+created: 2026-07-13
-#+updated: 2026-08-10
+#+updated: 2026-09-20
 
 A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
 same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
@@ -62,6 +63,7 @@ count lives in =schedule_step_count= now.
 :type:          text
 :cpp_type:      std::string
 :index_comment: Tenor convention this resolution row belongs to.
+:list_by:       true
 :END:
 
 References [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor_convention.code]].

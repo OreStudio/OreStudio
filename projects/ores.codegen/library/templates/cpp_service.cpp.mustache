@@ -159,8 +159,12 @@ std::vector<domain::{{entity_singular}}>
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.columns}}
 {{^is_int}}
+{{^is_timestamp}}
+{{^is_date}}
     if (v.{{{group_prefix}}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
         throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/is_date}}
+{{/is_timestamp}}
 {{/is_int}}
 {{/primary_key.columns}}
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
@@ -182,8 +186,12 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
 {{^is_int}}
+{{^is_timestamp}}
+{{^is_date}}
         if (e.{{{group_prefix}}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
             throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/is_date}}
+{{/is_timestamp}}
 {{/is_int}}
 {{/primary_key.columns}}
     }

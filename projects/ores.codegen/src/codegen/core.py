@@ -3709,6 +3709,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             field['is_uuid'] = field_type == 'uuid'
             field['is_text'] = field_type == 'text'
             field['is_int'] = field_type in ('integer', 'int')
+            # A compound key may carry a timestamp column (a TimescaleDB
+            # hypertable's partition column must sit in the primary key).
+            # The mapper's key-column conversions and the generator's
+            # key-column synthesis branch on these, exactly as the
+            # natural-key lists already do.
+            field['is_timestamp'] = (
+                field_type in ('timestamp', 'timestamptz', 'timestamp with time zone')
+                or 'time_point' in field.get('cpp_type', ''))
+            field['is_date'] = (
+                field_type == 'date'
+                or field.get('cpp_type', '') == 'std::chrono::year_month_day')
             if field['is_uuid'] and 'uuid_check_fn' not in field:
                 field['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
             if 'cpp_type' not in field:
@@ -3732,6 +3743,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _enrich_primary_key_field(field)
             _mark_last_item(pk_columns)
             pk['is_compound'] = len(pk_columns) > 1
+            # A compound key with a timestamp column needs the mapper's
+            # datetime include and conversion just as a timestamp natural
+            # key or column does. Fold it into the flag the mapper template
+            # already branches on, so the include is emitted once.
+            domain_entity['has_timestamp_key_columns'] = any(
+                c.get('is_timestamp') for c in pk_columns)
+            if domain_entity['has_timestamp_key_columns']:
+                domain_entity['has_date_or_timestamp_natural_keys'] = True
             # Every key column beyond the back-compat first (pk itself,
             # scalar-projected above) -- the generator template needs
             # these to synthesize a value for each, the same way it

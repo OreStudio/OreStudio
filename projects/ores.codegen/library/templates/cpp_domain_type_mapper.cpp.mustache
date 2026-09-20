@@ -51,6 +51,9 @@ domain::{{entity_singular}}
 {{#is_int}}
     r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
 {{/is_int}}
+{{#is_timestamp}}
+    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}.value()});
+{{/is_timestamp}}
 {{/primary_key.columns}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
@@ -168,6 +171,9 @@ domain::{{entity_singular}}
 {{#is_int}}
     r.{{column}} = std::to_string(v.{{{group_prefix}}}{{column}});
 {{/is_int}}
+{{#is_timestamp}}
+    r.{{column}} = ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{column}});
+{{/is_timestamp}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();

@@ -100,14 +100,35 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{group_prefix}}}{{column}} = 0;
 {{/generator_expr}}
 {{/is_int}}
+{{#is_timestamp}}
+{{#generator_expr}}
+    r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{{group_prefix}}}{{column}} = ctx.past_timepoint();
+{{/generator_expr}}
+{{/is_timestamp}}
+{{#is_date}}
+{{#generator_expr}}
+    r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{{group_prefix}}}{{column}} = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+{{/generator_expr}}
+{{/is_date}}
 {{^is_uuid}}
 {{^is_int}}
+{{^is_timestamp}}
+{{^is_date}}
 {{#generator_expr}}
     r.{{{group_prefix}}}{{column}} = {{{generator_expr}}};
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{{group_prefix}}}{{column}} = std::string(faker::word::noun());
 {{/generator_expr}}
+{{/is_date}}
+{{/is_timestamp}}
 {{/is_int}}
 {{/is_uuid}}
 {{/primary_key.extra_columns}}

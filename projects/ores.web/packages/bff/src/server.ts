@@ -28,6 +28,12 @@ import cookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
+import { registerEntityRoutes } from './entity-routes.js';
+import { accountContactInformationRoute } from './generated/iam/account_contact_information_route.js';
+import { accountTypeRoute } from './generated/iam/account_type_route.js';
+import { tenantRoute } from './generated/iam/tenant_route.js';
+import { tenantStatusRoute } from './generated/iam/tenant_status_route.js';
+import { tenantTypeRoute } from './generated/iam/tenant_type_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -555,6 +561,24 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
       message: response.message,
     };
   });
+
+  /**
+   * The IAM entities, registered from their generated route descriptors.
+   *
+   * Each of these used to be four handlers written out here by hand with the
+   * field names changed, which is how two entities of one kind end up behaving
+   * differently. The descriptor states the collection, the key and the subjects;
+   * the factory states the envelopes. Neither states a function.
+   */
+  for (const route of [
+    accountContactInformationRoute,
+    accountTypeRoute,
+    tenantRoute,
+    tenantStatusRoute,
+    tenantTypeRoute,
+  ]) {
+    registerEntityRoutes(server, requireSession, route);
+  }
 
   /**
    * The reasons a write may carry.

@@ -2,6 +2,9 @@
 {{{ts_license}}}
 {{#domain_entity}}
 import type { {{entity_pascal}} } from '../domain/{{entity_singular}}.js';
+{{#utility_imports}}
+import type { {{name_pascal}} } from '../../../{{module}}.js';
+{{/utility_imports}}
 
 {{#messages}}
 {{#comment}}
@@ -27,6 +30,9 @@ export const subjects = {
 {{/domain_entity}}
 {{#junction}}
 import type { {{name_pascal}} } from '../domain/{{name_singular}}.js';
+{{#utility_imports}}
+import type { {{name_pascal}} } from '../../../{{module}}.js';
+{{/utility_imports}}
 
 {{#messages}}
 {{#comment}}
@@ -54,9 +60,15 @@ export const subjects = {
 {{#domain_imports}}
 import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
 {{/domain_imports}}
+{{#utility_imports}}
+import type { {{name_pascal}} } from '../../../{{module}}.js';
+{{/utility_imports}}
 {{#domain_imports}}
 
 {{/domain_imports}}
+{{#utility_imports}}
+
+{{/utility_imports}}
 {{#messages}}
 {{#comment}}
 {{{.}}}

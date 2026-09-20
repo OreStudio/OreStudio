@@ -2164,11 +2164,23 @@ _TS_SCALARS = {
 # name one type. ``ores::utility::`` is excluded: its domain types --
 # ``hierarchy_node`` is the one a protocol carries -- are hand-written
 # utility types with no entity model behind them, so there is no facet
-# output to reference and the gap stays open.
+# output to reference. Those go through ``_TS_UTILITY_DOMAIN_TYPES``
+# instead.
 _TS_DOMAIN_TYPE_RE = re.compile(
     r"^ores::(?!utility::)[A-Za-z_][A-Za-z0-9_]*::domain::"
     r"([A-Za-z_][A-Za-z0-9_]*)$"
 )
+
+# Hand-written utility domain types that cross the wire, mapped to the
+# TypeScript interface and the module in the wire-protocol package that
+# declares it. They have no codegen component, so there is no
+# ``ores.ts.domain`` facet to emit them and no per-component domain module
+# to import from; the generated protocol imports the shared module the same
+# way it imports an entity interface. An unlisted utility type still has no
+# projection, which is what keeps the gap loud.
+_TS_UTILITY_DOMAIN_TYPES = {
+    "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
+}
 
 # The same qualified name inside a larger C++ type, e.g.
 # ``std::vector<ores::iam::domain::account_party>`` or
@@ -2216,6 +2228,9 @@ def _ts_type(cpp_type: str) -> str | None:
     domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
     if domain:
         return _to_pascal_case(domain.group(1))
+    utility = _TS_UTILITY_DOMAIN_TYPES.get(cpp_type)
+    if utility:
+        return utility[0]
     if "::" not in cpp_type:
         return _to_pascal_case(cpp_type)
     return None
@@ -2313,6 +2328,28 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
         for entity in sorted(entities)
+    ]
+
+
+def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The shared utility interfaces a protocol's fields render, one each.
+
+    A field whose C++ type names a registered
+    ``ores::utility::domain::<type>`` -- on its own or inside a container --
+    renders that type's hand-written interface, so the module must import it
+    from the wire-protocol package's shared ``utility/`` directory. Returns
+    ``{"name_pascal": ..., "module": ...}`` in interface-name order.
+    """
+    found: dict[str, str] = {}
+    for message in messages:
+        for field in message.get("fields") or []:
+            cpp_type = field.get("cpp_type") or ""
+            for qualified, (pascal, module) in _TS_UTILITY_DOMAIN_TYPES.items():
+                if qualified in cpp_type:
+                    found[pascal] = module
+    return [
+        {"name_pascal": pascal, "module": found[pascal]}
+        for pascal in sorted(found)
     ]
 
 
@@ -2700,6 +2737,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
             messages.append(entry)
     op["messages"] = messages
     op["domain_imports"] = ts_domain_imports(messages)
+    op["utility_imports"] = ts_utility_imports(messages)
 
     _reject_silent_ts_gap(path, messages, doc.file_properties)
 

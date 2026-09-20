@@ -4552,9 +4552,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # UI that reads it. Only the TypeScript twin refuses the model; the
         # C++ header has no such gap, so the check is scoped to its render.
         if target_template == 'ts_protocol.ts.mustache':
-            from .org_loader import _reject_silent_ts_gap  # deferred
+            from .org_loader import _reject_silent_ts_gap, ts_utility_imports  # deferred
             _reject_silent_ts_gap(
                 model_path, domain_entity['messages'], {})
+            domain_entity['utility_imports'] = ts_utility_imports(
+                domain_entity['messages'])
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -4645,8 +4647,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # UI that reads it. Only the TypeScript twin refuses the model; the
         # C++ header has no such gap, so the check is scoped to its render.
         if target_template == 'ts_protocol.ts.mustache':
-            from .org_loader import _reject_silent_ts_gap  # deferred
+            from .org_loader import (  # deferred
+                _reject_silent_ts_gap,
+                ts_utility_imports,
+            )
             _reject_silent_ts_gap(model_path, junction['messages'], {})
+            junction['utility_imports'] = ts_utility_imports(junction['messages'])
         # A junction member the projection cannot state would render an
         # interface with the member missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the

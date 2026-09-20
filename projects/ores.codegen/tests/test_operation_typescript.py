@@ -90,12 +90,22 @@ def test_a_timestamp_projects_onto_a_string():
 
 def test_a_type_with_no_projection_stays_none():
     # A component domain type projects to the interface its entity emits,
-    # through an optional as well; a utility domain type has no facet output to
-    # name, so it stays a gap the guard refuses.
+    # through an optional as well. A utility domain type has no facet output
+    # to name, so it projects only when it is registered in the shared
+    # utility table; anything else stays a gap the guard refuses.
     assert _ts_type("std::optional<ores::iam::domain::role>") == "Role | null"
-    assert _ts_type("ores::utility::domain::hierarchy_node") is None
-    assert _ts_type("std::vector<ores::utility::domain::hierarchy_node>") is None
+    assert _ts_type("ores::utility::domain::hierarchy_flat_row") is None
     assert _ts_type("std::map<std::string, int>") is None
+
+
+def test_a_registered_utility_type_projects_onto_its_shared_interface():
+    # hierarchy_node crosses the wire on every hierarchical entity's
+    # hierarchy response. The C++ struct is hand-written with no codegen
+    # component, so the wire-protocol package declares its interface and
+    # this table names it; see ts_utility_imports for the import.
+    assert _ts_type("ores::utility::domain::hierarchy_node") == "HierarchyNode"
+    assert _ts_type(
+        "std::vector<ores::utility::domain::hierarchy_node>") == "HierarchyNode[]"
 
 
 def test_message_names_are_pascal_cased(tmp_path):
@@ -113,17 +123,26 @@ def test_fields_carry_their_typescript_type(tmp_path):
 
 def test_an_unprojectable_type_stops_the_model_loading(tmp_path):
     body = MODEL.replace(
-        "std::string", "ores::utility::domain::hierarchy_node")
-    with pytest.raises(ValueError, match="ores::utility::domain::hierarchy_node"):
+        "std::string", "ores::utility::domain::hierarchy_flat_row")
+    with pytest.raises(ValueError, match="ores::utility::domain::hierarchy_flat_row"):
         load_org_operation_model(_write(tmp_path, body=body))
 
 
 def test_the_drawer_flag_lets_an_unprojectable_type_through(tmp_path):
     body = MODEL.replace(
-        "std::string", "ores::utility::domain::hierarchy_node")
+        "std::string", "ores::utility::domain::hierarchy_flat_row")
     op = load_org_operation_model(
         _write(tmp_path, drawer=DRAWER_DISABLED, body=body))["operation"]
     assert "ts_type" not in op["messages"][0]["fields"][0]
+
+
+def test_a_registered_utility_type_derives_a_shared_import(tmp_path):
+    body = MODEL.replace(
+        "std::string", "ores::utility::domain::hierarchy_node")
+    op = load_org_operation_model(_write(tmp_path, body=body))["operation"]
+    assert op["messages"][0]["fields"][0]["ts_type"] == "HierarchyNode"
+    assert op["utility_imports"] == [
+        {"name_pascal": "HierarchyNode", "module": "utility/hierarchy"}]
 
 
 def test_a_fully_projectable_model_needs_no_flag(tmp_path):

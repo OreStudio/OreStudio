@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 818208C0-3465-4CEF-A8C8-62A460871B2C
+:END:
+#+title: Codegen junction meta-model — the junction protocol
+#+description: The generic message set a junction model renders: by-side reads, set replacement, single-pair link and unlink, counts, and the view payload that enriches the other side. Design only, not yet implemented.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:meta_model:junction:protocol:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+* Summary
+
+A junction joins two entities, so its protocol is about a relationship rather
+than a row: which of the other side is joined to this one, and what happens when
+that set changes. The C++ protocol template already emits a thin version of that
+-- =list_by= and =replace_by= per side -- and two junctions in the estate use it:
+compute's =app_version_platform= (both) and dq's =dataset_bundle_member=
+(=list_by=). It is not finished: the verb set is incomplete, the TypeScript facet
+does not serve junctions at all, and IAM's one junction was given an operation
+model whose CRUD vocabulary is entity-shaped rather than relational. This page
+designs the generic set once, so every junction renders the same protocol and no
+junction needs a bespoke model to be usable from the UI.
+
+* What a junction row is
+
+A junction row is a left key, a right key, optionally its own columns, and the
+tenant and audit columns every table carries. It can own data: compute's
+=app_version_platform= carries =package_uri= per association, and its model
+narrative records that the generated read returns the platform rows enriched with
+the platform code. Two consequences follow, and they decide most of this design:
+the payload of a junction message is the *junction row*, not a bare key or a bare
+list of the other side's ids; and any enrichment from the other side is a view,
+because the junction row is what the relationship owns.
+
+* The generic message set
+
+| Verb | Request | Response | Emitted when |
+|------+---------+----------+--------------|
+| =get_<junction>_by_<side>= | the side's column, =offset=, =limit= | the view list, =total_available_count=, =success=, =message= | always, once per side |
+| =replace_<junction>_by_<side>= | the side's column, the junction rows, the four actor fields | =success=, =message= | where the side declares =:replace_by:= |
+| =link_<junction_singular>= | left column, right column, the junction's payload columns, the actor fields | =success=, =message= | always |
+| =unlink_<junction_singular>= | left column, right column, the actor fields | =success=, =message= | always |
+| =count_<junction>_by_<side>= | the side's column | =total_available_count= | always, once per side |
+| =exists_<junction_singular>= | left column, right column | =linked= | only when a consumer needs it; the by-side read answers it today |
+
+Decisions inside the set:
+
+- **Reads carry the junction rows, not the keys.** The row is the relationship's
+  own data, and a caller that wants only the other side's identity can read that
+  from the rows.
+- **One view type, not a per-junction one.** =<junction>_view= is the junction row
+  plus the other side's display fields, so a screen does not issue a request per
+  row. It is the same shape the session surface reached for, with the difference
+  that here it is *referenced by the read response* rather than declared and left
+  unused.
+- **Replacement is a whole-set operation and is opt-in.** =replace_by= closes what
+  the request omits and opens what it names, inside one transaction, which is what
+  the estate's soft close already expresses. It is destructive by nature, so a
+  side declares =:replace_by:= to have it.
+- **Link and unlink are the incremental verbs.** A screen toggling one row should
+  not rewrite the set to change it, and should not need to know whether the pair
+  already exists.
+- **Tenant scope never crosses the wire.** It comes from the caller's context, as
+  the generated repository already does for every entity.
+- **The actor fields stay on the write requests**, matching the existing template
+  and the generated audit columns, even though the context carries the actor.
+
+* Naming and subjects
+
+Verbs follow the existing =<component>.v1.<junction_plural>.<verb>= shape, and the
+existing subjects for the two verbs already implemented are
+=.list_by_<column>= and =.replace_by_<column>=. The =account_party= operation
+model's =iam.v1.account-parties.by-account= is the outlier; it should not be
+copied, and the project should settle whether the read subject keeps the
+=list_by_= spelling or moves to match the =get_..._by_= verb.
+
+* What stays bespoke, and how the two coexist
+
+A genuine command that is not a relationship operation stays in an operation
+model, and the existing ownership gate already arbitrates between the two: it
+keys on the component and the entity, so a junction whose entity an operation
+model declares keeps that model's protocol, and a junction without one takes the
+generic set. That is exactly why =account_party= behaves as it does today, and it
+means adopting this design does not force a wire change on it.
+
+* What the codegen needs
+
+1. The TypeScript protocol facet declares the model types it serves as
+   =domain_entity operation=, while its C++ sibling declares
+   =domain_entity schema junction operation=. Adding =junction= is the same
+   one-line change that entities needed, and it is also what removes the
+   coverage gate's known junction exception.
+2. The C++ junction block gains the verbs it lacks -- =link=, =unlink=, =count=,
+   paging on the read -- and emits the view type; the TypeScript template gains a
+   ={{#junction}}= branch rendering the same set from the same model.
+3. Nothing per junction is needed in a template: the payload columns are already
+   in the model, and the verb set is derived from the sides and their flags.
+
+* What to verify before implementing
+
+- The two junctions that already render a read would gain a view payload in the
+  response. Whether that is a compatible change depends on their consumers
+  (compute's is described as the desktop console and the repository tests), so
+  the change should re-point those consumers in the same commit.
+- =replace_by='s semantics against the current hand-written behaviour: the estate
+  soft-closes, so a replacement that omits a pair leaves the old row closed
+  rather than deleted. That is the intended reading here, and worth stating in
+  the template so nobody later mistakes it for an omission.
+- Whether the by-side read needs paging in practice: the current emitted read has
+  =offset= and =limit=, and no verb in the estate consumes them yet.
+
+* See also
+
+- [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model — SQL]] — the sibling meta-model page, and the
+  convention this one follows.
+- [[id:18F49E14-F89E-4E01-B4B7-33928F3B094A][Story: Generate every protocol message as TypeScript]] — where the missing
+  TypeScript facet for junctions was found, and the rule that a joined shape is a
+  message.
+
+* Status
+
+Design only. Nothing here is implemented. The order that follows from it: the
+facet change first, then the template verbs and the view, then re-point the two
+junctions that already render a read.

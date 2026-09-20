@@ -290,13 +290,12 @@ public:
             sess.account_id = acct.id;
             sess.tenant_id = acct.tenant_id;
             sess.start_time = now;
-            sess.username = acct.username;
-            sess.protocol = domain::session_protocol::http;
+            sess.protocol = "http";
             sess.client_ip = ip;
             // party_id set below once we know which party is active
             try {
-                repository::session_repository sess_repo(login_ctx);
-                sess_repo.create(sess);
+                repository::session_repository sess_repo;
+                sess_repo.write(login_ctx, sess);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Failed to create session record: " << e.what();
@@ -470,8 +469,9 @@ public:
                     if (claims_result->session_id && claims_result->session_start_time) {
                         try {
                             const auto session_id = sg(*claims_result->session_id);
-                            repository::session_repository sess_repo(ctx_);
-                            sess_repo.end_session(session_id,
+                            repository::session_repository sess_repo;
+                            sess_repo.end_session(ctx_,
+                                                  session_id,
                                                   *claims_result->session_start_time,
                                                   std::chrono::system_clock::now(),
                                                   0,

@@ -105,16 +105,17 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     http::net::http_server server(io_ctx, cfg.server);
 
-    auto session_repo = std::make_shared<iam::repository::session_repository>(ctx);
+    auto session_repo = std::make_shared<iam::repository::session_repository>();
     server.set_session_bytes_callback(
-        [session_repo](const std::string& session_id_str,
-                       std::chrono::system_clock::time_point start_time,
-                       std::size_t bytes_sent,
-                       std::size_t bytes_received) {
+        [session_repo, ctx](const std::string& session_id_str,
+                            std::chrono::system_clock::time_point start_time,
+                            std::size_t bytes_sent,
+                            std::size_t bytes_received) {
             try {
                 boost::uuids::string_generator gen;
                 auto session_id = gen(session_id_str);
-                session_repo->update_bytes(session_id, start_time, bytes_sent, bytes_received);
+                session_repo->update_bytes(
+                    ctx, session_id, start_time, bytes_sent, bytes_received);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
             }

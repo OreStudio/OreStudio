@@ -26,11 +26,44 @@
 #define ORES_IAM_MESSAGING_SESSION_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/session.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <string>
 #include <vector>
 
 namespace ores::iam::messaging {
+
+/**
+ * @brief Aggregated session statistics for a time period, computed from
+ * the sessions hypertable's continuous aggregates.
+ */
+struct session_statistics {
+    std::chrono::system_clock::time_point period_start;
+    std::chrono::system_clock::time_point period_end;
+    boost::uuids::uuid account_id;
+    std::uint64_t session_count = 0;
+    double avg_duration_seconds = 0.0;
+    std::uint64_t total_bytes_sent = 0;
+    std::uint64_t total_bytes_received = 0;
+    double avg_bytes_sent = 0.0;
+    double avg_bytes_received = 0.0;
+    std::uint32_t unique_countries = 0;
+};
+
+/**
+ * @brief A session with its party-scoped context.
+ *
+ * The session is the entity; party_id, visible_party_ids and username are
+ * the denormalised fields reached through the account-party association.
+ * They are message fields because no column backs them.
+ */
+struct session_view {
+    ores::iam::domain::session session;
+    std::string party_id;
+    std::vector<std::string> visible_party_ids;
+    std::string username;
+};
 
 struct list_sessions_request {
     using response_type = struct list_sessions_response;
@@ -65,7 +98,7 @@ struct get_session_statistics_request {
 };
 
 struct get_session_statistics_response {
-    std::vector<ores::iam::domain::session_statistics> statistics;
+    std::vector<session_statistics> statistics;
     bool success = false;
     std::string message;
 };

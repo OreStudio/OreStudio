@@ -19,22 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
+ * Template: cpp_domain_type_table_io.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
+#ifndef ORES_IAM_API_DOMAIN_SESSION_TABLE_IO_HPP
+#define ORES_IAM_API_DOMAIN_SESSION_TABLE_IO_HPP
 
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/export.hpp"
 #include <iosfwd>
+#include <vector>
 
 namespace ores::iam::domain {
 
 /**
- * @brief Dumps the session to a stream in JSON format.
+ * @brief Dumps the session objects to a stream in table format.
  */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<session>& v);
 
 }
 

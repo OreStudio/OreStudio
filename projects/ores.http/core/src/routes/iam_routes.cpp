@@ -89,7 +89,7 @@ iam_routes::iam_routes(database::context ctx,
                        std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
-    , session_repo_(ctx_)
+    , session_repo_()
     , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions))
     , auth_service_(std::move(auth_service))
@@ -507,7 +507,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         sess.account_id = account.id;
         sess.start_time = std::chrono::system_clock::now();
         sess.client_ip = ip_address;
-        sess.protocol = iam::domain::session_protocol::http;
+        sess.protocol = "http";
 
         // Extract User-Agent and HTTP version from request
         auto user_agent = req.get_header("User-Agent");
@@ -530,7 +530,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
 
         // Persist session to database
         try {
-            session_repo_.create(sess);
+            session_repo_.write(ctx_, sess);
             BOOST_LOG_SEV(lg(), debug)
                 << "HTTP session persisted: " << boost::uuids::to_string(sess.id);
         } catch (const std::exception& e) {
@@ -615,10 +615,10 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
                 auto now = std::chrono::system_clock::now();
 
                 // We need the start_time to update the session. Read it first.
-                auto session = session_repo_.read(session_id);
+                auto session = session_repo_.read(ctx_, session_id);
                 if (session) {
                     session_repo_.end_session(
-                        session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
+                        ctx_, session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
                     BOOST_LOG_SEV(lg(), debug)
                         << "HTTP session ended: " << *req.authenticated_user->session_id;
                 }
@@ -1381,8 +1381,8 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         }
 
         // Query sessions from database
-        auto sessions_list = session_repo_.read_by_account(target_account_id, limit, offset);
-        auto total_count = session_repo_.count_by_account(target_account_id);
+        auto sessions_list = session_repo_.read_by_account(ctx_, target_account_id, limit, offset);
+        auto total_count = session_repo_.count_by_account(ctx_, target_account_id);
 
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
                                   << " sessions for account "
@@ -1429,25 +1429,23 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
             target_account_id = requested_id;
         }
 
-        // Parse time range (default to last 30 days)
-        auto now = std::chrono::system_clock::now();
-        auto start_time = now - std::chrono::hours(24 * 30);
-        auto end_time = now;
-
         // TODO: Parse start/end from query params if provided
         (void)start_str;
         (void)end_str;
 
-        // Query statistics from database
-        std::vector<iam::domain::session_statistics> stats;
+        // Query statistics from database. The continuous aggregates the
+        // statistics are computed from (ores_iam_session_stats_*_vw) are not
+        // reachable from the generated session repository, and the
+        // hand-written read that preceded it queried a table that does not
+        // exist (ores_iam_session_stats_tbl -- the schema creates the views,
+        // never that table). The response keeps its shape and returns no
+        // rows until the aggregate read is modelled.
+        std::vector<iam::messaging::session_statistics> stats;
         if (aggregate_mode) {
-            stats = session_repo_.read_aggregate_daily_statistics(start_time, end_time);
-            BOOST_LOG_SEV(lg(), info)
-                << "Retrieved " << stats.size() << " aggregate statistics entries";
+            BOOST_LOG_SEV(lg(), info) << "Aggregate session statistics not yet modelled";
         } else {
-            stats = session_repo_.read_daily_statistics(target_account_id, start_time, end_time);
             BOOST_LOG_SEV(lg(), info)
-                << "Retrieved " << stats.size() << " statistics entries for account "
+                << "Session statistics not yet modelled for account "
                 << boost::uuids::to_string(target_account_id);
         }
 
@@ -1475,12 +1473,12 @@ asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http
 
         if (auth->is_admin) {
             // Admin gets all active sessions
-            active_sessions = session_repo_.read_all_active();
+            active_sessions = session_repo_.read_all_active(ctx_);
             BOOST_LOG_SEV(lg(), info)
                 << "Retrieved " << active_sessions.size() << " active sessions (admin view)";
         } else {
             // Non-admin gets only their own active sessions
-            active_sessions = session_repo_.read_active_by_account(auth->account_id);
+            active_sessions = session_repo_.read_active_by_account(ctx_, auth->account_id);
             BOOST_LOG_SEV(lg(), info)
                 << "Retrieved " << active_sessions.size() << " active sessions for account "
                 << boost::uuids::to_string(auth->account_id);

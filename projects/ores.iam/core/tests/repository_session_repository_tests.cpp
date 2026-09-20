@@ -49,11 +49,11 @@ TEST_CASE("create_single_session", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    session_repository repo(h.context());
+    session_repository repo;
     auto s = generate_synthetic_session(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Session: " << s;
-    CHECK_NOTHROW(repo.create(s));
+    CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
 TEST_CASE("read_session_by_id", tags) {
@@ -62,16 +62,16 @@ TEST_CASE("read_session_by_id", tags) {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    session_repository repo(h.context());
+    session_repository repo;
     auto s = generate_synthetic_session(gen_ctx);
     const auto target_id = s.id;
 
     BOOST_LOG_SEV(lg, debug) << "Session: " << s;
-    repo.create(s);
+    repo.write(h.context(), s);
 
     BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
-    auto read_session = repo.read(target_id);
+    auto read_session = repo.read(h.context(), target_id);
     BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     REQUIRE(read_session.has_value());
@@ -84,12 +84,12 @@ TEST_CASE("read_nonexistent_session", tags) {
 
     database_helper h;
 
-    session_repository repo(h.context());
+    session_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_session = repo.read(nonexistent_id);
+    auto read_session = repo.read(h.context(), nonexistent_id);
     BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     CHECK(!read_session.has_value());

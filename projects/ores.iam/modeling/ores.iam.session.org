@@ -1,0 +1,478 @@
+:PROPERTIES:
+:ores.cpp.nats-handler.enabled: nil
+:ores.cpp.nats-sub-registrar.enabled: nil
+:ID: 7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63
+:END:
+#+title: ores.iam.session
+#+description: Codegen entity model for the iam sessions table. Drives the C++ domain type, JSON IO, table IO, mapper, repository, generator, service, eventing, TypeScript metadata, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: session
+#+entity_plural: sessions
+#+entity_title: Session
+#+brief: A user session, recorded in the TimescaleDB sessions hypertable.
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+A user session: one login or service-account connection, recorded for
+analytics, session listing and end-time tracking. The table is a
+TimescaleDB hypertable partitioned by =start_time= with 7-day chunks (see
+=projects/ores.sql/create/iam/iam_sessions_create.sql=).
+
+The table has no =valid_from=/=valid_to=, no GIST exclusion, no =version=
+column and no audit tail, and it keys on =(id, start_time)= rather than a
+single surrogate key -- the partition column must sit in the primary key
+of a hypertable. The =:current_state:= and =:hypertable:= flags in the
+=* SQL ** Flags= drawer select exactly that shape. The compound key is
+what makes this the first entity in the estate whose key carries a
+timestamp; the mapper, entity and generator templates gained the
+timestamp key-column branches they were missing.
+
+=end_time= is =text not null default ''=, not a nullable timestamp, and
+=client_ip= is =text=, not =inet=. The model mirrors each column's real
+type; the domain projection is the column's type too, so a session's
+=end_time= is an empty string while the session is active and
+=client_ip= is a string. The richer readings (an instant, an IP address)
+belong to the consumer that needs them.
+
+The hand-written domain struct also carried =party_id=,
+=visible_party_ids= and =username=. No column backs any of them; they are
+the denormalised, party-scoped shape of a session, and the rule that an
+entity describes its table puts them on a message instead. They are
+declared as message fields on =session_view= in
+=ores.iam.session_messages=.
+
+The entity's CRUD handler and sub-registrar are switched off below: the
+hand-written =session_handler= already owns the =iam.v1.sessions.*=
+subjects that =ores.iam.session_messages= declares, and the generated
+=session_handler.hpp= would overwrite it. The generated
+=session_protocol.hpp= is suppressed by the same one-owner gate that
+the operation model already satisfies; only the competing handler is
+switched off here.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: true
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Unique identifier for the session.
+
+** start_time
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+Timestamp when the session started (login time). It is the hypertable's
+partition column, so it is part of the primary key.
+
+** account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Foreign key referencing the associated account.
+
+** end_time
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Timestamp when the session ended (logout or disconnect), stored as an
+ISO 8601 string. Empty while the session is still active.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** client_ip
+:PROPERTIES:
+:type:     text
+:cpp_type: boost::asio::ip::address
+:nullable: false
+:END:
+
+Client IP address (IPv4 or IPv6).
+
+#+begin_src cpp :name generator
+boost::asio::ip::make_address("192.168.1.100")
+#+end_src
+
+** client_identifier
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Client identifier string from the handshake, typically the client
+application name.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Client"
+#+end_src
+
+** client_version_major
+:PROPERTIES:
+:type:          smallint
+:cpp_type:      std::uint16_t
+:nullable:      false
+:default:       0
+:default_value: 0
+:END:
+
+Client protocol version major number.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** client_version_minor
+:PROPERTIES:
+:type:          smallint
+:cpp_type:      std::uint16_t
+:nullable:      false
+:default:       0
+:default_value: 0
+:END:
+
+Client protocol version minor number.
+
+** bytes_sent
+:PROPERTIES:
+:type:          bigint
+:cpp_type:      std::uint64_t
+:nullable:      false
+:default:       0
+:default_value: 0
+:END:
+
+Total bytes sent to the client during this session.
+
+** bytes_received
+:PROPERTIES:
+:type:          bigint
+:cpp_type:      std::uint64_t
+:nullable:      false
+:default:       0
+:default_value: 0
+:END:
+
+Total bytes received from the client during this session.
+
+** country_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+ISO 3166-1 alpha-2 country code from geolocation. Empty if geolocation
+is unavailable or the IP is private or localhost.
+
+#+begin_src cpp :name generator
+std::string("GB")
+#+end_src
+
+** protocol
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'binary'
+:default_value: "binary"
+:END:
+
+Protocol used for this session: =binary= or =http=.
+
+#+begin_src cpp :name generator
+std::string("binary")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                   ores_iam_sessions_tbl
+:current_state:               true
+:hypertable:                  true
+:hypertable_partition_column: start_time
+:hypertable_chunk_interval:   7 days
+:END:
+
+** Indexes
+
+| name       | columns                  | unique | current_only | where_extra        |
+|------------+--------------------------+--------+--------------+--------------------|
+| tenant     | tenant_id, start_time desc | false  | false        |                    |
+| account_id | account_id, start_time desc | false | false        |                    |
+| active     | account_id               | false  | false        | end_time = ''      |
+| country    | country_code, start_time desc | false | false     | country_code != '' |
+| protocol   | protocol, start_time desc | false  | false        |                    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: session
+:entity_plural_short:   sessions
+:entity_singular_words: session
+:entity_plural_words:   sessions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+** Table display
+
+| column               | header          |
+|----------------------+-----------------|
+| id                   | ID (UUID)       |
+| account_id           | Account         |
+| start_time           | Start           |
+| end_time             | End             |
+| client_ip            | Client IP       |
+| client_identifier    | Client          |
+| country_code         | Country         |
+| protocol             | Protocol        |
+| bytes_sent           | Bytes Sent      |
+| bytes_received       | Bytes Received  |
+
+** Paste blocks
+
+*** repository_reads
+:PROPERTIES:
+:ID: 2C6B8E14-9F3A-4D27-B5E8-1A7C4F9D2E80
+:END:
+
+The generated CRUD set reads by compound primary key and orders by it.
+The consumers on the session surface read by account, by active state,
+by session id alone (the logout path needs the =start_time= before it can
+address the row), and update =end_time= and the byte counters in place on
+the hot path. Those reads and the two in-place updates stay declared
+here, over the generated entity and mapper, rather than forcing the
+consumers onto full-row upserts.
+
+#+begin_src cpp :name includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.platform/time/datetime.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::optional<domain::session> read(context ctx, const boost::uuids::uuid& session_id);
+
+    void update_bytes(context ctx,
+                      const boost::uuids::uuid& session_id,
+                      const std::chrono::system_clock::time_point& start_time,
+                      std::uint64_t bytes_sent,
+                      std::uint64_t bytes_received);
+
+    void end_session(context ctx,
+                     const boost::uuids::uuid& session_id,
+                     const std::chrono::system_clock::time_point& start_time,
+                     const std::chrono::system_clock::time_point& end_time,
+                     std::uint64_t bytes_sent,
+                     std::uint64_t bytes_received);
+
+    std::vector<domain::session> read_by_account(context ctx,
+                                                 const boost::uuids::uuid& account_id,
+                                                 std::uint32_t limit = 0,
+                                                 std::uint32_t offset = 0);
+
+    std::vector<domain::session> read_active_by_account(context ctx,
+                                                        const boost::uuids::uuid& account_id);
+
+    std::uint32_t count_by_account(context ctx, const boost::uuids::uuid& account_id);
+
+    std::vector<domain::session> read_all_active(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::session>
+session_repository::read(context ctx, const boost::uuids::uuid& session_id) {
+    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+    const auto query = sqlgen::read<std::vector<session_entity>> |
+                       where("id"_c == session_id_str) |
+                       limit(static_cast<std::size_t>(1));
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    if (r->empty()) {
+        return std::nullopt;
+    }
+
+    return session_mapper::map(r->front());
+}
+
+void session_repository::update_bytes(context ctx,
+                                      const boost::uuids::uuid& session_id,
+                                      const std::chrono::system_clock::time_point& start_time,
+                                      std::uint64_t bytes_sent,
+                                      std::uint64_t bytes_received) {
+    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+    const auto start_time_str = ores::platform::time::datetime::to_db_string(start_time);
+
+    const auto query = sqlgen::update<session_entity>(
+                           "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
+                           "bytes_received"_c.set(static_cast<std::int64_t>(bytes_received))) |
+                       where("id"_c == session_id_str && "start_time"_c == start_time_str);
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(begin_transaction)
+                       .and_then(query)
+                       .and_then(commit);
+    ensure_success(r, lg());
+}
+
+void session_repository::end_session(context ctx,
+                                     const boost::uuids::uuid& session_id,
+                                     const std::chrono::system_clock::time_point& start_time,
+                                     const std::chrono::system_clock::time_point& end_time,
+                                     std::uint64_t bytes_sent,
+                                     std::uint64_t bytes_received) {
+    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+    const auto start_time_str = ores::platform::time::datetime::to_db_string(start_time);
+    const auto end_time_str = ores::platform::time::datetime::to_db_string(end_time);
+
+    const auto query = sqlgen::update<session_entity>(
+                           "end_time"_c.set(end_time_str),
+                           "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
+                           "bytes_received"_c.set(static_cast<std::int64_t>(bytes_received))) |
+                       where("id"_c == session_id_str && "start_time"_c == start_time_str);
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(begin_transaction)
+                       .and_then(query)
+                       .and_then(commit);
+    ensure_success(r, lg());
+}
+
+std::vector<domain::session> session_repository::read_by_account(context ctx,
+                                                                 const boost::uuids::uuid& account_id,
+                                                                 std::uint32_t limit_count,
+                                                                 std::uint32_t offset_count) {
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+
+    std::vector<session_entity> entities;
+    if (limit_count > 0) {
+        const auto query =
+            sqlgen::read<std::vector<session_entity>> | where("account_id"_c == account_id_str) |
+            order_by("start_time"_c.desc()) | sqlgen::offset(static_cast<std::size_t>(offset_count)) |
+            sqlgen::limit(static_cast<std::size_t>(limit_count));
+        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+        ensure_success(r, lg());
+        entities = *r;
+    } else {
+        const auto query =
+            sqlgen::read<std::vector<session_entity>> | where("account_id"_c == account_id_str) |
+            order_by("start_time"_c.desc()) | sqlgen::offset(static_cast<std::size_t>(offset_count));
+        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+        ensure_success(r, lg());
+        entities = *r;
+    }
+
+    return session_mapper::map(entities);
+}
+
+std::vector<domain::session>
+session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const std::string empty_end_time;
+    const auto query = sqlgen::read<std::vector<session_entity>> |
+                       where("account_id"_c == account_id_str && "end_time"_c == empty_end_time) |
+                       order_by("start_time"_c.desc());
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    return session_mapper::map(*r);
+}
+
+std::uint32_t session_repository::count_by_account(context ctx,
+                                                   const boost::uuids::uuid& account_id) {
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<session_entity>(sqlgen::count().as<"count">()) |
+                       where("account_id"_c == account_id_str) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    return static_cast<std::uint32_t>(r->count);
+}
+
+std::vector<domain::session> session_repository::read_all_active(context ctx) {
+    const std::string empty_end_time;
+    const auto query = sqlgen::read<std::vector<session_entity>> |
+                       where("end_time"_c == empty_end_time) | order_by("start_time"_c.desc());
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    return session_mapper::map(*r);
+}
+#+end_src
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.

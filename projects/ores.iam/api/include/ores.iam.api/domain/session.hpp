@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,69 +17,62 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_SESSION_HPP
-#define ORES_IAM_DOMAIN_SESSION_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_DOMAIN_SESSION_HPP
+#define ORES_IAM_API_DOMAIN_SESSION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
-#include <optional>
 #include <string>
-#include <vector>
+#include <string_view>
 
 namespace ores::iam::domain {
 
 /**
- * @brief Protocol used for the session connection.
- */
-enum class session_protocol {
-    /**
-     * @brief ORE Studio binary protocol over TCP.
-     */
-    binary = 0,
-
-    /**
-     * @brief HTTP/REST API with JWT authentication.
-     */
-    http = 1
-};
-
-/**
- * @brief Converts a session_protocol to its string representation.
- */
-[[nodiscard]] constexpr std::string_view to_string(session_protocol p) {
-    switch (p) {
-        case session_protocol::binary:
-            return "binary";
-        case session_protocol::http:
-            return "http";
-        default:
-            return "unknown";
-    }
-}
-
-/**
- * @brief Converts a string to session_protocol.
- */
-[[nodiscard]] constexpr session_protocol session_protocol_from_string(std::string_view s) {
-    if (s == "binary")
-        return session_protocol::binary;
-    if (s == "http")
-        return session_protocol::http;
-    return session_protocol::binary; // Default fallback
-}
-
-/**
- * @brief Represents a user session in the system.
+ * @brief A user session, recorded in the TimescaleDB sessions hypertable.
  *
- * This is the unified session type that serves both as:
- * - In-memory session data for authorization checks
- * - Persistent session record for historical tracking and analytics
+ * A user session: one login or service-account connection, recorded for
+ * analytics, session listing and end-time tracking. The table is a
+ * TimescaleDB hypertable partitioned by start_time with 7-day chunks (see
+ * projects/ores.sql/create/iam/iam_sessions_create.sql).
  *
- * Sessions are stored in a TimescaleDB hypertable for efficient time-series
- * queries and automatic data lifecycle management.
+ * The table has no valid_from/valid_to, no GIST exclusion, no version
+ * column and no audit tail, and it keys on (id, start_time) rather than a
+ * single surrogate key -- the partition column must sit in the primary key
+ * of a hypertable. The :current_state: and :hypertable: flags in the
+ * * SQL ** Flags drawer select exactly that shape. The compound key is
+ * what makes this the first entity in the estate whose key carries a
+ * timestamp; the mapper, entity and generator templates gained the
+ * timestamp key-column branches they were missing.
+ *
+ * end_time is text not null default '', not a nullable timestamp, and
+ * client_ip is text, not inet. The model mirrors each column's real
+ * type; the domain projection is the column's type too, so a session's
+ * end_time is an empty string while the session is active and
+ * client_ip is a string. The richer readings (an instant, an IP address)
+ * belong to the consumer that needs them.
+ *
+ * The hand-written domain struct also carried party_id,
+ * visible_party_ids and username. No column backs any of them; they are
+ * the denormalised, party-scoped shape of a session, and the rule that an
+ * entity describes its table puts them on a message instead. They are
+ * declared as message fields on session_view in
+ * ores.iam.session_messages.
+ *
+ * The entity's CRUD handler and sub-registrar are switched off below: the
+ * hand-written session_handler already owns the iam.v1.sessions.*
+ * subjects that ores.iam.session_messages declares, and the generated
+ * session_handler.hpp would overwrite it. The generated
+ * session_protocol.hpp is suppressed by the same one-owner gate that
+ * the operation model already satisfies; only the competing handler is
+ * switched off here.
  */
 struct session final {
     /**
@@ -88,9 +81,15 @@ struct session final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique identifier for this session.
+     * @brief Unique identifier for the session.
      */
     boost::uuids::uuid id;
+
+    /**
+     * @brief Timestamp when the session started (login time). It is the hypertable's partition
+     * column, so it is part of the primary key.
+     */
+    std::chrono::system_clock::time_point start_time;
 
     /**
      * @brief Foreign key referencing the associated account.
@@ -98,38 +97,20 @@ struct session final {
     boost::uuids::uuid account_id;
 
     /**
-     * @brief Party ID for party-level isolation.
+     * @brief Timestamp when the session ended (logout or disconnect), stored as an ISO 8601 string.
+     * Empty while the session is still active.
      */
-    boost::uuids::uuid party_id = {};
+    std::string end_time = "";
 
     /**
-     * @brief Visible party IDs for party-level RLS.
-     */
-    std::vector<boost::uuids::uuid> visible_party_ids;
-
-    /**
-     * @brief Timestamp when the session started (login time).
-     */
-    std::chrono::system_clock::time_point start_time;
-
-    /**
-     * @brief Timestamp when the session ended (logout or disconnect).
-     *
-     * Empty if session is still active.
-     */
-    std::optional<std::chrono::system_clock::time_point> end_time;
-
-    /**
-     * @brief Client IP address.
+     * @brief Client IP address (IPv4 or IPv6).
      */
     boost::asio::ip::address client_ip;
 
     /**
-     * @brief Client identifier string from handshake.
-     *
-     * Typically contains the client application name.
+     * @brief Client identifier string from the handshake, typically the client application name.
      */
-    std::string client_identifier;
+    std::string client_identifier = "";
 
     /**
      * @brief Client protocol version major number.
@@ -152,99 +133,26 @@ struct session final {
     std::uint64_t bytes_received = 0;
 
     /**
-     * @brief ISO 3166-1 alpha-2 country code from geolocation.
-     *
-     * Empty if geolocation is not available or IP is private/localhost.
+     * @brief ISO 3166-1 alpha-2 country code from geolocation. Empty if geolocation is unavailable
+     * or the IP is private or localhost.
      */
-    std::string country_code;
+    std::string country_code = "";
 
     /**
-     * @brief Protocol used for this session (binary or HTTP).
+     * @brief Protocol used for this session: binary or http.
      */
-    session_protocol protocol = session_protocol::binary;
-
-    /**
-     * @brief Username of the account that owns this session.
-     *
-     * Cached here for efficient access without needing to look up the account.
-     * Set during login and immutable for the session lifetime.
-     */
-    std::string username;
-
-    /**
-     * @brief Calculates the session duration.
-     *
-     * @return Duration if session has ended, nullopt if still active.
-     */
-    [[nodiscard]] std::optional<std::chrono::seconds> duration() const {
-        if (!end_time) {
-            return std::nullopt;
-        }
-        return std::chrono::duration_cast<std::chrono::seconds>(*end_time - start_time);
-    }
-
-    /**
-     * @brief Checks if the session is still active.
-     */
-    [[nodiscard]] bool is_active() const {
-        return !end_time.has_value();
-    }
+    std::string protocol = "binary";
 };
 
 /**
- * @brief Aggregated session statistics for a time period.
+ * @brief Dispatch-key identifier for session, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
  */
-struct session_statistics final {
-    /**
-     * @brief Start of the time period.
-     */
-    std::chrono::system_clock::time_point period_start;
-
-    /**
-     * @brief End of the time period.
-     */
-    std::chrono::system_clock::time_point period_end;
-
-    /**
-     * @brief Account ID if statistics are per-account, nil for aggregate.
-     */
-    boost::uuids::uuid account_id;
-
-    /**
-     * @brief Total number of sessions in this period.
-     */
-    std::uint64_t session_count = 0;
-
-    /**
-     * @brief Average session duration in seconds.
-     */
-    double avg_duration_seconds = 0.0;
-
-    /**
-     * @brief Total bytes sent across all sessions.
-     */
-    std::uint64_t total_bytes_sent = 0;
-
-    /**
-     * @brief Total bytes received across all sessions.
-     */
-    std::uint64_t total_bytes_received = 0;
-
-    /**
-     * @brief Average bytes sent per session.
-     */
-    double avg_bytes_sent = 0.0;
-
-    /**
-     * @brief Average bytes received per session.
-     */
-    double avg_bytes_received = 0.0;
-
-    /**
-     * @brief Number of unique countries from which sessions originated.
-     */
-    std::uint32_t unique_countries = 0;
-};
+[[nodiscard]] constexpr std::string_view entity_type_of(const session&) {
+    return "ores.iam.session";
+}
 
 }
 

@@ -19,23 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
+#ifndef ORES_IAM_SERVICE_MESSAGING_SESSION_EVENT_REGISTRAR_HPP
+#define ORES_IAM_SERVICE_MESSAGING_SESSION_EVENT_REGISTRAR_HPP
 
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::iam::domain {
+namespace ores::iam::service::messaging {
 
-/**
- * @brief Dumps the session to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_session_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                               ores::eventing::service::event_bus& event_bus,
+                               ores::nats::service::client& nats);
 
-}
+} // namespace ores::iam::service::messaging
 
 #endif

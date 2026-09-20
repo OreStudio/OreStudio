@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,25 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
- * To modify, update the template and regenerate.
- */
-#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
 
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
-
-namespace ores::iam::domain {
-
-/**
- * @brief Dumps the session to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
-
-}
-
-#endif
+drop trigger if exists ores_iam_sessions_notify_trg on "ores_iam_sessions_tbl";
+drop function if exists ores_iam_sessions_notify_fn;

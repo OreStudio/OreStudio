@@ -26,8 +26,9 @@ namespace ores::iam::service {
 using namespace ores::logging;
 
 service_session_service::service_session_service(context ctx)
-    : session_repo_(ctx)
-    , account_repo_(ctx) {
+    : ctx_(std::move(ctx))
+    , session_repo_()
+    , account_repo_(ctx_) {
 
     BOOST_LOG_SEV(lg(), debug) << "Service session service initialized";
 }
@@ -57,7 +58,7 @@ service_session_service::get_service_account(const std::string& username) {
 std::optional<domain::session>
 service_session_service::start_service_session(const std::string& username,
                                                const std::string& client_identifier,
-                                               domain::session_protocol protocol) {
+                                               const std::string& protocol) {
 
     BOOST_LOG_SEV(lg(), debug) << "Starting service session for username: " << username
                                << " with client: " << client_identifier;
@@ -73,7 +74,7 @@ service_session_service::start_service_session(const std::string& username,
 std::optional<domain::session>
 service_session_service::start_service_session(const boost::uuids::uuid& account_id,
                                                const std::string& client_identifier,
-                                               domain::session_protocol protocol) {
+                                               const std::string& protocol) {
 
     BOOST_LOG_SEV(lg(), debug) << "Starting service session for account ID: "
                                << boost::uuids::to_string(account_id);
@@ -99,9 +100,9 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
 
     domain::session session{.tenant_id = account.tenant_id,
                             .id = session_id,
-                            .account_id = account_id,
                             .start_time = now,
-                            .end_time = std::nullopt,
+                            .account_id = account_id,
+                            .end_time = "",
                             .client_ip = boost::asio::ip::make_address("127.0.0.1"),
                             .client_identifier = client_identifier,
                             .client_version_major = 1,
@@ -109,10 +110,9 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
                             .bytes_sent = 0,
                             .bytes_received = 0,
                             .country_code = "",
-                            .protocol = protocol,
-                            .username = account.username};
+                            .protocol = protocol};
 
-    session_repo_.create(session);
+    session_repo_.write(ctx_, session);
 
     BOOST_LOG_SEV(lg(), info) << "Started service session: " << boost::uuids::to_string(session_id)
                               << " for account: " << account.username
@@ -130,7 +130,7 @@ void service_session_service::end_service_session(
     BOOST_LOG_SEV(lg(), debug) << "Ending service session: " << boost::uuids::to_string(session_id);
 
     auto now = std::chrono::system_clock::now();
-    session_repo_.end_session(session_id, start_time, now, bytes_sent, bytes_received);
+    session_repo_.end_session(ctx_, session_id, start_time, now, bytes_sent, bytes_received);
 
     BOOST_LOG_SEV(lg(), info) << "Ended service session: " << boost::uuids::to_string(session_id);
 }

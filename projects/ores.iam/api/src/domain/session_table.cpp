@@ -19,23 +19,29 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
+ * Template: cpp_domain_type_table.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
+#include "ores.iam.api/domain/session_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::iam::domain {
 
-/**
- * @brief Dumps the session to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
 
+std::string convert_to_table(const std::vector<session>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "ID (UUID)" << "Account" << "Start" << "End" << "Client IP" << "Client"
+          << "Country" << "Protocol" << "Bytes Sent" << "Bytes Received" << fort::endr;
+
+    for ([[maybe_unused]] const auto& s : v) {
+        table << s.id << boost::uuids::to_string(s.account_id) << s.start_time << s.end_time
+              << s.client_ip << s.client_identifier << s.country_code << s.protocol << s.bytes_sent
+              << s.bytes_received << fort::endr;
+    }
+    return table.to_string();
 }
 
-#endif
+}

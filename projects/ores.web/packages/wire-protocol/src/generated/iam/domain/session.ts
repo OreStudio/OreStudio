@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,23 +19,29 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.hpp.mustache
+ * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-#define ORES_IAM_API_DOMAIN_SESSION_JSON_IO_HPP
-
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/export.hpp"
-#include <iosfwd>
-
-namespace ores::iam::domain {
-
 /**
- * @brief Dumps the session to a stream in JSON format.
+ * The session wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ *
+ * See the sibling protocol module for the messages that carry this type.
  */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
-
+export interface Session {
+    tenant_id: string;
+    id: string;
+    start_time: string;
+    account_id: string;
+    end_time: string;
+    client_ip: string;
+    client_identifier: string;
+    client_version_major: number;
+    client_version_minor: number;
+    bytes_sent: number;
+    bytes_received: number;
+    country_code: string;
+    protocol: string;
 }
-
-#endif

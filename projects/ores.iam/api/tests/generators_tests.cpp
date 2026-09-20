@@ -200,10 +200,9 @@ TEST_CASE("session_generator_produces_valid_instance", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.client_identifier.empty());
-    CHECK(!sut.username.empty());
     CHECK(sut.client_version_major == 1);
     CHECK(sut.country_code == "GB");
-    CHECK(sut.protocol == ores::iam::domain::session_protocol::binary);
+    CHECK(sut.protocol == "binary");
 }
 
 TEST_CASE("session_generator_produces_multiple_instances", tags) {

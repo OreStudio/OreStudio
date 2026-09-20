@@ -20,7 +20,7 @@
 #include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.iam.core/repository/session_entity.hpp"
+#include "ores.iam.core/repository/auth_event_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>

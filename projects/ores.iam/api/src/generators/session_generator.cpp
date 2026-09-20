@@ -17,35 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.api/generators/session_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/asio/ip/address.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::session generate_synthetic_session(utility::generation::generation_context& ctx) {
-    [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::session r;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.account_id = ctx.generate_uuid();
     r.start_time = ctx.past_timepoint();
-    r.client_ip = boost::asio::ip::make_address("127.0.0.1");
-    r.client_identifier = "test-client-" + std::to_string(idx);
+    r.account_id = ctx.generate_uuid();
+    r.end_time = std::string("");
+    r.client_ip = boost::asio::ip::make_address("192.168.1.100");
+    r.client_identifier = std::string(faker::word::noun()) + " Client";
     r.client_version_major = 1;
-    r.client_version_minor = 0;
-    r.bytes_sent = 0;
-    r.bytes_received = 0;
-    r.country_code = "GB";
-    r.protocol = domain::session_protocol::binary;
-    r.username = "test_user_" + std::to_string(idx);
+    r.country_code = std::string("GB");
+    r.protocol = std::string("binary");
     return r;
 }
 
@@ -53,7 +57,7 @@ std::vector<domain::session>
 generate_synthetic_sessions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::session> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_session(ctx));
     return r;
 }

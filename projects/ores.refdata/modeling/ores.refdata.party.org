@@ -335,8 +335,8 @@ first insert, since codename is immutable thereafter (see above).
 
 * Messages
 
-The =composite_as_of= pair, declared here rather than in a C++ paste
-block, so both the header and its TypeScript twin render it.
+The =composite_as_of= pair, declared here so both the header and its
+TypeScript twin render it.
 
 ** get_party_composite_as_of_request
 :PROPERTIES:
@@ -630,10 +630,8 @@ generic facets, in the top-level =* Messages= section: =composite_as_of=
 identifiers and contact information as they stood during that same
 version's window — see the "Temporal composite entity versioning"
 architecture doc). The header and its TypeScript twin both render it from
-there. The bulk cache-warming read that used to be hand-written here
-(=read_parties_for_cache=) is now covered by the generic
-=:read_for_cache: true= facet (see Flags) — party was the archetype's
-original motivating precedent, now migrated onto it.
+there. The generic =:read_for_cache: true= facet (see Flags) covers the bulk
+cache-warming read =read_parties_for_cache=.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
 #include "ores.refdata.api/domain/party_contact_information.hpp"

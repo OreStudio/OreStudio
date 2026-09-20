@@ -204,8 +204,8 @@ std::nullopt
 
 * Messages
 
-The =composite_as_of= pair, declared here rather than in a C++ paste
-block, so both the header and its TypeScript twin render it.
+The =composite_as_of= pair, declared here so both the header and its
+TypeScript twin render it.
 
 ** get_counterparty_composite_as_of_request
 :PROPERTIES:

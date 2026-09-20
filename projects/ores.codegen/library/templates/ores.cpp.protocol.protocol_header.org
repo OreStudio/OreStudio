@@ -27,8 +27,9 @@ batch =delete= by the pair, a count per side, and the view type. A junction
 that declares =:read_only:= or =:client_read_only:= renders no write verb --
 no =save=, =delete= or =replace_by=. The first also stops the repository
 writing, for a table provisioned outside the application; the second leaves
-the repository writable for a server-side producer and hides the verbs from
-clients only.
+the repository writable and stops the write surface short of it, at the
+service methods and the wire verbs, so a server-side producer writes through
+the repository rather than the service.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

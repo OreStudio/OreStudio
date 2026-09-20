@@ -79,6 +79,7 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
 {{#is_uuid}}
     r.{{{group_prefix}}}{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
@@ -141,6 +142,7 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_simple}}
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
     r.{{{audit_prefix}}}modified_by = v.modified_by;
@@ -202,6 +204,7 @@ domain::{{entity_singular}}
 {{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
 {{#is_uuid}}
     r.{{name}} = boost::uuids::to_string(v.{{{group_prefix}}}{{name}});
 {{/is_uuid}}
@@ -267,6 +270,7 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_simple}}
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
     r.modified_by = v.{{{audit_prefix}}}modified_by;

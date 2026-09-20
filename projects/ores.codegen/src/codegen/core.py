@@ -1963,6 +1963,55 @@ def ui_meta_projection(entity, model_path):
     }
 
 
+def web_declaration_projection(entity, model_path):
+    """The ores.ts.web template's data for one entity, or None.
+
+    ``entity`` is a loaded ``domain_entity`` or ``junction`` dict, enriched
+    first. None when the entity has no column table, the same condition
+    ``ui_meta_projection`` uses and for the same reason: an entity with no
+    columns has no table to draw and no fields to show, so it has no screen set
+    to declare. ``resolve_targets`` withholds the facet there.
+
+    The capabilities are read off the enriched presentation rather than guessed:
+    a history message type exists exactly when the service serves the entity's
+    history, and a read-only paginated list is the model saying the entity is
+    not written from the interface. Deriving them from anything else -- a
+    version column, say -- gets junctions and current-state entities wrong.
+    """
+    presentation = entity.get('presentation') or {}
+    columns = presentation.get('columns') or []
+    if not columns:
+        return None
+    component = entity.get('component', '')
+    entity_singular = entity.get('entity_singular', 'unknown')
+    read_only = bool(presentation.get('has_readonly_paginated_list'))
+    key_field = presentation.get('key_field', '')
+    searchable = [
+        c.get('field', '') for c in columns
+        if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
+    ]
+    return {
+        'component': component,
+        'entity': entity_singular,
+        'entity_camel': _ui_camel(entity_singular),
+        'route_segment': entity_singular,
+        'api_base': '/api/' + presentation.get('collection_name', ''),
+        'key_param': 'id',
+        'can_create': _ui_bool(not read_only),
+        'can_edit': _ui_bool(not read_only),
+        'can_remove': _ui_bool(not read_only),
+        'can_history': _ui_bool(bool(presentation.get('history_message_type'))),
+        'key_field': key_field,
+        'search_fields_block': '\n'.join(
+            f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
+    }
+
+
+def _ui_bool(value):
+    """A Mustache boolean, spelled as TypeScript rather than as a Python repr."""
+    return 'true' if value else 'false'
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -4830,6 +4879,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         ui_meta = ui_meta_projection(ui_entity, model_path)
         if ui_meta:
             data['ui_meta'] = ui_meta
+        # The screens' declaration, from the same enriched entity and withheld
+        # under the same condition, so the two projections of one model cannot
+        # disagree about whether the entity has a screen set at all.
+        web_declaration = web_declaration_projection(ui_entity, model_path)
+        if web_declaration:
+            data['web_declaration'] = web_declaration
 
     # Process each associated template
     for template_name in templates_to_process:

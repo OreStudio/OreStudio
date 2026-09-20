@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: e1526f95-6b47-4abb-9a56-f27262e3d2b8
+:END:
+#+title: ores.ts.web.entity_declaration
+#+description: One entity's screens as data: where they live, what the entity can do, and what the list searches.
+#+type: archetype
+#+output: projects/ores.web/packages/web/src/generated/{component}/web/{entity}_declaration.ts
+#+facet: ores.ts.web
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+
+One entity's declaration, as a TypeScript data module: the component and
+entity identifiers the registry knows it by, the route its screens live
+at, the API path the BFF serves it on, the parameter that carries its
+natural key, the four capabilities, and the fields its list searches
+across. It imports its own metadata from the sibling =ui= module, so the
+declaration and the columns are two projections of one model and cannot
+disagree about a field.
+
+The module holds values and one type-only import. There is no function in
+it, which is what makes it safe to generate: nothing here is behaviour
+that a template would have to be taught to reproduce.
+
+The values arrive pre-rendered where Mustache cannot express them. The
+search fields are a block for the same reason the columns are: every
+element but the last carries a trailing comma, and Mustache offers a
+comma or a leading comma, never "a comma unless last".
+
+The capabilities are derived rather than declared. An entity can be
+created, amended and deleted unless its model says it is read-only, and
+it has history when the service has a history provider for it. A
+capability is a property of the model and the service, never a preference
+of the screen.
+
+Field grouping is deliberately absent for now: the entity meta-model can
+resolve a field group, but no entity model binds one yet, so there is
+nothing to emit. It arrives with the field-group grammar work rather than
+being invented here. Until then the shared detail form shows the entity's
+fields in one group, which is what "no grouping declared" means.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/ts_web_declaration.ts.mustache=.
+
+#+begin_src mustache :tangle ts_web_declaration.ts.mustache
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_web_declaration.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+/**
+ * Where the {{{web_declaration.entity}}} screens live and what they can do.
+ *
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
+ */
+import { {{{web_declaration.entity_camel}}}Meta } from '../ui/{{{web_declaration.entity}}}_ui.js';
+import type { EntityDescriptor } from '../../../entity/descriptor.js';
+
+export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
+    component: '{{{web_declaration.component}}}',
+    entity: '{{{web_declaration.entity}}}',
+    meta: {{{web_declaration.entity_camel}}}Meta,
+    routeSegment: '{{{web_declaration.route_segment}}}',
+    apiBase: '{{{web_declaration.api_base}}}',
+    keyParam: '{{{web_declaration.key_param}}}',
+    capabilities: {
+        create: {{{web_declaration.can_create}}},
+        edit: {{{web_declaration.can_edit}}},
+        remove: {{{web_declaration.can_remove}}},
+        history: {{{web_declaration.can_history}}},
+    },
+    searchFields: [
+{{{web_declaration.search_fields_block}}}    ],
+};
+#+end_src
+
+* Template variables
+
+| Variable | Meaning |
+|----------+---------|
+| =component= | The component, as the registry names it |
+| =entity= | The entity's singular name, which is also its registry identifier |
+| =entity_camel= | The same name in camel case, for the exported constant |
+| =route_segment= | The entity's route segment, e.g. =country= |
+| =api_base= | Where the BFF serves the entity, e.g. =/api/countries= |
+| =key_param= | The route parameter carrying the natural key |
+| =can_create=, =can_edit=, =can_remove=, =can_history= | The four capabilities, as booleans |
+| =search_fields_block= | The searchable fields, pre-rendered with their commas |
+
+* See also
+
+- Parent facet: [[id:ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9][ores.ts.web]]
+- [[id:4693A9C7-C6EE-4565-B180-52655BA38719][ores.ts.ui.ui_meta]] — the columns and fields this declaration sits beside.

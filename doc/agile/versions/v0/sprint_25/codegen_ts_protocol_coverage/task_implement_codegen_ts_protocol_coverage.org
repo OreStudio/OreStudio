@@ -65,14 +65,21 @@ facet out.
    interface would have named a type it never imported.
 3. Model IAM's seven hand-written wire types. Planning corrected two assumptions
    and set the order below.
-   - *Shapes.* =account=, =login_info=, =permission= and =role= are entities —
-     each has a hand-written table. =account_version=, =session= and
+   - *Shapes.* =account=, =login_info=, =permission=, =role= and =session= are
+     entities — each has a hand-written table. =account_version= and
      =session_statistics= are message-only: the first has no table and there is
      no version facet in the codegen at all (the story's "through the account
-     entity's version facet" was wrong), and the other two carry members that no
-     column has — =session= has =party_id=, =visible_party_ids= and =username=
-     with nothing behind them, and the sessions table is a Timescale hypertable
-     whose primary key is =(id, start_time)=.
+     entity's version facet" was wrong), and the second is computed from
+     continuous aggregates rather than stored.
+   - *Session is an entity, revised.* An earlier reading made it message-only
+     because =party_id=, =visible_party_ids= and =username= have no column. The
+     rule that an entity describes its table settles it the other way: the
+     sessions table exists, so those three become message fields and the entity
+     is the table. Its shape is =:current_state:= — the table has no
+     =valid_from=/=valid_to= and a primary key of =(id, start_time)= — together
+     with the hypertable flag, and =end_time= is =text not null default ''=
+     rather than a nullable timestamp, which the entity mirrors the way the
+     =inet= column is mirrored.
    - *Order.* First a codegen enabler, then =login_info= (smallest entity,
      proves the soft-update path), then =permission= and =role=, then =session=
      with =session_statistics= (removes one opt-out), and =account= with

@@ -461,8 +461,8 @@ their own, not a rename: the specification states one payload addressed by
 three subjects, and an event as the eventing library states it carries one
 name, so =entity_change_event=, the bus and =publish_entity_event= need the
 action, the key and the version before the templates can render the subjects.
-The affected IAM files are 11 event headers, 10 event registrars, 10 notify
-triggers and 5 eventing integration tests.
+The affected IAM files are 10 event headers, 10 event registrars, 10 notify
+triggers and 5 eventing integration tests, all of them generated.
 
 * PRs
 

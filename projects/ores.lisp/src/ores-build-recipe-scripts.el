@@ -100,12 +100,58 @@ without a category land in =general/=."
         (match-string 1 tags)
       "general")))
 
-(defun ores/--recipe-script-header (recipe-file)
+(defun ores/--recipe-block-tangles (recipe-file)
+  "The :tangle targets RECIPE-FILE's ores-shell blocks declare.
+
+Empty for the recipes that state the whole document as one script, which
+take the TARGET-FILE path instead.  A recipe that names a target per
+block is a literate document: one section per command, each section
+exporting its own script, so the target is the script's name and this
+script owns its directory."
+  (with-temp-buffer
+    (insert-file-contents recipe-file)
+    (goto-char (point-min))
+    (let (targets)
+      (while (re-search-forward
+              "^[ \t]*#\\+begin_src[ \t]+ores-shell\\b[^\n]*" nil t)
+        (let ((header (match-string 0)))
+          (when (string-match ":tangle[ \t]+\\([^ \t\n]+\\)" header)
+            (push (match-string 1 header) targets))))
+      (nreverse targets))))
+
+(defun ores/--recipe-section-title (recipe-file target)
+  "The heading of the section in RECIPE-FILE whose block tangles to TARGET.
+
+A per-block script exports one section, so the section's own heading is
+what tells a reader of the script which command it runs."
+  (with-temp-buffer
+    (insert-file-contents recipe-file)
+    (goto-char (point-min))
+    (let ((heading nil)
+          (found nil))
+      (while (and (not found) (not (eobp)))
+        (cond
+         ((looking-at "^\\*+ +\\(.*\\)[ \t]*$")
+          (setq heading (string-trim (match-string 1))))
+         ((looking-at "^[ \t]*#\\+begin_src[ \t]+ores-shell\\b")
+          ;; The match data is read back against the same string, so the
+          ;; heading scan above cannot be mistaken for the block's target.
+          (let* ((line (buffer-substring (line-beginning-position)
+                                         (line-end-position)))
+                 (at (string-match ":tangle[ \t]+\\([^ \t\n]+\\)" line)))
+            (when (and at (equal (match-string 1 line) target))
+              (setq found heading)))))
+        (forward-line 1))
+      (or found ""))))
+
+(defun ores/--recipe-script-header (recipe-file &optional section)
   "Return the self-documenting banner for RECIPE-FILE, in ores-shell comments.
 
 Leads with the recipe's title and description so a reader of the script
 sees what it does, then the generated-file warning.  These are =#=
-comment lines, which the shell's load command skips."
+comment lines, which the shell's load command skips.  SECTION names the
+heading a per-block script exports, which leads the banner in place of a
+description the recipe already used for the whole document."
   (let* ((rel (file-relative-name recipe-file ores/--recipe-scripts-root))
          (title (ores/--recipe-keyword recipe-file "title"))
          (desc (ores/--recipe-keyword recipe-file "description"))
@@ -113,8 +159,12 @@ comment lines, which the shell's load command skips."
          (desc (and desc (not (string-empty-p desc))
                     (not (equal desc title)) desc)))
     (concat
-     (when (and title (not (string-empty-p title))) (concat "# " title "\n"))
-     (when desc (concat "# " desc "\n"))
+     (cond
+      ((and section (not (string-empty-p section)))
+       (concat "# " section "\n"))
+      ((and title (not (string-empty-p title)))
+       (concat "# " title "\n")))
+     (when (and (not section) desc) (concat "# " desc "\n"))
      "#\n"
      "# GENERATED from " rel " — do not edit by hand.\n"
      "# Regenerate with: ./compass.sh build --direct tangle_shell_scripts\n"
@@ -141,10 +191,13 @@ close the whole shell — so it is dropped from the generated artefact."
     (insert "\n")
     (write-region (point-min) (point-max) script-file)))
 
-(defun ores/--prepend-generated-header (script-file recipe-file)
-  "Prepend the self-documenting banner for RECIPE-FILE to SCRIPT-FILE."
+(defun ores/--prepend-generated-header (script-file recipe-file &optional section)
+  "Prepend the self-documenting banner for RECIPE-FILE to SCRIPT-FILE.
+
+SECTION names the heading a per-block script exports, when the script is
+one section of a literate recipe rather than the whole document."
   (with-temp-buffer
-    (insert (ores/--recipe-script-header recipe-file))
+    (insert (ores/--recipe-script-header recipe-file section))
     (insert-file-contents script-file)
     (write-region (point-min) (point-max) script-file)))
 
@@ -167,18 +220,44 @@ close the whole shell — so it is dropped from the generated artefact."
             (let* ((category (ores/--recipe-category recipe))
                    (dir (expand-file-name category
                                           ores/--recipe-scripts-library-dir))
-                   (target (expand-file-name
-                            (concat (file-name-base recipe) ".ores") dir)))
+                   (block-tangles (ores/--recipe-block-tangles recipe)))
               (make-directory dir t)
-              ;; TARGET-FILE redirects every block to the category folder;
-              ;; LANG-RE "ores-shell" keeps the sh runner blocks out.
-              (org-babel-tangle-file recipe target "ores-shell")
-              (when (file-exists-p target)
-                (ores/--strip-trailing-exit target)
-                (ores/--prepend-generated-header target recipe)
-                (setq generated (1+ generated))
-                (message "Generated %s/%s" category
-                         (file-name-nondirectory target))))))
+              (if block-tangles
+                  ;; A literate recipe names the script each section exports.
+                  ;; With no TARGET-FILE the tangle honours those names, and
+                  ;; this script moves what it produced into the library, so
+                  ;; the directory stays the build's business and the recipe
+                  ;; states only a name. Without TARGET-FILE a block that
+                  ;; declares no :tangle is skipped, which is why the two
+                  ;; modes are exclusive rather than layered.
+                  (progn
+                    (org-babel-tangle-file recipe nil "ores-shell")
+                    (dolist (raw block-tangles)
+                      (let* ((produced (expand-file-name
+                                        raw (file-name-directory recipe)))
+                             (dest (expand-file-name
+                                    (file-name-nondirectory raw) dir)))
+                        (when (file-exists-p produced)
+                          (ores/--strip-trailing-exit produced)
+                          (ores/--prepend-generated-header
+                           produced recipe
+                           (ores/--recipe-section-title recipe raw))
+                          (rename-file produced dest t)
+                          (setq generated (1+ generated))
+                          (message "Generated %s/%s" category
+                                   (file-name-nondirectory dest))))))
+                ;; TARGET-FILE redirects every block to one file in the
+                ;; category folder; LANG-RE "ores-shell" keeps the sh runner
+                ;; blocks out.
+                (let ((target (expand-file-name
+                               (concat (file-name-base recipe) ".ores") dir)))
+                  (org-babel-tangle-file recipe target "ores-shell")
+                  (when (file-exists-p target)
+                    (ores/--strip-trailing-exit target)
+                    (ores/--prepend-generated-header target recipe)
+                    (setq generated (1+ generated))
+                    (message "Generated %s/%s" category
+                             (file-name-nondirectory target))))))))
         (message "Generated %d script(s) in %s"
                  generated ores/--recipe-scripts-library-dir)))
   (error

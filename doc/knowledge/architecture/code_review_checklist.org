@@ -88,15 +88,18 @@ contract is complete:
 
 * Protocol / messaging
 
-For NATS protocol changes:
+For NATS protocol changes. The normative source is the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]];
+a reviewer applies the checks below against it.
 
 | Check              | Description                                              |
 |--------------------+----------------------------------------------------------|
-| Subject convention | =<domain>.v1.<entity>.<operation>=.                      |
+| Subject convention | ={component}.v1.{resource}.{verb}=, one subject per operation. |
 | Request / response | Reflect-cpp types end =_request= / =_response=.          |
-| Versioning         | =v1= namespace bump only for breaking changes.           |
+| Versioning         | =v1= changes only for a breaking shape change.           |
 | Handler            | Each request has a handler in =ores.service=.            |
 | Authorisation      | Server-side checks for privileged operations.            |
+| Write payload      | A write carries the write record: no server-owned field, no tenancy, and a stated precondition. |
 
 * Unit tests
 

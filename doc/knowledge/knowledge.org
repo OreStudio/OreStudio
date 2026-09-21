@@ -88,6 +88,7 @@ How the codebase is put together.
 | [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] | The three regimes, and how to review a component's data model against them |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
+| [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |
 | [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] | The recurring per-component cleanliness check, and the conventions it enforces |
 | [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake Setup]] | The preset menu, output layout, and the conventions every component build follows |
 

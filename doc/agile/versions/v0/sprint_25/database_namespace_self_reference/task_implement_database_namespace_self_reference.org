@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 9DADAEB1-28D3-4CF5-A00F-E825A77BCAF3
+:END:
+#+title: Task: Implement Hotfix: database_info mapper and repository use their own namespace
+#+description: Initial task for: Hotfix: database_info mapper and repository use their own namespace
+#+type: task
+#+level: s1
+#+filetags: :database_namespace_self_reference:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/database-namespace-self-reference
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the Windows MSVC build for ores.database. Remove the self-referential using-directive from database_info_mapper.cpp and database_info_repository.cpp, and stop the codegen templates from emitting it for the database component.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- ores.database compiles on Windows MSVC with /WX and no C4515 warning.
+- The codegen templates omit the self-referential using-directive for the database component and leave all other components byte-identical.
+
+* Plan
+
+The two failing files are generated from the =database= codegen component,
+so fix the root cause in the templates and correct the two generated files
+by hand, because the stale =database_info= model cannot regenerate them.
+
+1. Guard the four template sites that emit
+   =using namespace ores::database::repository;= with
+   ={{^component_is_database}}=.
+2. Expose =component_is_database= on the entity models in
+   =projects/ores.codegen/src/codegen/core.py=.
+3. Re-tangle the two =.mustache= files from their =.org= sources.
+4. Remove the redundant using-directive from the two generated =.cpp= files.
+
+* Notes
+
+Root cause: both files open =namespace ores::database::repository= and then
+pull in that same namespace with =using namespace ores::database::repository;=.
+MSVC reports C4515 ("namespace uses itself") and =/WX= promotes the warning to
+the error C2220. The directive is redundant, so removing it changes no
+behaviour.
+
+Only these two files are affected. The other generated repository and mapper
+files use a different enclosing namespace, e.g. =ores::refdata::repository=,
+so the same directive there is not self-referential.
+
+The templates keep the directive for every component except =database=, so
+all other components keep byte-identical output. Verified by regenerating
+=ores.refdata.asset_class_code= (no diff) and by rendering the guarded
+template with a =database= component (directive omitted).
+
+The =database_info= model fails current validation (missing =:subcomponent:=
+and no =:primary_key:= column), so codegen cannot regenerate the two files.
+The hand edit matches exactly what the guarded template now emits.
+
+Build check: =compass build ores.database.lib= is green on the local preset.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #2119 | [database] Remove self-referential namespace using-directive |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The guard has no automated regression test; the drift gate cannot catch a regression at this render seam. | projects/ores.codegen/tests/test_repository_namespace_guard.py | Accepted | Added the test. It renders both template families for a =database= component and for another component, and pins both halves of the seam. Confirmed it fails when the guard is removed. |
+
+* Result
+
+The self-referential using-directive is gone from both generated files, and
+the codegen templates no longer emit it for the =database= component.
+
+Shipped in PR #2119:
+
+- =database_info_mapper.cpp= and =database_info_repository.cpp= lose the
+  redundant =using namespace ores::database::repository;=.
+- The four template sites carry a ={{^component_is_database}}= guard, and
+  =component_is_database= is derived in =ores.codegen= for entity models.
+- The two =.mustache= files are re-tangled from their =.org= sources.
+- =tests/test_repository_namespace_guard.py= pins both halves of the guard.
+
+Acceptance met. =ores.database.lib= builds green locally, the full codegen
+suite passes (402 tests), and regeneration leaves every non-database file
+byte-identical. The C4515 diagnostic itself is MSVC-only, so neither
+acceptance check was observed on this host; Windows CI is scheduled rather
+than run per pull request, so it covers this fix on its next run after the
+merge.

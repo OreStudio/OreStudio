@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: A0393C39-A5FA-4D47-8CD9-6D3DB811A2F4
+:END:
+#+title: Task: Scaffold story: Hotfix: database_info mapper and repository use their own namespace
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :database_namespace_self_reference:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/database-namespace-self-reference
+#+pr: 2119
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the hotfix story and task on =hotfix/database-namespace-self-reference=
+off =origin/main=, and wire both into Sprint 25's =** Hotfixes= table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- Story and task exist under =doc/agile/versions/v0/sprint_25/=.
+- The sprint's =** Hotfixes= table carries the story row.
+
+* Plan
+
+Scaffold only: =compass story new --kind hotfix= creates the branch, the
+story, the task and the sprint wiring in one step.
+
+* Notes
+
+The branch was created off the latest =origin/main= (=43f37eb312=), the commit
+named in the CI failure.
+
+=compass story new= wired the story into =** Hotfixes= directly, so no manual
+move from =** Product= was needed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2119][#2119]] | [database] Remove self-referential namespace using-directive |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The hotfix branch, story and task exist, and Sprint 25's =** Hotfixes= table
+carries the story row.
+
+Acceptance met: =doc/agile/versions/v0/sprint_25/database_namespace_self_reference/=
+holds =story.org= and both task files, and the sprint row reads =STARTED= with
+a =2026-09-21= start date. The scaffold PR is #2119, which also carries the
+fix itself.

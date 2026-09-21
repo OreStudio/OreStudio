@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1
+:END:
+#+title: Hotfix: database_info mapper and repository use their own namespace
+#+description: The Windows MSVC build fails in ores.database because database_info_mapper.cpp and database_info_repository.cpp re-enter ores::database::repository with a using-directive from inside that same namespace; MSVC emits C4515 and /WX turns it into an error.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:database:codegen:windows:sprint_25:v0:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows MSVC build for ores.database. Remove the self-referential using-directive from database_info_mapper.cpp and database_info_repository.cpp, and stop the codegen templates from emitting it for the database component.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-21                               |
+
+* Acceptance
+
+- ores.database compiles on Windows MSVC with /WX and no C4515 warning.
+- The codegen templates omit the self-referential using-directive for the database component and leave all other components byte-identical.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A0393C39-A5FA-4D47-8CD9-6D3DB811A2F4][Scaffold story: Hotfix: database_info mapper and repository use their own namespace]] | DONE | 2026-09-21 | 2026-09-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9DADAEB1-28D3-4CF5-A00F-E825A77BCAF3][Implement Hotfix: database_info mapper and repository use their own namespace]] | DONE | 2026-09-21 | 2026-09-21 | Initial task for: Hotfix: database_info mapper and repository use their own namespace |
+
+* Decisions
+
+- The directive is redundant, so removing it is behaviour-preserving under any
+  conforming compiler. No suppression of C4515 was needed.
+- The guard keys on the component, not on the file: the =database= component
+  alone omits the directive, so no other component's generated output changes.
+  Regenerating =ores.refdata.asset_class_code= confirmed zero diff.
+- The two =database_info= files are generated, but the model that drives them
+  is stale and fails current validation. The generated files were corrected by
+  hand to match the guarded template, and the model was left for a follow-up.
+- MSVC-only validation was accepted as deferred: no Windows build runs on pull
+  requests, so the next scheduled Windows run covers the fix after merge.
+
+* Out of scope
+
+- Repairing the stale =database_info= model so codegen can regenerate it.
+
+* Result
+
+The Windows MSVC build failure for =ores.database= is fixed. The
+self-referential using-directive is gone from both =database_info= files, and
+the codegen templates no longer emit it for the =database= component.
+
+Landed in PR #2119 as three commits: the fix, the PR record, and the
+regression test. =ores.database.lib= builds green, the codegen suite passes
+402 tests, and non-database regeneration is byte-identical.
+
+One acceptance check is verified by construction rather than observation:
+C4515 is MSVC-only, so no local run can show it, and the Continuous Windows
+workflow runs on a schedule instead of per pull request. Its next run after
+the merge is the first real MSVC check of this fix.

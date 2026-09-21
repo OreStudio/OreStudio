@@ -22,33 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { Permission } from '../domain/permission.js';
 import type { Role } from '../domain/role.js';
-
-
-export interface ListRolesRequest {
-}
-
-export interface ListRolesResponse {
-    roles: Role[];
-}
-
-export interface ListPermissionsRequest {
-}
-
-export interface ListPermissionsResponse {
-    permissions: Permission[];
-}
-
-export interface GetRoleRequest {
-    identifier: string;
-}
-
-export interface GetRoleResponse {
-    found: boolean;
-    role: Role | null;
-    error_message: string;
-}
 
 export interface AssignRoleRequest {
     account_id: string;
@@ -125,8 +99,6 @@ export interface SuggestRoleCommandsResponse {
 }
 
 export const subjects = {
-    list_roles_request: "iam.v1.roles.list",
-    get_role_request: "iam.v1.roles.get",
     assign_role_request: "iam.v1.roles.assign",
     assign_role_by_name_request: "iam.v1.roles.assign-by-name",
     revoke_role_request: "iam.v1.roles.revoke",

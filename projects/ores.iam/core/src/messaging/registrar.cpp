@@ -40,7 +40,8 @@
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.iam.core/messaging/reset_handler.hpp"
-#include "ores.iam.core/messaging/role_handler.hpp"
+#include "ores.iam.core/messaging/authorization_handler.hpp"
+#include "ores.iam.core/messaging/role_registrar.hpp"
 #include "ores.iam.core/messaging/session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
@@ -252,16 +253,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             sh->samples(std::move(msg));
         }));
 
-    // --- Roles ---
-    auto rh = std::make_shared<role_handler>(nats, ctx, signer);
-    subs.push_back(
-        nats.queue_subscribe(list_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
-            rh->list(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(get_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
-            rh->get(std::move(msg));
-        }));
+    // --- Roles: the derived CRUD protocol ---
+    for (auto& sub : register_role_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // --- Authorization: the operations a role's CRUD verbs cannot state ---
+    auto rh = std::make_shared<authorization_handler>(nats, ctx, signer);
     subs.push_back(
         nats.queue_subscribe(assign_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->assign(std::move(msg));

@@ -32,6 +32,8 @@
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/permission_protocol.hpp"
+#include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
@@ -1163,6 +1165,7 @@ asio::awaitable<http_response> iam_routes::handle_list_roles(const http_request&
 
         iam::messaging::list_roles_response resp;
         resp.roles = roles;
+        resp.total = resp.roles.size();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1226,6 +1229,7 @@ asio::awaitable<http_response> iam_routes::handle_list_permissions(const http_re
 
         iam::messaging::list_permissions_response resp;
         resp.permissions = permissions;
+        resp.total = resp.permissions.size();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

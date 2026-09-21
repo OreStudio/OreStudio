@@ -18,66 +18,13 @@ The authorization protocol messages.
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
-#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 #+end_src
 
 * Messages
-
-** list_roles_request
-:PROPERTIES:
-:subject: iam.v1.roles.list
-:response: list_roles_response
-:END:
-
-** list_roles_response
-
-*** roles
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::role>
-:END:
-
-** list_permissions_request
-
-** list_permissions_response
-
-*** permissions
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::permission>
-:END:
-
-** get_role_request
-:PROPERTIES:
-:subject: iam.v1.roles.get
-:response: get_role_response
-:END:
-
-*** identifier
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-** get_role_response
-
-*** found
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** role
-:PROPERTIES:
-:cpp_type: std::optional<ores::iam::domain::role>
-:END:
-
-*** error_message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
 
 ** assign_role_request
 :PROPERTIES:

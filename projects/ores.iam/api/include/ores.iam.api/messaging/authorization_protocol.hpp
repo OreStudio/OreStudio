@@ -25,41 +25,12 @@
 #ifndef ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
-#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::iam::messaging {
-
-struct list_roles_request {
-    using response_type = struct list_roles_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.list";
-};
-
-struct list_roles_response {
-    std::vector<ores::iam::domain::role> roles;
-};
-
-struct list_permissions_request {};
-
-struct list_permissions_response {
-    std::vector<ores::iam::domain::permission> permissions;
-};
-
-struct get_role_request {
-    using response_type = struct get_role_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.get";
-    std::string identifier;
-};
-
-struct get_role_response {
-    bool found = false;
-    std::optional<ores::iam::domain::role> role;
-    std::string error_message;
-};
 
 struct assign_role_request {
     using response_type = struct assign_role_response;

@@ -109,3 +109,40 @@ def test_the_declared_order_is_preserved():
     entity = _columns("zeta", "alpha", "version", "mu")
     assert [c["column"] for c in write_record_fields(entity)] == \
         ["zeta", "alpha", "mu"]
+
+
+# --- the key record: one typed field per identifying column ----------------
+
+from codegen.org_loader import key_record_fields  # noqa: E402
+
+
+def _entity(*pk_columns):
+    return {"primary_key": {"columns": list(pk_columns)}}
+
+
+def test_a_surrogate_key_carries_the_uuid_type_not_text():
+    fields = key_record_fields(_entity({"column": "id", "is_uuid": True}))
+    assert [f["name"] for f in fields] == ["id"]
+    assert fields[0]["cpp_type"] == "boost::uuids::uuid"
+    assert fields[0]["ts_type"] == "string"
+
+
+def test_a_natural_text_key_carries_its_own_type():
+    fields = key_record_fields(_entity({"column": "code", "is_uuid": False}))
+    assert fields[0]["cpp_type"] == "std::string"
+
+
+def test_a_composite_key_carries_every_identifying_column():
+    fields = key_record_fields(_entity(
+        {"column": "name", "is_uuid": False},
+        {"column": "domain_name", "is_uuid": False}))
+    assert [f["name"] for f in fields] == ["name", "domain_name"]
+
+
+def test_a_key_is_never_a_vector_of_strings():
+    fields = key_record_fields(_entity({"column": "id", "is_uuid": True}))
+    assert not any("vector" in f["cpp_type"] for f in fields)
+
+
+def test_an_entity_has_at_least_one_identifying_column():
+    assert key_record_fields(_entity({"column": "id", "is_uuid": True}))

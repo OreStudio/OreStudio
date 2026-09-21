@@ -2510,6 +2510,26 @@ def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
             and _column_name(column) not in CHANGE_INTENT_FIELDS]
 
 
+def _key_cpp_type(column: dict[str, Any]) -> str:
+    """A key column's own type, not a string it happens to be printable as."""
+    return "boost::uuids::uuid" if column.get("is_uuid") else "std::string"
+
+
+def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The typed key that addresses one entity -- every identifying column.
+
+    The specification is explicit that a key carries each column with the
+    column's own type, and that a composite key is never flattened to one
+    string and never partially sent, because a partial key addresses a row
+    that need not exist. The derived delete request does both today: it sends
+    ``std::vector<std::string>`` per key column, so a uuid key and a text key
+    are indistinguishable to a caller.
+    """
+    primary_key = entity.get("primary_key") or {}
+    return [_ts_field(_column_name(column), _key_cpp_type(column))
+            for column in primary_key.get("columns") or []]
+
+
 def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive an entity's standard CRUD message list.
 

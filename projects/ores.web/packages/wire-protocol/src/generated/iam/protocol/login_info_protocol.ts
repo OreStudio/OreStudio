@@ -144,6 +144,20 @@ export const subjects = {
     delete_login_info_request: "iam.v1.login_info.delete",
     delete_many_login_info_request: "iam.v1.login_info.delete_many",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_login_info_request: true,
+    get_login_info_request: true,
+    get_many_login_info_request: true,
+    put_login_info_request: true,
+    put_many_login_info_request: true,
+    delete_login_info_request: true,
+    delete_many_login_info_request: true,
+} as const;
 
 /**
  * The subjects this resource's changes are announced on. One payload is

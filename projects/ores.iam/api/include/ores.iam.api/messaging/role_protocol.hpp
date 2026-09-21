@@ -83,6 +83,13 @@ struct role_versions_filter {
 struct list_roles_request {
     using response_type = struct list_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -97,6 +104,13 @@ struct list_roles_response {
 struct get_role_request {
     using response_type = struct get_role_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     role_key key;
 };
 
@@ -108,6 +122,13 @@ struct get_role_response {
 struct get_many_roles_request {
     using response_type = struct get_many_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<role_key> keys;
 };
 
@@ -119,6 +140,13 @@ struct get_many_roles_response {
 struct put_role_request {
     using response_type = struct put_role_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     role_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -131,6 +159,13 @@ struct put_role_response {
 struct put_many_roles_request {
     using response_type = struct put_many_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<role_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -143,6 +178,13 @@ struct put_many_roles_response {
 struct delete_role_request {
     using response_type = struct delete_role_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     role_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -154,6 +196,13 @@ struct delete_role_response {
 struct delete_many_roles_request {
     using response_type = struct delete_many_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<role_removal> removals;
     ores::utility::domain::change_intent intent;
 };
@@ -165,6 +214,13 @@ struct delete_many_roles_response {
 struct list_role_versions_request {
     using response_type = struct list_role_versions_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     role_key key;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
@@ -181,6 +237,13 @@ struct list_role_versions_response {
 struct get_role_version_request {
     using response_type = struct get_role_version_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     role_version_key key;
 };
 

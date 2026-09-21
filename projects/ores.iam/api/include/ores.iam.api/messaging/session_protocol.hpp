@@ -68,6 +68,13 @@ struct session_view {
 struct list_sessions_request {
     using response_type = struct list_sessions_response;
     static constexpr std::string_view nats_subject = "iam.v1.sessions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
     int limit = 50;
     int offset = 0;
@@ -83,6 +90,13 @@ struct list_sessions_response {
 struct get_active_sessions_request {
     using response_type = struct get_active_sessions_response;
     static constexpr std::string_view nats_subject = "iam.v1.sessions.active";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct get_active_sessions_response {

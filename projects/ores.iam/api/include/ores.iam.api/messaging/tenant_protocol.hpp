@@ -87,6 +87,13 @@ struct tenant_versions_filter {
 struct list_tenants_request {
     using response_type = struct list_tenants_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -101,6 +108,13 @@ struct list_tenants_response {
 struct get_tenant_request {
     using response_type = struct get_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     tenant_key key;
 };
 
@@ -112,6 +126,13 @@ struct get_tenant_response {
 struct get_many_tenants_request {
     using response_type = struct get_many_tenants_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<tenant_key> keys;
 };
 
@@ -123,6 +144,13 @@ struct get_many_tenants_response {
 struct put_tenant_request {
     using response_type = struct put_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     tenant_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -135,6 +163,13 @@ struct put_tenant_response {
 struct put_many_tenants_request {
     using response_type = struct put_many_tenants_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<tenant_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -147,6 +182,13 @@ struct put_many_tenants_response {
 struct delete_tenant_request {
     using response_type = struct delete_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     tenant_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -158,6 +200,13 @@ struct delete_tenant_response {
 struct delete_many_tenants_request {
     using response_type = struct delete_many_tenants_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<tenant_removal> removals;
     ores::utility::domain::change_intent intent;
 };
@@ -169,6 +218,13 @@ struct delete_many_tenants_response {
 struct list_tenant_versions_request {
     using response_type = struct list_tenant_versions_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     tenant_key key;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
@@ -185,6 +241,13 @@ struct list_tenant_versions_response {
 struct get_tenant_version_request {
     using response_type = struct get_tenant_version_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     tenant_version_key key;
 };
 

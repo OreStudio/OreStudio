@@ -53,3 +53,12 @@ export const subjects = {
     reset_tenant_command: "iam.v1.system.reset-tenant",
     reset_system_command: "iam.v1.system.reset",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    reset_tenant_command: true,
+    reset_system_command: true,
+} as const;

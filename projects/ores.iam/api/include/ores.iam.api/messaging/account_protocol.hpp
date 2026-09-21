@@ -45,6 +45,13 @@ struct get_accounts_response {
 struct save_account_request {
     using response_type = struct save_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.save";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string principal;
     std::string password;
     std::string totp_secret;
@@ -55,6 +62,13 @@ struct save_account_request {
 struct update_account_request {
     using response_type = struct update_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.update";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
     std::string email;
     /**
@@ -100,6 +114,13 @@ struct save_account_response {
 struct delete_account_request {
     using response_type = struct delete_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
 };
 
@@ -116,6 +137,13 @@ struct account_operation_result {
 struct lock_account_request {
     using response_type = struct lock_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.lock";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
 };
 
@@ -126,6 +154,13 @@ struct lock_account_response {
 struct unlock_account_request {
     using response_type = struct unlock_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.unlock";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
 };
 
@@ -136,6 +171,13 @@ struct unlock_account_response {
 struct list_login_info_request {
     using response_type = struct list_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.login-info";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct list_login_info_response {
@@ -145,6 +187,13 @@ struct list_login_info_response {
 struct reset_password_request {
     using response_type = struct reset_password_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.reset-password";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
     std::string new_password;
 };
@@ -168,6 +217,13 @@ struct change_password_response {
 struct update_my_email_request {
     using response_type = struct update_my_email_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.update-email";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string email;
 };
 
@@ -179,6 +235,13 @@ struct update_my_email_response {
 struct set_my_default_party_request {
     using response_type = struct set_my_default_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.set-default-party";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string party_id;
 };
 
@@ -190,6 +253,13 @@ struct set_my_default_party_response {
 struct select_party_request {
     using response_type = struct select_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.select-party";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string party_id;
 };
 
@@ -210,6 +280,13 @@ struct select_party_request {
 struct switch_party_request {
     using response_type = struct select_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.switch-party";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string party_id;
 };
 
@@ -242,6 +319,13 @@ struct select_party_response {
 struct get_accounts_request_typed {
     using response_type = struct get_accounts_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     int offset = 0;
     int limit = 100;
 };
@@ -249,6 +333,13 @@ struct get_accounts_request_typed {
 struct change_password_request_typed {
     using response_type = struct change_password_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.change-password";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string current_password;
     std::string new_password;
 };

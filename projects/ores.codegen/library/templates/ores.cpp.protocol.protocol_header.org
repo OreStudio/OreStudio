@@ -68,6 +68,13 @@ struct {{name}} {
 {{/response_type}}
 {{#subject}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
 {{/subject}}
 {{#fields}}
 {{#comment}}
@@ -121,6 +128,13 @@ struct {{name}} {
 {{/response_type}}
 {{#subject}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
 {{/subject}}
 {{#fields}}
 {{#comment}}
@@ -155,6 +169,13 @@ struct {{name}} {
 {{/response_type}}
 {{#subject}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
 {{/subject}}
 {{#fields}}
 {{#comment}}

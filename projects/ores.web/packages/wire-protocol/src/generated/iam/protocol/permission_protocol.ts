@@ -139,6 +139,20 @@ export const subjects = {
     delete_permission_request: "iam.v1.permissions.delete",
     delete_many_permissions_request: "iam.v1.permissions.delete_many",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_permissions_request: true,
+    get_permission_request: true,
+    get_many_permissions_request: true,
+    put_permission_request: true,
+    put_many_permissions_request: true,
+    delete_permission_request: true,
+    delete_many_permissions_request: true,
+} as const;
 
 /**
  * The subjects this resource's changes are announced on. One payload is

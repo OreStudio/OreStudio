@@ -145,3 +145,15 @@ export const subjects = {
     refresh_request: "iam.v1.auth.refresh",
     service_login_request: "iam.v1.auth.service-login",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    login_request: false,
+    logout_request: true,
+    public_key_request: false,
+    refresh_request: true,
+    service_login_request: false,
+} as const;

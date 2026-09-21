@@ -2934,6 +2934,15 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     # come from this one section.
     messages += entity.get("declared_messages") or []
 
+    # Whether a caller must have established a session first. Every derived
+    # operation acts on a logged-in caller, so the derived set states true; a
+    # message the model declares may state otherwise in its own drawer. The
+    # value is spelled for the renderer: both protocol twins emit it into C++
+    # and TypeScript, where a Python bool is not a literal.
+    for message in messages:
+        if message.get("subject"):
+            message.setdefault("requires_session", "true")
+
     return messages
 
 
@@ -3123,9 +3132,17 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
             entry["response_type"] = props["response"]
         # How a caller authenticates. An operation that establishes the session
         # cannot present one, so the model states it beside the subject rather
-        # than leaving each client to guess from the name.
-        if "auth" in props:
-            entry["auth"] = props["auth"]
+        # than leaving each client to guess from the name. The value is spelled
+        # for the renderer because both protocol twins emit it as a literal.
+        auth = str(props.get("auth", "")).strip().lower()
+        if auth not in ("", "none"):
+            raise ValueError(
+                f"message {node.title} states :auth: {props['auth']!r}; the "
+                "only value is 'none', which marks an operation a caller runs "
+                "before it has a session"
+            )
+        if "subject" in props:
+            entry["requires_session"] = "false" if auth == "none" else "true"
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3345,7 +3362,9 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
 
     ``public`` marks an operation a caller runs before it has a session --
     logging in, signing up, reading the signing key. Such a command presents no
-    token and refuses none, because the caller has none to present.
+    token and refuses none, because the caller has none to present. It is read
+    from the message's own ``requires_session``, which is the same fact the
+    protocol carries, so the two cannot drift.
     """
     commands: list[dict[str, Any]] = []
     for message in messages:
@@ -3353,13 +3372,7 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         response = message.get("response_type")
         if not subject or not response:
             continue
-        auth = str(message.get("auth", "")).strip().lower()
-        if auth not in ("", "none"):
-            raise ValueError(
-                f"{message['name']}: unknown :auth: {message['auth']!r}; the "
-                "only value is 'none', which marks a command that runs before "
-                "the caller has a session"
-            )
+        public = message.get("requires_session") == "false"
         fields = [_shell_field(field) for field in message.get("fields") or []]
         positionals = [field for field in fields if not field["is_optional"]]
         flags = [field for field in fields if field["is_optional"]]
@@ -3370,7 +3383,7 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             "request": message["name"],
             "response_type": response,
             "subject": subject,
-            "public": auth == "none",
+            "public": public,
             "positionals": positionals,
             "flags": flags,
             "positional_count": len(positionals),

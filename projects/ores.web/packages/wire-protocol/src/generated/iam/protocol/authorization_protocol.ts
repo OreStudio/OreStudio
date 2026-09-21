@@ -107,3 +107,17 @@ export const subjects = {
     get_role_permissions_request: "iam.v1.roles.permissions",
     suggest_role_commands_request: "iam.v1.roles.suggest-commands",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    assign_role_request: true,
+    assign_role_by_name_request: true,
+    revoke_role_request: true,
+    revoke_role_by_name_request: true,
+    get_account_roles_request: true,
+    get_role_permissions_request: true,
+    suggest_role_commands_request: true,
+} as const;

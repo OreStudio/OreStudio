@@ -77,6 +77,13 @@ struct login_info_event {
 struct list_login_info_request {
     using response_type = struct list_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -91,6 +98,13 @@ struct list_login_info_response {
 struct get_login_info_request {
     using response_type = struct get_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     login_info_key key;
 };
 
@@ -102,6 +116,13 @@ struct get_login_info_response {
 struct get_many_login_info_request {
     using response_type = struct get_many_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<login_info_key> keys;
 };
 
@@ -113,6 +134,13 @@ struct get_many_login_info_response {
 struct put_login_info_request {
     using response_type = struct put_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     login_info_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -125,6 +153,13 @@ struct put_login_info_response {
 struct put_many_login_info_request {
     using response_type = struct put_many_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<login_info_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -137,6 +172,13 @@ struct put_many_login_info_response {
 struct delete_login_info_request {
     using response_type = struct delete_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     login_info_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -148,6 +190,13 @@ struct delete_login_info_response {
 struct delete_many_login_info_request {
     using response_type = struct delete_many_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<login_info_removal> removals;
     ores::utility::domain::change_intent intent;
 };

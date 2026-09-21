@@ -176,6 +176,22 @@ export const subjects = {
     list_tenant_status_versions_request: "iam.v1.tenant_statuses_versions.list",
     get_tenant_status_version_request: "iam.v1.tenant_statuses_versions.get",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_tenant_statuses_request: true,
+    get_tenant_status_request: true,
+    get_many_tenant_statuses_request: true,
+    put_tenant_status_request: true,
+    put_many_tenant_statuses_request: true,
+    delete_tenant_status_request: true,
+    delete_many_tenant_statuses_request: true,
+    list_tenant_status_versions_request: true,
+    get_tenant_status_version_request: true,
+} as const;
 
 /**
  * The subjects this resource's changes are announced on. One payload is

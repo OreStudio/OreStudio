@@ -92,6 +92,18 @@ export const subjects = {
 {{/subject}}
 {{/messages}}
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
+{{/subject}}
+{{/messages}}
+} as const;
 
 /**
  * The subjects this resource's changes are announced on. One payload is
@@ -131,6 +143,18 @@ export const subjects = {
 {{/subject}}
 {{/messages}}
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
+{{/subject}}
+{{/messages}}
+} as const;
 {{/junction}}
 {{#operation}}
 {{#domain_imports}}
@@ -163,6 +187,18 @@ export const subjects = {
 {{#messages}}
 {{#subject}}
     {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
 {{/subject}}
 {{/messages}}
 } as const;

@@ -37,6 +37,13 @@ namespace ores::iam::messaging {
 struct reset_tenant_command {
     using response_type = struct reset_tenant_result;
     static constexpr std::string_view nats_subject = "iam.v1.system.reset-tenant";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string tenant_code;
 };
 
@@ -53,6 +60,13 @@ struct reset_tenant_result {
 struct reset_system_command {
     using response_type = struct reset_system_result;
     static constexpr std::string_view nats_subject = "iam.v1.system.reset";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct reset_system_result {

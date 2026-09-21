@@ -76,6 +76,13 @@ struct account_party_event {
 struct list_account_parties_request {
     using response_type = struct list_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -91,6 +98,13 @@ struct list_account_parties_response {
 struct get_account_party_request {
     using response_type = struct get_account_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_party_key key;
 };
 
@@ -102,6 +116,13 @@ struct get_account_party_response {
 struct get_many_account_parties_request {
     using response_type = struct get_many_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_party_key> keys;
 };
 
@@ -113,6 +134,13 @@ struct get_many_account_parties_response {
 struct put_account_party_request {
     using response_type = struct put_account_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_party_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -125,6 +153,13 @@ struct put_account_party_response {
 struct put_many_account_parties_request {
     using response_type = struct put_many_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_party_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -137,6 +172,13 @@ struct put_many_account_parties_response {
 struct delete_account_party_request {
     using response_type = struct delete_account_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_party_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -148,6 +190,13 @@ struct delete_account_party_response {
 struct delete_many_account_parties_request {
     using response_type = struct delete_many_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_party_removal> removals;
     ores::utility::domain::change_intent intent;
 };
@@ -159,6 +208,13 @@ struct delete_many_account_parties_response {
 struct list_by_account_id_account_parties_request {
     using response_type = struct list_by_account_id_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.list_by_account_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     boost::uuids::uuid account_id;
     ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;

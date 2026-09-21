@@ -95,6 +95,13 @@ struct account_contact_information_versions_filter {
 struct list_account_contact_informations_request {
     using response_type = struct list_account_contact_informations_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -110,6 +117,13 @@ struct list_account_contact_informations_response {
 struct get_account_contact_information_request {
     using response_type = struct get_account_contact_information_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_contact_information_key key;
 };
 
@@ -121,6 +135,13 @@ struct get_account_contact_information_response {
 struct get_many_account_contact_informations_request {
     using response_type = struct get_many_account_contact_informations_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_contact_information_key> keys;
 };
 
@@ -132,6 +153,13 @@ struct get_many_account_contact_informations_response {
 struct put_account_contact_information_request {
     using response_type = struct put_account_contact_information_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_contact_information_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -144,6 +172,13 @@ struct put_account_contact_information_response {
 struct put_many_account_contact_informations_request {
     using response_type = struct put_many_account_contact_informations_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_contact_information_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -156,6 +191,13 @@ struct put_many_account_contact_informations_response {
 struct delete_account_contact_information_request {
     using response_type = struct delete_account_contact_information_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_contact_information_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -168,6 +210,13 @@ struct delete_many_account_contact_informations_request {
     using response_type = struct delete_many_account_contact_informations_response;
     static constexpr std::string_view nats_subject =
         "iam.v1.account_contact_informations.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<account_contact_information_removal> removals;
     ores::utility::domain::change_intent intent;
 };
@@ -180,6 +229,13 @@ struct list_by_account_id_account_contact_informations_request {
     using response_type = struct list_by_account_id_account_contact_informations_response;
     static constexpr std::string_view nats_subject =
         "iam.v1.account_contact_informations.list_by_account_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     boost::uuids::uuid account_id;
     ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
@@ -198,6 +254,13 @@ struct list_account_contact_information_versions_request {
     using response_type = struct list_account_contact_information_versions_response;
     static constexpr std::string_view nats_subject =
         "iam.v1.account_contact_informations_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_contact_information_key key;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
@@ -215,6 +278,13 @@ struct get_account_contact_information_version_request {
     using response_type = struct get_account_contact_information_version_response;
     static constexpr std::string_view nats_subject =
         "iam.v1.account_contact_informations_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     account_contact_information_version_key key;
 };
 

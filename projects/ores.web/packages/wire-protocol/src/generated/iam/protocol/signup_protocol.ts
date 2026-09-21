@@ -37,3 +37,11 @@ export interface SignupResponse {
 export const subjects = {
     signup_request: "iam.v1.auth.signup",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    signup_request: false,
+} as const;

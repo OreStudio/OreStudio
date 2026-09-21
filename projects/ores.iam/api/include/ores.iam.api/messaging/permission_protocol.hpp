@@ -72,6 +72,13 @@ struct permission_event {
 struct list_permissions_request {
     using response_type = struct list_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
@@ -86,6 +93,13 @@ struct list_permissions_response {
 struct get_permission_request {
     using response_type = struct get_permission_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     permission_key key;
 };
 
@@ -97,6 +111,13 @@ struct get_permission_response {
 struct get_many_permissions_request {
     using response_type = struct get_many_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<permission_key> keys;
 };
 
@@ -108,6 +129,13 @@ struct get_many_permissions_response {
 struct put_permission_request {
     using response_type = struct put_permission_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     permission_change change;
     ores::utility::domain::change_intent intent;
 };
@@ -120,6 +148,13 @@ struct put_permission_response {
 struct put_many_permissions_request {
     using response_type = struct put_many_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<permission_change> changes;
     ores::utility::domain::change_intent intent;
 };
@@ -132,6 +167,13 @@ struct put_many_permissions_response {
 struct delete_permission_request {
     using response_type = struct delete_permission_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     permission_removal removal;
     ores::utility::domain::change_intent intent;
 };
@@ -143,6 +185,13 @@ struct delete_permission_response {
 struct delete_many_permissions_request {
     using response_type = struct delete_many_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::vector<permission_removal> removals;
     ores::utility::domain::change_intent intent;
 };

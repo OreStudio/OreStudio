@@ -93,3 +93,12 @@ export const subjects = {
     list_sessions_request: "iam.v1.sessions.list",
     get_active_sessions_request: "iam.v1.sessions.active",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_sessions_request: true,
+    get_active_sessions_request: true,
+} as const;

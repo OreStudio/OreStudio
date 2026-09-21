@@ -236,3 +236,23 @@ export const subjects = {
     get_accounts_request_typed: "iam.v1.accounts.list",
     change_password_request_typed: "iam.v1.accounts.change-password",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    save_account_request: true,
+    update_account_request: true,
+    delete_account_request: true,
+    lock_account_request: true,
+    unlock_account_request: true,
+    list_login_info_request: true,
+    reset_password_request: true,
+    update_my_email_request: true,
+    set_my_default_party_request: true,
+    select_party_request: true,
+    switch_party_request: true,
+    get_accounts_request_typed: true,
+    change_password_request_typed: true,
+} as const;

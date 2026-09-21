@@ -161,3 +161,18 @@ export const subjects = {
     delete_many_account_parties_request: "iam.v1.account_parties.delete_many",
     list_by_account_id_account_parties_request: "iam.v1.account_parties.list_by_account_id",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_account_parties_request: true,
+    get_account_party_request: true,
+    get_many_account_parties_request: true,
+    put_account_party_request: true,
+    put_many_account_parties_request: true,
+    delete_account_party_request: true,
+    delete_many_account_parties_request: true,
+    list_by_account_id_account_parties_request: true,
+} as const;

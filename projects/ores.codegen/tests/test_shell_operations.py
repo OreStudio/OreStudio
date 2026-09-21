@@ -21,7 +21,10 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.org_loader import (  # noqa: E402
     _reject_silent_shell_gap,
+    entity_protocol_messages,
     load_org_operation_model,
+    parse_declared_messages,
+    parse_org,
     shell_command_name,
     shell_command_projection,
 )
@@ -169,23 +172,90 @@ class TestAuthentication:
         ])
         assert commands[0]["public"] is False
 
-    def test_the_none_value_marks_a_pre_authentication_command(self):
+    def test_the_model_states_it_and_the_command_reads_it(self):
+        # The projection reads the message's own fact rather than a second
+        # derivation, so the shell and the protocol cannot disagree.
         message = _message("login_request", "iam.v1.auth.login", "login_response")
-        message["auth"] = "none"
+        message["requires_session"] = "false"
         commands = shell_command_projection([message])
         assert commands[0]["public"] is True
 
-    def test_the_value_is_read_whatever_its_case(self):
-        message = _message("login_request", "iam.v1.auth.login", "login_response")
-        message["auth"] = "NONE"
-        assert shell_command_projection([message])[0]["public"] is True
+    def test_a_message_without_the_fact_requires_a_session(self):
+        message = _message("logout_request", "iam.v1.auth.logout", "logout_response")
+        message["requires_session"] = "true"
+        assert shell_command_projection([message])[0]["public"] is False
 
-    def test_another_value_is_refused_rather_than_read_as_authenticated(self):
-        # A typo must not quietly produce a command that presents no token.
-        message = _message("login_request", "iam.v1.auth.login", "login_response")
-        message["auth"] = "optional"
-        with pytest.raises(ValueError, match="unknown :auth:"):
-            shell_command_projection([message])
+
+def _declared(org_text):
+    """The declared messages of a model body, through the real parser."""
+    return parse_declared_messages(parse_org(org_text).root)
+
+
+def _model_body(auth_line):
+    return f"""* Messages
+
+** login_request
+:PROPERTIES:
+:subject: iam.v1.auth.login
+:response: login_response
+{auth_line}:END:
+
+*** principal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+"""
+
+
+class TestTheProtocolsOwnStatement:
+    """The fact is the protocol's, and both twins carry it."""
+
+    def test_a_message_without_the_property_requires_a_session(self):
+        messages = _declared(_model_body(""))
+        assert messages[0]["requires_session"] == "true"
+
+    def test_the_none_value_marks_a_pre_authentication_message(self):
+        messages = _declared(_model_body(":auth: none\n"))
+        assert messages[0]["requires_session"] == "false"
+
+    def test_the_value_is_read_whatever_its_case(self):
+        messages = _declared(_model_body(":auth: NONE\n"))
+        assert messages[0]["requires_session"] == "false"
+
+    def test_another_value_is_refused(self):
+        # A typo must not quietly produce a message that presents no token.
+        with pytest.raises(ValueError, match="only value is 'none'"):
+            _declared(_model_body(":auth: optional\n"))
+
+    def test_a_payload_struct_carries_no_fact_because_it_addresses_nothing(self):
+        body = """* Messages
+
+** session_view
+
+*** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+"""
+        assert "requires_session" not in _declared(body)[0]
+
+    def test_every_derived_entity_operation_requires_a_session(self):
+        # The derivation has no unauthenticated verb, so the default is the
+        # only correct answer for the set it produces.
+        entity = {
+            "component": "iam",
+            "entity_singular": "tenant_type",
+            "entity_plural": "tenant_types",
+            "has_audit_columns": True,
+            "primary_key": {
+                "column": "type",
+                "columns": [{"column": "type", "cpp_type": "std::string"}],
+            },
+            "columns": [],
+        }
+        addressed = [m for m in entity_protocol_messages(entity) if m.get("subject")]
+        assert addressed, "the derivation produced no operation"
+        assert {m["requires_session"] for m in addressed} == {"true"}
 
 
 class TestTheRefusal:

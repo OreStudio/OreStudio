@@ -29,6 +29,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -166,7 +167,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .auth_required()
             .query_param("offset", "integer", "", false, "Pagination offset", "0")
             .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-            .response<iam::messaging::get_accounts_response>()
+            .response<iam::messaging::list_accounts_response>()
             .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -804,7 +805,7 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
-        iam::messaging::get_accounts_response resp;
+        iam::messaging::list_accounts_response resp;
         resp.accounts = accounts;
 
         co_return http_response::json(rfl::json::write(resp));

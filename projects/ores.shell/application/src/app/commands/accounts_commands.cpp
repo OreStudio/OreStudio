@@ -262,16 +262,18 @@ void accounts_commands::process_list_accounts(std::ostream& out,
 
     auto& state = pagination.state_for("accounts");
 
-    iam::messaging::get_accounts_request req;
+    // The derived list is the entity's own read now, so the page and the total
+    // are the protocol's rather than a hand-written request's.
+    iam::messaging::list_accounts_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<iam::messaging::get_accounts_response>(
-        out, session, "iam.v1.accounts.list", req);
+    auto result = do_auth_request<iam::messaging::list_accounts_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("accounts");
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->accounts.size()

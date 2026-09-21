@@ -1,0 +1,1134 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_IAM_MESSAGING_ACCOUNT_HANDLER_HPP
+#define ORES_IAM_MESSAGING_ACCOUNT_HANDLER_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
+#include "ores.iam.core/service/account_operations_service.hpp"
+#include "ores.iam.core/service/account_setup_service.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.core/service/cache/party_cache.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <chrono>
+#include <memory>
+#include <stdexcept>
+
+namespace ores::iam::messaging {
+
+namespace {
+
+inline auto& account_handler_lg() {
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_operations_handler");
+    return instance;
+}
+
+inline std::string acct_extract_bearer_token(const ores::nats::message& msg) {
+    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
+    if (it == msg.headers.end())
+        return {};
+    const auto& val = it->second;
+    if (!val.starts_with(ores::nats::headers::bearer_prefix))
+        return {};
+    return val.substr(ores::nats::headers::bearer_prefix.size());
+}
+
+inline std::vector<boost::uuids::uuid>
+acct_compute_visible_party_ids(const service::cache::party_cache& cache,
+                               const std::string& tenant_id,
+                               const boost::uuids::uuid& party_id) {
+    return cache.compute_visible_party_ids(tenant_id, party_id);
+}
+
+inline std::optional<refdata::domain::party>
+acct_lookup_party(const service::cache::party_cache& cache,
+                  const std::string& tenant_id,
+                  const boost::uuids::uuid& party_id) {
+    return cache.lookup(tenant_id, party_id);
+}
+
+// Reads onboarding.party directly from the DB (never the party cache), so
+// it is immune to cache staleness after a heavy import — unlike the
+// party.status check it replaces, which conflated the party's own domain
+// status with whether its provisioner wizard has run.
+inline bool acct_is_party_onboarding_complete(const ores::database::context& ctx,
+                                              const std::string& tenant_id_str,
+                                              const std::string& party_id_str) {
+    try {
+        auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+        if (!tid_result)
+            return false;
+        auto tenant_ctx = ctx.with_tenant(*tid_result, "");
+        variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str, party_id_str);
+        sfs.refresh();
+        return sfs.is_onboarding_party_complete();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(account_handler_lg(), warn)
+            << "Failed to check party onboarding completion: " << e.what();
+    }
+    return false;
+}
+
+inline std::string acct_lookup_tenant_name(const ores::database::context& ctx,
+                                           const boost::uuids::uuid& tenant_id) {
+    try {
+        const auto tenants = repository::read_active_tenant_by_id(ctx, tenant_id);
+        if (!tenants.empty())
+            return tenants.front().name;
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
+    }
+    return {};
+}
+
+} // namespace
+
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
+using namespace ores::logging;
+
+class account_operations_handler {
+public:
+    account_operations_handler(ores::nats::service::client& nats,
+                    ores::database::context ctx,
+                    ores::security::jwt::jwt_authenticator signer,
+                    std::shared_ptr<service::cache::party_cache> party_cache)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer))
+        , party_cache_(std::move(party_cache)) {
+        reload_token_settings();
+    }
+
+    void reload_token_settings() {
+        try {
+            variability::service::system_settings_service svc(
+                ctx_, database::service::tenant_context::system_tenant_id);
+            svc.refresh();
+            token_settings_ = domain::token_settings::load(svc);
+        } catch (const std::exception& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(account_handler_lg(), warn)
+                << "Failed to load token settings, using defaults: " << e.what();
+        }
+    }
+
+    void save(ores::nats::message msg) {
+        using ores::service::messaging::is_workflow_command;
+        using ores::service::messaging::extract_workflow_header;
+        using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::check_step_idempotency;
+        using ores::service::messaging::workflow_step_id_header;
+        using ores::service::messaging::workflow_instance_id_header;
+        using ores::service::messaging::workflow_tenant_id_header;
+
+        // Workflow step command: bypass JWT auth; use X-Tenant-Id header.
+        if (is_workflow_command(msg)) {
+            const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
+            const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+            const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+
+            // Idempotency guard: replay cached result if this step already completed.
+            if (auto cached = check_step_idempotency(nats_, step_id)) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        cached->outcome,
+                                        cached->result_json,
+                                        cached->error_message,
+                                        cached->log);
+                return;
+            }
+
+            auto req = decode<save_account_request>(msg);
+            if (!req) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        "Failed to decode save_account_request");
+                return;
+            }
+            try {
+                using ores::database::service::tenant_context;
+                auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
+
+                // Extract username from principal (strip @hostname suffix).
+                std::string username = req->principal;
+                const auto at_pos = req->principal.rfind('@');
+                if (at_pos != std::string::npos)
+                    username = req->principal.substr(0, at_pos);
+
+                service::account_operations_service acct_svc(wf_ctx);
+                auto auth_svc = std::make_shared<service::authorization_service>(wf_ctx);
+                service::account_setup_service setup_svc(acct_svc, auth_svc);
+                auto acct = setup_svc.create_account(
+                    username, req->email, req->password, ctx_.service_account());
+
+                BOOST_LOG_SEV(account_handler_lg(), debug)
+                    << "Workflow step completed: " << msg.subject;
+                const auto resp = save_account_response{
+                    .success = true, .account_id = boost::uuids::to_string(acct.id)};
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::completed,
+                                        rfl::json::write(resp),
+                                        "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), error)
+                    << "Workflow step failed: " << msg.subject << " — " << e.what();
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        e.what());
+            }
+            return;
+        }
+
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<save_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto base_ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!base_ctx_expected) {
+                error_reply(nats_, msg, base_ctx_expected.error());
+                return;
+            }
+            const auto& base_ctx = *base_ctx_expected;
+            if (!has_permission(base_ctx, "iam::accounts:create")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+
+            // Parse principal: if username@hostname, route to that tenant's
+            // context so accounts can be created in any tenant by a system
+            // admin whose JWT is in the system tenant.
+            std::string username = req->principal;
+            ores::database::context op_ctx = base_ctx;
+            const auto at_pos = req->principal.rfind('@');
+            if (at_pos != std::string::npos) {
+                username = req->principal.substr(0, at_pos);
+                const auto hostname = req->principal.substr(at_pos + 1);
+                const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
+                if (!tenants.empty()) {
+                    using ores::database::service::tenant_context;
+                    op_ctx = tenant_context::with_tenant(
+                        ctx_, boost::uuids::to_string(tenants.front().id));
+                } else {
+                    throw std::runtime_error("Tenant not found for hostname: " + hostname +
+                                             ". Cannot create account in an unknown tenant.");
+                }
+            }
+
+            service::account_operations_service acct_svc(op_ctx);
+            auto auth_svc = std::make_shared<service::authorization_service>(op_ctx);
+            service::account_setup_service setup_svc(acct_svc, auth_svc);
+            auto acct =
+                setup_svc.create_account(username, req->email, req->password, base_ctx.actor());
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  save_account_response{.success = true,
+                                        .account_id = boost::uuids::to_string(acct.id)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_account_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<delete_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:delete")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+            service::account_operations_service svc(ctx);
+            boost::uuids::string_generator sg;
+            svc.delete_account(sg(req->account_id));
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_account_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_account_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void lock(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<lock_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        lock_account_response resp;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:lock")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::account_operations_service svc(ctx);
+        boost::uuids::string_generator sg;
+        for (const auto& id : req->account_ids) {
+            try {
+                svc.lock_account(sg(id));
+                resp.results.push_back({.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.results.push_back({.success = false, .message = e.what()});
+            }
+        }
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void unlock(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<unlock_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        unlock_account_response resp;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:unlock")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::account_operations_service svc(ctx);
+        boost::uuids::string_generator sg;
+        for (const auto& id : req->account_ids) {
+            try {
+                svc.unlock_account(sg(id));
+                resp.results.push_back({.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.results.push_back({.success = false, .message = e.what()});
+            }
+        }
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void login_info(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::account_operations_service svc(ctx);
+            auto infos = svc.list_login_info();
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, list_login_info_response{.login_infos = std::move(infos)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, list_login_info_response{});
+        }
+    }
+
+    void reset_password(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<reset_password_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        reset_password_response resp;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:reset_password")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::account_operations_service svc(ctx);
+        boost::uuids::string_generator sg;
+        for (const auto& id_str : req->account_ids) {
+            try {
+                auto account_id = sg(id_str);
+                auto err = svc.change_password(account_id, req->new_password);
+                if (err.empty()) {
+                    resp.results.push_back({.success = true});
+                } else {
+                    resp.results.push_back({.success = false, .message = err});
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.results.push_back({.success = false, .message = e.what()});
+            }
+        }
+        resp.success = true;
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void change_password(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<change_password_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      change_password_response{.success = false,
+                                               .message = "Missing authorization token"});
+                return;
+            }
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                reply(nats_,
+                      msg,
+                      change_password_response{.success = false,
+                                               .message = "Invalid or expired token"});
+                return;
+            }
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::account_operations_service svc(ctx);
+            auto err = svc.change_password(account_id, req->new_password);
+            if (err.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, change_password_response{.success = true});
+            } else {
+                reply(nats_, msg, change_password_response{.success = false, .message = err});
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, change_password_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void update(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<update_account_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:update")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+            boost::uuids::string_generator sg;
+            const auto account_id = sg(req->account_id);
+
+            std::optional<boost::uuids::uuid> default_party_id;
+            if (!req->default_party_id.empty()) {
+                boost::uuids::uuid party_id;
+                try {
+                    party_id = sg(req->default_party_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{.success = false,
+                                                  .message = "Invalid default_party_id format"});
+                    return;
+                }
+                repository::account_party_repository ap_repo(ctx);
+                auto parties = ap_repo.read_latest_by_account(account_id);
+                const bool is_member =
+                    std::any_of(parties.begin(), parties.end(), [&](const auto& ap) {
+                        return ap.party_id == party_id;
+                    });
+                if (!is_member) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{
+                              .success = false,
+                              .message = "Account is not a member of the requested default party"});
+                    return;
+                }
+                default_party_id = party_id;
+            }
+
+            auto reports_to_account_id = boost::uuids::nil_uuid();
+            if (!req->reports_to_account_id.empty()) {
+                try {
+                    reports_to_account_id = sg(req->reports_to_account_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{
+                              .success = false, .message = "Invalid reports_to_account_id format"});
+                    return;
+                }
+            }
+
+            auto image_id = boost::uuids::nil_uuid();
+            if (!req->image_id.empty()) {
+                try {
+                    image_id = sg(req->image_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{.success = false,
+                                                  .message = "Invalid image_id format"});
+                    return;
+                }
+            }
+
+            service::account_operations_service svc(ctx);
+            svc.update_account(account_id,
+                               req->email,
+                               req->full_name,
+                               default_party_id,
+                               req->job_title,
+                               reports_to_account_id,
+                               image_id,
+                               ctx.actor(),
+                               req->change_reason_code,
+                               req->change_commentary);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, update_account_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, update_account_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void update_email(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<update_my_email_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      update_my_email_response{.success = false,
+                                               .message = "Missing authorization token"});
+                return;
+            }
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                reply(nats_,
+                      msg,
+                      update_my_email_response{.success = false,
+                                               .message = "Invalid or expired token"});
+                return;
+            }
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::account_operations_service svc(ctx);
+            auto err = svc.update_my_email(account_id, req->email);
+            if (err.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, update_my_email_response{.success = true});
+            } else {
+                reply(nats_, msg, update_my_email_response{.success = false, .message = err});
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, update_my_email_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void set_default_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<set_my_default_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Missing authorization token"});
+                return;
+            }
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Invalid or expired token"});
+                return;
+            }
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+
+            boost::uuids::uuid party_id;
+            try {
+                party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "set_default_party: invalid party_id: " << req->party_id;
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Invalid party_id format"});
+                return;
+            }
+
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+
+            repository::account_party_repository ap_repo(ctx);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+            const bool is_member = std::any_of(parties.begin(), parties.end(), [&](const auto& ap) {
+                return ap.party_id == party_id;
+            });
+            if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "set_default_party: party " << req->party_id
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{
+                          .success = false, .message = "User is not a member of requested party"});
+                return;
+            }
+
+            service::account_operations_service svc(ctx);
+            auto err = svc.set_my_default_party(account_id, party_id);
+            if (err.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, set_my_default_party_response{.success = true});
+            } else {
+                reply(nats_, msg, set_my_default_party_response{.success = false, .message = err});
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, set_my_default_party_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void select_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<select_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Missing authorization token"});
+                return;
+            }
+
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: JWT validation failed";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+            if (claims_result->audience != "select_party_only") {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: unexpected token audience: " << claims_result->audience;
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "select_party: account=" << claims_result->subject
+                << " requested_party=" << req->party_id;
+
+            // Build the DB context directly from the already-validated claims.
+            // Do NOT call make_request_context here — it re-validates the JWT
+            // using the standard audience ("authenticated"), which would reject
+            // the "select_party_only" token.
+            const auto tenant_id_str = claims_result->tenant_id.value_or("");
+            if (tenant_id_str.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: token has no tenant_id";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: missing tenant"});
+                return;
+            }
+            auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+            if (!tid_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: invalid tenant_id in token: " << tenant_id_str;
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: malformed tenant"});
+                return;
+            }
+            const auto ctx = ctx_.with_tenant(*tid_result, claims_result->username.value_or(""));
+
+            boost::uuids::uuid requested_party_id;
+            try {
+                requested_party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: invalid party_id: " << req->party_id;
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid party_id format"});
+                return;
+            }
+            repository::account_party_repository ap_repo(ctx);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "select_party: account has " << parties.size() << " party membership(s)";
+
+            bool is_member = false;
+            for (const auto& ap : parties) {
+                if (ap.party_id == requested_party_id) {
+                    is_member = true;
+                    break;
+                }
+            }
+
+            if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: party " << req->party_id
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "User is not a member of requested party"});
+                return;
+            }
+
+            auto visible =
+                acct_compute_visible_party_ids(*party_cache_, tenant_id_str, requested_party_id);
+
+            security::jwt::jwt_claims new_claims;
+            new_claims.subject = claims_result->subject;
+            new_claims.issued_at = std::chrono::system_clock::now();
+            new_claims.expires_at =
+                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
+            new_claims.username = claims_result->username;
+            new_claims.email = claims_result->email;
+            new_claims.tenant_id = tenant_id_str;
+            new_claims.party_id = boost::uuids::to_string(requested_party_id);
+            // Carry the session identifiers forward so logout can end
+            // the session record created at login.
+            new_claims.session_id = claims_result->session_id;
+            new_claims.session_start_time = claims_result->session_start_time;
+            for (const auto& vid : visible)
+                new_claims.visible_party_ids.push_back(boost::uuids::to_string(vid));
+
+            auto new_token = signer_.create_token(new_claims).value_or("");
+
+            std::string t_name;
+            std::string p_name;
+            try {
+                auto tid = sg(tenant_id_str);
+                t_name = acct_lookup_tenant_name(ctx, tid);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                             "party selection: "
+                                                          << e.what();
+            }
+            const bool onboarding_complete = acct_is_party_onboarding_complete(
+                ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
+            const bool party_setup_required = !onboarding_complete;
+            std::string party_setup_warning;
+            if (const auto p =
+                    acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
+                p_name = p->full_name;
+                if (party_setup_required) {
+                    BOOST_LOG_SEV(account_handler_lg(), info)
+                        << "select_party: party_setup_required=true for party "
+                        << boost::uuids::to_string(requested_party_id);
+                } else if (p->status == "Inactive") {
+                    party_setup_warning =
+                        "Party setup completed, but the party is still marked Inactive.";
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "select_party: onboarding.party complete but party "
+                        << boost::uuids::to_string(requested_party_id) << " still Inactive";
+                }
+            } else {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: party not found in cache for party "
+                    << boost::uuids::to_string(requested_party_id);
+            }
+
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  select_party_response{.success = true,
+                                        .message = "Party selected",
+                                        .token = new_token,
+                                        .username = claims_result->username.value_or(""),
+                                        .tenant_name = t_name,
+                                        .party_name = p_name,
+                                        .party_setup_required = party_setup_required,
+                                        .party_setup_warning = party_setup_warning});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
+        }
+    }
+
+    /**
+     * @brief Re-scopes an already-logged-in session to a different party.
+     *
+     * Intentionally a near-duplicate of select_party() above rather than a
+     * shared helper -- the only real difference is which token audience is
+     * accepted (any normal, already-authenticated session token, instead of
+     * select_party's single-use "select_party_only"), and the two are kept
+     * fully independent so a future change to one's validation rules can
+     * never accidentally weaken the other's. See switch_party_request's own
+     * doc comment (account_protocol.hpp) for why this is a separate subject
+     * rather than a relaxed select_party.
+     */
+    void switch_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<switch_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Missing authorization token"});
+                return;
+            }
+
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: JWT validation failed";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+            // Reject only the login-pending, single-use token -- a normal,
+            // already-authenticated session token has an empty audience
+            // (jwt_claims::audience is only ever set to a non-empty value
+            // for that one special case, in auth_handler.hpp), not the
+            // literal string "authenticated".
+            if (claims_result->audience == "select_party_only") {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: rejecting single-use select_party_only token -- "
+                       "use select_party to complete initial login instead";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "switch_party: account=" << claims_result->subject
+                << " requested_party=" << req->party_id;
+
+            const auto tenant_id_str = claims_result->tenant_id.value_or("");
+            if (tenant_id_str.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: token has no tenant_id";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: missing tenant"});
+                return;
+            }
+            auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+            if (!tid_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: invalid tenant_id in token: " << tenant_id_str;
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: malformed tenant"});
+                return;
+            }
+            const auto ctx = ctx_.with_tenant(*tid_result, claims_result->username.value_or(""));
+
+            boost::uuids::uuid requested_party_id;
+            try {
+                requested_party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: invalid party_id: " << req->party_id;
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid party_id format"});
+                return;
+            }
+            repository::account_party_repository ap_repo(ctx);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "switch_party: account has " << parties.size() << " party membership(s)";
+
+            bool is_member = false;
+            for (const auto& ap : parties) {
+                if (ap.party_id == requested_party_id) {
+                    is_member = true;
+                    break;
+                }
+            }
+
+            if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: party " << req->party_id
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "User is not a member of requested party"});
+                return;
+            }
+
+            auto visible =
+                acct_compute_visible_party_ids(*party_cache_, tenant_id_str, requested_party_id);
+
+            security::jwt::jwt_claims new_claims;
+            new_claims.subject = claims_result->subject;
+            new_claims.issued_at = std::chrono::system_clock::now();
+            new_claims.expires_at =
+                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
+            new_claims.username = claims_result->username;
+            new_claims.email = claims_result->email;
+            new_claims.tenant_id = tenant_id_str;
+            new_claims.party_id = boost::uuids::to_string(requested_party_id);
+            // Carry the session identifiers forward so logout can end
+            // the session record created at login.
+            new_claims.session_id = claims_result->session_id;
+            new_claims.session_start_time = claims_result->session_start_time;
+            for (const auto& vid : visible)
+                new_claims.visible_party_ids.push_back(boost::uuids::to_string(vid));
+
+            auto new_token = signer_.create_token(new_claims).value_or("");
+
+            std::string t_name;
+            std::string p_name;
+            try {
+                auto tid = sg(tenant_id_str);
+                t_name = acct_lookup_tenant_name(ctx, tid);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                             "party switch: "
+                                                          << e.what();
+            }
+            const bool onboarding_complete = acct_is_party_onboarding_complete(
+                ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
+            const bool party_setup_required = !onboarding_complete;
+            std::string party_setup_warning;
+            if (const auto p =
+                    acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
+                p_name = p->full_name;
+                if (party_setup_required) {
+                    BOOST_LOG_SEV(account_handler_lg(), info)
+                        << "switch_party: party_setup_required=true for party "
+                        << boost::uuids::to_string(requested_party_id);
+                } else if (p->status == "Inactive") {
+                    party_setup_warning =
+                        "Party setup completed, but the party is still marked Inactive.";
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "switch_party: onboarding.party complete but party "
+                        << boost::uuids::to_string(requested_party_id) << " still Inactive";
+                }
+            } else {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: party not found in cache for party "
+                    << boost::uuids::to_string(requested_party_id);
+            }
+
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  select_party_response{.success = true,
+                                        .message = "Party switched",
+                                        .token = new_token,
+                                        .username = claims_result->username.value_or(""),
+                                        .tenant_name = t_name,
+                                        .party_name = p_name,
+                                        .party_setup_required = party_setup_required,
+                                        .party_setup_warning = party_setup_warning});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<get_account_history_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            service::account_operations_service svc(ctx);
+            auto accounts = svc.get_account_history(req->username);
+            account_version_history avh;
+            int vnum = static_cast<int>(accounts.size());
+            for (const auto& a : accounts) {
+                ores::iam::messaging::account_version av;
+                av.data = a;
+                av.version_number = vnum--;
+                av.modified_by = a.modified_by;
+                av.recorded_at = a.recorded_at;
+                avh.versions.push_back(std::move(av));
+            }
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_account_history_response{.success = true, .history = std::move(avh)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_account_history_response{.success = false, .message = e.what()});
+        }
+    }
+
+private:
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    ores::security::jwt::jwt_authenticator signer_;
+    std::shared_ptr<service::cache::party_cache> party_cache_;
+    domain::token_settings token_settings_;
+};
+
+} // namespace ores::iam::messaging
+#endif

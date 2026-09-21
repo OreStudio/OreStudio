@@ -7,7 +7,7 @@
 #+type: ores.codegen.operation
 #+component: iam
 #+subcomponent: api
-#+entity_singular: account
+#+entity_singular: account_operations
 #+namespace: ores::iam::messaging
 #+brief: account protocol messages.
 #+filetags: :model:operation:iam:
@@ -26,33 +26,6 @@ The account protocol messages.
 #+end_src
 
 * Messages
-
-** get_accounts_request
-
-*** offset
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** limit
-:PROPERTIES:
-:cpp_type: int
-:default: 100
-:END:
-
-** get_accounts_response
-
-*** accounts
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::account>
-:END:
-
-*** total_available_count
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
 
 ** save_account_request
 :PROPERTIES:
@@ -419,7 +392,7 @@ The account protocol messages.
  * Deliberately a separate subject/handler from select_party rather than a
  * relaxed version of it: select_party only accepts a narrowly-scoped,
  * single-use token (audience "select_party_only") issued exclusively by
- * the login flow, by design -- see account_handler.hpp's select_party for
+ * the login flow, by design -- see account_operations_handler.hpp's select_party for
  * why. switch_party accepts a normal, already-authenticated session token
  * instead (any token that is NOT that single-use one), so an account with
  * access to more than one party (e.g. a tenant admin with cross-entity
@@ -506,24 +479,6 @@ The account protocol messages.
  * Clients re-arm the proactive refresh timer using this value.
  */
 #+end_src
-
-** get_accounts_request_typed
-:PROPERTIES:
-:subject: iam.v1.accounts.list
-:response: get_accounts_response
-:END:
-
-*** offset
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** limit
-:PROPERTIES:
-:cpp_type: int
-:default: 100
-:END:
 
 ** change_password_request_typed
 :PROPERTIES:

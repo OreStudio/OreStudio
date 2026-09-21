@@ -19,7 +19,7 @@
  */
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
-#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -50,7 +50,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -72,7 +72,7 @@ TEST_CASE("create_multiple_accounts", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     for (int i = 0; i < 5; ++i) {
         BOOST_LOG_SEV(lg, info) << "Creating account: " << i;
@@ -95,7 +95,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
     e.username = "";
@@ -111,7 +111,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
     e.email = "";
@@ -127,7 +127,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -141,7 +141,7 @@ TEST_CASE("list_accounts_returns_existing_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
     const auto a = sut.list_accounts();
     BOOST_LOG_SEV(lg, info) << "Current accounts in database: " << a.size();
     // Test database may have accounts from previous runs; just verify
@@ -154,7 +154,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     // Count existing accounts from previous test runs
     const auto initial_count = sut.list_accounts().size();
@@ -179,7 +179,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -199,7 +199,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -215,7 +215,7 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
     const std::string username = std::string(faker::internet::username());
@@ -231,7 +231,7 @@ TEST_CASE("login_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty username";
     const std::string username;
@@ -248,7 +248,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
@@ -268,7 +268,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
@@ -302,7 +302,7 @@ TEST_CASE("lock_account_successful", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
@@ -324,7 +324,7 @@ TEST_CASE("lock_nonexistent_account_returns_false", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
@@ -338,7 +338,7 @@ TEST_CASE("unlock_account_successful", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
@@ -372,7 +372,7 @@ TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
@@ -385,7 +385,7 @@ TEST_CASE("delete_nonexistent_account_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
@@ -399,7 +399,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
@@ -423,7 +423,7 @@ TEST_CASE("set_my_default_party_persists_the_new_default", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
     const std::string password = faker::internet::password();
@@ -446,7 +446,7 @@ TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
     const std::string password = faker::internet::password();
@@ -466,7 +466,7 @@ TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
@@ -481,7 +481,7 @@ TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    service::account_service sut(h.context());
+    service::account_operations_service sut(h.context());
 
     const auto e = generate_synthetic_account(ctx);
     const std::string password = faker::internet::password();

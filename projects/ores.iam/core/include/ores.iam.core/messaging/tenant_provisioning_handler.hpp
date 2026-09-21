@@ -1123,7 +1123,7 @@ private:
             photo_key_by_username[*row[0]] = *row[1];
         }
 
-        iam::messaging::get_accounts_request_typed accounts_req;
+        iam::messaging::list_accounts_request accounts_req;
         accounts_req.limit = 10'000;
         auto accounts_resp = client.request(accounts_req);
         for (const auto& a : accounts_resp.accounts) {

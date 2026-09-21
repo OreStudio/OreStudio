@@ -2943,6 +2943,17 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
         if message.get("subject"):
             message.setdefault("requires_session", "true")
 
+    # A read-only entity derives its reads and no writes. The write verbs are
+    # then operations the model states itself, which is what a row write cannot
+    # express: an account's password is hashed, its lockout counted and its TOTP
+    # secret minted, and none of those is a column a client may set.
+    if entity.get("read_only") or entity.get("client_read_only"):
+        messages = [
+            message for message in messages
+            if not message["name"].startswith(_WRITE_OPERATION_PREFIXES)
+            and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)
+        ]
+
     return messages
 
 

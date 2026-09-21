@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

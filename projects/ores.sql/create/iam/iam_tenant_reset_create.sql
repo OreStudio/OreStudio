@@ -155,7 +155,7 @@ begin
 
     -- Flip Operational parties back to 'Inactive'. The login flow computes
     -- party_setup_required from party.status == 'Inactive' (see
-    -- ores.iam.core/messaging/account_handler.hpp), so leaving parties Active
+    -- ores.iam.core/messaging/account_operations_handler.hpp), so leaving parties Active
     -- means the PartyProvisioningWizard will not re-trigger on next login.
     -- Direct UPDATE bypasses the insert trigger's actor validation, which is
     -- acceptable for a dev reset — the notify trigger still fires so clients

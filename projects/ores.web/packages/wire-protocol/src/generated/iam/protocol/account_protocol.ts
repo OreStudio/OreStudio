@@ -23,218 +23,97 @@
  * To modify, update the template and regenerate.
  */
 import type { Account } from '../domain/account.js';
-import type { LoginInfo } from '../domain/login_info.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-
-export interface GetAccountsRequest {
-    offset: number;
-    limit: number;
+export interface AccountKey {
+    id: string;
 }
 
-export interface GetAccountsResponse {
+export interface AccountLookup {
+    key: AccountKey;
+    account: Account | null;
+}
+
+export interface AccountEvent {
+    event_id: string;
+    key: AccountKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface AccountVersionKey {
+    account: AccountKey;
+    version: number;
+}
+
+export interface AccountVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListAccountsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListAccountsResponse {
+    result: Result;
     accounts: Account[];
-    total_available_count: number;
+    total: number;
 }
 
-export interface SaveAccountRequest {
-    principal: string;
-    password: string;
-    totp_secret: string;
-    email: string;
-    account_type: string;
+export interface GetAccountRequest {
+    key: AccountKey;
 }
 
-export interface UpdateAccountRequest {
-    account_id: string;
-    email: string;
-    /**
-     * @brief The account holder's full (real) name. Empty clears it.
-     */
-    full_name: string;
-    /**
-     * @brief Party to set as the account's default quick-login party.
-     * Empty clears the default. Must be one of the account's assigned
-     * parties (validated server-side).
-     */
-    default_party_id: string;
-    /**
-     * @brief Job title / functional role of the person holding this
-     * account (e.g. "Head of Desk", "Senior Trader"). Empty clears it.
-     */
-    job_title: string;
-    /**
-     * @brief The account this person reports to. Empty clears it. Must
-     * be another account in the same tenant (validated server-side).
-     */
-    reports_to_account_id: string;
-    /**
-     * @brief Profile picture for this account. Empty clears it. Must
-     * reference an existing image (validated server-side).
-     */
-    image_id: string;
-    change_reason_code: string;
-    change_commentary: string;
+export interface GetAccountResponse {
+    result: Result;
+    account: Account | null;
 }
 
-export interface UpdateAccountResponse {
-    success: boolean;
-    message: string;
+export interface GetManyAccountsRequest {
+    keys: AccountKey[];
 }
 
-export interface SaveAccountResponse {
-    success: boolean;
-    message: string;
-    account_id: string;
+export interface GetManyAccountsResponse {
+    result: Result;
+    entries: AccountLookup[];
 }
 
-export interface DeleteAccountRequest {
-    account_id: string;
-}
-
-export interface DeleteAccountResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface AccountOperationResult {
-    success: boolean;
-    message: string;
-}
-
-export interface LockAccountRequest {
-    account_ids: string[];
-}
-
-export interface LockAccountResponse {
-    results: AccountOperationResult[];
-}
-
-export interface UnlockAccountRequest {
-    account_ids: string[];
-}
-
-export interface UnlockAccountResponse {
-    results: AccountOperationResult[];
-}
-
-export interface ListLoginInfoRequest {
-}
-
-export interface ListLoginInfoResponse {
-    login_infos: LoginInfo[];
-}
-
-export interface ResetPasswordRequest {
-    account_ids: string[];
-    new_password: string;
-}
-
-export interface ResetPasswordResponse {
-    success: boolean;
-    message: string;
-    results: AccountOperationResult[];
-}
-
-export interface ChangePasswordRequest {
-    current_password: string;
-    new_password: string;
-}
-
-export interface ChangePasswordResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface UpdateMyEmailRequest {
-    email: string;
-}
-
-export interface UpdateMyEmailResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface SetMyDefaultPartyRequest {
-    party_id: string;
-}
-
-export interface SetMyDefaultPartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface SelectPartyRequest {
-    party_id: string;
-}
-
-/**
- * @brief Re-scopes an *already-logged-in* session to a different party.
- *
- * Deliberately a separate subject/handler from select_party rather than a
- * relaxed version of it: select_party only accepts a narrowly-scoped,
- * single-use token (audience "select_party_only") issued exclusively by
- * the login flow, by design -- see account_handler.hpp's select_party for
- * why. switch_party accepts a normal, already-authenticated session token
- * instead (any token that is NOT that single-use one), so an account with
- * access to more than one party (e.g. a tenant admin with cross-entity
- * access) can change which party's data is in view mid-session without
- * logging out and back in. Same party-membership check and new-token
- * issuance as select_party otherwise.
- */
-export interface SwitchPartyRequest {
-    party_id: string;
-}
-
-export interface SelectPartyResponse {
-    success: boolean;
-    message: string;
-    token: string;
-    username: string;
-    tenant_name: string;
-    party_name: string;
-    /**
-     * @brief True when the selected party's status is 'Inactive'.
-     * The client should present the PartyProvisioningWizard immediately.
-     */
-    party_setup_required: boolean;
-    /**
-     * @brief Set when the party provisioner wizard has completed
-     * (onboarding.party = true) but the party is still Inactive. The
-     * client should show a message instead of re-launching the wizard.
-     */
-    party_setup_warning: string;
-    /**
-     * @brief Token lifetime in seconds for the newly issued token.
-     *
-     * Clients re-arm the proactive refresh timer using this value.
-     */
-    access_lifetime_s: number;
-}
-
-export interface GetAccountsRequestTyped {
+export interface ListAccountVersionsRequest {
+    key: AccountKey;
     offset: number;
     limit: number;
+    order: Order;
+    filter: AccountVersionsFilter | null;
 }
 
-export interface ChangePasswordRequestTyped {
-    current_password: string;
-    new_password: string;
+export interface ListAccountVersionsResponse {
+    result: Result;
+    versions: Account[];
+    total: number;
+}
+
+export interface GetAccountVersionRequest {
+    key: AccountVersionKey;
+}
+
+export interface GetAccountVersionResponse {
+    result: Result;
+    version: Account;
 }
 
 export const subjects = {
-    save_account_request: "iam.v1.accounts.save",
-    update_account_request: "iam.v1.accounts.update",
-    delete_account_request: "iam.v1.accounts.delete",
-    lock_account_request: "iam.v1.accounts.lock",
-    unlock_account_request: "iam.v1.accounts.unlock",
-    list_login_info_request: "iam.v1.accounts.login-info",
-    reset_password_request: "iam.v1.accounts.reset-password",
-    update_my_email_request: "iam.v1.accounts.update-email",
-    set_my_default_party_request: "iam.v1.accounts.set-default-party",
-    select_party_request: "iam.v1.accounts.select-party",
-    switch_party_request: "iam.v1.accounts.switch-party",
-    get_accounts_request_typed: "iam.v1.accounts.list",
-    change_password_request_typed: "iam.v1.accounts.change-password",
+    list_accounts_request: "iam.v1.accounts.list",
+    get_account_request: "iam.v1.accounts.get",
+    get_many_accounts_request: "iam.v1.accounts.get_many",
+    list_account_versions_request: "iam.v1.accounts_versions.list",
+    get_account_version_request: "iam.v1.accounts_versions.get",
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -242,17 +121,20 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    save_account_request: true,
-    update_account_request: true,
-    delete_account_request: true,
-    lock_account_request: true,
-    unlock_account_request: true,
-    list_login_info_request: true,
-    reset_password_request: true,
-    update_my_email_request: true,
-    set_my_default_party_request: true,
-    select_party_request: true,
-    switch_party_request: true,
-    get_accounts_request_typed: true,
-    change_password_request_typed: true,
+    list_accounts_request: true,
+    get_account_request: true,
+    get_many_accounts_request: true,
+    list_account_versions_request: true,
+    get_account_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.accounts_events.created",
+    updated: "iam.v1.accounts_events.updated",
+    deleted: "iam.v1.accounts_events.deleted",
 } as const;

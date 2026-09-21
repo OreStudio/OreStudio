@@ -22,8 +22,8 @@
  * Template: cpp_shell_operation_implementation.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.shell/app/commands/iam/account_operations_commands.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
@@ -67,8 +67,9 @@ std::vector<std::string> split_list_token(const std::string& value) {
 
 } // namespace
 
-void account_operations_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("account");
+void account_operations_operations_commands::register_commands(cli::Menu& root_menu,
+                                                               nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("account_operations");
 
     menu->Insert(
         "save-account",
@@ -149,13 +150,6 @@ void account_operations_commands::register_commands(cli::Menu& root_menu, nats_c
         "switch-party <party_id>");
 
     menu->Insert(
-        "get-accounts",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_accounts(std::ref(out), std::ref(session), std::move(args));
-        },
-        "get-accounts [--offset <v>] [--limit <v>]");
-
-    menu->Insert(
         "change-password",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_change_password(std::ref(out), std::ref(session), std::move(args));
@@ -165,9 +159,8 @@ void account_operations_commands::register_commands(cli::Menu& root_menu, nats_c
     root_menu.Insert(std::move(menu));
 }
 
-void account_operations_commands::process_save_account(std::ostream& out,
-                                                       nats_client& session,
-                                                       const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_save_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating save-account request.";
 
     using request_type = ores::iam::messaging::save_account_request;
@@ -222,9 +215,8 @@ void account_operations_commands::process_save_account(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_update_account(std::ostream& out,
-                                                         nats_client& session,
-                                                         const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_update_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating update-account request.";
 
     using request_type = ores::iam::messaging::update_account_request;
@@ -283,9 +275,8 @@ void account_operations_commands::process_update_account(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_delete_account(std::ostream& out,
-                                                         nats_client& session,
-                                                         const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_delete_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete-account request.";
 
     using request_type = ores::iam::messaging::delete_account_request;
@@ -336,9 +327,8 @@ void account_operations_commands::process_delete_account(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_lock_account(std::ostream& out,
-                                                       nats_client& session,
-                                                       const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_lock_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating lock-account request.";
 
     using request_type = ores::iam::messaging::lock_account_request;
@@ -389,9 +379,8 @@ void account_operations_commands::process_lock_account(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_unlock_account(std::ostream& out,
-                                                         nats_client& session,
-                                                         const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_unlock_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating unlock-account request.";
 
     using request_type = ores::iam::messaging::unlock_account_request;
@@ -442,9 +431,8 @@ void account_operations_commands::process_unlock_account(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_list_login_info(std::ostream& out,
-                                                          nats_client& session,
-                                                          const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_list_login_info(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list-login-info request.";
 
     using request_type = ores::iam::messaging::list_login_info_request;
@@ -493,9 +481,8 @@ void account_operations_commands::process_list_login_info(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_reset_password(std::ostream& out,
-                                                         nats_client& session,
-                                                         const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_reset_password(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating reset-password request.";
 
     using request_type = ores::iam::messaging::reset_password_request;
@@ -547,9 +534,8 @@ void account_operations_commands::process_reset_password(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_update_my_email(std::ostream& out,
-                                                          nats_client& session,
-                                                          const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_update_my_email(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating update-my-email request.";
 
     using request_type = ores::iam::messaging::update_my_email_request;
@@ -600,7 +586,7 @@ void account_operations_commands::process_update_my_email(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_set_my_default_party(
+void account_operations_operations_commands::process_set_my_default_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating set-my-default-party request.";
 
@@ -652,9 +638,8 @@ void account_operations_commands::process_set_my_default_party(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_select_party(std::ostream& out,
-                                                       nats_client& session,
-                                                       const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_select_party(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating select-party request.";
 
     using request_type = ores::iam::messaging::select_party_request;
@@ -705,9 +690,8 @@ void account_operations_commands::process_select_party(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_switch_party(std::ostream& out,
-                                                       nats_client& session,
-                                                       const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_switch_party(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating switch-party request.";
 
     using request_type = ores::iam::messaging::switch_party_request;
@@ -758,69 +742,8 @@ void account_operations_commands::process_switch_party(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void account_operations_commands::process_get_accounts(std::ostream& out,
-                                                       nats_client& session,
-                                                       const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-accounts request.";
-
-    using request_type = ores::iam::messaging::get_accounts_request_typed;
-
-    // Whether the command presents a token is the protocol's own statement, so
-    // a message that establishes the session is never asked for one.
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run get-accounts." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{
-        {.name = "offset", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = ""},
-    };
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    constexpr std::size_t positional_count = 0;
-    if (parsed->positionals.size() != positional_count) {
-        fail(out) << "Expected " << positional_count << " arguments, got "
-                  << parsed->positionals.size() << "." << std::endl;
-        return;
-    }
-
-    request_type req;
-    try {
-        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
-            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
-        }
-        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
-            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
-        }
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    std::optional<ores::iam::messaging::get_accounts_response> result;
-    if constexpr (request_type::requires_session) {
-        result = do_auth_request<ores::iam::messaging::get_accounts_response>(
-            out, session, std::string(req.nats_subject), req);
-    } else {
-        result = do_request<ores::iam::messaging::get_accounts_response>(
-            out, session, std::string(req.nats_subject), req);
-    }
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void account_operations_commands::process_change_password(std::ostream& out,
-                                                          nats_client& session,
-                                                          const std::vector<std::string>& args) {
+void account_operations_operations_commands::process_change_password(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating change-password request.";
 
     using request_type = ores::iam::messaging::change_password_request_typed;

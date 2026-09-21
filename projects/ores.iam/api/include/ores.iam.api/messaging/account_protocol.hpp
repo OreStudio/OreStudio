@@ -22,302 +22,50 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_MESSAGING_ACCOUNT_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_ACCOUNT_PROTOCOL_HPP
+#ifndef ORES_IAM_API_MESSAGING_ACCOUNT_PROTOCOL_HPP
+#define ORES_IAM_API_MESSAGING_ACCOUNT_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/domain/login_info.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::iam::messaging {
 
-struct get_accounts_request {
-    int offset = 0;
-    int limit = 100;
+struct account_key {
+    boost::uuids::uuid id;
 };
 
-struct get_accounts_response {
-    std::vector<ores::iam::domain::account> accounts;
-    int total_available_count = 0;
+struct account_lookup {
+    account_key key;
+    std::optional<ores::iam::domain::account> account;
 };
 
-struct save_account_request {
-    using response_type = struct save_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.save";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string principal;
-    std::string password;
-    std::string totp_secret;
-    std::string email;
-    std::string account_type;
+struct account_event {
+    boost::uuids::uuid event_id;
+    account_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
 };
 
-struct update_account_request {
-    using response_type = struct update_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.update";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string account_id;
-    std::string email;
-    /**
-     * @brief The account holder's full (real) name. Empty clears it.
-     */
-    std::string full_name;
-    /**
-     * @brief Party to set as the account's default quick-login party.
-     * Empty clears the default. Must be one of the account's assigned
-     * parties (validated server-side).
-     */
-    std::string default_party_id;
-    /**
-     * @brief Job title / functional role of the person holding this
-     * account (e.g. "Head of Desk", "Senior Trader"). Empty clears it.
-     */
-    std::string job_title;
-    /**
-     * @brief The account this person reports to. Empty clears it. Must
-     * be another account in the same tenant (validated server-side).
-     */
-    std::string reports_to_account_id;
-    /**
-     * @brief Profile picture for this account. Empty clears it. Must
-     * reference an existing image (validated server-side).
-     */
-    std::string image_id;
-    std::string change_reason_code;
-    std::string change_commentary;
+struct account_version_key {
+    account_key account;
+    std::uint32_t version;
 };
 
-struct update_account_response {
-    bool success = false;
-    std::string message;
+struct account_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
 };
 
-struct save_account_response {
-    bool success = false;
-    std::string message;
-    std::string account_id;
-};
-
-struct delete_account_request {
-    using response_type = struct delete_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string account_id;
-};
-
-struct delete_account_response {
-    bool success = false;
-    std::string message;
-};
-
-struct account_operation_result {
-    bool success = false;
-    std::string message;
-};
-
-struct lock_account_request {
-    using response_type = struct lock_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.lock";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<std::string> account_ids;
-};
-
-struct lock_account_response {
-    std::vector<account_operation_result> results;
-};
-
-struct unlock_account_request {
-    using response_type = struct unlock_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.unlock";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<std::string> account_ids;
-};
-
-struct unlock_account_response {
-    std::vector<account_operation_result> results;
-};
-
-struct list_login_info_request {
-    using response_type = struct list_login_info_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.login-info";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
-
-struct list_login_info_response {
-    std::vector<ores::iam::domain::login_info> login_infos;
-};
-
-struct reset_password_request {
-    using response_type = struct reset_password_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.reset-password";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<std::string> account_ids;
-    std::string new_password;
-};
-
-struct reset_password_response {
-    bool success = false;
-    std::string message;
-    std::vector<account_operation_result> results;
-};
-
-struct change_password_request {
-    std::string current_password;
-    std::string new_password;
-};
-
-struct change_password_response {
-    bool success = false;
-    std::string message;
-};
-
-struct update_my_email_request {
-    using response_type = struct update_my_email_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.update-email";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string email;
-};
-
-struct update_my_email_response {
-    bool success = false;
-    std::string message;
-};
-
-struct set_my_default_party_request {
-    using response_type = struct set_my_default_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.set-default-party";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string party_id;
-};
-
-struct set_my_default_party_response {
-    bool success = false;
-    std::string message;
-};
-
-struct select_party_request {
-    using response_type = struct select_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.select-party";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string party_id;
-};
-
-/**
- * @brief Re-scopes an *already-logged-in* session to a different party.
- *
- * Deliberately a separate subject/handler from select_party rather than a
- * relaxed version of it: select_party only accepts a narrowly-scoped,
- * single-use token (audience "select_party_only") issued exclusively by
- * the login flow, by design -- see account_handler.hpp's select_party for
- * why. switch_party accepts a normal, already-authenticated session token
- * instead (any token that is NOT that single-use one), so an account with
- * access to more than one party (e.g. a tenant admin with cross-entity
- * access) can change which party's data is in view mid-session without
- * logging out and back in. Same party-membership check and new-token
- * issuance as select_party otherwise.
- */
-struct switch_party_request {
-    using response_type = struct select_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.switch-party";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string party_id;
-};
-
-struct select_party_response {
-    bool success = false;
-    std::string message;
-    std::string token;
-    std::string username;
-    std::string tenant_name;
-    std::string party_name;
-    /**
-     * @brief True when the selected party's status is 'Inactive'.
-     * The client should present the PartyProvisioningWizard immediately.
-     */
-    bool party_setup_required = false;
-    /**
-     * @brief Set when the party provisioner wizard has completed
-     * (onboarding.party = true) but the party is still Inactive. The
-     * client should show a message instead of re-launching the wizard.
-     */
-    std::string party_setup_warning;
-    /**
-     * @brief Token lifetime in seconds for the newly issued token.
-     *
-     * Clients re-arm the proactive refresh timer using this value.
-     */
-    int access_lifetime_s = 1800;
-};
-
-struct get_accounts_request_typed {
-    using response_type = struct get_accounts_response;
+struct list_accounts_request {
+    using response_type = struct list_accounts_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.list";
     /**
      * @brief Whether the caller must have established a session first.
@@ -326,13 +74,20 @@ struct get_accounts_request_typed {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct change_password_request_typed {
-    using response_type = struct change_password_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.change-password";
+struct list_accounts_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::account> accounts;
+    std::uint64_t total;
+};
+
+struct get_account_request {
+    using response_type = struct get_account_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.get";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -340,9 +95,86 @@ struct change_password_request_typed {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string current_password;
-    std::string new_password;
+    account_key key;
 };
+
+struct get_account_response {
+    ores::utility::domain::result result;
+    std::optional<ores::iam::domain::account> account;
+};
+
+struct get_many_accounts_request {
+    using response_type = struct get_many_accounts_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<account_key> keys;
+};
+
+struct get_many_accounts_response {
+    ores::utility::domain::result result;
+    std::vector<account_lookup> entries;
+};
+
+struct list_account_versions_request {
+    using response_type = struct list_account_versions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    account_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_versions_filter> filter;
+};
+
+struct list_account_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::account> versions;
+    std::uint64_t total;
+};
+
+struct get_account_version_request {
+    using response_type = struct get_account_version_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    account_version_key key;
+};
+
+struct get_account_version_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::account version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace account_event_subjects {
+inline constexpr std::string_view created = "iam.v1.accounts_events.created";
+inline constexpr std::string_view updated = "iam.v1.accounts_events.updated";
+inline constexpr std::string_view deleted = "iam.v1.accounts_events.deleted";
+}
 
 }
 

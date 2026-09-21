@@ -3266,6 +3266,12 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             # it needs is the one the resource already names for that kind of
             # change. A read needs authentication alone, so it names none.
             "is_write": verb in ("put", "put_many", "delete", "delete_many"),
+            # The single write verb has one hook the other verbs do not: a
+            # component may intercept its own save before authentication, for
+            # an orchestration command that carries its context in headers
+            # rather than in a token. ores.refdata's party is the one model
+            # that does, through an implementation block.
+            "is_put_one": verb == "put",
             "permission": ("delete" if verb in ("delete", "delete_many")
                            else "write" if verb in ("put", "put_many") else ""),
         })

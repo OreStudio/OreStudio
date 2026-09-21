@@ -70,6 +70,9 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void {{method}}(ores::nats::message msg) {
+{{#is_put_one}}
+<<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>
+{{/is_put_one}}
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);

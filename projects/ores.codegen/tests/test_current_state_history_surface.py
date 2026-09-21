@@ -1,16 +1,16 @@
-"""Tests for the history surface of a current-state entity.
+"""Tests for the versions surface of a current-state entity.
 
 Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_current_state_history_surface.py
 
 A current-state table has one row per key and no valid_from/valid_to axis, so
-it has no history endpoint, no history messages and no history subscription.
-The service and the repository already gate their history methods on
-``current_state``; these cases pin the rest of the surface to the same one
-flag: the NATS handler and its registrar, the C++ protocol header, the
-TypeScript twin, and the derivation the twin renders from. An ordinary entity
-must keep every one of them.
+it has no versions sub-resource: no version records, no version operations and
+no version subscription. The service and the repository already gate their
+history methods on ``current_state``; these cases pin the rest of the surface
+to the same one flag: the NATS handler and its registrar, the C++ protocol
+header, the TypeScript twin, and the derivation the twin renders from. An
+ordinary entity must keep every one of them.
 """
 import re
 import sys
@@ -143,22 +143,35 @@ def test_a_current_state_entity_derives_no_history_message():
     assert not [n for n in names if "_history_" in n]
 
 
-def test_an_ordinary_entity_still_derives_the_history_pair():
+def test_an_ordinary_entity_still_derives_the_versions_pair():
     names = _message_names(_enriched_entity())
     assert names[-2:] == [
-        "get_current_state_entity_history_request",
-        "get_current_state_entity_history_response"]
+        "get_current_state_entity_version_request",
+        "get_current_state_entity_version_response"]
 
 
 def test_the_current_state_derivation_keeps_the_rest_of_the_crud_set():
     names = _message_names(_enriched_entity(current_state=True))
     assert names == [
-        "get_current_state_entities_request",
-        "get_current_state_entities_response",
-        "save_current_state_entity_request",
-        "save_current_state_entity_response",
+        "current_state_entity_key",
+        "current_state_entity_write",
+        "current_state_entity_change",
+        "current_state_entity_removal",
+        "current_state_entity_lookup",
+        "list_current_state_entities_request",
+        "list_current_state_entities_response",
+        "get_current_state_entity_request",
+        "get_current_state_entity_response",
+        "get_many_current_state_entities_request",
+        "get_many_current_state_entities_response",
+        "put_current_state_entity_request",
+        "put_current_state_entity_response",
+        "put_many_current_state_entities_request",
+        "put_many_current_state_entities_response",
         "delete_current_state_entity_request",
         "delete_current_state_entity_response",
+        "delete_many_current_state_entities_request",
+        "delete_many_current_state_entities_response",
     ]
 
 
@@ -211,38 +224,39 @@ def test_a_current_state_protocol_header_states_no_history_pair(tmp_path):
     protocol = _render(tmp_path, "cpp_protocol.hpp.mustache",
                        "current_state_entity_protocol.hpp", CURRENT_STATE_MODEL)
     assert "history" not in protocol
-    assert "get_current_state_entities_request" in protocol
+    assert "versions" not in protocol
+    assert "struct list_current_state_entities_request {" in protocol
 
 
 def test_an_ordinary_protocol_header_keeps_the_history_pair(tmp_path):
     protocol = _render(tmp_path, "cpp_protocol.hpp.mustache",
                        "current_state_entity_protocol.hpp", BITEMPORAL_MODEL)
-    assert "struct get_current_state_entity_history_request {" in protocol
-    assert "struct get_current_state_entity_history_response {" in protocol
-    assert "testcomp.v1.current_state_entities.history" in protocol
+    assert "struct list_current_state_entity_versions_request {" in protocol
+    assert "struct get_current_state_entity_version_response {" in protocol
+    assert '"testcomp.v1.current_state_entities_versions.list"' in protocol
 
 
-def test_a_current_state_typescript_twin_states_no_history_surface(tmp_path):
+def test_a_current_state_typescript_twin_states_no_versions_surface(tmp_path):
     protocol = _render(tmp_path, "ts_protocol.ts.mustache",
                        "current_state_entity_protocol.ts", CURRENT_STATE_MODEL)
-    assert "History" not in protocol
-    assert "history" not in protocol
-    assert 'get_current_state_entities_request: "testcomp.v1.current_state_entities.list"' \
-        in protocol
+    assert "Version" not in protocol
+    assert "versions" not in protocol
+    assert ('list_current_state_entities_request: '
+            '"testcomp.v1.current_state_entities.list"') in protocol
 
 
-def test_an_ordinary_typescript_twin_keeps_the_history_surface(tmp_path):
+def test_an_ordinary_typescript_twin_keeps_the_versions_surface(tmp_path):
     protocol = _render(tmp_path, "ts_protocol.ts.mustache",
                        "current_state_entity_protocol.ts", BITEMPORAL_MODEL)
-    assert "export interface GetCurrentStateEntityHistoryRequest {" in protocol
-    assert "export interface GetCurrentStateEntityHistoryResponse {" in protocol
-    assert 'get_current_state_entity_history_request: "testcomp.v1.current_state_entities.history"' \
-        in protocol
+    assert "export interface ListCurrentStateEntityVersionsRequest {" in protocol
+    assert "export interface GetCurrentStateEntityVersionResponse {" in protocol
+    assert ('list_current_state_entity_versions_request: '
+            '"testcomp.v1.current_state_entities_versions.list"') in protocol
 
 
 def test_the_cpp_and_typescript_twins_agree_on_the_current_state_set(tmp_path):
     """The derived list and the C++ header read the same flag, so the two
-    twins cannot disagree about the history pair."""
+    twins cannot disagree about the versions sub-resource."""
     derived = set(_message_names(_enriched_entity(current_state=True)))
     protocol = _render(tmp_path, "cpp_protocol.hpp.mustache",
                        "current_state_entity_protocol.hpp", CURRENT_STATE_MODEL)

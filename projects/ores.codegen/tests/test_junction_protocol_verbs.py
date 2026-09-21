@@ -116,84 +116,94 @@ def _render(tmp_path: Path, target_template: str, target_output: str,
     return (tmp_path / target_output).read_text(encoding="utf-8")
 
 
-def test_the_derived_message_set_is_the_generic_relationship_protocol(tmp_path):
+def test_the_derived_message_set_is_the_entity_protocol_keyed_by_both_sides(
+        tmp_path):
     model = tmp_path / "ores.widget.widget_owner_junction.org"
     model.write_text(FIXTURE, encoding="utf-8")
     junction = load_org_junction_model(model)["junction"]
 
     messages = junction_protocol_messages(junction)
     assert [(m["name"], m.get("subject")) for m in messages] == [
-        ("get_widget_owners_request", "widget.v1.widget_owners.list"),
-        ("get_widget_owners_response", None),
-        ("get_widget_owners_by_widget_request",
-         "widget.v1.widget_owners.list_by_widget_id"),
-        ("get_widget_owners_by_widget_response", None),
-        ("save_widget_owner_request", "widget.v1.widget_owners.save"),
-        ("save_widget_owner_response", None),
+        ("widget_owner_key", None),
+        ("widget_owner_write", None),
+        ("widget_owner_change", None),
+        ("widget_owner_removal", None),
+        ("widget_owner_lookup", None),
+        ("widget_owners_filter", None),
+        ("list_widget_owners_request", "widget.v1.widget_owners.list"),
+        ("list_widget_owners_response", None),
+        ("get_widget_owner_request", "widget.v1.widget_owners.get"),
+        ("get_widget_owner_response", None),
+        ("get_many_widget_owners_request", "widget.v1.widget_owners.get_many"),
+        ("get_many_widget_owners_response", None),
+        ("put_widget_owner_request", "widget.v1.widget_owners.put"),
+        ("put_widget_owner_response", None),
+        ("put_many_widget_owners_request", "widget.v1.widget_owners.put_many"),
+        ("put_many_widget_owners_response", None),
         ("delete_widget_owner_request", "widget.v1.widget_owners.delete"),
         ("delete_widget_owner_response", None),
-        ("replace_widget_owners_by_widget_request",
-         "widget.v1.widget_owners.replace_by_widget_id"),
-        ("replace_widget_owners_by_widget_response", None),
-        ("count_widget_owners_by_widget_request",
-         "widget.v1.widget_owners.count_by_widget_id"),
-        ("count_widget_owners_by_widget_response", None),
-        ("count_widget_owners_by_owner_request",
-         "widget.v1.widget_owners.count_by_owner_id"),
-        ("count_widget_owners_by_owner_response", None),
-        ("widget_owner_view", None),
+        ("delete_many_widget_owners_request",
+         "widget.v1.widget_owners.delete_many"),
+        ("delete_many_widget_owners_response", None),
+        ("list_by_widget_id_widget_owners_request",
+         "widget.v1.widget_owners.list_by_widget_id"),
+        ("list_by_widget_id_widget_owners_response", None),
     ]
 
 
-def test_the_derived_messages_carry_the_keys_and_view(tmp_path):
+def test_the_derived_messages_carry_the_whole_key_and_a_scoped_read(tmp_path):
     model = tmp_path / "ores.widget.widget_owner_junction.org"
     model.write_text(FIXTURE, encoding="utf-8")
     junction = load_org_junction_model(model)["junction"]
 
     by_name = {m["name"]: m for m in junction_protocol_messages(junction)}
-    delete = by_name["delete_widget_owner_request"]
-    assert [(f["name"], f["ts_type"]) for f in delete["fields"]] == [
-        ("widget_ids", "string[]"), ("owner_ids", "string[]")]
+    key = by_name["widget_owner_key"]
+    assert [(f["name"], f["ts_type"]) for f in key["fields"]] == [
+        ("widget_id", "string"), ("owner_id", "string")]
 
-    by_side = by_name["get_widget_owners_by_widget_response"]
+    # A junction links rows, so a write has to name both halves of the key.
+    write = by_name["widget_owner_write"]
+    assert [(f["name"], f["ts_type"]) for f in write["fields"]] == [
+        ("widget_id", "string"), ("owner_id", "string"), ("role", "string")]
+
+    # The scoped read replies with link rows, so a caller that wants the
+    # owner's code resolves it with get_many rather than a payload type.
+    by_side = by_name["list_by_widget_id_widget_owners_response"]
     assert [(f["name"], f["ts_type"]) for f in by_side["fields"]] == [
-        ("widget_owners", "WidgetOwnerView[]"),
-        ("total_available_count", "number"),
-        ("success", "boolean"),
-        ("message", "string")]
-
-    view = by_name["widget_owner_view"]
-    assert [(f["name"], f["ts_type"]) for f in view["fields"]] == [
-        ("widget_owner", "WidgetOwner"), ("owner_code", "string")]
+        ("result", "Result"), ("widget_owners", "WidgetOwner[]"),
+        ("total", "number")]
+    assert "widget_owner_view" not in by_name
 
 
-def test_the_cpp_header_emits_the_read_save_delete_count_and_view(tmp_path):
+def test_the_cpp_header_emits_the_entity_protocol_keyed_by_both_sides(tmp_path):
     header = _render(tmp_path, "cpp_protocol.hpp.mustache",
                      "widget_owner_protocol.hpp")
 
-    assert "struct get_widget_owners_request {" in header
+    # Both halves of the key, each with its own column's type, and the payload
+    # column on the write record rather than on a link request.
+    assert "struct widget_owner_key {" in header
+    assert "struct widget_owner_write {" in header
+    assert "boost::uuids::uuid widget_id;" in header
+    assert "boost::uuids::uuid owner_id;" in header
+    assert "std::string role;" in header
+
+    assert "struct list_widget_owners_request {" in header
     assert '"widget.v1.widget_owners.list"' in header
-    assert "struct get_widget_owners_by_widget_request {" in header
-    # The by-side read returns the view, not the bare junction row.
-    assert "std::vector<widget_owner_view> widget_owners;" in header
-    assert "std::vector<ores::widget::domain::widget_owner> widget_owners;" in header
-    assert "struct save_widget_owner_request {" in header
-    assert '"widget.v1.widget_owners.save"' in header
-    assert "struct delete_widget_owner_request {" in header
-    assert '"widget.v1.widget_owners.delete"' in header
-    assert "std::vector<std::string> widget_ids;" in header
-    assert "std::vector<std::string> owner_ids;" in header
-    assert "struct count_widget_owners_by_widget_request {" in header
-    assert "struct count_widget_owners_by_owner_request {" in header
-    assert "struct widget_owner_view {" in header
-    assert "ores::widget::domain::widget_owner widget_owner;" in header
-    assert "std::string owner_code;" in header
-    # The payload column rides on the saved junction row, not a link request.
+    assert "struct list_by_widget_id_widget_owners_request {" in header
+    assert '"widget.v1.widget_owners.list_by_widget_id"' in header
+    assert "struct put_widget_owner_request {" in header
+    assert '"widget.v1.widget_owners.put"' in header
+    assert "struct delete_many_widget_owners_request {" in header
+    assert '"widget.v1.widget_owners.delete_many"' in header
+
     assert "struct link_widget_owner_request {" not in header
     assert "struct unlink_widget_owner_request {" not in header
-    # Paging stays on both reads.
+    # Paging stays on both reads, and the scoped read states its reach.
     assert header.count("std::uint32_t offset = 0;") == 2
     assert header.count("std::uint32_t limit = 100;") == 2
+    assert "ores::utility::domain::scope scope =" in header
+    # The shared records are included, not left to a transitive include.
+    assert '#include "ores.utility/domain/protocol.hpp"' in header
 
 
 def test_the_typescript_twin_emits_the_same_set(tmp_path):
@@ -201,47 +211,44 @@ def test_the_typescript_twin_emits_the_same_set(tmp_path):
                        "widget_owner_protocol.ts")
 
     assert "import type { WidgetOwner } from '../domain/widget_owner.js';" in protocol
-    assert "export interface GetWidgetOwnersRequest {" in protocol
-    assert "export interface GetWidgetOwnersResponse {" in protocol
-    assert "export interface GetWidgetOwnersByWidgetResponse {" in protocol
-    assert "widget_owners: WidgetOwnerView[];" in protocol
-    assert "export interface SaveWidgetOwnerRequest {" in protocol
+    assert "export interface ListWidgetOwnersRequest {" in protocol
+    assert "export interface GetWidgetOwnerRequest {" in protocol
+    assert "export interface WidgetOwnerKey {" in protocol
+    assert "widget_id: string;" in protocol
+    assert "owner_id: string;" in protocol
+    assert "export interface PutWidgetOwnerRequest {" in protocol
     assert "export interface DeleteWidgetOwnerRequest {" in protocol
-    assert "widget_ids: string[];" in protocol
-    assert "export interface CountWidgetOwnersByWidgetRequest {" in protocol
-    assert "export interface CountWidgetOwnersByOwnerRequest {" in protocol
-    assert "export interface WidgetOwnerView {" in protocol
-    assert "widget_owner: WidgetOwner;" in protocol
-    assert "owner_code: string;" in protocol
+    assert "export interface ListByWidgetIdWidgetOwnersRequest {" in protocol
+    assert "role: string;" in protocol
+    # The scoped read replies with link rows and no view type of its own.
+    assert "widget_owners: WidgetOwner[];" in protocol
+    assert "WidgetOwnerView" not in protocol
     assert "LinkWidgetOwnerRequest" not in protocol
-    assert "UnlinkWidgetOwnerRequest" not in protocol
     # Same subjects as the C++ twin, from the one derived list.
     for subject in (
         '"widget.v1.widget_owners.list"',
+        '"widget.v1.widget_owners.get"',
         '"widget.v1.widget_owners.list_by_widget_id"',
-        '"widget.v1.widget_owners.save"',
+        '"widget.v1.widget_owners.put"',
+        '"widget.v1.widget_owners.put_many"',
         '"widget.v1.widget_owners.delete"',
-        '"widget.v1.widget_owners.replace_by_widget_id"',
-        '"widget.v1.widget_owners.count_by_widget_id"',
-        '"widget.v1.widget_owners.count_by_owner_id"',
+        '"widget.v1.widget_owners.delete_many"',
     ):
         assert subject in protocol
 
 
-def test_a_junction_without_replace_emits_no_replacement_verb(tmp_path):
+def test_a_side_without_list_by_contributes_no_scoped_read(tmp_path):
     model = tmp_path / "ores.widget.widget_owner_junction.org"
-    model.write_text(FIXTURE.replace(":replace_by:    true\n", ""),
+    model.write_text(FIXTURE.replace(":list_by:       true\n", ""),
                      encoding="utf-8")
     junction = load_org_junction_model(model)["junction"]
 
     names = [m["name"] for m in junction_protocol_messages(junction)]
-    assert not any(name.startswith("replace_") for name in names)
-    # The batch write verbs are unconditional.
-    assert "save_widget_owner_request" in names
+    assert not any(name.startswith("list_by_") for name in names)
+    # The unscoped read and the write verbs are unconditional.
+    assert "list_widget_owners_request" in names
+    assert "put_widget_owner_request" in names
     assert "delete_widget_owner_request" in names
-    # Both counts stay: the repository serves both.
-    assert "count_widget_owners_by_widget_request" in names
-    assert "count_widget_owners_by_owner_request" in names
 
 
 def test_a_junction_without_name_singular_is_rejected(tmp_path):
@@ -323,15 +330,19 @@ def test_a_read_only_junction_derives_no_write_verb(tmp_path):
 
     names = [m["name"] for m in junction_protocol_messages(junction)]
     assert not any(
-        name.startswith(("save_", "delete_", "replace_")) for name in names)
-    # The reads and the counts stay: the repository serves both, and a
-    # read-only row is still readable.
+        name.startswith(("put_", "put_many_", "delete_", "delete_many_"))
+        for name in names)
+    # A write record nothing refers to is dead surface, so it goes too.
+    assert not any(
+        name.endswith(("_write", "_change", "_removal")) for name in names)
+    # The reads stay: a read-only row is still readable.
     for expected in (
-        "get_widget_owners_request",
-        "get_widget_owners_by_widget_request",
-        "count_widget_owners_by_widget_request",
-        "count_widget_owners_by_owner_request",
-        "widget_owner_view",
+        "widget_owner_key",
+        "widget_owner_lookup",
+        "list_widget_owners_request",
+        "get_widget_owner_request",
+        "get_many_widget_owners_request",
+        "list_by_widget_id_widget_owners_request",
     ):
         assert expected in names
 
@@ -339,22 +350,14 @@ def test_a_read_only_junction_derives_no_write_verb(tmp_path):
 def test_a_read_only_junction_renders_no_write_verb_on_either_twin(tmp_path):
     for template, name in (
         ("cpp_protocol.hpp.mustache", "widget_owner_protocol.hpp"),
-        ("cpp_service.hpp.mustache", "widget_owner_service.hpp"),
-        ("cpp_service.cpp.mustache", "widget_owner_service.cpp"),
-        ("cpp_nats_handler.hpp.mustache", "widget_owner_handler.hpp"),
-        ("cpp_nats_registrar.cpp.mustache", "widget_owner_registrar.cpp"),
         ("ts_protocol.ts.mustache", "widget_owner_protocol.ts"),
     ):
         rendered = _render(tmp_path, template, name, body=READ_ONLY_FIXTURE)
-        for verb in ("save_widget_owner", "delete_widget_owner",
-                     "remove_widget_owner", "replace_widget_owners"):
+        for verb in ("put_widget_owner", "delete_widget_owner",
+                     "widget_owner_write", "widget_owner_removal"):
             assert verb not in rendered, f"{verb} leaked into {name}"
-        # The count read survives on every twin that carries it. The
-        # service names it from the repository short name, which this
-        # fixture leaves unset, so match the column suffix both spellings
-        # share.
-        if template != "cpp_service.hpp.mustache":
-            assert "count_by_widget" in rendered, name
+        # The reads survive on both twins.
+        assert "list_by_widget_id_widget_owners" in rendered, name
 
 
 # A junction whose party_id names the association's target, not the caller's
@@ -410,7 +413,8 @@ def test_client_read_only_hides_the_wire_writes_and_keeps_the_repository(tmp_pat
 
     names = [m["name"] for m in junction_protocol_messages(junction)]
     assert not any(
-        name.startswith(("save_", "delete_", "replace_")) for name in names)
+        name.startswith(("put_", "put_many_", "delete_", "delete_many_"))
+        for name in names)
 
     # The repository is the difference between the two flags: it keeps its
     # writes here, where a :read_only: junction would have dropped them.
@@ -442,5 +446,5 @@ def test_a_junction_without_a_cpp_drawer_keeps_its_wire_writes(tmp_path):
 
     assert junction["wire_write_enabled"] is True
     names = [m["name"] for m in junction_protocol_messages(junction)]
-    assert "save_widget_owner_request" in names
+    assert "put_widget_owner_request" in names
     assert "delete_widget_owner_request" in names

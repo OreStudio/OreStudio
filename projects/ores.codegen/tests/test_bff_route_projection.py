@@ -81,19 +81,19 @@ def test_a_lookup_entity_names_the_derived_crud_subjects():
     assert projection["collection"] == "tenant_types"
     assert projection["key"] == "id"
     assert projection["key_field"] == "type"
-    assert projection["delete_keys_field"] == "types"
+    assert projection["delete_keys_field"] == "type"
     assert projection["rows_field"] == "types"
-    assert projection["subjects_list"] == "get_tenant_types_request"
-    assert projection["subjects_save"] == "save_tenant_type_request"
+    assert projection["subjects_list"] == "list_tenant_types_request"
+    assert projection["subjects_save"] == "put_tenant_type_request"
     assert projection["subjects_remove"] == "delete_tenant_type_request"
-    assert projection["subjects_history"] == "get_tenant_type_history_request"
+    assert projection["subjects_history"] == "list_tenant_type_versions_request"
 
 
-def test_a_domain_entity_has_no_single_record_get():
-    """The derived CRUD set states no read of one row, so the member is absent."""
+def test_a_domain_entity_states_its_single_record_read():
+    """The canonical set always reads one row, so the member is always present."""
     projection = bff_route_projection(_entity(), MODEL)
-    assert "subjects_get" not in projection
-    assert projection["has_get"] == "false"
+    assert projection["subjects_get"] == "get_tenant_type_request"
+    assert projection["has_get"] == "true"
     assert projection["has_history"] == "true"
 
 
@@ -108,22 +108,22 @@ def test_a_current_state_entity_has_no_history_member():
 
 
 def test_a_natural_key_primary_key_drives_delete_and_history():
-    """The path segment is the natural key and so is the request key."""
+    """The path segment is the natural key and so is the key record's member."""
     projection = bff_route_projection(_entity(), MODEL)
     assert projection["has_remove"] == "true"
     assert projection["has_history"] == "true"
     assert "subjects_remove" in projection
     assert "delete_keys_field" in projection
     assert "subjects_history" in projection
-    assert projection["history_rows_field"] == "history"
+    assert projection["history_rows_field"] == "versions"
 
 
 def test_a_surrogate_primary_key_withholds_delete_and_history():
-    """The requests are keyed by the surrogate primary key, not the natural key.
+    """The key record names the surrogate primary key, not the natural key.
 
-    The path segment the web builds is the natural key, so a route keyed by the
-    surrogate would send a value the service matches nothing against, or cannot
-    decode at all. The routes that can be driven stay.
+    The path segment the web builds is the natural key, so a route that filled
+    the surrogate member would send a value the service matches nothing
+    against. The routes that can be driven stay.
     """
     entity = _entity(primary_key={
         "column": "id",
@@ -136,8 +136,8 @@ def test_a_surrogate_primary_key_withholds_delete_and_history():
     assert "delete_keys_field" not in projection
     assert "subjects_history" not in projection
     assert "history_rows_field" not in projection
-    assert projection["subjects_list"] == "get_tenant_types_request"
-    assert projection["subjects_save"] == "save_tenant_type_request"
+    assert projection["subjects_list"] == "list_tenant_types_request"
+    assert projection["subjects_save"] == "put_tenant_type_request"
 
 
 def test_a_compound_primary_key_withholds_delete_and_history():
@@ -169,8 +169,8 @@ def test_a_current_state_entity_states_no_audit_timestamp_field():
     assert "timestamp_fields_block" not in projection
 
 
-def test_a_singular_plural_collision_does_not_invent_a_get():
-    """``series`` is both singular and plural; its one list read is not a get."""
+def test_a_singular_plural_collision_still_addresses_one_record():
+    """``series`` is both singular and plural, and the two reads stay distinct."""
     projection = bff_route_projection(_entity(
         entity_singular="series", entity_plural="series",
         entity_plural_short="series",
@@ -178,9 +178,9 @@ def test_a_singular_plural_collision_does_not_invent_a_get():
                      "columns": [{"column": "code", "is_uuid": False}]},
         presentation={"collection_name": "series", "key_field": "code",
                      "columns": [{"field": "code"}]}), MODEL)
-    assert "subjects_get" not in projection
-    assert projection["has_get"] == "false"
-    assert projection["subjects_list"] == "get_series_request"
+    assert projection["subjects_get"] == "get_series_request"
+    assert projection["has_get"] == "true"
+    assert projection["subjects_list"] == "list_series_request"
 
 
 def test_an_entity_with_no_derived_crud_set_projects_nothing():
@@ -212,20 +212,20 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "collection: 'tenant_types'," in rendered
     assert "key: 'id'," in rendered
     assert "keyField: 'type'," in rendered
-    assert "deleteKeysField: 'types'," in rendered
-    assert "list: subjects.get_tenant_types_request," in rendered
-    assert "save: subjects.save_tenant_type_request," in rendered
+    assert "deleteKeysField: 'type'," in rendered
+    assert "list: subjects.list_tenant_types_request," in rendered
+    assert "get: subjects.get_tenant_type_request," in rendered
+    assert "save: subjects.put_tenant_type_request," in rendered
     assert "remove: subjects.delete_tenant_type_request," in rendered
-    assert "history: subjects.get_tenant_type_history_request," in rendered
+    assert "history: subjects.list_tenant_type_versions_request," in rendered
     assert "rowsField: 'types'," in rendered
-    assert "historyRowsField: 'history'," in rendered
+    assert "historyRowsField: 'versions'," in rendered
     assert "timestampFields: ['recorded_at']," in rendered
     # The descriptor holds values and no behaviour.
     assert "=>" not in rendered
-    # No blank line left behind by the optional get member, which pystache
-    # would emit if the template gated on the ``has_get`` string literal.
+    # No blank line left behind by an optional member, which pystache would emit
+    # if the template gated on the ``has_get`` string literal.
     assert ",\n\n" not in rendered
-    assert "get: subjects." not in rendered
 
 
 def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
@@ -239,12 +239,13 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
 
     assert "export const tenantRoute: EntityRouteDescriptor = {" in rendered
     assert "keyField: 'code'," in rendered
-    assert "list: subjects.get_tenants_request," in rendered
-    assert "save: subjects.save_tenant_request," in rendered
+    assert "list: subjects.list_tenants_request," in rendered
+    assert "get: subjects.get_tenant_request," in rendered
+    assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
     assert "timestampFields: ['recorded_at']," in rendered
-    # The delete and history requests carry the UUID primary key, so neither
-    # route is stated and neither field is left behind.
+    # The key record names the UUID primary key, so neither route is stated and
+    # neither field is left behind.
     assert "deleteKeysField" not in rendered
     assert "remove: subjects." not in rendered
     assert "history: subjects." not in rendered

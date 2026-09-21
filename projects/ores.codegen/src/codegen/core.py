@@ -2135,25 +2135,28 @@ def bff_route_projection(entity, model_path):
     ``_ui_projection_entity`` states, so the declaration and the route
     cannot disagree about whether the entity has a screen set.
 
-    The roles are read off the derived CRUD messages, not assumed from the
+    The roles are read off the derived messages, not assumed from the
     entity's shape: ``entity_protocol_messages`` names the list request
-    ``get_<plural>_request`` and the save, delete and history requests
-    after the singular, and the descriptor names exactly the ``subjects``
-    keys the generated protocol module exports, so a rename moves both.
+    ``list_<plural>_request``, the write ``put_<singular>_request``, the
+    single-record read ``get_<singular>_request``, the removal
+    ``delete_<singular>_request`` and an entity's versions
+    ``list_<singular>_versions_request``, and the descriptor names exactly
+    the ``subjects`` keys the generated protocol module exports, so a rename
+    moves both.
 
     Every ``subjects_*`` value is the protocol module's own member name,
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
-    current-state entity derives no history pair, and no domain entity
-    derives a single-record get -- and ``has_get``/``has_remove``/
-    ``has_history`` state the same fact as TypeScript literals.
+    current-state entity derives no versions pair -- and ``has_get``/
+    ``has_remove``/``has_history`` state the same fact as TypeScript
+    literals.
 
-    The delete and history requests are keyed by the entity's primary key,
-    while the path segment is the natural key the web builds it from. The
-    two agree only when the primary key *is* the natural key, so the
-    projection states those routes only then. A descriptor that named a
-    primary-key field and sent it the natural key's value would match no row
-    on delete, or fail to decode on history.
+    The delete and versions reads address the entity's whole key record,
+    while the route's path segment carries the natural key the web builds it
+    from. The two agree only when the key is the natural key alone, so the
+    projection states those routes only then. A descriptor that sent a path
+    segment into a key record it does not fill would match no row on delete,
+    or fail to decode on a versions read.
 
     None when the derived set carries none of the required request roles --
     a defensive guard, since an enriched domain entity always derives them.
@@ -2170,30 +2173,32 @@ def bff_route_projection(entity, model_path):
     plural = entity.get('entity_plural', singular + 's')
     messages = entity.get('messages') or []
 
-    subjects_list = _protocol_subject_key(messages, f'get_{plural}_request')
-    subjects_save = _protocol_subject_key(messages, f'save_{singular}_request')
+    subjects_list = _protocol_subject_key(messages, f'list_{plural}_request')
+    subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
     if not (subjects_list and subjects_save and subjects_remove):
         return None
-    # An entity whose singular and plural are spelled alike has one
-    # ``get_<name>_request`` and it is the list request, not a read of one.
-    subjects_get = (_protocol_subject_key(messages, f'get_{singular}_request')
-                    if singular != plural else None)
+    subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
-        messages, f'get_{singular}_history_request')
+        messages, f'list_{singular}_versions_request')
 
     natural_key = presentation.get('key_field', '')
     keyed_by_natural_key = _keyed_by_natural_key(entity)
-    list_response = _protocol_message(messages, f'get_{plural}_response')
-    delete_request = _protocol_message(
-        messages, f'delete_{singular}_request')
+    list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
-        messages, f'get_{singular}_history_response')
-    delete_keys_field = _string_vector_field_name(delete_request) or ''
-    history_rows_field = _vector_field_name(history_response) or ''
+        messages, f'list_{singular}_versions_response')
+    # A removal carries the entity's whole key as a record, never a flattened
+    # string, so the descriptor states the one member the route's path segment
+    # fills. Only a single-column key can be driven from one path segment, and
+    # that is the same condition that lets the delete be stated at all.
+    key_record = _protocol_message(messages, f'{singular}_key')
+    key_members = [field['name']
+                   for field in (key_record or {}).get('fields') or []]
+    delete_keys_field = key_members[0] if len(key_members) == 1 else ''
     has_remove = bool(delete_keys_field) and keyed_by_natural_key
-    has_history = bool(history_rows_field) and keyed_by_natural_key
+    has_history = bool(history_response) and keyed_by_natural_key
+    history_rows_field = _vector_field_name(history_response) or ''
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,

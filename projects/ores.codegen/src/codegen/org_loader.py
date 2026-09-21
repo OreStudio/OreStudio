@@ -2222,6 +2222,11 @@ _TS_SCALARS = {
     # message-shaped model carries the type the domain struct declares.
     "utility::uuid::tenant_id": "string",
     "std::chrono::year_month_day": "string",
+    # An address crosses the wire as its textual form, per the same
+    # reflectors, so a message that carries one states a string. It is listed
+    # here as well as in the domain-only set below because a write record can
+    # carry one: a login records the address it came from.
+    "boost::asio::ip::address": "string",
 }
 
 # A domain member's fully qualified C++ name, e.g.
@@ -2250,6 +2255,7 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::precondition": ("Precondition", "utility/protocol"),
     "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
     "ores::utility::domain::order": ("Order", "utility/protocol"),
+    "ores::utility::domain::scope": ("Scope", "utility/protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.
@@ -2346,14 +2352,21 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     return _ts_type(cpp_type)
 
 
-def _ts_field(name: str, cpp_type: str, comment: str = "") -> dict[str, Any]:
+def _ts_field(name: str, cpp_type: str, comment: str = "",
+              default: str = "") -> dict[str, Any]:
     """One derived protocol field, with its TypeScript type when one exists.
 
     ``comment`` is always set: Mustache resolves a name it cannot find by
     walking up the context stack, so an absent ``comment`` would inherit
-    the enclosing message's."""
+    the enclosing message's. ``default`` is the C++ initialiser the
+    specification states for a field whose value has a defined starting
+    point, and is absent rather than empty when there is none, so the
+    renderer writes a bare member.
+    """
     field: dict[str, Any] = {"name": name, "cpp_type": cpp_type,
                              "comment": comment}
+    if default:
+        field["default"] = default
     mapped = _ts_type(cpp_type)
     if mapped:
         field["ts_type"] = mapped
@@ -2496,11 +2509,22 @@ CHANGE_INTENT_FIELDS = frozenset({
 
 
 def _column_name(column: dict[str, Any]) -> str:
-    """A column's name, whichever of the two spellings it carries."""
-    return column.get("column") or column.get("field") or ""
+    """A column's name, whichever of its three spellings the model carries.
+
+    A ``* Columns`` entry is named ``name`` by the org drawer, while a primary
+    key column, a foreign key and the repository's key aliases are named
+    ``column``, and a presentation column table is named ``field``. Reading
+    only one of them emits a member with no name at all, which is a wire shape
+    nothing can address.
+    """
+    return (column.get("column") or column.get("field")
+            or column.get("name") or "")
 
 
-def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def write_record_fields(
+    columns: list[dict[str, Any]],
+    key_columns: frozenset[str] | set[str] = frozenset(),
+) -> list[dict[str, Any]]:
     """The fields a client may send, in the order the model declares them.
 
     A write carries the user-owned fields and nothing else: tenancy and
@@ -2509,6 +2533,12 @@ def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
     record. What is left is what a caller actually decides, which for a create
     includes the key.
 
+    A key column is never stripped, even when its name is also a server-owned
+    one. ``party_id`` is the acting party on most entities, but on a junction
+    that links parties it is half the key, and which party a link names is the
+    caller's to state; stripping it would emit a write that cannot say what it
+    writes.
+
     Each field is shaped for the renderer, not handed back as the raw column:
     the message templates read ``name`` and ``cpp_type``, and a column dict
     passed through untouched would render an empty member.
@@ -2516,13 +2546,39 @@ def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [_ts_field(_column_name(column),
                       column.get("cpp_type") or "std::string")
             for column in columns
-            if _column_name(column) not in SERVER_OWNED_FIELDS
-            and _column_name(column) not in CHANGE_INTENT_FIELDS]
+            if _column_name(column) in key_columns
+            or (_column_name(column) not in SERVER_OWNED_FIELDS
+                and _column_name(column) not in CHANGE_INTENT_FIELDS)]
 
 
 def _key_cpp_type(column: dict[str, Any]) -> str:
-    """A key column's own type, not a string it happens to be printable as."""
-    return "boost::uuids::uuid" if column.get("is_uuid") else "std::string"
+    """A key column's own type, not a string it happens to be printable as.
+
+    The type is read from the column where the model states it, and falls back
+    to the uuid flag for a column dict built by hand, as the tests build one.
+    """
+    return (column.get("cpp_type")
+            or ("boost::uuids::uuid" if column.get("is_uuid") else "std::string"))
+
+
+def write_record_columns(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every column a write record may name, in the order the model declares them.
+
+    The loader partitions an entity's fields: the primary key is its own list,
+    a unique business identifier is a natural key, and the rest are columns.
+    A write record has to carry all three, because a create states its key --
+    which is the primary key for a surrogate-keyed entity and the natural key
+    for a lookup one -- and a record built from ``columns`` alone would leave a
+    create unable to say what it creates.
+    """
+    primary_key = entity.get("primary_key") or {}
+    declared = (list(primary_key.get("columns") or [])
+                + list(entity.get("natural_keys") or [])
+                + list(entity.get("columns") or []))
+    by_name: dict[str, dict[str, Any]] = {}
+    for column in declared:
+        by_name.setdefault(_column_name(column), column)
+    return list(by_name.values())
 
 
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
@@ -2540,162 +2596,272 @@ def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
             for column in primary_key.get("columns") or []]
 
 
-def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
-    """Derive an entity's standard CRUD message list.
+# The shared records every entity's messages are built from. They live in
+# ``ores.utility::domain`` because they are component-independent: a generated
+# ``*.api`` protocol header may not depend on the service layer, so an entity's
+# own result type could not be shared this way.
+_RESULT = "ores::utility::domain::result"
+_PRECONDITION = "ores::utility::domain::precondition"
+_INTENT = "ores::utility::domain::change_intent"
+_ORDER = "ores::utility::domain::order"
+_SCOPE = "ores::utility::domain::scope"
 
-    The list is the model of the ``{{#domain_entity}}`` block of
-    ``cpp_protocol.hpp.mustache``: the same messages, in the same order,
-    under the same conditionals, so the C++ header and its TypeScript twin
-    describe one protocol. It must be called on the enriched entity, after
-    ``core.generate_from_model`` has hoisted the repository's
-    ``entity_plural_short`` and derived ``extra_list_requests``,
-    ``primary_key.columns`` and the messaging flags. ``single_delete`` and
-    ``delete_request_extra_args`` are handler concerns -- the protocol
-    template branches on neither -- so they are deliberately not read
-    here. A ``current_state`` entity derives no history pair: it has no
-    valid_from/valid_to axis, so it has no history endpoint at all.
+# The operations that change state, and the auxiliary records only they carry.
+# A model whose surface has no client-facing writes derives the reads alone, and
+# a write record nothing refers to is dead surface rather than a message.
+_WRITE_OPERATION_PREFIXES = ("put_", "put_many_", "delete_", "delete_many_")
+_WRITE_ONLY_RECORD_SUFFIXES = ("_write", "_change", "_removal")
+
+
+def _column_cpp_type(entity: dict[str, Any], name: str) -> str:
+    """One named column's own C++ type, or a string when the model is silent."""
+    for column in entity.get("columns") or []:
+        if _column_name(column) == name:
+            return column.get("cpp_type") or "std::string"
+    return "std::string"
+
+
+def _parent_id_field(entity: dict[str, Any]) -> str:
+    """The column pointing at an entity's parent, when it declares one."""
+    if not entity.get("has_parent_id"):
+        return ""
+    presentation = entity.get("presentation") or {}
+    return (entity.get("parent_id_field")
+            or presentation.get("parent_id_field")
+            or presentation.get("parent_key_field") or "")
+
+
+def _relation_columns(entity: dict[str, Any]) -> list[str]:
+    """The columns a read may be scoped by, in the order the model declares them.
+
+    A scoped read addresses one related entity, so every foreign key the model
+    already reads by is a relation. The parent relation is one of these and not
+    a case of its own: reading a node's children and reading its subtree are one
+    verb, and ``scope`` says which.
+    """
+    names = [extra["filter_column"]
+             for extra in entity.get("extra_list_requests") or []
+             if extra.get("filter_column")]
+    parent = _parent_id_field(entity)
+    if parent and parent not in names:
+        names.append(parent)
+    return names
+
+
+def filter_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """An entity's filter record: one optional member per filterable column.
+
+    The specification makes filtering a record rather than a query language, so
+    every member is optional and carries the field's own type. Which fields are
+    filterable is the model's own statement: a column is filterable when the
+    model already reads by it, which is the list filter column and every foreign
+    key a scoped read is declared for. An empty result means the resource
+    supports no filtering, and then it has no filter record at all.
+    """
+    names = ([entity["list_filter_column"]]
+             if entity.get("list_filter_column") else []) + _relation_columns(entity)
+    return [_ts_field(name,
+                      f"std::optional<{_column_cpp_type(entity, name)}>")
+            for name in dict.fromkeys(names)]
+
+
+def versions_filter_fields() -> list[dict[str, Any]]:
+    """The version axis as a filter, rather than a second way to select.
+
+    An exact version and the two bounds, each optional and each typed, so that
+    reading the entity as it stood at version 7 and reading the last month of
+    changes need no operation of their own.
+    """
+    return [
+        _ts_field("version", "std::optional<std::uint32_t>"),
+        _ts_field("from_version", "std::optional<std::uint32_t>"),
+        _ts_field("to_version", "std::optional<std::uint32_t>"),
+    ]
+
+
+def paged_list_messages(
+    name: str,
+    subject: str,
+    leading: list[dict[str, Any]],
+    filter_field: dict[str, Any] | None,
+    collection: str,
+    collection_type: str,
+) -> list[dict[str, Any]]:
+    """The request and response pair every paged list shares.
+
+    ``name`` is the message stem, ``leading`` the fields that say what the list
+    covers -- nothing for an unscoped list, the relation for a scoped one, the
+    key for a versions list. Offset, limit and total are unconditional in the
+    specification, so they are stated here once instead of per entity, and the
+    filter comes last, after the page it narrows.
+    """
+    fields = list(leading) + [
+        _ts_field("offset", "std::uint32_t", default="0"),
+        _ts_field("limit", "std::uint32_t", default="100"),
+        _ts_field("order", _ORDER),
+    ]
+    if filter_field:
+        fields.append(filter_field)
+    return [
+        _ts_message(f"{name}_request", response_type=f"{name}_response",
+                    subject=subject, fields=fields),
+        _ts_message(f"{name}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(collection, f"std::vector<{collection_type}>"),
+            _ts_field("total", "std::uint64_t")]),
+    ]
+
+
+def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive an entity's canonical message list, as the specification states it.
+
+    The list is the one model both protocol twins render: the C++
+    ``cpp_protocol.hpp.mustache`` and the TypeScript ``ts_protocol.ts.mustache``
+    each walk ``{{#messages}}``, so a message added here appears in both or in
+    neither. An entry with a ``subject`` is an operation a caller addresses; an
+    entry without one is an auxiliary record -- a key, a write record, a change,
+    a removal, a lookup, a version key, a filter -- which the renderer writes as
+    a plain struct.
+
+    Must be called on the enriched entity, after ``core.generate_from_model``
+    has hoisted the repository's ``entity_plural_short`` and derived
+    ``extra_list_requests``, ``primary_key.columns`` and the messaging flags.
+    Messages the model declares itself are appended, so both twins carry them
+    from one section.
+
+    A ``current_state`` entity derives no versions sub-resource: it has no
+    valid_from/valid_to axis, so it has no version to read.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
     plural = entity.get("entity_plural", singular + "s")
     plural_short = entity.get("entity_plural_short") or plural
     domain_type = f"ores::{component}::domain::{singular}"
-    pk = entity.get("primary_key") or {}
+    key = f"{singular}_key"
+    key_columns = frozenset(
+        _column_name(column)
+        for column in (entity.get("primary_key") or {}).get("columns") or [])
 
-    list_fields = [
-        _ts_field("offset", "std::uint32_t"),
-        _ts_field("limit", "std::uint32_t"),
-    ]
-    filter_column = entity.get("list_filter_column")
-    if filter_column:
-        list_fields.append(_ts_field(filter_column, "std::string"))
-    if entity.get("has_as_of_lookup"):
-        list_fields.append(_ts_field(
-            "as_of", "std::string",
-            comment=_indent_block(
-                "// Empty = current/latest. Note: when as_of is set, results are not\n"
-                "// paginated by offset/limit -- all matching rows are returned.",
-                4)))
+    filter_fields = filter_record_fields(entity)
 
+    # The auxiliary records come first, because a C++ message names the records
+    # it carries and a type is declared before it is used. None of them has a
+    # subject: a record is a shape, an operation is something a caller sends.
     messages = [
-        _ts_message(
-            f"get_{plural}_request",
-            response_type=f"get_{plural}_response",
-            subject=f"{component}.v1.{plural}.list",
-            fields=list_fields),
-        _ts_message(
-            f"get_{plural}_response",
-            fields=[
-                _ts_field(plural_short, f"std::vector<{domain_type}>"),
-                _ts_field("total_available_count", "int"),
-                _ts_field("success", "bool"),
-                _ts_field("message", "std::string"),
-            ]),
+        _ts_message(key, fields=key_record_fields(entity)),
+        _ts_message(f"{singular}_write",
+                    fields=write_record_fields(write_record_columns(entity),
+                                               key_columns)),
+        _ts_message(f"{singular}_change", fields=[
+            _ts_field("write", f"{singular}_write"),
+            _ts_field("precondition", _PRECONDITION)]),
+        _ts_message(f"{singular}_removal", fields=[
+            _ts_field("key", key),
+            _ts_field("precondition", _PRECONDITION)]),
+        _ts_message(f"{singular}_lookup", fields=[
+            _ts_field("key", key),
+            _ts_field(singular, f"std::optional<{domain_type}>")]),
     ]
-
-    save_fields = (
-        [_ts_field(plural_short, f"std::vector<{domain_type}>")]
-        if entity.get("has_batch_save")
-        else [_ts_field("data", domain_type)]
-    )
-    messages += [
-        _ts_message(
-            f"save_{singular}_request",
-            response_type=f"save_{singular}_response",
-            subject=f"{component}.v1.{plural}.save",
-            fields=save_fields),
-        _ts_message(
-            f"save_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
-
-    delete_fields = []
-    for column in pk.get("columns") or []:
-        name = "ids" if column.get("is_uuid") else f"{column.get('column', '')}s"
-        delete_fields.append(_ts_field(name, "std::vector<std::string>"))
-    messages += [
-        _ts_message(
-            f"delete_{singular}_request",
-            response_type=f"delete_{singular}_response",
-            subject=f"{component}.v1.{plural}.delete",
-            fields=delete_fields),
-        _ts_message(
-            f"delete_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
-
-    # A current-state entity carries no valid_from/valid_to axis, so it has no
-    # history endpoint. The C++ header omits the request/response pair under
-    # the same ``current_state`` flag; deriving the list here from that one
-    # flag keeps the TypeScript interfaces and subjects in step by
-    # construction rather than by a second, independent gate.
+    if filter_fields:
+        messages.append(_ts_message(f"{plural}_filter", fields=filter_fields))
     if not entity.get("current_state"):
+        # A versioned entity's version is addressed by the entity's own key plus
+        # the version number, so the pair is a record of its own. A
+        # current-state entity has no version to address.
+        messages.append(_ts_message(f"{singular}_version_key", fields=[
+            _ts_field(singular, key),
+            _ts_field("version", "std::uint32_t")]))
+        messages.append(_ts_message(f"{singular}_versions_filter",
+                                    fields=versions_filter_fields()))
+
+    list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
+                   if filter_fields else None)
+
+    messages += paged_list_messages(
+        f"list_{plural}", request_subject(component, plural, "list"),
+        [], list_filter, plural_short, domain_type)
+
+    messages += [
+        _ts_message(f"get_{singular}_request",
+                    response_type=f"get_{singular}_response",
+                    subject=request_subject(component, plural, "get"),
+                    fields=[_ts_field("key", key)]),
+        _ts_message(f"get_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(singular, f"std::optional<{domain_type}>")]),
+        _ts_message(f"get_many_{plural}_request",
+                    response_type=f"get_many_{plural}_response",
+                    subject=request_subject(component, plural, "get_many"),
+                    fields=[_ts_field("keys", f"std::vector<{key}>")]),
+        _ts_message(f"get_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("entries", f"std::vector<{singular}_lookup>")]),
+        _ts_message(f"put_{singular}_request",
+                    response_type=f"put_{singular}_response",
+                    subject=request_subject(component, plural, "put"),
+                    fields=[_ts_field("change", f"{singular}_change"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(singular, domain_type)]),
+        _ts_message(f"put_many_{plural}_request",
+                    response_type=f"put_many_{plural}_response",
+                    subject=request_subject(component, plural, "put_many"),
+                    fields=[_ts_field("changes",
+                                      f"std::vector<{singular}_change>"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(plural_short, f"std::vector<{domain_type}>")]),
+        _ts_message(f"delete_{singular}_request",
+                    response_type=f"delete_{singular}_response",
+                    subject=request_subject(component, plural, "delete"),
+                    fields=[_ts_field("removal", f"{singular}_removal"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"delete_{singular}_response",
+                    fields=[_ts_field("result", _RESULT)]),
+        _ts_message(f"delete_many_{plural}_request",
+                    response_type=f"delete_many_{plural}_response",
+                    subject=request_subject(component, plural, "delete_many"),
+                    fields=[_ts_field("removals",
+                                      f"std::vector<{singular}_removal>"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"delete_many_{plural}_response",
+                    fields=[_ts_field("result", _RESULT)]),
+    ]
+
+    # A scoped read is the plain list with the relation in its addressing, so it
+    # shares the page, the order, the total and the response shape. The column
+    # names both the subject suffix and the field, so the two cannot disagree.
+    # ``scope`` is what makes one verb serve both readings: a node's children,
+    # and everything beneath it.
+    for relation in _relation_columns(entity):
+        messages += paged_list_messages(
+            f"list_by_{relation}_{plural}",
+            request_subject(component, plural, f"list_by_{relation}"),
+            [_ts_field(relation, _column_cpp_type(entity, relation)),
+             _ts_field("scope", _SCOPE,
+                       default="ores::utility::domain::scope::direct")],
+            list_filter, plural_short, domain_type)
+
+    if not entity.get("current_state"):
+        messages += paged_list_messages(
+            f"list_{singular}_versions",
+            versions_subject(component, plural, "list"),
+            [_ts_field("key", key)],
+            _ts_field("filter", f"std::optional<{singular}_versions_filter>"),
+            "versions", domain_type)
         messages += [
-            _ts_message(
-                f"get_{singular}_history_request",
-                response_type=f"get_{singular}_history_response",
-                subject=f"{component}.v1.{plural}.history",
-                fields=[_ts_field(pk.get("column", ""), "std::string")]),
-            _ts_message(
-                f"get_{singular}_history_response",
-                fields=[_ts_field("history", f"std::vector<{domain_type}>"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
+            _ts_message(f"get_{singular}_version_request",
+                        response_type=f"get_{singular}_version_response",
+                        subject=versions_subject(component, plural, "get"),
+                        fields=[_ts_field("key", f"{singular}_version_key")]),
+            _ts_message(f"get_{singular}_version_response", fields=[
+                _ts_field("result", _RESULT),
+                _ts_field("version", domain_type)]),
         ]
 
-    for extra in entity.get("extra_list_requests") or []:
-        suffix = extra["name_suffix"]
-        messages += [
-            _ts_message(
-                f"get_{plural}_{suffix}_request",
-                response_type=f"get_{plural}_{suffix}_response",
-                subject=f"{component}.v1.{plural}.{extra['nats_suffix']}",
-                fields=[_ts_field(extra["filter_column"], "std::string"),
-                        _ts_field("offset", "std::uint32_t"),
-                        _ts_field("limit", "std::uint32_t")]),
-            _ts_message(
-                f"get_{plural}_{suffix}_response",
-                fields=[_ts_field(plural_short, f"std::vector<{domain_type}>"),
-                        _ts_field("total_available_count", "int"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
-
-    if entity.get("has_parent_id"):
-        messages += [
-            _ts_message(
-                f"get_{singular}_hierarchy_request",
-                response_type=f"get_{singular}_hierarchy_response",
-                subject=f"{component}.v1.{plural}.hierarchy",
-                fields=[_ts_field("root_id", "std::string"),
-                        _ts_field("from_root", "bool")]),
-            _ts_message(
-                f"get_{singular}_hierarchy_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string"),
-                        _ts_field(
-                            "roots",
-                            "std::vector<ores::utility::domain::hierarchy_node>")]),
-        ]
-
-    if entity.get("read_for_cache"):
-        messages += [
-            _ts_message(
-                f"read_{plural}_for_cache_request",
-                response_type=f"read_{plural}_for_cache_response",
-                subject=f"{component}.v1.{plural}.read",
-                fields=[_ts_field("tenant_id", "std::string")]),
-            _ts_message(
-                f"read_{plural}_for_cache_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string"),
-                        _ts_field(plural_short, f"std::vector<{domain_type}>")]),
-        ]
-
-    # Messages the model declares itself, beside the derived CRUD set. The
-    # C++ header renders the same list at its paste point, so both twins
+    # Messages the model declares itself, beside the derived set, so both twins
     # come from this one section.
     messages += entity.get("declared_messages") or []
 
@@ -2703,137 +2869,68 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]:
-    """Derive a junction's generic relationship protocol message list.
+    """Derive a junction's message list: the entity set, keyed by both sides.
 
-    The list is the model of the ``{{#junction}}`` block of
-    ``cpp_protocol.hpp.mustache``, which is the entity protocol's shape
-    plus the relationship verbs: a paged unscoped read of the junction rows
-    (the entity-mirroring read a listing calls), a paged by-side read per
-    ``:list_by:`` side returning the ``<junction>_view`` payload, a paged
-    ``:replace_by:`` whole-set replacement per side, a batch additive
-    ``save`` that leaves omitted rows alone, a batch ``delete`` by the
-    pair, a count per side -- both sides, because the repository serves
-    both -- and the view the by-side read returns. The two twins render
-    from this one list, so a field added to one appears in the other.
+    A junction is an entity whose key spans the two sides it links, so it
+    declares the same verbs as any other resource and addresses one link by
+    both columns at once. Its key record carries the whole pair and never half
+    of it, which is what makes addressing one link unambiguous.
 
-    Must be called on the enriched junction, after ``core.generate_from_model``
-    has stamped the sides' ``is_uuid``/``is_date`` flags, the columns'
-    ``ts_type`` and the repository key aliases. The by-side read and the
-    replacement keep the subjects they already emitted, so a junction that
-    renders them today keeps addressing the same endpoint.
+    A by-side read is a scoped read of the same collection: each side the model
+    opted into ``:list_by:=`` contributes ``list_by_<column>``, which is the
+    plain list with that side in its addressing. The reply is a page of link
+    rows, as any scoped read replies, so a caller resolves the codes it wants
+    to display with ``get_many`` rather than through a payload type of its own.
+
+    A junction with no client-facing write surface derives the reads only. The
+    wire has no read-only flag -- authorisation is what refuses a write -- but a
+    model that states the surface has no writes should not emit messages for
+    operations that cannot happen.
+
+    Derived by projecting the junction onto the entity shape and delegating, so
+    a change to the entity protocol reaches junctions in the same commit rather
+    than being mirrored here by hand.
     """
     component = junction.get("component", "")
     name = junction.get("name", "")
     singular = junction.get("name_singular", "")
-    domain_type = f"ores::{component}::domain::{singular}"
-    actor_fields = ("modified_by", "performed_by", "change_reason_code",
-                    "change_commentary")
     sides = (junction.get("left") or {}, junction.get("right") or {})
-
-    messages: list[dict[str, Any]] = [
-        _ts_message(
-            f"get_{name}_request",
-            response_type=f"get_{name}_response",
-            subject=f"{component}.v1.{name}.list",
-            fields=[_ts_field("offset", "std::uint32_t"),
-                    _ts_field("limit", "std::uint32_t")]),
-        _ts_message(
-            f"get_{name}_response",
-            fields=[_ts_field(name, f"std::vector<{domain_type}>"),
-                    _ts_field("total_available_count", "int"),
-                    _ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
-
-    for side in sides:
-        short = side.get("column_short", "")
-        if not side.get("list_by"):
-            continue
-        messages += [
-            _ts_message(
-                f"get_{name}_by_{short}_request",
-                response_type=f"get_{name}_by_{short}_response",
-                subject=f"{component}.v1.{name}.list_by_{side['column']}",
-                fields=[_ts_field(side["column"], "std::string"),
-                        _ts_field("offset", "std::uint32_t"),
-                        _ts_field("limit", "std::uint32_t")]),
-            _ts_message(
-                f"get_{name}_by_{short}_response",
-                fields=[_ts_field(name, f"std::vector<{singular}_view>"),
-                        _ts_field("total_available_count", "int"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
-
-    # A junction with no client-facing write surface carries no write verb
-    # on either twin: the C++ block guards the same three, and this list
-    # feeds both. ``wire_write_enabled`` folds the repository's read_only
-    # together with the client-only switch; the fallback keeps a
-    # hand-built junction dict, as the tests use, on the read_only rule.
+    entity = {
+        "component": component,
+        "entity_singular": singular,
+        "entity_plural": name,
+        "entity_plural_short": name,
+        # A junction links rows and carries no valid_from/valid_to axis, so it
+        # has no versions sub-resource to read.
+        "current_state": True,
+        "primary_key": {
+            "columns": [{"column": side.get("column", ""),
+                         "cpp_type": side.get("cpp_type") or "std::string",
+                         "is_uuid": side.get("type") == "uuid"}
+                        for side in sides],
+        },
+        "columns": [{"column": side.get("column", ""),
+                     "cpp_type": side.get("cpp_type") or "std::string"}
+                    for side in sides]
+        + [{"column": _column_name(column),
+            "cpp_type": column.get("cpp_type") or "std::string"}
+           for column in junction.get("columns") or []],
+        "extra_list_requests": [
+            {"filter_column": side["column"],
+             "nats_suffix": f"list_by_{side['column']}"}
+            for side in sides if side.get("list_by")],
+    }
+    messages = entity_protocol_messages(entity)
+    # ``wire_write_enabled`` folds the repository's read_only together with the
+    # client-only switch; the fallback keeps a hand-built junction dict, as the
+    # tests use, on the read_only rule.
     if junction.get(
             "wire_write_enabled",
             not (junction.get("read_only") or junction.get("client_read_only"))):
-        messages += [
-            _ts_message(
-                f"save_{singular}_request",
-                response_type=f"save_{singular}_response",
-                subject=f"{component}.v1.{name}.save",
-                fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
-            _ts_message(
-                f"save_{singular}_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-            _ts_message(
-                f"delete_{singular}_request",
-                response_type=f"delete_{singular}_response",
-                subject=f"{component}.v1.{name}.delete",
-                fields=[_ts_field(f"{side['column']}s",
-                                  "std::vector<std::string>") for side in sides]),
-            _ts_message(
-                f"delete_{singular}_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
-
-        for side in sides:
-            short = side.get("column_short", "")
-            if not side.get("replace_by"):
-                continue
-            messages += [
-                _ts_message(
-                    f"replace_{name}_by_{short}_request",
-                    response_type=f"replace_{name}_by_{short}_response",
-                    subject=f"{component}.v1.{name}.replace_by_{side['column']}",
-                    fields=[_ts_field(side["column"], "std::string"),
-                            _ts_field(name, f"std::vector<{domain_type}>")]
-                           + [_ts_field(f, "std::string") for f in actor_fields]),
-                _ts_message(
-                    f"replace_{name}_by_{short}_response",
-                    fields=[_ts_field("success", "bool"),
-                            _ts_field("message", "std::string")]),
-            ]
-
-    for side in sides:
-        short = side.get("column_short", "")
-        messages += [
-            _ts_message(
-                f"count_{name}_by_{short}_request",
-                response_type=f"count_{name}_by_{short}_response",
-                subject=f"{component}.v1.{name}.count_by_{side['column']}",
-                fields=[_ts_field(side["column"], "std::string")]),
-            _ts_message(
-                f"count_{name}_by_{short}_response",
-                fields=[_ts_field("total_available_count", "int")]),
-        ]
-
-    view_fields = [_ts_field(singular, domain_type)]
-    for side in sides:
-        if side.get("enrich_code"):
-            view_fields.append(
-                _ts_field(f"{side['column_short']}_code", "std::string"))
-    messages.append(_ts_message(f"{singular}_view", fields=view_fields))
-
-    return messages
+        return messages
+    return [message for message in messages
+            if not message["name"].startswith(_WRITE_OPERATION_PREFIXES)
+            and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
 
 
 def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:

@@ -2497,15 +2497,21 @@ def _column_name(column: dict[str, Any]) -> str:
 
 
 def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """The columns a client may send, in the order the model declares them.
+    """The fields a client may send, in the order the model declares them.
 
     A write carries the user-owned fields and nothing else: tenancy and
     provenance come from the authenticated context, the version and the
     validity window from the database, and the change intent from beside the
     record. What is left is what a caller actually decides, which for a create
     includes the key.
+
+    Each field is shaped for the renderer, not handed back as the raw column:
+    the message templates read ``name`` and ``cpp_type``, and a column dict
+    passed through untouched would render an empty member.
     """
-    return [column for column in columns
+    return [_ts_field(_column_name(column),
+                      column.get("cpp_type") or "std::string")
+            for column in columns
             if _column_name(column) not in SERVER_OWNED_FIELDS
             and _column_name(column) not in CHANGE_INTENT_FIELDS]
 

@@ -3615,8 +3615,15 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             commands.append(_command(operation, "put", "add", "must_not_exist"))
             commands.append(_command(operation, "put", "set", "any"))
             continue
-        if verb.startswith("list_by_"):
+        # A scoped read's verb names the shape and not the column it is scoped
+        # by: the derivation states the relation in `leading`, so the command
+        # and its subject are built from that rather than from the verb.
+        relation = ""
+        if verb == "list_scoped":
+            relation = operation.get("leading", "")
+        elif verb.startswith("list_by_"):
             relation = verb[len("list_by_"):]
+        if relation:
             addressed_by = _input(
                 relation, _column_cpp_type(entity, relation))
             command = _command(operation, "list_by",
@@ -3636,8 +3643,17 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
                    for item in command["keys"] + command["writes"])
 
     kinds = {command["kind"] for command in commands}
+    # A verb the projection has no shape for would be skipped in silence, and
+    # an entity would answer fewer verbs from the shell than it derives with
+    # nothing to say so. The plan names them instead.
+    known = set(shapes) | {"put", "list_scoped"}
+    uncovered = sorted({
+        operation["verb"] for operation in entity.get("operations") or []
+        if operation.get("verb") not in known
+    })
     return {
         "commands": commands,
+        "uncovered_verbs": uncovered,
         "command_count": len(commands),
         "has_order": any(command["has_order"] for command in commands),
         "has_list": _any(lambda item: item["is_list"]),

@@ -69,7 +69,7 @@ TEST_CASE("account_contact_information_commands_registers_every_derived_verb", t
 
     account_contact_information_commands::register_commands(root_menu, session);
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
     CHECK(true);
 }
 
@@ -238,6 +238,35 @@ TEST_CASE("account_contact_information_commands_process_delete_many_requires_a_s
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("account_contact_information_commands_process_by_account_id_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    account_contact_information_commands::process_by_account_id(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("account_contact_information_commands_process_by_account_id_reports_the_expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    account_contact_information_commands::process_by_account_id(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(command_feedback::failed());
 }
 

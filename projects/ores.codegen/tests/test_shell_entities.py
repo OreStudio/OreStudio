@@ -18,7 +18,9 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
-from codegen.org_loader import entity_shell_commands  # noqa: E402
+from codegen.org_loader import entity_shell_commands, entity_shell_plan  # noqa: E402
+
+IAM_MODELING = REPO_ROOT / "projects/ores.iam/modeling"
 
 
 def _key(name, cpp_type="std::string", **overrides):
@@ -130,14 +132,18 @@ class TestTheCommandSet:
             "list", "get", "get-many", "add", "set", "put-many", "delete",
         ]
 
-    def test_a_relation_read_is_a_command_of_its_own(self):
+    def test_a_scoped_read_is_a_command_of_its_own(self):
+        # The derivation states a scoped read's verb as `list_scoped` and names
+        # the relation in `leading`, so the command is built from that.
         commands = entity_shell_commands(_entity(operations=[
-            _operation("list_by_account_id", "list_by_account_id_x_request",
+            _operation("list_scoped", "list_by_account_id_x_request",
                        "list_by_account_id_x_response",
-                       "iam.v1.x.list_by_account_id", has_order=True),
+                       "iam.v1.x.list_by_account_id", has_order=True,
+                       leading="account_id"),
         ]))
         assert _names(commands) == ["by-account-id"]
         assert commands[0]["kind"] == "list_by"
+        assert commands[0]["usage"].startswith("by-account-id <account_id>")
 
     def test_an_entity_with_no_operations_has_no_commands(self):
         assert entity_shell_commands(_entity()) == []
@@ -268,3 +274,68 @@ class TestTheTokenSetMatchesTheShell:
             operations=ALL_VERBS)
         add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
         assert add["unsupported"] == ["last_login"]
+
+
+class TestThatNoVerbIsSkipped:
+    """A verb with no shape must be reported, not silently dropped.
+
+    The projection builds a command per operation it recognises. An operation
+    it does not recognise would simply produce nothing, and the entity would
+    answer fewer verbs from the shell than it derives, with no failure anywhere.
+    """
+
+    def test_a_known_verb_set_leaves_nothing_uncovered(self):
+        plan = entity_shell_plan(_entity(operations=ALL_VERBS))
+        assert plan["uncovered_verbs"] == []
+
+    def test_a_verb_with_no_shape_is_named(self):
+        plan = entity_shell_plan(_entity(operations=[
+            _operation("archive", "archive_x_request", "archive_x_response",
+                       "iam.v1.x.archive"),
+        ]))
+        assert plan["uncovered_verbs"] == ["archive"]
+        assert plan["commands"] == []
+
+    def test_a_scoped_read_is_covered_by_its_own_shape(self):
+        plan = entity_shell_plan(_entity(operations=[
+            _operation("list_scoped", "list_by_account_id_x_request",
+                       "list_by_account_id_x_response",
+                       "iam.v1.x.list_by_account_id",
+                       leading="account_id"),
+        ]))
+        assert plan["uncovered_verbs"] == []
+
+    def test_every_iam_entity_that_renders_a_unit_covers_every_verb(self):
+        # The gate the pilot is for: if a model gains a verb the shell cannot
+        # address, this fails rather than the command quietly not existing.
+        import codegen.core as core
+        from codegen.org_loader import entity_shell_plan
+
+        captured = []
+        original = core._RENDERER.render
+        core._RENDERER.render = lambda t, d, *a, **k: (captured.append(d), "")[1]
+        try:
+            for path in sorted(IAM_MODELING.glob("*.org")):
+                try:
+                    core.generate_from_model(
+                        str(path), REPO_ROOT / "projects/ores.codegen/library/data",
+                        REPO_ROOT / "projects/ores.codegen/library/templates",
+                        REPO_ROOT / ".runtime/render/coverage",
+                        is_processing_batch=False,
+                        target_template="cpp_shell_command_impl.cpp.mustache",
+                        target_output="probe.cpp")
+                except Exception:  # noqa: BLE001 - not every model is an entity
+                    continue
+        finally:
+            core._RENDERER.render = original
+
+        checked = 0
+        for data in captured:
+            entity = data.get("domain_entity")
+            if not entity or not entity.get("shell", {}).get("commands"):
+                continue
+            checked += 1
+            plan = entity_shell_plan(entity)
+            assert plan["uncovered_verbs"] == [], (
+                f"{entity.get('entity_singular')}: {plan['uncovered_verbs']}")
+        assert checked >= 7, f"only {checked} entities rendered a shell unit"

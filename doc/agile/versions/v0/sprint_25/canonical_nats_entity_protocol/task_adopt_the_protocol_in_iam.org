@@ -634,6 +634,35 @@ doing -- =ores.shell.trading.tests= has the same shape at 420 cases and 159
 seconds -- but the pilot has made it visible and it will not survive many more
 units.
 
+**The end-to-end pass reached the shell and stopped at authentication.** Run
+against the live service, the shell connects to NATS, the seventeen units
+register, and a generated command is reached: =tenants list= answers =You must
+be logged in to run list=, which is the generated guard doing its job. Nothing
+further could be proved, and the reason is not the generated commands.
+
+The database is in bootstrap mode, so there is no account to log in as. The
+hand-written =bootstrap= creates one, and it lands in the system tenant --
+=ffffffff-ffff-ffff-ffff-ffffffffffff= -- while login resolves the tenant from
+the principal's hostname, =acme_corporation=. The service log states it plainly:
+=account not found for username: tenant_admin=. So the environment needs the
+tenant provisioning flow before an authenticated command can be exercised, and
+that flow is itself one of the generated units.
+
+Which exposes a defect that has to be fixed first, and it is not cosmetic. The
+generated operation units register submenus named =bootstrap=, =login= and
+=logout=, and =accounts_commands.cpp= already registers *root commands* of those
+same three names. The hand-written units register first, so they win: a script
+that runs =bootstrap-status= is answered =Wrong command=, and
+=bootstrap=<principal> <password> <email>= reaches the hand-written command.
+Three of the generated units -- bootstrap, login and the rest of their submenus
+-- are therefore unreachable from the REPL, and the collision is silent.
+
+That is the retirement task, and it is now known to block rather than merely
+tidy: the authenticated end-to-end pass cannot run until one of the two
+registrations goes. The hand-written =login= also does party selection after
+authenticating, which the generated one does not, so retiring it means deciding
+where that behaviour belongs.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

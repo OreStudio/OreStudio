@@ -1,0 +1,890 @@
+:PROPERTIES:
+:ID: C650CBC9-FDED-4C68-981F-7902E296928E
+:END:
+#+title: NATS entity protocol specification
+#+description: The normative specification for ORE Studio's common entity messages over NATS: the subject grammar and namespace, the canonical verb set, the request and response envelopes, keys, pagination and filtering, the write model that keeps server-owned fields off the wire, the concurrency precondition, the error model, the event contract, and the security rules.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:nats:messaging:protocol:specification:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+* Summary
+
+Every common, entity-related message that crosses the bus has the same shape. A
+subject has four segments -- component, version, resource, verb -- and its
+resource is a plural noun. A request carries the operation's parameters and its
+keys; a response carries one result, and the data the operation produced when
+the outcome is =ok=.
+
+Two rules govern what a message may assert. A write carries a write record of
+user-owned fields alone: tenancy, version and audit provenance are derived
+server-side from the authenticated context. And the verbs a resource supports
+are the ones its model declares, so what an entity can be asked for is a
+property of the model.
+
+* Detail
+
+** Scope
+
+This specification defines the shape of the *common, entity-related messages*:
+the operations that read an entity, write an entity, and read an entity's
+versions, together with the events that announce that an entity changed. It
+applies to every component, and it is deliberately silent about which entities
+exist.
+
+Four things are outside it and keep their own homes:
+
+- *The encoding.* Whether the payload is JSON or MessagePack is a
+  process-wide choice made once at startup, not a per-message negotiation. See
+  [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]].
+- *The transport, certificates and deployment.* Those are operational
+  concerns and are not part of a message's contract.
+- *Which components exist and which subjects they own.* That is the namespace
+  index in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]].
+- *A component's own domain operations,* beyond the grammar every subject
+  must obey. See *Domain operations* below.
+
+** Vocabulary
+
+| Term | Meaning |
+|------+---------|
+| Component | The owner of a namespace. Every subject lives inside exactly one. |
+| Resource | A plural noun naming the kind of entity a subject acts on, in snake_case. |
+| Verb | The operation a subject performs, from the closed set below. |
+| Subject | The routable address, ={component}.v1.{resource}.{verb}=. |
+| Envelope | The transport metadata: subject, reply subject and headers. |
+| Payload | The encoded request or response. |
+| Key | The fields that identify one entity. It may be composite. |
+| Write record | The user-owned fields of an entity, and the only part of an entity a client sends. |
+| Server-owned | A field the service derives from the authenticated context and the database, and which never appears on the wire. |
+
+** Subject grammar
+
+Every subject has exactly four dot-separated segments:
+
+#+begin_example
+{component}.v1.{resource}.{verb}
+#+end_example
+
+Each segment is lower snake_case. =v1= is a literal version segment, not a
+variable. All four are mandatory: a subject with three segments, or with five,
+does not belong to this protocol.
+
+*** The component namespace
+
+A subject's first segment is the component that owns it, and the component
+that owns it is the one that serves it. A subject that no single component
+owns still belongs to one: a concept shared by every entity is owned by the
+component whose service answers for it, and there is no bare, ownerless
+top-level namespace.
+
+This is what keeps request/reply correct. A request subject is subscribed by
+one component's queue group, so the reply comes from the service that owns the
+resource. A generic subject that every component subscribes to is answered by
+whichever service wins the race, which is not a property any caller can rely
+on.
+
+*** The verb suffix
+
+The last segment is one verb from the closed set. The resource segment is a
+plural noun in snake_case. =list_by_<relation>= carries one further word so that
+a scoped read is still one subject per operation, and a sub-resource's name
+carries the collection it holds after the resource it belongs to.
+
+*** The subject prefix
+
+A deployment may prepend a prefix to every subject, so that several
+deployments can share one bus without colliding. The prefix is configuration
+rather than protocol: subjects are written relative and the prefix is applied
+when a client connects. A message's contract is stated on the relative form.
+
+*** One subject per operation
+
+Each =(resource, verb)= pair has exactly one subject. Two components never
+publish the same subject, and one component never declares the same subject
+twice. Where a resource is reachable from two directions -- a junction whose
+rows are addressable by either side -- the subject is still one, and the
+direction is a field of the request rather than a second subject.
+
+*** Sub-resources
+
+A collection that belongs to one entity is a *sub-resource*, and it is a
+resource like any other: it has a name, a key, its own subjects, and it is read
+with the standard verbs. It is named for the entity it belongs to, followed by
+the collection:
+
+#+begin_example
+{component}.v1.{resource}_{collection}.{verb}
+#+end_example
+
+A sub-resource exists because a read that returns something other than a page
+of the resource is not a read of the resource. The versions of an entity are
+the case in point: a read that returns version records is not a read of the
+entity, and giving it a verb of its own would put a second kind of thing behind
+the verb slot. Naming the collection instead keeps the grammar at four
+segments, keeps one subject per operation, and lets the collection inherit the
+list contract rather than restate it.
+
+A sub-resource's key is composite: it is the parent's key together with the
+member's own identifier. The composite-key rule below already covers it, so a
+sub-resource needs no machinery that an ordinary composite-key entity does not
+already need.
+
+A sub-resource may be read-only. Versions are written by the database and not
+by a caller, so the versions collection declares =list= and =get= and no write
+verb -- for the same reason a read-only entity declares none.
+
+** The verb set
+
+Eight verbs cover every operation on an entity. A component's resource may
+support any subset, but it may not invent a verb outside this set.
+
+| Verb | Subject suffix | The operation it expresses |
+|------+----------------+----------------------------|
+| =get= | =.get= | Read one entity, named by its full key. |
+| =get_many= | =.get_many= | Read the entities named by a set of keys, in one reply. |
+| =list= | =.list= | Read a page of entities matching a filter, in a stated order. |
+| =list_by_<relation>= | =.list_by_<relation>= | Read a page of entities scoped by a related entity's key, directly or through its whole subtree. |
+| =put= | =.put= | Create or replace one entity. |
+| =put_many= | =.put_many= | Create or replace a set of entities as one transaction. |
+| =delete= | =.delete= | Remove one entity, named by its full key. |
+| =delete_many= | =.delete_many= | Remove a set of entities as one transaction. |
+
+The set is orthogonal: read one, read many, read a scoped page, write one,
+write many, remove one, remove many. Five consequences of it are deliberate.
+
+- *Single and batch are paired.* Every operation on one entity has a set form,
+  and a resource declares both or neither: =get= with =get_many=, =put= with
+  =put_many=, =delete= with =delete_many=. The single form is the batch of one,
+  so there is no per-model batching flag and no entity that can be written one
+  at a time but not as a set.
+- *A batch is one transaction.* Several writes land together or not at all.
+  Atomicity is a property of the set; the precondition is a property of the
+  element (see *Batching*).
+- *A read that returns something other than a page of the resource is a read of
+  that something.* The versions of an entity and the entities beneath a node in
+  a hierarchy are collections in their own right, read with the verbs above
+  rather than with a verb of their own (see *Sub-resources*).
+- *There is no =count= or =count_by_<relation>=.* Counting is a property of a
+  list rather than an operation on an entity, and every list reports its total
+  (see *Reads*).
+- *There is no verb for reading everything.* A full read is a list paged to
+  its end, and a cache is fed by events rather than by a bulk read (see
+  *Events*).
+
+A model declares which verbs a resource supports. A read-only resource simply
+declares no write verb. A verb is never derived from a version column, a
+repository flag, or the presence of a route; if the model does not declare it,
+it does not exist, and if the model declares it, it is served.
+
+** Keys
+
+A key identifies one entity, and it is the same key everywhere: in =get=, in
+=delete=, in a versions read, and in the key fields of a write record.
+
+A key is a record with one field per identifying column, each carrying the
+column's own type rather than a string. An entity whose identity is one column
+has a one-field key; an entity whose identity is composite has a record with
+all of its columns, and every operation that addresses it carries all of them.
+A composite key is never flattened into a single string and never partially
+sent, because a partial key addresses a row that need not exist.
+
+A sub-resource's key is the parent's key with the member's own identifier
+alongside it -- a version's key is the entity's key plus the version number --
+so a member of a sub-resource is addressed by a composite key and nothing else
+is needed to reach it.
+
+Holding a natural key and a surrogate primary key is permitted, and the two are
+not interchangeable. Which one identifies the entity on the wire is a
+declaration of the model, made once. It is the same key that appears in the
+subject's resource's operations and in the HTTP projection's path parameter, so
+that a caller never has to translate between an address and a request.
+
+** Requests
+
+A request is a record whose members are exactly the parameters of the
+operation. It contains:
+
+- the operation's addressing: the key, the keys, or the filter;
+- the operation's modifiers: a page, an order, a version range, a
+  precondition;
+- for a write, the write record and the change intent.
+
+A request never contains:
+
+- *Identity or tenancy.* Who is calling and which tenant and party they act
+  for are established once, by the connection and the token it carries, and
+  are read from the authenticated context. A request that carries
+  =tenant_id=, =party_id=, or a caller identity is malformed, because those
+  values are not the caller's to state. See *Security*.
+- *Server-owned fields.* See *Writes*.
+- *Provenance.* Audit fields are derived, never supplied.
+- *Correlation or idempotency.* Those travel in the envelope's headers, so
+  that a payload is entirely business data.
+
+Every request names its reply in the type system, so a request's response type
+is not something a caller has to look up.
+
+Message names follow the operation: =<verb>_<resource>_request= and
+=<verb>_<resource>_response=, with the resource in the singular for operations
+on one entity and the plural for operations on a set.
+
+** Responses and outcomes
+
+Every response carries a result, and a result is the only place a caller looks
+to learn whether the operation happened.
+
+#+begin_src
+result {
+    outcome : ok | invalid | denied | missing | conflict | unavailable | failed
+    code    : string   -- stable and machine-readable, empty when ok
+    message : string   -- one sentence, safe to show to a person
+    fields  : list of field_failure   -- present only for invalid
+}
+#+end_src
+
+The outcomes are a closed set, and each maps to exactly one status when the
+operation is projected onto HTTP:
+
+| Outcome | Meaning | HTTP |
+|---------+---------+------|
+| =ok= | The operation happened. | 200 / 201 / 204 |
+| =invalid= | The request is well-formed but violates the operation's contract. | 400 |
+| =denied= | The caller may not perform this operation on this resource. | 403 |
+| =missing= | The addressed entity does not exist. | 404 |
+| =conflict= | The request's precondition does not hold, or the key already exists. | 409 |
+| =unavailable= | A dependency the operation needs is not reachable. | 503 |
+| =failed= | An invariant was broken or an unexpected error occurred. | 500 |
+
+=ok= is the only outcome under which a payload's data is meaningful. A reply
+whose outcome is anything else carries no data, and a caller that reads data
+without checking the outcome is wrong.
+
+A =denied= outcome is not an authentication failure. Authentication failures
+happen before an operation is reached and are described by the envelope rather
+than by a payload; see *Security*.
+
+** Reads
+
+A read never modifies state, and it is safe to repeat. Every read is
+tenant-scoped by the authenticated context, and none of them accepts a tenant
+as a parameter.
+
+*** list
+
+=list= returns one page of entities and the total that the filter matches.
+
+#+begin_src
+list_<resource>_request {
+    offset : uint32          -- default 0
+    limit  : uint32          -- default 100
+    order  : order           -- the sort, stated explicitly
+    filter : <resource>_filter   -- optional; absent means no filter
+}
+list_<resource>_response {
+    result : result
+    <resources> : list of <resource>
+    total  : uint64          -- how many the filter matches, ignoring the page
+}
+#+end_src
+
+Three rules make the contract unambiguous.
+
+- *=offset=, =limit= and =total= are unconditional.* Every list is paged, every
+  list reports its total, and no caller has to discover whether this particular
+  resource pages. The total is the count *before* the page is applied, so a
+  caller can drive paging to the end without a second operation. That is what it
+  costs: the count is taken on every list, whether or not the caller wants it,
+  which makes every list two queries rather than one. Uniformity is bought with
+  that and is worth it, because the alternative is a client that cannot know
+  whether the number it holds is the total or the size of the page it happens to
+  have.
+- *Ordering is stated, never implied.* A page of an unordered set is not
+  reproducible, so the request names its sort and the service honours it. Where
+  a caller asks for no particular order, the order is by key, so that paging is
+  stable across calls.
+- *Filtering is a record, not a query language.* A filter is a record with one
+  optional member per filterable field, each carrying the field's own type.
+  There is no free-text query string and no expression to parse. A resource
+  that supports no filtering simply has no filter record.
+
+=list= replaces every read that returned a filtered set: an entity's versions
+and the entities beneath a node in a hierarchy are scoped reads of collections
+in their own right, and they differ from the plain case only in how the scope is
+named.
+
+*** get
+
+=get= returns exactly one entity, addressed by its full key.
+
+#+begin_src
+get_<resource>_request {
+    key : <resource>_key
+}
+get_<resource>_response {
+    result : result
+    <resource> : optional of <resource>
+}
+#+end_src
+
+There is no separate "found" flag: an entity that does not exist is the
+=missing= outcome. =ok= always carries an entity, and =missing= never does.
+
+=get= is the operation a screen uses to show one record, and it is the reason
+a screen never has to read a page to find a row in it.
+
+*** get_many
+
+=get_many= returns the entities named by a set of keys, and answers in the
+shape of its question.
+
+#+begin_src
+get_many_<resources>_request {
+    keys : list of <resource>_key
+}
+get_many_<resources>_response {
+    result  : result
+    entries : list of <resource>_lookup
+}
+<resource>_lookup {
+    key        : <resource>_key
+    <resource> : optional of <resource>
+}
+#+end_src
+
+The reply carries one entry per requested key, in the order the keys were
+asked for, so the correspondence between a request and its reply is positional
+and a caller never has to diff the two to find out what it did not get.
+
+An entity that does not exist is an entry whose entity is empty, not a missing
+entry and not a failure: asking for a set is not a claim that every member of
+it exists, so the outcome stays =ok= and the caller reads absence from the
+entry. Keys may repeat, and each occurrence gets its own entry, because a
+positional reply is only unambiguous if it answers the question that was
+asked.
+
+A set is bounded, so that one request cannot ask for an unbounded reply.
+
+*** An entity's versions
+
+An entity whose rows are versioned has a versions sub-resource, and its
+versions are read with the verbs every other collection uses.
+
+#+begin_src
+list_<resource>_versions_request {
+    key    : <resource>_key   -- the entity whose versions these are
+    offset : uint32
+    limit  : uint32
+    order  : order
+    filter : <resource>_versions_filter
+}
+list_<resource>_versions_response {
+    result   : result
+    versions : list of <resource>_version
+    total    : uint64
+}
+get_<resource>_version_request {
+    key : <resource>_version_key
+}
+get_<resource>_version_response {
+    result  : result
+    version : <resource>_version
+}
+<resource>_version_key {
+    <resource> : <resource>_key
+    version    : uint32
+}
+#+end_src
+
+A =<resource>_version= is a member of the versions collection: it carries the
+version number, the audit provenance the service derived when it wrote that
+version, and the entity's fields as they stood at that version. Because the
+member type is the collection's own, reading versions is an ordinary read of a
+resource and nothing about it is a special case.
+
+The collection is read-only. A version is written by the database when the row
+changes, never by a caller, so =list= and =get= are the only verbs it declares.
+
+The version axis is a filter, not a second selection mechanism. A
+=<resource>_versions_filter= record carries an exact =version= and the
+=from_version= and =to_version= bounds, each optional and each typed, alongside
+whatever else the entity's versions may be filtered by -- who modified them, and
+when they were recorded.
+
+A point-in-time read then falls out of the same shape: a caller that wants the
+entity as it stood at version 7 lists the versions filtered to version 7, and a
+caller that wants the last month of changes lists the versions recorded in that
+window. There is no separate operation for either, and no second way to ask.
+
+The parent's key is one field of the collection's key and also a field of the
+request, so a composite-key entity's versions are addressed exactly as the
+entity itself is.
+
+*** list_by_<relation>
+
+=list_by_<relation>= is =list= scoped to the entities related to one other
+entity, addressed by that entity's key. It carries the relation's key in place
+of part of the filter, and is otherwise =list= exactly: same paging, same
+total, same stated order.
+
+#+begin_src
+list_by_<relation>_<resources>_request {
+    <relation> : <relation>_key
+    scope      : direct | subtree   -- default direct
+    offset     : uint32
+    limit      : uint32
+    order      : order
+    filter     : <resource>_filter
+}
+list_by_<relation>_<resources>_response {
+    result      : result
+    <resources> : list of <resource>
+    total       : uint64
+}
+#+end_src
+
+A relation is named in the subject suffix and its key is a field of the request,
+and the two always agree. Scoping by a related entity is not a filter, because
+an authorisation decision may depend on the relation, and a filter is not
+something a caller's access is evaluated against.
+
+Where the relation is an entity's parent, =subtree= scopes the page to every
+entity below the named one rather than to its immediate children. The reply is
+still a page of entities, each carrying its own parent key as any entity does,
+so a caller assembles the tree from the keys in the reply: it needs no second
+read and no node type of its own. A page of a subtree need not be connected, so
+a caller that renders a whole tree pages to the end of the subtree, which the
+unconditional total lets it drive.
+
+** Writes
+
+A write is a request to change one entity or a set of them. Every write states
+what the caller wants the entity to become, and what the caller believes about
+the entity it is replacing.
+
+*** The write record
+
+A client sends a *write record*: the entity's user-owned fields, and nothing
+else.
+
+#+begin_src
+<resource>_write {
+    ... the fields the user owns, and no others ...
+}
+#+end_src
+
+The write record is a distinct type from the entity a read returns. A read
+returns the entity with its server-owned fields populated, because a caller
+needs to display and reason about them. A write carries the write record,
+because a caller has no business asserting them. The two are never the same
+type, so a client cannot accidentally round-trip a read into a write.
+
+*** Server-owned fields
+
+A field is server-owned when the service can derive it, and when a client
+asserting it would be a way to lie. Server-owned fields never appear in a write
+record:
+
+| Field | Where it comes from |
+|-------+---------------------|
+| tenant | The authenticated context. |
+| party | The authenticated context. |
+| version | The database, which owns the version of every row. |
+| modified by | The authenticated caller, from the validated token. |
+| performed by | The service account that owns the running process, never a request. |
+| recorded at | The database, as the instant the version was recorded. |
+| valid from, valid to | The database, which owns the validity window. |
+
+A service derives every one of these itself. It does not read them from a
+request, and it does not trust them if a request carries them anyway: a request
+that carries a server-owned field is *invalid*, so that a client is told it is
+wrong rather than silently ignored. This is the rule that makes tenancy and
+provenance trustworthy: no caller can write another tenant's data, or claim
+another person's authorship, because neither is a value the caller supplies.
+
+*** Change intent
+
+What a caller *does* supply about a write, beyond the entity's fields, is its
+intent: the reason the change is being made, and any commentary the operator
+recorded. Intent is user-owned data, so it travels in the write record's
+operation rather than being derived.
+
+#+begin_src
+change_intent {
+    reason_code : string
+    commentary  : string   -- optional
+}
+#+end_src
+
+Intention is required of every write, because a change with no stated reason
+is not auditable. A service that rejects a write with no intent answers
+=invalid=.
+
+*** Preconditions
+
+A write states what it believes about the entity it is about to change, and the
+service refuses the write when the belief is false. This is how two writers
+cannot silently overwrite each other, and how a create cannot silently become
+an overwrite.
+
+#+begin_src
+precondition {
+    kind    : any | must_not_exist | must_match_version
+    version : uint32   -- present only for must_match_version
+}
+#+end_src
+
+| Precondition | The write lands when | Otherwise |
+|--------------+----------------------+-----------|
+| =any= | Always. The write replaces whatever is there. | -- |
+| =must_not_exist= | The key does not yet exist. | =conflict= |
+| =must_match_version= | The row is at the stated version. | =conflict= |
+
+The three are distinct on purpose. A create sends =must_not_exist= and fails
+loudly when the key is taken, which is what makes a duplicate create
+detectable. A caller updating a row it read sends =must_match_version= with the
+version it read, and learns that someone else got there first. A caller
+deliberately replacing a row, or republishing it, sends =any=. A revert is a
+write like any other: it sends the fields of the version being restored and
+states the version it believes is current, so it takes =must_match_version= and
+lands as a new version rather than erasing the ones after it. No integer
+doubles as a mode: there is no value of =version= that means "do not check",
+because that is what conflated a create with an overwrite.
+
+A write with no precondition is =invalid=. Stating the belief is not optional.
+
+A precondition belongs to *one change*, never to a request that carries several.
+A batch of updates is a set of rows each at its own version, so a single version
+claim could not describe it, and a batch-level claim would either weaken the
+check to =any= or reject a batch that is entirely valid.
+
+*** Batching
+
+Batching is how a caller changes a set of entities in one operation. It is not
+a separate family of messages: a batch is the same element repeated, and the
+single-entity verb is the batch of one.
+
+#+begin_src
+<resource>_change {
+    write        : <resource>_write
+    precondition : precondition
+}
+put_<resource>_request {
+    change : <resource>_change
+    intent : change_intent
+}
+put_<resource>_response {
+    result     : result
+    <resource> : <resource>
+}
+put_many_<resources>_request {
+    changes : list of <resource>_change
+    intent  : change_intent
+}
+put_many_<resources>_response {
+    result      : result
+    <resources> : list of <resource>
+}
+#+end_src
+
+A write answers with the entity as it now stands, so that the caller learns the
+version and the audit provenance the service assigned without a second read.
+A batch answers with the entities in the order the changes were sent.
+
+Four rules make batching coherent across every entity.
+
+- *Every change states its own precondition.* The element is where the belief
+  lives, so a batch may create one entity and update another, and each is
+  checked against what the caller actually believes about it. A verb's single
+  form and its batch form share one element type, so they cannot drift apart in
+  what they permit.
+- *The batch is atomic; the elements are independent in what they claim.* The
+  set lands together or not at all. A precondition that fails anywhere makes
+  the whole operation =conflict=, and nothing is written -- which is what makes
+  a batch safe to retry, because a half-applied batch is not a state a caller
+  has to reason about.
+- *Intent is stated once for the set.* A batch is one act by one operator, so
+  the reason for it is one reason. Per-element intent would let one operation
+  tell several different stories about why it happened.
+- *A batch has a bound.* A batch carries at most =1000= elements and a page
+  carries at most =1000= entities, with a list's =limit= defaulting to =100=.
+  The bounds are part of the protocol rather than a runtime surprise, so a
+  caller can size its chunks and a generated message can enforce them. A
+  request that exceeds a bound is =invalid=.
+
+A batch is not a way to escape authorisation. Every element is authorised as if
+it had been sent alone, and the operation is =denied= if any element is not
+permitted, so a batch cannot reach a row its author would not have reached
+singly.
+
+*** delete and delete_many
+
+A delete names the key of what it removes and carries its own precondition, on
+the same terms as a write: removing a row a caller has not read is a claim that
+it wants to remove whatever is there. The reason the deletion is recorded
+travels as change intent.
+
+#+begin_src
+<resource>_removal {
+    key          : <resource>_key
+    precondition : precondition
+}
+delete_<resource>_request {
+    removal : <resource>_removal
+    intent  : change_intent
+}
+delete_many_<resources>_request {
+    removals : list of <resource>_removal
+    intent   : change_intent
+}
+#+end_src
+
+The element carries the precondition for the reason a write's element does: a
+batch of deletions is a set of rows at different versions, and a caller
+removing several rows it read is claiming something about each one. Both
+responses carry a result and nothing else, because a deletion has no data to
+return.
+
+A removal states =any= or =must_match_version=; =must_not_exist= describes a
+create and has no meaning for a removal, so a removal that states it is
+=invalid=. A row that does not exist is =missing= and a row that exists at
+another version is =conflict=, so a caller can tell "someone else removed it"
+from "someone else changed it". Under =any= both are =ok=: a removal with
+nothing left to remove has still achieved what it asked for, which is what
+makes a retried delete safe.
+
+The batch is one transaction, and it does not report per-entity success: the
+whole operation either happened or it did not.
+
+** Events
+
+A change to an entity is announced as an event, and events are a separate
+namespace from request/reply.
+
+#+begin_example
+{component}.v1.events.{resource}.{action}
+#+end_example
+
+The =events= segment occupies the position the verb occupies for a request, so
+an event subject is still four segments and still inside its component's
+namespace. =action= names what happened -- for instance =created=, =updated= or
+=deleted=.
+
+Every event carries:
+
+#+begin_src
+event {
+    event_id     : uuid     -- identifies this publication
+    key          : <resource>_key
+    action       : created | updated | deleted
+    version      : uint32   -- the version the change produced
+    occurred_at  : timestamp
+    correlation_id : string -- optional; the request that caused the change
+}
+#+end_src
+
+Events are published at least once and may arrive more than once, and they may
+arrive out of order. A consumer is therefore idempotent and does not assume
+ordering: it applies change by key and version, so that applying an event it has
+already applied changes nothing, and ignoring an event older than the version it
+holds changes nothing either. A consumer that needs the entity reads it with
+=get= rather than assuming the event carried everything, so an event is a
+notification and not a substitute for a read.
+
+An event's =version= is the version of the row it announces, so the two views of
+an entity's past agree: the versions sub-resource holds what each version was,
+the events say when each was produced, and a consumer that has been away reads
+the versions collection rather than replaying the event stream. The stream is
+for reacting, and the collection is for catching up.
+
+Request subjects and event subjects are served by different mechanisms and must
+not be mixed. A request subject is subscribed by one queue group, because a
+request must be answered exactly once by the service that owns the resource.
+Several queue groups on one request subject fan the request out and more than
+one reply races back, which is not something a request/reply caller can use. An
+event subject may have several independent consumers, because several
+subscribers each wanting every event is the point.
+
+** Security
+
+*** Identity
+
+A caller is authenticated before any operation is reached, and its identity is
+carried by the connection in the envelope, never in a payload. Every operation
+runs against that identity. A payload cannot assert one.
+
+*** Tenancy
+
+Tenant and party are derived from the authenticated token and applied by the
+service. They are not request parameters and not filter fields. A caller
+therefore cannot read or write outside its own tenancy by asking to, and the
+rule that enforces this is the same rule that keeps server-owned fields off the
+wire -- there is nothing to override because there is no field to send.
+
+*** Cross-tenant access
+
+Operations that act outside the caller's own tenancy are not expressed by
+widening a request. They are addressed by a subject in a reserved administrative
+namespace, authorised separately and more narrowly than the ordinary subject,
+and audited as privileged. This keeps the common path free of an override and
+makes every privileged operation a visible address rather than an argument.
+
+*** Authorisation
+
+Authorisation is per operation and per resource. The service checks it before
+performing the operation, and answers =denied= when it fails. A verb that
+modifies state is never authorised by the same permission as a verb that reads,
+so that read access cannot be widened into write access by a request that names
+a different verb.
+
+Authorisation is not the client's concern: a caller does not ask whether it may
+do something, it does it and is told. A capability a client displays is a hint,
+not a grant.
+
+*** Headers
+
+Envelope headers are the registry for everything that is not business data.
+
+| Header | Purpose |
+|--------+---------|
+| =Authorization= | The caller's token, as =Bearer <token>=. |
+| =X-Delegated-Authorization= | A token for acting on behalf of another principal. |
+| =X-Correlation-Id= | Correlates every message caused by one originating request. |
+| =X-Idempotency-Key= | Makes a command safe to repeat. |
+| =X-Error= | The transport failure code, on an empty reply. |
+
+A service propagates the correlation id onto every message it publishes while
+serving a request, so that one cause is traceable across components.
+
+A command that cannot be expressed idempotently at the data layer carries an
+idempotency key, and a service that sees a key it has already served returns
+the original result rather than performing the operation twice. This is what
+makes a retry safe on a bus that delivers at least once.
+
+=Authorization=, =X-Delegated-Authorization= and =X-Error= are handled at the
+transport boundary, before a payload is decoded, so that a failure to
+authenticate is reported even though no operation was reached. =X-Error=
+carries one of a small closed set of codes on a reply with an empty body, and
+covers only those failures: everything an operation itself decides is reported
+by the =result= inside the response.
+
+** Versioning
+
+The =v1= segment names the version of this protocol. It changes only when a
+message's shape changes incompatibly.
+
+Within a version, change is additive. A new field is optional, a new verb is a
+new subject, and an existing field keeps its meaning and its type. A caller
+that ignores a field it does not know about continues to work, so a service may
+add to a response without coordinating every client.
+
+Where a shape must change incompatibly, the component serves the new version
+alongside the old for a deprecation window and then withdraws the old. Serving
+two versions is a transition, not a steady state: a component carries one
+version in the normal case.
+
+** Domain operations
+
+Not every message is a common entity operation. A component may need an
+operation that is genuinely its own: an import that runs a job, a curve that is
+republished, a workflow that is started.
+
+A domain operation lives in a reserved namespace inside its component, so that
+it is visibly not a common entity operation:
+
+#+begin_example
+{component}.v1.ops.{operation}
+#+end_example
+
+A domain operation obeys everything above that applies to it: the envelope, the
+=result=, the headers, the server-owned field rule, the security rules and the
+version rule. What it does not have is a resource and a verb from the common
+set, because it does not act on an entity in the common way.
+
+The namespace is reserved so that domain operations are enumerable and
+distinguishable. An operation that acts on an entity the common way belongs in
+the common set, and an operation that merely has an unusual name does not
+qualify as a domain operation.
+
+** HTTP projection
+
+A client that speaks HTTP rather than the bus reaches the same operations
+through a projection, and the projection is mechanical: one operation, one
+route. It exists so that a browser client does not need a second, separately
+invented contract.
+
+| Verb | Method and path |
+|------+-----------------|
+| =get= | =GET /{resource}/{key}= |
+| =get_many= | =GET /{resource}?keys=...= |
+| =list= | =GET /{resource}?offset=&limit=&order=&<filter>= |
+| =list_by_<relation>= | =GET /{resource}?<relation>=...&scope=subtree= |
+| =list= (versions) | =GET /{resource}/{key}/versions?offset=&limit=&order=&<filter>= |
+| =get= (a version) | =GET /{resource}/{key}/versions/{version}= |
+| =put= | =PUT /{resource}/{key}=, or =POST /{resource}= to create |
+| =put_many= | =PUT /{resource}= |
+| =delete= | =DELETE /{resource}/{key}= |
+| =delete_many= | =DELETE /{resource}= |
+
+A sub-resource nests under its parent here, which is the one place the
+projection and the bus differ in shape rather than in contract: HTTP has a path
+to nest in and a subject does not, so the sub-resource is named in the resource
+segment instead. The verbs, the keys, the filters and the outcomes are the same
+on both sides.
+
+The projection does not restate the contract. The key in the path is the key in
+the request, the filter is the filter record, and the =result= is the HTTP
+status: a caller reading the status learns exactly what a caller reading the
+outcome learns. A route exists for an operation when the model declares the
+operation, so a route never advertises an operation the service does not
+perform.
+
+Identity and tenancy follow the same rule as on the bus. They are carried by
+the session and never by the request body.
+
+** Conformance
+
+Every clause above that can be checked mechanically is checked mechanically, and
+a generated message that violates one fails the check rather than passing
+review.
+
+A conforming message has a subject with four segments whose component owns it
+and whose last segment is in the verb set; a key that carries every identifying
+column with its own type; a response that carries a =result= and no data
+outside =ok=; a list whose =offset=, =limit= and =total= are unconditional, and
+whose order and filter it states; a write record with no server-owned field and
+no tenancy; a single-entity verb that comes with its batch form; a batch whose
+every element carries its own precondition; a batch or page within its bound; a
+collection subordinated to an entity that is named as a sub-resource rather than
+given a verb of its own; and a name that follows =<verb>_<resource>_request= and
+=<verb>_<resource>_response=.
+
+Conformance is enforced for the components that have adopted this
+specification. A component adopts it whole -- there is no partial conformance,
+because a component half on this protocol is a component whose messages cannot
+be reasoned about -- and the components that have adopted it are named by one
+list, so that the set of components under the gate is a single fact rather than
+a per-check opinion.
+
+* See also
+
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the envelope and the payload encoding this
+  specification assumes.
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — which component owns which
+  namespace.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic concurrency versioning]] — why the version is the
+  database's to assign.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — one subject per concrete type, and why a
+  variant payload field is not used.
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History diff architecture]] — how a version's difference from its
+  predecessor is presented.
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Entity mirror cache placement]] — where an event-fed mirror lives.
+- [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-service delegation]] — the header registry, and why message
+  structs carry only business data.
+- [[id:4E762126-2152-11F1-B1D1-40B0768014EB][NATS multitenancy design]] — the token claims tenancy is derived from.
+- [[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][Service RBAC design]] — the permission scheme authorisation uses.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — the wire criteria a message is reviewed
+  against.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — the protocol rules a reviewer checks.

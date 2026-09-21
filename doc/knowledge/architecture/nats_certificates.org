@@ -183,7 +183,7 @@ binary reads them as plain files.
   chain via cnats and logs =mTLS enabled=; a missing client cert
   trips the mTLS gate and the connection is refused.
 - *Deliberate fallback exclusion*: the trio is *not* in the
-  shared-domain env fallback ([[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]] documents this
+  shared-domain env fallback ([[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] documents this
   decision and its regression tests
   =register_shared_domain_does_not_resolve_tls_ca=): the cert/key
   paths are genuinely per-service, and letting only the CA resolve
@@ -287,12 +287,13 @@ only when it reports drift, recreate:
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — the command recipe (=--force=, =--hostname=, adding services).
 - [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — =compass nats init=, the config + JetStream store side.
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env configure=, which calls cert generation automatically.
 - [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] — the end-to-end init flow.
 - [[id:98D8986A-3EF0-4BE3-AFB7-441B81ACA94C][How do I deploy the service runtime to a remote WSL host?]] — the deploy recipe covering both roles.
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and its mTLS setup.
-- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format: payload, envelope, and multi-protocol support]] — the shared-domain fallback and why the TLS trio is excluded from it.
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the shared-domain fallback and why the TLS trio is excluded from it.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the per-service layer checklist (certs, IAM, registry gaps).
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — JWT/signing-key side of the authentication model.

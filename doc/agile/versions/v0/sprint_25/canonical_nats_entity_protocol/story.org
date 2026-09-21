@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 97EDFED1-5706-4A07-8921-69AE367811FF
+:END:
+#+title: Story: Define and adopt the canonical NATS entity protocol
+#+description: ORE Studio has no canonical specification for its NATS entity messages: the de-facto specification is a codegen template, the only index of subject namespaces sits outside doc/, and the conventions that do exist are scattered across plans, one closed agile task and the code itself. This story writes the target-state specification for common entity messaging, reconciles every NATS document to a single responsibility, and adopts the specification in ores.iam across codegen, ores.shell and ores.web.
+#+type: story
+#+level: s2
+#+filetags: :nats:messaging:protocol:architecture:codegen:sprint_25:v0:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One target-state specification defines every common, entity-related message a component speaks. It states the subject grammar, the canonical verb set for the operations an entity supports, the request and response envelopes, the pagination and filtering contract, the concurrency contract, the error model, the event envelope and delivery semantics, and the security rules for writes. It names no component and describes no legacy state. Codegen is its implementation, and the documents that carry fragments of it today are reconciled to one responsibility each. ores.iam is the first component converted.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Approach agreed and recorded as decisions; no task started. |
+| Waiting on    | Nothing.                               |
+| Next          | Write the specification, then reconcile the document estate. |
+| Last touched  | 2026-09-21                               |
+
+* Acceptance
+
+- A target-state specification for common entity NATS messages exists in the architecture knowledge, names no component, and describes no current or legacy state.
+- The specification defines the subject grammar, the canonical verb set, the request and response envelopes, pagination and filtering, the concurrency contract, the error model, the event envelope and delivery semantics, and the security rules for writes.
+- The specification states that a write request carries only user-owned fields: every server-owned field is absent from the wire and derived server-side from the authenticated context.
+- Every document that describes NATS messaging states exactly one responsibility, the conflicts between them are resolved, and superseded documents are marked historical rather than deleted.
+- ores.iam speaks the specification across generated C++ messages, generated shell commands and their tests, the generated BFF route descriptor and the web screens.
+- A conformance check fails when a generated message violates the specification's grammar.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:07056F20-C09B-4F6F-B550-C52E99A7A2D9][Scaffold story: Define and adopt the canonical NATS entity protocol]] | DONE | 2026-09-21 | 2026-09-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:C13A0569-B4F2-46FC-990E-4746A78B90B5][Write the NATS entity protocol specification]] | DONE | 2026-09-21 | 2026-09-21 | Author the target-state specification for common entity messages, and absorb the unowned backlog captures that are fragments of it. |
+| [[id:4620D5A7-61E1-4907-A8F4-B5C1396AC49D][Reconcile every NATS document to one responsibility]] | BACKLOG | | | Around thirty documents describe ORE Studio's NATS messaging, and they disagree: three competing history subjects, two event subject prefixes, three different claims about the payload format, and two unreconciled error channels. This task gives every one of them exactly one responsibility and resolves the conflicts. |
+| [[id:D9A4776C-AB42-4461-8F2F-AD077C20716E][Adopt the canonical protocol in ores.iam]] | BACKLOG | | | The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes. |
+| [[id:3663F420-C591-4E77-80CD-E68726522C32][Enforce the protocol with a conformance gate]] | BACKLOG | | | A specification without a gate drifts, which is exactly what the protocol twin coverage check proved when its written rule and its implementation disagreed for a whole component. This task lands the check that keeps generated messages honest. |
+
+* Decisions
+
+Agreed before any work started, and the basis the specification is written
+against. Each one answers a shortcoming found in the existing messages; the
+evidence for each is in the specification task's notes.
+
+- *The specification is one generic document, not a per-component one.* It
+  defines the shape of every common entity message and names no component.
+  A component's own operations are additions that must still obey the grammar.
+- *The subject grammar is ={component}.v1.{resource_plural}.{verb}=.* Exactly
+  one subject per resource and verb. No three-segment subjects, no kebab-case,
+  no duplicate definitions.
+- *The canonical verb set is eight, and orthogonal:* =get=, =get_many=, =list=,
+  =list_by_<relation>=, =put=, =put_many=, =delete=, =delete_many= -- read one,
+  read many, read a scoped page, write one, write many, remove one, remove many.
+  The paged read's message is renamed from =get_<plural>_request=
+  to =list_<plural>_request=; the current name contradicts its own =.list=
+  subject.
+- *A read that returns something other than a page of the resource is a read of
+  that something.* An entity's versions and the entities below a node in a
+  hierarchy are collections in their own right, read with the verbs above rather
+  than with a verb of their own. Versions become a read-only
+  =<resource>_versions= sub-resource addressed by a composite key, so the
+  version axis is a filter rather than a second selection mechanism; a subtree
+  becomes the relation-scoped list with a =subtree= scope, so the reply is
+  entities and the caller assembles the tree. This is what removes the
+  =history= and =list_tree= verbs.
+- *Single and batch are paired, element-wise in their claims and set-wise in
+  their atomicity.* Every operation on one entity has a set form and a resource
+  declares both or neither, so no entity is batch-less. Each element states its
+  own precondition, because a batch of updates is a set of rows each at its own
+  version and one version claim could not describe it; the batch then lands or
+  fails as one transaction. Batch and page bounds are part of the protocol.
+- *No verb is derived that the specification does not name.* Whether an entity
+  has a write verb is what the model declares, not something inferred from a
+  version column or a repository flag. That inference is what leaves 22
+  resources with a list and no write today.
+- *A write request carries only user-owned fields.* =tenant_id=, =party_id=,
+  =version=, =modified_by=, =performed_by=, =recorded_at= and the validity
+  window never appear on the wire; the server derives them from the
+  authenticated context. This follows =service-to-service-delegation=, which
+  already states that delegation context travels in headers and that message
+  structs carry only business data.
+- *Change intent travels explicitly.* The user-supplied reason and commentary
+  are part of the write rather than server-owned, and their shape is stated
+  once rather than restated per protocol.
+- *Concurrency is an explicit precondition, not a sentinel.* =version = 0=
+  currently conflates create, upsert, regeneration and revert, which is why a
+  duplicate create can silently overwrite. The specification replaces it with
+  a stated precondition.
+- *One error model.* Every response carries a single result with a stable
+  error code. The transport =X-Error= header is reserved for failures that
+  cannot produce a typed body, and the specification names which those are.
+- *Pagination stays unconditional; filtering is additive.* =offset=, =limit=
+  and the total count remain unconditional members of every list, because the
+  =has_pagination= fork was deliberately removed to stop clients disagreeing
+  about whether they page. Filtering, sorting and the version axis are added
+  without reintroducing it. A separate =count= verb is therefore not in the
+  set.
+- *Events get one prefix and a stated delivery contract.*
+  =ores.{component}.{entity}_changed= and ={component}.v1.<resource>.<verb>=
+  currently coexist. The specification picks one, and states idempotency,
+  ordering and the queue-group rule, which today follow per-registrar habit.
+- *The specification is enforced by a gate, not by review.* The twin coverage
+  check proved that a written rule and its implementation drift silently, so
+  the specification lands with a conformance check rather than as prose alone.
+- *Adoption is one component at a time, starting with ores.iam.*
+  =COMPONENTS_UNDER_TEST= in =component_registry.py= is the single list of
+  components under test, and a component joins it when its protocol is
+  converted.
+
+* Out of scope
+
+- Components other than =ores.iam=. Their adoption follows once the
+  specification and its conformance gate exist, and is tracked by the shared
+  component list rather than by tasks in this story.
+- The wire encoding. JSON versus MessagePack is a process-wide choice already
+  documented in =nats_wire_format=, and this story does not change it.
+- Transport, certificates and deployment. =nats_certificates= and the service
+  hosting runbooks keep their own responsibilities.

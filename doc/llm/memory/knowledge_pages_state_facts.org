@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: CABCAFC1-B55F-4CC5-88AA-50A061EFCA5B
+:END:
+#+title: Knowledge pages state facts, never history
+#+description: A knowledge page is a statement of fact about the system as it is. Its summary must not assert that the subject matters, justify a choice already made, narrate how the system came to be, or describe the cluster the page belongs to.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+A knowledge page states what is true of the system now: what a thing is, what it does, and why it is shaped the way it is. It does not narrate how the system came to be that way.
+
+The summary has to place its subject, because that is all a search result or a link preview shows. A reader who has not opened the page must learn from the summary what area it covers. For a structure note that means naming the subject area the cluster addresses and the concerns it separates -- not the pages it gathers.
+
+Three openings are never right: a summary does not assert that its subject matters, does not justify a choice already made, and does not inventory its cluster. Write the subject.
+
+*Why:* The first summary written for the Message Queue structure note had all three faults at once -- messaging playing a central role, NATS chosen for its simplicity, and the cluster listing every document on the topic -- and was rejected for exactly that. The reader who reached the page already decided the subject matters; a justification for a settled choice belongs with the decision that recorded it; and inventorying the collection is the job of the index, not of the page.
+
+The correction then over-shot the other way. It stated facts about the message implementation -- the subject grammar, what a payload may carry, the verbs an entity supports -- all true, and all belonging to a single page of the cluster, and it still left a reader unable to say what the cluster covered. That was rejected in turn. A summary has to place its subject, not merely describe it.
+
+*How to apply:* When writing or reviewing the summary of any knowledge page, and especially when scaffolding one, where the template invites a generic opening. Read it back as a stranger would and ask two questions: does it say what area the page covers, and is every sentence a fact about that area rather than about the page or its past? For a structure note, name the concerns the cluster separates; for any other page, name what the thing is.

@@ -143,5 +143,5 @@ generated =.env= round-trips through =compass db recreate=.
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env configure=
   reads, then =env version new= + re-init.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).
-- [[proj:doc/knowledge/architecture/nats_wire_format.org][NATS wire format: payload, envelope, and multi-protocol support]] —
+- [[proj:doc/knowledge/architecture/nats_wire_format.org][NATS Wire Format]] —
   the architecture behind =ORES_NATS_WIRE_FORMAT=.

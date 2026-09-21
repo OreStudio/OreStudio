@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: C13A0569-B4F2-46FC-990E-4746A78B90B5
+:END:
+#+title: Task: Write the NATS entity protocol specification
+#+description: ORE Studio has no canonical specification for its common entity NATS messages: the de-facto specification is a codegen archetype, the only index of subject namespaces sits outside doc/, and the conventions that exist are scattered across plans, a closed agile task and the code itself. This task writes the target-state specification every component's entity messages must follow.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/canonical-nats-entity-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A target-state specification in the architecture knowledge defines every
+common, entity-related NATS message: the subject grammar and namespace; the
+canonical verb set and the operation each verb expresses; the request and
+response envelopes; the key and composite-key contract; pagination, filtering
+and sorting; the concurrency precondition; the error model; the event envelope
+and its delivery semantics; the authorisation and tenancy rules; and the rule
+that a write request never carries a server-owned field. It names no component
+and describes no legacy state, so it reads as the shape every component's
+entity messages take rather than as a description of any one of them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- The specification is registered in the knowledge index, and the checklist
+  line that currently states the subject convention points at it.
+- It defines the subject grammar and the canonical verb set, and says which
+  operation each verb expresses.
+- It defines one request envelope and one response envelope, including the
+  error model, and reconciles the transport =X-Error= channel with it.
+- It defines the write model: a write request carries only user-owned fields,
+  and the user-supplied change intent travels explicitly.
+- It defines the concurrency precondition that replaces the =version = 0=
+  sentinel, and says what a create, a replace and a revert each send.
+- It defines keys for single and composite primary keys, so a history or a
+  delete request cannot address only part of a key.
+- It defines pagination, filtering and sorting, and states the cost of the
+  unconditional total count.
+- It defines the event envelope, the delivery semantics, idempotency and the
+  queue-group rule.
+- It defines the security rules: server-derived identity and tenancy,
+  cross-tenant access, and authorisation per verb.
+- It defines the domain-operation escape hatch, so an operation that is not an
+  entity message still lives inside one grammar.
+- The backlog captures that asked for pieces of this protocol are named in its
+  notes, so the rules they wanted are no longer held only by the captures.
+  Re-pointing the captures themselves belongs to the document reconciliation
+  task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+**There is no canonical specification today.** The document every other page
+links to as the protocol reference, =projects/modeling/messaging.org=, is a
+*subject namespace index*, not a specification: it holds the per-service
+namespace table and one hard rule, that every subject lives inside its owning
+component's namespace and no bare top-level namespace exists. It names no
+verb set, no message shape, no error envelope and no security rule. The
+de-facto specification for message shapes is the codegen archetype
+=ores.cpp.protocol.protocol_header.org=, which is repo code rather than
+documentation. Inside =doc/= the closest thing is =nats_wire_format=, which
+covers only the envelope and payload encoding. The only written statement of
+the success/message convention is a single closed agile task
+(=normalise_nats_protocol_message_shapes=). So this document is created, not
+consolidated.
+
+**What the specification must absorb.** The subject namespace rule and the
+per-service namespace table from =projects/modeling/messaging.org=; the verb
+set and message shapes from the codegen archetype; the response convention
+from the closed task; the error and auth rules scattered across
+=anatomy_of_a_service=, =internal_actor_impersonation=, the JWT refresh and
+RBAC plans; the version contract from =optimistic_concurrency_versioning=; and
+the normative constraints in =polymorphic_types_over_nats= (one subject per
+concrete type, never an untyped blob) and =data_oriented_design= Regime 3.
+
+**Fragments already filed as backlog captures**, each of which is a piece of
+this specification and should be absorbed or re-pointed rather than left
+unowned:
+
+| Capture | What it is |
+|---------+------------|
+| =next/enforce-optimistic-concurrency-version-check.org= | Remove the =version = 0= bypass; proposes =force_version= |
+| =next/add_server_side_list_search.org= | List requests carry no filter field at all |
+| =next/promote_cross_tenant_read_to_codegen_flag.org= | Cross-tenant read as a codegen flag |
+| =next/do_not_return_sensitive_fields.org= | An empty capture; the rule has a home once writes are specified |
+| =next/codegen_nats_subject_constants.org= | Subjects are raw string literals in three places |
+| =next/rename-protocol-hpp-files-for-nats.org= | The =_protocol.hpp= suffix is a binary-era leftover |
+| =next/improve_handling_of_error_responses.org= | Stale: proposes a typed error from the deleted binary protocol |
+
+**Scale the specification has to account for.** A census of the generated and
+hand-written subjects gives 1042 distinct subjects across 18 components and
+293 =component/resource= pairs, of which =list= 226, =save= 202, =delete= 201
+and =history= 190. Beyond those four there are 28 =list_by_*= and 28
+=count_by_*= subjects, 6 =get=, 4 =hierarchy=, 2 =read=, 2 =replace_by_*, and
+78 singleton verbs such as =publish-from-dq= (43 subjects on its own),
+=schedule=, =submit= and =simulate=. The singleton operations are why the
+escape hatch matters: without it they remain a second, ungoverned protocol.
+
+**Known defects the specification has to close.** No single-record read is
+derived for any entity, so 224 resources can list but cannot fetch one. Save
+is single-record unless a model opts in and delete is always batch, so 1 of
+182 models has a batch save. History is derived from only the first primary
+key column in TypeScript while C++ iterates them all, so a composite-key
+entity disagrees with its own twin. Delete is keyed on the primary key while
+the route that carries it is keyed on the natural key, which made a delete
+report success while matching no row. Writes carry the whole domain struct,
+server-owned fields included. =iam.v1.roles.list= is defined twice, once
+derived and once hand-written, and the derived =save=, =delete= and =history=
+messages have no server registration.
+
+**Sequencing against an in-flight story.** =FA160AE1= (=festive_dijkstra=) has
+an open PR whose acceptance is that the eleven hand-written IAM protocol
+headers generate from org with *zero byte differences*. That freezes the
+current IAM protocol, which this specification redesigns. The =operation=
+model type that story adds is the vehicle the specification needs for
+non-CRUD messages, so the two are complementary, but the zero-byte-difference
+criterion cannot survive the conversion. Sequence the adoption task
+explicitly against it.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The specification is written and registered:
+=doc/knowledge/architecture/nats_entity_protocol.org=, linked from the
+knowledge index and pointed at by the code review checklist's protocol section.
+
+It fixes a subject grammar of four segments and eight orthogonal verbs, one
+request and one response envelope with a closed set of outcomes, a key record
+that carries every identifying column, the pagination and filtering contract,
+the write model that keeps server-owned fields off the wire, the concurrency
+precondition that replaces the version sentinel, the event contract with
+at-least-once delivery and idempotent consumers, the header registry, the
+security rules including cross-tenant access, and the reserved namespace for a
+component's own operations.
+
+Two things came out of writing it rather than being planned. Batching turned out
+to be present but incoherent -- a batch read answered with a short list, and a
+batch write carried one set-level precondition, which cannot describe rows at
+different versions -- so the element-versus-set distinction was made explicit.
+And an entity's versions and a hierarchy's subtree were verbs where every read
+of a collection should be a resource, so both became collections read with the
+existing verbs and the verb set fell from ten to eight.
+
+The cluster also gained its structure note, =Message Queue=, which orders the
+thirteen pages the subject spans. Its first two summaries were rejected and the
+third is in place; the rule that came out of that is recorded as the
+=knowledge_pages_state_facts= memory.
+
+Remaining, and named rather than left implicit: re-pointing the backlog captures
+this protocol absorbs belongs to the document reconciliation task, and the
+components other than =ores.iam= adopt the specification under the shared
+component list.

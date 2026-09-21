@@ -236,6 +236,7 @@ Investigate before committing either way on new polymorphic types.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — defines the NATS protocol structs this pattern applies to.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — NATS subject naming conventions for market data.
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — first application of this pattern to feed config params.

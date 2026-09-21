@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: D9A4776C-AB42-4461-8F2F-AD077C20716E
+:END:
+#+title: Task: Adopt the canonical protocol in ores.iam
+#+description: The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/adopt-the-protocol-in-iam
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.iam is the first component that speaks the canonical protocol end to end.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- Codegen emits the canonical messages for every IAM entity, with no hand-written protocol header left and no dead generated surface.
+- Generated ores.shell commands and their tests exercise every verb for every IAM entity.
+- The generated BFF route descriptor and the web screens consume the canonical messages, including a single-record read.
+- The duplicate iam.v1.roles.list subject and its unregistered derived messages are resolved.
+- The C++ build, the codegen tests, the drift gate and the TypeScript checks pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+**The surfaces, which are five rather than three.** The web client does not
+speak NATS: it speaks HTTP to the BFF, which translates HTTP onto subjects.
+So a verb change reaches: the generated C++ protocol header and handler; the
+generated TypeScript protocol module; the generated shell command and its
+test; the generated BFF route descriptor; and the web screens that consume
+it. The specification has to state the HTTP mapping, or the web side cannot
+follow it.
+
+**The shell side already has a facet.** =ores.cpp.shell-command= renders a
+header, an implementation and a test per entity into
+=projects/ores.shell/{component}/=. It is default-disabled and enabled only by
+the trading instrument models today, so IAM joins by enabling it on the IAM
+models once the generator emits the canonical verbs.
+
+**Defects to close while converting, all found in the census.** No
+single-record read is derived, so the BFF's single-record route is unreachable
+for every entity and the web loads a row from the list under a ceiling.
+=iam.session= loses save and delete entirely because an operation model
+suppresses the derived set. =iam.roles= declares =iam.v1.roles.list= twice and
+its derived =save=, =delete= and =history= have no server registration.
+=read_for_cache= is keyed on =tenant_id=, which is simultaneously server-owned
+and stripped by =stamp()=.
+
+**Sequencing.** =FA160AE1= has an open PR whose acceptance is that the eleven
+hand-written IAM protocol headers generate from org with zero byte
+differences. That cannot survive this conversion, so decide the order before
+starting: either that PR merges first and the org it produces is rewritten
+here, or it is re-scoped now to the canonical shapes.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

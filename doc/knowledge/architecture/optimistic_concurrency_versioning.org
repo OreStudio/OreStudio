@@ -296,6 +296,7 @@ remove.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the domain that reads this column as its internal
   version, and the second, commercial version it carries alongside.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal

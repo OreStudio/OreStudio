@@ -179,6 +179,7 @@ diagnosable rather than a generic warning.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the full per-service checklist this doc's
   Phase 1/Phase 2 split slots into (registry, certs, IAM
   accounts/roles, controller definition, runner).

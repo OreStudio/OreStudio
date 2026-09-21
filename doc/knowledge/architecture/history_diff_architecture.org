@@ -295,6 +295,7 @@ conflated:
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Story: Consolidate history dialogs onto HistoryDialogBase]] — the
   owning story.
 - [[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Task: Redesign server-side history-diff architecture]] — the task

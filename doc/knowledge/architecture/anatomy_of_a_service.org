@@ -201,6 +201,7 @@ missing):
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — the step-by-step registry procedure.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — the generator and its profiles.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the api/core/service component meta-model.
@@ -219,5 +220,5 @@ missing):
   to mint tokens or warm caches, worked through IAM's party_cache.
 - [[id:18D8CB4F-E926-49E8-83C3-7C8418861B33][NATS certificates]] — generating the mTLS certificates a service
   presents, their layout, and container deployment.
-- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]] — the payload and envelope a service sends, and
-  multi-protocol support.
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the payload and envelope a service sends, and the
+  process-wide choice of their encoding.

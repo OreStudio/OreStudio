@@ -1020,6 +1020,34 @@ subscription and the shell's =accounts list-logins= among them. The entity's
 =list_by_account_id_login_info= for the scoped read, which is the verb the
 account-scoped spelling was standing in for.
 
+**The junction is the one entity the shell facet cannot reach.** Measured
+2026-09-21. =account_party= derives eight subjects -- list, get, get_many, put,
+put_many, delete, delete_many and list_by_account_id -- and the hand-written
+=account_parties_commands= offers *one command*: =list=. The other seven verbs
+have no shell surface at all, so the criterion that every IAM entity's verbs are
+exercised from the shell is unmet for this one entity and met for the other ten.
+
+The facet does not reach it because the shell archetypes serve =domain_entity=
+alone, and a junction is a different model type. Making them serve it is not the
+wrapper change it looks like: the junction's render context names its resource
+=name_singular= where a domain entity says =entity_singular=, and it carries no
+=shell= plan at all -- the plan is built for domain entities only. So the work is
+
+1. a normalising shim in =generate_from_model= so a junction presents the keys
+   the shell templates read -- =entity_singular=, =entity_plural=,
+   =entity_plural_short=, =primary_key=, =write_fields= -- from the junction's own
+   spellings, rather than the templates learning two vocabularies;
+2. =entity_shell_plan(junction)= beside the domain-entity call, which the
+   normalised keys make a one-liner;
+3. =junction= added to the shell facet's =#+model_types:= and to the three
+   archetypes', with the templates' ={{#domain_entity}}= wrapper reading the
+   normalised section instead.
+
+The reason not to simply expose the junction under =domain_entity= in the shared
+render data is that the protocol template has separate ={{#domain_entity}}= and
+={{#junction}}= blocks, so a junction that answered to both would render its
+header twice.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

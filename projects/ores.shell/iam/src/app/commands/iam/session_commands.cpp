@@ -22,8 +22,8 @@
  * Template: cpp_shell_command_impl.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.shell/app/commands/iam/role_commands.hpp"
-#include "ores.iam.api/messaging/role_protocol.hpp"
+#include "ores.shell/app/commands/iam/session_commands.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -111,8 +111,8 @@ void apply_page(Request& req, const parsed_args& parsed) {
 
 } // namespace
 
-void role_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("roles");
+void session_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("sessions");
 
     menu->Insert(
         "list",
@@ -126,73 +126,65 @@ void role_commands::register_commands(cli::Menu& root_menu, nats_client& session
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <id> <start_time>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <id> <start_time>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <name> <description> <reason> <commentary>");
+        "add <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
+        "<client_version_major> <client_version_minor> <bytes_sent> <bytes_received> "
+        "<country_code> <protocol> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <name> <description> <reason> <commentary> [--version <n>]");
+        "set <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
+        "<client_version_major> <client_version_minor> <bytes_sent> <bytes_received> "
+        "<country_code> <protocol> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <name> <description> <reason> <commentary>");
+        "put-many --count <n> <id> <start_time> <account_id> <end_time> <client_ip> "
+        "<client_identifier> <client_version_major> <client_version_minor> <bytes_sent> "
+        "<bytes_received> <country_code> <protocol> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <id> <start_time> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
-
-    menu->Insert(
-        "versions",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_versions(std::ref(out), std::ref(session), std::move(args));
-        },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
-
-    menu->Insert(
-        "version",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_version(std::ref(out), std::ref(session), std::move(args));
-        },
-        "version <id> --version <n>");
+        "delete-many <id> <start_time> <reason> <commentary>");
 
     root_menu.Insert(std::move(menu));
 }
 
-void role_commands::process_list(std::ostream& out,
-                                 nats_client& session,
-                                 const std::vector<std::string>& args) {
+void session_commands::process_list(std::ostream& out,
+                                    nats_client& session,
+                                    const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
 
-    using request_type = messaging::list_roles_request;
+    using request_type = messaging::list_sessions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run list." << std::endl;
@@ -227,7 +219,7 @@ void role_commands::process_list(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::list_roles_response>(
+    auto result = do_auth_request<messaging::list_sessions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -235,12 +227,12 @@ void role_commands::process_list(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_get(std::ostream& out,
-                                nats_client& session,
-                                const std::vector<std::string>& args) {
+void session_commands::process_get(std::ostream& out,
+                                   nats_client& session,
+                                   const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
 
-    using request_type = messaging::get_role_request;
+    using request_type = messaging::get_session_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run get." << std::endl;
@@ -259,17 +251,18 @@ void role_commands::process_get(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 2) {
+            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
+        read_token(req.key.start_time, parsed->positionals[next++], "start_time");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<messaging::get_role_response>(
+    auto result = do_auth_request<messaging::get_session_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -277,12 +270,12 @@ void role_commands::process_get(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_get_many(std::ostream& out,
-                                     nats_client& session,
-                                     const std::vector<std::string>& args) {
+void session_commands::process_get_many(std::ostream& out,
+                                        nats_client& session,
+                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
-    using request_type = messaging::get_many_roles_request;
+    using request_type = messaging::get_many_sessions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run get-many." << std::endl;
@@ -301,14 +294,15 @@ void role_commands::process_get_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
-            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.empty() || parsed->positionals.size() % 2 != 0) {
+            fail(out) << "Expected a multiple of 2 arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
-            messaging::role_key key;
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
+            messaging::session_key key;
             read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.start_time, parsed->positionals[i + 1], "start_time");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -316,7 +310,7 @@ void role_commands::process_get_many(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::get_many_roles_response>(
+    auto result = do_auth_request<messaging::get_many_sessions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -324,12 +318,12 @@ void role_commands::process_get_many(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_add(std::ostream& out,
-                                nats_client& session,
-                                const std::vector<std::string>& args) {
+void session_commands::process_add(std::ostream& out,
+                                   nats_client& session,
+                                   const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
 
-    using request_type = messaging::put_role_request;
+    using request_type = messaging::put_session_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run add." << std::endl;
@@ -348,14 +342,28 @@ void role_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.start_time, parsed->positionals[next++], "start_time");
+        read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
+        read_token(req.change.write.end_time, parsed->positionals[next++], "end_time");
+        read_token(req.change.write.client_ip, parsed->positionals[next++], "client_ip");
+        read_token(
+            req.change.write.client_identifier, parsed->positionals[next++], "client_identifier");
+        read_token(req.change.write.client_version_major,
+                   parsed->positionals[next++],
+                   "client_version_major");
+        read_token(req.change.write.client_version_minor,
+                   parsed->positionals[next++],
+                   "client_version_minor");
+        read_token(req.change.write.bytes_sent, parsed->positionals[next++], "bytes_sent");
+        read_token(req.change.write.bytes_received, parsed->positionals[next++], "bytes_received");
+        read_token(req.change.write.country_code, parsed->positionals[next++], "country_code");
+        read_token(req.change.write.protocol, parsed->positionals[next++], "protocol");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -364,7 +372,7 @@ void role_commands::process_add(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::put_role_response>(
+    auto result = do_auth_request<messaging::put_session_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -372,12 +380,12 @@ void role_commands::process_add(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_set(std::ostream& out,
-                                nats_client& session,
-                                const std::vector<std::string>& args) {
+void session_commands::process_set(std::ostream& out,
+                                   nats_client& session,
+                                   const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
 
-    using request_type = messaging::put_role_request;
+    using request_type = messaging::put_session_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run set." << std::endl;
@@ -398,14 +406,28 @@ void role_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.start_time, parsed->positionals[next++], "start_time");
+        read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
+        read_token(req.change.write.end_time, parsed->positionals[next++], "end_time");
+        read_token(req.change.write.client_ip, parsed->positionals[next++], "client_ip");
+        read_token(
+            req.change.write.client_identifier, parsed->positionals[next++], "client_identifier");
+        read_token(req.change.write.client_version_major,
+                   parsed->positionals[next++],
+                   "client_version_major");
+        read_token(req.change.write.client_version_minor,
+                   parsed->positionals[next++],
+                   "client_version_minor");
+        read_token(req.change.write.bytes_sent, parsed->positionals[next++], "bytes_sent");
+        read_token(req.change.write.bytes_received, parsed->positionals[next++], "bytes_received");
+        read_token(req.change.write.country_code, parsed->positionals[next++], "country_code");
+        read_token(req.change.write.protocol, parsed->positionals[next++], "protocol");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -420,7 +442,7 @@ void role_commands::process_set(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::put_role_response>(
+    auto result = do_auth_request<messaging::put_session_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -428,12 +450,12 @@ void role_commands::process_set(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_put_many(std::ostream& out,
-                                     nats_client& session,
-                                     const std::vector<std::string>& args) {
+void session_commands::process_put_many(std::ostream& out,
+                                        nats_client& session,
+                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
-    using request_type = messaging::put_many_roles_request;
+    using request_type = messaging::put_many_sessions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run put-many." << std::endl;
@@ -460,16 +482,30 @@ void role_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 3 + 2) {
-            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
-            messaging::role_change change;
+            messaging::session_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
+            read_token(change.write.start_time, parsed->positionals[next++], "start_time");
+            read_token(change.write.account_id, parsed->positionals[next++], "account_id");
+            read_token(change.write.end_time, parsed->positionals[next++], "end_time");
+            read_token(change.write.client_ip, parsed->positionals[next++], "client_ip");
+            read_token(
+                change.write.client_identifier, parsed->positionals[next++], "client_identifier");
+            read_token(change.write.client_version_major,
+                       parsed->positionals[next++],
+                       "client_version_major");
+            read_token(change.write.client_version_minor,
+                       parsed->positionals[next++],
+                       "client_version_minor");
+            read_token(change.write.bytes_sent, parsed->positionals[next++], "bytes_sent");
+            read_token(change.write.bytes_received, parsed->positionals[next++], "bytes_received");
+            read_token(change.write.country_code, parsed->positionals[next++], "country_code");
+            read_token(change.write.protocol, parsed->positionals[next++], "protocol");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -480,7 +516,7 @@ void role_commands::process_put_many(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::put_many_roles_response>(
+    auto result = do_auth_request<messaging::put_many_sessions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -488,12 +524,12 @@ void role_commands::process_put_many(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_delete(std::ostream& out,
-                                   nats_client& session,
-                                   const std::vector<std::string>& args) {
+void session_commands::process_delete(std::ostream& out,
+                                      nats_client& session,
+                                      const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
-    using request_type = messaging::delete_role_request;
+    using request_type = messaging::delete_session_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run delete." << std::endl;
@@ -514,11 +550,12 @@ void role_commands::process_delete(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1 + 2) {
-            fail(out) << "Expected " << (1 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 2 + 2) {
+            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.start_time, parsed->positionals[next++], "start_time");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -532,7 +569,7 @@ void role_commands::process_delete(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::delete_role_response>(
+    auto result = do_auth_request<messaging::delete_session_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -540,12 +577,12 @@ void role_commands::process_delete(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void role_commands::process_delete_many(std::ostream& out,
-                                        nats_client& session,
-                                        const std::vector<std::string>& args) {
+void session_commands::process_delete_many(std::ostream& out,
+                                           nats_client& session,
+                                           const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
-    using request_type = messaging::delete_many_roles_request;
+    using request_type = messaging::delete_many_sessions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run delete-many." << std::endl;
@@ -564,16 +601,17 @@ void role_commands::process_delete_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() < 1 + 2 || (parsed->positionals.size() - 2) % 1 != 0) {
+        if (parsed->positionals.size() < 2 + 2 || (parsed->positionals.size() - 2) % 2 != 0) {
             fail(out) << "Expected a whole number of key groups and an intent, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
-        const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
-            messaging::role_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
-            req.removals.push_back(messaging::role_removal{.key = std::move(key)});
+            messaging::session_key key;
+            read_token(key.id, parsed->positionals[i * 2 + 0], "id");
+            read_token(key.start_time, parsed->positionals[i * 2 + 1], "start_time");
+            req.removals.push_back(messaging::session_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
         req.intent.commentary = parsed->positionals[parsed->positionals.size() - 1];
@@ -582,101 +620,7 @@ void role_commands::process_delete_many(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::delete_many_roles_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void role_commands::process_versions(std::ostream& out,
-                                     nats_client& session,
-                                     const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
-
-    using request_type = messaging::list_role_versions_request;
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run versions." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{
-        {.name = "offset", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = ""},
-        {.name = "order", .requires_value = true, .default_value = ""},
-        {.name = "desc", .requires_value = false, .default_value = "false"},
-    };
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    request_type req;
-    [[maybe_unused]] std::size_t next = 0;
-    try {
-
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
-                      << std::endl;
-            return;
-        }
-        apply_page(req, *parsed);
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    auto result = do_auth_request<messaging::list_role_versions_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void role_commands::process_version(std::ostream& out,
-                                    nats_client& session,
-                                    const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
-
-    using request_type = messaging::get_role_version_request;
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run version." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{
-        {.name = "version", .requires_value = true, .default_value = ""},
-    };
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    request_type req;
-    [[maybe_unused]] std::size_t next = 0;
-    try {
-
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
-                      << std::endl;
-            return;
-        }
-        req.key.version =
-            ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    auto result = do_auth_request<messaging::get_role_version_response>(
+    auto result = do_auth_request<messaging::delete_many_sessions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

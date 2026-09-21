@@ -24,12 +24,15 @@
  */
 #include "ores.shell/app/commands/iam/tenant_commands.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <chrono>
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
@@ -70,6 +73,10 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
         } else {
             throw std::invalid_argument(name + " must be 'true' or 'false'");
         }
+    } else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>) {
+        target = ores::platform::time::datetime::from_iso8601_utc(raw);
+    } else if constexpr (std::is_same_v<T, boost::asio::ip::address>) {
+        target = boost::asio::ip::make_address(raw);
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         target.clear();
         std::string current;

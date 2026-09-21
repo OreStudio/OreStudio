@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63
 :END:
 #+title: ores.iam.session

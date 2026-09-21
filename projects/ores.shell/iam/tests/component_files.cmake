@@ -27,6 +27,7 @@ set(files
     "permission_commands_tests.cpp"
     "reset_operations_commands_tests.cpp"
     "role_commands_tests.cpp"
+    "session_commands_tests.cpp"
     "session_operations_operations_commands_tests.cpp"
     "session_samples_operations_commands_tests.cpp"
     "signup_operations_commands_tests.cpp"

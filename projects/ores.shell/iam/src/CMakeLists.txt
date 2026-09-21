@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
     PRIVATE
         ores.iam.api.lib
+        ores.platform.lib
         ores.utility.lib
         cli::cli)
 

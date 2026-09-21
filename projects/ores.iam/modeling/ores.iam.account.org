@@ -50,8 +50,8 @@ The model describes the table and nothing else. Two columns need care:
 Two behavioural facets are switched off, each with a reason:
 
 - The entity's CRUD handler and sub-registrar, because the hand-written
-  =account_handler= already owns every =iam.v1.accounts.*= subject.
-- The generated CRUD service, because the hand-written =account_service=
+  =account_operations_handler= already owns every =iam.v1.accounts.*= subject.
+- The generated CRUD service, because the hand-written =account_operations_service=
   is the authentication surface (login, lock, unlock, password change
   and reset, party selection, service-credential check) and the
   generated service's =get_account_history(id)= collides in name and

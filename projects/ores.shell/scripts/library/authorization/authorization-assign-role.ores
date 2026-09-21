@@ -1,0 +1,6 @@
+# =assign-role=
+#
+# GENERATED from doc/recipes/shell/authorization/authorization.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+authorization assign-role __none__ __none__

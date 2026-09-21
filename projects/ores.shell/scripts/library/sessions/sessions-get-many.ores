@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/sessions/session.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+sessions get-many 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z

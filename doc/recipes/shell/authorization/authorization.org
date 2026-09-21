@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 788B9C8F-08A8-5B70-9794-3447973C6090
+:END:
+#+title: Authorization shell commands
+#+description: Every command the authorization submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:authorization:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =authorization=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =assign-role=
+:PROPERTIES:
+:ID: 1798A90E-6894-519C-8B53-17F4C968C190
+:END:
+
+Sends =assign_role_request= and prints =assign_role_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =role_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization assign-role <account_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.roles.assign=.
+
+#+name: authorization-assign-role
+#+begin_src ores-shell :tangle authorization-assign-role.ores :exports none
+authorization assign-role __none__ __none__
+#+end_src
+
+** =assign-role-by-name=
+:PROPERTIES:
+:ID: ACFC829F-B7A3-5152-8C4A-9DC9E84229D6
+:END:
+
+Sends =assign_role_by_name_request= and prints =assign_role_by_name_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =role_name=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization assign-role-by-name <principal> <role_name>
+#+end_example
+
+It is addressed at =iam.v1.roles.assign-by-name=.
+
+#+name: authorization-assign-role-by-name
+#+begin_src ores-shell :tangle authorization-assign-role-by-name.ores :exports none
+authorization assign-role-by-name __none__ __none__
+#+end_src
+
+** =revoke-role=
+:PROPERTIES:
+:ID: D1D1CEB5-79B3-5D4D-996B-9C783877489B
+:END:
+
+Sends =revoke_role_request= and prints =revoke_role_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =role_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization revoke-role <account_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.roles.revoke=.
+
+#+name: authorization-revoke-role
+#+begin_src ores-shell :tangle authorization-revoke-role.ores :exports none
+authorization revoke-role __none__ __none__
+#+end_src
+
+** =revoke-role-by-name=
+:PROPERTIES:
+:ID: 086448B4-7C89-5E93-977F-F56639911487
+:END:
+
+Sends =revoke_role_by_name_request= and prints =revoke_role_by_name_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =role_name=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization revoke-role-by-name <principal> <role_name>
+#+end_example
+
+It is addressed at =iam.v1.roles.revoke-by-name=.
+
+#+name: authorization-revoke-role-by-name
+#+begin_src ores-shell :tangle authorization-revoke-role-by-name.ores :exports none
+authorization revoke-role-by-name __none__ __none__
+#+end_src
+
+** =get-account-roles=
+:PROPERTIES:
+:ID: 074D3723-1348-577E-95E7-B9EC90F2343F
+:END:
+
+Sends =get_account_roles_request= and prints =get_account_roles_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization get-account-roles <account_id>
+#+end_example
+
+It is addressed at =iam.v1.roles.by-account=.
+
+#+name: authorization-get-account-roles
+#+begin_src ores-shell :tangle authorization-get-account-roles.ores :exports none
+authorization get-account-roles __none__
+#+end_src
+
+** =get-account-permissions=
+:PROPERTIES:
+:ID: 8210F786-82E7-5973-B1D0-09288524FE0A
+:END:
+
+Sends =get_account_permissions_request= and prints =get_account_permissions_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization get-account-permissions <account_id>
+#+end_example
+
+It is addressed at =iam.v1.roles.permissions-by-account=.
+
+#+name: authorization-get-account-permissions
+#+begin_src ores-shell :tangle authorization-get-account-permissions.ores :exports none
+authorization get-account-permissions __none__
+#+end_src
+
+** =get-role-permissions=
+:PROPERTIES:
+:ID: D657A55F-ED53-5C39-92DC-F532C984173E
+:END:
+
+Sends =get_role_permissions_request= and prints =get_role_permissions_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization get-role-permissions <role_id>
+#+end_example
+
+It is addressed at =iam.v1.roles.permissions=.
+
+#+name: authorization-get-role-permissions
+#+begin_src ores-shell :tangle authorization-get-role-permissions.ores :exports none
+authorization get-role-permissions __none__
+#+end_src
+
+** =suggest-role-commands=
+:PROPERTIES:
+:ID: EADC0056-801B-56EF-B1A3-A7B395D331B3
+:END:
+
+Sends =suggest_role_commands_request= and prints =suggest_role_commands_response=, so the shape is the protocol's and the meaning is the service's. It reads =username=, =tenant_id=, =hostname=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization suggest-role-commands <username> <tenant_id> <hostname>
+#+end_example
+
+It is addressed at =iam.v1.roles.suggest-commands=.
+
+#+name: authorization-suggest-role-commands
+#+begin_src ores-shell :tangle authorization-suggest-role-commands.ores :exports none
+authorization suggest-role-commands __none__ __none__ __none__
+#+end_src
+

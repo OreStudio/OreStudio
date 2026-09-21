@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/account_parties/account_party.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+account_parties list --limit 1

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 62EF06D0-D41D-5D6A-ADD5-6958FF8A43C0
+:END:
+#+title: Roles shell commands
+#+description: Every command the roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:roles:
+
+This file documents the roles resource at the shell, one section per command. Every command is a subcommand of =roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 37460C99-E3AD-5D18-A31D-6AB4022440B8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.roles.list=.
+
+#+name: roles-list
+#+begin_src ores-shell :tangle roles-list.ores :exports none
+roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 424EF871-4F9B-5F8D-AA56-964FCEBF2B77
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles get <id>
+#+end_example
+
+It is addressed at =iam.v1.roles.get=.
+
+#+name: roles-get
+#+begin_src ores-shell :tangle roles-get.ores :exports none
+roles get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C1764DF4-51C3-5404-A9B5-94368432AA34
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.roles.get_many=.
+
+#+name: roles-get-many
+#+begin_src ores-shell :tangle roles-get-many.ores :exports none
+roles get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 21BDB4CF-17EB-561C-8758-2401546DC664
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles add <id> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.roles.put=.
+
+#+name: roles-add
+#+begin_src ores-shell :tangle roles-add.ores :exports none
+roles add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2966AD57-0D58-5BD8-8DD8-00FEEE9A6EEB
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles set <id> <name> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.roles.put=.
+
+#+name: roles-set
+#+begin_src ores-shell :tangle roles-set.ores :exports none
+roles set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 797DCEE8-B0AA-5CEF-8029-60C6C5A24C73
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles put-many --count <n> <id> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.roles.put_many=.
+
+#+name: roles-put-many
+#+begin_src ores-shell :tangle roles-put-many.ores :exports none
+roles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 022D5313-8527-5561-A63E-47B6DB9A4BE1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.roles.delete=.
+
+#+name: roles-delete
+#+begin_src ores-shell :tangle roles-delete.ores :exports none
+roles delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2AF3FF11-9A89-571E-BC7E-A21C384E67F6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.roles.delete_many=.
+
+#+name: roles-delete-many
+#+begin_src ores-shell :tangle roles-delete-many.ores :exports none
+roles delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 3FDFAB26-7521-5E9A-BAE7-7C590B64E96F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.roles_versions.list=.
+
+#+name: roles-versions
+#+begin_src ores-shell :tangle roles-versions.ores :exports none
+roles versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C25B5FBF-472A-56D8-AE02-307352F0A0D2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+roles version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.roles_versions.get=.
+
+#+name: roles-version
+#+begin_src ores-shell :tangle roles-version.ores :exports none
+roles version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

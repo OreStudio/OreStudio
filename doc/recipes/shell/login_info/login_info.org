@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: E5F57DD2-8258-5688-BB05-DEF61B680A9A
+:END:
+#+title: Login Info shell commands
+#+description: Every command the login_info submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:login_info:
+
+This file documents the login_info resource at the shell, one section per command. Every command is a subcommand of =login_info=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 95BD51F9-A5BD-5041-8964-F3B9EAEB8209
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+login_info list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.login_info.list=.
+
+#+name: login_info-list
+#+begin_src ores-shell :tangle login_info-list.ores :exports none
+login_info list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 744A3753-ED85-5D9E-B1CD-ADF0B87B7A9A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+login_info get <account_id>
+#+end_example
+
+It is addressed at =iam.v1.login_info.get=.
+
+#+name: login_info-get
+#+begin_src ores-shell :tangle login_info-get.ores :exports none
+login_info get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1F60006E-7EF1-5298-AB33-13999A94F8BE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+login_info get-many <account_id>
+#+end_example
+
+It is addressed at =iam.v1.login_info.get_many=.
+
+#+name: login_info-get-many
+#+begin_src ores-shell :tangle login_info-get-many.ores :exports none
+login_info get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+

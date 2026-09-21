@@ -1,0 +1,6 @@
+# =provision-tenant=
+#
+# GENERATED from doc/recipes/shell/bootstrap/bootstrap.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+bootstrap provision-tenant __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__

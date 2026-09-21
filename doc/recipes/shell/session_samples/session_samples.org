@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 3513ED5C-330C-50FD-8D58-A0652D033B54
+:END:
+#+title: Session Samples shell commands
+#+description: Every command the session_samples submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:session_samples:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> session_samples get-session-samples=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =get-session-samples=
+:PROPERTIES:
+:ID: 88709B39-FCBE-50CC-A1EB-147A87654FAF
+:END:
+
+Sends =get_session_samples_request= and prints =get_session_samples_response=, so the shape is the protocol's and the meaning is the service's. It reads =session_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+session_samples get-session-samples <session_id>
+#+end_example
+
+It is addressed at =iam.v1.sessions.samples=.
+
+#+name: session_samples-get-session-samples
+#+begin_src ores-shell :tangle session_samples-get-session-samples.ores :exports none
+session_samples get-session-samples __none__
+#+end_src
+

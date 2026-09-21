@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 8427B6C2-8E9C-5846-866B-DBBF5973DAFB
+:END:
+#+title: Tenant Types shell commands
+#+description: Every command the tenant_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenant_types:
+
+This file documents the tenant_types resource at the shell, one section per command. Every command is a subcommand of =tenant_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: CACC757A-3820-5692-A7FB-20B9CCB1842C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.list=.
+
+#+name: tenant_types-list
+#+begin_src ores-shell :tangle tenant_types-list.ores :exports none
+tenant_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 1DE72809-4F71-5292-866B-B3B5182BEB55
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types get <type>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.get=.
+
+#+name: tenant_types-get
+#+begin_src ores-shell :tangle tenant_types-get.ores :exports none
+tenant_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 67291ABB-F475-59A9-80AC-6A3A0730576C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types get-many <type>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.get_many=.
+
+#+name: tenant_types-get-many
+#+begin_src ores-shell :tangle tenant_types-get-many.ores :exports none
+tenant_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C7454CE6-7586-5DB0-A264-139937449C37
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types add <type> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.put=.
+
+#+name: tenant_types-add
+#+begin_src ores-shell :tangle tenant_types-add.ores :exports none
+tenant_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6780E2FF-B89B-5247-81CA-C40367F289EE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types set <type> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.put=.
+
+#+name: tenant_types-set
+#+begin_src ores-shell :tangle tenant_types-set.ores :exports none
+tenant_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D8102011-6CF5-573F-B7A6-6B74BDE076D7
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types put-many --count <n> <type> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.put_many=.
+
+#+name: tenant_types-put-many
+#+begin_src ores-shell :tangle tenant_types-put-many.ores :exports none
+tenant_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AF237AD9-F65B-585A-96A9-84FF57CB3193
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types delete <type> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.delete=.
+
+#+name: tenant_types-delete
+#+begin_src ores-shell :tangle tenant_types-delete.ores :exports none
+tenant_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 16E0A01B-A4FF-59EA-88D5-4D6A4F362AB2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types delete-many <type> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types.delete_many=.
+
+#+name: tenant_types-delete-many
+#+begin_src ores-shell :tangle tenant_types-delete-many.ores :exports none
+tenant_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 745B8C7B-62D0-569D-8C9B-4F005A7E15FA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types versions <type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.tenant_types_versions.list=.
+
+#+name: tenant_types-versions
+#+begin_src ores-shell :tangle tenant_types-versions.ores :exports none
+tenant_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 04622FA5-139E-5726-998A-52FEED1AAE91
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_types version <type> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.tenant_types_versions.get=.
+
+#+name: tenant_types-version
+#+begin_src ores-shell :tangle tenant_types-version.ores :exports none
+tenant_types version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 04C8F03D-5BB8-58F2-A556-63A54274108F
+:END:
+#+title: Account Contact Informations shell commands
+#+description: Every command the account_contact_informations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_contact_informations:
+
+This file documents the account_contact_informations resource at the shell, one section per command. Every command is a subcommand of =account_contact_informations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F42886D2-76BF-5BB2-972C-35C11517278B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.list=.
+
+#+name: account_contact_informations-list
+#+begin_src ores-shell :tangle account_contact_informations-list.ores :exports none
+account_contact_informations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 20767BDD-9EE5-5AEE-88DC-C0F797E295D0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations get <id>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.get=.
+
+#+name: account_contact_informations-get
+#+begin_src ores-shell :tangle account_contact_informations-get.ores :exports none
+account_contact_informations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D5E458FB-2662-5647-8AE3-A5DC2F3E5F4A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.get_many=.
+
+#+name: account_contact_informations-get-many
+#+begin_src ores-shell :tangle account_contact_informations-get-many.ores :exports none
+account_contact_informations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EA93F955-C6E6-5A9B-8922-4C8E6AA74FA3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations add <id> <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.put=.
+
+#+name: account_contact_informations-add
+#+begin_src ores-shell :tangle account_contact_informations-add.ores :exports none
+account_contact_informations add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 268CEEEE-56A5-5C50-AEB5-58E9CBA44CD5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations set <id> <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.put=.
+
+#+name: account_contact_informations-set
+#+begin_src ores-shell :tangle account_contact_informations-set.ores :exports none
+account_contact_informations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5F52836E-6022-5FFD-B9E5-1CA65F9520BC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations put-many --count <n> <id> <account_id> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.put_many=.
+
+#+name: account_contact_informations-put-many
+#+begin_src ores-shell :tangle account_contact_informations-put-many.ores :exports none
+account_contact_informations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 23BD2CA1-501A-5106-92B4-CEBC43A7C6E4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.delete=.
+
+#+name: account_contact_informations-delete
+#+begin_src ores-shell :tangle account_contact_informations-delete.ores :exports none
+account_contact_informations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1AE5A2DA-AA62-574A-80DE-BC2DD1425422
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.delete_many=.
+
+#+name: account_contact_informations-delete-many
+#+begin_src ores-shell :tangle account_contact_informations-delete-many.ores :exports none
+account_contact_informations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: 4DD63800-7EFB-5F3D-89D0-9665D1A4799D
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.list_by_account_id=.
+
+#+name: account_contact_informations-by-account-id
+#+begin_src ores-shell :tangle account_contact_informations-by-account-id.ores :exports none
+account_contact_informations by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0F4D2FCB-25A1-5060-A8CD-12DD36043C2A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations_versions.list=.
+
+#+name: account_contact_informations-versions
+#+begin_src ores-shell :tangle account_contact_informations-versions.ores :exports none
+account_contact_informations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 11E54D74-2488-593A-8F37-2A89542F2B07
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_contact_informations version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations_versions.get=.
+
+#+name: account_contact_informations-version
+#+begin_src ores-shell :tangle account_contact_informations-version.ores :exports none
+account_contact_informations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

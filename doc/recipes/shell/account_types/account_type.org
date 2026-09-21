@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 60803D77-F933-54BA-9E26-F559A3863A91
+:END:
+#+title: Account Types shell commands
+#+description: Every command the account_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_types:
+
+This file documents the account_types resource at the shell, one section per command. Every command is a subcommand of =account_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 98ACEFB2-0A78-5C5A-8B40-23636AFD79B5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_types.list=.
+
+#+name: account_types-list
+#+begin_src ores-shell :tangle account_types-list.ores :exports none
+account_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: DC23B26A-A6E1-5F70-90EF-BA8FF27389E7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types get <type>
+#+end_example
+
+It is addressed at =iam.v1.account_types.get=.
+
+#+name: account_types-get
+#+begin_src ores-shell :tangle account_types-get.ores :exports none
+account_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 16FFE7F4-B0DB-5881-B0AD-7380549485C5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types get-many <type>
+#+end_example
+
+It is addressed at =iam.v1.account_types.get_many=.
+
+#+name: account_types-get-many
+#+begin_src ores-shell :tangle account_types-get-many.ores :exports none
+account_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 46BAB3F5-E971-57C6-BBC8-BF1917D39496
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types add <type> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_types.put=.
+
+#+name: account_types-add
+#+begin_src ores-shell :tangle account_types-add.ores :exports none
+account_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 020119F1-0018-588D-BEDA-B9A3D8124213
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types set <type> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_types.put=.
+
+#+name: account_types-set
+#+begin_src ores-shell :tangle account_types-set.ores :exports none
+account_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 913F42E3-6EF4-542A-B375-D83A924A8545
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types put-many --count <n> <type> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_types.put_many=.
+
+#+name: account_types-put-many
+#+begin_src ores-shell :tangle account_types-put-many.ores :exports none
+account_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F5D30583-CEA3-506B-B584-B631429BEDEF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types delete <type> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_types.delete=.
+
+#+name: account_types-delete
+#+begin_src ores-shell :tangle account_types-delete.ores :exports none
+account_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 49783B0C-B80E-595D-BDCA-84A6F1D741BA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types delete-many <type> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_types.delete_many=.
+
+#+name: account_types-delete-many
+#+begin_src ores-shell :tangle account_types-delete-many.ores :exports none
+account_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2B7F974F-206C-5A41-A29D-CFAFF3BD932F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types versions <type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_types_versions.list=.
+
+#+name: account_types-versions
+#+begin_src ores-shell :tangle account_types-versions.ores :exports none
+account_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 191F171F-FF31-5747-9022-C8682E1A3AD8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_types version <type> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.account_types_versions.get=.
+
+#+name: account_types-version
+#+begin_src ores-shell :tangle account_types-version.ores :exports none
+account_types version __none__ --version 1
+#+end_src
+

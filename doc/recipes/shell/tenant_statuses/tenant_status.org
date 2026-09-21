@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 5CF80075-6E0E-57A5-9A76-DD3BC0E17211
+:END:
+#+title: Tenant Statuses shell commands
+#+description: Every command the tenant_statuses submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenant_statuses:
+
+This file documents the tenant_statuses resource at the shell, one section per command. Every command is a subcommand of =tenant_statuses=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 30111FA9-B197-5C1D-8A9E-94A90D4DFD35
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.list=.
+
+#+name: tenant_statuses-list
+#+begin_src ores-shell :tangle tenant_statuses-list.ores :exports none
+tenant_statuses list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 01EDCC1D-56F8-50A6-908F-EE91FC0DAB2C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses get <status>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.get=.
+
+#+name: tenant_statuses-get
+#+begin_src ores-shell :tangle tenant_statuses-get.ores :exports none
+tenant_statuses get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BFD5BFD8-EFA3-5977-9837-B15B44C0A585
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses get-many <status>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.get_many=.
+
+#+name: tenant_statuses-get-many
+#+begin_src ores-shell :tangle tenant_statuses-get-many.ores :exports none
+tenant_statuses get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FDB5D6D7-79BF-51E1-ABBC-5D02C0A0800B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses add <status> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.put=.
+
+#+name: tenant_statuses-add
+#+begin_src ores-shell :tangle tenant_statuses-add.ores :exports none
+tenant_statuses add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 14E0FAF2-55D1-5180-A4DE-630CCCE266BD
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses set <status> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.put=.
+
+#+name: tenant_statuses-set
+#+begin_src ores-shell :tangle tenant_statuses-set.ores :exports none
+tenant_statuses set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 80E91401-2FBB-5C0B-91B6-258A2B06A5B0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses put-many --count <n> <status> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.put_many=.
+
+#+name: tenant_statuses-put-many
+#+begin_src ores-shell :tangle tenant_statuses-put-many.ores :exports none
+tenant_statuses put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B619F382-8B1B-5B16-BB16-336403A6DF23
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses delete <status> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.delete=.
+
+#+name: tenant_statuses-delete
+#+begin_src ores-shell :tangle tenant_statuses-delete.ores :exports none
+tenant_statuses delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 5AA71394-7645-5635-8FA1-32F9BB4C26BB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses delete-many <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses.delete_many=.
+
+#+name: tenant_statuses-delete-many
+#+begin_src ores-shell :tangle tenant_statuses-delete-many.ores :exports none
+tenant_statuses delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: AC23D625-EE2B-58A1-B44E-B20CAD67BAC9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses versions <status> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses_versions.list=.
+
+#+name: tenant_statuses-versions
+#+begin_src ores-shell :tangle tenant_statuses-versions.ores :exports none
+tenant_statuses versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DCFAE387-883F-5583-A3FC-7E85A8567455
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_statuses version <status> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.tenant_statuses_versions.get=.
+
+#+name: tenant_statuses-version
+#+begin_src ores-shell :tangle tenant_statuses-version.ores :exports none
+tenant_statuses version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,6 @@
+# =put-many=
+#
+# GENERATED from doc/recipes/shell/account_parties/account_party.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+account_parties put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script

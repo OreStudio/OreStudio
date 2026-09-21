@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 0E61EABD-0AF3-59A0-B796-0519EEE06FC9
+:END:
+#+title: Sessions shell commands
+#+description: Every command the sessions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:sessions:
+
+This file documents the sessions resource at the shell, one section per command. Every command is a subcommand of =sessions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3E1CD1D6-5D89-53C0-8AE7-B5209F25995C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.sessions.list=.
+
+#+name: sessions-list
+#+begin_src ores-shell :tangle sessions-list.ores :exports none
+sessions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 91967DB9-65E4-5A2A-B754-F5F29EF78C0A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions get <id> <start_time>
+#+end_example
+
+It is addressed at =iam.v1.sessions.get=.
+
+#+name: sessions-get
+#+begin_src ores-shell :tangle sessions-get.ores :exports none
+sessions get 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 470AE5DF-FA5A-5BA5-9D35-0A2165F5768E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions get-many <id> <start_time>
+#+end_example
+
+It is addressed at =iam.v1.sessions.get_many=.
+
+#+name: sessions-get-many
+#+begin_src ores-shell :tangle sessions-get-many.ores :exports none
+sessions get-many 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 07851262-1A14-5661-839F-D8C672F60E14
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions add <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> <client_version_major> <client_version_minor> <bytes_sent> <bytes_received> <country_code> <protocol> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.sessions.put=.
+
+#+name: sessions-add
+#+begin_src ores-shell :tangle sessions-add.ores :exports none
+sessions add 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A5A86BB6-5878-55D4-A922-7CCCE16AC60E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions set <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> <client_version_major> <client_version_minor> <bytes_sent> <bytes_received> <country_code> <protocol> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.sessions.put=.
+
+#+name: sessions-set
+#+begin_src ores-shell :tangle sessions-set.ores :exports none
+sessions set 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5C3321FD-0F38-52B1-810D-3E0B621C227A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions put-many --count <n> <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> <client_version_major> <client_version_minor> <bytes_sent> <bytes_received> <country_code> <protocol> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.sessions.put_many=.
+
+#+name: sessions-put-many
+#+begin_src ores-shell :tangle sessions-put-many.ores :exports none
+sessions put-many --count 1 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 28D4B58D-CFBB-5BC0-913F-A6723F64DAB3
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions delete <id> <start_time> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.sessions.delete=.
+
+#+name: sessions-delete
+#+begin_src ores-shell :tangle sessions-delete.ores :exports none
+sessions delete 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A709C1CA-3A30-55D3-9646-F39A9A7C325C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sessions delete-many <id> <start_time> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.sessions.delete_many=.
+
+#+name: sessions-delete-many
+#+begin_src ores-shell :tangle sessions-delete-many.ores :exports none
+sessions delete-many 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+

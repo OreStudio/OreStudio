@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 7640B5F6-3480-5422-9EB5-F12B9609B724
+:END:
+#+title: Tenant Provisioning shell commands
+#+description: Every command the tenant_provisioning submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenant_provisioning:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =tenant_provisioning=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =complete-tenant-provisioning=
+:PROPERTIES:
+:ID: 72FBCCDB-9EF9-510C-9F33-A893CDD3897A
+:END:
+
+Sends =complete_tenant_provisioning_command= and prints =complete_tenant_provisioning_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_provisioning complete-tenant-provisioning
+#+end_example
+
+It is addressed at =iam.v1.tenants.complete-provisioning=.
+
+#+name: tenant_provisioning-complete-tenant-provisioning
+#+begin_src ores-shell :tangle tenant_provisioning-complete-tenant-provisioning.ores :exports none
+tenant_provisioning complete-tenant-provisioning
+#+end_src
+
+** =provision-acme-tenant=
+:PROPERTIES:
+:ID: EF8E648E-5FED-5282-8685-9E6BCEAC7B96
+:END:
+
+Sends =provision_acme_tenant_command= and prints =provision_acme_tenant_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_provisioning provision-acme-tenant
+#+end_example
+
+It is addressed at =iam.v1.tenants.provision-acme=.
+
+#+name: tenant_provisioning-provision-acme-tenant
+#+begin_src ores-shell :tangle tenant_provisioning-provision-acme-tenant.ores :exports none
+tenant_provisioning provision-acme-tenant
+#+end_src
+

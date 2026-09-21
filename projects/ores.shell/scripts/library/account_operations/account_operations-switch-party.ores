@@ -1,0 +1,6 @@
+# =switch-party=
+#
+# GENERATED from doc/recipes/shell/account_operations/account_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+account_operations switch-party __none__

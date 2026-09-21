@@ -28,6 +28,7 @@ The reset protocol messages.
 :PROPERTIES:
 :subject: iam.v1.system.reset-tenant
 :response: reset_tenant_result
+:destructive: true
 :END:
 
 #+begin_src cpp :name comment
@@ -60,6 +61,7 @@ The reset protocol messages.
 :PROPERTIES:
 :subject: iam.v1.system.reset
 :response: reset_system_result
+:destructive: true
 :END:
 
 #+begin_src cpp :name comment

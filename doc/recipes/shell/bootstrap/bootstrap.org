@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 567A34ED-0B68-5C66-A733-77163A4B45F6
+:END:
+#+title: Bootstrap shell commands
+#+description: Every command the bootstrap submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:bootstrap:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =bootstrap=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =bootstrap-status=
+:PROPERTIES:
+:ID: 490E8311-CD27-539E-AB73-84F34E258FB2
+:END:
+
+Sends =bootstrap_status_request= and prints =bootstrap_status_response=, so the shape is the protocol's and the meaning is the service's. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+bootstrap bootstrap-status
+#+end_example
+
+It is addressed at =iam.v1.bootstrap.status=.
+
+#+name: bootstrap-bootstrap-status
+#+begin_src ores-shell :tangle bootstrap-bootstrap-status.ores :exports none
+bootstrap bootstrap-status
+#+end_src
+
+** =create-initial-admin=
+:PROPERTIES:
+:ID: 1A0548BD-DAC2-588B-B3FD-67E0A0517055
+:END:
+
+Sends =create_initial_admin_request= and prints =create_initial_admin_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =email=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+bootstrap create-initial-admin <principal> <password> <email>
+#+end_example
+
+It is addressed at =iam.v1.bootstrap.create-admin=.
+
+#+name: bootstrap-create-initial-admin
+#+begin_src ores-shell :tangle bootstrap-create-initial-admin.ores :exports none
+bootstrap create-initial-admin __none__ __none__ __none__
+#+end_src
+
+** =provision-tenant=
+:PROPERTIES:
+:ID: EABE8FDD-3AC9-5040-806A-1551352FCEA9
+:END:
+
+Sends =provision_tenant_request= and prints =provision_tenant_response=, so the shape is the protocol's and the meaning is the service's. It reads =type=, =code=, =name=, =hostname=, =description=, =principal=, =password=, =email=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+bootstrap provision-tenant <type> <code> <name> <hostname> <description> <principal> <password> <email>
+#+end_example
+
+It is addressed at =iam.v1.bootstrap.provision-tenant=.
+
+#+name: bootstrap-provision-tenant
+#+begin_src ores-shell :tangle bootstrap-provision-tenant.ores :exports none
+bootstrap provision-tenant __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+

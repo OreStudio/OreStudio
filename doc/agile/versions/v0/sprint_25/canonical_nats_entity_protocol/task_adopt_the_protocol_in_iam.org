@@ -957,6 +957,41 @@ removed, the facets on, and one regeneration. Session's conversion was this
 shape and took a round; account's is the same shape with a wider blast radius,
 not a different kind of job.
 
+**Account's writes are workflows, and the canonical verbs cannot state them.**
+Found 2026-09-21 by doing the conversion and watching it break, which is the only
+way this was going to surface.
+
+The conversion reached the hand-written shell unit and stopped at its create.
+That command takes a *principal and a password*, and the service hashes them:
+=create_account= is where password material is made. The canonical =put= carries
+=password_hash=, =password_salt= and =totp_secret= as ordinary write fields, so a
+client using it would supply the hash itself. Turning account into a regular
+entity would therefore hand every client the ability to write password material
+directly and bypass the hashing, the lockout counters and the TOTP secret --
+which the hand-written update avoided by being a *partial* update, where the
+canonical put is a full-row replace that must send every field or clear it.
+
+That is not a bug in the conversion; it is the conversion asking a question the
+model has not answered. Account's reads -- list, get, and the history -- are
+ordinary row reads and convert cleanly. Its writes are three cases and the model
+must say which it is:
+
+1. =password_hash=, =password_salt= and =totp_secret= become server-owned, as
+   =service_password_hash= already is in the domain projection. Then the
+   canonical put can no longer set them, and creating an account with a password
+   stops being a put at all -- it needs its own operation, which is what the
+   hand-written =create_account= already is.
+2. Account's writes stay workflows and only its reads are canonical: the
+   derived put and delete are switched off for the entity, and the operation
+   model keeps create, update and delete beside lock, unlock and the rest.
+3. The fields stay client-writable and the generated put is accepted as the way
+   an account is written, with hashing moved to the client. Nothing about this
+   option is good, and it is listed so the choice is explicit rather than
+   arrived at by default.
+
+The attempt was reverted rather than left half-done. What it bought is this
+question, and it is worth more than the wiring would have been.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

@@ -162,7 +162,9 @@ struct {{name}} {
     using response_type = struct {{response_type}};
 {{/response_type}}
 {{#subject}}
+{{^subject_is_derived}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+{{/subject_is_derived}}
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -180,6 +182,42 @@ struct {{name}} {
 };
 
 {{/messages}}
+{{#derived_subject}}
+
+/**
+ * @brief The subject these messages are addressed at, for one component.
+ *
+ * The pattern is stated once, in the model, and this is its only derivation: a
+ * service composes the subject it listens on with it, and every client
+ * composes the subject it sends to with it, so no two callers can disagree
+ * about a subject that is not a constant.
+ */
+[[nodiscard]] inline std::string {{subject_function_by_component}}(std::string_view component) {
+    return {{#derived_subject_prefix}}std::string("{{derived_subject_prefix}}") + {{/derived_subject_prefix}}std::string(component) + std::string("{{derived_subject_suffix}}");
+}
+
+/**
+ * @brief The subject these messages are addressed at, for the resource a
+ * dispatch key names.
+ *
+ * The same rule as {{subject_function_by_component}}(), reached from the key a
+ * client holds rather than from the component a service knows. The hole is the
+ * component segment of the key, which is always
+ * "<product>.<component>.<entity>" -- so "ores.iam.tenant_type" is addressed
+ * at iam.v1.history.get.
+ */
+[[nodiscard]] inline std::string {{subject_function}}(std::string_view entity_type) {
+    const auto first_dot = entity_type.find('.');
+    const auto second_dot = first_dot == std::string_view::npos
+                                ? std::string_view::npos
+                                : entity_type.find('.', first_dot + 1);
+    const std::string component =
+        first_dot != std::string_view::npos && second_dot != std::string_view::npos
+            ? std::string(entity_type.substr(first_dot + 1, second_dot - first_dot - 1))
+            : std::string("unknown");
+    return {{subject_function_by_component}}(component);
+}
+{{/derived_subject}}
 }
 
 #endif

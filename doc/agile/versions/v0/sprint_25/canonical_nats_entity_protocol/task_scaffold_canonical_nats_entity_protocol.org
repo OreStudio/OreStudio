@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -69,3 +69,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded: the story page, the four tasks and the sprint row, all in
+Sprint 25 and all sharing =feature/canonical-nats-entity-protocol=.
+
+The scaffold PR (#2118) carries the story documents together with the first
+task's work, because the two share a branch: the NATS entity protocol
+specification, the Message Queue structure note that orders the cluster, and
+the =knowledge_pages_state_facts= memory its summaries produced. The remaining
+three tasks stay BACKLOG.

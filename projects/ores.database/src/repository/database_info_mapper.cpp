@@ -26,7 +26,6 @@
 namespace ores::database::repository {
 
 using namespace ores::logging;
-using namespace ores::database::repository;
 
 domain::database_info database_info_mapper::map(const database_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;

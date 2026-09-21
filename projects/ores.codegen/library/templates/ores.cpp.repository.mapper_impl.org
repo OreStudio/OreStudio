@@ -50,7 +50,9 @@ The full template source. Edit here and re-tangle with
 namespace ores::{{component}}::repository {
 
 using namespace ores::logging;
+{{^component_is_database}}
 using namespace ores::database::repository;
+{{/component_is_database}}
 
 domain::{{entity_singular}}
 {{entity_singular}}_mapper::map(const {{entity_singular}}_entity& v) {
@@ -344,7 +346,9 @@ std::vector<{{entity_singular}}_entity>
 namespace ores::{{component}}::repository {
 
 using namespace ores::logging;
+{{^component_is_database}}
 using namespace ores::database::repository;
+{{/component_is_database}}
 
 domain::{{name_singular}}
 {{name_singular}}_mapper::map(const {{name_singular}}_entity& v) {

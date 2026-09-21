@@ -60,7 +60,9 @@ namespace ores::{{component}}::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
+{{^component_is_database}}
 using namespace ores::database::repository;
+{{/component_is_database}}
 
 std::string {{entity_singular}}_repository::sql() {
     return generate_create_table_sql<{{entity_singular}}_entity>(lg());
@@ -876,7 +878,9 @@ namespace ores::{{component}}::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
+{{^component_is_database}}
 using namespace ores::database::repository;
+{{/component_is_database}}
 
 std::string {{name_singular}}_repository::sql() {
     return generate_create_table_sql<{{name_singular}}_entity>(lg());

@@ -29,7 +29,6 @@ namespace ores::database::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
-using namespace ores::database::repository;
 
 std::vector<domain::database_info> database_info_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading database infos.";

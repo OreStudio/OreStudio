@@ -2800,6 +2800,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity['component_core_upper'] = (
                 entity['component_core'].replace('.', '_').upper()
             )
+            entity['component_is_database'] = component == 'database'
         # Store entity at top level for easier template access
         data['entity'] = entity
 
@@ -3462,6 +3463,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['component_service_upper'] = (
                 domain_entity['component_service'].replace('.', '_').upper()
             )
+            domain_entity['component_is_database'] = component == 'database'
             # cached_by: the consumer component a nats-event-cache
             # archetype's output belongs to (see resolve_output_path);
             # exposed to templates alongside the entity's own component.

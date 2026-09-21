@@ -141,6 +141,7 @@ public:
      */
     std::uint32_t count_account_contact_informations_by_account_id(const std::string& account_id);
 
+
     /**
      * @brief Lists account contact informations filtered by account_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
@@ -156,6 +157,7 @@ public:
         const std::string& account_id,
         std::chrono::system_clock::time_point valid_from_bound,
         std::chrono::system_clock::time_point valid_to_bound);
+
     /**
      * @brief Retrieves a single account contact information as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.

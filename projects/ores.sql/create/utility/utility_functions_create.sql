@@ -26,6 +26,31 @@
 -- '2026-05-27T12:34:56Z'). Use this in pg_notify payloads so JSON
 -- deserializers (e.g. rfl::json → std::chrono::system_clock::time_point)
 -- can parse the value.  All notify triggers must use this function.
+-- Whether the current transaction may replace the version of a row that
+-- already exists.
+--
+-- A write states its own claim about the row it is about to change: the version
+-- it read, or that no row exists yet. A writer that means to replace whatever
+-- is there regardless -- a publish from an external source of truth, a
+-- reseeding generator -- states that separately, here, rather than overloading
+-- a version number with the meaning "do not check". A version of zero now has
+-- one meaning: no row exists.
+--
+-- The signal is transaction-local. The writer sets it, a client that does not
+-- know about it cannot set it, and it cannot leak to another transaction
+-- through a pooled connection.
+create or replace function ores_utility_version_replace_allowed_fn()
+returns boolean language sql stable as $$
+    select coalesce(current_setting('ores.utility.allow_version_replace', true), 'off') = 'on';
+$$;
+
+-- Turns the replace signal on for the rest of the current transaction. Call it
+-- in the same transaction as the write it authorises.
+create or replace function ores_utility_allow_version_replace_fn()
+returns void language sql as $$
+    select set_config('ores.utility.allow_version_replace', 'on', true);
+$$;
+
 create or replace function ores_utility_iso8601_timestamp_fn(p_ts timestamptz)
 returns text language sql immutable as $$
     select to_char(p_ts at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')

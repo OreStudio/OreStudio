@@ -138,7 +138,7 @@ permission_service::put_permission(const messaging::put_permission_request& requ
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    repo_.write(ctx_, value);
+    repo_.write(ctx_, value, request.change.precondition);
     auto written = read_one(repo_, ctx_, key_from(value));
     if (!written.empty())
         response.permission = std::move(written.front());
@@ -162,9 +162,13 @@ permission_service::put_many_permissions(const messaging::put_many_permissions_r
         batch.push_back(std::move(value));
     }
     // One statement, so the set lands together. The store checks each row's
-    // version inside that statement, which is what makes the check above and
-    // the write one decision rather than two.
-    repo_.write(ctx_, batch);
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
     response.permissions.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
@@ -269,6 +273,9 @@ permission_service::prepare_change(const messaging::permission_change& change,
         case precondition_kind::any:
             break;
     }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
     stamp(out,
           ctx_,
           intent.reason_code.empty() ?

@@ -259,39 +259,5 @@ void account_party_repository::remove_by_account(const boost::uuids::uuid& accou
     execute_delete_query(ctx_, query, lg(), "removing all account parties from database");
 }
 
-void account_party_repository::replace_by_account(
-    const boost::uuids::uuid& account_id,
-    const std::vector<domain::account_party>& account_parties,
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Replacing account parties for account: " << account_id;
-    const auto account_id_str = boost::uuids::to_string(account_id);
-    const auto tid = ctx_.tenant_id().to_string();
-
-    // Soft-close the currently active rows for this side so rows absent
-    // from the new set disappear from the active set. Rows in @p
-    // account_parties are re-inserted below; the insert trigger takes care
-    // of the bitemporal bookkeeping.
-    execute_parameterized_command(ctx_,
-                                  "UPDATE ores_iam_account_parties_tbl"
-                                  "   SET valid_to = current_timestamp"
-                                  " WHERE tenant_id = $1::uuid"
-                                  "   AND account_id = $2::uuid"
-                                  "   AND valid_to = ores_utility_infinity_timestamp_fn()",
-                                  {tid, account_id_str},
-                                  lg(),
-                                  "Closing existing account parties for account " + account_id_str);
-
-    for (auto account_party : account_parties) {
-        account_party.tenant_id = tid;
-        account_party.modified_by = modified_by;
-        account_party.performed_by = performed_by;
-        account_party.change_reason_code = change_reason_code;
-        account_party.change_commentary = change_commentary;
-        write(account_party);
-    }
-}
 }

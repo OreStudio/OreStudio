@@ -88,19 +88,7 @@ public:
 
     void remove(const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id);
     void remove_by_account(const boost::uuids::uuid& account_id);
-    /**
-     * @brief Replaces the active account parties for a account.
-     *
-     * Soft-closes the currently active rows for the given
-     * account and inserts the rows in @p account_parties,
-     * so the active set exactly matches the caller's list.
-     */
-    void replace_by_account(const boost::uuids::uuid& account_id,
-                            const std::vector<domain::account_party>& account_parties,
-                            const std::string& modified_by,
-                            const std::string& performed_by,
-                            const std::string& change_reason_code,
-                            const std::string& change_commentary);
+
 
 private:
     context ctx_;

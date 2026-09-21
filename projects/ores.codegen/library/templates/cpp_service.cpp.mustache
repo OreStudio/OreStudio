@@ -188,7 +188,7 @@ messaging::{{response}}
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    repo_.write(ctx_, value);
+    repo_.write(ctx_, value, request.change.precondition);
     auto written = read_one(repo_, ctx_, key_from(value));
     if (!written.empty())
         response.{{entity_singular}} = std::move(written.front());
@@ -214,9 +214,13 @@ messaging::{{response}}
         batch.push_back(std::move(value));
     }
     // One statement, so the set lands together. The store checks each row's
-    // version inside that statement, which is what makes the check above and
-    // the write one decision rather than two.
-    repo_.write(ctx_, batch);
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
     response.{{entity_plural_short}}.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
@@ -399,13 +403,9 @@ ores::utility::domain::result
     case precondition_kind::any:
         break;
     }
-{{#has_audit_columns}}
-    // Zero states no claim, which is what the caller asked for with `any`; a
-    // version states the one the row must still carry when the write lands.
-    out.version = change.precondition.kind == precondition_kind::must_match_version
-                      ? static_cast<int>(*change.precondition.version)
-                      : 0;
-{{/has_audit_columns}}
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
     stamp(out, ctx_,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
@@ -444,16 +444,7 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
 }
 
-{{#has_as_of_lookup}}
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_service::list_{{entity_plural_short}}_at_timepoint(
-    const std::string& as_of, const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} at timepoint: " << as_of;
-    if ({{primary_key.column}}.empty())
-        return repo_.read_at_timepoint(ctx_, as_of);
-    return repo_.read_at_timepoint(ctx_, as_of, {{primary_key.column}});
-}
-{{/has_as_of_lookup}}
+
 
 {{#foreign_keys}}
 {{#list_by}}
@@ -484,6 +475,7 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{co
 {{/list_by_uuid}}
 {{/list_by}}
 
+
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}_as_of(
@@ -494,6 +486,7 @@ std::vector<domain::{{entity_singular}}>
     return repo_.read_by_{{column}}_as_of(ctx_, {{column}}, valid_from_bound, valid_to_bound);
 }
 {{/list_by_as_of}}
+
 {{/foreign_keys}}
 {{#has_audit_columns}}
 std::optional<domain::{{entity_singular}}>
@@ -884,52 +877,8 @@ void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string
                               << "/" << {{right.column}};
 }
 
-{{#left.replace_by}}
-void {{name_singular}}_service::replace_{{name_short}}_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}},
-{{/left.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{left.column_title_lower}}: "
-                               << {{left.column}};
-    repo_.replace_by_{{left.column_short}}({{left.column}}, {{name_short}}, modified_by,
-                                           performed_by, change_reason_code, change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced {{name_words}} for {{left.column_title_lower}}: "
-                              << {{left.column}};
-}
 
-{{/left.replace_by}}
-{{#right.replace_by}}
-void {{name_singular}}_service::replace_{{name_short}}_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}},
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}},
-{{/right.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{right.column_title_lower}}: "
-                               << {{right.column}};
-    repo_.replace_by_{{right.column_short}}({{right.column}}, {{name_short}}, modified_by,
-                                            performed_by, change_reason_code, change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced {{name_words}} for {{right.column_title_lower}}: "
-                              << {{right.column}};
-}
-
-{{/right.replace_by}}
 {{/wire_write_enabled}}
 }
 {{/junction}}

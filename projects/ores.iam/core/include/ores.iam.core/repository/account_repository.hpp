@@ -29,6 +29,7 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -61,11 +62,37 @@ public:
 
     /**
      * @brief Writes accounts to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
     /**@{*/
     void write(context ctx, const domain::account& v);
     void write(context ctx, const std::vector<domain::account>& v);
     /**@}*/
+
+    /**
+     * @brief Writes a account, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void
+    write(context ctx, const domain::account& v, const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of accounts, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::account>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
      * @brief Reads latest accounts, possibly filtered by primary key.
@@ -75,6 +102,7 @@ public:
     std::vector<domain::account> read_latest(context ctx, const std::string& id);
     std::vector<domain::account> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
+
 
     /**
      * @brief Reads all accounts, possibly filtered by primary key.
@@ -151,6 +179,22 @@ public:
     std::optional<boost::uuids::uuid> check_service_credentials(context ctx,
                                                                 const std::string& username,
                                                                 const std::string& password);
+
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::account& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::account apply_claim(context ctx,
+                                const domain::account& v,
+                                const ores::utility::domain::precondition& claim);
 };
 
 }

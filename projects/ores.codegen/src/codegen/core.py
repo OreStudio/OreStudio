@@ -4113,6 +4113,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # different list's fact.
             pk['key_columns'] = [dict(column) for column in pk_columns]
             _mark_last_item(pk['key_columns'])
+            # The same key read from a domain object rather than from a key
+            # record, which the repository's own key parameters take as text.
+            def _v_arg(column: dict[str, Any]) -> str:
+                if column.get('is_uuid'):
+                    return f'boost::uuids::to_string(v.{column["column"]})'
+                if column.get('is_timestamp'):
+                    return (f'ores::platform::time::datetime::to_db_string('
+                            f'v.{column["column"]})')
+                return f'v.{column["column"]}'
+
+            pk['v_args'] = ', '.join(_v_arg(c) for c in pk_columns)
             pk['batch_keys_args'] = ', '.join(
                 f'{c["column"]}_keys' for c in pk_columns)
             # Complete stream expressions (leading string literal, trailing

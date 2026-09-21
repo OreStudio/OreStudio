@@ -29,6 +29,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -61,11 +62,42 @@ public:
 
     /**
      * @brief Writes sessions to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
     /**@{*/
     void write(context ctx, const domain::session& v);
     void write(context ctx, const std::vector<domain::session>& v);
     /**@}*/
+
+    /**
+     * @brief Writes a session, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     *
+     * This table carries no version column, so the store cannot check a
+     * version. A @c must_match_version claim is refused here, and a
+     * @c must_not_exist claim over a live row is refused by the read below
+     * rather than by the trigger.
+     */
+    void
+    write(context ctx, const domain::session& v, const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of sessions, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::session>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
      * @brief Reads latest sessions, possibly filtered by primary key.
@@ -78,6 +110,7 @@ public:
                                              const std::vector<std::string>& ids,
                                              const std::vector<std::string>& start_times);
     /**@}*/
+
 
     /**
      * @brief Reads the session rows for the given primary key.
@@ -171,6 +204,22 @@ public:
     std::uint32_t count_by_account(context ctx, const boost::uuids::uuid& account_id);
 
     std::vector<domain::session> read_all_active(context ctx);
+
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::session& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::session apply_claim(context ctx,
+                                const domain::session& v,
+                                const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -38,7 +38,6 @@ can act on behalf of.
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up parties for an account
 :list_by:       true
-:replace_by:    true
 :END:
 
 ID of the IAM account.

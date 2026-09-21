@@ -29,6 +29,7 @@
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -61,11 +62,38 @@ public:
 
     /**
      * @brief Writes tenant types to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
     /**@{*/
     void write(context ctx, const domain::tenant_type& v);
     void write(context ctx, const std::vector<domain::tenant_type>& v);
     /**@}*/
+
+    /**
+     * @brief Writes a tenant type, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(context ctx,
+               const domain::tenant_type& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of tenant types, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::tenant_type>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
      * @brief Reads latest tenant types, possibly filtered by primary key.
@@ -76,6 +104,7 @@ public:
     std::vector<domain::tenant_type> read_latest(context ctx,
                                                  const std::vector<std::string>& types);
     /**@}*/
+
 
     /**
      * @brief Reads all tenant types, possibly filtered by primary key.
@@ -142,6 +171,23 @@ public:
      * @brief Deletes tenant types by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& types);
+
+
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::tenant_type& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::tenant_type apply_claim(context ctx,
+                                    const domain::tenant_type& v,
+                                    const ores::utility::domain::precondition& claim);
 };
 
 }

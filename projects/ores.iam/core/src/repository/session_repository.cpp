@@ -29,6 +29,7 @@
 #include "ores.iam.core/repository/session_entity.hpp"
 #include "ores.iam.core/repository/session_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <set>
@@ -47,10 +48,56 @@ std::string session_repository::sql() {
     return generate_create_table_sql<session_entity>(lg());
 }
 
+ores::utility::domain::precondition session_repository::replace_claim(context ctx,
+                                                                      const domain::session& v) {
+    const auto current = read_latest(ctx,
+                                     boost::uuids::to_string(v.id),
+                                     ores::platform::time::datetime::to_db_string(v.start_time));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+}
+
+domain::session session_repository::apply_claim(context ctx,
+                                                const domain::session& v,
+                                                const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "session_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist &&
+        !read_latest(ctx,
+                     boost::uuids::to_string(v.id),
+                     ores::platform::time::datetime::to_db_string(v.start_time))
+             .empty())
+        throw std::invalid_argument("session_repository::write: a current row already exists");
+    return t;
+}
+
 void session_repository::write(context ctx, const domain::session& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void session_repository::write(context ctx,
+                               const domain::session& v,
+                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
                                << " start_time: " << v.start_time;
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(v));
+    const auto t = apply_claim(ctx, v, claim);
+    const auto query = sqlgen::insert_or_replace(session_mapper::map(t));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -58,9 +105,15 @@ void session_repository::write(context ctx, const domain::session& v) {
     ensure_success(r, lg());
 }
 
-void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+void session_repository::write(context ctx,
+                               const std::vector<domain::session>& v,
+                               const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(v));
+    std::vector<domain::session> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    const auto query = sqlgen::insert_or_replace(session_mapper::map(batch));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)

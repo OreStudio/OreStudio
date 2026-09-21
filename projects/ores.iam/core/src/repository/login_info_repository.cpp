@@ -28,6 +28,7 @@
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/login_info_entity.hpp"
 #include "ores.iam.core/repository/login_info_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
@@ -41,9 +42,49 @@ std::string login_info_repository::sql() {
     return generate_create_table_sql<login_info_entity>(lg());
 }
 
+ores::utility::domain::precondition
+login_info_repository::replace_claim(context ctx, const domain::login_info& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.account_id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+}
+
+domain::login_info login_info_repository::apply_claim(
+    context ctx, const domain::login_info& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "login_info_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist &&
+        !read_latest(ctx, boost::uuids::to_string(v.account_id)).empty())
+        throw std::invalid_argument("login_info_repository::write: a current row already exists");
+    return t;
+}
+
 void login_info_repository::write(context ctx, const domain::login_info& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void login_info_repository::write(context ctx, const std::vector<domain::login_info>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void login_info_repository::write(context ctx,
+                                  const domain::login_info& v,
+                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing login info. " << "account_id: " << v.account_id;
-    const auto query = sqlgen::insert_or_replace(login_info_mapper::map(v));
+    const auto t = apply_claim(ctx, v, claim);
+    const auto query = sqlgen::insert_or_replace(login_info_mapper::map(t));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -51,9 +92,15 @@ void login_info_repository::write(context ctx, const domain::login_info& v) {
     ensure_success(r, lg());
 }
 
-void login_info_repository::write(context ctx, const std::vector<domain::login_info>& v) {
+void login_info_repository::write(context ctx,
+                                  const std::vector<domain::login_info>& v,
+                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing login info. Count: " << v.size();
-    const auto query = sqlgen::insert_or_replace(login_info_mapper::map(v));
+    std::vector<domain::login_info> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    const auto query = sqlgen::insert_or_replace(login_info_mapper::map(batch));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)

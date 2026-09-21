@@ -97,21 +97,4 @@ void account_party_service::remove_account_party(const boost::uuids::uuid& accou
     BOOST_LOG_SEV(lg(), info) << "Removed account party: " << account_id << "/" << party_id;
 }
 
-void account_party_service::replace_account_parties_by_account(
-    const boost::uuids::uuid& account_id,
-    const std::vector<domain::account_party>& account_parties,
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Replacing account parties for account: " << account_id;
-    repo_.replace_by_account(account_id,
-                             account_parties,
-                             modified_by,
-                             performed_by,
-                             change_reason_code,
-                             change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced account parties for account: " << account_id;
-}
-
 }

@@ -28,6 +28,7 @@
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_entity.hpp"
 #include "ores.iam.core/repository/role_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
@@ -41,14 +42,71 @@ std::string role_repository::sql() {
     return generate_create_table_sql<role_entity>(lg());
 }
 
+ores::utility::domain::precondition role_repository::replace_claim(context ctx,
+                                                                   const domain::role& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::role role_repository::apply_claim(context ctx,
+                                          const domain::role& v,
+                                          const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void role_repository::write(context ctx, const domain::role& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
-    execute_write_query(ctx, role_mapper::map(v), lg(), "Writing role to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void role_repository::write(context ctx, const std::vector<domain::role>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void role_repository::write(context ctx,
+                            const domain::role& v,
+                            const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, role_mapper::map(t), lg(), "Writing role to database.");
+}
+
+void role_repository::write(context ctx,
+                            const std::vector<domain::role>& v,
+                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing roles. Count: " << v.size();
-    execute_write_query(ctx, role_mapper::map(v), lg(), "Writing roles to database.");
+    std::vector<domain::role> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, role_mapper::map(batch), lg(), "Writing roles to database.");
 }
 
 std::vector<domain::role> role_repository::read_latest(context ctx) {

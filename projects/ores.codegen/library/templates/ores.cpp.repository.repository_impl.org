@@ -28,6 +28,7 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -67,10 +68,83 @@ std::string {{entity_singular}}_repository::sql() {
     return generate_create_table_sql<{{entity_singular}}_entity>(lg());
 }
 
+ores::utility::domain::precondition
+{{entity_singular}}_repository::replace_claim(context ctx,
+                                             const domain::{{entity_singular}}& v) {
+    const auto current = read_latest(ctx, {{{primary_key.v_args}}});
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+{{#has_audit_columns}}
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+{{/has_audit_columns}}
+}
+
+domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
+    context ctx,
+    const domain::{{entity_singular}}& v,
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+{{#has_audit_columns}}
+    switch (claim.kind) {
+    case precondition_kind::must_not_exist:
+        // Zero states that no current row exists, which is the one meaning the
+        // store gives a zero version.
+        t.version = 0;
+        break;
+    case precondition_kind::must_match_version:
+        t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+        break;
+    case precondition_kind::any: {
+        // A caller that claims nothing still has to say what it replaces, so
+        // the row is read and its version stated. A row that moved on between
+        // this read and the write is a conflict the trigger raises, never a
+        // silent overwrite.
+        const auto current = read_latest(ctx, {{{primary_key.v_args}}});
+        t.version = current.empty() ? 0 : current.front().version;
+        break;
+    }
+    }
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist
+        && !read_latest(ctx, {{{primary_key.v_args}}}).empty())
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::write: a current row already exists");
+{{/has_audit_columns}}
+    return t;
+}
+
 void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void {{entity_singular}}_repository::write(
+    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v,
+                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 {{#current_state}}
-    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(v));
+    const auto t = apply_claim(ctx, v, claim);
+    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(t));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -78,16 +152,22 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
     ensure_success(r, lg());
 {{/current_state}}
 {{^current_state}}
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/current_state}}
 }
 
 void {{entity_singular}}_repository::write(
-    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    context ctx, const std::vector<domain::{{entity_singular}}>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+    std::vector<domain::{{entity_singular}}> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
 {{#current_state}}
-    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(v));
+    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(batch));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -95,7 +175,7 @@ void {{entity_singular}}_repository::write(
     ensure_success(r, lg());
 {{/current_state}}
 {{^current_state}}
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),
         lg(), "Writing {{entity_plural_words}} to database.");
 {{/current_state}}
 }
@@ -244,87 +324,7 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
 }
 {{/service_find_by_code}}
-{{#has_as_of_lookup}}
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_at_timepoint(context ctx, const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} at timepoint: " << as_of;
-    const auto ts = make_timestamp(as_of, lg());
-{{#read_tenant_filtered}}
-    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-{{#has_workspace_id}}
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
-        order_by("{{primary_key.column}}"_c);
-{{/has_workspace_id}}
-{{^has_workspace_id}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
-        order_by("{{primary_key.column}}"_c);
-{{/has_workspace_id}}
-{{/read_tenant_filtered}}
-{{^read_tenant_filtered}}
-{{#has_workspace_id}}
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
-        order_by("{{primary_key.column}}"_c);
-{{/has_workspace_id}}
-{{^has_workspace_id}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
-        order_by("{{primary_key.column}}"_c);
-{{/has_workspace_id}}
-{{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx, query,
-        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
-        lg(), "Reading {{entity_plural_words}} at timepoint.");
-}
-
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_at_timepoint(
-    context ctx, const std::string& as_of, const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at timepoint. {{primary_key.column}}: " << {{primary_key.column}};
-    const auto ts = make_timestamp(as_of, lg());
-{{#read_tenant_filtered}}
-    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-{{#has_workspace_id}}
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
-{{/has_workspace_id}}
-{{^has_workspace_id}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{primary_key.column}}"_c == {{primary_key.column}} &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
-{{/has_workspace_id}}
-{{/read_tenant_filtered}}
-{{^read_tenant_filtered}}
-{{#has_workspace_id}}
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
-{{/has_workspace_id}}
-{{^has_workspace_id}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("{{primary_key.column}}"_c == {{primary_key.column}} &&
-              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
-{{/has_workspace_id}}
-{{/read_tenant_filtered}}
-
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx, query,
-        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
-        lg(), "Reading {{entity_singular_words}} at timepoint by {{primary_key.column}}.");
-}
-{{/has_as_of_lookup}}
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_all(context ctx, {{{primary_key.params}}}) {
@@ -548,6 +548,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 }
 {{/list_by}}
 
+
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_by_{{column}}_as_of(
@@ -578,6 +579,7 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading {{entity_plural_words}} as of window by {{column}}.");
 }
 {{/list_by_as_of}}
+
 {{/foreign_keys}}
 {{entity_singular}}_repository::remove_status
 {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}},
@@ -1504,128 +1506,8 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
         "removing all {{name_words}} from database");
 }
 
-{{#left.replace_by}}
-void {{name_singular}}_repository::replace_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}},
-{{/left.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{left.column_title_lower}}: "
-                               << {{left.column}};
-{{#left.is_uuid}}
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
-{{/left.is_uuid}}
-{{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
-{{/has_tenant_id}}
 
-    // Soft-close the currently active rows for this side so rows absent
-    // from the new set disappear from the active set. Rows in @p
-    // {{name_short}} are re-inserted below; the insert trigger takes care
-    // of the bitemporal bookkeeping.
-    execute_parameterized_command(
-        ctx_,
-        "UPDATE {{product}}_{{component}}_{{name}}_tbl"
-        "   SET valid_to = current_timestamp"
-{{#has_tenant_id}}
-        " WHERE tenant_id = $1::uuid"
-        "   AND {{left.column}} = $2{{#left.is_uuid}}::uuid{{/left.is_uuid}}"
-{{/has_tenant_id}}
-{{^has_tenant_id}}
-        " WHERE {{left.column}} = $1{{#left.is_uuid}}::uuid{{/left.is_uuid}}"
-{{/has_tenant_id}}
-        "   AND valid_to = ores_utility_infinity_timestamp_fn()",
-{{#has_tenant_id}}
-        {tid, {{#left.is_uuid}}{{left.column}}_str{{/left.is_uuid}}{{^left.is_uuid}}{{left.column}}{{/left.is_uuid}}},
-{{/has_tenant_id}}
-{{^has_tenant_id}}
-        {{{#left.is_uuid}}{{left.column}}_str{{/left.is_uuid}}{{^left.is_uuid}}{{left.column}}{{/left.is_uuid}}},
-{{/has_tenant_id}}
-        lg(),
-        "Closing existing {{name_words}} for {{left.column_title_lower}} " +
-        {{#left.is_uuid}}{{left.column}}_str{{/left.is_uuid}}{{^left.is_uuid}}{{left.column}}{{/left.is_uuid}});
-
-    for (auto {{name_singular_short}} : {{name_short}}) {
-{{#has_tenant_id}}
-        {{name_singular_short}}.tenant_id = tid;
-{{/has_tenant_id}}
-        {{name_singular_short}}.modified_by = modified_by;
-        {{name_singular_short}}.performed_by = performed_by;
-        {{name_singular_short}}.change_reason_code = change_reason_code;
-        {{name_singular_short}}.change_commentary = change_commentary;
-        write({{name_singular_short}});
-    }
-}
-{{/left.replace_by}}
-{{#right.replace_by}}
-void {{name_singular}}_repository::replace_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}},
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}},
-{{/right.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{right.column_title_lower}}: "
-                               << {{right.column}};
-{{#right.is_uuid}}
-    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
-{{/right.is_uuid}}
-{{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
-{{/has_tenant_id}}
-
-    // Soft-close the currently active rows for this side so rows absent
-    // from the new set disappear from the active set. Rows in @p
-    // {{name_short}} are re-inserted below; the insert trigger takes care
-    // of the bitemporal bookkeeping.
-    execute_parameterized_command(
-        ctx_,
-        "UPDATE {{product}}_{{component}}_{{name}}_tbl"
-        "   SET valid_to = current_timestamp"
-{{#has_tenant_id}}
-        " WHERE tenant_id = $1::uuid"
-        "   AND {{right.column}} = $2{{#right.is_uuid}}::uuid{{/right.is_uuid}}"
-{{/has_tenant_id}}
-{{^has_tenant_id}}
-        " WHERE {{right.column}} = $1{{#right.is_uuid}}::uuid{{/right.is_uuid}}"
-{{/has_tenant_id}}
-        "   AND valid_to = ores_utility_infinity_timestamp_fn()",
-{{#has_tenant_id}}
-        {tid, {{#right.is_uuid}}{{right.column}}_str{{/right.is_uuid}}{{^right.is_uuid}}{{right.column}}{{/right.is_uuid}}},
-{{/has_tenant_id}}
-{{^has_tenant_id}}
-        {{{#right.is_uuid}}{{right.column}}_str{{/right.is_uuid}}{{^right.is_uuid}}{{right.column}}{{/right.is_uuid}}},
-{{/has_tenant_id}}
-        lg(),
-        "Closing existing {{name_words}} for {{right.column_title_lower}} " +
-        {{#right.is_uuid}}{{right.column}}_str{{/right.is_uuid}}{{^right.is_uuid}}{{right.column}}{{/right.is_uuid}});
-
-    for (auto {{name_singular_short}} : {{name_short}}) {
-{{#has_tenant_id}}
-        {{name_singular_short}}.tenant_id = tid;
-{{/has_tenant_id}}
-        {{name_singular_short}}.modified_by = modified_by;
-        {{name_singular_short}}.performed_by = performed_by;
-        {{name_singular_short}}.change_reason_code = change_reason_code;
-        {{name_singular_short}}.change_commentary = change_commentary;
-        write({{name_singular_short}});
-    }
-}
-{{/right.replace_by}}
 {{/read_only}}
 }
 {{/junction}}

@@ -142,7 +142,7 @@ tenant_service::put_tenant(const messaging::put_tenant_request& request) {
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    repo_.write(ctx_, value);
+    repo_.write(ctx_, value, request.change.precondition);
     auto written = read_one(repo_, ctx_, key_from(value));
     if (!written.empty())
         response.tenant = std::move(written.front());
@@ -166,9 +166,13 @@ tenant_service::put_many_tenants(const messaging::put_many_tenants_request& requ
         batch.push_back(std::move(value));
     }
     // One statement, so the set lands together. The store checks each row's
-    // version inside that statement, which is what makes the check above and
-    // the write one decision rather than two.
-    repo_.write(ctx_, batch);
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
     response.tenants.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
@@ -325,11 +329,9 @@ tenant_service::prepare_change(const messaging::tenant_change& change,
         case precondition_kind::any:
             break;
     }
-    // Zero states no claim, which is what the caller asked for with `any`; a
-    // version states the one the row must still carry when the write lands.
-    out.version = change.precondition.kind == precondition_kind::must_match_version ?
-                      static_cast<int>(*change.precondition.version) :
-                      0;
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
     stamp(out,
           ctx_,
           intent.reason_code.empty() ?

@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.service/messaging/account_contact_information_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.iam.api/eventing/account_contact_information_changed_event.hpp"
+#include "ores.iam.api/eventing/account_contact_information_event.hpp"
+#include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 
 namespace ores::iam::service::messaging {
 
@@ -38,22 +39,20 @@ namespace ev = ores::eventing;
 register_account_contact_information_event_mapping(ev::service::postgres_event_source& event_source,
                                                    ev::service::event_bus& event_bus,
                                                    ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<
-        iam::eventing::account_contact_information_changed_event>(
-        event_source,
-        "ores.iam.account_contact_information",
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<iam::messaging::account_contact_information_event>(
         "ores_iam_account_contact_informations");
 
-    return event_bus.subscribe<iam::eventing::account_contact_information_changed_event>(
-        [&nats](const iam::eventing::account_contact_information_changed_event& e) {
+    return event_bus.subscribe<iam::messaging::account_contact_information_event>(
+        [&nats](const iam::messaging::account_contact_information_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            iam::eventing::account_contact_information_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.iam.account_contact_information",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.account_contact_information_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<iam::messaging::account_contact_information_event>(
+                    e.action),
+                e);
         });
 }
 

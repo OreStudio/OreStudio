@@ -61,6 +61,15 @@ struct tenant_type_lookup {
     std::optional<ores::iam::domain::tenant_type> tenant_type;
 };
 
+struct tenant_type_event {
+    boost::uuids::uuid event_id;
+    tenant_type_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct tenant_type_version_key {
     tenant_type_key tenant_type;
     std::uint32_t version;
@@ -180,6 +189,20 @@ struct get_tenant_type_version_response {
     ores::utility::domain::result result;
     ores::iam::domain::tenant_type version;
 };
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace tenant_type_event_subjects {
+inline constexpr std::string_view created = "iam.v1.tenant_types_events.created";
+inline constexpr std::string_view updated = "iam.v1.tenant_types_events.updated";
+inline constexpr std::string_view deleted = "iam.v1.tenant_types_events.deleted";
+}
 
 }
 

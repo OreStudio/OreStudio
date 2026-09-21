@@ -78,6 +78,20 @@ struct {{name}} {
 };
 
 {{/messages}}
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace {{entity_singular}}_event_subjects {
+{{#events}}
+inline constexpr std::string_view {{action}} = "{{subject}}";
+{{/events}}
+}
+
 <<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
 }
 

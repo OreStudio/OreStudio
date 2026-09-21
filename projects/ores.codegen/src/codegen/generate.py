@@ -148,9 +148,16 @@ _UI_META_FACETS = frozenset({
 # must not render a second, competing header at the same output path, where
 # the last writer would silently discard the other. Without an operation
 # model, the entity keeps its derived CRUD header.
+# The facets that speak a resource's protocol. An event carries that
+# protocol's key record and is published on that protocol's subjects, so a
+# protocol an operation model owns takes the events with it: the derived event
+# type the events are stated in does not exist for an operation's own spelling.
 _PROTOCOL_FACETS = frozenset({
     "ores.cpp.protocol",
     "ores.ts.protocol",
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.cpp.eventing-integration-test",
 })
 
 # The BFF route descriptor imports its subjects from the entity's own

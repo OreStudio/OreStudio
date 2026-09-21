@@ -130,6 +130,7 @@ def test_the_derived_message_set_is_the_entity_protocol_keyed_by_both_sides(
         ("widget_owner_removal", None),
         ("widget_owner_lookup", None),
         ("widget_owners_filter", None),
+        ("widget_owner_event", None),
         ("list_widget_owners_request", "widget.v1.widget_owners.list"),
         ("list_widget_owners_response", None),
         ("get_widget_owner_request", "widget.v1.widget_owners.get"),

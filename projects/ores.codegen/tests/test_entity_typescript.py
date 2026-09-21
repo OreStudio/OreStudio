@@ -102,6 +102,7 @@ def test_the_canonical_set_is_derived_in_the_specification_order():
     assert [m["name"] for m in messages] == [
         "tenant_type_key", "tenant_type_write", "tenant_type_change",
         "tenant_type_removal", "tenant_type_lookup",
+        "tenant_type_event",
         "tenant_type_version_key", "tenant_type_versions_filter",
         "list_tenant_types_request", "list_tenant_types_response",
         "get_tenant_type_request", "get_tenant_type_response",

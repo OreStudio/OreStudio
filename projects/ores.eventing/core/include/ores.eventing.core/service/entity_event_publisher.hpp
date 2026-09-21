@@ -21,8 +21,11 @@
 #define ORES_EVENTING_CORE_SERVICE_ENTITY_EVENT_PUBLISHER_HPP
 
 #include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/export.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include <stdexcept>
 #include <string>
 
 namespace ores::eventing::service {
@@ -42,6 +45,36 @@ ORES_EVENTING_CORE_EXPORT void
 publish_entity_event(ores::nats::service::client& nats,
                      const std::string& subject,
                      const domain::entity_change_event& notification);
+
+/**
+ * @brief Publishes a canonical entity event to NATS on the given subject.
+ *
+ * The event is published as the event type states it, so the key travels as
+ * the entity's own key record rather than as a list of opaque identifiers.
+ * The subject is the event's collection prefix plus the action the event
+ * reports, which is what 
+ef event_subject states.
+ *
+ * On failure it rethrows with the subject in the message, for the same reason
+ * the change-event overload does: every call site is an event_bus subscriber
+ * callback, and the bus reports a failed handler rather than swallowing it.
+ *
+ * @param nats The client to publish with.
+ * @param subject The event subject, from 
+ef event_subject.
+ * @param event The typed event to publish.
+ */
+template <typename Event>
+void publish_entity_event(ores::nats::service::client& nats,
+                          const std::string& subject,
+                          const Event& event) {
+    try {
+        nats.publish(subject, ores::nats::default_wire_codec().encode(event), {});
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to publish to NATS subject '" + subject +
+                                 "': " + e.what());
+    }
+}
 
 }
 

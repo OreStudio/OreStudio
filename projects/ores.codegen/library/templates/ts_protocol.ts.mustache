@@ -30,6 +30,17 @@ export const subjects = {
 {{/subject}}
 {{/messages}}
 } as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+{{#events}}
+    {{action}}: "{{subject}}",
+{{/events}}
+} as const;
 {{/domain_entity}}
 {{#junction}}
 import type { {{name_pascal}} } from '../domain/{{name_singular}}.js';

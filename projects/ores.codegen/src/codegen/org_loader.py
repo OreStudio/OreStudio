@@ -2227,6 +2227,10 @@ _TS_SCALARS = {
     # here as well as in the domain-only set below because a write record can
     # carry one: a login records the address it came from.
     "boost::asio::ip::address": "string",
+    # A time point crosses the wire as its ISO 8601 text, per the same
+    # reflectors. An event states when it occurred, so a protocol that could
+    # not project one would have no event.
+    "std::chrono::system_clock::time_point": "string",
 }
 
 # A domain member's fully qualified C++ name, e.g.
@@ -2455,6 +2459,21 @@ SPEC_VERBS = (
     "get", "get_many", "list", "put", "put_many", "delete", "delete_many")
 SPEC_EVENT_ACTIONS = ("created", "updated", "deleted")
 SPEC_VERSIONS_VERBS = ("list", "get")
+
+
+def entity_event_prefix(component: str, plural: str) -> str:
+    """``iam.v1.tenants_events`` -- the collection one entity's events share.
+
+    The prefix names the events collection, and the action is the last
+    segment, so one payload is addressed by three subjects.
+    """
+    return f"{component}.v1.{plural}_events"
+
+
+def entity_events(component: str, plural: str) -> list[dict[str, Any]]:
+    """The subjects one entity's events are published on, one per action."""
+    return [{"action": action, "subject": event_subject(component, plural, action)}
+            for action in SPEC_EVENT_ACTIONS]
 
 
 def request_subject(component: str, plural: str, verb: str) -> str:
@@ -2799,6 +2818,17 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     ]
     if filter_fields:
         messages.append(_ts_message(f"{plural}_filter", fields=filter_fields))
+    # The announcement. One payload carries what happened to one row, and the
+    # subject's last segment says which action it reports, so the payload is
+    # stated once and the three subjects alongside it.
+    messages.append(_ts_message(f"{singular}_event", fields=[
+        _ts_field("event_id", "boost::uuids::uuid"),
+        _ts_field("key", key),
+        _ts_field("action", "std::string"),
+        _ts_field("version", "std::uint32_t"),
+        _ts_field("occurred_at", "std::chrono::system_clock::time_point"),
+        _ts_field("correlation_id", "std::optional<std::string>"),
+    ]))
     if entity.get("has_audit_columns"):
         # A versioned entity's version is addressed by the entity's own key plus
         # the version number, so the pair is a record of its own. An entity with

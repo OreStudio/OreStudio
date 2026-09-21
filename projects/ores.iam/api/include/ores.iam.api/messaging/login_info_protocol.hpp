@@ -65,6 +65,15 @@ struct login_info_lookup {
     std::optional<ores::iam::domain::login_info> login_info;
 };
 
+struct login_info_event {
+    boost::uuids::uuid event_id;
+    login_info_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_login_info_request {
     using response_type = struct list_login_info_response;
     static constexpr std::string_view nats_subject = "iam.v1.login_info.list";
@@ -146,6 +155,20 @@ struct delete_many_login_info_request {
 struct delete_many_login_info_response {
     ores::utility::domain::result result;
 };
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace login_info_event_subjects {
+inline constexpr std::string_view created = "iam.v1.login_info_events.created";
+inline constexpr std::string_view updated = "iam.v1.login_info_events.updated";
+inline constexpr std::string_view deleted = "iam.v1.login_info_events.deleted";
+}
 
 }
 

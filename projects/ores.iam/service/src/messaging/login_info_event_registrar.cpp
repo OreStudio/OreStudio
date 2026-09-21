@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.service/messaging/login_info_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.iam.api/eventing/login_info_changed_event.hpp"
+#include "ores.iam.api/eventing/login_info_event.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
 
 namespace ores::iam::service::messaging {
 
@@ -38,19 +39,17 @@ namespace ev = ores::eventing;
 register_login_info_event_mapping(ev::service::postgres_event_source& event_source,
                                   ev::service::event_bus& event_bus,
                                   ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<iam::eventing::login_info_changed_event>(
-        event_source, "ores.iam.login_info", "ores_iam_login_info");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<iam::messaging::login_info_event>(
+        "ores_iam_login_info");
 
-    return event_bus.subscribe<iam::eventing::login_info_changed_event>(
-        [&nats](const iam::eventing::login_info_changed_event& e) {
+    return event_bus.subscribe<iam::messaging::login_info_event>(
+        [&nats](const iam::messaging::login_info_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<iam::eventing::login_info_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.iam.login_info",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.login_info_ids,
-                                                .tenant_id = e.tenant_id});
+                nats, ev::domain::event_subject<iam::messaging::login_info_event>(e.action), e);
         });
 }
 

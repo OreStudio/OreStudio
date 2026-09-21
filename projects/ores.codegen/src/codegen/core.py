@@ -4212,6 +4212,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['notify_assign_new'] = '\n        '.join(
                 f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
             )
+            # The notification carries the key as its own object, because it is
+            # the entity's key record: one column here, a pair there, and the
+            # event type is what knows which.
+            # The same comparison the test makes against a decoded event's key.
+            pk['key_equals_v'] = ' && '.join(
+                f'decoded->key.{c["column"]} == v.{c["column"]}' for c in pk_columns)
+            pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
+                f"'{c['column']}', changed_{c['column']}"
+                for c in pk_columns) + ')'
             pk['notify_id_array'] = ', '.join(
                 f"changed_{c['column']}" for c in pk_columns
             )
@@ -4874,6 +4883,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _reject_silent_entity_domain_ts_gap,
             _to_pascal_case,
             _ts_domain_type,
+            entity_event_prefix,
+            entity_events,
             entity_protocol_messages,
             operations_by_verb,
             protocol_operations,
@@ -4928,6 +4939,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # reads it, so one decision gates both.
         domain_entity['protocol_derived'] = not _protocol_owned_by_operation(
             model_path, domain_entity)
+        # The subjects this entity's changes are announced on. An event's last
+        # segment is the action it reports, so one payload is addressed by
+        # three subjects and both protocol twins state them.
+        domain_entity['event_prefix'] = entity_event_prefix(
+            domain_entity.get('component', ''),
+            domain_entity.get('entity_plural')
+            or str(domain_entity.get('entity_singular', '')) + 's')
+        domain_entity['events'] = entity_events(
+            domain_entity.get('component', ''),
+            domain_entity.get('entity_plural')
+            or str(domain_entity.get('entity_singular', '')) + 's')
         # A field the protocol projection cannot express would render an
         # interface with the field missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the
@@ -5020,6 +5042,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _reject_silent_junction_ts_gap,
             _to_pascal_case,
             _ts_domain_type,
+            entity_event_prefix,
+            entity_events,
             junction_protocol_messages,
             operations_by_verb,
             protocol_operations,
@@ -5048,6 +5072,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction[f'{_verb}_operations'] = _verb_ops
         junction['protocol_derived'] = not _protocol_owned_by_operation(
             model_path, junction)
+        junction['event_prefix'] = entity_event_prefix(
+            junction.get('component', ''), junction.get('name', ''))
+        junction['events'] = entity_events(
+            junction.get('component', ''), junction.get('name', ''))
         # A field the protocol projection cannot express would render an
         # interface with the field missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the

@@ -60,6 +60,15 @@ struct permission_lookup {
     std::optional<ores::iam::domain::permission> permission;
 };
 
+struct permission_event {
+    boost::uuids::uuid event_id;
+    permission_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
 struct list_permissions_request {
     using response_type = struct list_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.permissions.list";
@@ -141,6 +150,20 @@ struct delete_many_permissions_request {
 struct delete_many_permissions_response {
     ores::utility::domain::result result;
 };
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace permission_event_subjects {
+inline constexpr std::string_view created = "iam.v1.permissions_events.created";
+inline constexpr std::string_view updated = "iam.v1.permissions_events.updated";
+inline constexpr std::string_view deleted = "iam.v1.permissions_events.deleted";
+}
 
 }
 

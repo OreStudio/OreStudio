@@ -175,6 +175,7 @@ def test_the_current_state_derivation_keeps_the_rest_of_the_crud_set():
         "current_state_entity_change",
         "current_state_entity_removal",
         "current_state_entity_lookup",
+        "current_state_entity_event",
         "list_current_state_entities_request",
         "list_current_state_entities_response",
         "get_current_state_entity_request",

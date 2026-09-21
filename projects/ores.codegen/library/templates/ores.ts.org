@@ -39,10 +39,10 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
+| [[id:AA24D1D3-60B0-4650-900A-57B496BE1657][ores.ts.domain]] | 1 | Per-entity and per-junction domain interfaces: the TypeScript shape of the object the C++ domain class declares. |
 | [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] | 1 | Wire payload interfaces and NATS subject constants. |
-| [[id:AA24D1D3-60B0-4650-900A-57B496BE1657][ores.ts.domain]] | 1 | Per-entity domain interfaces: the TypeScript shape of the C++ domain class. |
 | [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]] | 1 | Per-entity presentation metadata: the table's columns and the form's fields, as data. |
-| [[id:ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9][ores.ts.web]] | 1 | Per-entity web declarations: where an entity's screens live, what it can do, and how its BFF routes are reached, as data. |
+| [[id:ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9][ores.ts.web]] | 2 | Per-entity web declarations: where an entity's screens live, what it can do, and how its BFF routes are reached, as data. |
 
 * See also
 

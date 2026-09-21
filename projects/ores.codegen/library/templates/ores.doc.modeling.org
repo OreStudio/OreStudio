@@ -49,7 +49,7 @@ branches on.
 | [[id:33B2DE63-DA3B-4455-A79A-EBCFAFCC726D][ores.doc.modeling.field_group]] | Codegen field-group model (=*_field_group.org= suffix drives loader dispatch); carries =#+brief=. |
 | [[id:631BD15D-F858-4E31-9FF0-506B82D2A6AC][ores.doc.modeling.junction]] | Codegen SQL join-table + C++ counterpart (=*_junction.org= suffix drives loader dispatch): Left/Right FK sides, Columns, SQL/C++ sections. |
 | [[id:990E0A18-1FC2-4FD8-8013-5A04306BA386][ores.doc.modeling.lookup_entity]] | Codegen batch-loaded reference table (=*_lookup_entity.org= suffix drives loader dispatch): minimal frontmatter, Primary key, Columns, optional Artefact indexes. |
-| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services and fleet processes, each with two independent optional aspects -- DB access (psql var, IAM role, DML grant prefixes) and deployment (replicas, enabled, dependencies, extra CLI args). One top-level section per service. |
+| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services and fleet processes, each with two independent optional aspects -- DB access (psql var, IAM role, DML grant prefixes) and deployment (replicas, enabled, dependencies, execution runtime, extra CLI args). One top-level section per service. |
 
 * Scaffolds outside the inventory
 

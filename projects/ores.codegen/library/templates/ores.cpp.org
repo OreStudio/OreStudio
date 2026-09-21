@@ -56,7 +56,7 @@ do not edit by hand.
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
 | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 12 | Service-application C++ scaffold: application, host, config options/parser, main. |
-| [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 3 | Shell REPL command units for entity CRUD verbs: the per-entity submenu, its get/add/delete/history handlers, and the per-menu registrar. |
+| [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 6 | Shell REPL command units: one submenu per entity or junction, one command per derived verb, and the per-menu registrar. |
 
 * See also
 

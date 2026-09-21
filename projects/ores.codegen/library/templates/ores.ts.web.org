@@ -94,8 +94,8 @@ well; the declaration still renders, because it names no subject.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:e1526f95-6b47-4abb-9a56-f27262e3d2b8][ores.ts.web.entity_declaration]] | One entity's screens: route, API path, key, capabilities, search fields and field grouping. |
 | [[id:6a28993e-6f1f-4fc4-a5e5-f0eda941cbfc][ores.ts.web.bff_route]] | One entity's BFF route descriptor: the collection, the key and the subjects its routes travel on. |
+| [[id:e1526f95-6b47-4abb-9a56-f27262e3d2b8][ores.ts.web.entity_declaration]] | One entity's screens as data: where they live, what the entity can do, and what the list searches. |
 
 * See also
 

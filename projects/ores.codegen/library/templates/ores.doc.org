@@ -44,6 +44,7 @@ do not edit by hand.
 | [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 5 | Agile artefact scaffolds: task, story, sprint, version. |
 | [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 11 | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook. |
 | [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 6 | Entity-modeling doc scaffolds: entity_org, field_group, junction, lookup_entity, service_registry, dataset_overview, profile, feature. |
+| [[id:14E8EF57-7C0A-4DCE-ACD8-1569893708A6][ores.doc.shell-recipe]] | 1 | Literate shell recipes: one org document per model that renders a shell unit, one section per command, each section exporting its own script into the shell's library. |
 | [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 0 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
 
 * See also

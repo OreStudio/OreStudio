@@ -27,6 +27,7 @@ Output is a dict with the same top-level shape as the JSON entity loader:
 from __future__ import annotations
 
 import re
+import uuid
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -3171,6 +3172,19 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
             )
         if "subject" in props:
             entry["requires_session"] = "false" if auth == "none" else "true"
+        # A command that destroys the environment it runs in cannot be replayed
+        # unattended, and nothing about its shape says so: `reset-system` looks
+        # like any other zero-argument operation. The model states it, so a
+        # generated script carries the warning and a runner can refuse it
+        # rather than discover it by running it.
+        destructive = str(props.get("destructive", "")).strip().lower()
+        if destructive:
+            if destructive not in ("true", "yes", "1"):
+                raise ValueError(
+                    f"message {node.title} states :destructive: "
+                    f"{props['destructive']!r}; the only value is 'true'"
+                )
+            entry["destructive"] = True
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3420,12 +3434,20 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             "response_type": response,
             "subject": subject,
             "public": public,
+            # Whether replaying the command destroys the environment it runs
+            # in. The model states it, because the shape does not: a reset and
+            # a status read are both a bare command name.
+            "is_destructive": bool(message.get("destructive")),
             "positionals": positionals,
             "flags": flags,
             "positional_count": len(positionals),
             "has_positionals": bool(positionals),
             "has_flags": bool(flags),
             "usage": shell_command_usage(command, positionals, flags),
+            "invocation": " ".join(
+                [command]
+                + [_sentinel_for_field(field["name"], field["cpp_type"])
+                   for field in positionals]),
             "unsupported": [field["name"] for field in fields
                             if not field["fillable"]],
         })
@@ -3469,6 +3491,205 @@ def _reject_silent_shell_gap(
         "':ores.cpp.shell-command.enabled: nil' in the file's :PROPERTIES: "
         "drawer to skip the shell facet"
     )
+
+
+def shell_menu_name(model_type: str, model_data: dict[str, Any]) -> str:
+    """The REPL submenu a model's generated shell unit registers.
+
+    One rule with two readers: the output-path resolver places a document under
+    the menu's directory and the renderer states the menu in the document's
+    filetag, so a menu computed twice would file a document under one name and
+    tag it with another.
+    """
+    if model_type == "operation":
+        return (model_data.get("operation") or {}).get("entity_singular", "")
+    if model_type == "junction":
+        # A junction states its plural as ``name``: the table that links
+        # accounts to parties is named for the links, not for either side.
+        junction = model_data.get("junction") or {}
+        return junction.get("entity_plural") or junction.get("name") or ""
+    entity = model_data.get("domain_entity") or {}
+    return entity.get("entity_plural") or entity.get("entity_singular") or ""
+
+
+# The namespace generated document ids are minted in. A constant, not a fresh
+# random id per run: org-roam links documents by id, so a regenerated recipe
+# that changed its id would orphan every reference to it. Deriving the id from
+# the document's own name instead keeps it stable across runs and unique across
+# documents.
+_RECIPE_ID_NAMESPACE = uuid.UUID("6F1D2C3A-7E4B-4C58-9A21-8D3F5B7C0E64")
+
+
+def recipe_org_id(name: str) -> str:
+    """The stable org-roam id for a generated document called ``name``."""
+    return str(uuid.uuid5(_RECIPE_ID_NAMESPACE, name)).upper()
+
+
+# What a shell verb asks of the store, in the words a recipe uses. Keyed by the
+# verb the protocol states rather than by the command name, because two commands
+# may serve one verb -- a put becomes add and set -- and what differs between
+# them is the precondition, which is stated separately below.
+_SHELL_VERB_SENTENCE = {
+    "list": "Reads one page of the collection. Nothing addresses it but the "
+            "caller's tenant, so it is the read that shows what exists.",
+    "get": "Reads the one row its key addresses. A key states every "
+           "identifying column, so a partial key is refused rather than "
+           "answered with an arbitrary row.",
+    "get_many": "Reads several rows in one request, one key group per row.",
+    "put": "Writes a row.",
+    "put_many": "Writes several rows in one request. The count states how "
+                "many field groups follow.",
+    "delete": "Removes a row.",
+    "delete_many": "Removes several rows in one request.",
+    "list_versions": "Reads the row's recorded history, newest first.",
+    "get_version": "Reads one recorded version of the row.",
+    "list_scoped": "Reads one page of the rows that share a relation value. "
+                   "The relation is part of the address rather than a filter "
+                   "applied after the read.",
+}
+
+# What separates two commands that serve the same verb. A create and a replace
+# are one verb stating two different claims about the row's existence.
+_SHELL_PRECONDITION_SENTENCE = {
+    "must_not_exist": "The change states that the row must not exist, so a "
+                      "create that collides with an existing row is refused "
+                      "rather than replacing it.",
+    "must_match_version": "The change states the version it expects, so it is "
+                          "a compare-and-swap against the version the caller "
+                          "last read.",
+    "any": "The change states no precondition, so it replaces whatever row the "
+           "key already addresses.",
+}
+
+
+def _shell_command_commentary(command: dict[str, Any]) -> str:
+    """The literate paragraph one shell command carries in a recipe.
+
+    Two projections reach this: a derived entity command, whose shape the verb
+    and its precondition describe, and a declared operation, which states no
+    verb because its meaning is the server's. They are told apart by the key
+    only the derived one carries.
+    """
+    if not command.get("kind"):
+        return _declared_command_commentary(command)
+    kind = command["kind"]
+    sentences = [_SHELL_VERB_SENTENCE.get(command.get("verb", ""), "").strip()]
+    if kind in ("put", "put_many"):
+        sentences.append(
+            _SHELL_PRECONDITION_SENTENCE.get(command.get("precondition", ""), ""))
+    if command.get("has_intent"):
+        sentences.append(
+            "The change carries a reason and a commentary, which the server "
+            "records on it so the row's history says why it moved.")
+    if command.get("allows_version"):
+        sentences.append(
+            "Passing --version makes the write conditional on the version the "
+            "caller last read.")
+    return " ".join(sentence for sentence in sentences if sentence)
+
+
+def _declared_command_commentary(command: dict[str, Any]) -> str:
+    """The paragraph a declared operation carries.
+
+    A declared operation states no verb, because what it does is the handler's
+    business rather than a relation the store can derive. So the paragraph
+    states what the command is: the request it sends, the reply it prints, and
+    whether a caller needs a session to run it.
+    """
+    sentences = [
+        f"Sends ={command.get('request', '')}= and prints "
+        f"={command.get('response_type', '')}=, so the shape is the protocol's "
+        "and the meaning is the service's."
+    ]
+    names = [field["name"] for field in command.get("positionals") or []]
+    if names:
+        sentences.append(
+            "It reads " + ", ".join(f"={name}=" for name in names)
+            + ", in that order.")
+    if command.get("public"):
+        sentences.append(
+            "A caller runs it before it has a session, so the command "
+            "presents no token and refuses none.")
+    else:
+        sentences.append("The caller must have established a session first.")
+    if command.get("is_destructive"):
+        sentences.append(
+            "This command destroys the system it runs against. Do not replay "
+            "it against an environment you need.")
+    return " ".join(sentences)
+
+
+def shell_recipe_document(component: str, menu: str, singular: str,
+                          plural: str, commands: list[dict[str, Any]],
+                          is_operation: bool) -> dict[str, Any]:
+    """The literate recipe document a model's shell surface renders as.
+
+    One entity, one document. Each command becomes a section that states what
+    it does, the shape it asks for, and the subject it is addressed at, and
+    that exports its own script into the shell's library. Mustache cannot loop
+    twice over one list with different keys, so the document is assembled here
+    rather than in the template.
+    """
+    titled = " ".join(word.capitalize() for word in menu.replace("_", " ").split())
+    rendered: list[dict[str, Any]] = []
+    for command in commands:
+        name = command["command"]
+        block = f"{menu}-{name}"
+        rendered.append({
+            "command": name,
+            "heading": name,
+            # The block's own name, the id a reader links to, and the script it
+            # exports. All three are built from the menu and the command, so one
+            # rename moves the section, the block and the library file together.
+            "block": block,
+            "id": recipe_org_id(f"{component}.{block}"),
+            "script": f"{block}.ores",
+            # The unit's own help and invocation are written for a caller
+            # already inside the submenu. A script loads at the root menu, so
+            # both state the whole path a reader types.
+            "usage": f"{menu} {command['usage']}",
+            "invocation": f"{menu} {command['invocation']}",
+            "verb": command.get("verb", ""),
+            "subject": command.get("subject", ""),
+            "request": command.get("request", ""),
+            "response_type": command.get("response_type", ""),
+            "commentary": _shell_command_commentary(command),
+            "is_destructive": bool(command.get("is_destructive")),
+        })
+    return {
+        "id": recipe_org_id(f"{component}.{menu}"),
+        "component": component,
+        "menu": menu,
+        "singular": singular,
+        "plural": plural,
+        "title": f"{titled} shell commands",
+        "description": (
+            f"Every command the {menu} submenu answers, with the script each "
+            "one exports into the shell's script library."),
+        "intro": _shell_recipe_intro(menu, plural, rendered, is_operation),
+        "is_operation": is_operation,
+        "commands": rendered,
+        "command_count": len(rendered),
+    }
+
+
+def _shell_recipe_intro(menu: str, plural: str, commands: list[dict[str, Any]],
+                        is_operation: bool) -> str:
+    """The document's opening prose, in the recipe's own voice."""
+    what = ("declared operations" if is_operation
+            else f"the {plural} resource")
+    if len(commands) == 1:
+        return (
+            f"This file documents {what} at the shell. Its one command is "
+            f"=ores-shell> {menu} {commands[0]['command']}=, and the section "
+            "below exports it as a script into "
+            "=projects/ores.shell/scripts/library/=, which the shell can load.")
+    return (
+        f"This file documents {what} at the shell, one section per command. "
+        f"Every command is a subcommand of ={menu}=, and every section exports "
+        "its own script into =projects/ores.shell/scripts/library/=. Loading a "
+        "script runs that one command, so a failure names the command it came "
+        "from.")
 
 
 def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
@@ -3639,6 +3860,7 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             command["positional_count"] = len(keys)
             command["exact_count"] = True
         command["usage"] = _entity_shell_usage(command)
+        command["invocation"] = _entity_shell_invocation(command)
         return command
 
     commands: list[dict[str, Any]] = []
@@ -3665,6 +3887,7 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             command["unsupported"] = sorted(
                 item["name"] for item in [addressed_by] if not item["fillable"])
             command["usage"] = _entity_shell_usage(command)
+            command["invocation"] = _entity_shell_invocation(command)
             commands.append(command)
             continue
         if verb in shapes:
@@ -3698,6 +3921,84 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         "any_versioned": any(command["allows_version"] for command in commands),
         "has_helpers": bool(commands),
     }
+
+
+# The value a generated script sends for a field. A generator cannot invent a
+# real id, and a recipe that sent nothing would fail before it left the client:
+# a uuid the shell cannot parse, or an arity the command refuses, proves only
+# that the client is strict. So a generated script sends a well-formed value
+# that addresses nothing. A service that answers "not found" has then proved
+# the command is registered, the subject has a subscriber and the request
+# decoded -- which is what the script exists to check.
+_SENTINEL_VALUES = {
+    "boost::uuids::uuid": "00000000-0000-0000-0000-000000000000",
+    "std::string": "__none__",
+    "bool": "false",
+    "int": "0",
+    "std::int32_t": "0",
+    "std::int64_t": "0",
+    "std::uint16_t": "0",
+    "std::uint32_t": "0",
+    "std::uint64_t": "0",
+    "double": "0",
+    "std::chrono::system_clock::time_point": "1970-01-01T00:00:00Z",
+    "boost::asio::ip::address": "0.0.0.0",
+    "std::vector<std::string>": "__none__",
+}
+
+# A write states an intent, and the reason code is an enum value on the wire
+# rather than free text, so the script sends a code the schema seeds.
+_SENTINEL_REASON = "system.new_record"
+_SENTINEL_COMMENTARY = "generated_script"
+
+
+def _sentinel_value(cpp_type: str) -> str:
+    """A well-formed value of ``cpp_type`` that addresses no row."""
+    return _SENTINEL_VALUES.get((cpp_type or "").strip(), "__none__")
+
+
+def _sentinel_for_field(name: str, cpp_type: str) -> str:
+    """A sentinel for one declared field, by name where the name decides.
+
+    A write's reason code is an enum the schema seeds and its commentary is
+    free text, so a generic string sentinel would be refused before the
+    request reached the handler -- and a script that never reaches the handler
+    checks nothing.
+    """
+    if name == "reason_code":
+        return _SENTINEL_REASON
+    if name == "commentary":
+        return _SENTINEL_COMMENTARY
+    return _sentinel_value(cpp_type)
+
+
+def _entity_shell_invocation(command: dict[str, Any]) -> str:
+    """The command line a generated script sends.
+
+    Built beside :func:`_entity_shell_usage` from the same inputs, so the line
+    a script runs is the shape the help states and the two cannot disagree. An
+    optional flag is left out rather than filled, because a script that states
+    only what a command requires is the shortest thing that reaches it.
+    """
+    kind = command["kind"]
+    tokens = [command["command"]]
+    if kind in ("put", "put_many"):
+        if kind == "put_many":
+            tokens += ["--count", "1"]
+        tokens += [_sentinel_value(field["cpp_type"]) for field in command["writes"]]
+    elif kind == "list_by":
+        tokens.append(_sentinel_value(command["relation"]["cpp_type"]))
+    elif kind != "paged":
+        tokens += [_sentinel_value(key["cpp_type"]) for key in command["keys"]]
+    if command["has_intent"]:
+        tokens += [_SENTINEL_REASON, _SENTINEL_COMMENTARY]
+    if kind == "version_read":
+        tokens += ["--version", "1"]
+    # A page of one keeps a generated script's output readable, and a read that
+    # is not paged has no such flag to give.
+    if command["has_order"]:
+        tokens += ["--limit", "1"]
+    return " ".join(tokens)
 
 
 def _entity_shell_usage(command: dict[str, Any]) -> str:

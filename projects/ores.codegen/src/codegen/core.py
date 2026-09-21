@@ -719,6 +719,12 @@ def _component_path_vars(entity):
     }
 
 
+# The template that renders a model's literate shell recipe. Named once,
+# because three model branches build the document it reads and a repeated
+# literal is three places for the name to drift.
+_SHELL_RECIPE_TEMPLATE = "doc_shell_recipe.org.mustache"
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -733,6 +739,9 @@ def resolve_output_path(output_pattern, model_data, model_type):
     """
     result = output_pattern
 
+    # Deferred import: org_loader imports this module at load time.
+    from .org_loader import shell_menu_name
+
     # Extract values based on model type
     if model_type == 'domain_entity' and 'domain_entity' in model_data:
         entity = model_data['domain_entity']
@@ -746,6 +755,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
+        result = result.replace('{shell_menu}',
+                                shell_menu_name('domain_entity', model_data))
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
@@ -759,6 +770,9 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{junction_name}', junction_name)
         result = result.replace('{entity}', name_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
+        result = result.replace('{entity_plural}', junction_name)
+        result = result.replace('{shell_menu}',
+                                shell_menu_name('junction', model_data))
 
     elif model_type == 'field_group' and 'field_group' in model_data:
         fg = model_data['field_group']
@@ -788,6 +802,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
             result = result.replace('{' + placeholder + '}', value)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', snake_to_pascal(entity_singular))
+        result = result.replace('{shell_menu}',
+                                shell_menu_name('operation', model_data))
 
     elif model_type == 'enum' and 'enum' in model_data:
         enum = model_data['enum']
@@ -4896,6 +4912,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
+            shell_menu_name,
+            shell_recipe_document,
             write_record_for,
         )
         for _field in (
@@ -4942,6 +4960,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The same set as the shell addresses it: one command per operation,
         # plus the facts a unit needs about the set as a whole.
         domain_entity['shell'] = entity_shell_plan(domain_entity)
+        # A recipe is a view of the unit the model renders, so it is built from
+        # that same plan rather than from a second reading of the model: a
+        # command the unit gains arrives in the document that documents it.
+        if target_template == _SHELL_RECIPE_TEMPLATE:
+            data['shell_recipe'] = shell_recipe_document(
+                domain_entity.get('component', ''),
+                shell_menu_name('domain_entity', model),
+                domain_entity.get('entity_singular', ''),
+                domain_entity.get('entity_plural', ''),
+                domain_entity['shell']['commands'],
+                is_operation=False)
         # Whether this entity's protocol is derived from its own model or
         # owned by an operation model beside it. The derived names are what
         # the service speaks, so an owned protocol must not be assumed:
@@ -5060,6 +5089,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction_protocol_messages,
             operations_by_verb,
             protocol_operations,
+            shell_menu_name,
+            shell_recipe_document,
             write_record_for,
         )
         for _side in (junction.get('left') or {}, junction.get('right') or {}):
@@ -5098,7 +5129,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # is published under ``domain_entity`` for those templates only -- the
         # protocol twin reads ``{{#domain_entity}}`` and ``{{#junction}}``
         # both, and would render its header twice.
-        if target_template.startswith('cpp_shell_command_'):
+        if (target_template.startswith('cpp_shell_command_')
+                or target_template == _SHELL_RECIPE_TEMPLATE):
             _shape = junction_entity_shape(junction)
             _shape['messages'] = junction['messages']
             _shape['write_fields'] = write_record_for(_shape)
@@ -5106,6 +5138,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for _verb, _verb_ops in operations_by_verb(_ops).items():
                 _shape[f'{_verb}_operations'] = _verb_ops
             _shape['shell'] = entity_shell_plan(_shape)
+            if target_template == _SHELL_RECIPE_TEMPLATE:
+                data['shell_recipe'] = shell_recipe_document(
+                    _shape.get('component', ''),
+                    shell_menu_name('junction', model),
+                    _shape.get('entity_singular', ''),
+                    _shape.get('entity_plural', ''),
+                    _shape['shell']['commands'],
+                    is_operation=False)
             # A junction states its C++ sub-component in the C++ drawer rather
             # than in the frontmatter a domain entity uses, so the include path
             # the unit renders is read from where a junction states it.
@@ -5244,6 +5284,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         op['component_upper'] = op.get('component', 'unknown').upper()
         if 'entity_singular' in op:
             op['entity_singular_upper'] = op['entity_singular'].upper()
+        # An operation model's unit is projected from its declared messages, so
+        # its recipe is built from that same projection.
+        if target_template == _SHELL_RECIPE_TEMPLATE:
+            from .org_loader import (  # deferred to avoid circular import
+                shell_menu_name,
+                shell_recipe_document,
+            )
+            data['shell_recipe'] = shell_recipe_document(
+                op.get('component', ''),
+                shell_menu_name('operation', model),
+                op.get('entity_singular', ''),
+                op.get('entity_singular', ''),
+                op.get('shell_commands') or [],
+                is_operation=True)
         data['operation'] = op
 
     # Special processing for enum models

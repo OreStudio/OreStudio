@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 3ADD47D1-AA6F-40F7-99BC-E9C378DCD1A6
+:END:
+#+title: ores.doc.shell-recipe.recipe
+#+description: One literate shell recipe per entity or operation: a section per command, each section exporting its own script into the shell's library.
+#+type: archetype
+#+output: doc/recipes/shell/{shell_menu}/{entity}.org
+#+facet: ores.doc.shell-recipe
+#+model_types: domain_entity junction operation
+#+requires_facet: ores.cpp.shell-command
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+One literate recipe document per model that renders a shell unit. The document
+states what each command does, the shape it asks for, and the subject it is
+addressed at, and each section exports its own =ores-shell= block.
+
+The block carries a =:tangle= argument naming the script it exports, which is
+what makes one document produce one script per command: given a =TARGET-FILE=
+=org-babel-tangle-file= redirects every matching block into one file, but with
+no target it honours each block's own =:tangle= instead. So the recipe is the
+literate source and the library script is its export, rather than a second
+document that restates it.
+
+The generated line is an invocation with a sentinel value per field, not a
+shape. A script that sent nothing would fail before it left the client, and a
+client-side refusal proves nothing about the service; a well-formed value that
+addresses no row reaches the handler, so the script checks the wiring it
+exists to check. See =org_loader._SENTINEL_VALUES=.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_shell_recipe.org.mustache=.
+
+#+begin_src mustache :tangle doc_shell_recipe.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.doc.shell-recipe.recipe.org. Edit the org source. }}
+{{#shell_recipe}}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: recipe
+,#+level: cross
+,#+filetags: :recipe:shell:{{menu}}:
+
+{{intro}}
+
+,* Commands
+
+{{#commands}}
+,** ={{command}}=
+:PROPERTIES:
+:ID: {{id}}
+:END:
+
+{{commentary}}
+
+{{#is_destructive}}
+*Destructive.* This command does not read or amend a row; it returns the
+system to its pre-bootstrap state. The script below is generated for
+completeness like every other, and must not be replayed against an environment
+anyone needs.
+{{/is_destructive}}
+
+The command is shaped like this:
+
+,#+begin_example
+{{usage}}
+,#+end_example
+
+{{#subject}}
+It is addressed at ={{subject}}=.
+{{/subject}}
+
+,#+name: {{block}}
+,#+begin_src ores-shell :tangle {{script}} :exports none
+{{#is_destructive}}# DESTRUCTIVE: replaying this command destroys the system it runs against.
+{{/is_destructive}}{{invocation}}
+,#+end_src
+
+{{/commands}}
+{{/shell_recipe}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:14E8EF57-7C0A-4DCE-ACD8-1569893708A6][ores.doc.shell-recipe]]
+- [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — the unit this document is a view of.

@@ -62,14 +62,31 @@ Agreed scope, 2026-09-21. IAM is the pilot and nothing else is touched:
 
 The order the work has to happen in, because each step gates the next:
 
+0. *Unify the two sources of truth first.* The TypeScript twin already renders
+   ={{#messages}}= from =entity_protocol_messages=, and so does the C++
+   =operation= block added when the operation model type landed. The C++
+   =domain_entity= block does not: it is 175 lines of hand-written structs that
+   mirror the derivation by hand, and nothing checks that the two agree -- the
+   twin-coverage gate only proves the file exists, not that the shapes match.
+   Point that block at the same ={{#messages}}= list first, keeping the
+   entity-level envelope around it: the include guard, the includes, the
+   namespace and the =paste:= marker are entity concerns, not message ones.
+
+   The checkpoint is that regenerating IAM leaves the C++ header
+   *byte-identical*. If it does not, the derivation is missing something the
+   hand-written block carries, and closing that gap is the first real work.
+   Only once this holds does one derivation drive both twins, which is what the
+   specification assumes and what makes the rest of the change a single edit
+   rather than two.
 1. The derivation. =org_loader.entity_protocol_messages= and
    =junction_protocol_messages= emit the eight verbs, the specification's
    message names and subjects, the result envelope, the write record with no
    server-owned field, per-element preconditions, the versions sub-resource and
-   the bounds.
-2. The templates. =cpp_protocol.hpp.mustache= and =ts_protocol.ts.mustache=
-   render what the derivation produces. The handler, service and registrar
-   templates move with them, since the verb set is what they branch on.
+   the bounds. Auxiliary records -- the key, the write record, the version, the
+   result -- are emitted as entries with no subject, which the existing renderer
+   already writes as plain structs, so no new template machinery is needed.
+2. The rest of the templates. The handler, service and registrar templates
+   branch on the verb set, so they move with it.
 3. Regenerate IAM and compile. The generated C++ has to build before anything
    downstream is worth attempting.
 4. The shell. Enable =ores.cpp.shell-command= on the IAM models and let the
@@ -108,11 +125,21 @@ its derived =save=, =delete= and =history= have no server registration.
 =read_for_cache= is keyed on =tenant_id=, which is simultaneously server-owned
 and stripped by =stamp()=.
 
-**Sequencing.** =FA160AE1= has an open PR whose acceptance is that the eleven
-hand-written IAM protocol headers generate from org with zero byte
-differences. That cannot survive this conversion, so decide the order before
-starting: either that PR merges first and the org it produces is rewritten
-here, or it is re-scoped now to the canonical shapes.
+**The protocol has two sources of truth and only one of them is generated.**
+=ts_protocol.ts.mustache= renders ={{#messages}}= from
+=entity_protocol_messages=, so the TypeScript twin follows the derivation.
+=cpp_protocol.hpp.mustache='s =domain_entity= block, lines 3 to 178, is
+hand-written and mirrors it, which is why =check_protocol_twin_coverage.py= can
+only prove the twin file exists and not that the two agree. The =operation=
+block at lines 445 to 478 already renders ={{#messages}}=, so the renderer this
+needs is on main. Unifying the two is what turns the rest of this task from two
+parallel edits into one.
+
+**Sequencing is settled.** =FA160AE1= merged as PR #2104 before this branch
+started, so the =operation= model type and the generic message renderer are in
+the base. Its zero-byte-difference criterion applied to the old shapes and is
+superseded by this specification.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

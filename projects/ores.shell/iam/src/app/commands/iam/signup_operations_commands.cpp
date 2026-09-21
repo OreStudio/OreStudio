@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -62,6 +63,17 @@ void signup_operations_commands::process_signup(std::ostream& out,
                                                 const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating signup request.";
 
+    using request_type = ores::iam::messaging::signup_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run signup." << std::endl;
+            return;
+        }
+    }
+
     const std::vector<flag_spec> specs{};
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -76,7 +88,7 @@ void signup_operations_commands::process_signup(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::signup_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.principal = parsed->positionals[next++];
@@ -87,9 +99,14 @@ void signup_operations_commands::process_signup(std::ostream& out,
         return;
     }
 
-    // The caller has no session yet, so the command presents no token.
-    auto result = do_request<ores::iam::messaging::signup_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::signup_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::signup_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::signup_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

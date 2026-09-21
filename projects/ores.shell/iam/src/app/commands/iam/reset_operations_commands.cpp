@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -69,9 +70,15 @@ void reset_operations_commands::process_reset_tenant(std::ostream& out,
                                                      const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating reset-tenant request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run reset-tenant." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::reset_tenant_command;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run reset-tenant." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -88,7 +95,7 @@ void reset_operations_commands::process_reset_tenant(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::reset_tenant_command req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.tenant_code = parsed->positionals[next++];
@@ -97,8 +104,14 @@ void reset_operations_commands::process_reset_tenant(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::reset_tenant_result>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::reset_tenant_result> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::reset_tenant_result>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::reset_tenant_result>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -110,9 +123,15 @@ void reset_operations_commands::process_reset_system(std::ostream& out,
                                                      const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating reset-system request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run reset-system." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::reset_system_command;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run reset-system." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -129,15 +148,21 @@ void reset_operations_commands::process_reset_system(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::reset_system_command req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::reset_system_result>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::reset_system_result> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::reset_system_result>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::reset_system_result>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

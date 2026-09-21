@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -77,6 +78,17 @@ void bootstrap_operations_commands::process_bootstrap_status(std::ostream& out,
                                                              const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap-status request.";
 
+    using request_type = ores::iam::messaging::bootstrap_status_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run bootstrap-status." << std::endl;
+            return;
+        }
+    }
+
     const std::vector<flag_spec> specs{};
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -91,16 +103,21 @@ void bootstrap_operations_commands::process_bootstrap_status(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::bootstrap_status_request req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    // The caller has no session yet, so the command presents no token.
-    auto result = do_request<ores::iam::messaging::bootstrap_status_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::bootstrap_status_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::bootstrap_status_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::bootstrap_status_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -110,6 +127,17 @@ void bootstrap_operations_commands::process_bootstrap_status(std::ostream& out,
 void bootstrap_operations_commands::process_create_initial_admin(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create-initial-admin request.";
+
+    using request_type = ores::iam::messaging::create_initial_admin_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run create-initial-admin." << std::endl;
+            return;
+        }
+    }
 
     const std::vector<flag_spec> specs{};
     const auto parsed = parse_args(args, specs);
@@ -125,7 +153,7 @@ void bootstrap_operations_commands::process_create_initial_admin(
         return;
     }
 
-    ores::iam::messaging::create_initial_admin_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.principal = parsed->positionals[next++];
@@ -136,9 +164,14 @@ void bootstrap_operations_commands::process_create_initial_admin(
         return;
     }
 
-    // The caller has no session yet, so the command presents no token.
-    auto result = do_request<ores::iam::messaging::create_initial_admin_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::create_initial_admin_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::create_initial_admin_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::create_initial_admin_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -149,6 +182,17 @@ void bootstrap_operations_commands::process_provision_tenant(std::ostream& out,
                                                              nats_client& session,
                                                              const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating provision-tenant request.";
+
+    using request_type = ores::iam::messaging::provision_tenant_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run provision-tenant." << std::endl;
+            return;
+        }
+    }
 
     const std::vector<flag_spec> specs{};
     const auto parsed = parse_args(args, specs);
@@ -164,7 +208,7 @@ void bootstrap_operations_commands::process_provision_tenant(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::provision_tenant_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.type = parsed->positionals[next++];
@@ -180,9 +224,14 @@ void bootstrap_operations_commands::process_provision_tenant(std::ostream& out,
         return;
     }
 
-    // The caller has no session yet, so the command presents no token.
-    auto result = do_request<ores::iam::messaging::provision_tenant_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::provision_tenant_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::provision_tenant_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::provision_tenant_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

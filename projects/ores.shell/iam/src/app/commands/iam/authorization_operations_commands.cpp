@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -105,9 +106,15 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
                                                             const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating assign-role request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run assign-role." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::assign_role_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run assign-role." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -124,7 +131,7 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::assign_role_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -134,8 +141,14 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::assign_role_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::assign_role_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::assign_role_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::assign_role_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -146,9 +159,15 @@ void authorization_operations_commands::process_assign_role_by_name(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating assign-role-by-name request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run assign-role-by-name." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::assign_role_by_name_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run assign-role-by-name." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -165,7 +184,7 @@ void authorization_operations_commands::process_assign_role_by_name(
         return;
     }
 
-    ores::iam::messaging::assign_role_by_name_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.principal = parsed->positionals[next++];
@@ -175,8 +194,14 @@ void authorization_operations_commands::process_assign_role_by_name(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::assign_role_by_name_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::assign_role_by_name_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::assign_role_by_name_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::assign_role_by_name_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -188,9 +213,15 @@ void authorization_operations_commands::process_revoke_role(std::ostream& out,
                                                             const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating revoke-role request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run revoke-role." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::revoke_role_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run revoke-role." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -207,7 +238,7 @@ void authorization_operations_commands::process_revoke_role(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::revoke_role_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -217,8 +248,14 @@ void authorization_operations_commands::process_revoke_role(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::revoke_role_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::revoke_role_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::revoke_role_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::revoke_role_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -229,9 +266,15 @@ void authorization_operations_commands::process_revoke_role_by_name(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating revoke-role-by-name request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run revoke-role-by-name." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::revoke_role_by_name_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run revoke-role-by-name." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -248,7 +291,7 @@ void authorization_operations_commands::process_revoke_role_by_name(
         return;
     }
 
-    ores::iam::messaging::revoke_role_by_name_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.principal = parsed->positionals[next++];
@@ -258,8 +301,14 @@ void authorization_operations_commands::process_revoke_role_by_name(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::revoke_role_by_name_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::revoke_role_by_name_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::revoke_role_by_name_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::revoke_role_by_name_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -270,9 +319,15 @@ void authorization_operations_commands::process_get_account_roles(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-account-roles request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-account-roles." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::get_account_roles_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-account-roles." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -289,7 +344,7 @@ void authorization_operations_commands::process_get_account_roles(
         return;
     }
 
-    ores::iam::messaging::get_account_roles_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -298,8 +353,14 @@ void authorization_operations_commands::process_get_account_roles(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_account_roles_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::get_account_roles_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_account_roles_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_account_roles_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -310,9 +371,15 @@ void authorization_operations_commands::process_get_role_permissions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-role-permissions request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-role-permissions." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::get_role_permissions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-role-permissions." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -329,7 +396,7 @@ void authorization_operations_commands::process_get_role_permissions(
         return;
     }
 
-    ores::iam::messaging::get_role_permissions_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.role_id = parsed->positionals[next++];
@@ -338,8 +405,14 @@ void authorization_operations_commands::process_get_role_permissions(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_role_permissions_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::get_role_permissions_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_role_permissions_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_role_permissions_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -350,9 +423,15 @@ void authorization_operations_commands::process_suggest_role_commands(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating suggest-role-commands request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run suggest-role-commands." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::suggest_role_commands_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run suggest-role-commands." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -369,7 +448,7 @@ void authorization_operations_commands::process_suggest_role_commands(
         return;
     }
 
-    ores::iam::messaging::suggest_role_commands_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.username = parsed->positionals[next++];
@@ -380,8 +459,14 @@ void authorization_operations_commands::process_suggest_role_commands(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::suggest_role_commands_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::suggest_role_commands_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::suggest_role_commands_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::suggest_role_commands_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

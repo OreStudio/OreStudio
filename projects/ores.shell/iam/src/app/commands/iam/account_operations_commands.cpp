@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -169,9 +170,15 @@ void account_operations_commands::process_save_account(std::ostream& out,
                                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating save-account request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run save-account." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::save_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run save-account." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -188,7 +195,7 @@ void account_operations_commands::process_save_account(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::save_account_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.principal = parsed->positionals[next++];
@@ -201,8 +208,14 @@ void account_operations_commands::process_save_account(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::save_account_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::save_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::save_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::save_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -214,9 +227,15 @@ void account_operations_commands::process_update_account(std::ostream& out,
                                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating update-account request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run update-account." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::update_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run update-account." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -233,7 +252,7 @@ void account_operations_commands::process_update_account(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::update_account_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -250,8 +269,14 @@ void account_operations_commands::process_update_account(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::update_account_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::update_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::update_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::update_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -263,9 +288,15 @@ void account_operations_commands::process_delete_account(std::ostream& out,
                                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete-account request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run delete-account." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::delete_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run delete-account." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -282,7 +313,7 @@ void account_operations_commands::process_delete_account(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::delete_account_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -291,8 +322,14 @@ void account_operations_commands::process_delete_account(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::delete_account_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::delete_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::delete_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::delete_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -304,9 +341,15 @@ void account_operations_commands::process_lock_account(std::ostream& out,
                                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating lock-account request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run lock-account." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::lock_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run lock-account." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -323,7 +366,7 @@ void account_operations_commands::process_lock_account(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::lock_account_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_ids = split_list_token(parsed->positionals[next++]);
@@ -332,8 +375,14 @@ void account_operations_commands::process_lock_account(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::lock_account_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::lock_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::lock_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::lock_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -345,9 +394,15 @@ void account_operations_commands::process_unlock_account(std::ostream& out,
                                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating unlock-account request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run unlock-account." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::unlock_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run unlock-account." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -364,7 +419,7 @@ void account_operations_commands::process_unlock_account(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::unlock_account_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_ids = split_list_token(parsed->positionals[next++]);
@@ -373,8 +428,14 @@ void account_operations_commands::process_unlock_account(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::unlock_account_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::unlock_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::unlock_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::unlock_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -386,9 +447,15 @@ void account_operations_commands::process_list_login_info(std::ostream& out,
                                                           const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list-login-info request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run list-login-info." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::list_login_info_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-login-info." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -405,15 +472,21 @@ void account_operations_commands::process_list_login_info(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::list_login_info_request req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::list_login_info_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::list_login_info_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::list_login_info_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::list_login_info_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -425,9 +498,15 @@ void account_operations_commands::process_reset_password(std::ostream& out,
                                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating reset-password request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run reset-password." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::reset_password_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run reset-password." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -444,7 +523,7 @@ void account_operations_commands::process_reset_password(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::reset_password_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_ids = split_list_token(parsed->positionals[next++]);
@@ -454,8 +533,14 @@ void account_operations_commands::process_reset_password(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::reset_password_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::reset_password_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::reset_password_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::reset_password_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -467,9 +552,15 @@ void account_operations_commands::process_update_my_email(std::ostream& out,
                                                           const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating update-my-email request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run update-my-email." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::update_my_email_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run update-my-email." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -486,7 +577,7 @@ void account_operations_commands::process_update_my_email(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::update_my_email_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.email = parsed->positionals[next++];
@@ -495,8 +586,14 @@ void account_operations_commands::process_update_my_email(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::update_my_email_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::update_my_email_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::update_my_email_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::update_my_email_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -507,9 +604,15 @@ void account_operations_commands::process_set_my_default_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating set-my-default-party request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run set-my-default-party." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::set_my_default_party_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run set-my-default-party." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -526,7 +629,7 @@ void account_operations_commands::process_set_my_default_party(
         return;
     }
 
-    ores::iam::messaging::set_my_default_party_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.party_id = parsed->positionals[next++];
@@ -535,8 +638,14 @@ void account_operations_commands::process_set_my_default_party(
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::set_my_default_party_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::set_my_default_party_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::set_my_default_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::set_my_default_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -548,9 +657,15 @@ void account_operations_commands::process_select_party(std::ostream& out,
                                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating select-party request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run select-party." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::select_party_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run select-party." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -567,7 +682,7 @@ void account_operations_commands::process_select_party(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::select_party_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.party_id = parsed->positionals[next++];
@@ -576,8 +691,14 @@ void account_operations_commands::process_select_party(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::select_party_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::select_party_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::select_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::select_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -589,9 +710,15 @@ void account_operations_commands::process_switch_party(std::ostream& out,
                                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating switch-party request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run switch-party." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::switch_party_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run switch-party." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -608,7 +735,7 @@ void account_operations_commands::process_switch_party(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::switch_party_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.party_id = parsed->positionals[next++];
@@ -617,8 +744,14 @@ void account_operations_commands::process_switch_party(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::select_party_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::select_party_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::select_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::select_party_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -630,9 +763,15 @@ void account_operations_commands::process_get_accounts(std::ostream& out,
                                                        const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-accounts request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-accounts." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::get_accounts_request_typed;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-accounts." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{
@@ -652,7 +791,7 @@ void account_operations_commands::process_get_accounts(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::get_accounts_request_typed req;
+    request_type req;
     try {
         if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
             req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
@@ -665,8 +804,14 @@ void account_operations_commands::process_get_accounts(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_accounts_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::get_accounts_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_accounts_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_accounts_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -678,9 +823,15 @@ void account_operations_commands::process_change_password(std::ostream& out,
                                                           const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating change-password request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run change-password." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::change_password_request_typed;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run change-password." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -697,7 +848,7 @@ void account_operations_commands::process_change_password(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::change_password_request_typed req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.current_password = parsed->positionals[next++];
@@ -707,8 +858,14 @@ void account_operations_commands::process_change_password(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::change_password_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::change_password_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::change_password_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::change_password_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

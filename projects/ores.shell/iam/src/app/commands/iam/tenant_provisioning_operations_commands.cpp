@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -69,9 +70,15 @@ void tenant_provisioning_operations_commands::process_complete_tenant_provisioni
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating complete-tenant-provisioning request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run complete-tenant-provisioning." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::complete_tenant_provisioning_command;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run complete-tenant-provisioning." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -88,15 +95,21 @@ void tenant_provisioning_operations_commands::process_complete_tenant_provisioni
         return;
     }
 
-    ores::iam::messaging::complete_tenant_provisioning_command req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::complete_tenant_provisioning_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::complete_tenant_provisioning_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::complete_tenant_provisioning_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::complete_tenant_provisioning_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -107,9 +120,15 @@ void tenant_provisioning_operations_commands::process_provision_acme_tenant(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating provision-acme-tenant request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run provision-acme-tenant." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::provision_acme_tenant_command;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run provision-acme-tenant." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -126,15 +145,21 @@ void tenant_provisioning_operations_commands::process_provision_acme_tenant(
         return;
     }
 
-    ores::iam::messaging::provision_acme_tenant_command req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::provision_acme_tenant_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::provision_acme_tenant_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::provision_acme_tenant_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::provision_acme_tenant_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

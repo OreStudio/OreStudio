@@ -32,6 +32,7 @@
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -69,9 +70,15 @@ void session_operations_commands::process_list_sessions(std::ostream& out,
                                                         const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list-sessions request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run list-sessions." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::list_sessions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-sessions." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{
@@ -91,7 +98,7 @@ void session_operations_commands::process_list_sessions(std::ostream& out,
         return;
     }
 
-    ores::iam::messaging::list_sessions_request req;
+    request_type req;
     std::size_t next = 0;
     try {
         req.account_id = parsed->positionals[next++];
@@ -106,8 +113,14 @@ void session_operations_commands::process_list_sessions(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::list_sessions_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::list_sessions_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::list_sessions_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::list_sessions_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 
@@ -118,9 +131,15 @@ void session_operations_commands::process_get_active_sessions(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-active-sessions request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-active-sessions." << std::endl;
-        return;
+    using request_type = ores::iam::messaging::get_active_sessions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-active-sessions." << std::endl;
+            return;
+        }
     }
 
     const std::vector<flag_spec> specs{};
@@ -137,15 +156,21 @@ void session_operations_commands::process_get_active_sessions(
         return;
     }
 
-    ores::iam::messaging::get_active_sessions_request req;
+    request_type req;
     try {
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_active_sessions_response>(
-        out, session, std::string(req.nats_subject), req);
+    std::optional<ores::iam::messaging::get_active_sessions_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_active_sessions_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_active_sessions_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
     if (!result)
         return;
 

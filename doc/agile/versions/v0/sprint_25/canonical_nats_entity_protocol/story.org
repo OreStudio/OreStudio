@@ -59,12 +59,21 @@ evidence for each is in the specification task's notes.
 - *The subject grammar is ={component}.v1.{resource_plural}.{verb}=.* Exactly
   one subject per resource and verb. No three-segment subjects, no kebab-case,
   no duplicate definitions.
-- *The canonical verb set is explicit, and batched where the operation is
-  batched:* =get=, =get_many=, =list=, =put=, =put_many=, =delete=,
-  =delete_many=, =history=, plus =list_by_<relation>= and =list_tree=. The
-  paged read's message is renamed from =get_<plural>_request=
+- *The canonical verb set is eight, and orthogonal:* =get=, =get_many=, =list=,
+  =list_by_<relation>=, =put=, =put_many=, =delete=, =delete_many= -- read one,
+  read many, read a scoped page, write one, write many, remove one, remove many.
+  The paged read's message is renamed from =get_<plural>_request=
   to =list_<plural>_request=; the current name contradicts its own =.list=
   subject.
+- *A read that returns something other than a page of the resource is a read of
+  that something.* An entity's versions and the entities below a node in a
+  hierarchy are collections in their own right, read with the verbs above rather
+  than with a verb of their own. Versions become a read-only
+  =<resource>_versions= sub-resource addressed by a composite key, so the
+  version axis is a filter rather than a second selection mechanism; a subtree
+  becomes the relation-scoped list with a =subtree= scope, so the reply is
+  entities and the caller assembles the tree. This is what removes the
+  =history= and =list_tree= verbs.
 - *Single and batch are paired, element-wise in their claims and set-wise in
   their atomicity.* Every operation on one entity has a set form and a resource
   declares both or neither, so no entity is batch-less. Each element states its

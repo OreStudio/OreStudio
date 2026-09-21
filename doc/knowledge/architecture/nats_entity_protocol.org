@@ -28,8 +28,8 @@ by review.
 ** Scope
 
 This specification defines the shape of the *common, entity-related messages*:
-the operations that read an entity, write an entity, and report an entity's
-history, together with the events that announce that an entity changed. It
+the operations that read an entity, write an entity, and read an entity's
+versions, together with the events that announce that an entity changed. It
 applies to every component, and it is deliberately silent about which entities
 exist.
 
@@ -88,8 +88,9 @@ on.
 *** The verb suffix
 
 The last segment is one verb from the closed set. The resource segment is a
-plural noun in snake_case. =list_by_<relation>= and =list_tree= carry one
-further word so that a scoped read is still one subject per operation.
+plural noun in snake_case. =list_by_<relation>= carries one further word so that
+a scoped read is still one subject per operation, and a sub-resource's name
+carries the collection it holds after the resource it belongs to.
 
 *** The subject prefix
 
@@ -106,9 +107,37 @@ twice. Where a resource is reachable from two directions -- a junction whose
 rows are addressable by either side -- the subject is still one, and the
 direction is a field of the request rather than a second subject.
 
+*** Sub-resources
+
+A collection that belongs to one entity is a *sub-resource*, and it is a
+resource like any other: it has a name, a key, its own subjects, and it is read
+with the standard verbs. It is named for the entity it belongs to, followed by
+the collection:
+
+#+begin_example
+{component}.v1.{resource}_{collection}.{verb}
+#+end_example
+
+A sub-resource exists because a read that returns something other than a page
+of the resource is not a read of the resource. The versions of an entity are
+the case in point: a read that returns version records is not a read of the
+entity, and giving it a verb of its own would put a second kind of thing behind
+the verb slot. Naming the collection instead keeps the grammar at four
+segments, keeps one subject per operation, and lets the collection inherit the
+list contract rather than restate it.
+
+A sub-resource's key is composite: it is the parent's key together with the
+member's own identifier. The composite-key rule below already covers it, so a
+sub-resource needs no machinery that an ordinary composite-key entity does not
+already need.
+
+A sub-resource may be read-only. Versions are written by the database and not
+by a caller, so the versions collection declares =list= and =get= and no write
+verb -- for the same reason a read-only entity declares none.
+
 ** The verb set
 
-Ten verbs cover every operation on an entity. A component's resource may
+Eight verbs cover every operation on an entity. A component's resource may
 support any subset, but it may not invent a verb outside this set.
 
 | Verb | Subject suffix | The operation it expresses |
@@ -116,15 +145,14 @@ support any subset, but it may not invent a verb outside this set.
 | =get= | =.get= | Read one entity, named by its full key. |
 | =get_many= | =.get_many= | Read the entities named by a set of keys, in one reply. |
 | =list= | =.list= | Read a page of entities matching a filter, in a stated order. |
-| =list_by_<relation>= | =.list_by_<relation>= | Read a page of entities scoped by a related entity's key. |
-| =list_tree= | =.list_tree= | Read the entities of a hierarchy from a root, for an entity that has one. |
-| =history= | =.history= | Read the versions of one entity. |
+| =list_by_<relation>= | =.list_by_<relation>= | Read a page of entities scoped by a related entity's key, directly or through its whole subtree. |
 | =put= | =.put= | Create or replace one entity. |
 | =put_many= | =.put_many= | Create or replace a set of entities as one transaction. |
 | =delete= | =.delete= | Remove one entity, named by its full key. |
 | =delete_many= | =.delete_many= | Remove a set of entities as one transaction. |
 
-Four consequences of the set are deliberate.
+The set is orthogonal: read one, read many, read a scoped page, write one,
+write many, remove one, remove many. Five consequences of it are deliberate.
 
 - *Single and batch are paired.* Every operation on one entity has a set form,
   and a resource declares both or neither: =get= with =get_many=, =put= with
@@ -134,6 +162,10 @@ Four consequences of the set are deliberate.
 - *A batch is one transaction.* Several writes land together or not at all.
   Atomicity is a property of the set; the precondition is a property of the
   element (see *Batching*).
+- *A read that returns something other than a page of the resource is a read of
+  that something.* The versions of an entity and the entities beneath a node in
+  a hierarchy are collections in their own right, read with the verbs above
+  rather than with a verb of their own (see *Sub-resources*).
 - *There is no =count= or =count_by_<relation>=.* Counting is a property of a
   list rather than an operation on an entity, and every list reports its total
   (see *Reads*).
@@ -149,7 +181,7 @@ it does not exist, and if the model declares it, it is served.
 ** Keys
 
 A key identifies one entity, and it is the same key everywhere: in =get=, in
-=delete=, in =history=, and in the key fields of a write record.
+=delete=, in a versions read, and in the key fields of a write record.
 
 A key is a record with one field per identifying column, each carrying the
 column's own type rather than a string. An entity whose identity is one column
@@ -157,6 +189,11 @@ has a one-field key; an entity whose identity is composite has a record with
 all of its columns, and every operation that addresses it carries all of them.
 A composite key is never flattened into a single string and never partially
 sent, because a partial key addresses a row that need not exist.
+
+A sub-resource's key is the parent's key with the member's own identifier
+alongside it -- a version's key is the entity's key plus the version number --
+so a member of a sub-resource is addressed by a composite key and nothing else
+is needed to reach it.
 
 Holding a natural key and a surrogate primary key is permitted, and the two are
 not interchangeable. Which one identifies the entity on the wire is a
@@ -170,7 +207,7 @@ A request is a record whose members are exactly the parameters of the
 operation. It contains:
 
 - the operation's addressing: the key, the keys, or the filter;
-- the operation's modifiers: a page, an order, a history range, a
+- the operation's modifiers: a page, an order, a version range, a
   precondition;
 - for a write, the write record and the change intent.
 
@@ -267,8 +304,10 @@ Three rules make the contract unambiguous.
   There is no free-text query string and no expression to parse. A resource
   that supports no filtering simply has no filter record.
 
-=list= replaces every read that returned a filtered set, including the scoped
-reads below, which differ only in how the scope is named.
+=list= replaces every read that returned a filtered set: an entity's versions
+and the entities beneath a node in a hierarchy are scoped reads of collections
+in their own right, and they differ from the plain case only in how the scope is
+named.
 
 *** get
 
@@ -322,30 +361,60 @@ asked.
 
 A set is bounded, so that one request cannot ask for an unbounded reply.
 
-*** history
+*** An entity's versions
 
-=history= returns the versions of one entity, most recent first.
+An entity whose rows are versioned has a versions sub-resource, and its
+versions are read with the verbs every other collection uses.
 
 #+begin_src
-history_<resource>_request {
-    key          : <resource>_key
-    from_version : optional of uint32   -- inclusive lower bound
-    to_version   : optional of uint32   -- inclusive upper bound
-    offset       : uint32
-    limit        : uint32
+list_<resource>_versions_request {
+    key    : <resource>_key   -- the entity whose versions these are
+    offset : uint32
+    limit  : uint32
+    order  : order
+    filter : <resource>_versions_filter
 }
-history_<resource>_response {
+list_<resource>_versions_response {
     result   : result
     versions : list of <resource>_version
     total    : uint64
 }
+get_<resource>_version_request {
+    key : <resource>_version_key
+}
+get_<resource>_version_response {
+    result  : result
+    version : <resource>_version
+}
+<resource>_version_key {
+    <resource> : <resource>_key
+    version    : uint32
+}
 #+end_src
 
-History is addressed by the same key as every other operation, so a
-composite-key entity's history is reachable. A version is a record carrying the
+A =<resource>_version= is a member of the versions collection: it carries the
 version number, the audit provenance the service derived when it wrote that
-version, and the entity's fields as they stood at that version. The version
-axis of a read is expressed here rather than by a variant of =get=.
+version, and the entity's fields as they stood at that version. Because the
+member type is the collection's own, reading versions is an ordinary read of a
+resource and nothing about it is a special case.
+
+The collection is read-only. A version is written by the database when the row
+changes, never by a caller, so =list= and =get= are the only verbs it declares.
+
+The version axis is a filter, not a second selection mechanism. A
+=<resource>_versions_filter= record carries an exact =version= and the
+=from_version= and =to_version= bounds, each optional and each typed, alongside
+whatever else the entity's versions may be filtered by -- who modified them, and
+when they were recorded.
+
+A point-in-time read then falls out of the same shape: a caller that wants the
+entity as it stood at version 7 lists the versions filtered to version 7, and a
+caller that wants the last month of changes lists the versions recorded in that
+window. There is no separate operation for either, and no second way to ask.
+
+The parent's key is one field of the collection's key and also a field of the
+request, so a composite-key entity's versions are addressed exactly as the
+entity itself is.
 
 *** list_by_<relation>
 
@@ -354,33 +423,34 @@ entity, addressed by that entity's key. It carries the relation's key in place
 of part of the filter, and is otherwise =list= exactly: same paging, same
 total, same stated order.
 
+#+begin_src
+list_by_<relation>_<resources>_request {
+    <relation> : <relation>_key
+    scope      : direct | subtree   -- default direct
+    offset     : uint32
+    limit      : uint32
+    order      : order
+    filter     : <resource>_filter
+}
+list_by_<relation>_<resources>_response {
+    result      : result
+    <resources> : list of <resource>
+    total       : uint64
+}
+#+end_src
+
 A relation is named in the subject suffix and its key is a field of the request,
 and the two always agree. Scoping by a related entity is not a filter, because
 an authorisation decision may depend on the relation, and a filter is not
 something a caller's access is evaluated against.
 
-*** list_tree
-
-=list_tree= returns the entities of a hierarchy that lie below a root, for an
-entity that has one.
-
-#+begin_src
-list_tree_<resources>_request {
-    root      : <resource>_key
-    from_root : bool        -- whether the root itself is included
-    offset    : uint32
-    limit     : uint32
-}
-list_tree_<resources>_response {
-    result : result
-    nodes  : list of <resource>_node
-    total  : uint64
-}
-#+end_src
-
-A node carries the entity, its key, and the key of its parent, so that a caller
-can assemble the tree without a second read. The reply is a page of the subtree,
-not of the whole resource, so a large hierarchy is still a bounded reply.
+Where the relation is an entity's parent, =subtree= scopes the page to every
+entity below the named one rather than to its immediate children. The reply is
+still a page of entities, each carrying its own parent key as any entity does,
+so a caller assembles the tree from the keys in the reply: it needs no second
+read and no node type of its own. A page of a subtree need not be connected, so
+a caller that renders a whole tree pages to the end of the subtree, which the
+unconditional total lets it drive.
 
 ** Writes
 
@@ -614,6 +684,12 @@ holds changes nothing either. A consumer that needs the entity reads it with
 =get= rather than assuming the event carried everything, so an event is a
 notification and not a substitute for a read.
 
+An event's =version= is the version of the row it announces, so the two views of
+an entity's past agree: the versions sub-resource holds what each version was,
+the events say when each was produced, and a consumer that has been away reads
+the versions collection rather than replaying the event stream. The stream is
+for reacting, and the collection is for catching up.
+
 Request subjects and event subjects are served by different mechanisms and must
 not be mixed. A request subject is subscribed by one queue group, because a
 request must be answered exactly once by the service that owns the resource.
@@ -735,13 +811,19 @@ invented contract.
 | =get= | =GET /{resource}/{key}= |
 | =get_many= | =GET /{resource}?keys=...= |
 | =list= | =GET /{resource}?offset=&limit=&order=&<filter>= |
-| =list_by_<relation>= | =GET /{resource}?<relation>=...= |
-| =list_tree= | =GET /{resource}/tree?root=...= |
-| =history= | =GET /{resource}/{key}/history= |
+| =list_by_<relation>= | =GET /{resource}?<relation>=...&scope=subtree= |
+| =list= (versions) | =GET /{resource}/{key}/versions?offset=&limit=&order=&<filter>= |
+| =get= (a version) | =GET /{resource}/{key}/versions/{version}= |
 | =put= | =PUT /{resource}/{key}=, or =POST /{resource}= to create |
 | =put_many= | =PUT /{resource}= |
 | =delete= | =DELETE /{resource}/{key}= |
 | =delete_many= | =DELETE /{resource}= |
+
+A sub-resource nests under its parent here, which is the one place the
+projection and the bus differ in shape rather than in contract: HTTP has a path
+to nest in and a subject does not, so the sub-resource is named in the resource
+segment instead. The verbs, the keys, the filters and the outcomes are the same
+on both sides.
 
 The projection does not restate the contract. The key in the path is the key in
 the request, the filter is the filter record, and the =result= is the HTTP
@@ -762,11 +844,13 @@ review.
 A conforming message has a subject with four segments whose component owns it
 and whose last segment is in the verb set; a key that carries every identifying
 column with its own type; a response that carries a =result= and no data
-outside =ok=; a list whose =offset=, =limit= and =total= are unconditional; a
-write record with no server-owned field and no tenancy; a single-entity verb
-that comes with its batch form; a batch whose every element carries its own
-precondition; a batch or page within its bound; and a name that follows
-=<verb>_<resource>_request= and =<verb>_<resource>_response=.
+outside =ok=; a list whose =offset=, =limit= and =total= are unconditional, and
+whose order and filter it states; a write record with no server-owned field and
+no tenancy; a single-entity verb that comes with its batch form; a batch whose
+every element carries its own precondition; a batch or page within its bound; a
+collection subordinated to an entity that is named as a sub-resource rather than
+given a verb of its own; and a name that follows =<verb>_<resource>_request= and
+=<verb>_<resource>_response=.
 
 Conformance is enforced for the components that have adopted this
 specification. A component adopts it whole -- there is no partial conformance,

@@ -23,50 +23,150 @@
  * To modify, update the template and regenerate.
  */
 import type { Tenant } from '../domain/tenant.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetTenantsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetTenantsResponse {
-    tenants: Tenant[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveTenantRequest {
-    data: Tenant;
-}
-
-export interface SaveTenantResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteTenantRequest {
-    ids: string[];
-}
-
-export interface DeleteTenantResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetTenantHistoryRequest {
+export interface TenantKey {
     id: string;
 }
 
-export interface GetTenantHistoryResponse {
-    history: Tenant[];
-    success: boolean;
-    message: string;
+export interface TenantWrite {
+    id: string;
+    code: string;
+    name: string;
+    type: string;
+    description: string;
+    hostname: string;
+    status: string;
+}
+
+export interface TenantChange {
+    write: TenantWrite;
+    precondition: Precondition;
+}
+
+export interface TenantRemoval {
+    key: TenantKey;
+    precondition: Precondition;
+}
+
+export interface TenantLookup {
+    key: TenantKey;
+    tenant: Tenant | null;
+}
+
+export interface TenantVersionKey {
+    tenant: TenantKey;
+    version: number;
+}
+
+export interface TenantVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListTenantsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListTenantsResponse {
+    result: Result;
+    tenants: Tenant[];
+    total: number;
+}
+
+export interface GetTenantRequest {
+    key: TenantKey;
+}
+
+export interface GetTenantResponse {
+    result: Result;
+    tenant: Tenant | null;
+}
+
+export interface GetManyTenantsRequest {
+    keys: TenantKey[];
+}
+
+export interface GetManyTenantsResponse {
+    result: Result;
+    entries: TenantLookup[];
+}
+
+export interface PutTenantRequest {
+    change: TenantChange;
+    intent: ChangeIntent;
+}
+
+export interface PutTenantResponse {
+    result: Result;
+    tenant: Tenant;
+}
+
+export interface PutManyTenantsRequest {
+    changes: TenantChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyTenantsResponse {
+    result: Result;
+    tenants: Tenant[];
+}
+
+export interface DeleteTenantRequest {
+    removal: TenantRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteTenantResponse {
+    result: Result;
+}
+
+export interface DeleteManyTenantsRequest {
+    removals: TenantRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyTenantsResponse {
+    result: Result;
+}
+
+export interface ListTenantVersionsRequest {
+    key: TenantKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TenantVersionsFilter | null;
+}
+
+export interface ListTenantVersionsResponse {
+    result: Result;
+    versions: Tenant[];
+    total: number;
+}
+
+export interface GetTenantVersionRequest {
+    key: TenantVersionKey;
+}
+
+export interface GetTenantVersionResponse {
+    result: Result;
+    version: Tenant;
 }
 
 export const subjects = {
-    get_tenants_request: "iam.v1.tenants.list",
-    save_tenant_request: "iam.v1.tenants.save",
+    list_tenants_request: "iam.v1.tenants.list",
+    get_tenant_request: "iam.v1.tenants.get",
+    get_many_tenants_request: "iam.v1.tenants.get_many",
+    put_tenant_request: "iam.v1.tenants.put",
+    put_many_tenants_request: "iam.v1.tenants.put_many",
     delete_tenant_request: "iam.v1.tenants.delete",
-    get_tenant_history_request: "iam.v1.tenants.history",
+    delete_many_tenants_request: "iam.v1.tenants.delete_many",
+    list_tenant_versions_request: "iam.v1.tenants_versions.list",
+    get_tenant_version_request: "iam.v1.tenants_versions.get",
 } as const;

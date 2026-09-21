@@ -123,15 +123,32 @@ std::optional<domain::account_type> account_type_repository::read_at_version(
     return entities.front();
 }
 
-void account_type_repository::remove(context ctx, const std::string& type) {
+account_type_repository::remove_status account_type_repository::remove(
+    context ctx, const std::string& type, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
+    const auto current = read_latest(ctx, type);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<account_type_entity> |
-        where("tenant_id"_c == tid && "type"_c == type && "valid_to"_c == max.value());
+    const auto query = sqlgen::delete_from<account_type_entity> |
+                       where("tenant_id"_c == tid && "type"_c == type &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing account type from database.");
+    return remove_status::removed;
+}
+
+void account_type_repository::remove(context ctx, const std::string& type) {
+    static_cast<void>(remove(ctx, type, std::nullopt));
 }
 
 std::vector<domain::account_type>
@@ -171,6 +188,24 @@ std::uint32_t account_type_repository::get_total_type_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active account type count: " << count;
     return count;
+}
+
+std::vector<domain::account_type>
+account_type_repository::read_latest(context ctx, const std::vector<std::string>& types) {
+    if (types.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_type_entity>> |
+        where("tenant_id"_c == tid && "type"_c.in(types) && "valid_to"_c == max.value());
+    auto result = execute_read_query<account_type_entity, domain::account_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_type_mapper::map(entities); },
+        lg(),
+        "Reading latest account types by ids.");
+    return result;
 }
 
 void account_type_repository::remove(context ctx, const std::vector<std::string>& types) {

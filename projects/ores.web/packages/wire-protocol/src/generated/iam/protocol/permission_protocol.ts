@@ -23,50 +23,110 @@
  * To modify, update the template and regenerate.
  */
 import type { Permission } from '../domain/permission.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetPermissionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetPermissionsResponse {
-    permissions: Permission[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SavePermissionRequest {
-    data: Permission;
-}
-
-export interface SavePermissionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeletePermissionRequest {
-    ids: string[];
-}
-
-export interface DeletePermissionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetPermissionHistoryRequest {
+export interface PermissionKey {
     id: string;
 }
 
-export interface GetPermissionHistoryResponse {
-    history: Permission[];
-    success: boolean;
-    message: string;
+export interface PermissionWrite {
+    id: string;
+    code: string;
+    description: string;
+}
+
+export interface PermissionChange {
+    write: PermissionWrite;
+    precondition: Precondition;
+}
+
+export interface PermissionRemoval {
+    key: PermissionKey;
+    precondition: Precondition;
+}
+
+export interface PermissionLookup {
+    key: PermissionKey;
+    permission: Permission | null;
+}
+
+export interface ListPermissionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListPermissionsResponse {
+    result: Result;
+    permissions: Permission[];
+    total: number;
+}
+
+export interface GetPermissionRequest {
+    key: PermissionKey;
+}
+
+export interface GetPermissionResponse {
+    result: Result;
+    permission: Permission | null;
+}
+
+export interface GetManyPermissionsRequest {
+    keys: PermissionKey[];
+}
+
+export interface GetManyPermissionsResponse {
+    result: Result;
+    entries: PermissionLookup[];
+}
+
+export interface PutPermissionRequest {
+    change: PermissionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutPermissionResponse {
+    result: Result;
+    permission: Permission;
+}
+
+export interface PutManyPermissionsRequest {
+    changes: PermissionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyPermissionsResponse {
+    result: Result;
+    permissions: Permission[];
+}
+
+export interface DeletePermissionRequest {
+    removal: PermissionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeletePermissionResponse {
+    result: Result;
+}
+
+export interface DeleteManyPermissionsRequest {
+    removals: PermissionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyPermissionsResponse {
+    result: Result;
 }
 
 export const subjects = {
-    get_permissions_request: "iam.v1.permissions.list",
-    save_permission_request: "iam.v1.permissions.save",
+    list_permissions_request: "iam.v1.permissions.list",
+    get_permission_request: "iam.v1.permissions.get",
+    get_many_permissions_request: "iam.v1.permissions.get_many",
+    put_permission_request: "iam.v1.permissions.put",
+    put_many_permissions_request: "iam.v1.permissions.put_many",
     delete_permission_request: "iam.v1.permissions.delete",
-    get_permission_history_request: "iam.v1.permissions.history",
+    delete_many_permissions_request: "iam.v1.permissions.delete_many",
 } as const;

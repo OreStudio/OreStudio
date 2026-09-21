@@ -31,8 +31,10 @@
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::iam::repository {
 
@@ -114,14 +116,29 @@ session_repository::read_all(context ctx, const std::string& id, const std::stri
 }
 
 
-void session_repository::remove(context ctx, const std::string& id, const std::string& start_time) {
+session_repository::remove_status session_repository::remove(context ctx,
+                                                             const std::string& id,
+                                                             const std::string& start_time,
+                                                             std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
                                << " start_time: " << start_time;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+    const auto current = read_latest(ctx, id, start_time);
+    if (current.empty())
+        return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<session_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "start_time"_c == start_time);
 
     execute_delete_query(ctx, query, lg(), "Removing session from database.");
+    return remove_status::removed;
+}
+
+void session_repository::remove(context ctx, const std::string& id, const std::string& start_time) {
+    static_cast<void>(remove(ctx, id, start_time, std::nullopt));
 }
 
 std::vector<domain::session>
@@ -158,6 +175,40 @@ std::uint32_t session_repository::get_total_session_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active session count: " << count;
     return count;
+}
+
+std::vector<domain::session> session_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& start_times) {
+    if (ids.empty() || start_times.empty())
+        return {};
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<session_entity>> |
+        where("tenant_id"_c == tid && "id"_c.in(ids) && "start_time"_c.in(start_times));
+    auto result = execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading latest sessions by ids.");
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (start_times.size() != ids.size())
+        throw std::invalid_argument(
+            "session_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string>> requested;
+    for (std::size_t i = 0; i < ids.size(); ++i)
+        requested.emplace(ids[i], start_times[i]);
+    std::vector<domain::session> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(
+                std::make_tuple(boost::uuids::to_string(item.id),
+                                ores::platform::time::datetime::to_db_string(item.start_time))))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
 void session_repository::remove(context ctx,

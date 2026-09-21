@@ -124,14 +124,33 @@ account_repository::read_at_version(context ctx, const std::string& id, std::uin
 }
 
 
-void account_repository::remove(context ctx, const std::string& id) {
+account_repository::remove_status account_repository::remove(context ctx,
+                                                             const std::string& id,
+                                                             std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<account_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing account from database.");
+    return remove_status::removed;
+}
+
+void account_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::account>
@@ -171,6 +190,23 @@ std::uint32_t account_repository::get_total_account_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active account count: " << count;
     return count;
+}
+
+std::vector<domain::account> account_repository::read_latest(context ctx,
+                                                             const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading latest accounts by ids.");
+    return result;
 }
 
 void account_repository::remove(context ctx, const std::vector<std::string>& ids) {

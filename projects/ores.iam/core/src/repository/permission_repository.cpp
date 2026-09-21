@@ -116,14 +116,27 @@ std::vector<domain::permission> permission_repository::read_all(context ctx,
 }
 
 
-void permission_repository::remove(context ctx, const std::string& id) {
+permission_repository::remove_status permission_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing permission. " << "id: " << id;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<permission_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing permission from database.");
+    return remove_status::removed;
+}
+
+void permission_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::permission>
@@ -163,6 +176,23 @@ std::uint32_t permission_repository::get_total_permission_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active permission count: " << count;
     return count;
+}
+
+std::vector<domain::permission>
+permission_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<permission_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<permission_entity, domain::permission>(
+        ctx,
+        query,
+        [](const auto& entities) { return permission_mapper::map(entities); },
+        lg(),
+        "Reading latest permissions by ids.");
+    return result;
 }
 
 void permission_repository::remove(context ctx, const std::vector<std::string>& ids) {

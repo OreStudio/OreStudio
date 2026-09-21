@@ -64,6 +64,7 @@ public:
      */
     explicit session_service(context ctx);
 
+
     /**
      * @brief Lists sessions with pagination support.
      *
@@ -88,6 +89,12 @@ public:
      */
     std::optional<domain::session> get_session(const std::string& id,
                                                const std::string& start_time);
+
+    /**
+     * @brief Retrieves a batch of sessions by primary key.
+     */
+    std::vector<domain::session> get_sessions(const std::vector<std::string>& ids,
+                                              const std::vector<std::string>& start_times);
 
     /**
      * @brief Saves a session (creates or updates).

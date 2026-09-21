@@ -26,79 +26,192 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_CONTACT_INFORMATION_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account_contact_information.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::iam::messaging {
 
-struct get_account_contact_informations_request {
-    using response_type = struct get_account_contact_informations_response;
+struct account_contact_information_key {
+    boost::uuids::uuid id;
+};
+
+struct account_contact_information_write {
+    boost::uuids::uuid id;
+    boost::uuids::uuid account_id;
+    std::string street_line_1;
+    std::string street_line_2;
+    std::string city;
+    std::string state;
+    std::string country_code;
+    std::string postal_code;
+    std::string phone;
+    std::string email;
+    std::string web_page;
+};
+
+struct account_contact_information_change {
+    account_contact_information_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct account_contact_information_removal {
+    account_contact_information_key key;
+    ores::utility::domain::precondition precondition;
+};
+
+struct account_contact_information_lookup {
+    account_contact_information_key key;
+    std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+};
+
+struct account_contact_informations_filter {
+    std::optional<boost::uuids::uuid> account_id;
+};
+
+struct account_contact_information_version_key {
+    account_contact_information_key account_contact_information;
+    std::uint32_t version;
+};
+
+struct account_contact_information_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_account_contact_informations_request {
+    using response_type = struct list_account_contact_informations_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_contact_informations_filter> filter;
 };
 
-struct get_account_contact_informations_response {
+struct list_account_contact_informations_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_account_contact_information_request {
-    using response_type = struct save_account_contact_information_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.save";
-    ores::iam::domain::account_contact_information data;
-
-    static save_account_contact_information_request
-    from(ores::iam::domain::account_contact_information v) {
-        return {.data = std::move(v)};
-    }
+struct get_account_contact_information_request {
+    using response_type = struct get_account_contact_information_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.get";
+    account_contact_information_key key;
 };
 
-struct save_account_contact_information_response {
-    bool success = false;
-    std::string message;
+struct get_account_contact_information_response {
+    ores::utility::domain::result result;
+    std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+};
+
+struct get_many_account_contact_informations_request {
+    using response_type = struct get_many_account_contact_informations_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.get_many";
+    std::vector<account_contact_information_key> keys;
+};
+
+struct get_many_account_contact_informations_response {
+    ores::utility::domain::result result;
+    std::vector<account_contact_information_lookup> entries;
+};
+
+struct put_account_contact_information_request {
+    using response_type = struct put_account_contact_information_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.put";
+    account_contact_information_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_account_contact_information_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::account_contact_information account_contact_information;
+};
+
+struct put_many_account_contact_informations_request {
+    using response_type = struct put_many_account_contact_informations_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.put_many";
+    std::vector<account_contact_information_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_account_contact_informations_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
 };
 
 struct delete_account_contact_information_request {
     using response_type = struct delete_account_contact_information_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.delete";
-    std::vector<std::string> ids;
+    account_contact_information_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_account_contact_information_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_account_contact_information_history_request {
-    using response_type = struct get_account_contact_information_history_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.history";
-    std::string id;
+struct delete_many_account_contact_informations_request {
+    using response_type = struct delete_many_account_contact_informations_response;
+    static constexpr std::string_view nats_subject =
+        "iam.v1.account_contact_informations.delete_many";
+    std::vector<account_contact_information_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_account_contact_information_history_response {
-    std::vector<ores::iam::domain::account_contact_information> history;
-    bool success = false;
-    std::string message;
+struct delete_many_account_contact_informations_response {
+    ores::utility::domain::result result;
 };
 
-struct get_account_contact_informations_by_account_id_request {
-    using response_type = struct get_account_contact_informations_by_account_id_response;
+struct list_by_account_id_account_contact_informations_request {
+    using response_type = struct list_by_account_id_account_contact_informations_response;
     static constexpr std::string_view nats_subject =
         "iam.v1.account_contact_informations.list_by_account_id";
-    std::string account_id;
+    boost::uuids::uuid account_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_contact_informations_filter> filter;
 };
 
-struct get_account_contact_informations_by_account_id_response {
+struct list_by_account_id_account_contact_informations_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_contact_information> account_contact_informations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
+};
+
+struct list_account_contact_information_versions_request {
+    using response_type = struct list_account_contact_information_versions_response;
+    static constexpr std::string_view nats_subject =
+        "iam.v1.account_contact_informations_versions.list";
+    account_contact_information_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_contact_information_versions_filter> filter;
+};
+
+struct list_account_contact_information_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::account_contact_information> versions;
+    std::uint64_t total;
+};
+
+struct get_account_contact_information_version_request {
+    using response_type = struct get_account_contact_information_version_response;
+    static constexpr std::string_view nats_subject =
+        "iam.v1.account_contact_informations_versions.get";
+    account_contact_information_version_key key;
+};
+
+struct get_account_contact_information_version_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::account_contact_information version;
 };
 
 }

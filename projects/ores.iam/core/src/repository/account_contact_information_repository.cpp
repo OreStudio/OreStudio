@@ -213,14 +213,34 @@ account_contact_information_repository::read_by_account_id_as_of(
         lg(),
         "Reading account contact informations as of window by account_id.");
 }
-void account_contact_information_repository::remove(context ctx, const std::string& id) {
+account_contact_information_repository::remove_status
+account_contact_information_repository::remove(context ctx,
+                                               const std::string& id,
+                                               std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<account_contact_information_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing account contact information from database.");
+    return remove_status::removed;
+}
+
+void account_contact_information_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::account_contact_information>
@@ -264,6 +284,25 @@ account_contact_information_repository::get_total_account_contact_information_co
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active account contact information count: " << count;
     return count;
+}
+
+std::vector<domain::account_contact_information>
+account_contact_information_repository::read_latest(context ctx,
+                                                    const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result =
+        execute_read_query<account_contact_information_entity, domain::account_contact_information>(
+            ctx,
+            query,
+            [](const auto& entities) { return account_contact_information_mapper::map(entities); },
+            lg(),
+            "Reading latest account contact informations by ids.");
+    return result;
 }
 
 void account_contact_information_repository::remove(context ctx,

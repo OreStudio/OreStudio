@@ -23,50 +23,146 @@
  * To modify, update the template and regenerate.
  */
 import type { Role } from '../domain/role.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetRolesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetRolesResponse {
-    roles: Role[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveRoleRequest {
-    data: Role;
-}
-
-export interface SaveRoleResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteRoleRequest {
-    ids: string[];
-}
-
-export interface DeleteRoleResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetRoleHistoryRequest {
+export interface RoleKey {
     id: string;
 }
 
-export interface GetRoleHistoryResponse {
-    history: Role[];
-    success: boolean;
-    message: string;
+export interface RoleWrite {
+    id: string;
+    name: string;
+    description: string;
+}
+
+export interface RoleChange {
+    write: RoleWrite;
+    precondition: Precondition;
+}
+
+export interface RoleRemoval {
+    key: RoleKey;
+    precondition: Precondition;
+}
+
+export interface RoleLookup {
+    key: RoleKey;
+    role: Role | null;
+}
+
+export interface RoleVersionKey {
+    role: RoleKey;
+    version: number;
+}
+
+export interface RoleVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListRolesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListRolesResponse {
+    result: Result;
+    roles: Role[];
+    total: number;
+}
+
+export interface GetRoleRequest {
+    key: RoleKey;
+}
+
+export interface GetRoleResponse {
+    result: Result;
+    role: Role | null;
+}
+
+export interface GetManyRolesRequest {
+    keys: RoleKey[];
+}
+
+export interface GetManyRolesResponse {
+    result: Result;
+    entries: RoleLookup[];
+}
+
+export interface PutRoleRequest {
+    change: RoleChange;
+    intent: ChangeIntent;
+}
+
+export interface PutRoleResponse {
+    result: Result;
+    role: Role;
+}
+
+export interface PutManyRolesRequest {
+    changes: RoleChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyRolesResponse {
+    result: Result;
+    roles: Role[];
+}
+
+export interface DeleteRoleRequest {
+    removal: RoleRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteRoleResponse {
+    result: Result;
+}
+
+export interface DeleteManyRolesRequest {
+    removals: RoleRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyRolesResponse {
+    result: Result;
+}
+
+export interface ListRoleVersionsRequest {
+    key: RoleKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: RoleVersionsFilter | null;
+}
+
+export interface ListRoleVersionsResponse {
+    result: Result;
+    versions: Role[];
+    total: number;
+}
+
+export interface GetRoleVersionRequest {
+    key: RoleVersionKey;
+}
+
+export interface GetRoleVersionResponse {
+    result: Result;
+    version: Role;
 }
 
 export const subjects = {
-    get_roles_request: "iam.v1.roles.list",
-    save_role_request: "iam.v1.roles.save",
+    list_roles_request: "iam.v1.roles.list",
+    get_role_request: "iam.v1.roles.get",
+    get_many_roles_request: "iam.v1.roles.get_many",
+    put_role_request: "iam.v1.roles.put",
+    put_many_roles_request: "iam.v1.roles.put_many",
     delete_role_request: "iam.v1.roles.delete",
-    get_role_history_request: "iam.v1.roles.history",
+    delete_many_roles_request: "iam.v1.roles.delete_many",
+    list_role_versions_request: "iam.v1.roles_versions.list",
+    get_role_version_request: "iam.v1.roles_versions.get",
 } as const;

@@ -26,62 +26,159 @@
 #define ORES_IAM_API_MESSAGING_TENANT_TYPE_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/tenant_type.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::iam::messaging {
 
-struct get_tenant_types_request {
-    using response_type = struct get_tenant_types_response;
+struct tenant_type_key {
+    std::string type;
+};
+
+struct tenant_type_write {
+    std::string type;
+    std::string name;
+    std::string description;
+    int display_order;
+};
+
+struct tenant_type_change {
+    tenant_type_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct tenant_type_removal {
+    tenant_type_key key;
+    ores::utility::domain::precondition precondition;
+};
+
+struct tenant_type_lookup {
+    tenant_type_key key;
+    std::optional<ores::iam::domain::tenant_type> tenant_type;
+};
+
+struct tenant_type_version_key {
+    tenant_type_key tenant_type;
+    std::uint32_t version;
+};
+
+struct tenant_type_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_tenant_types_request {
+    using response_type = struct list_tenant_types_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenant_types.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_tenant_types_response {
+struct list_tenant_types_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant_type> types;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_tenant_type_request {
-    using response_type = struct save_tenant_type_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.save";
-    ores::iam::domain::tenant_type data;
-
-    static save_tenant_type_request from(ores::iam::domain::tenant_type v) {
-        return {.data = std::move(v)};
-    }
+struct get_tenant_type_request {
+    using response_type = struct get_tenant_type_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.get";
+    tenant_type_key key;
 };
 
-struct save_tenant_type_response {
-    bool success = false;
-    std::string message;
+struct get_tenant_type_response {
+    ores::utility::domain::result result;
+    std::optional<ores::iam::domain::tenant_type> tenant_type;
+};
+
+struct get_many_tenant_types_request {
+    using response_type = struct get_many_tenant_types_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.get_many";
+    std::vector<tenant_type_key> keys;
+};
+
+struct get_many_tenant_types_response {
+    ores::utility::domain::result result;
+    std::vector<tenant_type_lookup> entries;
+};
+
+struct put_tenant_type_request {
+    using response_type = struct put_tenant_type_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.put";
+    tenant_type_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_tenant_type_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::tenant_type tenant_type;
+};
+
+struct put_many_tenant_types_request {
+    using response_type = struct put_many_tenant_types_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.put_many";
+    std::vector<tenant_type_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_tenant_types_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::tenant_type> types;
 };
 
 struct delete_tenant_type_request {
     using response_type = struct delete_tenant_type_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenant_types.delete";
-    std::vector<std::string> types;
+    tenant_type_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_tenant_type_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_tenant_type_history_request {
-    using response_type = struct get_tenant_type_history_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.history";
-    std::string type;
+struct delete_many_tenant_types_request {
+    using response_type = struct delete_many_tenant_types_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.delete_many";
+    std::vector<tenant_type_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_tenant_type_history_response {
-    std::vector<ores::iam::domain::tenant_type> history;
-    bool success = false;
-    std::string message;
+struct delete_many_tenant_types_response {
+    ores::utility::domain::result result;
+};
+
+struct list_tenant_type_versions_request {
+    using response_type = struct list_tenant_type_versions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types_versions.list";
+    tenant_type_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<tenant_type_versions_filter> filter;
+};
+
+struct list_tenant_type_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::tenant_type> versions;
+    std::uint64_t total;
+};
+
+struct get_tenant_type_version_request {
+    using response_type = struct get_tenant_type_version_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types_versions.get";
+    tenant_type_version_key key;
+};
+
+struct get_tenant_type_version_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::tenant_type version;
 };
 
 }

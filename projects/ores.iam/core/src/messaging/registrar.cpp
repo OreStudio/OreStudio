@@ -42,10 +42,10 @@
 #include "ores.iam.core/messaging/reset_handler.hpp"
 #include "ores.iam.core/messaging/role_handler.hpp"
 #include "ores.iam.core/messaging/session_handler.hpp"
-#include "ores.iam.core/messaging/tenant_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
-#include "ores.iam.core/messaging/tenant_status_handler.hpp"
-#include "ores.iam.core/messaging/tenant_type_handler.hpp"
+#include "ores.iam.core/messaging/tenant_registrar.hpp"
+#include "ores.iam.core/messaging/tenant_status_registrar.hpp"
+#include "ores.iam.core/messaging/tenant_type_registrar.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/cache/party_cache_registrar.hpp"
@@ -286,25 +286,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         signer, [pc](const std::string& tenant_id, const boost::uuids::uuid& party_id) {
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
-    auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
+    // --- Tenant provisioning ---
+    // The provisioning workflow is hand-written, so its two commands are
+    // wired here beside the handler that serves them.
     auto tph =
         std::make_shared<tenant_provisioning_handler>(nats, ctx, signer, std::move(impersonation));
-    subs.push_back(
-        nats.queue_subscribe(get_tenants_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->list(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(save_tenant_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_history_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->history(std::move(msg));
-        }));
     subs.push_back(nats.queue_subscribe(
         complete_tenant_provisioning_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->complete_provisioning(std::move(msg));
@@ -314,43 +300,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
             tph->provision_acme(std::move(msg));
         }));
 
-    // --- Tenant statuses ---
-    auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_statuses_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_tenant_status_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_status_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_status_history_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->history(std::move(msg));
-        }));
-
-    // --- Tenant types ---
-    auto tth = std::make_shared<tenant_type_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_types_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_tenant_type_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_type_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_type_history_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->history(std::move(msg));
-        }));
+    // --- Tenants, tenant statuses and tenant types ---
+    // The generated registrars own these subjects, so the component registrar
+    // asks each of them for its subscriptions rather than naming the subjects
+    // again here. A subject added to the protocol is then wired by the same
+    // change that declares it.
+    for (auto& sub : register_tenant_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_tenant_status_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_tenant_type_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
 
     // --- System reset ---
     auto rsh = std::make_shared<reset_handler>(nats, ctx, signer);

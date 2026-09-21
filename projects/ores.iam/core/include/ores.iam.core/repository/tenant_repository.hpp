@@ -73,6 +73,7 @@ public:
     /**@{*/
     std::vector<domain::tenant> read_latest(context ctx);
     std::vector<domain::tenant> read_latest(context ctx, const std::string& id);
+    std::vector<domain::tenant> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
@@ -111,6 +112,28 @@ public:
      * @brief Deletes a tenant by closing its temporal validity.
      */
     void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a tenant, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes tenants by closing their temporal validity.

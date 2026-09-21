@@ -23,64 +23,176 @@
  * To modify, update the template and regenerate.
  */
 import type { AccountContactInformation } from '../domain/account_contact_information.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetAccountContactInformationsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetAccountContactInformationsResponse {
-    account_contact_informations: AccountContactInformation[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveAccountContactInformationRequest {
-    data: AccountContactInformation;
-}
-
-export interface SaveAccountContactInformationResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteAccountContactInformationRequest {
-    ids: string[];
-}
-
-export interface DeleteAccountContactInformationResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetAccountContactInformationHistoryRequest {
+export interface AccountContactInformationKey {
     id: string;
 }
 
-export interface GetAccountContactInformationHistoryResponse {
-    history: AccountContactInformation[];
-    success: boolean;
-    message: string;
+export interface AccountContactInformationWrite {
+    id: string;
+    account_id: string;
+    street_line_1: string;
+    street_line_2: string;
+    city: string;
+    state: string;
+    country_code: string;
+    postal_code: string;
+    phone: string;
+    email: string;
+    web_page: string;
 }
 
-export interface GetAccountContactInformationsByAccountIdRequest {
-    account_id: string;
+export interface AccountContactInformationChange {
+    write: AccountContactInformationWrite;
+    precondition: Precondition;
+}
+
+export interface AccountContactInformationRemoval {
+    key: AccountContactInformationKey;
+    precondition: Precondition;
+}
+
+export interface AccountContactInformationLookup {
+    key: AccountContactInformationKey;
+    account_contact_information: AccountContactInformation | null;
+}
+
+export interface AccountContactInformationsFilter {
+    account_id: string | null;
+}
+
+export interface AccountContactInformationVersionKey {
+    account_contact_information: AccountContactInformationKey;
+    version: number;
+}
+
+export interface AccountContactInformationVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListAccountContactInformationsRequest {
     offset: number;
     limit: number;
+    order: Order;
+    filter: AccountContactInformationsFilter | null;
 }
 
-export interface GetAccountContactInformationsByAccountIdResponse {
+export interface ListAccountContactInformationsResponse {
+    result: Result;
     account_contact_informations: AccountContactInformation[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
+    total: number;
+}
+
+export interface GetAccountContactInformationRequest {
+    key: AccountContactInformationKey;
+}
+
+export interface GetAccountContactInformationResponse {
+    result: Result;
+    account_contact_information: AccountContactInformation | null;
+}
+
+export interface GetManyAccountContactInformationsRequest {
+    keys: AccountContactInformationKey[];
+}
+
+export interface GetManyAccountContactInformationsResponse {
+    result: Result;
+    entries: AccountContactInformationLookup[];
+}
+
+export interface PutAccountContactInformationRequest {
+    change: AccountContactInformationChange;
+    intent: ChangeIntent;
+}
+
+export interface PutAccountContactInformationResponse {
+    result: Result;
+    account_contact_information: AccountContactInformation;
+}
+
+export interface PutManyAccountContactInformationsRequest {
+    changes: AccountContactInformationChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyAccountContactInformationsResponse {
+    result: Result;
+    account_contact_informations: AccountContactInformation[];
+}
+
+export interface DeleteAccountContactInformationRequest {
+    removal: AccountContactInformationRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteAccountContactInformationResponse {
+    result: Result;
+}
+
+export interface DeleteManyAccountContactInformationsRequest {
+    removals: AccountContactInformationRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyAccountContactInformationsResponse {
+    result: Result;
+}
+
+export interface ListByAccountIdAccountContactInformationsRequest {
+    account_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AccountContactInformationsFilter | null;
+}
+
+export interface ListByAccountIdAccountContactInformationsResponse {
+    result: Result;
+    account_contact_informations: AccountContactInformation[];
+    total: number;
+}
+
+export interface ListAccountContactInformationVersionsRequest {
+    key: AccountContactInformationKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AccountContactInformationVersionsFilter | null;
+}
+
+export interface ListAccountContactInformationVersionsResponse {
+    result: Result;
+    versions: AccountContactInformation[];
+    total: number;
+}
+
+export interface GetAccountContactInformationVersionRequest {
+    key: AccountContactInformationVersionKey;
+}
+
+export interface GetAccountContactInformationVersionResponse {
+    result: Result;
+    version: AccountContactInformation;
 }
 
 export const subjects = {
-    get_account_contact_informations_request: "iam.v1.account_contact_informations.list",
-    save_account_contact_information_request: "iam.v1.account_contact_informations.save",
+    list_account_contact_informations_request: "iam.v1.account_contact_informations.list",
+    get_account_contact_information_request: "iam.v1.account_contact_informations.get",
+    get_many_account_contact_informations_request: "iam.v1.account_contact_informations.get_many",
+    put_account_contact_information_request: "iam.v1.account_contact_informations.put",
+    put_many_account_contact_informations_request: "iam.v1.account_contact_informations.put_many",
     delete_account_contact_information_request: "iam.v1.account_contact_informations.delete",
-    get_account_contact_information_history_request: "iam.v1.account_contact_informations.history",
-    get_account_contact_informations_by_account_id_request: "iam.v1.account_contact_informations.list_by_account_id",
+    delete_many_account_contact_informations_request: "iam.v1.account_contact_informations.delete_many",
+    list_by_account_id_account_contact_informations_request: "iam.v1.account_contact_informations.list_by_account_id",
+    list_account_contact_information_versions_request: "iam.v1.account_contact_informations_versions.list",
+    get_account_contact_information_version_request: "iam.v1.account_contact_informations_versions.get",
 } as const;

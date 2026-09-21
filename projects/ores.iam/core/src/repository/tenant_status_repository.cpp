@@ -124,15 +124,32 @@ std::optional<domain::tenant_status> tenant_status_repository::read_at_version(
     return entities.front();
 }
 
-void tenant_status_repository::remove(context ctx, const std::string& status) {
+tenant_status_repository::remove_status tenant_status_repository::remove(
+    context ctx, const std::string& status, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenant status. " << "status: " << status;
+    const auto current = read_latest(ctx, status);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<tenant_status_entity> |
-        where("tenant_id"_c == tid && "status"_c == status && "valid_to"_c == max.value());
+    const auto query = sqlgen::delete_from<tenant_status_entity> |
+                       where("tenant_id"_c == tid && "status"_c == status &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing tenant status from database.");
+    return remove_status::removed;
+}
+
+void tenant_status_repository::remove(context ctx, const std::string& status) {
+    static_cast<void>(remove(ctx, status, std::nullopt));
 }
 
 std::vector<domain::tenant_status>
@@ -172,6 +189,24 @@ std::uint32_t tenant_status_repository::get_total_status_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active tenant status count: " << count;
     return count;
+}
+
+std::vector<domain::tenant_status>
+tenant_status_repository::read_latest(context ctx, const std::vector<std::string>& statuss) {
+    if (statuss.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<tenant_status_entity>> |
+        where("tenant_id"_c == tid && "status"_c.in(statuss) && "valid_to"_c == max.value());
+    auto result = execute_read_query<tenant_status_entity, domain::tenant_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return tenant_status_mapper::map(entities); },
+        lg(),
+        "Reading latest tenant statuses by ids.");
+    return result;
 }
 
 void tenant_status_repository::remove(context ctx, const std::vector<std::string>& statuss) {

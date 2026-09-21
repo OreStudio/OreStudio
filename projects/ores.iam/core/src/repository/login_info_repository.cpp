@@ -108,13 +108,26 @@ std::vector<domain::login_info> login_info_repository::read_all(context ctx,
 }
 
 
-void login_info_repository::remove(context ctx, const std::string& account_id) {
+login_info_repository::remove_status login_info_repository::remove(
+    context ctx, const std::string& account_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing login info. " << "account_id: " << account_id;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+    const auto current = read_latest(ctx, account_id);
+    if (current.empty())
+        return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<login_info_entity> |
                        where("tenant_id"_c == tid && "account_id"_c == account_id);
 
     execute_delete_query(ctx, query, lg(), "Removing login info from database.");
+    return remove_status::removed;
+}
+
+void login_info_repository::remove(context ctx, const std::string& account_id) {
+    static_cast<void>(remove(ctx, account_id, std::nullopt));
 }
 
 std::vector<domain::login_info>
@@ -150,6 +163,22 @@ std::uint32_t login_info_repository::get_total_login_info_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active login info count: " << count;
     return count;
+}
+
+std::vector<domain::login_info>
+login_info_repository::read_latest(context ctx, const std::vector<std::string>& account_ids) {
+    if (account_ids.empty())
+        return {};
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<login_info_entity>> |
+                       where("tenant_id"_c == tid && "account_id"_c.in(account_ids));
+    auto result = execute_read_query<login_info_entity, domain::login_info>(
+        ctx,
+        query,
+        [](const auto& entities) { return login_info_mapper::map(entities); },
+        lg(),
+        "Reading latest login info by ids.");
+    return result;
 }
 
 void login_info_repository::remove(context ctx, const std::vector<std::string>& account_ids) {

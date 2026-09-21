@@ -23,39 +23,115 @@
  * To modify, update the template and regenerate.
  */
 import type { LoginInfo } from '../domain/login_info.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetLoginInfoRequest {
+export interface LoginInfoKey {
+    account_id: string;
+}
+
+export interface LoginInfoWrite {
+    account_id: string;
+    last_ip: string;
+    last_attempt_ip: string;
+    failed_logins: number;
+    locked: boolean;
+    last_login: string;
+    online: boolean;
+    password_reset_required: boolean;
+}
+
+export interface LoginInfoChange {
+    write: LoginInfoWrite;
+    precondition: Precondition;
+}
+
+export interface LoginInfoRemoval {
+    key: LoginInfoKey;
+    precondition: Precondition;
+}
+
+export interface LoginInfoLookup {
+    key: LoginInfoKey;
+    login_info: LoginInfo | null;
+}
+
+export interface ListLoginInfoRequest {
     offset: number;
     limit: number;
+    order: Order;
+}
+
+export interface ListLoginInfoResponse {
+    result: Result;
+    login_info: LoginInfo[];
+    total: number;
+}
+
+export interface GetLoginInfoRequest {
+    key: LoginInfoKey;
 }
 
 export interface GetLoginInfoResponse {
+    result: Result;
+    login_info: LoginInfo | null;
+}
+
+export interface GetManyLoginInfoRequest {
+    keys: LoginInfoKey[];
+}
+
+export interface GetManyLoginInfoResponse {
+    result: Result;
+    entries: LoginInfoLookup[];
+}
+
+export interface PutLoginInfoRequest {
+    change: LoginInfoChange;
+    intent: ChangeIntent;
+}
+
+export interface PutLoginInfoResponse {
+    result: Result;
+    login_info: LoginInfo;
+}
+
+export interface PutManyLoginInfoRequest {
+    changes: LoginInfoChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyLoginInfoResponse {
+    result: Result;
     login_info: LoginInfo[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveLoginInfoRequest {
-    data: LoginInfo;
-}
-
-export interface SaveLoginInfoResponse {
-    success: boolean;
-    message: string;
 }
 
 export interface DeleteLoginInfoRequest {
-    ids: string[];
+    removal: LoginInfoRemoval;
+    intent: ChangeIntent;
 }
 
 export interface DeleteLoginInfoResponse {
-    success: boolean;
-    message: string;
+    result: Result;
+}
+
+export interface DeleteManyLoginInfoRequest {
+    removals: LoginInfoRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyLoginInfoResponse {
+    result: Result;
 }
 
 export const subjects = {
-    get_login_info_request: "iam.v1.login_info.list",
-    save_login_info_request: "iam.v1.login_info.save",
+    list_login_info_request: "iam.v1.login_info.list",
+    get_login_info_request: "iam.v1.login_info.get",
+    get_many_login_info_request: "iam.v1.login_info.get_many",
+    put_login_info_request: "iam.v1.login_info.put",
+    put_many_login_info_request: "iam.v1.login_info.put_many",
     delete_login_info_request: "iam.v1.login_info.delete",
+    delete_many_login_info_request: "iam.v1.login_info.delete_many",
 } as const;

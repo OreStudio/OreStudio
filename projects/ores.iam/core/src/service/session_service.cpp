@@ -58,6 +58,12 @@ std::optional<domain::session> session_service::get_session(const std::string& i
     return results.front();
 }
 
+std::vector<domain::session>
+session_service::get_sessions(const std::vector<std::string>& ids,
+                              const std::vector<std::string>& start_times) {
+    return repo_.read_latest(ctx_, ids, start_times);
+}
+
 void session_service::save_session(const domain::session& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Session id cannot be empty.");

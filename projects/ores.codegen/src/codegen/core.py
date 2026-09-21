@@ -5055,9 +5055,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _ts_domain_type,
             entity_event_prefix,
             entity_events,
+            entity_shell_plan,
+            junction_entity_shape,
             junction_protocol_messages,
             operations_by_verb,
             protocol_operations,
+            write_record_for,
         )
         for _side in (junction.get('left') or {}, junction.get('right') or {}):
             _mapped = _ts_domain_type(_side.get('cpp_type'))
@@ -5087,6 +5090,33 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction.get('component', ''), junction.get('name', ''))
         junction['events'] = entity_events(
             junction.get('component', ''), junction.get('name', ''))
+        # The shell templates are pinned to ``domain_entity``, because that is
+        # the shape they read, and a junction reaches them as one: the shape
+        # states the same projection the protocol above was derived from, so a
+        # verb the model gains reaches the protocol and the shell in the same
+        # commit instead of the shell being written out by hand beside it. It
+        # is published under ``domain_entity`` for those templates only -- the
+        # protocol twin reads ``{{#domain_entity}}`` and ``{{#junction}}``
+        # both, and would render its header twice.
+        if target_template.startswith('cpp_shell_command_'):
+            _shape = junction_entity_shape(junction)
+            _shape['messages'] = junction['messages']
+            _shape['write_fields'] = write_record_for(_shape)
+            _shape['operations'] = _ops
+            for _verb, _verb_ops in operations_by_verb(_ops).items():
+                _shape[f'{_verb}_operations'] = _verb_ops
+            _shape['shell'] = entity_shell_plan(_shape)
+            # A junction states its C++ sub-component in the C++ drawer rather
+            # than in the frontmatter a domain entity uses, so the include path
+            # the unit renders is read from where a junction states it.
+            _shape['subcomponent'] = (junction.get('cpp') or {}).get(
+                'subcomponent') or junction.get('subcomponent') or 'api'
+            _shape['entity_singular_upper'] = (
+                junction.get('entity_upper')
+                or _shape['entity_singular'].upper())
+            _shape['entity_plural_words'] = (
+                junction.get('entity_plural_words') or _shape['entity_plural'])
+            data['domain_entity'] = _shape
         # A field the protocol projection cannot express would render an
         # interface with the field missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the

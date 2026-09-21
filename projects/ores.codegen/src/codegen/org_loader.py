@@ -2957,6 +2957,51 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return messages
 
 
+def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
+    """A junction projected onto the entity shape every render reads.
+
+    A junction is an entity whose key spans the two sides it links, so the
+    protocol derivation and the shell projection address it as one. The shape
+    is built here once rather than by each of them, because a junction that
+    gained a side would otherwise gain it in the protocol and not in the
+    shell -- the same drift a raw subject literal causes, one level up.
+
+    The key carries the whole pair and never half of it, which is what makes
+    addressing one link unambiguous. A junction links rows and carries no
+    ``valid_from``/``valid_to`` axis, so it has no versions sub-resource; the
+    plural is the junction's own name, because a table that links accounts to
+    parties is named for the links and not for one of them.
+
+    The caller adds ``messages``, ``operations``, ``write_fields`` and
+    ``shell`` on top: those are derivations of this shape, not members of it.
+    """
+    name = junction.get("name", "")
+    sides = (junction.get("left") or {}, junction.get("right") or {})
+    return {
+        "component": junction.get("component", ""),
+        "entity_singular": junction.get("name_singular", ""),
+        "entity_plural": name,
+        "entity_plural_short": name,
+        "current_state": True,
+        "primary_key": {
+            "columns": [{"column": side.get("column", ""),
+                         "cpp_type": side.get("cpp_type") or "std::string",
+                         "is_uuid": side.get("type") == "uuid"}
+                        for side in sides],
+        },
+        "columns": [{"column": side.get("column", ""),
+                     "cpp_type": side.get("cpp_type") or "std::string"}
+                    for side in sides]
+        + [{"column": _column_name(column),
+            "cpp_type": column.get("cpp_type") or "std::string"}
+           for column in junction.get("columns") or []],
+        "extra_list_requests": [
+            {"filter_column": side["column"],
+             "nats_suffix": f"list_by_{side['column']}"}
+            for side in sides if side.get("list_by")],
+    }
+
+
 def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive a junction's message list: the entity set, keyed by both sides.
 
@@ -2980,35 +3025,7 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     a change to the entity protocol reaches junctions in the same commit rather
     than being mirrored here by hand.
     """
-    component = junction.get("component", "")
-    name = junction.get("name", "")
-    singular = junction.get("name_singular", "")
-    sides = (junction.get("left") or {}, junction.get("right") or {})
-    entity = {
-        "component": component,
-        "entity_singular": singular,
-        "entity_plural": name,
-        "entity_plural_short": name,
-        # A junction links rows and carries no valid_from/valid_to axis, so it
-        # has no versions sub-resource to read.
-        "current_state": True,
-        "primary_key": {
-            "columns": [{"column": side.get("column", ""),
-                         "cpp_type": side.get("cpp_type") or "std::string",
-                         "is_uuid": side.get("type") == "uuid"}
-                        for side in sides],
-        },
-        "columns": [{"column": side.get("column", ""),
-                     "cpp_type": side.get("cpp_type") or "std::string"}
-                    for side in sides]
-        + [{"column": _column_name(column),
-            "cpp_type": column.get("cpp_type") or "std::string"}
-           for column in junction.get("columns") or []],
-        "extra_list_requests": [
-            {"filter_column": side["column"],
-             "nats_suffix": f"list_by_{side['column']}"}
-            for side in sides if side.get("list_by")],
-    }
+    entity = junction_entity_shape(junction)
     messages = entity_protocol_messages(entity)
     # ``wire_write_enabled`` folds the repository's read_only together with the
     # client-only switch; the fallback keeps a hand-built junction dict, as the

@@ -347,3 +347,133 @@ class TestThatNoVerbIsSkipped:
             assert plan["uncovered_verbs"] == [], (
                 f"{entity.get('entity_singular')}: {plan['uncovered_verbs']}")
         assert checked >= 7, f"only {checked} entities rendered a shell unit"
+
+
+def _junction(read_only=False):
+    """An account_party-shaped junction, as the loader hands it to the shape."""
+    junction = {
+        "component": "iam",
+        "name": "account_parties",
+        "name_singular": "account_party",
+        "left": {"column": "account_id", "cpp_type": "boost::uuids::uuid",
+                 "type": "uuid", "list_by": True},
+        "right": {"column": "party_id", "cpp_type": "boost::uuids::uuid",
+                  "type": "uuid"},
+        "columns": [],
+    }
+    if read_only:
+        junction["read_only"] = True
+    return junction
+
+
+def _junction_plan(read_only=False):
+    """The shape and shell plan core.py assembles for a junction.
+
+    Mirrors that assembly rather than importing it, so a key the assembly
+    stops setting shows up here as a failure rather than as agreement.
+    """
+    from codegen.org_loader import (
+        junction_entity_shape,
+        junction_protocol_messages,
+        protocol_operations,
+        write_record_for,
+    )
+
+    junction = _junction(read_only=read_only)
+    shape = junction_entity_shape(junction)
+    shape["messages"] = junction_protocol_messages(junction)
+    shape["write_fields"] = write_record_for(shape)
+    shape["operations"] = protocol_operations(shape["messages"])
+    return shape, entity_shell_plan(shape)
+
+
+class TestTheJunctionUnit:
+    """A junction is an entity, so it renders the same unit an entity does.
+
+    account_party derived eight subjects while its shell offered two by hand,
+    so six verbs had no shell surface at all -- including both that remove an
+    association. The unit exists because the derivation built an entity shape
+    for the protocol and then threw it away; these cases pin the projection
+    that reads it, and the archetype gate that let it render nothing at all
+    without failing.
+    """
+
+    def test_the_plural_is_the_junctions_own_name(self):
+        from codegen.org_loader import junction_entity_shape
+
+        shape = junction_entity_shape(_junction())
+        assert shape["entity_singular"] == "account_party"
+        assert shape["entity_plural"] == "account_parties"
+
+    def test_the_key_carries_the_whole_pair(self):
+        from codegen.org_loader import junction_entity_shape
+
+        columns = [c["column"] for c in
+                   junction_entity_shape(_junction())["primary_key"]["columns"]]
+        assert columns == ["account_id", "party_id"]
+
+    def test_every_derived_verb_becomes_a_command(self):
+        _, plan = _junction_plan()
+        assert plan["uncovered_verbs"] == []
+        assert _names(plan["commands"]) == [
+            "list", "get", "get-many", "add", "set",
+            "put-many", "delete", "delete-many", "by-account-id",
+        ]
+
+    def test_the_shell_sends_to_the_subjects_the_protocol_states(self):
+        shape, plan = _junction_plan()
+        declared = {m["subject"] for m in shape["messages"] if m.get("subject")}
+        assert {c["subject"] for c in plan["commands"]} <= declared
+
+    def test_a_read_only_junction_derives_the_reads_only(self):
+        shape, plan = _junction_plan(read_only=True)
+        assert "delete" not in _names(plan["commands"])
+        assert plan["uncovered_verbs"] == []
+
+    def test_the_junction_derives_no_versions_to_read(self):
+        # A junction links rows and carries no valid_from/valid_to axis, so it
+        # states no versions sub-resource. Its writes still carry the version
+        # precondition a compare-and-swap needs, which is a different fact.
+        shape, plan = _junction_plan()
+        assert not [m for m in shape["messages"] if "versions" in m["name"]]
+        assert {c["kind"] for c in plan["commands"]}.isdisjoint(
+            {"versions", "version_read"})
+        assert plan["has_version"] is True
+
+    def test_account_parties_renders_a_unit_covering_every_verb(self):
+        import codegen.core as core
+
+        captured = []
+        original = core._RENDERER.render
+        core._RENDERER.render = lambda t, d, *a, **k: (captured.append(d), "")[1]
+        try:
+            core.generate_from_model(
+                str(IAM_MODELING / "ores.iam.account_party_junction.org"),
+                REPO_ROOT / "projects/ores.codegen/library/data",
+                REPO_ROOT / "projects/ores.codegen/library/templates",
+                REPO_ROOT / ".runtime/render/junction",
+                is_processing_batch=False,
+                target_template="cpp_shell_command_impl.cpp.mustache",
+                target_output="probe.cpp")
+        finally:
+            core._RENDERER.render = original
+
+        assert len(captured) == 1
+        plan = captured[0]["domain_entity"]["shell"]
+        assert plan["uncovered_verbs"] == []
+        assert plan["command_count"] == 9
+
+    def test_the_shell_archetypes_admit_a_junction(self):
+        # The gate that hid the gap: the projection was ready and the facet
+        # still logged "nothing to generate ... model type 'junction'".
+        templates = REPO_ROOT / "projects/ores.codegen/library/templates"
+        for name in ("ores.cpp.shell-command.org",
+                     "ores.cpp.shell-command.command_header.org",
+                     "ores.cpp.shell-command.command_implementation.org",
+                     "ores.cpp.shell-command.command_tests.org"):
+            text = (templates / name).read_text()
+            declared = [line for line in text.splitlines()
+                        if line.startswith("#+model_types:")]
+            assert declared, name
+            assert "junction" in declared[0], name
+

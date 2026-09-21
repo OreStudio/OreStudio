@@ -6,7 +6,7 @@
 #+type: archetype
 #+output: projects/ores.shell/{component}/src/app/commands/{component}/{entity}_commands.cpp
 #+facet: ores.cpp.shell-command
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-16

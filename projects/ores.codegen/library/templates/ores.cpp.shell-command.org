@@ -2,9 +2,9 @@
 :ID: D7287835-B101-4829-8B93-5C7F4FC9BA70
 :END:
 #+title: ores.cpp.shell-command
-#+description: Shell REPL command units for entity CRUD verbs: the per-entity submenu, its get/add/delete/history handlers, and the per-menu registrar.
+#+description: Shell REPL command units: one submenu per entity or junction, one command per derived verb, and the per-menu registrar.
 #+type: facet
-#+model_types: domain_entity operation
+#+model_types: domain_entity junction operation
 #+level: cross
 #+facet_group: ores.cpp
 #+default: disabled
@@ -20,18 +20,23 @@ summary and the routing table to them.
 * Summary
 
 Three templates that project one entity onto one shell REPL command unit: a
-header declaring the unit class, a source holding its four handler bodies,
-and the test file that pins the unit's guards. The unit owns the =get=,
-=add=, =delete= and =history= verbs of one submenu, and registers that
-submenu on the root menu. The templates are opt-in and disabled by
-default.
+header declaring the unit class, a source holding its handler bodies, and the
+test file that pins the unit's guards. The unit owns one submenu and one
+command per verb the entity derives -- a put becomes two, because a create and
+a replace are one verb stating two different claims -- and registers that
+submenu on the root menu. The templates are opt-in and disabled by default.
 
 * The ores.cpp.shell-command facet
 
-The facet consumes a =domain_entity= model and writes the shell's view of
-it. The model already carries everything the templates need: the entity
-names and title, the component, the API sub-component, the primary key and
-the columns.
+The facet consumes a =domain_entity= model or a =junction= and writes the
+shell's view of it. A junction is an entity whose key spans the two sides it
+links, so it derives the same verb set and reaches the same unit; the shape the
+templates read is the one the protocol was derived from, which is why a verb
+the model gains reaches the protocol and the shell in the same commit rather
+than the shell being written out by hand beside it.
+
+The model already carries everything the templates need: the entity names and
+title, the component, the API sub-component, the primary key and the columns.
 
 The facet writes into the entity's own adapter part under
 =projects/ores.shell/=, not into the entity's domain component. A
@@ -69,7 +74,7 @@ fixed shape, so the argument count no longer shapes the generated types.
 
 *The supply annotation.* The add verb fills one domain member per
 positional argument. The =:supplied_by:= annotation on a column says who
-supplies the value, and the generator turns it into the ={{user_supplied_count}}=
+supplies the value, and the generator turns it into the ={{positional_count}}=
 arity and the ={{#is_*}}= sections the template reads. The four values are:
 
 | Value             | Meaning                                                       |

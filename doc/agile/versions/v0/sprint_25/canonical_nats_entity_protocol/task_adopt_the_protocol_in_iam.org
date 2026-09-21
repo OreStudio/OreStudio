@@ -158,6 +158,55 @@ started, so the =operation= model type and the generic message renderer are in
 the base. Its zero-byte-difference criterion applied to the old shapes and is
 superseded by this specification.
 
+**Step 1 recipe: exactly what =entity_protocol_messages= must emit.** The
+foundation helpers are built and tested; this is the composite they feed. Every
+shared record below comes from =ores.utility::domain= (=result=,
+=precondition=, =change_intent=); every subject from the three builders.
+
+Auxiliary records first -- entries with no subject, which the renderer already
+writes as plain structs:
+
+| Record | Fields |
+|--------+--------|
+| =<singular>_key= | =key_record_fields(entity)= |
+| =<singular>_write= | =write_record_fields(entity)=, each column's own cpp type |
+| =<singular>_change= | =write: <singular>_write=, =precondition= |
+| =<singular>_removal= | =key: <singular>_key=, =precondition= |
+| =<singular>_lookup= | =key: <singular>_key=, =<singular>: optional<domain>= |
+| =<singular>_version_key= | =<singular>: <singular>_key=, =version: std::uint32_t= |
+| =<plural>_filter= | one optional member per filterable column; starts from the model's =list_filter_column= |
+
+Then the operations, in this order, paired request before response:
+
+| Request | Subject | Request fields | Response fields |
+|---------+---------+----------------+-----------------|
+| =list_<plural>_request= | =request_subject(c, p, "list")= | =offset= 0, =limit= 100, =order=, =filter= | =result=, =<plural_short>=, =total= |
+| =get_<singular>_request= | =.get= | =key: <singular>_key= | =result=, =<singular>: optional<domain>= |
+| =get_many_<plural>_request= | =.get_many= | =keys: vector<<singular>_key>= | =result=, =entries= |
+| =put_<singular>_request= | =.put= | =change: <singular>_change=, =intent= | =result=, =<singular>: domain= |
+| =put_many_<plural>_request= | =.put_many= | =changes=, =intent= | =result=, =<plural_short>= |
+| =delete_<singular>_request= | =.delete= | =removal=, =intent= | =result= |
+| =delete_many_<plural>_request= | =.delete_many= | =removals=, =intent= | =result= |
+| =list_<plural>_versions_request= | =versions_subject(c, p, "list")= | =key=, =offset=, =limit=, =order=, =filter= | =result=, =versions: vector<domain>=, =total= |
+| =get_<singular>_version_request= | =versions_subject(c, p, "get")= | =key: <singular>_version_key= | =result=, =version: domain= |
+
+A version is the domain row itself: the domain type already carries the version
+number and the audit provenance the service derived, so no separate version
+record is needed.
+
+Dropped outright, not renamed: =save_*=, =get_<singular>_history_*=,
+=get_<singular>_hierarchy_*=, =read_<plural>_for_cache_*=, =count_by_*=, and the
+=get_<plural>= naming for the paged read. =extra_list_requests= become
+=list_by_<relation>_<plural>= carrying =scope: direct | subtree=, and
+=hierarchy= becomes the same verb with =scope: subtree=.
+
+Then the template: replace =cpp_protocol.hpp.mustache= lines 18 to 113 -- the
+hand-written structs -- with the ={{#messages}}= renderer the operation block
+already uses at lines 455 to 474, keeping the entity-level envelope around it:
+the include guard, the includes, the =paste:= marker and the namespace. Add
+=ores.utility/domain/protocol.hpp= and =key_record_fields='s uuid header to the
+includes when the generated messages reference them.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

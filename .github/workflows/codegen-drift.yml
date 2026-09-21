@@ -38,8 +38,9 @@ permissions:
 jobs:
   # Artefact drift: a generated file was hand-edited, or a model or
   # template changed and the components built from it were never
-  # regenerated. check_component_drift.py regenerates the components in
-  # its known-drift-free registry and fails if the tree moves.
+  # regenerated. check_component_drift.py regenerates the components under
+  # test, the shared list in component_registry.py, and fails if the tree
+  # moves.
   #
   # This guards a gap that template-drift.yml cannot see. That job
   # proves the .mustache artefacts match their org sources; it says
@@ -71,12 +72,13 @@ jobs:
       - name: Check generated output matches the models
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --all
-      # Protocol twin coverage: every protocol header the TypeScript
-      # projection has reached must have its *_protocol.ts twin, and no
-      # model may carry the :ores.ts.protocol.enabled: opt-out. The drift
-      # step above proves a committed file matches its model; it cannot
-      # see a header whose twin was never generated, because both files
-      # are valid artefacts of the same model.
+      # Protocol twin coverage: every protocol header of a component under
+      # test must have its *_protocol.ts twin, and no model may carry the
+      # :ores.ts.protocol.enabled: opt-out. The drift step above proves a
+      # committed file matches its model; it cannot see a header whose twin
+      # was never generated, because both files are valid artefacts of the
+      # same model. The components under test are the shared list in
+      # component_registry.py; every other component is still to do.
       - name: Check every protocol header has a TypeScript twin
         run: |
           python3 projects/ores.codegen/scripts/check_protocol_twin_coverage.py

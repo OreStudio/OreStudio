@@ -7,8 +7,9 @@ instead of its .org model source, or a model changed without running
 
 Two selectors choose what to check:
 
-  --all           check every component in the known-drift-free registry
-                  below; the local compass-pr-raise gate covers this set
+  --all           check every component under test -- the shared list in
+                  component_registry.py; the local compass-pr-raise gate
+                  covers this set
   --component X   check one named component, by catalogue slug
 
 Two modes choose whether it writes, and the difference is the point of
@@ -43,7 +44,7 @@ whose committed tree predates a template receives the newer per-entity
 families as untracked files on regeneration, and git diff cannot see
 untracked files. The in-place check fails when regeneration materializes
 untracked files that were not already in the tree, so a component joins
-the registry only when its regeneration leaves the tree fully clean.
+the shared list only when its regeneration leaves the tree fully clean.
 See the regen-byproduct-hygiene memory in doc/llm/memory/.
 
 Usage:
@@ -67,29 +68,15 @@ from types import SimpleNamespace
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CODEGEN_DIR = REPO_ROOT / "projects" / "ores.codegen"
+SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(CODEGEN_DIR / "src"))
+sys.path.insert(0, str(SCRIPTS_DIR))
 
 from codegen.generate import _generate_single, cmd_regenerate  # noqa: E402
 from codegen.logging_config import configure  # noqa: E402
 from codegen.manifest import discover_models, get_component  # noqa: E402
 from codegen.physical_space import load_graph  # noqa: E402
-
-# Components verified to regenerate byte-identical to their committed
-# tree, with no untracked materialization. --all checks exactly this
-# set, the drift gate the compass-pr-raise skill runs. A component joins only
-# when compass-codegen-fix-drift step 7 verifies its regeneration leaves the
-# tree fully clean.
-KNOWN_DRIFT_FREE = (
-    "analytics-cpp",
-    "refdata",
-    "reporting",
-    "marketdata",
-    "compute-cpp",
-    "iam",
-    "iam-cpp",
-    "synthetic",
-    "shell",
-)
+from component_registry import COMPONENTS_UNDER_TEST  # noqa: E402
 
 TEMPLATES_DIR = CODEGEN_DIR / "library" / "templates"
 
@@ -316,8 +303,8 @@ def main() -> int:
     modes.add_argument(
         "--all",
         action="store_true",
-        help="regenerate every known-drift-free component "
-        f"({', '.join(KNOWN_DRIFT_FREE)})",
+        help="regenerate every component under test "
+        f"({', '.join(COMPONENTS_UNDER_TEST)})",
     )
     modes.add_argument(
         "--component",
@@ -337,7 +324,7 @@ def main() -> int:
 
     configure(verbose=args.verbose)
 
-    components = list(KNOWN_DRIFT_FREE) if args.all else [args.component]
+    components = list(COMPONENTS_UNDER_TEST) if args.all else [args.component]
 
     if args.dry_run:
         return _dry_run(components, args.address, args.verbose)

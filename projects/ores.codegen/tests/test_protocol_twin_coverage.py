@@ -4,13 +4,14 @@ Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_protocol_twin_coverage.py
 
-The check has two rules: every generated protocol header has a TypeScript
-twin, and no model opts the TypeScript protocol facet out. The first rule
-is scoped by committed output, so a component is checked only once its
-first twin lands. These tests drive the check against a throw-away
-repository tree, never the real one: a header with no twin fails, a
-complete twin set passes, an opt-out key fails with its file and line,
-and the scoping rule is shown both ways.
+The check has two rules: every protocol header has a TypeScript twin, and
+no model opts the TypeScript protocol facet out. The first rule covers the
+components the shared list in component_registry.py names, so a to-do
+component is not checked however much TypeScript it has committed. These
+tests drive the check against a throw-away repository tree, never the real
+one: a header with no twin fails, a complete twin set passes, an opt-out
+key fails with its file and line, and the component scoping is shown both
+ways.
 """
 import sys
 from pathlib import Path
@@ -92,6 +93,9 @@ def _point_module_at(monkeypatch, repo: Path) -> None:
     component = Component(name=COMPONENT, modeling_dir=MODEL_DIR)
     monkeypatch.setattr(cptc, "all_components", lambda: [COMPONENT])
     monkeypatch.setattr(cptc, "get_component", lambda name: component)
+    # The fixtures are one to-do component, so the shared list has to name it
+    # or rule 1 skips it and every failure case below passes vacuously.
+    monkeypatch.setattr(cptc, "COMPONENTS_UNDER_TEST", (COMPONENT,))
 
 
 def test_missing_twin_is_reported_and_fails(tmp_path, monkeypatch, capsys):
@@ -157,22 +161,24 @@ def test_component_without_committed_ts_needs_no_twins(tmp_path, monkeypatch,
     assert "intact" in captured.out
 
 
-def test_committed_output_switches_the_component_into_the_check(
+def test_the_shared_list_decides_which_components_are_checked(
         tmp_path, monkeypatch, capsys):
     repo = _make_repo(tmp_path)
     _write(repo / HEADER.format(entity="widget"), "// generated header\n")
-    _point_module_at(monkeypatch, repo)
-
-    # No committed TypeScript output: the header is not covered.
-    assert cptc.main() == 0
-    capsys.readouterr()
-
-    # The first twin lands elsewhere in the same directory: the component
-    # joins the check, and widget's absent twin now fails.
     _write(repo / TS_OUTPUT.format(component="widget", entity="gadget"),
            "export {};\n")
+    _point_module_at(monkeypatch, repo)
+
+    # Committed TypeScript output does not put a component in scope: the
+    # shared list does, and this one names it.
+    assert cptc.main() == 1
+    capsys.readouterr()
+
+    # A component the list does not name is to-do, so its absent twins are
+    # not the gate's business.
+    monkeypatch.setattr(cptc, "COMPONENTS_UNDER_TEST", ())
     rc = cptc.main()
     captured = capsys.readouterr()
 
-    assert rc == 1
-    assert "widget_protocol.hpp" in captured.err
+    assert rc == 0
+    assert "widget_protocol.hpp" not in captured.err

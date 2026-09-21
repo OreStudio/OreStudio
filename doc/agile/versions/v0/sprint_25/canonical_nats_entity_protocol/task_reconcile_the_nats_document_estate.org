@@ -42,6 +42,7 @@ Every document that describes NATS messaging states exactly one responsibility -
 - The error-channel conflict is resolved and the stale binary-era error capture is superseded.
 - projects/modeling/messaging.org is scoped as the subject namespace index and links to the specification instead of standing in for it.
 - Superseded plans are marked historical, not deleted.
+- The backlog captures that asked for pieces of the messaging protocol are re-pointed at the specification, or superseded where it now states the rule they wanted.
 
 * Plan
 

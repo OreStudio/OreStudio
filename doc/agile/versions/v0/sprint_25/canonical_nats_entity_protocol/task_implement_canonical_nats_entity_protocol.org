@@ -63,8 +63,10 @@ entity messages take rather than as a description of any one of them.
   cross-tenant access, and authorisation per verb.
 - It defines the domain-operation escape hatch, so an operation that is not an
   entity message still lives inside one grammar.
-- It absorbs the unowned backlog captures that are fragments of it, and
-  re-points or supersedes each one rather than leaving it to be rediscovered.
+- The backlog captures that asked for pieces of this protocol are named in its
+  notes, so the rules they wanted are no longer held only by the captures.
+  Re-pointing the captures themselves belongs to the document reconciliation
+  task.
 
 * Plan
 

@@ -294,7 +294,12 @@ Three rules make the contract unambiguous.
 - *=offset=, =limit= and =total= are unconditional.* Every list is paged, every
   list reports its total, and no caller has to discover whether this particular
   resource pages. The total is the count *before* the page is applied, so a
-  caller can drive paging to the end without a second operation.
+  caller can drive paging to the end without a second operation. That is what it
+  costs: the count is taken on every list, whether or not the caller wants it,
+  which makes every list two queries rather than one. Uniformity is bought with
+  that and is worth it, because the alternative is a client that cannot know
+  whether the number it holds is the total or the size of the page it happens to
+  have.
 - *Ordering is stated, never implied.* A page of an unordered set is not
   reproducible, so the request names its sort and the service honours it. Where
   a caller asks for no particular order, the order is by key, so that paging is
@@ -540,7 +545,10 @@ The three are distinct on purpose. A create sends =must_not_exist= and fails
 loudly when the key is taken, which is what makes a duplicate create
 detectable. A caller updating a row it read sends =must_match_version= with the
 version it read, and learns that someone else got there first. A caller
-deliberately replacing a row, or republishing it, sends =any=. No integer
+deliberately replacing a row, or republishing it, sends =any=. A revert is a
+write like any other: it sends the fields of the version being restored and
+states the version it believes is current, so it takes =must_match_version= and
+lands as a new version rather than erasing the ones after it. No integer
 doubles as a mode: there is no value of =version= that means "do not check",
 because that is what conflated a create with an overwrite.
 

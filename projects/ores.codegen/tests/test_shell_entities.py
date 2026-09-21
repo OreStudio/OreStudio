@@ -162,12 +162,12 @@ class TestWhatACommandAsksFor:
         add = next(c for c in commands if c["command"] == "add")
         # The key travels inside the write record, so the command must not ask
         # for it twice.
-        assert add["usage"] == 'add <type> <reason> "<commentary>"'
+        assert add["usage"] == "add <type> <reason> <commentary>"
 
     def test_a_delete_is_addressed_by_the_key_and_takes_the_intent(self):
         commands = entity_shell_commands(_entity(operations=ALL_VERBS))
         delete = next(c for c in commands if c["command"] == "delete")
-        assert delete["usage"] == 'delete <type> <reason> "<commentary>" [--version <n>]'
+        assert delete["usage"] == "delete <type> <reason> <commentary> [--version <n>]"
 
     def test_a_version_read_asks_for_the_number(self):
         commands = entity_shell_commands(_entity(operations=ALL_VERBS))
@@ -203,8 +203,8 @@ class TestTheRefusal:
         assert add["unsupported"] == ["last_ip"]
 
     @pytest.mark.parametrize("cpp_type", [
-        "std::string", "bool", "int", "std::uint32_t", "std::uint64_t",
-        "boost::uuids::uuid", "std::chrono::system_clock::time_point",
+        "std::string", "bool", "int", "std::uint16_t", "std::uint32_t",
+        "std::uint64_t", "double", "boost::uuids::uuid",
         "std::vector<std::string>",
     ])
     def test_a_type_a_token_can_fill_is_fillable(self, cpp_type):
@@ -243,3 +243,28 @@ class TestSupply:
         party = next(f for f in add["writes"] if f["name"] == "party_id")
         assert party["is_session_party"] is True
         assert party["is_user"] is False
+
+
+class TestTheTokenSetMatchesTheShell:
+    """A type the projection calls fillable must be one from_token converts.
+
+    The two sets drifted once: the derived requests carry std::uint32_t for a
+    page and a version, and from_token refused every unsigned width, so an
+    entity the projection accepted would not compile.
+    """
+
+    def test_an_integer_width_the_protocol_uses_is_fillable(self):
+        entity = _entity(
+            key=[_key("id")],
+            writes=[_write("display_order", "std::uint32_t")],
+            operations=ALL_VERBS)
+        add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
+        assert add["unsupported"] == []
+
+    def test_a_timestamp_is_not_fillable_because_no_token_form_exists(self):
+        entity = _entity(
+            key=[_key("id")],
+            writes=[_write("last_login", "std::chrono::system_clock::time_point")],
+            operations=ALL_VERBS)
+        add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
+        assert add["unsupported"] == ["last_login"]

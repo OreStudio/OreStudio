@@ -3297,10 +3297,13 @@ _SHELL_TOKEN_TYPES = frozenset({
     "std::string",
     "bool",
     "int",
+    "std::int32_t",
+    "std::int64_t",
+    "std::uint16_t",
     "std::uint32_t",
     "std::uint64_t",
+    "double",
     "boost::uuids::uuid",
-    "std::chrono::system_clock::time_point",
 })
 # The one container form the shell can fill: a comma-separated token.
 _SHELL_LIST_TYPE = "std::vector<std::string>"
@@ -3436,6 +3439,18 @@ def _reject_silent_shell_gap(
 
 
 def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The shell commands an entity's derived operation set yields."""
+    return entity_shell_plan(entity)["commands"]
+
+
+def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
+    """The entity's shell commands, and the facts the unit needs about them.
+
+    A unit emits a helper only when some command needs it and a loop only when
+    a batch verb is present. Mustache cannot ask a list whether any member has
+    a property, so those answers are computed here rather than tested per
+    command.
+    """
     """The shell's view of an entity's derived operation set.
 
     One command per operation the entity derives, so the REPL covers exactly
@@ -3499,6 +3514,12 @@ def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
         _input(field.get("name", ""), field.get("cpp_type", ""))
         for field in entity.get("write_fields") or []
     ]
+    # A batch verb reads its positionals in groups, so each input states the
+    # offset it occupies within its group.
+    for index, item in enumerate(keys):
+        item["index"] = index
+    for index, item in enumerate(writes):
+        item["index"] = index
 
     # verb -> (kind, command). A put is absent because it becomes two commands.
     shapes = {
@@ -3546,6 +3567,44 @@ def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
             "unsupported": sorted(
                 item["name"] for item in _used_inputs(kind) if not item["fillable"]),
         }
+        # The flags the handler declares. Exact rather than uniform, so a
+        # command that takes no page cannot be handed one.
+        value_flags: list[str] = []
+        switches: list[str] = []
+        if command["has_order"]:
+            value_flags += ["offset", "limit", "order"]
+            switches += ["desc"]
+        if kind == "list_by":
+            value_flags += ["scope"]
+        if kind == "version_read" or command["allows_version"]:
+            value_flags += ["version"]
+        if kind == "put_many":
+            value_flags += ["count"]
+        command["flags"] = value_flags
+        command["switches"] = switches
+        # Mustache cannot compare a string, so the shape is also stated as a
+        # flag per shape and the template selects a body by section name.
+        for shape in ("paged", "list_by", "versions", "key_read", "version_read",
+                      "put", "put_many", "delete", "get_many", "delete_many"):
+            command[f"is_{shape}"] = kind == shape
+        # How many positionals the command reads, and whether that count is
+        # fixed. A batch verb reads a whole number of groups, so only a
+        # remainder is an error.
+        if kind in ("paged", "list_by"):
+            command["positional_count"] = 1 if kind == "list_by" else 0
+            command["exact_count"] = True
+        elif kind in ("put", "put_many"):
+            command["positional_count"] = len(writes)
+            command["exact_count"] = kind == "put"
+        elif kind == "delete_many":
+            command["positional_count"] = len(keys)
+            command["exact_count"] = False
+        elif kind == "get_many":
+            command["positional_count"] = len(keys)
+            command["exact_count"] = False
+        else:
+            command["positional_count"] = len(keys)
+            command["exact_count"] = True
         command["usage"] = _entity_shell_usage(command)
         return command
 
@@ -3571,7 +3630,25 @@ def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
         if verb in shapes:
             kind, name = shapes[verb]
             commands.append(_command(operation, kind, name))
-    return commands
+
+    def _any(predicate) -> bool:
+        return any(predicate(item) for command in commands
+                   for item in command["keys"] + command["writes"])
+
+    kinds = {command["kind"] for command in commands}
+    return {
+        "commands": commands,
+        "command_count": len(commands),
+        "has_order": any(command["has_order"] for command in commands),
+        "has_list": _any(lambda item: item["is_list"]),
+        "has_bool": _any(lambda item: item["is_bool"]),
+        "has_minted": _any(lambda item: item["is_minted"]),
+        "has_session_party": _any(lambda item: item["is_session_party"]),
+        "has_batch": bool(kinds & {"get_many", "put_many", "delete_many"}),
+        "has_version": bool(kinds & {"version_read", "put", "delete"}),
+        "any_versioned": any(command["allows_version"] for command in commands),
+        "has_helpers": bool(commands),
+    }
 
 
 def _entity_shell_usage(command: dict[str, Any]) -> str:
@@ -3591,7 +3668,7 @@ def _entity_shell_usage(command: dict[str, Any]) -> str:
     elif kind != "paged":
         parts.extend(f"<{key['name']}>" for key in command["keys"])
     if command["has_intent"]:
-        parts.append("<reason> \"<commentary>\"")
+        parts.append("<reason> <commentary>")
     if kind == "version_read":
         parts.append("--version <n>")
     elif command["allows_version"]:

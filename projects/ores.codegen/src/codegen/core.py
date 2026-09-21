@@ -4886,6 +4886,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
+            entity_shell_plan,
             operations_by_verb,
             protocol_operations,
             write_record_for,
@@ -4931,6 +4932,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             domain_entity[f'{_verb}_operations'] = _verb_ops
+        # The same set as the shell addresses it: one command per operation,
+        # plus the facts a unit needs about the set as a whole.
+        domain_entity['shell'] = entity_shell_plan(domain_entity)
         # Whether this entity's protocol is derived from its own model or
         # owned by an operation model beside it. The derived names are what
         # the service speaks, so an owned protocol must not be assumed:

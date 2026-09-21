@@ -41,7 +41,6 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 #include <ostream>
 #include <string>
 #include <vector>
@@ -55,7 +54,13 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Manages commands related to {{entity_plural_words}}.
+ * @brief Every verb {{entity_plural_words}} answer, as one command each.
+ *
+ * The unit is the entity's own derivation addressed from the REPL, so a verb
+ * the model gains appears as a command without an edit here and a verb it
+ * loses takes its command with it. What each command asks for follows from its
+ * shape: a paged read is addressed by nothing, a write by its write record,
+ * and everything else by the key.
  */
 class {{entity_singular}}_commands {
 private:
@@ -70,58 +75,19 @@ private:
 
 public:
     /**
-     * @brief Register {{entity_singular_words}} related commands.
+     * @brief Register the {{entity_plural_words}} submenu.
      */
     static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+                                  ores::nats::service::nats_client& session);
+{{#shell.commands}}
 
     /**
-     * @brief Process a get {{entity_plural_words}} request.
+     * @brief {{usage}}
      */
-    static void process_get_{{entity_plural}}(std::ostream& out,
-                                              ores::nats::service::nats_client& session,
-                                              pagination_context& pagination);
-
-    /**
-     * @brief Process an add {{entity_singular_words}} request.
-     *
-     * The value arguments arrive as free-form tokens and are parsed in the
-     * body. A per-argument typed handler builds one template instantiation
-     * per argument count, which the Windows clang toolchain cannot mangle
-     * beyond a few dozen arguments.
-     */
-    static void process_add_{{entity_singular}}(std::ostream& out,
-                                               ores::nats::service::nats_client& session,
-                                               const std::vector<std::string>& args);
-
-    /**
-     * @brief Process a delete {{entity_singular_words}} request.
-     */
-    static void process_delete_{{entity_singular}}(std::ostream& out,
-                                                  ores::nats::service::nats_client& session,
-                                                  std::string {{primary_key.column}});
-
-{{^current_state}}
-    /**
-     * @brief Process the {{entity_singular_words}} history request.
-{{^has_audit_group}}
-     *
-     * The verb takes free-form tokens rather than the key alone, because it
-     * also answers --diff and --version.
-{{/has_audit_group}}
-     */
-{{#has_audit_group}}
-    static void process_get_{{entity_singular}}_history(std::ostream& out,
-                                                        ores::nats::service::nats_client& session,
-                                                        std::string {{primary_key.column}});
-{{/has_audit_group}}
-{{^has_audit_group}}
-    static void process_get_{{entity_singular}}_history(
-        std::ostream& out, ores::nats::service::nats_client& session,
-        const std::vector<std::string>& args);
-{{/has_audit_group}}
-{{/current_state}}
+    static void process_{{identifier}}(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<std::string>& args);
+{{/shell.commands}}
 };
 
 }

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
 :ores.ts.web.enabled: true
 :END:

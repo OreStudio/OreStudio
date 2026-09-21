@@ -54,8 +54,10 @@ inline constexpr bool is_optional_v = is_optional<T>::value;
 
 template <typename T>
 inline constexpr bool has_token_conversion_v =
-    std::is_same_v<T, int> || std::is_same_v<T, std::int64_t> || std::is_same_v<T, double> ||
-    std::is_same_v<T, boost::uuids::uuid>;
+    std::is_same_v<T, int> || std::is_same_v<T, std::int32_t> ||
+    std::is_same_v<T, std::int64_t> || std::is_same_v<T, std::uint16_t> ||
+    std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t> ||
+    std::is_same_v<T, double> || std::is_same_v<T, boost::uuids::uuid>;
 
 template <typename T>
 inline constexpr bool always_false_v = false;

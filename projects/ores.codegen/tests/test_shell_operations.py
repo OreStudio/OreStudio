@@ -151,8 +151,7 @@ class TestHowFieldsArrive:
         "int",
         "std::uint32_t",
         "std::uint64_t",
-        "boost::uuids::uuid",
-        "std::chrono::system_clock::time_point",
+        "boost::uuids::uuid", "std::uint16_t", "double",
         "std::vector<std::string>",
     ])
     def test_a_type_a_token_can_fill_is_fillable(self, cpp_type):

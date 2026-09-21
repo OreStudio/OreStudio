@@ -17,28 +17,42 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "app/commands/iam/account_contact_information_commands.cpp"
     "app/commands/iam/account_history_operations_commands.cpp"
     "app/commands/iam/account_operations_commands.cpp"
+    "app/commands/iam/account_type_commands.cpp"
     "app/commands/iam/authorization_operations_commands.cpp"
     "app/commands/iam/bootstrap_operations_commands.cpp"
     "app/commands/iam/login_operations_commands.cpp"
+    "app/commands/iam/permission_commands.cpp"
     "app/commands/iam/reset_operations_commands.cpp"
+    "app/commands/iam/role_commands.cpp"
     "app/commands/iam/session_operations_commands.cpp"
     "app/commands/iam/session_samples_operations_commands.cpp"
     "app/commands/iam/signup_operations_commands.cpp"
+    "app/commands/iam/tenant_commands.cpp"
     "app/commands/iam/tenant_provisioning_operations_commands.cpp"
+    "app/commands/iam/tenant_status_commands.cpp"
+    "app/commands/iam/tenant_type_commands.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_contact_information_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_history_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/authorization_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/login_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/permission_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/reset_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/role_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/session_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/signup_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_status_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_type_commands.hpp"
 )

@@ -28,6 +28,13 @@
 #include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/reset_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/account_contact_information_commands.hpp"
+#include "ores.shell/app/commands/iam/account_type_commands.hpp"
+#include "ores.shell/app/commands/iam/permission_commands.hpp"
+#include "ores.shell/app/commands/iam/role_commands.hpp"
+#include "ores.shell/app/commands/iam/tenant_commands.hpp"
+#include "ores.shell/app/commands/iam/tenant_status_commands.hpp"
+#include "ores.shell/app/commands/iam/tenant_type_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -39,6 +46,8 @@ void iam_commands::register_commands(cli::Menu& root_menu,
                                      pagination_context& /*pagination*/) {
     BOOST_LOG_SEV(lg(), debug) << "Registering IAM command surface.";
 
+    // The declared operations first, so an entity's own verbs are registered
+    // last and a name the two share resolves to the entity's.
     bootstrap_operations_commands::register_commands(root_menu, session);
     login_operations_commands::register_commands(root_menu, session);
     signup_operations_commands::register_commands(root_menu, session);
@@ -49,6 +58,13 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     session_samples_operations_commands::register_commands(root_menu, session);
     reset_operations_commands::register_commands(root_menu, session);
     tenant_provisioning_operations_commands::register_commands(root_menu, session);
+    account_contact_information_commands::register_commands(root_menu, session);
+    account_type_commands::register_commands(root_menu, session);
+    permission_commands::register_commands(root_menu, session);
+    role_commands::register_commands(root_menu, session);
+    tenant_commands::register_commands(root_menu, session);
+    tenant_status_commands::register_commands(root_menu, session);
+    tenant_type_commands::register_commands(root_menu, session);
 }
 
 }

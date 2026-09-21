@@ -45,7 +45,7 @@
 #include "ores.iam.core/messaging/account_type_registrar.hpp"
 #include "ores.iam.core/messaging/login_info_registrar.hpp"
 #include "ores.iam.core/messaging/permission_registrar.hpp"
-#include "ores.iam.core/messaging/session_handler.hpp"
+#include "ores.iam.core/messaging/session_operations_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
@@ -242,7 +242,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Sessions ---
-    auto sh = std::make_shared<session_handler>(nats, ctx, signer);
+    auto sh = std::make_shared<session_operations_handler>(nats, ctx, signer);
     subs.push_back(nats.queue_subscribe(
         list_sessions_request::nats_subject, qg, [sh](ores::nats::message msg) {
             sh->list(std::move(msg));

@@ -106,24 +106,36 @@ The order the work has to happen in, because each step gates the next:
 2. The rest of the templates. The handler, service and registrar templates
    branch on the verb set, so they move with it.
 
-   *Step 2 is deeper than that sentence.* The messages carry three things the
-   internal layers have no concept of, so this is not a rename:
+   *The templates are the product.* The pilot exists to make codegen emit the
+   canonical protocol; rolling it out to the other components is a later,
+   mechanical pass. So the template rewrite is unconditional and deletes the
+   branches rather than satisfying them: ={{#read_for_cache}}=,
+   ={{#has_as_of_lookup}}=, ={{#has_batch_save}}=, ={{#has_parent_id}}=,
+   ={{#extra_list_requests}}= as a separate message family, =count_by_*=,
+   =replace_by_*= and the =<junction>_view= payload all go, along with the
+   message names and subjects they emit. A model that still declares one of
+   those features loses it when its component is converted, and the model is
+   what gets fixed, not the template. Nothing is kept "for now" and no
+   conditional exists to keep two protocols alive at once.
+
+   What the rewrite has to carry is the three things the messages state and the
+   internal layers have no concept of today:
 
    - *A precondition.* The repository writes with
      =write(context, const domain&)= and removes with =remove(context, key)=,
      and neither takes an expected version. So =must_match_version= cannot be
-     honoured and =must_not_exist= cannot be told from an overwrite. Honouring
-     it needs a conditional write and a conditional remove, and the losing
-     writer has to be reported as =conflict= rather than thrown as an
-     exception.
+     honoured and =must_not_exist= cannot be told from an overwrite. The
+     repository gains a conditional write and a conditional remove, and the
+     losing writer becomes a =conflict= outcome rather than an exception. This
+     is the root of the chain and has to land first.
    - *Change intent.* The audit fields come from the domain object and the
      authenticated context through =stamp()=. Intent has to reach the write
      path. Partly there already: several entities carry
      =change_reason_code=/=change_commentary= columns, which are exactly the
      fields the write record strips.
-   - *A result envelope.* Every response now carries one, so the handler needs
-     a mapping from what the service decided to an outcome, and the service has
-     to report =missing=, =conflict= and =denied= rather than throw for them.
+   - *A result envelope.* Every response now carries one, so the service
+     returns an outcome instead of throwing for =missing=, =conflict= and
+     =denied=, and the handler fills a =result=.
 
    So the order is repository, then service, then handler, then registrar: the
    repository gains conditional write and remove; the service gains an
@@ -133,12 +145,12 @@ The order the work has to happen in, because each step gates the next:
    (=[GENERATED]= markers in =ores.iam/core/=), so all of this is template work
    plus regeneration, with no hand-written IAM service to keep in step.
 
-   Two pieces are off the critical path. =cpp_nats_event_cache.hpp= renders for
-   a =read_for_cache= entity, and no IAM entity declares one, so it does not
-   block the build. The =** Presentation= protocol class names
-   (=get_request_class=, =save_request_class=, =history_request_class=) are read
-   by =doc_entity_org.org.mustache= alone, so the IAM model drawers need them
-   updated for the documentation facet, not for the compiler.
+   Two pieces are off the critical path for the IAM pilot only, because no IAM
+   entity reaches them: =cpp_nats_event_cache.hpp= renders for a
+   =read_for_cache= entity and IAM declares none, and the =** Presentation=
+   protocol class names (=get_request_class=, =save_request_class=,
+   =history_request_class=) are read by =doc_entity_org.org.mustache= alone.
+   They are not exempt from the rewrite; they simply do not block the build.
 3. Regenerate IAM and compile. The generated C++ has to build before anything
    downstream is worth attempting.
 4. The shell. Enable =ores.cpp.shell-command= on the IAM models and let the

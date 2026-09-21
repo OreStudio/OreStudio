@@ -21,7 +21,6 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/account_parties_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/bundles_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
@@ -111,7 +110,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     synthetic_commands::register_commands(*root, session_);
     synthetic_entity_commands::register_commands(*root, session_, pagination_);
     parties_commands::register_commands(*root, session_);
-    account_parties_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);
 
@@ -145,7 +143,7 @@ void repl::cleanup() {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
         try {
             std::ignore = session_.authenticated_request(
-                "iam.v1.auth.logout",
+                iam::messaging::logout_request::nats_subject,
                 ores::nats::default_wire_codec().encode(iam::messaging::logout_request{}),
                 std::chrono::seconds(30));
             BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";

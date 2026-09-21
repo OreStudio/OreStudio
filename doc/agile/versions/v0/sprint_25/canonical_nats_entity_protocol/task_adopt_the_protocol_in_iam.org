@@ -28,9 +28,9 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Steps 0 and 1 are DONE: the protocol has one source of truth and the derivation states the specification. The handler, service, registrar, event-cache, shell-command and entity-doc templates still branch on the verbs being replaced. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 2: move the remaining templates onto the verb set. Step 3: regenerate IAM and compile. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -187,8 +187,19 @@ Then the operations, in this order, paired request before response:
 | =put_many_<plural>_request= | =.put_many= | =changes=, =intent= | =result=, =<plural_short>= |
 | =delete_<singular>_request= | =.delete= | =removal=, =intent= | =result= |
 | =delete_many_<plural>_request= | =.delete_many= | =removals=, =intent= | =result= |
-| =list_<plural>_versions_request= | =versions_subject(c, p, "list")= | =key=, =offset=, =limit=, =order=, =filter= | =result=, =versions: vector<domain>=, =total= |
+| =list_<singular>_versions_request= | =versions_subject(c, p, "list")= | =key=, =offset=, =limit=, =order=, =filter= | =result=, =versions: vector<domain>=, =total= |
 | =get_<singular>_version_request= | =versions_subject(c, p, "get")= | =key: <singular>_version_key= | =result=, =version: domain= |
+
+The versions list takes the resource in the *singular* because the
+specification writes it that way at its own code block, and because the read is
+scoped to one entity rather than to a set of them: =list_tenant_versions=, not
+=list_tenants_versions=. The subject keeps the plural resource segment,
+=iam.v1.tenants_versions.list=, because that names the collection.
+
+The scoped read carries =scope: ores::utility::domain::scope=, defaulting to
+=scope::direct=. =scope= is a shared record beside =order=, so it has a
+TypeScript twin and a utility-domain map entry; unlike =outcome= it is a
+request field of a generated message, so it needs one.
 
 A version is the domain row itself: the domain type already carries the version
 number and the audit provenance the service derived, so no separate version
@@ -225,6 +236,55 @@ not there.
 =std::optional=, =std::vector=, the fixed-width integers and =boost::uuids::uuid=
 all map correctly already -- probed and confirmed -- so this is the only
 projection gap on the codegen path.
+
+**Steps 0 and 1 are done, and four defects only the real models could show.**
+
+The hand-built entity dicts the tests used were shaped the way the code
+expected, not the way the loader produces a model. Running the derivation
+against =ores.iam.tenant_type= and =ores.iam.account_party= found:
+
+- An enriched =* Columns= entry is named =name=, not =column=. The write record
+  rendered =: string;= -- members with no name at all. =_column_name= now reads
+  =column=, =field= and =name=.
+- A key column's type is stated as =cpp_type=, not as an =is_uuid= flag, so a
+  uuid key was typed =std::string=. =_key_cpp_type= reads the model's own type
+  and keeps the flag only as the fallback a hand-built dict needs.
+- The loader partitions a model's fields into the primary key, the natural keys
+  and the columns. A write record built from =columns= alone left a create
+  unable to state its key: =tenant_type='s key is =type= and =tenant='s =code=
+  is a natural key, and neither is in =columns=. =write_record_columns= reads
+  all three.
+- A junction's =party_id= is half its key, not the acting party, so the
+  server-owned filter stripped it and the write could not say what it linked.
+  A key column is never stripped, whatever it is called.
+
+=boost::asio::ip::address= was a fifth, found by the drift check rather than by
+a test: it is in =_TS_DOMAIN_STRING_TYPES= for domain members but was not in
+=_TS_SCALARS=, so a protocol message carrying one had no TypeScript projection.
+=login_info= carries one, which is how the gap surfaced.
+
+**The =_view= payload is replaced by =get_many=, not lost.** A junction's
+by-side read used to return =<junction>_view=: the link row plus the joined
+row's display code. The specification says a scoped read replies with a page of
+entities, and =get_many= exists so a screen resolves the referenced rows it
+displays in one round trip. So the enrichment moves to the client and the
+generated module loses a type nothing else used. =replace_by_*= is not replaced
+by anything: the specification has no whole-set replacement verb, and a caller
+that means to replace a set sends a batch.
+
+**The dead ={{#entity}}= block is gone.** =cpp_protocol.hpp.mustache= had three
+protocol blocks. Two are live -- =domain_entity= and =junction= -- and the
+third keyed on =entity=, which only a schema model reaches. No =ores.codegen.schema=
+model exists in the tree, so it rendered nothing while being the last place the
+old verbs survived in the template. Removing it is what makes "one source of
+truth" true rather than nearly true.
+
+**The BFF route projection now states the single-record read.** It withheld
+=subjects_get= because no domain entity derived a =get=; the specification
+derives one for every entity, so =has_get= is true rather than permanently
+false. The delete and versions routes stay gated on the key being the natural
+key, because the path segment carries one value and a key record may name
+several.
 
 * Test Scenarios
 

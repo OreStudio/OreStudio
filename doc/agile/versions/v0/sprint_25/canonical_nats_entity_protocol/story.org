@@ -65,6 +65,12 @@ evidence for each is in the specification task's notes.
   paged read's message is renamed from =get_<plural>_request=
   to =list_<plural>_request=; the current name contradicts its own =.list=
   subject.
+- *Single and batch are paired, element-wise in their claims and set-wise in
+  their atomicity.* Every operation on one entity has a set form and a resource
+  declares both or neither, so no entity is batch-less. Each element states its
+  own precondition, because a batch of updates is a set of rows each at its own
+  version and one version claim could not describe it; the batch then lands or
+  fails as one transaction. Batch and page bounds are part of the protocol.
 - *No verb is derived that the specification does not name.* Whether an entity
   has a write verb is what the model declares, not something inferred from a
   version column or a repository flag. That inference is what leaves 22

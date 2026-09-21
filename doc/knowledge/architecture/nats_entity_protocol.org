@@ -124,11 +124,16 @@ support any subset, but it may not invent a verb outside this set.
 | =delete= | =.delete= | Remove one entity, named by its full key. |
 | =delete_many= | =.delete_many= | Remove a set of entities as one transaction. |
 
-Three consequences of the set are deliberate.
+Four consequences of the set are deliberate.
 
-- *Save is split into =put= and =put_many=.* One write is one entity; several
-  writes are one transaction. A resource does not have to choose between them,
-  and it does not have to be able to write batches to be writable.
+- *Single and batch are paired.* Every operation on one entity has a set form,
+  and a resource declares both or neither: =get= with =get_many=, =put= with
+  =put_many=, =delete= with =delete_many=. The single form is the batch of one,
+  so there is no per-model batching flag and no entity that can be written one
+  at a time but not as a set.
+- *A batch is one transaction.* Several writes land together or not at all.
+  Atomicity is a property of the set; the precondition is a property of the
+  element (see *Batching*).
 - *There is no =count= or =count_by_<relation>=.* Counting is a property of a
   list rather than an operation on an entity, and every list reports its total
   (see *Reads*).
@@ -287,23 +292,35 @@ a screen never has to read a page to find a row in it.
 
 *** get_many
 
-=get_many= returns the entities named by a set of keys.
+=get_many= returns the entities named by a set of keys, and answers in the
+shape of its question.
 
 #+begin_src
 get_many_<resources>_request {
     keys : list of <resource>_key
 }
 get_many_<resources>_response {
-    result : result
-    <resources> : list of <resource>
+    result  : result
+    entries : list of <resource>_lookup
+}
+<resource>_lookup {
+    key        : <resource>_key
+    <resource> : optional of <resource>
 }
 #+end_src
 
-The reply contains the entities that exist. A key that does not exist is not an
-error, because asking for a set is not a claim that every member of it exists;
-the outcome is =ok= and the reply is short. A caller that needs to know which
-keys were absent compares the reply with its request. A set is bounded, so that
-one request cannot ask for an unbounded reply.
+The reply carries one entry per requested key, in the order the keys were
+asked for, so the correspondence between a request and its reply is positional
+and a caller never has to diff the two to find out what it did not get.
+
+An entity that does not exist is an entry whose entity is empty, not a missing
+entry and not a failure: asking for a set is not a claim that every member of
+it exists, so the outcome stays =ok= and the caller reads absence from the
+entry. Keys may repeat, and each occurrence gets its own entry, because a
+positional reply is only unambiguous if it answers the question that was
+asked.
+
+A set is bounded, so that one request cannot ask for an unbounded reply.
 
 *** history
 
@@ -459,40 +476,108 @@ because that is what conflated a create with an overwrite.
 
 A write with no precondition is =invalid=. Stating the belief is not optional.
 
-*** Batched writes
+A precondition belongs to *one change*, never to a request that carries several.
+A batch of updates is a set of rows each at its own version, so a single version
+claim could not describe it, and a batch-level claim would either weaken the
+check to =any= or reject a batch that is entirely valid.
 
-=put_many= and =delete_many= apply one operation to a set of entities.
+*** Batching
+
+Batching is how a caller changes a set of entities in one operation. It is not
+a separate family of messages: a batch is the same element repeated, and the
+single-entity verb is the batch of one.
 
 #+begin_src
-put_many_<resources>_request {
-    <resources> : list of <resource>_write
+<resource>_change {
+    write        : <resource>_write
     precondition : precondition
-    intent       : change_intent
+}
+put_<resource>_request {
+    change : <resource>_change
+    intent : change_intent
+}
+put_<resource>_response {
+    result     : result
+    <resource> : <resource>
+}
+put_many_<resources>_request {
+    changes : list of <resource>_change
+    intent  : change_intent
 }
 put_many_<resources>_response {
-    result : result
+    result      : result
     <resources> : list of <resource>
 }
 #+end_src
 
-A batch is one transaction. Either every entity in it is written, or none of
-them is; a partial application is =failed=, and a caller that receives it may
-assume nothing was written. A batch is bounded, and the bound is part of the
-message's contract rather than a runtime surprise.
+A write answers with the entity as it now stands, so that the caller learns the
+version and the audit provenance the service assigned without a second read.
+A batch answers with the entities in the order the changes were sent.
 
-A single precondition governs the batch, so a batch is not a way to smuggle
-per-entity preconditions past the check.
+Four rules make batching coherent across every entity.
+
+- *Every change states its own precondition.* The element is where the belief
+  lives, so a batch may create one entity and update another, and each is
+  checked against what the caller actually believes about it. A verb's single
+  form and its batch form share one element type, so they cannot drift apart in
+  what they permit.
+- *The batch is atomic; the elements are independent in what they claim.* The
+  set lands together or not at all. A precondition that fails anywhere makes
+  the whole operation =conflict=, and nothing is written -- which is what makes
+  a batch safe to retry, because a half-applied batch is not a state a caller
+  has to reason about.
+- *Intent is stated once for the set.* A batch is one act by one operator, so
+  the reason for it is one reason. Per-element intent would let one operation
+  tell several different stories about why it happened.
+- *A batch has a bound.* A batch carries at most =1000= elements and a page
+  carries at most =1000= entities, with a list's =limit= defaulting to =100=.
+  The bounds are part of the protocol rather than a runtime surprise, so a
+  caller can size its chunks and a generated message can enforce them. A
+  request that exceeds a bound is =invalid=.
+
+A batch is not a way to escape authorisation. Every element is authorised as if
+it had been sent alone, and the operation is =denied= if any element is not
+permitted, so a batch cannot reach a row its author would not have reached
+singly.
 
 *** delete and delete_many
 
-A delete names the key of what it removes, and states the same kind of
-precondition as a write: removing a row a caller has not read is a claim that
+A delete names the key of what it removes and carries its own precondition, on
+the same terms as a write: removing a row a caller has not read is a claim that
 it wants to remove whatever is there. The reason the deletion is recorded
 travels as change intent.
 
-=delete= removes one entity; =delete_many= removes a set in one transaction.
-Neither reports per-entity success: the whole operation either happened or it
-did not.
+#+begin_src
+<resource>_removal {
+    key          : <resource>_key
+    precondition : precondition
+}
+delete_<resource>_request {
+    removal : <resource>_removal
+    intent  : change_intent
+}
+delete_many_<resources>_request {
+    removals : list of <resource>_removal
+    intent   : change_intent
+}
+#+end_src
+
+The element carries the precondition for the reason a write's element does: a
+batch of deletions is a set of rows at different versions, and a caller
+removing several rows it read is claiming something about each one. Both
+responses carry a result and nothing else, because a deletion has no data to
+return.
+
+A removal states =any= or =must_match_version=; =must_not_exist= describes a
+create and has no meaning for a removal, so a removal that states it is
+=invalid=. A row that does not exist is =missing= and a row that exists at
+another version is =conflict=, so a caller can tell "someone else removed it"
+from "someone else changed it". Under =any= both are =ok=: a removal with
+nothing left to remove has still achieved what it asked for, which is what
+makes a retried delete safe.
+
+The batch is one transaction, and it does not report per-entity success: the
+whole operation either happened or it did not.
 
 ** Events
 
@@ -678,9 +763,10 @@ A conforming message has a subject with four segments whose component owns it
 and whose last segment is in the verb set; a key that carries every identifying
 column with its own type; a response that carries a =result= and no data
 outside =ok=; a list whose =offset=, =limit= and =total= are unconditional; a
-write record with no server-owned field and no tenancy; a stated precondition
-on every write; and a name that follows =<verb>_<resource>_request= and
-=<-_response=.
+write record with no server-owned field and no tenancy; a single-entity verb
+that comes with its batch form; a batch whose every element carries its own
+precondition; a batch or page within its bound; and a name that follows
+=<verb>_<resource>_request= and =<verb>_<resource>_response=.
 
 Conformance is enforced for the components that have adopted this
 specification. A component adopts it whole -- there is no partial conformance,

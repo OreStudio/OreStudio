@@ -8,7 +8,7 @@
 #+filetags: :database_namespace_self_reference:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/database-namespace-self-reference
-#+pr:
+#+pr: 2119
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2119][#2119]] | [database] Remove self-referential namespace using-directive |
 
 * Review
 

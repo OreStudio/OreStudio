@@ -25,7 +25,6 @@ organisation itself.
 :parent_id_column:      parent_party_id
 :hierarchy_name_field:  full_name
 :generate_touch_function: true
-:read_for_cache:        true
 :profile:   self-referencing-hierarchy
 :END:
 
@@ -399,13 +398,8 @@ Everything below is consumed by the C++ codegen pipeline only.
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:has_batch_remove:            true
 :service_find_by_uuid:        true
 :service_find_by_code_column: short_code
-:service_pagination:          true
-:read_for_cache:              true
-:cached_by:                   iam
-:cache_aux_type:              children_map
 :END:
 
 ** Repository
@@ -630,8 +624,7 @@ generic facets, in the top-level =* Messages= section: =composite_as_of=
 identifiers and contact information as they stood during that same
 version's window — see the "Temporal composite entity versioning"
 architecture doc). The header and its TypeScript twin both render it from
-there. The generic =:read_for_cache: true= facet (see Flags) covers the bulk
-cache-warming read =read_parties_for_cache=.
+there.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
 #include "ores.refdata.api/domain/party_contact_information.hpp"

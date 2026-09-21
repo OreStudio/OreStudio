@@ -120,7 +120,6 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository

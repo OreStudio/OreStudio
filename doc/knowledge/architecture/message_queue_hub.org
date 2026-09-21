@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 4682A7D5-04FC-494B-BD7C-6816500EB3C9
+:END:
+#+title: Message Queue
+#+description: Structure note for the messaging cluster: the bus, where a subject may live, what a message must look like, what a write claims, and how a service binds to it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:nats:messaging:structure_note:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+* Summary
+
+Two mistakes account for most of the damage in this cluster, and they sit at
+opposite ends of a message. The first is treating a subject as a string rather
+than an address: a subject in the wrong namespace, or one two components both
+believe they own, is answered by a service that was never meant to answer it,
+and request/reply reports nothing unusual when it happens. The second is
+treating the payload as the contract: identity, tenancy and provenance are
+established by the connection and the token it carries, so a message that
+restates them is not more explicit, it is forgeable.
+
+Read the cluster as: what the bus gives you, where a subject may live, what a
+message must look like, and only then how a service binds to it. The binding
+comes last because it is the part that looks like the work and is mostly
+mechanical once the shape is settled.
+
+* Reading order
+
+** What the bus is
+
+[[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — start here. The
+substrate: subjects and wildcards, pub/sub against request/reply, queue groups,
+and streams. Every name below is a NATS name, and the patterns below are ones
+this substrate already provides.
+
+[[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the library that wraps
+it: what a call site looks like, the shared configuration knobs, and the
+request/reply helpers. Read second, because it is the concrete form the
+substrate takes in this codebase.
+
+** Where a subject may live
+
+[[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging
+Reference]] — the namespace map: which component owns which subjects, and the
+rule that no subject is ownerless. Read this before writing a subject, because
+a subject in the wrong namespace is served by the wrong service and nothing
+reports it.
+
+** What a message must look like
+
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol
+Specification]] — the centre of the cluster. The subject grammar, the eight
+verbs, the request and response envelopes, the write model that keeps
+server-owned fields off the wire, the error model, the event contract, and the
+security rules. Read it before writing any message; it is the page the rest of
+the cluster defers to.
+
+[[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the seam the
+specification assumes rather than restates: the envelope against the payload,
+and the process-wide encoding choice. Read straight after, because it is what
+says which bytes are the message and which are not.
+
+** How a payload may vary
+
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] —
+one subject per concrete type, and why a variant is never carried as an untyped
+blob. Read when a message has to carry more than one shape, which is exactly
+when a shortcut is tempting.
+
+** What a write claims, and what the past means
+
+[[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency
+Versioning]] — what the version on a write actually asserts, who owns it, and
+why an integer must not double as a mode. Read before implementing a write
+path; the failure it prevents is a silent overwrite.
+
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] —
+presenting one version against its predecessor. Read after the version page,
+because it presumes the version is the database's to assign and not the
+caller's to claim.
+
+** How a service binds to the bus
+
+[[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the layers,
+where the registrar sits, and the error contract, with the stand-up checklist.
+Read when you are building or repairing a service rather than a message.
+
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — how
+subjects become handlers, one entity at a time. Read straight after the anatomy
+page: it is the mechanism that page names.
+
+[[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when a
+subject becomes callable, and the ordering that follows for anything that calls
+back into its own service. Read last of the three, because it only bites once
+subscriptions exist.
+
+** State kept from the bus
+
+[[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache
+live?]] — the placement of a cache fed by events rather than by reads. Read when
+a consumer keeps state instead of answering requests, which is a different
+problem from every page above it.
+
+** Alongside, when the question is running it
+# aside
+
+[[id:18D8CB4F-E926-49E8-83C3-7C8418861B33][NATS certificates]] — generation,
+TLS layout, and container deployment. Not part of the message story; reach for
+it when the question is securing or deploying the bus rather than speaking on
+it.
+
+* What this cluster does not cover
+
+[[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] is a separate
+cluster with a structure note of its own. Service-to-service authentication and
+impersonation travel in message headers, so the headers are named here, but the
+question of who an actor is and where each layer enforces it belongs there.
+
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] owns the
+schema, and with it the database half of the eventing relay — the notification
+that becomes a published event. This cluster starts on the bus side of that
+seam.
+
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] is a
+domain cluster whose interface happens to be this protocol. Read the protocol
+here and what market data does with it there.
+
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] supplies the
+criteria a message's shape is reviewed against. It judges the shape; it does not
+define it.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is, and why its order is authored rather than computed.

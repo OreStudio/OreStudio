@@ -39,6 +39,7 @@ one, start there rather than here.
 | [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] | Who an actor is, and where each layer enforces it |
 | [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] | The methodology the code generator implements |
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
+| [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 
 Every structure note carries the =structure_note= tag, so listing that
 tag returns the complete set.
@@ -91,6 +92,15 @@ How the codebase is put together.
 | [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |
 | [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] | The recurring per-component cleanliness check, and the conventions it enforces |
 | [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake Setup]] | The preset menu, output layout, and the conventions every component build follows |
+
+* Infrastructure
+
+The shared substrate every component builds on rather than a component of
+its own.
+
+| Entry point | What it covers |
+|-------------+----------------|
+| [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | The bus, the subject namespace, the message contract, and how a service binds to it |
 
 * Tooling
 

@@ -26,11 +26,11 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | The shell surface is proved against the running fleet. The whole tree compiles; the fleet is up; 550 codegen tests pass; the component-drift, model-drift, twin-coverage, handler-permission and populate-reference checks are clean; and every one of the 124 generated IAM shell commands has a recipe, of which 123 were run and all 123 answered. The recipe set is now generated rather than hand-written: one literate document per model, one script per command. One command, `reset reset-system`, is deliberately not replayed, and the model declares it destructive. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open PR 1: this conversion plus the shell verification, with `ores.web` as PR 2. The shell recipe inventory is generated and gated now, so the facet is complete for IAM; the next move is to roll it out to the next component once IAM has merged. |
+| Next         | Nothing. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -1279,3 +1279,31 @@ recipes, because a recipe here is titled as the question it answers. It is now
 |   |                 |      |          |       |
 
 * Result
+
+The canonical protocol is adopted in =ores.iam=, and the shell surface it
+generates is proved against the running fleet.
+
+Twenty-one protocol headers, each with its TypeScript twin; twenty generated
+shell units covering every derived verb of every IAM entity, the =account_party=
+junction included; and twenty literate recipe documents exporting one script per
+command, 124 in all, with an inventory that lists every one of them and a gate
+that fails if it stops doing so.
+
+Every raw IAM subject outside a protocol header now references a generated
+constant, with one exception that cannot be fixed from inside IAM: =ores.nats=
+fetches the JWKS signing key from a literal, because it links =ores.logging= and
+=ores.utility= alone and referencing IAM's constant would invert the layering.
+The aggregate-constants backlog story ([[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject
+constants per component]]) has to solve that with a neutral owner.
+
+Verified: the whole tree compiles; the fleet is up and serving; the codegen test
+suite passes; component drift, model drift, protocol twin coverage, handler
+permissions and populate references are clean; and of the 124 generated
+commands, 123 were run against the live fleet and all 123 answered.
+
+Two things this task leaves behind that it did not start with. The recipe set is
+generated from the models rather than hand-written, because a hand-written set
+cannot stay true across a thousand commands. And =reset reset-system= is declared
+destructive in its own model, because an unattended replay of the library ran it
+and took the environment's tenants with it: the shape of a command says nothing
+about whether it is safe to replay.

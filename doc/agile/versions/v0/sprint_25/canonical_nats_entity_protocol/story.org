@@ -23,9 +23,9 @@ One target-state specification defines every common, entity-related message a co
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Approach agreed and recorded as decisions; no task started. |
+| Now           | The specification is written and =ores.iam= is converted to it, with the generated shell surface proved against the running fleet. What remains is the reconciliation of the NATS document estate, the conformance gate, and the =ores.web= half of the IAM verification. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the specification, then reconcile the document estate. |
+| Next          | Open the conversion PR, then verify every IAM entity through =ores.web=. |
 | Last touched  | 2026-09-21                               |
 
 * Acceptance
@@ -44,9 +44,9 @@ One target-state specification defines every common, entity-related message a co
 | [[id:07056F20-C09B-4F6F-B550-C52E99A7A2D9][Scaffold story: Define and adopt the canonical NATS entity protocol]] | DONE | 2026-09-21 | 2026-09-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:C13A0569-B4F2-46FC-990E-4746A78B90B5][Write the NATS entity protocol specification]] | DONE | 2026-09-21 | 2026-09-21 | Author the target-state specification for common entity messages, and absorb the unowned backlog captures that are fragments of it. |
 | [[id:4620D5A7-61E1-4907-A8F4-B5C1396AC49D][Reconcile every NATS document to one responsibility]] | BACKLOG | | | Around thirty documents describe ORE Studio's NATS messaging, and they disagree: three competing history subjects, two event subject prefixes, three different claims about the payload format, and two unreconciled error channels. This task gives every one of them exactly one responsibility and resolves the conflicts. |
-| [[id:D9A4776C-AB42-4461-8F2F-AD077C20716E][Adopt the canonical protocol in ores.iam]] | STARTED | 2026-09-21 | | The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes. |
+| [[id:D9A4776C-AB42-4461-8F2F-AD077C20716E][Adopt the canonical protocol in ores.iam]] | DONE | 2026-09-21 | 2026-09-21 | The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes. The shell surface is proved against the running fleet, and the recipes that exercise it are generated. |
 | [[id:3663F420-C591-4E77-80CD-E68726522C32][Enforce the protocol with a conformance gate]] | BACKLOG | | | A specification without a gate drifts, which is exactly what the protocol twin coverage check proved when its written rule and its implementation disagreed for a whole component. This task lands the check that keeps generated messages honest. |
-| [[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]] | BACKLOG | | | The second PR of the IAM pilot. Exercise every IAM entity through the shell and the UI against the canonical protocol, and fix what the sweep finds: a protocol change is only as good as the proof that every operation still works. |
+| [[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]] | BACKLOG | | | The second PR of the IAM pilot. The shell half landed with the conversion: 124 generated commands, 123 of them run against the live fleet. What remains is the UI: exercise every IAM entity through =ores.web= and fix what the sweep finds. |
 
 * Decisions
 

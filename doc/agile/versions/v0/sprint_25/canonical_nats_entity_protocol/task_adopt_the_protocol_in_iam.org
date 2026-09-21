@@ -72,12 +72,25 @@ The order the work has to happen in, because each step gates the next:
    entity-level envelope around it: the include guard, the includes, the
    namespace and the =paste:= marker are entity concerns, not message ones.
 
-   The checkpoint is that regenerating IAM leaves the C++ header
-   *byte-identical*. If it does not, the derivation is missing something the
-   hand-written block carries, and closing that gap is the first real work.
-   Only once this holds does one derivation drive both twins, which is what the
-   specification assumes and what makes the rest of the change a single edit
-   rather than two.
+   The byte-identical checkpoint first proposed here is the wrong target. The
+   hand-written block carries constructs the generic renderer cannot emit and
+   the specification deletes anyway: the static =from(...)= constructors on the
+   save request, the ={{default_limit}}= on extra list requests, and the
+   per-primary-key vector naming for delete. Holding those still protects only
+   shapes that are about to be replaced. The verification is the codegen tests
+   plus reading the generated header back, not a diff against the old bytes.
+
+   *Where the shared records live.* =result=, =precondition= and
+   =change_intent= are component-independent, and they cannot go in
+   =ores.service=: a generated =*.api= protocol header may not depend on the
+   service layer, and no =*.api= does today. They belong in
+   =ores.utility::domain=, beside =hierarchy_node=, the existing precedent for
+   a wire type that generated protocol headers include.
+   =projects/ores.utility/include/ores.utility/domain/protocol.hpp= is written
+   and syntax-checked under =g++ -std=c++23=.
+
+   What remains of this step is the mechanical part: point the =domain_entity=
+   block at ={{#messages}}= and let the derivation carry the rest.
 1. The derivation. =org_loader.entity_protocol_messages= and
    =junction_protocol_messages= emit the eight verbs, the specification's
    message names and subjects, the result envelope, the write record with no

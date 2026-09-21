@@ -58,7 +58,7 @@ TEST_CASE("account_operations_operations_registers_every_declared_command", tags
 
     account_operations_operations_commands::register_commands(root_menu, session);
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
     CHECK(true);
 }
 
@@ -314,40 +314,6 @@ TEST_CASE("account_operations_operations_process_unlock_account_reaches_the_tran
 
     command_feedback::reset();
     account_operations_operations_commands::process_unlock_account(out, session, tokens(1));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
-    // Whether the command carries a token or not, everything ahead of the
-    // transport is satisfied, which is what the absence of a connection proves.
-    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("account_operations_operations_process_list_login_info_requires_a_session", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    account_operations_operations_commands::process_list_login_info(out, session, tokens(0));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("account_operations_operations_process_list_login_info_reaches_the_transport", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    account_operations_operations_commands::process_list_login_info(out, session, tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -387,26 +387,6 @@ public:
         reply(nats_, msg, resp);
     }
 
-    void login_info(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
-        try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
-            auto infos = svc.list_login_info();
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, list_login_info_response{.login_infos = std::move(infos)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, list_login_info_response{});
-        }
-    }
-
     void reset_password(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<reset_password_request>(msg);

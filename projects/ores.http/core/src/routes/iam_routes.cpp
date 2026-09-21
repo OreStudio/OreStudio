@@ -33,6 +33,7 @@
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
 #include "ores.iam.api/messaging/permission_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
@@ -1059,7 +1060,7 @@ asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_req
         auto login_infos = account_service_.list_login_info();
 
         iam::messaging::list_login_info_response resp;
-        resp.login_infos = login_infos;
+        resp.login_info = login_infos;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

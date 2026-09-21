@@ -28,6 +28,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -427,14 +428,17 @@ void accounts_commands::process_create_account(std::ostream& out,
 void accounts_commands::process_list_login_info(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
+    // The login-info read is the entity's own now, so the subject is the
+    // request's rather than a spelling this command kept by hand.
+    iam::messaging::list_login_info_request req;
     auto result = do_auth_request<iam::messaging::list_login_info_response>(
-        out, session, "iam.v1.accounts.list-logins", iam::messaging::list_login_info_request{});
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->login_infos.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->login_info.size()
                               << " login info records.";
-    out << result->login_infos << std::endl;
+    out << result->login_info << std::endl;
 }
 
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {

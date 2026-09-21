@@ -158,22 +158,6 @@ struct unlock_account_response {
     std::vector<account_operation_result> results;
 };
 
-struct list_login_info_request {
-    using response_type = struct list_login_info_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.login-info";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
-
-struct list_login_info_response {
-    std::vector<ores::iam::domain::login_info> login_infos;
-};
-
 struct reset_password_request {
     using response_type = struct reset_password_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.reset-password";

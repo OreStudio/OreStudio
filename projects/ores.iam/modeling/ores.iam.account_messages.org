@@ -248,19 +248,6 @@ The account protocol messages.
 :cpp_type: std::vector<account_operation_result>
 :END:
 
-** list_login_info_request
-:PROPERTIES:
-:subject: iam.v1.accounts.login-info
-:response: list_login_info_response
-:END:
-
-** list_login_info_response
-
-*** login_infos
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::login_info>
-:END:
-
 ** reset_password_request
 :PROPERTIES:
 :subject: iam.v1.accounts.reset-password

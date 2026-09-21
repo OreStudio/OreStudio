@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
+#include "ores.shell/app/commands/iam/login_info_commands.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
@@ -47,6 +48,7 @@ void iam_commands::register_commands(cli::Menu& root_menu,
                                      pagination_context& /*pagination*/) {
     BOOST_LOG_SEV(lg(), debug) << "Registering IAM command surface.";
 
+    login_info_commands::register_commands(root_menu, session);
     // The declared operations first, so an entity's own verbs are registered
     // last and a name the two share resolves to the entity's.
     // The login operations are absent on purpose: they change this client's

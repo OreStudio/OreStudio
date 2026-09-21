@@ -22,8 +22,6 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { LoginInfo } from '../domain/login_info.js';
-
 export interface SaveAccountRequest {
     principal: string;
     password: string;
@@ -103,13 +101,6 @@ export interface UnlockAccountRequest {
 
 export interface UnlockAccountResponse {
     results: AccountOperationResult[];
-}
-
-export interface ListLoginInfoRequest {
-}
-
-export interface ListLoginInfoResponse {
-    login_infos: LoginInfo[];
 }
 
 export interface ResetPasswordRequest {
@@ -210,7 +201,6 @@ export const subjects = {
     delete_account_request: "iam.v1.accounts.delete",
     lock_account_request: "iam.v1.accounts.lock",
     unlock_account_request: "iam.v1.accounts.unlock",
-    list_login_info_request: "iam.v1.accounts.login-info",
     reset_password_request: "iam.v1.accounts.reset-password",
     update_my_email_request: "iam.v1.accounts.update-email",
     set_my_default_party_request: "iam.v1.accounts.set-default-party",
@@ -229,7 +219,6 @@ export const requiresSession = {
     delete_account_request: true,
     lock_account_request: true,
     unlock_account_request: true,
-    list_login_info_request: true,
     reset_password_request: true,
     update_my_email_request: true,
     set_my_default_party_request: true,

@@ -167,10 +167,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             acth->unlock(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_login_info_request::nats_subject, qg, [acth](ores::nats::message msg) {
-            acth->login_info(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
         reset_password_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->reset_password(std::move(msg));
         }));

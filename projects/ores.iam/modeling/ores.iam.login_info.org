@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 8A507DA9-1FFE-4DD3-992F-7359F5531253
 :END:
 #+title: ores.iam.login_info
@@ -36,6 +37,7 @@ indexes so none is lost.
 :product:       ores
 :component:     iam
 :has_tenant_id: true
+:read_only:     true
 :END:
 
 * Natural keys

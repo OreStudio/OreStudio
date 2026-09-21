@@ -99,13 +99,6 @@ public:
                                        const std::vector<std::string>& args);
 
     /**
-     * @brief list-login-info
-     */
-    static void process_list_login_info(std::ostream& out,
-                                        ores::nats::service::nats_client& session,
-                                        const std::vector<std::string>& args);
-
-    /**
      * @brief reset-password <account_ids> <new_password>
      */
     static void process_reset_password(std::ostream& out,

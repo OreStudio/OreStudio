@@ -3304,6 +3304,11 @@ _SHELL_TOKEN_TYPES = frozenset({
     "std::uint64_t",
     "double",
     "boost::uuids::uuid",
+    # A timestamp and an address have a text form but no lexical_cast, so the
+    # generated unit's read_token states their conversions itself. This set is
+    # what those helpers fill, or a model is refused for a type they can read.
+    "std::chrono::system_clock::time_point",
+    "boost::asio::ip::address",
 })
 # The one container form the shell can fill: a comma-separated token.
 _SHELL_LIST_TYPE = "std::vector<std::string>"

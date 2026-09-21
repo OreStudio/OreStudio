@@ -203,10 +203,10 @@ class TestTheRefusal:
     def test_a_write_that_reads_an_unfillable_field_says_so(self):
         entity = _entity(
             key=[_key("account_id")],
-            writes=[_write("last_ip", "boost::asio::ip::address")],
+            writes=[_write("samples", "std::vector<std::int64_t>")],
             operations=ALL_VERBS)
         add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
-        assert add["unsupported"] == ["last_ip"]
+        assert add["unsupported"] == ["samples"]
 
     @pytest.mark.parametrize("cpp_type", [
         "std::string", "bool", "int", "std::uint16_t", "std::uint32_t",
@@ -267,13 +267,21 @@ class TestTheTokenSetMatchesTheShell:
         add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
         assert add["unsupported"] == []
 
-    def test_a_timestamp_is_not_fillable_because_no_token_form_exists(self):
+    @pytest.mark.parametrize("cpp_type", [
+        "std::chrono::system_clock::time_point", "boost::asio::ip::address",
+    ])
+    def test_a_type_with_a_text_form_but_no_lexical_cast_is_fillable(self, cpp_type):
         entity = _entity(
-            key=[_key("id")],
-            writes=[_write("last_login", "std::chrono::system_clock::time_point")],
+            key=[_key("id")], writes=[_write("v", cpp_type)], operations=ALL_VERBS)
+        add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
+        assert add["unsupported"] == []
+
+    def test_a_container_the_helpers_cannot_fill_is_reported(self):
+        entity = _entity(
+            key=[_key("id")], writes=[_write("v", "std::vector<int>")],
             operations=ALL_VERBS)
         add = next(c for c in entity_shell_commands(entity) if c["command"] == "add")
-        assert add["unsupported"] == ["last_login"]
+        assert add["unsupported"] == ["v"]
 
 
 class TestThatNoVerbIsSkipped:

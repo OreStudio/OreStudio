@@ -67,7 +67,7 @@ well, with the field set the C++ junction block declares.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] | The domain interface for one entity. |
+| [[id:0F51A89C-4E08-422F-9227-52E73281E563][ores.ts.domain.domain_types]] | The TypeScript interface for one entity's or junction's domain object. |
 
 * See also
 

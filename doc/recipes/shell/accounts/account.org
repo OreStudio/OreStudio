@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 5CE9A9DA-423C-55CD-A7CD-8CC84F89813E
+:END:
+#+title: How do I run the accounts commands from the shell?
+#+description: Every command the accounts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:accounts:
+
+This file documents the accounts resource at the shell, one section per command. Every command is a subcommand of =accounts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 331B3179-B21A-51C0-90B4-90F821A78A13
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+accounts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.accounts.list=.
+
+#+name: accounts-list
+#+begin_src ores-shell :tangle accounts-list.ores :exports none
+accounts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E9A79CD8-8AD2-5658-A45E-7F9FB882FB33
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+accounts get <id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.get=.
+
+#+name: accounts-get
+#+begin_src ores-shell :tangle accounts-get.ores :exports none
+accounts get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 224ECF89-4C28-50EE-93CD-357D6D91964A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+accounts get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.get_many=.
+
+#+name: accounts-get-many
+#+begin_src ores-shell :tangle accounts-get-many.ores :exports none
+accounts get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9734C2CD-F6C3-530B-9D71-466276B71494
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+accounts versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.accounts_versions.list=.
+
+#+name: accounts-versions
+#+begin_src ores-shell :tangle accounts-versions.ores :exports none
+accounts versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D1BE46B0-4206-5A63-AD25-64CFBBF2A875
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+accounts version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.accounts_versions.get=.
+
+#+name: accounts-version
+#+begin_src ores-shell :tangle accounts-version.ores :exports none
+accounts version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

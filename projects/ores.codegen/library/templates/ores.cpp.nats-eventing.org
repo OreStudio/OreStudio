@@ -33,7 +33,7 @@ class names arrive as explicit model fields.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:55E74B24-DD8C-4810-A5FA-D15358234711][ores.cpp.nats-eventing.nats_changed_event_header]] | Entity-changed event type published by the notify pipeline. =nats-eventing= profile. |
+| [[id:55E74B24-DD8C-4810-A5FA-D15358234711][ores.cpp.nats-eventing.nats_changed_event_header]] | Entity event type, its traits and the notify pipeline's conversion into it. =nats-eventing= profile. |
 
 * See also
 

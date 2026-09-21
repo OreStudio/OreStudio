@@ -5,154 +5,17 @@
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-{{#has_parent_id}}
-#include "ores.utility/domain/hierarchy.hpp"
-{{/has_parent_id}}
 <<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>
 
 namespace ores::{{component}}::messaging {
 
-struct get_{{entity_plural}}_request {
-    using response_type = struct get_{{entity_plural}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-{{#list_filter_column}}
-    std::string {{list_filter_column}};
-{{/list_filter_column}}
-{{#has_as_of_lookup}}
-    // Empty = current/latest. Note: when as_of is set, results are not
-    // paginated by offset/limit -- all matching rows are returned.
-    std::string as_of;
-{{/has_as_of_lookup}}
-};
-
-struct get_{{entity_plural}}_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct save_{{entity_singular}}_request {
-    using response_type = struct save_{{entity_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.save";
-{{#has_batch_save}}
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-
-    static save_{{entity_singular}}_request from(std::vector<ores::{{component}}::domain::{{entity_singular}}> v) {
-        return {.{{entity_plural_short}} = std::move(v)};
-    }
-{{/has_batch_save}}
-{{^has_batch_save}}
-    ores::{{component}}::domain::{{entity_singular}} data;
-
-    static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
-        return {.data = std::move(v)};
-    }
-{{/has_batch_save}}
-};
-
-struct save_{{entity_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_{{entity_singular}}_request {
-    using response_type = struct delete_{{entity_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.delete";
-{{#primary_key.columns}}
-    std::vector<std::string> {{#is_uuid}}ids{{/is_uuid}}{{^is_uuid}}{{column}}s{{/is_uuid}};
-{{/primary_key.columns}}
-};
-
-struct delete_{{entity_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-{{^current_state}}
-struct get_{{entity_singular}}_history_request {
-    using response_type = struct get_{{entity_singular}}_history_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.history";
-{{#primary_key.columns}}
-    std::string {{column}};
-{{/primary_key.columns}}
-};
-
-struct get_{{entity_singular}}_history_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> history;
-    bool success = false;
-    std::string message;
-};
-{{/current_state}}
-
-{{#extra_list_requests}}
-struct get_{{entity_plural}}_{{name_suffix}}_request {
-    using response_type = struct get_{{entity_plural}}_{{name_suffix}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.{{nats_suffix}}";
-    std::string {{filter_column}};
-    std::uint32_t offset = 0;
-    std::uint32_t limit = {{default_limit}};
-};
-
-struct get_{{entity_plural}}_{{name_suffix}}_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-{{/extra_list_requests}}
-{{#has_parent_id}}
-/**
- * @brief Reads the {{entity_singular}} hierarchy rooted at, or containing,
- * a given {{entity_singular}}.
- */
-struct get_{{entity_singular}}_hierarchy_request {
-    using response_type = struct get_{{entity_singular}}_hierarchy_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.hierarchy";
-    std::string root_id;
-    bool from_root = false;
-};
-
-struct get_{{entity_singular}}_hierarchy_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::utility::domain::hierarchy_node> roots;
-};
-
-{{/has_parent_id}}
-{{#read_for_cache}}
-/**
- * @brief Reads all active {{entity_plural}} for a tenant — used by
- * client-side caches to warm up without multiple round-trips.
- */
-struct read_{{entity_plural}}_for_cache_request {
-    using response_type = struct read_{{entity_plural}}_for_cache_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.read";
-    std::string tenant_id;
-};
-
-struct read_{{entity_plural}}_for_cache_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-};
-
-{{/read_for_cache}}
-<<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
-{{#declared_messages}}
+{{#messages}}
 {{#comment}}
 {{{.}}}
 {{/comment}}
@@ -162,6 +25,13 @@ struct {{name}} {
 {{/response_type}}
 {{#subject}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
 {{/subject}}
 {{#fields}}
 {{#comment}}
@@ -171,7 +41,22 @@ struct {{name}} {
 {{/fields}}
 };
 
-{{/declared_messages}}
+{{/messages}}
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace {{entity_singular}}_event_subjects {
+{{#events}}
+inline constexpr std::string_view {{action}} = "{{subject}}";
+{{/events}}
+}
+
+<<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
 }
 
 #endif
@@ -181,267 +66,46 @@ struct {{name}} {
 #define ORES_{{component_include_upper}}_MESSAGING_{{name_singular_upper}}_PROTOCOL_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 
 namespace ores::{{component}}::messaging {
 
-/**
- * @brief The {{name_singular_words}} row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct {{name_singular}}_view {
-    ores::{{component}}::domain::{{name_singular}} {{name_singular}};
-{{#left.enrich_code}}
-    std::string {{left.column_short}}_code;
-{{/left.enrich_code}}
-{{#right.enrich_code}}
-    std::string {{right.column_short}}_code;
-{{/right.enrich_code}}
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+struct {{name}} {
+{{#response_type}}
+    using response_type = struct {{response_type}};
+{{/response_type}}
+{{#subject}}
+    static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
+{{/subject}}
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+{{/fields}}
 };
 
-struct get_{{name}}_request {
-    using response_type = struct get_{{name}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_{{name}}_response {
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-{{#left.list_by}}
-struct get_{{name}}_by_{{left.column_short}}_request {
-    using response_type = struct get_{{name}}_by_{{left.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.list_by_{{left.column}}";
-    std::string {{left.column}};
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_{{name}}_by_{{left.column_short}}_response {
-    std::vector<{{name_singular}}_view> {{name}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-{{/left.list_by}}
-{{#right.list_by}}
-struct get_{{name}}_by_{{right.column_short}}_request {
-    using response_type = struct get_{{name}}_by_{{right.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.list_by_{{right.column}}";
-    std::string {{right.column}};
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_{{name}}_by_{{right.column_short}}_response {
-    std::vector<{{name_singular}}_view> {{name}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-{{/right.list_by}}
-{{#wire_write_enabled}}
-struct save_{{name_singular}}_request {
-    using response_type = struct save_{{name_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.save";
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
-
-    static save_{{name_singular}}_request from(std::vector<ores::{{component}}::domain::{{name_singular}}> v) {
-        return {.{{name}} = std::move(v)};
-    }
-};
-
-struct save_{{name_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_{{name_singular}}_request {
-    using response_type = struct delete_{{name_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.delete";
-    std::vector<std::string> {{left.column}}s;
-    std::vector<std::string> {{right.column}}s;
-};
-
-struct delete_{{name_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-{{#left.replace_by}}
-struct replace_{{name}}_by_{{left.column_short}}_request {
-    using response_type = struct replace_{{name}}_by_{{left.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.replace_by_{{left.column}}";
-    std::string {{left.column}};
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct replace_{{name}}_by_{{left.column_short}}_response {
-    bool success = false;
-    std::string message;
-};
-
-{{/left.replace_by}}
-{{#right.replace_by}}
-struct replace_{{name}}_by_{{right.column_short}}_request {
-    using response_type = struct replace_{{name}}_by_{{right.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.replace_by_{{right.column}}";
-    std::string {{right.column}};
-    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-};
-
-struct replace_{{name}}_by_{{right.column_short}}_response {
-    bool success = false;
-    std::string message;
-};
-
-{{/right.replace_by}}
-{{/wire_write_enabled}}
-struct count_{{name}}_by_{{left.column_short}}_request {
-    using response_type = struct count_{{name}}_by_{{left.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.count_by_{{left.column}}";
-    std::string {{left.column}};
-};
-
-struct count_{{name}}_by_{{left.column_short}}_response {
-    int total_available_count = 0;
-};
-
-struct count_{{name}}_by_{{right.column_short}}_request {
-    using response_type = struct count_{{name}}_by_{{right.column_short}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{name}}.count_by_{{right.column}}";
-    std::string {{right.column}};
-};
-
-struct count_{{name}}_by_{{right.column_short}}_response {
-    int total_available_count = 0;
-};
+{{/messages}}
 }
 
 #endif
 {{/junction}}
-{{#entity}}
-#ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
-#define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
-
-#include <cstdint>
-#include <string>
-#include <vector>
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-
-namespace ores::{{component}}::messaging {
-
-struct get_{{entity_plural}}_request {
-    using response_type = struct get_{{entity_plural}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-{{#list_filter_column}}
-    std::string {{list_filter_column}};
-{{/list_filter_column}}
-{{#has_as_of_lookup}}
-    // Empty = current/latest. Note: when as_of is set, results are not
-    // paginated by offset/limit -- all matching rows are returned.
-    std::string as_of;
-{{/has_as_of_lookup}}
-};
-
-struct get_{{entity_plural}}_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct save_{{entity_singular}}_request {
-    using response_type = struct save_{{entity_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.save";
-{{#has_batch_save}}
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-
-    static save_{{entity_singular}}_request from(std::vector<ores::{{component}}::domain::{{entity_singular}}> v) {
-        return {.{{entity_plural_short}} = std::move(v)};
-    }
-{{/has_batch_save}}
-{{^has_batch_save}}
-    ores::{{component}}::domain::{{entity_singular}} data;
-
-    static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
-        return {.data = std::move(v)};
-    }
-{{/has_batch_save}}
-};
-
-struct save_{{entity_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_{{entity_singular}}_request {
-    using response_type = struct delete_{{entity_singular}}_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.delete";
-{{#primary_key.is_text}}
-    std::vector<std::string> {{primary_key.column}}s;
-{{/primary_key.is_text}}
-{{^primary_key.is_text}}
-    std::vector<std::string> ids;
-{{/primary_key.is_text}}
-};
-
-struct delete_{{entity_singular}}_response {
-    bool success = false;
-    std::string message;
-};
-
-{{^current_state}}
-struct get_{{entity_singular}}_history_request {
-    using response_type = struct get_{{entity_singular}}_history_response;
-    static constexpr std::string_view nats_subject =
-        "{{component}}.v1.{{entity_plural}}.history";
-    std::string {{primary_key.column}};
-};
-
-struct get_{{entity_singular}}_history_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> history;
-    bool success = false;
-    std::string message;
-};
-{{/current_state}}
-
-}
-
-#endif
-{{/entity}}
 {{#operation}}
 #ifndef ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
@@ -462,6 +126,13 @@ struct {{name}} {
 {{/response_type}}
 {{#subject}}
     static constexpr std::string_view nats_subject = "{{subject}}";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = {{requires_session}};
 {{/subject}}
 {{#fields}}
 {{#comment}}

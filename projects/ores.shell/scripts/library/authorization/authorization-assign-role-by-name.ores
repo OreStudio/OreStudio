@@ -1,0 +1,6 @@
+# =assign-role-by-name=
+#
+# GENERATED from doc/recipes/shell/authorization/authorization.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+authorization assign-role-by-name __none__ __none__

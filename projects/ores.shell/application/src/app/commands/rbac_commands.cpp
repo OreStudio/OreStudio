@@ -21,6 +21,8 @@
 #include "ores.iam.api/domain/permission_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/role_table_io.hpp"       // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/permission_protocol.hpp"
+#include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -38,6 +40,9 @@ using namespace ores::logging;
 using ores::nats::service::nats_client;
 
 namespace {
+
+// A page of roles is read in one request; the shell does not page it.
+constexpr std::uint32_t list_limit = 1000;
 
 auto& parse_uuid_lg() {
     static auto instance = make_logger("ores.shell.app.commands.rbac_commands");
@@ -133,26 +138,45 @@ void rbac_commands::register_commands(cli::Menu& root_menu,
 void rbac_commands::process_list_permissions(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list permissions request.";
 
+    iam::messaging::list_permissions_request req;
+    req.limit = list_limit;
+
     auto result = do_auth_request<iam::messaging::list_permissions_response>(
-        out, session, "iam.v1.permissions.list", iam::messaging::list_permissions_request{});
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
+
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << result->result.message << std::endl;
+        return;
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->permissions.size()
                               << " permissions.";
     out << result->permissions << std::endl;
+    out << result->permissions.size() << " of " << result->total << " permissions shown."
+        << std::endl;
 }
 
 void rbac_commands::process_list_roles(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list roles request.";
 
+    iam::messaging::list_roles_request req;
+    req.limit = list_limit;
+
     auto result = do_auth_request<iam::messaging::list_roles_response>(
-        out, session, "iam.v1.roles.list", iam::messaging::list_roles_request{});
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << result->result.message << std::endl;
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->roles.size() << " roles.";
     out << result->roles << std::endl;
+    out << result->roles.size() << " of " << result->total << " roles shown." << std::endl;
 }
 
 void rbac_commands::process_get_role(std::ostream& out,
@@ -160,16 +184,22 @@ void rbac_commands::process_get_role(std::ostream& out,
                                      std::string role_identifier) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: " << role_identifier;
 
+    // A role is addressed by its id, which is what the key states.
+    const auto parsed_role_id = parse_uuid(out, role_identifier, "role id");
+    if (!parsed_role_id)
+        return;
+
     iam::messaging::get_role_request req;
-    req.identifier = role_identifier;
+    req.key.id = *parsed_role_id;
 
     auto result =
-        do_auth_request<iam::messaging::get_role_response>(out, session, "iam.v1.roles.get", req);
+        do_auth_request<iam::messaging::get_role_response>(out, session, 
+                                                           std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->found || !result->role) {
-        out << "X " << result->error_message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok || !result->role) {
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
@@ -222,7 +252,7 @@ void rbac_commands::process_assign_role(std::ostream& out,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "iam.v1.roles.assign", req);
+            out, session, iam::messaging::assign_role_request::nats_subject, req);
         if (!result)
             return;
 
@@ -242,7 +272,7 @@ void rbac_commands::process_assign_role(std::ostream& out,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "iam.v1.roles.assign-by-name", req);
+            out, session, iam::messaging::assign_role_by_name_request::nats_subject, req);
         if (!result)
             return;
 
@@ -272,7 +302,7 @@ void rbac_commands::process_revoke_role(std::ostream& out,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "iam.v1.roles.revoke", req);
+            out, session, iam::messaging::revoke_role_request::nats_subject, req);
         if (!result)
             return;
 
@@ -292,7 +322,7 @@ void rbac_commands::process_revoke_role(std::ostream& out,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "iam.v1.roles.revoke-by-name", req);
+            out, session, iam::messaging::revoke_role_by_name_request::nats_subject, req);
         if (!result)
             return;
 
@@ -320,7 +350,7 @@ void rbac_commands::process_get_account_roles(std::ostream& out,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "iam.v1.roles.for-account", req);
+        out, session, iam::messaging::get_account_roles_request::nats_subject, req);
     if (!result)
         return;
 
@@ -346,7 +376,7 @@ void rbac_commands::process_get_account_permissions(std::ostream& out,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "iam.v1.permissions.for-account", req);
+        out, session, iam::messaging::get_account_permissions_request::nats_subject, req);
     if (!result)
         return;
 
@@ -377,7 +407,7 @@ void rbac_commands::process_suggest_role_commands(std::ostream& out,
     }
 
     auto result = do_auth_request<iam::messaging::suggest_role_commands_response>(
-        out, session, "iam.v1.roles.suggest-commands", req);
+        out, session, iam::messaging::suggest_role_commands_request::nats_subject, req);
     if (!result)
         return;
 

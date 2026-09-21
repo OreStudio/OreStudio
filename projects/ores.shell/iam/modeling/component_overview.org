@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 410D3332-BEED-4B51-B46C-01E92FB5E4F9
+:END:
+#+title: ores.shell.iam
+#+description: The shell's IAM adapter part. Holds the generated command units that project the IAM domain and its declared operations onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:iam:component:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+name: shell.iam
+#+full_name: ores.shell.iam
+#+brief: Shell IAM command units
+
+* Summary
+
+=ores.shell.iam= is the adapter part that projects the IAM domain onto the
+shell's REPL menu. It holds the generated command units for the IAM models that
+opt in, and each unit owns one submenu.
+
+Two kinds of unit land here. An entity unit owns that entity's CRUD verbs --
+=list=, =get=, =add=, =set=, =delete= and the version reads -- and is rendered
+from the entity's derived protocol. An operations unit owns the operations a
+model *declares*, one command per message that carries a subject and a response,
+and is rendered from the operation model. The split matters because an account's
+writes are workflows rather than row writes, so the verbs a caller can reach are
+the ones the model declares and not the ones a table happens to admit.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the shell surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The units are output of the =ores.cpp.shell-command= facet, which is opt-in per
+model through an =:ores.cpp.shell-command.enabled: true= entry in the model's
+properties drawer. The facet writes here because the part is named after the
+domain the units project, which is the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFEB1BC756][Component architecture]].
+
+* Inputs
+
+- Free-form token vectors from the command layer, parsed by =parse_args=.
+- The logged-in NATS session, passed by reference into every helper.
+- The IAM models under =projects/ores.iam/modeling/= whose properties drawer
+  opts in to the =ores.cpp.shell-command= facet.
+
+* Outputs
+
+- One command unit per opted-in model, at
+  =src/app/commands/iam/<unit>_commands.cpp= and
+  =include/ores.shell/app/commands/iam/<unit>_commands.hpp=.
+- NATS request messages to the IAM service, one per command.
+- Formatted text output of query results to stdout.
+
+* Entry points
+
+- =include/ores.shell/app/commands/iam/= -- the generated unit headers.
+- =src/app/commands/iam/= -- the generated unit implementations.
+- =register_iam_shell_commands= -- the component-level entry the host calls
+  once to install every unit below the IAM root menu.
+
+* Dependencies
+
+- =ores.shell.api= -- argument parsing, feedback, pagination, request helpers.
+- =ores.nats= -- NATS transport for service calls.
+- =ores.iam.api= -- the domain types and protocol messages the units send.
+- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.logging= -- logger factory.
+- =cli= -- the menu and handler types the units register against.
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] -- the composite this part belongs to.
+- [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]] -- the shared shell plumbing.
+- [[id:35C549C4-A6C0-4037-84DF-63E677C8C61E][ores.shell.application]] -- the runnable host.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] -- the facet that emits the units.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFEB1BC756][Component architecture]] -- the composite and adapter kinds.

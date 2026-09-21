@@ -27,6 +27,7 @@ Output is a dict with the same top-level shape as the JSON entity loader:
 from __future__ import annotations
 
 import re
+import uuid
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -2222,6 +2223,15 @@ _TS_SCALARS = {
     # message-shaped model carries the type the domain struct declares.
     "utility::uuid::tenant_id": "string",
     "std::chrono::year_month_day": "string",
+    # An address crosses the wire as its textual form, per the same
+    # reflectors, so a message that carries one states a string. It is listed
+    # here as well as in the domain-only set below because a write record can
+    # carry one: a login records the address it came from.
+    "boost::asio::ip::address": "string",
+    # A time point crosses the wire as its ISO 8601 text, per the same
+    # reflectors. An event states when it occurred, so a protocol that could
+    # not project one would have no event.
+    "std::chrono::system_clock::time_point": "string",
 }
 
 # A domain member's fully qualified C++ name, e.g.
@@ -2246,6 +2256,11 @@ _TS_DOMAIN_TYPE_RE = re.compile(
 # projection, which is what keeps the gap loud.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
+    "ores::utility::domain::result": ("Result", "utility/protocol"),
+    "ores::utility::domain::precondition": ("Precondition", "utility/protocol"),
+    "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
+    "ores::utility::domain::order": ("Order", "utility/protocol"),
+    "ores::utility::domain::scope": ("Scope", "utility/protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.
@@ -2342,14 +2357,21 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     return _ts_type(cpp_type)
 
 
-def _ts_field(name: str, cpp_type: str, comment: str = "") -> dict[str, Any]:
+def _ts_field(name: str, cpp_type: str, comment: str = "",
+              default: str = "") -> dict[str, Any]:
     """One derived protocol field, with its TypeScript type when one exists.
 
     ``comment`` is always set: Mustache resolves a name it cannot find by
     walking up the context stack, so an absent ``comment`` would inherit
-    the enclosing message's."""
+    the enclosing message's. ``default`` is the C++ initialiser the
+    specification states for a field whose value has a defined starting
+    point, and is absent rather than empty when there is none, so the
+    renderer writes a bare member.
+    """
     field: dict[str, Any] = {"name": name, "cpp_type": cpp_type,
                              "comment": comment}
+    if default:
+        field["default"] = default
     mapped = _ts_type(cpp_type)
     if mapped:
         field["ts_type"] = mapped
@@ -2369,6 +2391,12 @@ def _ts_message(
         "name_pascal": _to_pascal_case(name),
         "comment": "",
         "fields": fields or [],
+        # Derived here rather than declared by a model's own * Messages
+        # section. The service and handler templates render the derived
+        # operations, because their names and subjects come from this
+        # derivation; a declared message's handler is written by hand beside
+        # the operation model that states it.
+        "derived": True,
     }
     if response_type:
         message["response_type"] = response_type
@@ -2423,300 +2451,685 @@ def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
-    """Derive an entity's standard CRUD message list.
+# The specification's vocabulary. A subject has exactly four segments and its
+# last is one of these verbs; a scoped read adds a relation to the verb rather
+# than a segment, so it stays four. An event's last segment is an action
+# instead, drawn from its own closed set, because an event reports what
+# happened and no caller asked for it.
+SPEC_VERBS = (
+    "get", "get_many", "list", "put", "put_many", "delete", "delete_many")
+SPEC_EVENT_ACTIONS = ("created", "updated", "deleted")
+SPEC_VERSIONS_VERBS = ("list", "get")
 
-    The list is the model of the ``{{#domain_entity}}`` block of
-    ``cpp_protocol.hpp.mustache``: the same messages, in the same order,
-    under the same conditionals, so the C++ header and its TypeScript twin
-    describe one protocol. It must be called on the enriched entity, after
-    ``core.generate_from_model`` has hoisted the repository's
-    ``entity_plural_short`` and derived ``extra_list_requests``,
-    ``primary_key.columns`` and the messaging flags. ``single_delete`` and
-    ``delete_request_extra_args`` are handler concerns -- the protocol
-    template branches on neither -- so they are deliberately not read
-    here. A ``current_state`` entity derives no history pair: it has no
-    valid_from/valid_to axis, so it has no history endpoint at all.
+
+def entity_event_prefix(component: str, plural: str) -> str:
+    """``iam.v1.tenants_events`` -- the collection one entity's events share.
+
+    The prefix names the events collection, and the action is the last
+    segment, so one payload is addressed by three subjects.
+    """
+    return f"{component}.v1.{plural}_events"
+
+
+def entity_events(component: str, plural: str) -> list[dict[str, Any]]:
+    """The subjects one entity's events are published on, one per action."""
+    return [{"action": action, "subject": event_subject(component, plural, action)}
+            for action in SPEC_EVENT_ACTIONS]
+
+
+def request_subject(component: str, plural: str, verb: str) -> str:
+    """``iam.v1.tenants.get`` -- one subject per resource and verb.
+
+    ``verb`` is one of ``SPEC_VERBS``, or ``list_by_<relation>`` for a read
+    scoped to a related entity. The relation is part of the verb, not a fifth
+    segment, which is what keeps the grammar at four.
+    """
+    if verb not in SPEC_VERBS and not verb.startswith("list_by_"):
+        raise ValueError(
+            f"{verb!r} is not a verb of this protocol; "
+            f"expected one of {SPEC_VERBS} or list_by_<relation>")
+    return f"{component}.v1.{plural}.{verb}"
+
+
+def event_subject(component: str, plural: str, action: str) -> str:
+    """``iam.v1.tenants_events.created`` -- an announcement, not an operation.
+
+    The resource segment names the events collection rather than the resource,
+    in the ``{resource}_{collection}`` form a sub-resource uses, so the subject
+    still has four segments and still sits inside its component's namespace.
+    """
+    if action not in SPEC_EVENT_ACTIONS:
+        raise ValueError(
+            f"{action!r} is not an event action; "
+            f"expected one of {SPEC_EVENT_ACTIONS}")
+    return f"{component}.v1.{plural}_events.{action}"
+
+
+def versions_subject(component: str, plural: str, verb: str) -> str:
+    """``iam.v1.tenants_versions.list`` -- an entity's versions, read-only.
+
+    Versions are written by the database and never by a caller, so only the
+    read verbs exist for the collection.
+    """
+    if verb not in SPEC_VERSIONS_VERBS:
+        raise ValueError(
+            f"{verb!r} is not a read; a versions collection is read-only, "
+            f"so expected one of {SPEC_VERSIONS_VERBS}")
+    return f"{component}.v1.{plural}_versions.{verb}"
+
+
+# Fields the service derives and a client therefore never sends. The
+# specification lists them once, and a request that carries one is invalid
+# rather than silently overwritten, so a write record must not offer them.
+SERVER_OWNED_FIELDS = frozenset({
+    "tenant_id", "party_id", "version", "modified_by", "performed_by",
+    "recorded_at", "valid_from", "valid_to",
+})
+
+# Why a change is being made is user-owned, but it travels beside the write
+# record as change intent rather than inside it, so neither of these is a
+# write-record field either.
+CHANGE_INTENT_FIELDS = frozenset({
+    "change_reason_code", "change_commentary",
+})
+
+
+def _column_name(column: dict[str, Any]) -> str:
+    """A column's name, whichever of its three spellings the model carries.
+
+    A ``* Columns`` entry is named ``name`` by the org drawer, while a primary
+    key column, a foreign key and the repository's key aliases are named
+    ``column``, and a presentation column table is named ``field``. Reading
+    only one of them emits a member with no name at all, which is a wire shape
+    nothing can address.
+    """
+    return (column.get("column") or column.get("field")
+            or column.get("name") or "")
+
+
+def write_record_fields(
+    columns: list[dict[str, Any]],
+    key_columns: frozenset[str] | set[str] = frozenset(),
+) -> list[dict[str, Any]]:
+    """The fields a client may send, in the order the model declares them.
+
+    A write carries the user-owned fields and nothing else: tenancy and
+    provenance come from the authenticated context, the version and the
+    validity window from the database, and the change intent from beside the
+    record. What is left is what a caller actually decides, which for a create
+    includes the key.
+
+    A key column is never stripped, even when its name is also a server-owned
+    one. ``party_id`` is the acting party on most entities, but on a junction
+    that links parties it is half the key, and which party a link names is the
+    caller's to state; stripping it would emit a write that cannot say what it
+    writes.
+
+    Each field is shaped for the renderer, not handed back as the raw column:
+    the message templates read ``name`` and ``cpp_type``, and a column dict
+    passed through untouched would render an empty member.
+    """
+    fields: list[dict[str, Any]] = []
+    for column in columns:
+        name = _column_name(column)
+        if name not in key_columns and (
+                name in SERVER_OWNED_FIELDS or name in CHANGE_INTENT_FIELDS):
+            continue
+        field = _ts_field(name, column.get("cpp_type") or "std::string")
+        # Where the domain type holds the member. A composed entity reaches
+        # its fields through a group member, so the record's own member name
+        # and the domain's access path are not the same string; the service
+        # that builds a domain object from a record reads this.
+        field["domain_member"] = (column.get("group_prefix") or "") + name
+        fields.append(field)
+    return fields
+
+
+def _key_cpp_type(column: dict[str, Any]) -> str:
+    """A key column's own type, not a string it happens to be printable as.
+
+    The type is read from the column where the model states it, and falls back
+    to the uuid flag for a column dict built by hand, as the tests build one.
+    """
+    return (column.get("cpp_type")
+            or ("boost::uuids::uuid" if column.get("is_uuid") else "std::string"))
+
+
+def write_record_columns(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every column a write record may name, in the order the model declares them.
+
+    The loader partitions an entity's fields: the primary key is its own list,
+    a unique business identifier is a natural key, and the rest are columns.
+    A write record has to carry all three, because a create states its key --
+    which is the primary key for a surrogate-keyed entity and the natural key
+    for a lookup one -- and a record built from ``columns`` alone would leave a
+    create unable to say what it creates.
+    """
+    primary_key = entity.get("primary_key") or {}
+    declared = (list(primary_key.get("columns") or [])
+                + list(entity.get("natural_keys") or [])
+                + list(entity.get("columns") or []))
+    by_name: dict[str, dict[str, Any]] = {}
+    for column in declared:
+        by_name.setdefault(_column_name(column), column)
+    return list(by_name.values())
+
+
+def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The write record's fields for one entity, derived once for every reader.
+
+    The protocol twin renders these as the record's members and the service
+    builds a domain object from them, so a field the record carries and a
+    field the service sets cannot disagree.
+    """
+    key_columns = frozenset(
+        _column_name(column)
+        for column in (entity.get("primary_key") or {}).get("columns") or [])
+    return write_record_fields(write_record_columns(entity), key_columns)
+
+
+def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The typed key that addresses one entity -- every identifying column.
+
+    The specification is explicit that a key carries each column with the
+    column's own type, and that a composite key is never flattened to one
+    string and never partially sent, because a partial key addresses a row
+    that need not exist. The derived delete request does both today: it sends
+    ``std::vector<std::string>`` per key column, so a uuid key and a text key
+    are indistinguishable to a caller.
+    """
+    primary_key = entity.get("primary_key") or {}
+    return [_ts_field(_column_name(column), _key_cpp_type(column))
+            for column in primary_key.get("columns") or []]
+
+
+# The shared records every entity's messages are built from. They live in
+# ``ores.utility::domain`` because they are component-independent: a generated
+# ``*.api`` protocol header may not depend on the service layer, so an entity's
+# own result type could not be shared this way.
+_RESULT = "ores::utility::domain::result"
+_PRECONDITION = "ores::utility::domain::precondition"
+_INTENT = "ores::utility::domain::change_intent"
+_ORDER = "ores::utility::domain::order"
+_SCOPE = "ores::utility::domain::scope"
+
+# The operations that change state, and the auxiliary records only they carry.
+# A model whose surface has no client-facing writes derives the reads alone, and
+# a write record nothing refers to is dead surface rather than a message.
+_WRITE_OPERATION_PREFIXES = ("put_", "put_many_", "delete_", "delete_many_")
+_WRITE_ONLY_RECORD_SUFFIXES = ("_write", "_change", "_removal")
+
+
+def _column_cpp_type(entity: dict[str, Any], name: str) -> str:
+    """One named column's own C++ type, or a string when the model is silent.
+
+    The loader partitions an entity's fields, so a relation stated by a scoped
+    read is often a natural key rather than a plain column -- a foreign key
+    that identifies the child within its parent is exactly that. Searching
+    ``columns`` alone would type such a relation ``std::string`` while the
+    write record types the same column from its own dict, and the two would
+    disagree about one column.
+    """
+    for column in write_record_columns(entity):
+        if _column_name(column) == name:
+            return column.get("cpp_type") or "std::string"
+    return "std::string"
+
+
+def _parent_id_field(entity: dict[str, Any]) -> str:
+    """The column pointing at an entity's parent, when it declares one."""
+    if not entity.get("has_parent_id"):
+        return ""
+    presentation = entity.get("presentation") or {}
+    return (entity.get("parent_id_field")
+            or presentation.get("parent_id_field")
+            or presentation.get("parent_key_field") or "")
+
+
+def _relation_columns(entity: dict[str, Any]) -> list[str]:
+    """The columns a read may be scoped by, in the order the model declares them.
+
+    A scoped read addresses one related entity, so every foreign key the model
+    already reads by is a relation. The parent relation is one of these and not
+    a case of its own: reading a node's children and reading its subtree are one
+    verb, and ``scope`` says which.
+    """
+    names = [extra["filter_column"]
+             for extra in entity.get("extra_list_requests") or []
+             if extra.get("filter_column")]
+    parent = _parent_id_field(entity)
+    if parent and parent not in names:
+        names.append(parent)
+    return names
+
+
+def filter_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """An entity's filter record: one optional member per filterable column.
+
+    The specification makes filtering a record rather than a query language, so
+    every member is optional and carries the field's own type. Which fields are
+    filterable is the model's own statement: a column is filterable when the
+    model already reads by it, which is the list filter column and every foreign
+    key a scoped read is declared for. An empty result means the resource
+    supports no filtering, and then it has no filter record at all.
+    """
+    names = ([entity["list_filter_column"]]
+             if entity.get("list_filter_column") else []) + _relation_columns(entity)
+    return [_ts_field(name,
+                      f"std::optional<{_column_cpp_type(entity, name)}>")
+            for name in dict.fromkeys(names)]
+
+
+def versions_filter_fields() -> list[dict[str, Any]]:
+    """The version axis as a filter, rather than a second way to select.
+
+    An exact version and the two bounds, each optional and each typed, so that
+    reading the entity as it stood at version 7 and reading the last month of
+    changes need no operation of their own.
+    """
+    return [
+        _ts_field("version", "std::optional<std::uint32_t>"),
+        _ts_field("from_version", "std::optional<std::uint32_t>"),
+        _ts_field("to_version", "std::optional<std::uint32_t>"),
+    ]
+
+
+def paged_list_messages(
+    name: str,
+    subject: str,
+    leading: list[dict[str, Any]],
+    filter_field: dict[str, Any] | None,
+    collection: str,
+    collection_type: str,
+) -> list[dict[str, Any]]:
+    """The request and response pair every paged list shares.
+
+    ``name`` is the message stem, ``leading`` the fields that say what the list
+    covers -- nothing for an unscoped list, the relation for a scoped one, the
+    key for a versions list. Offset, limit and total are unconditional in the
+    specification, so they are stated here once instead of per entity, and the
+    filter comes last, after the page it narrows.
+    """
+    fields = list(leading) + [
+        _ts_field("offset", "std::uint32_t", default="0"),
+        _ts_field("limit", "std::uint32_t", default="100"),
+        _ts_field("order", _ORDER),
+    ]
+    if filter_field:
+        fields.append(filter_field)
+    return [
+        _ts_message(f"{name}_request", response_type=f"{name}_response",
+                    subject=subject, fields=fields),
+        _ts_message(f"{name}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(collection, f"std::vector<{collection_type}>"),
+            _ts_field("total", "std::uint64_t")]),
+    ]
+
+
+def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive an entity's canonical message list, as the specification states it.
+
+    The list is the one model both protocol twins render: the C++
+    ``cpp_protocol.hpp.mustache`` and the TypeScript ``ts_protocol.ts.mustache``
+    each walk ``{{#messages}}``, so a message added here appears in both or in
+    neither. An entry with a ``subject`` is an operation a caller addresses; an
+    entry without one is an auxiliary record -- a key, a write record, a change,
+    a removal, a lookup, a version key, a filter -- which the renderer writes as
+    a plain struct.
+
+    Must be called on the enriched entity, after ``core.generate_from_model``
+    has hoisted the repository's ``entity_plural_short`` and derived
+    ``extra_list_requests``, ``primary_key.columns`` and the messaging flags.
+    Messages the model declares itself are appended, so both twins carry them
+    from one section.
+
+    A ``current_state`` entity derives no versions sub-resource: it has no
+    valid_from/valid_to axis, so it has no version to read.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
     plural = entity.get("entity_plural", singular + "s")
     plural_short = entity.get("entity_plural_short") or plural
     domain_type = f"ores::{component}::domain::{singular}"
-    pk = entity.get("primary_key") or {}
+    key = f"{singular}_key"
+    key_columns = frozenset(
+        _column_name(column)
+        for column in (entity.get("primary_key") or {}).get("columns") or [])
 
-    list_fields = [
-        _ts_field("offset", "std::uint32_t"),
-        _ts_field("limit", "std::uint32_t"),
-    ]
-    filter_column = entity.get("list_filter_column")
-    if filter_column:
-        list_fields.append(_ts_field(filter_column, "std::string"))
-    if entity.get("has_as_of_lookup"):
-        list_fields.append(_ts_field(
-            "as_of", "std::string",
-            comment=_indent_block(
-                "// Empty = current/latest. Note: when as_of is set, results are not\n"
-                "// paginated by offset/limit -- all matching rows are returned.",
-                4)))
+    filter_fields = filter_record_fields(entity)
 
+    # The auxiliary records come first, because a C++ message names the records
+    # it carries and a type is declared before it is used. None of them has a
+    # subject: a record is a shape, an operation is something a caller sends.
     messages = [
-        _ts_message(
-            f"get_{plural}_request",
-            response_type=f"get_{plural}_response",
-            subject=f"{component}.v1.{plural}.list",
-            fields=list_fields),
-        _ts_message(
-            f"get_{plural}_response",
-            fields=[
-                _ts_field(plural_short, f"std::vector<{domain_type}>"),
-                _ts_field("total_available_count", "int"),
-                _ts_field("success", "bool"),
-                _ts_field("message", "std::string"),
-            ]),
+        _ts_message(key, fields=key_record_fields(entity)),
+        _ts_message(f"{singular}_write", fields=write_record_fields(
+            write_record_columns(entity), key_columns)),
+        _ts_message(f"{singular}_change", fields=[
+            _ts_field("write", f"{singular}_write"),
+            _ts_field("precondition", _PRECONDITION)]),
+        _ts_message(f"{singular}_removal", fields=[
+            _ts_field("key", key),
+            _ts_field("precondition", _PRECONDITION,
+                      default="ores::utility::domain::removal_precondition")]),
+        _ts_message(f"{singular}_lookup", fields=[
+            _ts_field("key", key),
+            _ts_field(singular, f"std::optional<{domain_type}>")]),
     ]
+    if filter_fields:
+        messages.append(_ts_message(f"{plural}_filter", fields=filter_fields))
+    # The announcement. One payload carries what happened to one row, and the
+    # subject's last segment says which action it reports, so the payload is
+    # stated once and the three subjects alongside it.
+    messages.append(_ts_message(f"{singular}_event", fields=[
+        _ts_field("event_id", "boost::uuids::uuid"),
+        _ts_field("key", key),
+        _ts_field("action", "std::string"),
+        _ts_field("version", "std::uint32_t"),
+        _ts_field("occurred_at", "std::chrono::system_clock::time_point"),
+        _ts_field("correlation_id", "std::optional<std::string>"),
+    ]))
+    if entity.get("has_audit_columns"):
+        # A versioned entity's version is addressed by the entity's own key plus
+        # the version number, so the pair is a record of its own. An entity with
+        # no version column has no version to address -- a current-state table
+        # keeps no history at all, and a table the model marked
+        # ``no_audit_columns`` keeps a validity window with no version in it.
+        # The gate is the version column, not the current-state flag, because
+        # the two are not the same claim.
+        messages.append(_ts_message(f"{singular}_version_key", fields=[
+            _ts_field(singular, key),
+            _ts_field("version", "std::uint32_t")]))
+        messages.append(_ts_message(f"{singular}_versions_filter",
+                                    fields=versions_filter_fields()))
 
-    save_fields = (
-        [_ts_field(plural_short, f"std::vector<{domain_type}>")]
-        if entity.get("has_batch_save")
-        else [_ts_field("data", domain_type)]
-    )
+    list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
+                   if filter_fields else None)
+
+    messages += paged_list_messages(
+        f"list_{plural}", request_subject(component, plural, "list"),
+        [], list_filter, plural_short, domain_type)
+
     messages += [
-        _ts_message(
-            f"save_{singular}_request",
-            response_type=f"save_{singular}_response",
-            subject=f"{component}.v1.{plural}.save",
-            fields=save_fields),
-        _ts_message(
-            f"save_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
+        _ts_message(f"get_{singular}_request",
+                    response_type=f"get_{singular}_response",
+                    subject=request_subject(component, plural, "get"),
+                    fields=[_ts_field("key", key)]),
+        _ts_message(f"get_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(singular, f"std::optional<{domain_type}>")]),
+        _ts_message(f"get_many_{plural}_request",
+                    response_type=f"get_many_{plural}_response",
+                    subject=request_subject(component, plural, "get_many"),
+                    fields=[_ts_field("keys", f"std::vector<{key}>")]),
+        _ts_message(f"get_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field("entries", f"std::vector<{singular}_lookup>")]),
+        _ts_message(f"put_{singular}_request",
+                    response_type=f"put_{singular}_response",
+                    subject=request_subject(component, plural, "put"),
+                    fields=[_ts_field("change", f"{singular}_change"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_{singular}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(singular, domain_type)]),
+        _ts_message(f"put_many_{plural}_request",
+                    response_type=f"put_many_{plural}_response",
+                    subject=request_subject(component, plural, "put_many"),
+                    fields=[_ts_field("changes",
+                                      f"std::vector<{singular}_change>"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"put_many_{plural}_response", fields=[
+            _ts_field("result", _RESULT),
+            _ts_field(plural_short, f"std::vector<{domain_type}>")]),
+        _ts_message(f"delete_{singular}_request",
+                    response_type=f"delete_{singular}_response",
+                    subject=request_subject(component, plural, "delete"),
+                    fields=[_ts_field("removal", f"{singular}_removal"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"delete_{singular}_response",
+                    fields=[_ts_field("result", _RESULT)]),
+        _ts_message(f"delete_many_{plural}_request",
+                    response_type=f"delete_many_{plural}_response",
+                    subject=request_subject(component, plural, "delete_many"),
+                    fields=[_ts_field("removals",
+                                      f"std::vector<{singular}_removal>"),
+                            _ts_field("intent", _INTENT)]),
+        _ts_message(f"delete_many_{plural}_response",
+                    fields=[_ts_field("result", _RESULT)]),
     ]
 
-    delete_fields = []
-    for column in pk.get("columns") or []:
-        name = "ids" if column.get("is_uuid") else f"{column.get('column', '')}s"
-        delete_fields.append(_ts_field(name, "std::vector<std::string>"))
-    messages += [
-        _ts_message(
-            f"delete_{singular}_request",
-            response_type=f"delete_{singular}_response",
-            subject=f"{component}.v1.{plural}.delete",
-            fields=delete_fields),
-        _ts_message(
-            f"delete_{singular}_response",
-            fields=[_ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
+    # A scoped read is the plain list with the relation in its addressing, so it
+    # shares the page, the order, the total and the response shape. The column
+    # names both the subject suffix and the field, so the two cannot disagree.
+    # ``scope`` is what makes one verb serve both readings: a node's children,
+    # and everything beneath it.
+    for relation in _relation_columns(entity):
+        messages += paged_list_messages(
+            f"list_by_{relation}_{plural}",
+            request_subject(component, plural, f"list_by_{relation}"),
+            [_ts_field(relation, _column_cpp_type(entity, relation)),
+             _ts_field("scope", _SCOPE,
+                       default="ores::utility::domain::scope::direct")],
+            list_filter, plural_short, domain_type)
 
-    # A current-state entity carries no valid_from/valid_to axis, so it has no
-    # history endpoint. The C++ header omits the request/response pair under
-    # the same ``current_state`` flag; deriving the list here from that one
-    # flag keeps the TypeScript interfaces and subjects in step by
-    # construction rather than by a second, independent gate.
-    if not entity.get("current_state"):
+    if entity.get("has_audit_columns"):
+        messages += paged_list_messages(
+            f"list_{singular}_versions",
+            versions_subject(component, plural, "list"),
+            [_ts_field("key", key)],
+            _ts_field("filter", f"std::optional<{singular}_versions_filter>"),
+            "versions", domain_type)
         messages += [
-            _ts_message(
-                f"get_{singular}_history_request",
-                response_type=f"get_{singular}_history_response",
-                subject=f"{component}.v1.{plural}.history",
-                fields=[_ts_field(pk.get("column", ""), "std::string")]),
-            _ts_message(
-                f"get_{singular}_history_response",
-                fields=[_ts_field("history", f"std::vector<{domain_type}>"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
+            _ts_message(f"get_{singular}_version_request",
+                        response_type=f"get_{singular}_version_response",
+                        subject=versions_subject(component, plural, "get"),
+                        fields=[_ts_field("key", f"{singular}_version_key")]),
+            _ts_message(f"get_{singular}_version_response", fields=[
+                _ts_field("result", _RESULT),
+                _ts_field("version", domain_type)]),
         ]
 
-    for extra in entity.get("extra_list_requests") or []:
-        suffix = extra["name_suffix"]
-        messages += [
-            _ts_message(
-                f"get_{plural}_{suffix}_request",
-                response_type=f"get_{plural}_{suffix}_response",
-                subject=f"{component}.v1.{plural}.{extra['nats_suffix']}",
-                fields=[_ts_field(extra["filter_column"], "std::string"),
-                        _ts_field("offset", "std::uint32_t"),
-                        _ts_field("limit", "std::uint32_t")]),
-            _ts_message(
-                f"get_{plural}_{suffix}_response",
-                fields=[_ts_field(plural_short, f"std::vector<{domain_type}>"),
-                        _ts_field("total_available_count", "int"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
-
-    if entity.get("has_parent_id"):
-        messages += [
-            _ts_message(
-                f"get_{singular}_hierarchy_request",
-                response_type=f"get_{singular}_hierarchy_response",
-                subject=f"{component}.v1.{plural}.hierarchy",
-                fields=[_ts_field("root_id", "std::string"),
-                        _ts_field("from_root", "bool")]),
-            _ts_message(
-                f"get_{singular}_hierarchy_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string"),
-                        _ts_field(
-                            "roots",
-                            "std::vector<ores::utility::domain::hierarchy_node>")]),
-        ]
-
-    if entity.get("read_for_cache"):
-        messages += [
-            _ts_message(
-                f"read_{plural}_for_cache_request",
-                response_type=f"read_{plural}_for_cache_response",
-                subject=f"{component}.v1.{plural}.read",
-                fields=[_ts_field("tenant_id", "std::string")]),
-            _ts_message(
-                f"read_{plural}_for_cache_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string"),
-                        _ts_field(plural_short, f"std::vector<{domain_type}>")]),
-        ]
-
-    # Messages the model declares itself, beside the derived CRUD set. The
-    # C++ header renders the same list at its paste point, so both twins
+    # Messages the model declares itself, beside the derived set, so both twins
     # come from this one section.
     messages += entity.get("declared_messages") or []
 
+    # Whether a caller must have established a session first. Every derived
+    # operation acts on a logged-in caller, so the derived set states true; a
+    # message the model declares may state otherwise in its own drawer. The
+    # value is spelled for the renderer: both protocol twins emit it into C++
+    # and TypeScript, where a Python bool is not a literal.
+    for message in messages:
+        if message.get("subject"):
+            message.setdefault("requires_session", "true")
+
+    # A read-only entity derives its reads and no writes. The write verbs are
+    # then operations the model states itself, which is what a row write cannot
+    # express: an account's password is hashed, its lockout counted and its TOTP
+    # secret minted, and none of those is a column a client may set.
+    if entity.get("read_only") or entity.get("client_read_only"):
+        messages = [
+            message for message in messages
+            if not message["name"].startswith(_WRITE_OPERATION_PREFIXES)
+            and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)
+        ]
+
     return messages
+
+
+def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
+    """A junction projected onto the entity shape every render reads.
+
+    A junction is an entity whose key spans the two sides it links, so the
+    protocol derivation and the shell projection address it as one. The shape
+    is built here once rather than by each of them, because a junction that
+    gained a side would otherwise gain it in the protocol and not in the
+    shell -- the same drift a raw subject literal causes, one level up.
+
+    The key carries the whole pair and never half of it, which is what makes
+    addressing one link unambiguous. A junction links rows and carries no
+    ``valid_from``/``valid_to`` axis, so it has no versions sub-resource; the
+    plural is the junction's own name, because a table that links accounts to
+    parties is named for the links and not for one of them.
+
+    The caller adds ``messages``, ``operations``, ``write_fields`` and
+    ``shell`` on top: those are derivations of this shape, not members of it.
+    """
+    name = junction.get("name", "")
+    sides = (junction.get("left") or {}, junction.get("right") or {})
+    return {
+        "component": junction.get("component", ""),
+        "entity_singular": junction.get("name_singular", ""),
+        "entity_plural": name,
+        "entity_plural_short": name,
+        "current_state": True,
+        "primary_key": {
+            "columns": [{"column": side.get("column", ""),
+                         "cpp_type": side.get("cpp_type") or "std::string",
+                         "is_uuid": side.get("type") == "uuid"}
+                        for side in sides],
+        },
+        "columns": [{"column": side.get("column", ""),
+                     "cpp_type": side.get("cpp_type") or "std::string"}
+                    for side in sides]
+        + [{"column": _column_name(column),
+            "cpp_type": column.get("cpp_type") or "std::string"}
+           for column in junction.get("columns") or []],
+        "extra_list_requests": [
+            {"filter_column": side["column"],
+             "nats_suffix": f"list_by_{side['column']}"}
+            for side in sides if side.get("list_by")],
+    }
 
 
 def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]:
-    """Derive a junction's generic relationship protocol message list.
+    """Derive a junction's message list: the entity set, keyed by both sides.
 
-    The list is the model of the ``{{#junction}}`` block of
-    ``cpp_protocol.hpp.mustache``, which is the entity protocol's shape
-    plus the relationship verbs: a paged unscoped read of the junction rows
-    (the entity-mirroring read a listing calls), a paged by-side read per
-    ``:list_by:`` side returning the ``<junction>_view`` payload, a paged
-    ``:replace_by:`` whole-set replacement per side, a batch additive
-    ``save`` that leaves omitted rows alone, a batch ``delete`` by the
-    pair, a count per side -- both sides, because the repository serves
-    both -- and the view the by-side read returns. The two twins render
-    from this one list, so a field added to one appears in the other.
+    A junction is an entity whose key spans the two sides it links, so it
+    declares the same verbs as any other resource and addresses one link by
+    both columns at once. Its key record carries the whole pair and never half
+    of it, which is what makes addressing one link unambiguous.
 
-    Must be called on the enriched junction, after ``core.generate_from_model``
-    has stamped the sides' ``is_uuid``/``is_date`` flags, the columns'
-    ``ts_type`` and the repository key aliases. The by-side read and the
-    replacement keep the subjects they already emitted, so a junction that
-    renders them today keeps addressing the same endpoint.
+    A by-side read is a scoped read of the same collection: each side the model
+    opted into ``:list_by:=`` contributes ``list_by_<column>``, which is the
+    plain list with that side in its addressing. The reply is a page of link
+    rows, as any scoped read replies, so a caller resolves the codes it wants
+    to display with ``get_many`` rather than through a payload type of its own.
+
+    A junction with no client-facing write surface derives the reads only. The
+    wire has no read-only flag -- authorisation is what refuses a write -- but a
+    model that states the surface has no writes should not emit messages for
+    operations that cannot happen.
+
+    Derived by projecting the junction onto the entity shape and delegating, so
+    a change to the entity protocol reaches junctions in the same commit rather
+    than being mirrored here by hand.
     """
-    component = junction.get("component", "")
-    name = junction.get("name", "")
-    singular = junction.get("name_singular", "")
-    domain_type = f"ores::{component}::domain::{singular}"
-    actor_fields = ("modified_by", "performed_by", "change_reason_code",
-                    "change_commentary")
-    sides = (junction.get("left") or {}, junction.get("right") or {})
-
-    messages: list[dict[str, Any]] = [
-        _ts_message(
-            f"get_{name}_request",
-            response_type=f"get_{name}_response",
-            subject=f"{component}.v1.{name}.list",
-            fields=[_ts_field("offset", "std::uint32_t"),
-                    _ts_field("limit", "std::uint32_t")]),
-        _ts_message(
-            f"get_{name}_response",
-            fields=[_ts_field(name, f"std::vector<{domain_type}>"),
-                    _ts_field("total_available_count", "int"),
-                    _ts_field("success", "bool"),
-                    _ts_field("message", "std::string")]),
-    ]
-
-    for side in sides:
-        short = side.get("column_short", "")
-        if not side.get("list_by"):
-            continue
-        messages += [
-            _ts_message(
-                f"get_{name}_by_{short}_request",
-                response_type=f"get_{name}_by_{short}_response",
-                subject=f"{component}.v1.{name}.list_by_{side['column']}",
-                fields=[_ts_field(side["column"], "std::string"),
-                        _ts_field("offset", "std::uint32_t"),
-                        _ts_field("limit", "std::uint32_t")]),
-            _ts_message(
-                f"get_{name}_by_{short}_response",
-                fields=[_ts_field(name, f"std::vector<{singular}_view>"),
-                        _ts_field("total_available_count", "int"),
-                        _ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
-
-    # A junction with no client-facing write surface carries no write verb
-    # on either twin: the C++ block guards the same three, and this list
-    # feeds both. ``wire_write_enabled`` folds the repository's read_only
-    # together with the client-only switch; the fallback keeps a
-    # hand-built junction dict, as the tests use, on the read_only rule.
+    entity = junction_entity_shape(junction)
+    messages = entity_protocol_messages(entity)
+    # ``wire_write_enabled`` folds the repository's read_only together with the
+    # client-only switch; the fallback keeps a hand-built junction dict, as the
+    # tests use, on the read_only rule.
     if junction.get(
             "wire_write_enabled",
             not (junction.get("read_only") or junction.get("client_read_only"))):
-        messages += [
-            _ts_message(
-                f"save_{singular}_request",
-                response_type=f"save_{singular}_response",
-                subject=f"{component}.v1.{name}.save",
-                fields=[_ts_field(name, f"std::vector<{domain_type}>")]),
-            _ts_message(
-                f"save_{singular}_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-            _ts_message(
-                f"delete_{singular}_request",
-                response_type=f"delete_{singular}_response",
-                subject=f"{component}.v1.{name}.delete",
-                fields=[_ts_field(f"{side['column']}s",
-                                  "std::vector<std::string>") for side in sides]),
-            _ts_message(
-                f"delete_{singular}_response",
-                fields=[_ts_field("success", "bool"),
-                        _ts_field("message", "std::string")]),
-        ]
+        return messages
+    return [message for message in messages
+            if not message["name"].startswith(_WRITE_OPERATION_PREFIXES)
+            and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
 
-        for side in sides:
-            short = side.get("column_short", "")
-            if not side.get("replace_by"):
-                continue
-            messages += [
-                _ts_message(
-                    f"replace_{name}_by_{short}_request",
-                    response_type=f"replace_{name}_by_{short}_response",
-                    subject=f"{component}.v1.{name}.replace_by_{side['column']}",
-                    fields=[_ts_field(side["column"], "std::string"),
-                            _ts_field(name, f"std::vector<{domain_type}>")]
-                           + [_ts_field(f, "std::string") for f in actor_fields]),
-                _ts_message(
-                    f"replace_{name}_by_{short}_response",
-                    fields=[_ts_field("success", "bool"),
-                            _ts_field("message", "std::string")]),
-            ]
 
-    for side in sides:
-        short = side.get("column_short", "")
-        messages += [
-            _ts_message(
-                f"count_{name}_by_{short}_request",
-                response_type=f"count_{name}_by_{short}_response",
-                subject=f"{component}.v1.{name}.count_by_{side['column']}",
-                fields=[_ts_field(side["column"], "std::string")]),
-            _ts_message(
-                f"count_{name}_by_{short}_response",
-                fields=[_ts_field("total_available_count", "int")]),
-        ]
+# Which verb a derived request states, from the request's own name. A versions
+# list is a list and a single version is a get, but each answers a different
+# sub-resource and so takes a different body, so the suffix is read first.
+_OPERATION_PREFIXES = (
+    ("list_by_", "list_scoped"),
+    ("put_many_", "put_many"),
+    ("delete_many_", "delete_many"),
+    ("get_many_", "get_many"),
+    ("list_", "list"),
+    ("get_", "get"),
+    ("put_", "put"),
+    ("delete_", "delete"),
+)
 
-    view_fields = [_ts_field(singular, domain_type)]
-    for side in sides:
-        if side.get("enrich_code"):
-            view_fields.append(
-                _ts_field(f"{side['column_short']}_code", "std::string"))
-    messages.append(_ts_message(f"{singular}_view", fields=view_fields))
 
-    return messages
+def _operation_verb(name: str) -> str:
+    """The verb one derived request states, or an empty string if none."""
+    if name.endswith("_versions_request"):
+        return "list_versions"
+    if name.endswith("_version_request"):
+        return "get_version"
+    for prefix, verb in _OPERATION_PREFIXES:
+        if name.startswith(prefix):
+            return verb
+    return ""
+
+
+def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The operations a resource addresses, in the order the messages state them.
+
+    A message with a subject is an operation; one without is a record. The
+    method name is the request's own name without its ``_request`` suffix, so
+    one rename moves the subject, the service method and the handler method
+    together rather than three names kept in step by hand.
+
+    Declared messages are left out: an operation model states its whole
+    protocol and its handler beside it, so the derived surface a generated
+    handler serves stops at what the derivation owns.
+    """
+    operations: list[dict[str, Any]] = []
+    for message in messages:
+        if not message.get("derived") or not message.get("subject"):
+            continue
+        fields = message.get("fields") or []
+        names = [field.get("name") for field in fields]
+        leading_type = fields[0].get("cpp_type", "") if fields else ""
+        verb = _operation_verb(message["name"])
+        operations.append({
+            "method": message["name"][:-len("_request")],
+            "request": message["name"],
+            "response": message.get("response_type", ""),
+            "subject": message["subject"],
+            "verb": verb,
+            "fields": fields,
+            # What the request carries, so a service body states the page, the
+            # order and the filter it was handed rather than assuming them.
+            "has_order": "order" in names,
+            "has_filter": "filter" in names,
+            "has_scope": "scope" in names,
+            # The field a paged list is scoped by: the relation for a scoped
+            # read, the key for a versions read, nothing for a plain list.
+            "leading": names[0] if names else "",
+            # The repository takes a relation as text whatever the column is,
+            # so a service body that passes one states the conversion from the
+            # column's own type.
+            "leading_is_uuid": "boost::uuids::uuid" in leading_type,
+            "leading_is_timestamp": "time_point" in leading_type,
+            # A write is an operation that changes state, and the permission
+            # it needs is the one the resource already names for that kind of
+            # change. A read needs authentication alone, so it names none.
+            "is_write": verb in ("put", "put_many", "delete", "delete_many"),
+            "permission": ("delete" if verb in ("delete", "delete_many")
+                           else "write" if verb in ("put", "put_many") else ""),
+        })
+    return operations
+
+
+def operations_by_verb(
+        operations: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """The same operations grouped by verb, for a template with a body per verb.
+
+    A handler method is uniform whatever the verb, because the service answers
+    the request; a service method is not, because the storage call it makes
+    depends on what the verb asks for. Grouping here keeps the branch in the
+    template instead of in the C++.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for operation in operations:
+        grouped.setdefault(operation["verb"], []).append(operation)
+    return grouped
 
 
 def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
@@ -2746,6 +3159,33 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
         # the model key takes the alias's own name.
         if "response" in props:
             entry["response_type"] = props["response"]
+        # How a caller authenticates. An operation that establishes the session
+        # cannot present one, so the model states it beside the subject rather
+        # than leaving each client to guess from the name. The value is spelled
+        # for the renderer because both protocol twins emit it as a literal.
+        auth = str(props.get("auth", "")).strip().lower()
+        if auth not in ("", "none"):
+            raise ValueError(
+                f"message {node.title} states :auth: {props['auth']!r}; the "
+                "only value is 'none', which marks an operation a caller runs "
+                "before it has a session"
+            )
+        if "subject" in props:
+            entry["requires_session"] = "false" if auth == "none" else "true"
+        # A command that destroys the environment it runs in cannot be replayed
+        # unattended, and nothing about its shape says so: `reset-system` looks
+        # like any other zero-argument operation. The model states it, so a
+        # generated script carries the warning and a runner can refuse it
+        # rather than discover it by running it.
+        destructive = str(props.get("destructive", "")).strip().lower()
+        if destructive:
+            if destructive not in ("true", "yes", "1"):
+                raise ValueError(
+                    f"message {node.title} states :destructive: "
+                    f"{props['destructive']!r}; the values that mean yes are "
+                    "'true', 'yes' and '1'"
+                )
+            entry["destructive"] = True
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -2834,7 +3274,30 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)
 
+    # The shell's view of the same list: one command per addressable message,
+    # so the REPL surface and the protocol are one declaration.
+    op["shell_commands"] = shell_command_projection(messages)
+    # The unit-local helpers are emitted only when a command needs them, so an
+    # unused static function is not compiled into every unit.
+    op["shell_has_bool"] = any(
+        field["is_bool"]
+        for command in op["shell_commands"]
+        for field in command["positionals"] + command["flags"]
+    )
+    op["shell_has_list"] = any(
+        field["is_list"]
+        for command in op["shell_commands"]
+        for field in command["positionals"] + command["flags"]
+    )
+    # The anonymous namespace holds those two helpers, so it is emitted only
+    # when one of them is.
+    op["shell_has_helpers"] = bool(op["shell_has_bool"] or op["shell_has_list"])
+    # Mustache cannot ask a list for its length, so the count the unit's own
+    # test asserts is derived here.
+    op["shell_command_count"] = len(op["shell_commands"])
+
     _reject_silent_ts_gap(path, messages, doc.file_properties)
+    _reject_silent_shell_gap(path, op["shell_commands"], doc.file_properties)
 
     return {"operation": op}
 
@@ -2870,9 +3333,708 @@ def _reject_silent_ts_gap(
     )
 
 
+# The C++ types a generated shell command fills from one command-line token.
+# A type outside this set has no token form, so the model must map it here or
+# switch the facet off rather than render a unit that cannot compile.
+_SHELL_TOKEN_TYPES = frozenset({
+    "std::string",
+    "bool",
+    "int",
+    "std::int32_t",
+    "std::int64_t",
+    "std::uint16_t",
+    "std::uint32_t",
+    "std::uint64_t",
+    "double",
+    "boost::uuids::uuid",
+    # A timestamp and an address have a text form but no lexical_cast, so the
+    # generated unit's read_token states their conversions itself. This set is
+    # what those helpers fill, or a model is refused for a type they can read.
+    "std::chrono::system_clock::time_point",
+    "boost::asio::ip::address",
+})
+# The one container form the shell can fill: a comma-separated token.
+_SHELL_LIST_TYPE = "std::vector<std::string>"
+# The trailing words a message name carries that are not part of the action.
+_SHELL_NAME_NOISE = frozenset({"request", "command", "typed"})
+
+
+def shell_command_name(message_name: str) -> str:
+    """The REPL command a declared message becomes.
+
+    The trailing words name the artefact rather than the action, so they are
+    dropped in whatever order the model wrote them: ``save_account_request``
+    becomes ``save-account``, and ``get_accounts_request_typed`` becomes the
+    same command as ``get_accounts_request``.
+    """
+    words = message_name.split("_")
+    # The last word stands even when it is noise: a message named after the
+    # artefact alone would otherwise give the menu an empty command.
+    while len(words) > 1 and words[-1] in _SHELL_NAME_NOISE:
+        words.pop()
+    return "-".join(words)
+
+
+def _shell_field(field: dict[str, Any]) -> dict[str, Any]:
+    """One declared request field, as the shell unit asks for it.
+
+    A field the model gave a ``:default:`` is optional, so it arrives as a
+    ``--<name>`` flag and the struct's own initialiser stands when the caller
+    omits it. A field without one is a positional argument.
+    """
+    cpp = (field.get("cpp_type") or "std::string").strip()
+    is_list = cpp == _SHELL_LIST_TYPE
+    return {
+        "name": field["name"],
+        "cpp_type": cpp,
+        "default": field.get("default"),
+        "is_optional": field.get("default") is not None,
+        "is_list": is_list,
+        "is_string": cpp == "std::string",
+        "is_bool": cpp == "bool",
+        "is_number": cpp in ("int", "std::uint32_t", "std::uint64_t"),
+        "needs_from_token": not is_list and cpp not in ("std::string", "bool"),
+        "fillable": is_list or cpp in _SHELL_TOKEN_TYPES,
+    }
+
+
+def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The shell commands a declared protocol yields, one per addressable message.
+
+    A message is addressable when it states a subject and a response: the
+    subject is what the command sends to and the response is what it prints, so
+    a payload struct has neither and a request with no response answers with
+    nothing the shell could show.
+
+    ``unsupported`` lists the fields a token cannot fill. The renderer emits the
+    command regardless, so an unfillable field fails the build rather than
+    disappearing from the surface; :func:`_reject_silent_shell_gap` reports it
+    when the model has opted in.
+
+    ``public`` marks an operation a caller runs before it has a session --
+    logging in, signing up, reading the signing key. Such a command presents no
+    token and refuses none, because the caller has none to present. It is read
+    from the message's own ``requires_session``, which is the same fact the
+    protocol carries, so the two cannot drift.
+    """
+    commands: list[dict[str, Any]] = []
+    for message in messages:
+        subject = message.get("subject")
+        response = message.get("response_type")
+        if not subject or not response:
+            continue
+        public = message.get("requires_session") == "false"
+        fields = [_shell_field(field) for field in message.get("fields") or []]
+        positionals = [field for field in fields if not field["is_optional"]]
+        flags = [field for field in fields if field["is_optional"]]
+        command = shell_command_name(message["name"])
+        commands.append({
+            "command": command,
+            "identifier": command.replace("-", "_"),
+            "request": message["name"],
+            "response_type": response,
+            "subject": subject,
+            "public": public,
+            # Whether replaying the command destroys the environment it runs
+            # in. The model states it, because the shape does not: a reset and
+            # a status read are both a bare command name.
+            "is_destructive": bool(message.get("destructive")),
+            "positionals": positionals,
+            "flags": flags,
+            "positional_count": len(positionals),
+            "has_positionals": bool(positionals),
+            "has_flags": bool(flags),
+            "usage": shell_command_usage(command, positionals, flags),
+            "invocation": " ".join(
+                [command]
+                + [_sentinel_for_field(field["name"], field["cpp_type"])
+                   for field in positionals]),
+            "unsupported": [field["name"] for field in fields
+                            if not field["fillable"]],
+        })
+    return commands
+
+
+def shell_command_usage(command: str, positionals: list[dict[str, Any]],
+                        flags: list[dict[str, Any]]) -> str:
+    """The one-line help a generated command registers."""
+    parts = [command]
+    parts.extend(f"<{field['name']}>" for field in positionals)
+    parts.extend(f"[--{field['name']} <v>]" for field in flags)
+    return " ".join(parts)
+
+
+def _reject_silent_shell_gap(
+    path: Path | str, commands: list[dict[str, Any]],
+    file_properties: dict[str, str],
+) -> None:
+    """Reject an opted-in model whose tokens cannot fill a declared field.
+
+    The facet is opt-in, so a model that has not asked for a shell unit is left
+    alone: the same projection serves every operation model and most of them
+    render no unit at all.
+    """
+    unsupported = sorted({
+        f"{command['command']}.{name}"
+        for command in commands
+        for name in command["unsupported"]
+    })
+    if not unsupported:
+        return
+    enabled = str(
+        file_properties.get("ores.cpp.shell-command.enabled", "")
+    ).strip().lower()
+    if enabled not in ("true", "yes", "1"):
+        return
+    raise ValueError(
+        f"{Path(path).name}: no shell token form for {unsupported}; map the "
+        "type in org_loader._SHELL_TOKEN_TYPES, or set "
+        "':ores.cpp.shell-command.enabled: nil' in the file's :PROPERTIES: "
+        "drawer to skip the shell facet"
+    )
+
+
+def shell_menu_name(model_type: str, model_data: dict[str, Any]) -> str:
+    """The REPL submenu a model's generated shell unit registers.
+
+    One rule with two readers: the output-path resolver places a document under
+    the menu's directory and the renderer states the menu in the document's
+    filetag, so a menu computed twice would file a document under one name and
+    tag it with another.
+    """
+    if model_type == "operation":
+        return (model_data.get("operation") or {}).get("entity_singular", "")
+    if model_type == "junction":
+        # A junction states its plural as ``name``: the table that links
+        # accounts to parties is named for the links, not for either side.
+        junction = model_data.get("junction") or {}
+        return junction.get("entity_plural") or junction.get("name") or ""
+    entity = model_data.get("domain_entity") or {}
+    return entity.get("entity_plural") or entity.get("entity_singular") or ""
+
+
+# The namespace generated document ids are minted in. A constant, not a fresh
+# random id per run: org-roam links documents by id, so a regenerated recipe
+# that changed its id would orphan every reference to it. Deriving the id from
+# the document's own name instead keeps it stable across runs and unique across
+# documents.
+_RECIPE_ID_NAMESPACE = uuid.UUID("6F1D2C3A-7E4B-4C58-9A21-8D3F5B7C0E64")
+
+
+def recipe_org_id(name: str) -> str:
+    """The stable org-roam id for a generated document called ``name``."""
+    return str(uuid.uuid5(_RECIPE_ID_NAMESPACE, name)).upper()
+
+
+# What a shell verb asks of the store, in the words a recipe uses. Keyed by the
+# verb the protocol states rather than by the command name, because two commands
+# may serve one verb -- a put becomes add and set -- and what differs between
+# them is the precondition, which is stated separately below.
+_SHELL_VERB_SENTENCE = {
+    "list": "Reads one page of the collection. Nothing addresses it but the "
+            "caller's tenant, so it is the read that shows what exists.",
+    "get": "Reads the one row its key addresses. A key states every "
+           "identifying column, so a partial key is refused rather than "
+           "answered with an arbitrary row.",
+    "get_many": "Reads several rows in one request, one key group per row.",
+    "put": "Writes a row.",
+    "put_many": "Writes several rows in one request. The count states how "
+                "many field groups follow.",
+    "delete": "Removes a row.",
+    "delete_many": "Removes several rows in one request.",
+    "list_versions": "Reads the row's recorded history, newest first.",
+    "get_version": "Reads one recorded version of the row.",
+    "list_scoped": "Reads one page of the rows that share a relation value. "
+                   "The relation is part of the address rather than a filter "
+                   "applied after the read.",
+}
+
+# What separates two commands that serve the same verb. A create and a replace
+# are one verb stating two different claims about the row's existence.
+_SHELL_PRECONDITION_SENTENCE = {
+    "must_not_exist": "The change states that the row must not exist, so a "
+                      "create that collides with an existing row is refused "
+                      "rather than replacing it.",
+    "must_match_version": "The change states the version it expects, so it is "
+                          "a compare-and-swap against the version the caller "
+                          "last read.",
+    "any": "The change states no precondition, so it replaces whatever row the "
+           "key already addresses.",
+}
+
+
+def _shell_command_commentary(command: dict[str, Any]) -> str:
+    """The literate paragraph one shell command carries in a recipe.
+
+    Two projections reach this: a derived entity command, whose shape the verb
+    and its precondition describe, and a declared operation, which states no
+    verb because its meaning is the server's. They are told apart by the key
+    only the derived one carries.
+    """
+    if not command.get("kind"):
+        return _declared_command_commentary(command)
+    kind = command["kind"]
+    sentences = [_SHELL_VERB_SENTENCE.get(command.get("verb", ""), "").strip()]
+    if kind in ("put", "put_many"):
+        sentences.append(
+            _SHELL_PRECONDITION_SENTENCE.get(command.get("precondition", ""), ""))
+    if command.get("has_intent"):
+        sentences.append(
+            "The change carries a reason and a commentary, which the server "
+            "records on it so the row's history says why it moved.")
+    if command.get("allows_version"):
+        sentences.append(
+            "Passing --version makes the write conditional on the version the "
+            "caller last read.")
+    return " ".join(sentence for sentence in sentences if sentence)
+
+
+def _declared_command_commentary(command: dict[str, Any]) -> str:
+    """The paragraph a declared operation carries.
+
+    A declared operation states no verb, because what it does is the handler's
+    business rather than a relation the store can derive. So the paragraph
+    states what the command is: the request it sends, the reply it prints, and
+    whether a caller needs a session to run it.
+    """
+    sentences = [
+        f"Sends ={command.get('request', '')}= and prints "
+        f"={command.get('response_type', '')}=, so the shape is the protocol's "
+        "and the meaning is the service's."
+    ]
+    names = [field["name"] for field in command.get("positionals") or []]
+    if names:
+        sentences.append(
+            "It reads " + ", ".join(f"={name}=" for name in names)
+            + ", in that order.")
+    if command.get("public"):
+        sentences.append(
+            "A caller runs it before it has a session, so the command "
+            "presents no token and refuses none.")
+    else:
+        sentences.append("The caller must have established a session first.")
+    if command.get("is_destructive"):
+        sentences.append(
+            "This command destroys the system it runs against. Do not replay "
+            "it against an environment you need.")
+    return " ".join(sentences)
+
+
+def shell_recipe_document(component: str, menu: str, singular: str,
+                          plural: str, commands: list[dict[str, Any]],
+                          is_operation: bool) -> dict[str, Any]:
+    """The literate recipe document a model's shell surface renders as.
+
+    One entity, one document. Each command becomes a section that states what
+    it does, the shape it asks for, and the subject it is addressed at, and
+    that exports its own script into the shell's library. Mustache cannot loop
+    twice over one list with different keys, so the document is assembled here
+    rather than in the template.
+    """
+    # A recipe is titled as the question it answers, so a generated one reads
+    # like the hand-written recipes it is catalogued beside rather than like a
+    # section heading that wandered into the list.
+    title = f"How do I run the {menu} commands from the shell?"
+    rendered: list[dict[str, Any]] = []
+    for command in commands:
+        name = command["command"]
+        block = f"{menu}-{name}"
+        rendered.append({
+            "command": name,
+            "heading": name,
+            # The block's own name, the id a reader links to, and the script it
+            # exports. All three are built from the menu and the command, so one
+            # rename moves the section, the block and the library file together.
+            "block": block,
+            "id": recipe_org_id(f"{component}.{block}"),
+            "script": f"{block}.ores",
+            # The unit's own help and invocation are written for a caller
+            # already inside the submenu. A script loads at the root menu, so
+            # both state the whole path a reader types.
+            "usage": f"{menu} {command['usage']}",
+            "invocation": f"{menu} {command['invocation']}",
+            "verb": command.get("verb", ""),
+            "subject": command.get("subject", ""),
+            "request": command.get("request", ""),
+            "response_type": command.get("response_type", ""),
+            "commentary": _shell_command_commentary(command),
+            "is_destructive": bool(command.get("is_destructive")),
+        })
+    return {
+        "id": recipe_org_id(f"{component}.{menu}"),
+        "component": component,
+        "menu": menu,
+        "singular": singular,
+        "plural": plural,
+        "title": title,
+        "description": (
+            f"Every command the {menu} submenu answers, with the script each "
+            "one exports into the shell's script library."),
+        "intro": _shell_recipe_intro(menu, plural, rendered, is_operation),
+        "is_operation": is_operation,
+        "commands": rendered,
+        "command_count": len(rendered),
+    }
+
+
+def _shell_recipe_intro(menu: str, plural: str, commands: list[dict[str, Any]],
+                        is_operation: bool) -> str:
+    """The document's opening prose, in the recipe's own voice."""
+    what = ("declared operations" if is_operation
+            else f"the {plural} resource")
+    if len(commands) == 1:
+        return (
+            f"This file documents {what} at the shell. Its one command is "
+            f"=ores-shell> {menu} {commands[0]['command']}=, and the section "
+            "below exports it as a script into "
+            "=projects/ores.shell/scripts/library/=, which the shell can load.")
+    return (
+        f"This file documents {what} at the shell, one section per command. "
+        f"Every command is a subcommand of ={menu}=, and every section exports "
+        "its own script into =projects/ores.shell/scripts/library/=. Loading a "
+        "script runs that one command, so a failure names the command it came "
+        "from.")
+
+
+def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The shell commands an entity's derived operation set yields."""
+    return entity_shell_plan(entity)["commands"]
+
+
+def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
+    """The entity's shell commands, and the facts the unit needs about them.
+
+    A unit emits a helper only when some command needs it and a loop only when
+    a batch verb is present. Mustache cannot ask a list whether any member has
+    a property, so those answers are computed here rather than tested per
+    command.
+    """
+    """The shell's view of an entity's derived operation set.
+
+    One command per operation the entity derives, so the REPL covers exactly
+    the verbs the entity answers and a verb the model gains appears without an
+    edit here. A put becomes two commands, because a create and a replace are
+    one verb that states two different claims.
+
+    ``kind`` is the shape of the handler rather than the verb: six shapes serve
+    the verbs, because a versions read is a paged read addressed by a key and a
+    list-by-relation read is a paged read addressed by a relation. The template
+    branches on the shape and builds each member path itself, so the projection
+    carries names and types rather than C++.
+
+    ``keys`` and ``writes`` are what a caller types. A key column and a write
+    field are shaped alike, because one token fills either; what differs is
+    where the template puts them -- under the key, under the removal, under the
+    change, or inside the loop of a batch verb.
+
+    Only an entity that derives its own protocol reaches here. One whose
+    protocol an operation model owns has no derived request types to name, and
+    its declared operations are what the shell renders instead.
+    """
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    namespace = f"ores::{component}::messaging"
+
+    supplies: dict[str, str] = {}
+    for column in list(entity.get("columns") or []) + list(
+            (entity.get("primary_key") or {}).get("columns") or []):
+        name = column.get("name") or column.get("column")
+        if not name:
+            continue
+        if column.get("is_minted"):
+            supplies[name] = "minted"
+        elif column.get("is_session_party"):
+            supplies[name] = "session_party"
+        else:
+            supplies[name] = "user"
+
+    def _input(name: str, cpp_type: str) -> dict[str, Any]:
+        cpp = (cpp_type or "std::string").strip()
+        supply = supplies.get(name, "user")
+        return {
+            "name": name,
+            "cpp_type": cpp,
+            "is_user": supply == "user",
+            "is_minted": supply == "minted",
+            "is_session_party": supply == "session_party",
+            "is_string": cpp == "std::string",
+            "is_bool": cpp == "bool",
+            "is_list": cpp == _SHELL_LIST_TYPE,
+            "needs_from_token": cpp not in ("std::string", "bool"),
+            "fillable": cpp == _SHELL_LIST_TYPE or cpp in _SHELL_TOKEN_TYPES,
+        }
+
+    keys = [
+        _input(column.get("column", ""), column.get("cpp_type", ""))
+        for column in (entity.get("primary_key") or {}).get("columns") or []
+    ]
+    writes = [
+        _input(field.get("name", ""), field.get("cpp_type", ""))
+        for field in entity.get("write_fields") or []
+    ]
+    # A batch verb reads its positionals in groups, so each input states the
+    # offset it occupies within its group.
+    for index, item in enumerate(keys):
+        item["index"] = index
+    for index, item in enumerate(writes):
+        item["index"] = index
+
+    # verb -> (kind, command). A put is absent because it becomes two commands.
+    shapes = {
+        "list": ("paged", "list"),
+        "get": ("key_read", "get"),
+        "get_many": ("get_many", "get-many"),
+        "put_many": ("put_many", "put-many"),
+        "delete": ("delete", "delete"),
+        "delete_many": ("delete_many", "delete-many"),
+        "list_versions": ("versions", "versions"),
+        "get_version": ("version_read", "version"),
+    }
+
+    def _used_inputs(kind: str) -> list[dict[str, Any]]:
+        if kind in ("put", "put_many"):
+            return writes
+        if kind in ("paged", "list_by"):
+            return []
+        return keys
+
+    def _command(operation: dict[str, Any], kind: str, name: str,
+                 precondition: str = "",
+                 relation: dict[str, Any] | None = None) -> dict[str, Any]:
+        command = {
+            "command": name,
+            "identifier": name.replace("-", "_"),
+            "verb": operation.get("verb", ""),
+            "kind": kind,
+            "request": operation["request"],
+            "response_type": operation["response"],
+            "subject": operation["subject"],
+            "keys": keys,
+            "writes": writes,
+            "key_arity": len(keys),
+            "write_arity": len(writes),
+            "relation": relation,
+            "has_order": bool(operation.get("has_order")),
+            "has_intent": operation.get("verb") in
+                ("put", "put_many", "delete", "delete_many"),
+            "precondition": precondition,
+            "allows_version": kind in ("put", "delete") and precondition != "must_not_exist",
+            # Only what the handler actually asks for: a paged read takes no
+            # key, and a write takes the write record rather than the key,
+            # because the key travels inside it.
+            "unsupported": sorted(
+                item["name"] for item in _used_inputs(kind) if not item["fillable"]),
+        }
+        # The flags the handler declares. Exact rather than uniform, so a
+        # command that takes no page cannot be handed one.
+        value_flags: list[str] = []
+        switches: list[str] = []
+        if command["has_order"]:
+            value_flags += ["offset", "limit", "order"]
+            switches += ["desc"]
+        if kind == "list_by":
+            value_flags += ["scope"]
+        if kind == "version_read" or command["allows_version"]:
+            value_flags += ["version"]
+        if kind == "put_many":
+            value_flags += ["count"]
+        command["flags"] = value_flags
+        command["switches"] = switches
+        # Mustache cannot compare a string, so the shape is also stated as a
+        # flag per shape and the template selects a body by section name.
+        for shape in ("paged", "list_by", "versions", "key_read", "version_read",
+                      "put", "put_many", "delete", "get_many", "delete_many"):
+            command[f"is_{shape}"] = kind == shape
+        # How many positionals the command reads, and whether that count is
+        # fixed. A batch verb reads a whole number of groups, so only a
+        # remainder is an error.
+        if kind in ("paged", "list_by"):
+            command["positional_count"] = 1 if kind == "list_by" else 0
+            command["exact_count"] = True
+        elif kind in ("put", "put_many"):
+            command["positional_count"] = len(writes)
+            command["exact_count"] = kind == "put"
+        elif kind == "delete_many":
+            command["positional_count"] = len(keys)
+            command["exact_count"] = False
+        elif kind == "get_many":
+            command["positional_count"] = len(keys)
+            command["exact_count"] = False
+        else:
+            command["positional_count"] = len(keys)
+            command["exact_count"] = True
+        command["usage"] = _entity_shell_usage(command)
+        command["invocation"] = _entity_shell_invocation(command)
+        return command
+
+    commands: list[dict[str, Any]] = []
+    for operation in entity.get("operations") or []:
+        verb = operation.get("verb", "")
+        if verb == "put":
+            commands.append(_command(operation, "put", "add", "must_not_exist"))
+            commands.append(_command(operation, "put", "set", "any"))
+            continue
+        # A scoped read's verb names the shape and not the column it is scoped
+        # by: the derivation states the relation in `leading`, so the command
+        # and its subject are built from that rather than from the verb.
+        relation = ""
+        if verb == "list_scoped":
+            relation = operation.get("leading", "")
+        elif verb.startswith("list_by_"):
+            relation = verb[len("list_by_"):]
+        if relation:
+            addressed_by = _input(
+                relation, _column_cpp_type(entity, relation))
+            command = _command(operation, "list_by",
+                               f"by-{relation.replace('_', '-')}",
+                               relation=addressed_by)
+            command["unsupported"] = sorted(
+                item["name"] for item in [addressed_by] if not item["fillable"])
+            command["usage"] = _entity_shell_usage(command)
+            command["invocation"] = _entity_shell_invocation(command)
+            commands.append(command)
+            continue
+        if verb in shapes:
+            kind, name = shapes[verb]
+            commands.append(_command(operation, kind, name))
+
+    def _any(predicate) -> bool:
+        return any(predicate(item) for command in commands
+                   for item in command["keys"] + command["writes"])
+
+    kinds = {command["kind"] for command in commands}
+    # A verb the projection has no shape for would be skipped in silence, and
+    # an entity would answer fewer verbs from the shell than it derives with
+    # nothing to say so. The plan names them instead.
+    known = set(shapes) | {"put", "list_scoped"}
+    uncovered = sorted({
+        operation["verb"] for operation in entity.get("operations") or []
+        if operation.get("verb") not in known
+    })
+    return {
+        "commands": commands,
+        "uncovered_verbs": uncovered,
+        "command_count": len(commands),
+        "has_order": any(command["has_order"] for command in commands),
+        "has_list": _any(lambda item: item["is_list"]),
+        "has_bool": _any(lambda item: item["is_bool"]),
+        "has_minted": _any(lambda item: item["is_minted"]),
+        "has_session_party": _any(lambda item: item["is_session_party"]),
+        "has_batch": bool(kinds & {"get_many", "put_many", "delete_many"}),
+        "has_version": bool(kinds & {"version_read", "put", "delete"}),
+        "any_versioned": any(command["allows_version"] for command in commands),
+        "has_helpers": bool(commands),
+    }
+
+
+# The value a generated script sends for a field. A generator cannot invent a
+# real id, and a recipe that sent nothing would fail before it left the client:
+# a uuid the shell cannot parse, or an arity the command refuses, proves only
+# that the client is strict. So a generated script sends a well-formed value
+# that addresses nothing. A service that answers "not found" has then proved
+# the command is registered, the subject has a subscriber and the request
+# decoded -- which is what the script exists to check.
+_SENTINEL_VALUES = {
+    "boost::uuids::uuid": "00000000-0000-0000-0000-000000000000",
+    "std::string": "__none__",
+    "bool": "false",
+    "int": "0",
+    "std::int32_t": "0",
+    "std::int64_t": "0",
+    "std::uint16_t": "0",
+    "std::uint32_t": "0",
+    "std::uint64_t": "0",
+    "double": "0",
+    "std::chrono::system_clock::time_point": "1970-01-01T00:00:00Z",
+    "boost::asio::ip::address": "0.0.0.0",
+    "std::vector<std::string>": "__none__",
+}
+
+# A write states an intent, and the reason code is an enum value on the wire
+# rather than free text, so the script sends a code the schema seeds.
+_SENTINEL_REASON = "system.new_record"
+_SENTINEL_COMMENTARY = "generated_script"
+
+
+def _sentinel_value(cpp_type: str) -> str:
+    """A well-formed value of ``cpp_type`` that addresses no row."""
+    return _SENTINEL_VALUES.get((cpp_type or "").strip(), "__none__")
+
+
+def _sentinel_for_field(name: str, cpp_type: str) -> str:
+    """A sentinel for one declared field, by name where the name decides.
+
+    A write's reason code is an enum the schema seeds and its commentary is
+    free text, so a generic string sentinel would be refused before the
+    request reached the handler -- and a script that never reaches the handler
+    checks nothing.
+    """
+    if name == "reason_code":
+        return _SENTINEL_REASON
+    if name == "commentary":
+        return _SENTINEL_COMMENTARY
+    return _sentinel_value(cpp_type)
+
+
+def _entity_shell_invocation(command: dict[str, Any]) -> str:
+    """The command line a generated script sends.
+
+    Built beside :func:`_entity_shell_usage` from the same inputs, so the line
+    a script runs is the shape the help states and the two cannot disagree. An
+    optional flag is left out rather than filled, because a script that states
+    only what a command requires is the shortest thing that reaches it.
+    """
+    kind = command["kind"]
+    tokens = [command["command"]]
+    if kind in ("put", "put_many"):
+        if kind == "put_many":
+            tokens += ["--count", "1"]
+        tokens += [_sentinel_value(field["cpp_type"]) for field in command["writes"]]
+    elif kind == "list_by":
+        tokens.append(_sentinel_value(command["relation"]["cpp_type"]))
+    elif kind != "paged":
+        tokens += [_sentinel_value(key["cpp_type"]) for key in command["keys"]]
+    if command["has_intent"]:
+        tokens += [_SENTINEL_REASON, _SENTINEL_COMMENTARY]
+    if kind == "version_read":
+        tokens += ["--version", "1"]
+    # A page of one keeps a generated script's output readable, and a read that
+    # is not paged has no such flag to give.
+    if command["has_order"]:
+        tokens += ["--limit", "1"]
+    return " ".join(tokens)
+
+
+def _entity_shell_usage(command: dict[str, Any]) -> str:
+    """The one-line help a generated entity command registers.
+
+    What a command asks for follows from its shape: a paged read is addressed
+    by nothing, a write by its write record, and everything else by the key.
+    """
+    kind = command["kind"]
+    parts = [command["command"]]
+    if kind in ("put", "put_many"):
+        if kind == "put_many":
+            parts.append("--count <n>")
+        parts.extend(f"<{field['name']}>" for field in command["writes"])
+    elif kind == "list_by":
+        parts.append(f"<{command['relation']['name']}>")
+    elif kind != "paged":
+        parts.extend(f"<{key['name']}>" for key in command["keys"])
+    if command["has_intent"]:
+        parts.append("<reason> <commentary>")
+    if kind == "version_read":
+        parts.append("--version <n>")
+    elif command["allows_version"]:
+        parts.append("[--version <n>]")
+    if command["has_order"]:
+        parts.extend(["[--offset <n>]", "[--limit <n>]",
+                      "[--order <field>]", "[--desc]"])
+    return " ".join(parts)
+
+
 def junction_ts_fields(junction: dict[str, Any]) -> list[dict[str, Any]]:
     """The junction members that need a TypeScript projection, in the order
-    ``domain_types.ts.mustache`` emits them.
 
     The audit tail is hard-coded as strings by the template, so it is not
     listed here. Only the left and right columns and the junction's own

@@ -1,6 +1,5 @@
 :PROPERTIES:
-:ores.cpp.nats-handler.enabled: nil
-:ores.cpp.nats-sub-registrar.enabled: nil
+:ores.cpp.shell-command.enabled: true
 :ID: 6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30
 :END:
 #+title: ores.iam.role

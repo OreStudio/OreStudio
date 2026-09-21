@@ -144,11 +144,11 @@ def test_deleting_the_operation_model_restores_the_bff_route(tmp_path):
     assert BFF_ROUTE_TEMPLATE in _templates(entity)
 
 
-def test_the_real_account_party_junction_now_owns_its_protocol(tmp_path):
-    """The pair the rule existed for is retired. The real junction declares
-    its list read and has no operation model, so it renders its own protocol
-    -- and it still keeps its hand-written messaging stack, whose facets the
-    model disables."""
+def test_the_real_account_party_junction_renders_its_own_protocol(tmp_path):
+    """The pair the rule existed for is retired. The junction declares its list
+    read and has no operation model, so it renders its own protocol -- both
+    twins from one model -- and its hand-written messaging layer, whose facets
+    the model disables, speaks that protocol."""
     junction = tmp_path / "ores.iam.account_party_junction.org"
     junction.write_text(ACCOUNT_PARTY_JUNCTION.read_text(encoding="utf-8"),
                         encoding="utf-8")

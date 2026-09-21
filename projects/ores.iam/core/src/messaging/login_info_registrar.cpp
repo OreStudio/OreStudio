@@ -39,15 +39,17 @@ register_login_info_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<login_info_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_login_info_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_login_info_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_login_info(std::move(msg));
         }));
     return subs;
 }

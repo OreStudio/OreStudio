@@ -41,6 +41,10 @@
 import type { ComponentDefinition, EntityDefinition, ResolvedEntity } from './types.js';
 import type { EntityDescriptor } from '../entity/descriptor.js';
 import { tenantTypeDescriptor } from '../generated/iam/web/tenant_type_declaration.js';
+import { accountContactInformationDescriptor } from '../generated/iam/web/account_contact_information_declaration.js';
+import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
+import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
+import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -111,7 +115,10 @@ export const iamComponent: ComponentDefinition = {
   entities: [
     entity('account', 'personAccounts'),
     entity('role', 'keyMultiple', planned),
-    entity('tenant', 'buildingSkyscraper', planned),
+    wired(accountContactInformationDescriptor, 'accountContactInformation', 'peopleTeam'),
+    wired(accountTypeDescriptor, 'accountType', 'settings'),
+    wired(tenantDescriptor, 'tenant', 'buildingSkyscraper'),
+    wired(tenantStatusDescriptor, 'tenantStatus', 'clock'),
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
     entity('systemSetting', 'settings', planned),
   ],

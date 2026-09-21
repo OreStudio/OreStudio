@@ -1,0 +1,6 @@
+# =get-active-sessions=
+#
+# GENERATED from doc/recipes/shell/session_operations/session_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+session_operations get-active-sessions

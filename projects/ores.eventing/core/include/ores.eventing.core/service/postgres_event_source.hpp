@@ -23,6 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -81,6 +83,20 @@ private:
         publisher_fn publisher;
     };
 
+    /**
+     * @brief Type-erased publisher for one canonical entity event.
+     *
+     * Takes the store's notification and publishes the typed event the
+     * notification names.
+     */
+    using entity_event_publisher_fn =
+        std::function<void(const domain::entity_event_notification&)>;
+
+    struct entity_event_mapping {
+        std::string channel_name;
+        entity_event_publisher_fn publisher;
+    };
+
 public:
     /**
      * @brief Constructs a postgres_event_source.
@@ -129,6 +145,41 @@ public:
     }
 
     /**
+     * @brief Register a mapping from a canonical event's channel to its type.
+     *
+     * The notification trigger publishes the specification's event fields on
+     * @p channel_name: the event identity, the key, the action, the version,
+     * the time and the correlation. The mapping converts each notification
+     * into @p Event -- which knows its own key record -- and publishes it on
+     * the bus. A subscriber then publishes it to NATS on the subject the
+     * action names.
+     *
+     * The conversion is read from the event's own traits, because only the
+     * event knows the columns its key carries.
+     *
+     * @tparam Event The generated event type, which must specialize
+     * entity_event_traits.
+     * @param channel_name The PostgreSQL channel to listen on.
+     */
+    template <typename Event>
+    void register_entity_event_mapping(const std::string& channel_name) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), info)
+            << "Registering canonical event mapping: channel='" << channel_name
+            << "', prefix='" << domain::entity_event_traits<Event>::subject_prefix << "'";
+
+        entity_event_mappings_[channel_name] = entity_event_mapping{
+            .channel_name = channel_name,
+            .publisher = [this, channel_name](
+                             const domain::entity_event_notification& notification) {
+                bus_.publish(domain::entity_event_traits<Event>::from_notification(notification));
+            }};
+
+        listener_.subscribe(channel_name);
+        BOOST_LOG_SEV(lg(), debug) << "Subscribed to PostgreSQL channel: " << channel_name;
+    }
+
+    /**
      * @brief Start the event source.
      *
      * Begins listening for PostgreSQL notifications on all registered channels.
@@ -166,9 +217,16 @@ private:
      */
     void on_entity_change(const domain::entity_change_event& e);
 
+    /**
+     * @brief Dispatches a canonical notification to its registered mapping.
+     */
+    void on_entity_event(const std::string& channel,
+                         const domain::entity_event_notification& e);
+
     event_bus& bus_;
     ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
+    std::unordered_map<std::string, entity_event_mapping> entity_event_mappings_;
     std::string registered_entities_;
     std::atomic<std::uint64_t> parse_failure_count_{0};
 };

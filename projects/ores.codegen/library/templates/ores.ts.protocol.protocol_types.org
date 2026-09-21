@@ -92,6 +92,29 @@ export const subjects = {
 {{/subject}}
 {{/messages}}
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
+{{/subject}}
+{{/messages}}
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+{{#events}}
+    {{action}}: "{{subject}}",
+{{/events}}
+} as const;
 {{/domain_entity}}
 {{#junction}}
 import type { {{name_pascal}} } from '../domain/{{name_singular}}.js';
@@ -117,6 +140,18 @@ export const subjects = {
 {{#messages}}
 {{#subject}}
     {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
 {{/subject}}
 {{/messages}}
 } as const;
@@ -152,6 +187,18 @@ export const subjects = {
 {{#messages}}
 {{#subject}}
     {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
 {{/subject}}
 {{/messages}}
 } as const;

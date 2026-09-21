@@ -44,7 +44,7 @@ data generator produces test accounts for development and CI use.
 - =include/ores.iam.core/ores.iam.hpp= — aggregate include.
 - =include/ores.iam.core/messaging/registrar.hpp= — registers all NATS
   handlers (account, auth, session, role, tenant, bootstrap, reset).
-- =include/ores.iam.core/service/account_service.hpp= — account management
+- =include/ores.iam.core/service/account_operations_service.hpp= — account management
   entry point.
 - =include/ores.iam.core/service/authorization_service.hpp= — authorisation
   and role-check entry point.

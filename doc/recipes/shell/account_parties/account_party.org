@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: C21B8496-BA73-5BCF-8E1D-FD61A605239A
+:END:
+#+title: How do I run the account_parties commands from the shell?
+#+description: Every command the account_parties submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_parties:
+
+This file documents the account_parties resource at the shell, one section per command. Every command is a subcommand of =account_parties=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DC3B170F-DCF9-5C84-8F19-917AEF20E96A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_parties.list=.
+
+#+name: account_parties-list
+#+begin_src ores-shell :tangle account_parties-list.ores :exports none
+account_parties list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 26B081E5-7882-546E-BE6F-29F41635442F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties get <account_id> <party_id>
+#+end_example
+
+It is addressed at =iam.v1.account_parties.get=.
+
+#+name: account_parties-get
+#+begin_src ores-shell :tangle account_parties-get.ores :exports none
+account_parties get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B13F0616-2404-550F-92D9-780FB907E04A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties get-many <account_id> <party_id>
+#+end_example
+
+It is addressed at =iam.v1.account_parties.get_many=.
+
+#+name: account_parties-get-many
+#+begin_src ores-shell :tangle account_parties-get-many.ores :exports none
+account_parties get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EC2CA896-1B95-531A-A6A3-9AED537D018E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties add <account_id> <party_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_parties.put=.
+
+#+name: account_parties-add
+#+begin_src ores-shell :tangle account_parties-add.ores :exports none
+account_parties add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 270E0D5B-9DD1-5B53-8F24-680359FBA515
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties set <account_id> <party_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_parties.put=.
+
+#+name: account_parties-set
+#+begin_src ores-shell :tangle account_parties-set.ores :exports none
+account_parties set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 196CB14C-B444-5529-BF11-79355095A35B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties put-many --count <n> <account_id> <party_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_parties.put_many=.
+
+#+name: account_parties-put-many
+#+begin_src ores-shell :tangle account_parties-put-many.ores :exports none
+account_parties put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 60949913-6295-571E-A033-61D9F5513D1B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties delete <account_id> <party_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_parties.delete=.
+
+#+name: account_parties-delete
+#+begin_src ores-shell :tangle account_parties-delete.ores :exports none
+account_parties delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 638E6C65-5592-54C7-936E-766FEA6EBDF6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties delete-many <account_id> <party_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_parties.delete_many=.
+
+#+name: account_parties-delete-many
+#+begin_src ores-shell :tangle account_parties-delete-many.ores :exports none
+account_parties delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: D0340F0C-E950-578A-9623-C08042138ACA
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_parties by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_parties.list_by_account_id=.
+
+#+name: account_parties-by-account-id
+#+begin_src ores-shell :tangle account_parties-by-account-id.ores :exports none
+account_parties by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

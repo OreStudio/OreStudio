@@ -56,6 +56,7 @@ target_link_libraries(${lib_target_name}
         ores.storage.lib
         ores.synthetic.api.lib
         ores.shell.trading.lib
+        ores.shell.iam.lib
         ores.trading.api.lib
         ores.workflow.api.lib
         ores.logging.lib

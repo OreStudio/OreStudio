@@ -23,50 +23,144 @@
  * To modify, update the template and regenerate.
  */
 import type { Permission } from '../domain/permission.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetPermissionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetPermissionsResponse {
-    permissions: Permission[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SavePermissionRequest {
-    data: Permission;
-}
-
-export interface SavePermissionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeletePermissionRequest {
-    ids: string[];
-}
-
-export interface DeletePermissionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetPermissionHistoryRequest {
+export interface PermissionKey {
     id: string;
 }
 
-export interface GetPermissionHistoryResponse {
-    history: Permission[];
-    success: boolean;
-    message: string;
+export interface PermissionWrite {
+    id: string;
+    code: string;
+    description: string;
+}
+
+export interface PermissionChange {
+    write: PermissionWrite;
+    precondition: Precondition;
+}
+
+export interface PermissionRemoval {
+    key: PermissionKey;
+    precondition: Precondition;
+}
+
+export interface PermissionLookup {
+    key: PermissionKey;
+    permission: Permission | null;
+}
+
+export interface PermissionEvent {
+    event_id: string;
+    key: PermissionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListPermissionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListPermissionsResponse {
+    result: Result;
+    permissions: Permission[];
+    total: number;
+}
+
+export interface GetPermissionRequest {
+    key: PermissionKey;
+}
+
+export interface GetPermissionResponse {
+    result: Result;
+    permission: Permission | null;
+}
+
+export interface GetManyPermissionsRequest {
+    keys: PermissionKey[];
+}
+
+export interface GetManyPermissionsResponse {
+    result: Result;
+    entries: PermissionLookup[];
+}
+
+export interface PutPermissionRequest {
+    change: PermissionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutPermissionResponse {
+    result: Result;
+    permission: Permission;
+}
+
+export interface PutManyPermissionsRequest {
+    changes: PermissionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyPermissionsResponse {
+    result: Result;
+    permissions: Permission[];
+}
+
+export interface DeletePermissionRequest {
+    removal: PermissionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeletePermissionResponse {
+    result: Result;
+}
+
+export interface DeleteManyPermissionsRequest {
+    removals: PermissionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyPermissionsResponse {
+    result: Result;
 }
 
 export const subjects = {
-    get_permissions_request: "iam.v1.permissions.list",
-    save_permission_request: "iam.v1.permissions.save",
+    list_permissions_request: "iam.v1.permissions.list",
+    get_permission_request: "iam.v1.permissions.get",
+    get_many_permissions_request: "iam.v1.permissions.get_many",
+    put_permission_request: "iam.v1.permissions.put",
+    put_many_permissions_request: "iam.v1.permissions.put_many",
     delete_permission_request: "iam.v1.permissions.delete",
-    get_permission_history_request: "iam.v1.permissions.history",
+    delete_many_permissions_request: "iam.v1.permissions.delete_many",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_permissions_request: true,
+    get_permission_request: true,
+    get_many_permissions_request: true,
+    put_permission_request: true,
+    put_many_permissions_request: true,
+    delete_permission_request: true,
+    delete_many_permissions_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.permissions_events.created",
+    updated: "iam.v1.permissions_events.updated",
+    deleted: "iam.v1.permissions_events.deleted",
 } as const;

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 11ED9447-461D-4074-9663-E83190BA7371
 :ores.ts.web.enabled: true
 :END:
@@ -220,18 +221,18 @@ Tenant lifecycle status (FK to tenant_statuses).
 :collection_name:        tenants
 :item_var:               tenant
 :key_field:              code
-:get_request_class:      iam::messaging::get_tenants_request
-:get_response_class:     iam::messaging::get_tenants_response
-:get_message_type:       get_tenants_request
-:save_request_class:     iam::messaging::save_tenant_request
-:save_response_class:    iam::messaging::save_tenant_response
-:save_message_type:      save_tenant_request
+:get_request_class:      iam::messaging::list_tenants_request
+:get_response_class:     iam::messaging::list_tenants_response
+:get_message_type:       list_tenants_request
+:save_request_class:     iam::messaging::put_tenant_request
+:save_response_class:    iam::messaging::put_tenant_response
+:save_message_type:      put_tenant_request
 :delete_request_class:   iam::messaging::delete_tenant_request
 :delete_response_class:  iam::messaging::delete_tenant_response
 :delete_message_type:    delete_tenant_request
-:history_request_class:  iam::messaging::get_tenant_history_request
-:history_response_class: iam::messaging::get_tenant_history_response
-:history_message_type:   get_tenant_history_request
+:history_request_class:  iam::messaging::list_tenant_versions_request
+:history_response_class: iam::messaging::list_tenant_versions_response
+:history_message_type:   list_tenant_versions_request
 :settings_group:         TenantListWindow
 :window_title:           Tenants
 :icon:                   Building

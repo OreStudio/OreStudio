@@ -23,39 +23,80 @@
  * To modify, update the template and regenerate.
  */
 import type { LoginInfo } from '../domain/login_info.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetLoginInfoRequest {
+export interface LoginInfoKey {
+    account_id: string;
+}
+
+export interface LoginInfoLookup {
+    key: LoginInfoKey;
+    login_info: LoginInfo | null;
+}
+
+export interface LoginInfoEvent {
+    event_id: string;
+    key: LoginInfoKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListLoginInfoRequest {
     offset: number;
     limit: number;
+    order: Order;
+}
+
+export interface ListLoginInfoResponse {
+    result: Result;
+    login_info: LoginInfo[];
+    total: number;
+}
+
+export interface GetLoginInfoRequest {
+    key: LoginInfoKey;
 }
 
 export interface GetLoginInfoResponse {
-    login_info: LoginInfo[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
+    result: Result;
+    login_info: LoginInfo | null;
 }
 
-export interface SaveLoginInfoRequest {
-    data: LoginInfo;
+export interface GetManyLoginInfoRequest {
+    keys: LoginInfoKey[];
 }
 
-export interface SaveLoginInfoResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteLoginInfoRequest {
-    ids: string[];
-}
-
-export interface DeleteLoginInfoResponse {
-    success: boolean;
-    message: string;
+export interface GetManyLoginInfoResponse {
+    result: Result;
+    entries: LoginInfoLookup[];
 }
 
 export const subjects = {
-    get_login_info_request: "iam.v1.login_info.list",
-    save_login_info_request: "iam.v1.login_info.save",
-    delete_login_info_request: "iam.v1.login_info.delete",
+    list_login_info_request: "iam.v1.login_info.list",
+    get_login_info_request: "iam.v1.login_info.get",
+    get_many_login_info_request: "iam.v1.login_info.get_many",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_login_info_request: true,
+    get_login_info_request: true,
+    get_many_login_info_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.login_info_events.created",
+    updated: "iam.v1.login_info_events.updated",
+    deleted: "iam.v1.login_info_events.deleted",
 } as const;

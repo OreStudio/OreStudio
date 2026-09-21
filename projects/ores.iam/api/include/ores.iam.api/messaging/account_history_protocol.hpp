@@ -69,6 +69,13 @@ struct account_version_history {
 struct get_account_history_request {
     using response_type = struct get_account_history_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.history";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string username;
 };
 

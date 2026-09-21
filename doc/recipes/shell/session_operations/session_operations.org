@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 84B782E8-D992-574E-8094-29E6454141D7
+:END:
+#+title: How do I run the session_operations commands from the shell?
+#+description: Every command the session_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:session_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> session_operations get-active-sessions=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =get-active-sessions=
+:PROPERTIES:
+:ID: F3A62E73-083B-5DF1-BC17-5FC8C27B8275
+:END:
+
+Sends =get_active_sessions_request= and prints =get_active_sessions_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+session_operations get-active-sessions
+#+end_example
+
+It is addressed at =iam.v1.sessions.active=.
+
+#+name: session_operations-get-active-sessions
+#+begin_src ores-shell :tangle session_operations-get-active-sessions.ores :exports none
+session_operations get-active-sessions
+#+end_src
+

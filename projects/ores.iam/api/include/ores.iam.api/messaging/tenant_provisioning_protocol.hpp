@@ -35,6 +35,13 @@ namespace ores::iam::messaging {
 struct complete_tenant_provisioning_command {
     using response_type = struct complete_tenant_provisioning_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.complete-provisioning";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct complete_tenant_provisioning_response {
@@ -54,6 +61,13 @@ struct complete_tenant_provisioning_response {
 struct provision_acme_tenant_command {
     using response_type = struct provision_acme_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct provision_acme_tenant_step {

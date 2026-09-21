@@ -20,6 +20,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
@@ -36,7 +37,6 @@ const std::string tags("[domain]");
 }
 
 using ores::iam::domain::session;
-using ores::iam::messaging::session_statistics;
 using namespace ores::logging;
 
 TEST_CASE("create_session_with_valid_fields", tags) {
@@ -216,53 +216,4 @@ TEST_CASE("create_multiple_random_sessions", tags) {
 
         CHECK(!sut.client_identifier.empty());
     }
-}
-
-TEST_CASE("create_session_statistics_with_valid_fields", tags) {
-    auto lg(make_logger(test_suite));
-
-    session_statistics sut;
-    sut.period_start = std::chrono::system_clock::now() - std::chrono::hours(24);
-    sut.period_end = std::chrono::system_clock::now();
-    sut.account_id = boost::uuids::random_generator()();
-    sut.session_count = 10;
-    sut.avg_duration_seconds = 1800.0;
-    sut.total_bytes_sent = 1048576;
-    sut.total_bytes_received = 2097152;
-    sut.avg_bytes_sent = 104857.6;
-    sut.avg_bytes_received = 209715.2;
-    sut.unique_countries = 3;
-
-    BOOST_LOG_SEV(lg, info) << "Session statistics count: " << sut.session_count;
-
-    CHECK(sut.session_count == 10);
-    CHECK(sut.avg_duration_seconds == 1800.0);
-    CHECK(sut.total_bytes_sent == 1048576);
-    CHECK(sut.total_bytes_received == 2097152);
-    CHECK(sut.unique_countries == 3);
-}
-
-TEST_CASE("create_session_statistics_with_faker", tags) {
-    auto lg(make_logger(test_suite));
-
-    session_statistics sut;
-    sut.period_start =
-        std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(1, 720));
-    sut.period_end = std::chrono::system_clock::now();
-    sut.account_id = boost::uuids::random_generator()();
-    sut.session_count = faker::number::integer<uint64_t>(1, 1000);
-    sut.avg_duration_seconds = faker::number::decimal(60.0, 7200.0);
-    sut.total_bytes_sent = faker::number::integer<uint64_t>(1000, 100000000);
-    sut.total_bytes_received = faker::number::integer<uint64_t>(1000, 100000000);
-    sut.avg_bytes_sent =
-        static_cast<double>(sut.total_bytes_sent) / static_cast<double>(sut.session_count);
-    sut.avg_bytes_received =
-        static_cast<double>(sut.total_bytes_received) / static_cast<double>(sut.session_count);
-    sut.unique_countries = faker::number::integer<uint32_t>(1, 50);
-
-    BOOST_LOG_SEV(lg, info) << "Faker session statistics count: " << sut.session_count;
-
-    CHECK(sut.session_count >= 1);
-    CHECK(sut.avg_duration_seconds >= 60.0);
-    CHECK(sut.unique_countries >= 1);
 }

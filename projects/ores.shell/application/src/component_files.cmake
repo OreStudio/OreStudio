@@ -18,7 +18,6 @@
 #
 set(files
     "app/application.cpp"
-    "app/commands/account_parties_commands.cpp"
     "app/commands/accounts_commands.cpp"
     "app/commands/bundles_commands.cpp"
     "app/commands/change_reason_categories_commands.cpp"
@@ -28,6 +27,7 @@ set(files
     "app/commands/countries_commands.cpp"
     "app/commands/crm_commands.cpp"
     "app/commands/currencies_commands.cpp"
+    "app/commands/iam/iam_commands.cpp"
     "app/commands/lei_commands.cpp"
     "app/commands/marketdata_commands.cpp"
     "app/commands/navigation_commands.cpp"
@@ -81,7 +81,6 @@ set(files
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/application.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/account_parties_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/accounts_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/bundles_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/change_reason_categories_commands.hpp"
@@ -91,6 +90,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/countries_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/crm_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/currencies_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/iam_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/lei_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/navigation_commands.hpp"

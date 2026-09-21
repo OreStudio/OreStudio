@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 9F267AE7-4C61-5746-ABA9-23660FB44E6F
+:END:
+#+title: How do I run the reset commands from the shell?
+#+description: Every command the reset submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:reset:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =reset=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =reset-tenant=
+:PROPERTIES:
+:ID: E6571B2B-51E0-5733-9305-62208CA5A984
+:END:
+
+Sends =reset_tenant_command= and prints =reset_tenant_result=, so the shape is the protocol's and the meaning is the service's. It reads =tenant_code=, in that order. The caller must have established a session first. This command destroys the system it runs against. Do not replay it against an environment you need.
+
+*Destructive.* This command does not read or amend a row; it returns the
+system to its pre-bootstrap state. The script below is generated for
+completeness like every other, and must not be replayed against an environment
+anyone needs.
+
+The command is shaped like this:
+
+#+begin_example
+reset reset-tenant <tenant_code>
+#+end_example
+
+It is addressed at =iam.v1.system.reset-tenant=.
+
+#+name: reset-reset-tenant
+#+begin_src ores-shell :tangle reset-reset-tenant.ores :exports none
+# DESTRUCTIVE: replaying this command destroys the system it runs against.
+reset reset-tenant __none__
+#+end_src
+
+** =reset-system=
+:PROPERTIES:
+:ID: 4958A9FB-679D-57A7-9286-050D3A057C6E
+:END:
+
+Sends =reset_system_command= and prints =reset_system_result=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first. This command destroys the system it runs against. Do not replay it against an environment you need.
+
+*Destructive.* This command does not read or amend a row; it returns the
+system to its pre-bootstrap state. The script below is generated for
+completeness like every other, and must not be replayed against an environment
+anyone needs.
+
+The command is shaped like this:
+
+#+begin_example
+reset reset-system
+#+end_example
+
+It is addressed at =iam.v1.system.reset=.
+
+#+name: reset-reset-system
+#+begin_src ores-shell :tangle reset-reset-system.ores :exports none
+# DESTRUCTIVE: replaying this command destroys the system it runs against.
+reset reset-system
+#+end_src
+

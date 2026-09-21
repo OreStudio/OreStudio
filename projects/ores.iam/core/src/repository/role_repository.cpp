@@ -28,6 +28,7 @@
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_entity.hpp"
 #include "ores.iam.core/repository/role_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
@@ -41,14 +42,71 @@ std::string role_repository::sql() {
     return generate_create_table_sql<role_entity>(lg());
 }
 
+ores::utility::domain::precondition role_repository::replace_claim(context ctx,
+                                                                   const domain::role& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::role role_repository::apply_claim(context ctx,
+                                          const domain::role& v,
+                                          const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void role_repository::write(context ctx, const domain::role& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
-    execute_write_query(ctx, role_mapper::map(v), lg(), "Writing role to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void role_repository::write(context ctx, const std::vector<domain::role>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void role_repository::write(context ctx,
+                            const domain::role& v,
+                            const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing role. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, role_mapper::map(t), lg(), "Writing role to database.");
+}
+
+void role_repository::write(context ctx,
+                            const std::vector<domain::role>& v,
+                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing roles. Count: " << v.size();
-    execute_write_query(ctx, role_mapper::map(v), lg(), "Writing roles to database.");
+    std::vector<domain::role> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, role_mapper::map(batch), lg(), "Writing roles to database.");
 }
 
 std::vector<domain::role> role_repository::read_latest(context ctx) {
@@ -118,14 +176,32 @@ role_repository::read_at_version(context ctx, const std::string& id, std::uint32
     return entities.front();
 }
 
-void role_repository::remove(context ctx, const std::string& id) {
+role_repository::remove_status
+role_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<role_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing role from database.");
+    return remove_status::removed;
+}
+
+void role_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::role>
@@ -165,6 +241,23 @@ std::uint32_t role_repository::get_total_role_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active role count: " << count;
     return count;
+}
+
+std::vector<domain::role> role_repository::read_latest(context ctx,
+                                                       const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<role_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<role_entity, domain::role>(
+        ctx,
+        query,
+        [](const auto& entities) { return role_mapper::map(entities); },
+        lg(),
+        "Reading latest roles by ids.");
+    return result;
 }
 
 void role_repository::remove(context ctx, const std::vector<std::string>& ids) {

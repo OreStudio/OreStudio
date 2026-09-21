@@ -57,6 +57,15 @@ std::vector<domain::account_party> account_party_service::list_account_parties_b
     return repo_.read_latest_by_account(account_id, offset, limit);
 }
 
+std::optional<domain::account_party> account_party_service::find_account_party(
+    const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id) {
+    for (auto& row : list_account_parties_by_account(account_id)) {
+        if (row.party_id == party_id)
+            return row;
+    }
+    return std::nullopt;
+}
+
 std::uint32_t account_party_service::get_total_account_party_count_by_account(
     const boost::uuids::uuid& account_id) {
     return repo_.get_total_account_party_count_by_account(account_id);
@@ -86,23 +95,6 @@ void account_party_service::remove_account_party(const boost::uuids::uuid& accou
     BOOST_LOG_SEV(lg(), debug) << "Removing account party: " << account_id << "/" << party_id;
     repo_.remove(account_id, party_id);
     BOOST_LOG_SEV(lg(), info) << "Removed account party: " << account_id << "/" << party_id;
-}
-
-void account_party_service::replace_account_parties_by_account(
-    const boost::uuids::uuid& account_id,
-    const std::vector<domain::account_party>& account_parties,
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Replacing account parties for account: " << account_id;
-    repo_.replace_by_account(account_id,
-                             account_parties,
-                             modified_by,
-                             performed_by,
-                             change_reason_code,
-                             change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced account parties for account: " << account_id;
 }
 
 }

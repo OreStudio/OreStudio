@@ -58,3 +58,12 @@ export const subjects = {
     complete_tenant_provisioning_command: "iam.v1.tenants.complete-provisioning",
     provision_acme_tenant_command: "iam.v1.tenants.provision-acme",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    complete_tenant_provisioning_command: true,
+    provision_acme_tenant_command: true,
+} as const;

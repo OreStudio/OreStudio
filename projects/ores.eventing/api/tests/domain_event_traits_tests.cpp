@@ -18,8 +18,9 @@
  *
  */
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
-#include "ores.iam.api/eventing/account_changed_event.hpp"
+#include "ores.iam.api/eventing/tenant_type_event.hpp"
 #include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -32,7 +33,6 @@ const std::string tags("[event_traits]");
 
 using namespace ores::eventing::domain;
 using ores::refdata::eventing::currency_changed_event;
-using ores::iam::eventing::account_changed_event;
 
 TEST_CASE("event_traits_currency_changed_event", tags) {
     REQUIRE(event_traits<currency_changed_event>::name == "ores.refdata.currency_changed");
@@ -41,18 +41,25 @@ TEST_CASE("event_traits_currency_changed_event", tags) {
     STATIC_REQUIRE(has_event_traits<currency_changed_event>);
 }
 
-TEST_CASE("event_traits_account_changed_event", tags) {
-    REQUIRE(event_traits<account_changed_event>::name == "ores.iam.account_changed");
-
-    // Verify the concept works
-    STATIC_REQUIRE(has_event_traits<account_changed_event>);
+TEST_CASE("entity_event_traits_state_the_events_subject_prefix", tags) {
+    // A canonical event states the collection's prefix; the action completes
+    // the subject, so one payload is addressed by three subjects.
+    using event_type = ores::iam::messaging::tenant_type_event;
+    REQUIRE(entity_event_traits<event_type>::subject_prefix ==
+            "iam.v1.tenant_types_events");
+    REQUIRE(event_subject<event_type>("created") ==
+            "iam.v1.tenant_types_events.created");
+    REQUIRE(event_subject<event_type>("updated") ==
+            "iam.v1.tenant_types_events.updated");
+    REQUIRE(event_subject<event_type>("deleted") ==
+            "iam.v1.tenant_types_events.deleted");
 }
 
 TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
     ores::eventing::service::event_bus bus;
 
     bool currency_received = false;
-    bool account_received = false;
+    bool other_received = false;
     std::chrono::system_clock::time_point received_timestamp;
 
     auto sub1 = bus.subscribe<currency_changed_event>([&](const currency_changed_event& e) {
@@ -60,13 +67,13 @@ TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
         received_timestamp = e.timestamp;
     });
 
-    auto sub2 = bus.subscribe<account_changed_event>(
-        [&](const account_changed_event&) { account_received = true; });
+    auto sub2 = bus.subscribe<ores::iam::messaging::tenant_type_event>(
+        [&](const ores::iam::messaging::tenant_type_event&) { other_received = true; });
 
     auto now = std::chrono::system_clock::now();
     bus.publish(currency_changed_event{now});
 
     REQUIRE(currency_received);
-    REQUIRE_FALSE(account_received);
+    REQUIRE_FALSE(other_received);
     REQUIRE(received_timestamp == now);
 }

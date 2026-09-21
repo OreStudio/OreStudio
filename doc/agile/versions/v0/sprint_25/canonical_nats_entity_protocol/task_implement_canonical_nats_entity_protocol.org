@@ -157,13 +157,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2118][#2118]] | [doc] Specify the canonical NATS entity protocol |
 
 * Review
 
+Review of #2118 arrived after the merge, so both findings are corrected in the
+follow-up that carries the IAM adoption, not in #2118.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The event subject example has five segments and contradicts the four-segment rule | ==nats_entity_protocol.org== | Applied | Events are now ={component}.v1.{resource}_events.{action}=, the grammar states the request and event forms separately, and the verb-suffix rule is scoped to request subjects |
+| 2 | =get_many='s key-set bound is stated but never numbered | ==nats_entity_protocol.org== | Applied | The key set now carries the batch bound of 1000, by reference to *Batching* |
 
 * Result
 

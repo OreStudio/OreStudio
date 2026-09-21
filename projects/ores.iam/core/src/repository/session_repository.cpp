@@ -29,10 +29,13 @@
 #include "ores.iam.core/repository/session_entity.hpp"
 #include "ores.iam.core/repository/session_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::iam::repository {
 
@@ -45,10 +48,56 @@ std::string session_repository::sql() {
     return generate_create_table_sql<session_entity>(lg());
 }
 
+ores::utility::domain::precondition session_repository::replace_claim(context ctx,
+                                                                      const domain::session& v) {
+    const auto current = read_latest(ctx,
+                                     boost::uuids::to_string(v.id),
+                                     ores::platform::time::datetime::to_db_string(v.start_time));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+}
+
+domain::session session_repository::apply_claim(context ctx,
+                                                const domain::session& v,
+                                                const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "session_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist &&
+        !read_latest(ctx,
+                     boost::uuids::to_string(v.id),
+                     ores::platform::time::datetime::to_db_string(v.start_time))
+             .empty())
+        throw std::invalid_argument("session_repository::write: a current row already exists");
+    return t;
+}
+
 void session_repository::write(context ctx, const domain::session& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void session_repository::write(context ctx,
+                               const domain::session& v,
+                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
                                << " start_time: " << v.start_time;
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(v));
+    const auto t = apply_claim(ctx, v, claim);
+    const auto query = sqlgen::insert_or_replace(session_mapper::map(t));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -56,9 +105,15 @@ void session_repository::write(context ctx, const domain::session& v) {
     ensure_success(r, lg());
 }
 
-void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+void session_repository::write(context ctx,
+                               const std::vector<domain::session>& v,
+                               const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sessions. Count: " << v.size();
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(v));
+    std::vector<domain::session> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    const auto query = sqlgen::insert_or_replace(session_mapper::map(batch));
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -114,14 +169,29 @@ session_repository::read_all(context ctx, const std::string& id, const std::stri
 }
 
 
-void session_repository::remove(context ctx, const std::string& id, const std::string& start_time) {
+session_repository::remove_status session_repository::remove(context ctx,
+                                                             const std::string& id,
+                                                             const std::string& start_time,
+                                                             std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
                                << " start_time: " << start_time;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+    const auto current = read_latest(ctx, id, start_time);
+    if (current.empty())
+        return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<session_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "start_time"_c == start_time);
 
     execute_delete_query(ctx, query, lg(), "Removing session from database.");
+    return remove_status::removed;
+}
+
+void session_repository::remove(context ctx, const std::string& id, const std::string& start_time) {
+    static_cast<void>(remove(ctx, id, start_time, std::nullopt));
 }
 
 std::vector<domain::session>
@@ -158,6 +228,40 @@ std::uint32_t session_repository::get_total_session_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active session count: " << count;
     return count;
+}
+
+std::vector<domain::session> session_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& start_times) {
+    if (ids.empty() || start_times.empty())
+        return {};
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<session_entity>> |
+        where("tenant_id"_c == tid && "id"_c.in(ids) && "start_time"_c.in(start_times));
+    auto result = execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading latest sessions by ids.");
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (start_times.size() != ids.size())
+        throw std::invalid_argument(
+            "session_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string>> requested;
+    for (std::size_t i = 0; i < ids.size(); ++i)
+        requested.emplace(ids[i], start_times[i]);
+    std::vector<domain::session> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(
+                std::make_tuple(boost::uuids::to_string(item.id),
+                                ores::platform::time::datetime::to_db_string(item.start_time))))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
 void session_repository::remove(context ctx,

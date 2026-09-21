@@ -32,6 +32,13 @@ namespace ores::iam::messaging {
 struct bootstrap_status_request {
     using response_type = struct bootstrap_status_response;
     static constexpr std::string_view nats_subject = "iam.v1.bootstrap.status";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
 };
 
 struct bootstrap_status_response {
@@ -42,6 +49,13 @@ struct bootstrap_status_response {
 struct create_initial_admin_request {
     using response_type = struct create_initial_admin_response;
     static constexpr std::string_view nats_subject = "iam.v1.bootstrap.create-admin";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
     std::string principal;
     std::string password;
     std::string email;
@@ -58,6 +72,13 @@ struct create_initial_admin_response {
 struct provision_tenant_request {
     using response_type = struct provision_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.bootstrap.provision-tenant";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
     /*
      * tenant type (e.g., "corporate")
      */

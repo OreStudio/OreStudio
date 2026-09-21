@@ -1,7 +1,5 @@
 :PROPERTIES:
-:ores.cpp.nats-handler.enabled: nil
-:ores.cpp.nats-sub-registrar.enabled: nil
-:ores.cpp.service.enabled: nil
+:ores.cpp.shell-command.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
 :END:
 #+title: ores.iam.account
@@ -50,8 +48,8 @@ The model describes the table and nothing else. Two columns need care:
 Two behavioural facets are switched off, each with a reason:
 
 - The entity's CRUD handler and sub-registrar, because the hand-written
-  =account_handler= already owns every =iam.v1.accounts.*= subject.
-- The generated CRUD service, because the hand-written =account_service=
+  =account_operations_handler= already owns every =iam.v1.accounts.*= subject.
+- The generated CRUD service, because the hand-written =account_operations_service=
   is the authentication surface (login, lock, unlock, password change
   and reset, party selection, service-credential check) and the
   generated service's =get_account_history(id)= collides in name and
@@ -66,6 +64,7 @@ Two behavioural facets are switched off, each with a reason:
 :product:   ores
 :component: iam
 :has_tenant_id:    true
+:read_only:       true
 :generate_touch_function: true
 :END:
 

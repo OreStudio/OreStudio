@@ -40,6 +40,13 @@ struct party_summary {
 struct login_request {
     using response_type = struct login_response;
     static constexpr std::string_view nats_subject = "iam.v1.auth.login";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
     std::string principal;
     std::string password;
 };
@@ -91,6 +98,13 @@ struct login_response {
 struct logout_request {
     using response_type = struct logout_response;
     static constexpr std::string_view nats_subject = "iam.v1.auth.logout";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 struct logout_response {
@@ -100,6 +114,13 @@ struct logout_response {
 
 struct public_key_request {
     static constexpr std::string_view nats_subject = "iam.v1.auth.public-key";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
 };
 
 /**
@@ -111,6 +132,13 @@ struct public_key_request {
 struct refresh_request {
     using response_type = struct refresh_response;
     static constexpr std::string_view nats_subject = "iam.v1.auth.refresh";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
 };
 
 /**
@@ -144,6 +172,13 @@ struct refresh_response {
 struct service_login_request {
     using response_type = struct service_login_response;
     static constexpr std::string_view nats_subject = "iam.v1.auth.service-login";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
     std::string username;
     std::string password;
 };

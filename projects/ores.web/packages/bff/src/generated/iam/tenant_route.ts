@@ -37,8 +37,9 @@ export const tenantRoute: EntityRouteDescriptor = {
   key: 'id',
   keyField: 'code',
   subjects: {
-    list: subjects.get_tenants_request,
-    save: subjects.save_tenant_request,
+    list: subjects.list_tenants_request,
+    get: subjects.get_tenant_request,
+    save: subjects.put_tenant_request,
   },
   rowsField: 'tenants',
   timestampFields: ['recorded_at'],

@@ -27,6 +27,8 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -200,18 +202,6 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         "List your currently active sessions");
 
     accounts_menu->Insert(
-        "session-stats",
-        [&session](std::ostream& out) { process_session_stats(std::ref(out), std::ref(session)); },
-        "Show session statistics for the last 30 days");
-
-    accounts_menu->Insert(
-        "session-stats-days",
-        [&session](std::ostream& out, int days) {
-            process_session_stats(std::ref(out), std::ref(session), days);
-        },
-        "Show session statistics for the specified number of days");
-
-    accounts_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string username) {
             process_get_account_history(std::ref(out), std::ref(session), std::move(username));
@@ -233,20 +223,6 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         "Set the logged-in account's default party for quick-login (party-uuid-or-full-name)");
 
     root_menu.Insert(std::move(accounts_menu));
-
-    // Bootstrap command at root level (doesn't require authentication)
-    root_menu.Insert(
-        "bootstrap",
-        [&session](
-            std::ostream& out, std::string principal, std::string password, std::string email) {
-            process_bootstrap(std::ref(out),
-                              std::ref(session),
-                              std::move(principal),
-                              std::move(password),
-                              std::move(email));
-        },
-        "Create initial admin (principal password email) - principal is username@hostname or "
-        "username");
 
     // Top-level login/logout aliases for convenience
     root_menu.Insert(
@@ -275,16 +251,18 @@ void accounts_commands::process_list_accounts(std::ostream& out,
 
     auto& state = pagination.state_for("accounts");
 
-    iam::messaging::get_accounts_request req;
+    // The derived list is the entity's own read now, so the page and the total
+    // are the protocol's rather than a hand-written request's.
+    iam::messaging::list_accounts_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<iam::messaging::get_accounts_response>(
-        out, session, "iam.v1.accounts.list", req);
+    auto result = do_auth_request<iam::messaging::list_accounts_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("accounts");
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->accounts.size()
@@ -309,8 +287,8 @@ void accounts_commands::process_login(std::ostream& out,
     req.principal = std::move(principal);
     req.password = std::move(password);
 
-    auto result =
-        do_request<iam::messaging::login_response>(out, session, "iam.v1.auth.login", req);
+    auto result = do_request<iam::messaging::login_response>(
+        out, session, iam::messaging::login_request::nats_subject, req);
     if (!result)
         return;
 
@@ -348,7 +326,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::lock_account_response>(
-        out, session, "iam.v1.accounts.lock", req);
+        out, session, iam::messaging::lock_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -386,7 +364,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::unlock_account_response>(
-        out, session, "iam.v1.accounts.unlock", req);
+        out, session, iam::messaging::unlock_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -421,7 +399,7 @@ void accounts_commands::process_create_account(std::ostream& out,
     req.email = std::move(email);
 
     auto result = do_auth_request<iam::messaging::save_account_response>(
-        out, session, "iam.v1.accounts.save", req);
+        out, session, iam::messaging::save_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -438,14 +416,17 @@ void accounts_commands::process_create_account(std::ostream& out,
 void accounts_commands::process_list_login_info(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
+    // The login-info read is the entity's own now, so the subject is the
+    // request's rather than a spelling this command kept by hand.
+    iam::messaging::list_login_info_request req;
     auto result = do_auth_request<iam::messaging::list_login_info_response>(
-        out, session, "iam.v1.accounts.list-logins", iam::messaging::list_login_info_request{});
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->login_infos.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->login_info.size()
                               << " login info records.";
-    out << result->login_infos << std::endl;
+    out << result->login_info << std::endl;
 }
 
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {
@@ -456,7 +437,10 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
 
     try {
         auto result = do_auth_request<iam::messaging::logout_response>(
-            out, session, "iam.v1.auth.logout", iam::messaging::logout_request{});
+            out,
+            session,
+            iam::messaging::logout_request::nats_subject,
+            iam::messaging::logout_request{});
         if (result && result->success) {
             out << "✓ Logged out successfully." << std::endl;
         } else {
@@ -468,74 +452,43 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
     session.clear_auth();
 }
 
-void accounts_commands::process_bootstrap(std::ostream& out,
-                                          nats_client& session,
-                                          std::string principal,
-                                          std::string password,
-                                          std::string email) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for principal: " << principal;
-
-    iam::messaging::create_initial_admin_request req;
-    req.principal = std::move(principal);
-    req.password = std::move(password);
-    req.email = std::move(email);
-
-    auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out, session, iam::messaging::create_initial_admin_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Bootstrap successful. Admin account ID: "
-                                  << result->account_id << ", tenant: " << result->tenant_name
-                                  << " (" << result->tenant_id << ")";
-        out << "✓ Initial admin account created successfully!" << std::endl;
-        out << "  Account ID: " << result->account_id << std::endl;
-        out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
-        out << "  You can now login with the credentials provided." << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << result->error_message;
-        fail(out) << "Bootstrap failed: " << result->error_message << std::endl;
-    }
-}
-
 void accounts_commands::process_list_sessions(std::ostream& out,
                                               nats_client& session,
                                               std::string account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
 
+    // The derivation states no scoped read for sessions, because an account is
+    // not a relation the session resource is addressed by. Saying so is what
+    // the specification asks of an implementation that cannot answer a scope,
+    // rather than quietly returning every session instead.
+    if (!account_id.empty()) {
+        fail(out) << "Listing sessions by account is not served. "
+                     "Use 'sessions' for the page." << std::endl;
+        return;
+    }
+
     iam::messaging::list_sessions_request req;
     req.limit = 50;
 
-    if (!account_id.empty()) {
-        try {
-            req.account_id = account_id;
-        } catch (const boost::bad_lexical_cast&) {
-            BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-            fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
-            return;
-        }
-    }
-
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
-        out, session, "iam.v1.sessions.list", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
-    if (!result->success) {
-        fail(out) << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
-                              << " sessions (total: " << result->total_count << ").";
+                              << " sessions (total: " << result->total << ").";
 
     if (sessions.empty()) {
         out << "No sessions found." << std::endl;
         return;
     }
 
-    out << "Sessions (showing " << sessions.size() << " of " << result->total_count
+    out << "Sessions (showing " << sessions.size() << " of " << result->total
         << "):" << std::endl;
     out << std::string(80, '-') << std::endl;
 
@@ -571,7 +524,10 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
-        out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
+        out,
+        session,
+        iam::messaging::get_active_sessions_request::nats_subject,
+        iam::messaging::get_active_sessions_request{});
     if (!result)
         return;
     if (!result->success) {
@@ -606,76 +562,6 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
     }
 }
 
-void accounts_commands::process_session_stats(std::ostream& out, nats_client& session, int days) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating session statistics request for " << days << " days.";
-
-    auto end_date = std::chrono::system_clock::now();
-    auto start_time = end_date - std::chrono::hours(24 * days);
-
-    iam::messaging::get_session_statistics_request req;
-    req.account_id = "";
-    req.start_time = start_time;
-    req.end_time = end_date;
-
-    auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
-        out, session, "iam.v1.sessions.statistics", req);
-    if (!result)
-        return;
-    if (!result->success) {
-        fail(out) << result->message << std::endl;
-        return;
-    }
-
-    const auto& stats = result->statistics;
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << stats.size() << " daily statistics.";
-
-    if (stats.empty()) {
-        out << "No session statistics available for the last " << days << " days." << std::endl;
-        return;
-    }
-
-    out << "Session Statistics (last " << days << " days):" << std::endl;
-    out << std::string(80, '-') << std::endl;
-
-    std::uint64_t total_sessions = 0;
-    std::uint64_t total_bytes_sent = 0;
-    std::uint64_t total_bytes_recv = 0;
-    double total_duration = 0;
-
-    for (const auto& s : stats) {
-        total_sessions += s.session_count;
-        total_bytes_sent += s.total_bytes_sent;
-        total_bytes_recv += s.total_bytes_received;
-        total_duration += s.avg_duration_seconds * s.session_count;
-    }
-
-    double avg_duration = total_sessions > 0 ? total_duration / total_sessions : 0;
-
-    out << "  Total Sessions: " << total_sessions << std::endl;
-    out << "  Avg Duration: "
-        << format_duration(std::chrono::seconds(static_cast<int>(avg_duration))) << std::endl;
-    out << "  Total Data Sent: " << format_bytes(total_bytes_sent) << std::endl;
-    out << "  Total Data Received: " << format_bytes(total_bytes_recv) << std::endl;
-
-    if (!stats.empty()) {
-        const auto& latest = stats.front();
-        if (latest.unique_countries > 0) {
-            out << "  Countries (latest): " << latest.unique_countries << std::endl;
-        }
-    }
-
-    out << std::endl << "Daily breakdown:" << std::endl;
-    for (const auto& s : stats) {
-        out << "  " << format_time(s.period_start).substr(0, 10) << ": " << s.session_count
-            << " sessions";
-        if (s.avg_duration_seconds > 0) {
-            out << ", avg "
-                << format_duration(std::chrono::seconds(static_cast<int>(s.avg_duration_seconds)));
-        }
-        out << std::endl;
-    }
-}
-
 void accounts_commands::process_get_account_history(std::ostream& out,
                                                     nats_client& session,
                                                     std::string username) {
@@ -690,7 +576,7 @@ void accounts_commands::process_get_account_history(std::ostream& out,
     req.username = std::move(username);
 
     auto result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", req);
+        out, session, iam::messaging::get_account_history_request::nats_subject, req);
     if (!result)
         return;
 
@@ -775,7 +661,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     hist_req.username = username;
 
     auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", hist_req);
+        out, session, iam::messaging::get_account_history_request::nats_subject, hist_req);
     if (!history_result)
         return;
 
@@ -820,7 +706,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "-----" << std::endl;
 
     auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "iam.v1.roles.for-account", roles_req);
+        out, session, iam::messaging::get_account_roles_request::nats_subject, roles_req);
     if (!roles_result) {
         out << "  (failed to retrieve roles)" << std::endl;
     } else if (roles_result->roles.empty()) {
@@ -844,7 +730,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "---------------------" << std::endl;
 
     auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "iam.v1.permissions.for-account", perms_req);
+        out, session, iam::messaging::get_account_permissions_request::nats_subject, perms_req);
     if (!perms_result) {
         out << "  (failed to retrieve permissions)" << std::endl;
     } else if (perms_result->permission_codes.empty()) {

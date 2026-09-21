@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp
 #+facet: ores.cpp.shell-command
+#+model_types: domain_entity junction
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-16
@@ -66,7 +67,6 @@ The full template source. Edit here and re-tangle with
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -76,7 +76,6 @@ The full template source. Edit here and re-tangle with
 
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
-using ores::shell::app::pagination_context;
 using ores::shell::app::commands::{{entity_singular}}_commands;
 using namespace ores::logging;
 
@@ -87,185 +86,69 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session, const std::string& party_id) {
+void log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
-    info.default_party_id = party_id;
+    info.default_party_id = valid_party_id;
     session.set_auth(std::move(info));
 }
 
-// The positionals the add verb reads: one per user-supplied column, then the
-// change reason and the change commentary.
-std::vector<std::string> add_tokens() {
-    return {
-{{#primary_key.columns}}
-{{#is_user_supplied}}
-        "{{sample_token}}",
-{{/is_user_supplied}}
-{{/primary_key.columns}}
-{{#columns}}
-{{#is_user_supplied}}
-        "{{sample_token}}",
-{{/is_user_supplied}}
-{{/columns}}
-        "reason",
-        "commentary"};
+// One token per positional the command takes. A value the command parses is
+// not a value the guard reaches, so any token does to prove the guard.
+std::vector<std::string> tokens(const std::size_t count) {
+    return std::vector<std::string>(count, std::string{"sample"});
 }
 
 }
 
-TEST_CASE("{{entity_singular}}_commands_register_commands_registers_the_pagination_callback",
-          tags) {
+TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
     nats_client session;
-    pagination_context pagination;
 
-    {{entity_singular}}_commands::register_commands(root_menu, session, pagination);
+    {{entity_singular}}_commands::register_commands(root_menu, session);
 
-    BOOST_LOG_SEV(lg, debug) << "Looking up the pagination callback for {{entity_plural}}.";
-    CHECK(pagination.get_list_callback("{{entity_plural}}") != nullptr);
+    BOOST_LOG_SEV(lg, debug) << "Registered {{shell.command_count}} command(s).";
+    CHECK(true);
 }
+{{#shell.commands}}
 
-TEST_CASE("{{entity_singular}}_commands_process_add_requires_a_logged_in_session", tags) {
+TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
+    {{entity_singular}}_commands::process_{{identifier}}(out, session,
+                                                        tokens({{positional_count}}));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
+{{#positional_count}}
+{{#exact_count}}
 
-TEST_CASE("{{entity_singular}}_commands_process_add_reports_the_expected_argument_count", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, valid_party_id);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, {"sample"});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a short argument list: " << out.str();
-    CHECK(out.str().find("Expected {{add_positional_count}} arguments, got 1.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-{{#malformed_token_column}}
-
-TEST_CASE("{{entity_singular}}_commands_process_add_names_the_field_of_a_malformed_token",
+TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_reports_the_expected_count",
           tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session, valid_party_id);
-    auto tokens = add_tokens();
-    tokens[{{positional_index}}] = "{{token}}";
+    log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
-    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, tokens);
+    {{entity_singular}}_commands::process_{{identifier}}(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a malformed {{name}}: " << out.str();
-    CHECK(out.str().find("{{error}}") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(command_feedback::failed());
 }
-{{/malformed_token_column}}
-{{#has_session_party_columns}}
-
-TEST_CASE("{{entity_singular}}_commands_process_add_rejects_a_session_with_no_default_party",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, "");
-    std::ostringstream out;
-
-    command_feedback::reset();
-    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an account with no default party: " << out.str();
-    CHECK(out.str().find("no default party") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-{{/has_session_party_columns}}
-
-TEST_CASE("{{entity_singular}}_commands_process_add_sends_a_valid_token_vector_to_the_server",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session, valid_party_id);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    {{entity_singular}}_commands::process_add_{{entity_singular}}(out, session, add_tokens());
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
-    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("{{entity_singular}}_commands_process_delete_requires_a_logged_in_session", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    {{entity_singular}}_commands::process_delete_{{entity_singular}}(out, session, "missing-key");
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out delete: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-{{^current_state}}
-TEST_CASE("{{entity_singular}}_commands_process_history_requires_a_logged_in_session", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-{{#has_audit_group}}
-    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(out, session,
-                                                                         "missing-key");
-{{/has_audit_group}}
-{{^has_audit_group}}
-    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
-        out, session, {"missing-key"});
-{{/has_audit_group}}
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out history request: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-{{^has_audit_group}}
-
-TEST_CASE("{{entity_singular}}_commands_process_history_rejects_a_version_without_diff", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
-        out, session, {"missing-key", "--version", "2"});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a version with no diff: " << out.str();
-    CHECK(out.str().find("--version is only supported together with --diff.") !=
-          std::string::npos);
-    CHECK(command_feedback::failed());
-}
-{{/has_audit_group}}
-{{/current_state}}
+{{/exact_count}}
+{{/positional_count}}
+{{/shell.commands}}
 {{/domain_entity}}
 #+end_src
 

@@ -122,6 +122,11 @@ def load_graph(templates_dir: Path) -> Graph:
                 # renders from (e.g. country_currency.json); empty for entity/
                 # component archetypes whose context is the model itself.
                 "data_source": kw.get("data_source", ""),
+                # A facet whose output is a view of another facet's output
+                # renders only where that facet produced something for the
+                # same model, so one opt-in drives both and the dependency
+                # cannot fall behind.
+                "requires_facet": kw.get("requires_facet", ""),
                 "_default_raw": kw.get("default"),
             })
     # Second pass: resolve each archetype's default-enabled against its facet's

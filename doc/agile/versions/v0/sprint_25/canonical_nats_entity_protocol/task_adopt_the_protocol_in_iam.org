@@ -8,12 +8,12 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/adopt-the-protocol-in-iam
-#+pr:
+#+pr: 2120
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
 #+updated: 2026-09-21
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -40,12 +40,162 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 - The generated BFF route descriptor and the web screens consume the canonical messages, including a single-record read.
 - The duplicate iam.v1.roles.list subject and its unregistered derived messages are resolved.
 - The C++ build, the codegen tests, the drift gate and the TypeScript checks pass.
+- No component other than =ores.iam= is changed, and nothing is carried for backwards compatibility.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Agreed scope, 2026-09-21. IAM is the pilot and nothing else is touched:
+
+- *IAM only.* The other components keep the output they have. The system is
+  unstable and their committed generated code is not regenerated, not
+  reconciled and not built against this.
+- *No backwards compatibility.* The old verbs, message names and subjects are
+  replaced, not carried alongside. No aliases, no deprecation window, no dual
+  serving.
+- *All layers in one PR.* Codegen, IAM's generated C++, its hand-written
+  service layer, the generated shell commands and their tests, the BFF route
+  descriptors and the web screens ship together. A partial change leaves the
+  tree uncompilable, because renaming a verb changes handler signatures and
+  registration.
+- *A second PR verifies.* Once this lands, the verification task exercises
+  every IAM entity through the shell and the UI and fixes what it finds.
+
+The order the work has to happen in, because each step gates the next:
+
+0. *Unify the two sources of truth first.* The TypeScript twin already renders
+   ={{#messages}}= from =entity_protocol_messages=, and so does the C++
+   =operation= block added when the operation model type landed. The C++
+   =domain_entity= block does not: it is 175 lines of hand-written structs that
+   mirror the derivation by hand, and nothing checks that the two agree -- the
+   twin-coverage gate only proves the file exists, not that the shapes match.
+   Point that block at the same ={{#messages}}= list first, keeping the
+   entity-level envelope around it: the include guard, the includes, the
+   namespace and the =paste:= marker are entity concerns, not message ones.
+
+   The byte-identical checkpoint first proposed here is the wrong target. The
+   hand-written block carries constructs the generic renderer cannot emit and
+   the specification deletes anyway: the static =from(...)= constructors on the
+   save request, the ={{default_limit}}= on extra list requests, and the
+   per-primary-key vector naming for delete. Holding those still protects only
+   shapes that are about to be replaced. The verification is the codegen tests
+   plus reading the generated header back, not a diff against the old bytes.
+
+   *Where the shared records live.* =result=, =precondition= and
+   =change_intent= are component-independent, and they cannot go in
+   =ores.service=: a generated =*.api= protocol header may not depend on the
+   service layer, and no =*.api= does today. They belong in
+   =ores.utility::domain=, beside =hierarchy_node=, the existing precedent for
+   a wire type that generated protocol headers include.
+   =projects/ores.utility/include/ores.utility/domain/protocol.hpp= is written
+   and syntax-checked under =g++ -std=c++23=.
+
+   What remains of this step is the mechanical part: point the =domain_entity=
+   block at ={{#messages}}= and let the derivation carry the rest.
+1. The derivation. =org_loader.entity_protocol_messages= and
+   =junction_protocol_messages= emit the eight verbs, the specification's
+   message names and subjects, the result envelope, the write record with no
+   server-owned field, per-element preconditions, the versions sub-resource and
+   the bounds. Auxiliary records -- the key, the write record, the version, the
+   result -- are emitted as entries with no subject, which the existing renderer
+   already writes as plain structs, so no new template machinery is needed.
+
+   Started: =request_subject=, =event_subject= and =versions_subject= build the
+   grammar, refuse the vocabulary being replaced, and keep a scoped read at four
+   segments by carrying the relation in the verb slot.
+   =test_protocol_subject_grammar.py= holds all three to it.
+2. The rest of the templates. The handler, service and registrar templates
+   branch on the verb set, so they move with it.
+
+   *The templates are the product.* The pilot exists to make codegen emit the
+   canonical protocol; rolling it out to the other components is a later,
+   mechanical pass. So the template rewrite is unconditional and deletes the
+   branches rather than satisfying them: ={{#read_for_cache}}=,
+   ={{#has_as_of_lookup}}=, ={{#has_batch_save}}=, ={{#has_parent_id}}=,
+   ={{#extra_list_requests}}= as a separate message family, =count_by_*=,
+   =replace_by_*= and the =<junction>_view= payload all go, along with the
+   message names and subjects they emit. A model that still declares one of
+   those features loses it when its component is converted, and the model is
+   what gets fixed, not the template. Nothing is kept "for now" and no
+   conditional exists to keep two protocols alive at once.
+
+   What the rewrite has to carry is the three things the messages state and the
+   internal layers have no concept of today:
+
+   - *A precondition.* The repository writes with
+     =write(context, const domain&)= and removes with =remove(context, key)=,
+     and neither takes an expected version. So =must_match_version= cannot be
+     honoured and =must_not_exist= cannot be told from an overwrite. The
+     repository gains a conditional write and a conditional remove, and the
+     losing writer becomes a =conflict= outcome rather than an exception. This
+     is the root of the chain and has to land first.
+   - *Change intent.* The audit fields come from the domain object and the
+     authenticated context through =stamp()=. Intent has to reach the write
+     path. Partly there already: several entities carry
+     =change_reason_code=/=change_commentary= columns, which are exactly the
+     fields the write record strips.
+   - *A result envelope.* Every response now carries one, so the service
+     returns an outcome instead of throwing for =missing=, =conflict= and
+     =denied=, and the handler fills a =result=.
+
+   So the order is repository, then service, then handler, then registrar: the
+   repository gains conditional write and remove; the service gains an
+   outcome-returning interface over the eight verbs and the versions pair; the
+   handler becomes the adapter that decodes a canonical request, calls the
+   service and fills a result. The entity service and handler are *generated*
+   (=[GENERATED]= markers in =ores.iam/core/=), so all of this is template work
+   plus regeneration, with no hand-written IAM service to keep in step.
+
+   Two pieces are off the critical path for the IAM pilot only, because no IAM
+   entity reaches them: =cpp_nats_event_cache.hpp= renders for a
+   =read_for_cache= entity and IAM declares none, and the =** Presentation=
+   protocol class names (=get_request_class=, =save_request_class=,
+   =history_request_class=) are read by =doc_entity_org.org.mustache= alone.
+   They are not exempt from the rewrite; they simply do not block the build.
+3. Regenerate IAM and compile. The generated C++ has to build before anything
+   downstream is worth attempting.
+4. The shell. Enable =ores.cpp.shell-command= on the IAM models and let the
+   generated command units and their tests exercise every verb.
+5. The UI. The BFF route descriptor and the web screens follow the generated
+   protocol.
+
+The event subject prefix is the one cross-component concern, and it is
+deliberately accepted here: IAM adopts ={component}.v1.{resource}_events.{action}=
+while the other components still announce =ores.{component}.{entity}_changed=,
+so their event fan-out is inconsistent until they are converted. That is the
+price of piloting one component and it is the agreed scope.
+
+*Events are in this task* (settled 2026-09-21). IAM derives its events and
+adopts ={component}.v1.{plural}_events.{action}= in this PR; the other
+components keep announcing =ores.{component}.{entity}_changed= until
+=4620D5A7= converts them.
+
+That decision exposes a modelling gap the specification leaves open, and it
+should be settled before the derivation is written, because it decides whether
+the templates grow an events block:
+
+The specification states one payload and three subjects. Every event carries
+=event_id=, =key=, =action=, =version=, =occurred_at= and =correlation_id=, and
+the action is one of three -- yet the subject's last segment *is* the action, so
+one payload type is addressed by three subjects. A message as the renderer
+states it carries at most one =nats_subject=, and the =subjects= map is keyed by
+message name, so "one type, three subjects" has no expression today.
+
+Three ways out, and the choice is a protocol decision rather than a code one:
+
+- Three payload types, =<singular>_event_created= and its two siblings, each
+  with the full field list and its own subject. No new machinery, but the
+  payload is stated three times and =action= becomes redundant with the type
+  that carries it.
+- One payload, =<singular>_event=, beside three subject holders that carry the
+  subject and no fields. Also no new machinery, but it invents three empty
+  types whose only job is to hold a string.
+- One payload and an =events= block in both templates, rendering
+  =event_subjects= per action the way =subjects= is rendered per message. This
+  is the only one that states the protocol as written, and it is the one that
+  costs template work.
+
+The third is the honest reading and the one to take unless the specification is
+changed to give each action its own payload type.
 
 * Notes
 
@@ -72,11 +222,206 @@ its derived =save=, =delete= and =history= have no server registration.
 =read_for_cache= is keyed on =tenant_id=, which is simultaneously server-owned
 and stripped by =stamp()=.
 
-**Sequencing.** =FA160AE1= has an open PR whose acceptance is that the eleven
-hand-written IAM protocol headers generate from org with zero byte
-differences. That cannot survive this conversion, so decide the order before
-starting: either that PR merges first and the org it produces is rewritten
-here, or it is re-scoped now to the canonical shapes.
+**The protocol has two sources of truth and only one of them is generated.**
+=ts_protocol.ts.mustache= renders ={{#messages}}= from
+=entity_protocol_messages=, so the TypeScript twin follows the derivation.
+=cpp_protocol.hpp.mustache='s =domain_entity= block, lines 3 to 178, is
+hand-written and mirrors it, which is why =check_protocol_twin_coverage.py= can
+only prove the twin file exists and not that the two agree. The =operation=
+block at lines 445 to 478 already renders ={{#messages}}=, so the renderer this
+needs is on main. Unifying the two is what turns the rest of this task from two
+parallel edits into one.
+
+**Sequencing is settled.** =FA160AE1= merged as PR #2104 before this branch
+started, so the =operation= model type and the generic message renderer are in
+the base. Its zero-byte-difference criterion applied to the old shapes and is
+superseded by this specification.
+
+**Step 1 recipe: exactly what =entity_protocol_messages= must emit.** The
+foundation helpers are built and tested; this is the composite they feed. Every
+shared record below comes from =ores.utility::domain= (=result=,
+=precondition=, =change_intent=); every subject from the three builders.
+
+Auxiliary records first -- entries with no subject, which the renderer already
+writes as plain structs:
+
+| Record | Fields |
+|--------+--------|
+| =<singular>_key= | =key_record_fields(entity)= |
+| =<singular>_write= | =write_record_fields(entity)=, each column's own cpp type |
+| =<singular>_change= | =write: <singular>_write=, =precondition= |
+| =<singular>_removal= | =key: <singular>_key=, =precondition= |
+| =<singular>_lookup= | =key: <singular>_key=, =<singular>: optional<domain>= |
+| =<singular>_version_key= | =<singular>: <singular>_key=, =version: std::uint32_t= |
+| =<plural>_filter= | one optional member per filterable column; starts from the model's =list_filter_column= |
+
+Then the operations, in this order, paired request before response:
+
+| Request | Subject | Request fields | Response fields |
+|---------+---------+----------------+-----------------|
+| =list_<plural>_request= | =request_subject(c, p, "list")= | =offset= 0, =limit= 100, =order=, =filter= | =result=, =<plural_short>=, =total= |
+| =get_<singular>_request= | =.get= | =key: <singular>_key= | =result=, =<singular>: optional<domain>= |
+| =get_many_<plural>_request= | =.get_many= | =keys: vector<<singular>_key>= | =result=, =entries= |
+| =put_<singular>_request= | =.put= | =change: <singular>_change=, =intent= | =result=, =<singular>: domain= |
+| =put_many_<plural>_request= | =.put_many= | =changes=, =intent= | =result=, =<plural_short>= |
+| =delete_<singular>_request= | =.delete= | =removal=, =intent= | =result= |
+| =delete_many_<plural>_request= | =.delete_many= | =removals=, =intent= | =result= |
+| =list_<singular>_versions_request= | =versions_subject(c, p, "list")= | =key=, =offset=, =limit=, =order=, =filter= | =result=, =versions: vector<domain>=, =total= |
+| =get_<singular>_version_request= | =versions_subject(c, p, "get")= | =key: <singular>_version_key= | =result=, =version: domain= |
+
+The versions list takes the resource in the *singular* because the
+specification writes it that way at its own code block, and because the read is
+scoped to one entity rather than to a set of them: =list_tenant_versions=, not
+=list_tenants_versions=. The subject keeps the plural resource segment,
+=iam.v1.tenants_versions.list=, because that names the collection.
+
+The scoped read carries =scope: ores::utility::domain::scope=, defaulting to
+=scope::direct=. =scope= is a shared record beside =order=, so it has a
+TypeScript twin and a utility-domain map entry; unlike =outcome= it is a
+request field of a generated message, so it needs one.
+
+A version is the domain row itself: the domain type already carries the version
+number and the audit provenance the service derived, so no separate version
+record is needed.
+
+Dropped outright, not renamed: =save_*=, =get_<singular>_history_*=,
+=get_<singular>_hierarchy_*=, =read_<plural>_for_cache_*=, =count_by_*=, and the
+=get_<plural>= naming for the paged read. =extra_list_requests= become
+=list_by_<relation>_<plural>= carrying =scope: direct | subtree=, and
+=hierarchy= becomes the same verb with =scope: subtree=.
+
+Then the template: replace =cpp_protocol.hpp.mustache= lines 18 to 113 -- the
+hand-written structs -- with the ={{#messages}}= renderer the operation block
+already uses at lines 455 to 474, keeping the entity-level envelope around it:
+the include guard, the includes, the =paste:= marker and the namespace. Add
+=ores.utility/domain/protocol.hpp= and =key_record_fields='s uuid header to the
+includes when the generated messages reference them.
+
+**Do this before the composite: give the shared records a TypeScript twin.**
+=org_loader._ts_type= maps scalars, containers, optionals and a component's own
+domain types. It does **not** map =ores::utility::domain::*=, so
+=ores::utility::domain::result= returns =None= and a field carrying it would
+render with no TypeScript type at all -- which the guard added in
+=test_protocol_subject_grammar.py= now fails on rather than letting through.
+
+The mechanism already exists and =hierarchy_node= uses it: the utility-domain map
+at =org_loader.py:2248= pairs a C++ type with its TypeScript name and import
+module, =("HierarchyNode", "utility/hierarchy")=, and the function at line 2404
+resolves it inside containers as well as alone. The four records need entries
+pointing at a new =utility/protocol= module, and that module has to exist
+before the entries do, or the generated TypeScript imports something that is
+not there.
+
+=std::optional=, =std::vector=, the fixed-width integers and =boost::uuids::uuid=
+all map correctly already -- probed and confirmed -- so this is the only
+projection gap on the codegen path.
+
+**Steps 0 and 1 are done, and four defects only the real models could show.**
+
+The hand-built entity dicts the tests used were shaped the way the code
+expected, not the way the loader produces a model. Running the derivation
+against =ores.iam.tenant_type= and =ores.iam.account_party= found:
+
+- An enriched =* Columns= entry is named =name=, not =column=. The write record
+  rendered =: string;= -- members with no name at all. =_column_name= now reads
+  =column=, =field= and =name=.
+- A key column's type is stated as =cpp_type=, not as an =is_uuid= flag, so a
+  uuid key was typed =std::string=. =_key_cpp_type= reads the model's own type
+  and keeps the flag only as the fallback a hand-built dict needs.
+- The loader partitions a model's fields into the primary key, the natural keys
+  and the columns. A write record built from =columns= alone left a create
+  unable to state its key: =tenant_type='s key is =type= and =tenant='s =code=
+  is a natural key, and neither is in =columns=. =write_record_columns= reads
+  all three.
+- A junction's =party_id= is half its key, not the acting party, so the
+  server-owned filter stripped it and the write could not say what it linked.
+  A key column is never stripped, whatever it is called.
+
+=boost::asio::ip::address= was a fifth, found by the drift check rather than by
+a test: it is in =_TS_DOMAIN_STRING_TYPES= for domain members but was not in
+=_TS_SCALARS=, so a protocol message carrying one had no TypeScript projection.
+=login_info= carries one, which is how the gap surfaced.
+
+**The =_view= payload is replaced by =get_many=, not lost.** A junction's
+by-side read used to return =<junction>_view=: the link row plus the joined
+row's display code. The specification says a scoped read replies with a page of
+entities, and =get_many= exists so a screen resolves the referenced rows it
+displays in one round trip. So the enrichment moves to the client and the
+generated module loses a type nothing else used. =replace_by_*= is not replaced
+by anything: the specification has no whole-set replacement verb, and a caller
+that means to replace a set sends a batch.
+
+**The dead ={{#entity}}= block is gone.** =cpp_protocol.hpp.mustache= had three
+protocol blocks. Two are live -- =domain_entity= and =junction= -- and the
+third keyed on =entity=, which only a schema model reaches. No =ores.codegen.schema=
+model exists in the tree, so it rendered nothing while being the last place the
+old verbs survived in the template. Removing it is what makes "one source of
+truth" true rather than nearly true.
+
+**The BFF route projection now states the single-record read.** It withheld
+=subjects_get= because no domain entity derived a =get=; the specification
+derives one for every entity, so =has_get= is true rather than permanently
+false. The delete and versions routes stay gated on the key being the natural
+key, because the path segment carries one value and a key record may name
+several.
+
+**Step 2 landed, and what it found.** The repository, service, handler and
+registrar templates now speak the canonical verbs, and the whole tree
+compiles. The work found five things worth keeping.
+
+- *The database already arbitrates the version.* Every bitemporal table's
+  insert trigger reads the current row =for update=, raises
+  =P0002= when the stated version differs, and treats a zero version as
+  "no claim". So =must_match_version= needed no new storage mechanism:
+  the repository reads the current row first, to answer =missing= and
+  =conflicting= as outcomes rather than exceptions, and the trigger
+  remains the arbiter that makes the check and the write one transaction. A
+  write with =must_not_exist= is the one case the trigger cannot answer,
+  because it treats "no row" and "any row" alike; the read before the write
+  is what tells them apart.
+- *The versions sub-resource is gated on the version column, not on the
+  current-state flag.* =permission= carries =no_audit_columns=
+  and is not a current-state table: it keeps a validity window with no
+  version in it, so it derived a versions pair it could not answer. The gate
+  is =has_audit_columns=, which is exactly "has a version column".
+- *A relation is often a natural key.* =account_contact_information='s
+  =account_id= is a foreign key and a natural key, and the loader
+  partitions natural keys out of =columns=. The scoped read therefore
+  typed the relation =std::string= while the write record typed the same
+  column a uuid. One lookup, both spellings.
+- *The batch read was never exercised.* It was gated on a model flag no IAM
+  entity sets, so making it unconditional exposed two latent defects: it
+  filtered the exact requested key-tuples by comparing a mapped row against
+  text, which cannot match a uuid or a timestamp column, and the conditional
+  removal compared an =int= column to the protocol's =uint32=.
+- *The service keeps its plain accessors.* The canonical methods take a
+  request and answer its response, so the handler decides nothing; the
+  existing accessors stay because hand-written callers use them. One wire
+  protocol, one internal convenience surface.
+
+**The account_party junction converted with the rest.** Its protocol was
+generated while its handler, service and registrar were hand-written, so the
+canonical derivation left that layer compiling against shapes that no longer
+existed. Silencing the facets was refused by =check_protocol_twin_coverage=,
+whose point is that a header never ships without its twin, and an operation
+model would have kept a second protocol alive for one resource; so the layer
+moved onto the canonical protocol, along with its five callers.
+
+That conversion needed one protocol change. A removal's precondition defaulted
+to =must_not_exist=, which as a claim about a removal is unsatisfiable, so a
+removal that says nothing now means "remove whatever is current" and the
+derived removal record carries that default. A caller that wants the version
+checked still states it.
+
+**What a service can and cannot answer is now explicit.** A stated order, a
+stated filter and a =subtree= scope are refused with =invalid= and a code,
+rather than ignored: the store pages in key order, filters nothing yet, and
+has no subtree. Batch removal refuses a per-element precondition for the same
+reason -- the store removes a set in one statement, and serving it as a
+sequence of single removals would leave a partial batch behind. Those are the
+gaps step 4 and the verification pass should close, and they are visible to
+the caller rather than silent.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -88,16 +433,887 @@ via its "Verifies task" field.
 |----------+-------+-------|
 |          |       |       |
 
+**The version sentinel is gone, and it is proved gone.** The trigger treated a
+caller-supplied zero as "skip the check", overloading one number with four
+meanings and letting a create with a colliding key silently version an
+unrelated row. Zero now means one thing -- no current row exists -- so the
+store refuses a duplicate create for every client. A writer that means to
+replace states that separately, with a transaction-local signal it raises
+itself; the signal cannot be set by a client that does not know about it and
+cannot leak through a pooled connection.
+
+The write path moved to match. The repository's plain write replaces the row
+the caller last read, by reading the version the row carries now and stating
+it, so a row that moved on is a conflict rather than a silent overwrite. The
+service hands the repository the claim instead of computing a version of its
+own: one statement of the version, where the store's arbiter reads it.
+
+Proved in one transaction against the real generated trigger, rolled back at
+the end: a create stores version 1; a second create is refused with "Row
+already exists"; a write stating version 99 is refused with "Version conflict:
+expected version 99, but current version is 1"; a write stating version 1
+replaces the row and stores 2; the explicit replace signal lets a zero replace
+and store 3; and the earlier rows are closed, not deleted.
+
+**The eventing templates are the last stale surface.** Everything else that
+renders for IAM speaks the canonical protocol. The events are a design of
+their own, not a rename: the specification states one payload addressed by
+three subjects, and an event as the eventing library states it carries one
+name, so =entity_change_event=, the bus and =publish_entity_event= need the
+action, the key and the version before the templates can render the subjects.
+The affected IAM files are 10 event headers, 10 event registrars, 10 notify
+triggers and 5 eventing integration tests, all of them generated.
+
+**Rebuilding the database was the gate that mattered, and it found two
+defects.** Both were in the converted SQL and neither was visible from a build
+or from a reading of the templates.
+
+The notify trigger declared =change_version= but assigned =changed_version=
+throughout. Every generated notify function failed to compile, so the database
+could not be built from the create scripts at all -- which is also why the
+eventing integration tests had nothing to exercise. Its delete branch read
+=OLD.version= unconditionally, and three IAM tables carry no version column
+because they are not versioned: a delete on permissions, sessions or login_info
+would have raised at runtime. The read now sits inside the audit-column guard
+the other branches already use.
+
+The touch-version function reset the parent's version to the zero sentinel and
+re-inserted. Zero now means one thing to the insert trigger -- no current row
+exists -- so the trigger refused the insert as a create colliding with a live
+row, and every write to a child of a composite parent failed. The
+account_contact_information integration test failed on exactly that. The
+function already holds the row lock from the read it performs, so it now states
+the version it read: the store sees the replace it is, and the
+compare-and-swap stays meaningful for the rest of the transaction, which the
+transaction-wide replace signal would not.
+
+**What the eventing run proved.** The whole tree builds, 442 codegen tests pass,
+and every gate passes. =ores.iam.core.tests= passes 96 test cases and 224
+assertions, and all five eventing integration tests are among them. The cause of
+the five earlier failures was exactly as diagnosed: those tests exercise the
+*deployed* trigger, and the regenerated trigger had not been applied, so the
+store still notified the old payload shape, which no longer parses as an event
+notification. Nothing was wrong with the templates' event contract.
+
+**The role duplication was three duplications and a shadowed handler.** An
+operation model and an entity model both declared =iam.v1.roles.list= and
+=iam.v1.roles.get=, and the authorization model also declared a permission list
+the permission entity derives. Two headers in the same namespace declared the
+same four struct names, so any translation unit that included both would not
+compile. The derived role protocol was worse off than duplicated: the role
+entity disabled its generated handler and registrar, and the hand-written
+handler that took their place included the *authorization* header and declared a
+class of the same name at the same path. The derived messages were therefore
+generated, registered nowhere, and served by nobody -- the state the acceptance
+criteria call out. The authorization model now keeps only what a role's CRUD
+verbs cannot state, the hand-written handler became =authorization_handler= and
+lost the two reads, and the generated handler and registrar serve role CRUD
+again. =uniq -d= over every subject in every IAM protocol header is now empty.
+
+**Two entities cannot derive a CRUD protocol, and one of them should not.**
+=account= and =session= own their protocol through an operation model, so no
+shell unit can be derived for them *by the facet as it stands*. The operation
+models are not the obstacle: =ores.cpp.protocol= lists =operation= among its
+model types, so a declared model already yields its subjects, request and
+response types, and every field's =cpp_type=, in both twins. The hand-crafted
+artefacts for an operation model are the ones whose facets exclude =operation= --
+=nats-handler=, =service=, =repository= and =shell-command= take only
+=domain_entity=, =schema= and =junction=. That is why =session_handler=,
+=bootstrap_handler=, =reset_handler=, =authorization_handler= and the login
+wiring in the account handler are hand-written while the protocol beside each is
+generated. Canonicalising an operation model is therefore *not* a prerequisite
+for generating shell commands from it; it is needed only where a verb is
+actually wrong. The facet change is what unlocks the commands, and the protocol
+template already shows the shape it takes: walk ={{#operation}}{{#messages}}= and
+emit one unit per declared message.
+
+They are not alike. A session's list request
+is a scoped read in the old shape, and its generated service already implements
+save and delete, so the derivation costs nothing and gains a =list_by_account_id=
+read. An account's writes are workflows -- =create_account=, =login=,
+=lock_account=, =change_password=, =set_my_default_party= -- and its entity
+service is switched off entirely. Forcing the generic =put=/=delete= shape onto
+that would push a password and a TOTP secret through a write record, and would
+offer the shell =add= and =delete= for accounts where the product has distinct
+operations. Settled 2026-09-21: account becomes a regular entity *and* keeps its
+workflow operations, so the shell gains both a CRUD unit and the workflow units;
+and the shell facet learns to render an =operation= model, which is what makes
+the second half possible. That facet change also covers =login=, =signup=,
+=bootstrap=, =reset=, =provisioning=, =authorization=, =session= and
+=account_history=, none of which are entities at all.
+
+**The shell facet renders a declared protocol, and one thing is still open.**
+Settled and built 2026-09-21: =ores.cpp.shell-command= admits =operation=, and
+three archetypes render one command per message that carries a subject and a
+response. The declaration is already the whole surface -- a field without a
+=:default:= is a positional and one with a default is a =--<name>= flag, a list
+field is one comma-separated token, the request goes out on its own
+=nats_subject=, and the reply is printed as JSON. A field no token can fill is
+refused rather than dropped, so a model that opts in cannot silently lose an
+argument. Proved on =session_samples=: the unit compiles, its three generated
+tests pass, and =ores.shell.iam= exists as an adapter part with an aggregator the
+host calls.
+
+**The fact lives in the protocol, not in the shell.** Settled 2026-09-21. The
+shell has two helpers: =do_request= sends without a token and =do_auth_request=
+sends with one, and the generated unit originally used the second
+unconditionally, which is wrong for the six operations that establish the
+session. The first attempt fixed that in the shell's own projection, which put
+the fact in the wrong place: the web client must decide whether to attach a
+token before it has one, and every later client must decide the same thing, so a
+fact only the shell carries is a fact each consumer re-derives.
+
+A message now states it as =:auth: none= beside its =:subject:=. Both protocol
+twins carry it -- a C++ constant beside the subject, a TypeScript map beside the
+subjects -- and a value other than =none= is refused where the message is
+parsed, so a typo fails the model rather than producing an operation every
+client calls without a token. Every derived entity operation states =true=,
+because the derivation has no unauthenticated verb.
+
+The shell reads the protocol's statement rather than a duplicate: =if constexpr
+(request_type::requires_session)= chooses the guard and the helper. The
+projection keeps one flag, for choosing which test cases to emit, and a test
+asserts the two agree.
+
+**The entity unit is projected, and three entities cannot take it yet.** The
+shell's entity archetypes still speak the superseded verbs, so the projection
+they will render from is written and tested ahead of the template: one command
+per derived operation, a put becoming two because a create and a replace are one
+verb stating two claims, and six handler shapes serving the ten verbs because a
+versions read is a paged read addressed by a key. A command is measured against
+the inputs its shape actually reads -- a paged read takes no key, a write takes
+the write record rather than the key, because the key travels inside it -- so an
+unfillable column the read never touches does not condemn it.
+
+Seven of the ten IAM domain entities can take a unit today. Each derives its own
+protocol and every input a token can fill: =account_contact_information=,
+=account_type=, =permission=, =role=, =tenant=, =tenant_status= and
+=tenant_type=.
+
+The three that cannot are each a different reason, and none is the template's
+fault. =login_info= derives a protocol but its write record carries =last_ip=
+and =last_attempt_ip=, which are =boost::asio::ip::address= -- a type no token
+fills, and two facts the server records rather than a client sends. It needs the
+same decision as =account= and =session=. Those two are now excluded by the
+ownership gate, which is where they belong: the shell facet names the derived
+request types, so it joined =_PROTOCOL_FACETS= beside the eventing facets, and a
+model that owns the protocol leaves the entity no such type to name. The
+=account_party= junction is a fourth case: the entity archetypes serve
+=domain_entity= alone, so its shell surface stays the hand-written
+=account_parties_commands=.
+
+**The shell surface is complete for the entities that can take it, and a gate
+found what reading did not.** Seventeen units and 105 commands: ten operation
+units over the declared protocols, seven entity units over the derived ones, all
+installed by one aggregator. The entity archetypes render the projection rather
+than a fixed verb list, so a verb the model gains appears as a command and a
+verb it loses takes its command with it.
+
+Two facts only generating and compiling could show. The shell's =from_token=
+refused every unsigned width while the derived requests carry =std::uint32_t=
+for the page and the version, so an entity the projection accepted would not
+compile; the token set now matches, and the projection's notion of fillable was
+aligned with it -- the two had drifted in opposite directions, with the
+projection claiming a =time_point= was fillable when no conversion exists.
+
+The third fact was found by a gate and not by reading. A scoped read derives its
+verb as =list_scoped= and names the relation in the operation's =leading= field,
+never in the verb, so a projection that looked for a verb beginning =list_by_=
+matched nothing and emitted no command: =account_contact_information='s
+=list_by_account_id= subject could not be reached from the shell and nothing
+said so. The plan now names every verb it has no shape for, and a test asserts
+that list is empty for every IAM entity that renders a unit. It failed on its
+first run, on this. The synthetic case that was supposed to cover relations had
+been passing because it invented a verb the derivation never produces -- which is
+precisely the difference between a gate written from the real models and a
+fixture written from the intent.
+
+Worth recording too: the generated tests cost about half a second per case, so
+=ores.shell.iam.tests= is now 449 cases and 220 seconds. That is not this work's
+doing -- =ores.shell.trading.tests= has the same shape at 420 cases and 159
+seconds -- but the pilot has made it visible and it will not survive many more
+units.
+
+**The end-to-end pass reached the shell and stopped at authentication.** Run
+against the live service, the shell connects to NATS, the seventeen units
+register, and a generated command is reached: =tenants list= answers =You must
+be logged in to run list=, which is the generated guard doing its job. Nothing
+further could be proved, and the reason is not the generated commands.
+
+The database is in bootstrap mode, so there is no account to log in as. The
+hand-written =bootstrap= creates one, and it lands in the system tenant --
+=ffffffff-ffff-ffff-ffff-ffffffffffff= -- while login resolves the tenant from
+the principal's hostname, =acme_corporation=. The service log states it plainly:
+=account not found for username: tenant_admin=. So the environment needs the
+tenant provisioning flow before an authenticated command can be exercised, and
+that flow is itself one of the generated units.
+
+Which exposes a defect that has to be fixed first, and it is not cosmetic. The
+generated operation units register submenus named =bootstrap=, =login= and
+=logout=, and =accounts_commands.cpp= already registers *root commands* of those
+same three names. The hand-written units register first, so they win: a script
+that runs =bootstrap-status= is answered =Wrong command=, and
+=bootstrap=<principal> <password> <email>= reaches the hand-written command.
+Three of the generated units -- bootstrap, login and the rest of their submenus
+-- are therefore unreachable from the REPL, and the collision is silent.
+
+That is the retirement task, and it is now known to block rather than merely
+tidy: the authenticated end-to-end pass cannot run until one of the two
+registrations goes. The hand-written =login= also does party selection after
+authenticating, which the generated one does not, so retiring it means deciding
+where that behaviour belongs.
+
+**A generated command is proved end to end, and login is a client's own.**
+Settled 2026-09-21. The collision is gone: the hand-written =bootstrap= is
+retired, because its three commands are the generated unit's, its server call
+was the same =create_initial_admin_request= and the only thing it added was a
+friendlier print. =bootstrap bootstrap-status= now runs from the REPL, over
+mTLS, into the service and back:
+
+#+begin_src text
+  {"is_in_bootstrap_mode":false,"message":""}
+#+end_src
+
+which is the first generated command proved against the real service rather than
+only shaped right.
+
+Login is not retired, and the facet is switched off for it. A login operation
+does not change the store, it changes *this client's own session*: something has
+to take the token out of the reply and hand it to the session, and
+=accounts_commands= does that, including the party selection that follows. A unit
+which sends a request and prints the reply cannot express that, and one that
+appeared to log in while leaving the session signed out would be worse than no
+command. So =login= and =logout= stay hand-written, and the reason is recorded
+rather than left as a silent collision. The shell surface is sixteen units and
+101 commands.
+
+The authenticated pass still needs a provisioned environment. The bootstrap admin
+lands in the system tenant while login resolves the tenant from the principal's
+hostname, so =account not found for username: tenant_admin= is what the service
+log says and no usable login exists yet.
+
+**The end-to-end pass succeeded, and it found two defects the build could not.**
+Settled 2026-09-21. A scripted shell session logs in and runs eight generated
+commands over mTLS into the live service, one per handler shape: a paged read, a
+versions read addressed by a key, a key read, and the declared operations. Seven
+of the eight return =outcome ok=; =tenant_types get system= answers =missing=
+with code =not_found=, which is the canonical outcome for a row that is not
+there, in a tenant that has no types yet. Two return real data -- 382
+permissions and 26 roles -- so the replies are the store's and not a stub.
+
+The environment had to be built to get there, and that was the first thing the
+pass taught: the database was in bootstrap mode with no usable login. The
+hand-written bootstrap created an admin in the *system* tenant, while login
+resolves the tenant from the principal's hostname, so the service answered
+=account not found for username: tenant_admin=. The generated
+=bootstrap provision-tenant= then created the tenant properly and login followed.
+That is the generated surface doing the job the hand-written one could not.
+
+Two defects followed, and neither was visible from a build.
+
+The first is a stale process. The service had been running since before the
+protocol changed, so it answered the *old* response shape and the shell reported
+=Field named 'result' not found=. Nothing was wrong with either side; the
+running binary was simply not the built one. Restarting the service is part of
+running this pass, and it is worth stating because the failure reads like a
+protocol mismatch and is not.
+
+The second is real and is fixed. =account_type=, =login_info= and =permission=
+each had a generated protocol header, service and registrar, and the service
+included and called none of them -- =register_account_type_handlers=,
+=register_login_info_handlers= and =register_permission_handlers= existed and
+were never wired. The shell's =account_types list= was answered *no service is
+handling subject 'iam.v1.account_types.list'*. Three of the eight entities the
+shell renders a unit for reached nothing at all, and the generated tests could
+not have caught it: they stop at the transport by design.
+
+**The write lifecycle works end to end, and a domain rule proved the chain.**
+Settled 2026-09-21. One entity taken through every write verb, over mTLS into the
+live service and back:
+
+| Command | Reply |
+|---------|-------|
+| =tenant_types add e2e_probe ...= | =ok=, the row at version 1 |
+| =tenant_types get e2e_probe= | =ok=, version 1 |
+| =tenant_types versions e2e_probe= | =ok=, one version |
+| =tenant_types set e2e_probe ...= | =ok=, the row at **version 2** |
+| =tenant_types versions e2e_probe= | =ok=, **two versions** |
+| =tenant_types delete e2e_probe ...= | =ok= |
+| =tenant_types list= | =ok=, empty |
+| =account_contact_informations by-account-id <uuid>= | =ok= |
+
+So a create, a compare-and-swap replace that bumped the version, the bitemporal
+history holding both, and a delete that left the table empty. The scoped read is
+the shape the projection had been dropping entirely, and it answers too.
+
+The first attempt failed, and that is the reassuring part. =add= came back
+=failed=/=internal_error= with
+
+#+begin_src text
+  Invalid change_reason_code: e2e.reason. Reason must exist in
+  ores_dq_change_reasons_tbl.
+#+end_src
+
+raised by =ores_iam_tenant_types_insert_fn=. A domain rule, enforced in the
+database, refusing a value the shell invented: the request reached the service,
+the service reached the repository, and the repository reached the trigger. Every
+layer of the chain is therefore proved by that failure, and the verbs are proved
+by the run that then used a reason the tenant actually has.
+
+**Step 5 was mostly done, and the gap was one list.** The BFF needed nothing:
+five IAM entities have a generated route descriptor, the server registers all
+five, and the factory builds the list, the single-record read and the history
+route from the descriptor -- which states the collection, the key and the
+canonical subjects and no function. A hand-written handler per entity would have
+been five places to keep in step; there are none.
+
+The web registry knew about one of the five. =tenant_type= was wired, =tenant=
+and =role= were placeholders marked planned, and =account_contact_information=,
+=account_type= and =tenant_status= were referenced nowhere, so three entities the
+model declares a screen for had no screen and =tenant='s own declaration was
+ignored in favour of a placeholder. All five are wired now, each taking its route
+segment from its declaration, so the sidebar link and the router path are one
+string rather than two -- which is what =assertWiredPath= checks, and what its
+test covers.
+
+**Three entities remain, and one of them is outside this PR's reach.** The
+acceptance criterion says the shell's commands exercise every verb for every IAM
+entity. Seven entities meet it. The three that do not are each a different
+problem, and none is unfinished mechanics.
+
+=account= and =session= are owned by operation models, so no canonical CRUD set
+is derived for them and their declared verbs are the old spellings --
+=iam.v1.accounts.save=, =.update=, =.delete= rather than put. Making them
+regular entities is the settled plan and it is a real refactor, not a wiring
+change: the operation model stops owning the protocol, the canonical set derives,
+the generated service, handler and registrar come back, and the genuine workflow
+operations -- =login=, =lock_account=, =change_password=,
+=set_my_default_party= -- move to an operation model with a hand-written handler
+beside it, as the authorization split already does. It also reaches the HTTP
+routes, the shell and the web screens.
+
+=login_info= is a different problem and it is *blocked by this PR's own scope*.
+Its entire write record is server-recorded: =last_ip= and =last_attempt_ip= are
+=boost::asio::ip::address=, =last_login= is a timestamp, and the rest are the
+failed-login count, the lock state and the online flag. A client should not send
+any of them, so the right answer is that the entity is read-only -- but codegen
+has no way to say that for a =domain_entity=. =:read_only:= is honoured for a
+junction and not by =entity_protocol_messages=, which derives put, put_many,
+delete and delete_many unconditionally. Teaching the derivation to honour it on
+a domain entity is small; the consequence is not. It removes
+=save_login_info=/=delete_login_info= from the generated service, and
+=projects/ores.cli= calls them -- thirty-nine references across seven files, one
+of them in a component this PR is explicitly forbidden to change.
+
+So the honest position is that two of the three are the next task and the third
+waits on a decision about scope: either =login_info= becomes read-only and
+=ores.cli= is carried with it, or the pilot ships with one entity whose write
+verbs exist and have no shell command.
+
+**The account and session refactor, as a sequence.** Worked out 2026-09-21 so it
+does not have to be re-derived. The shape is the one the role split already
+proved, and it is all-or-nothing per entity: the tree is red from the first step
+to the last, because renaming a request type changes the handler that decodes it.
+
+1. *Rename the hand-written pair.* =account_handler= →
+   =account_operations_handler= and =account_service= →
+   =account_operations_service=, file names, class names and logger names
+   together. Nothing else changes, so this step alone is green. It is needed
+   because the generated facets emit a class of each of those names at each of
+   those paths, and a rename is cheaper than teaching the templates to avoid a
+   collision.
+2. *Lift the ownership.* In =ores.iam.account_messages.org= change
+   =:entity_singular: account= to =account_operations=, which is what makes the
+   operation model stop owning the entity's protocol. Then delete the messages
+   the derivation will state instead -- =save_account_request=,
+   =update_account_request=, =delete_account_request=, =get_accounts_request_typed=
+   and =change_password_request_typed= -- and keep only the genuine workflows:
+   lock, unlock, login-info, reset-password, update-email, set-default-party,
+   select-party, switch-party.
+3. *Re-enable the generated facets.* Remove =:ores.cpp.nats-handler.enabled: nil=,
+   =:ores.cpp.nats-sub-registrar.enabled: nil= and =:ores.cpp.service.enabled: nil=
+   from =ores.iam.account.org=, and enable =:ores.cpp.shell-command:.
+4. *Rewire the callers.* =registrar.cpp= delegates the canonical set to
+   =register_account_handlers= and the workflows to the operations handler;
+   =iam_routes.cpp= moves its list and get onto the derived message names;
+   =accounts_commands.cpp= moves onto the canonical subjects; and the web screens
+   for account are wired to a generated declaration, which does not exist yet
+   because the entity has no shell or web facet enabled.
+5. *Regenerate and rebuild.* The account protocol header, service, handler,
+   registrar, TypeScript twin, both shell units and the web descriptor all appear
+   at once.
+
+=session= follows the same five steps and is smaller: =session_messages.org= is
+half the size and its =active= and =samples= operations are the only bespoke
+ones. Its list request is already a scoped read in the old shape, so step 2 is
+mostly a deletion, and its =session_view= record is declared, documented and
+referenced by nothing.
+
+**Check which half is generated before renaming it.** Learned the hard way
+2026-09-21. The session refactor began by renaming the hand-written pair,
+=session_service= and =session_handler=. Only the handler is hand-written: the
+entity switches off =nats-handler= and =nats-sub-registrar=, and nothing else, so
+the service is generated and renaming it did not free the name -- it duplicated
+the artefact. The drift gate said so on its next run, materialising
+=session_service.hpp= and =.cpp= beside the renamed pair.
+
+The rule the episode leaves: an entity's =:ores.<facet>.enabled: nil= entries are
+the exact list of what is hand-written, and anything absent from that list is
+generated and must not be renamed by hand. The service half is undone and the
+handler half kept.
+
+**What lifting session's ownership actually costs.** Worked out 2026-09-21 so
+the next attempt does not rediscover it. Two consequences the five-step plan
+does not show.
+
+*There will be two session headers, not one renamed.* =session_protocol.hpp= is
+the operation model's today. After the lift the entity derives a header of that
+same name, so the operation model's moves to =session_operations_protocol.hpp=
+and a new =session_protocol.hpp= appears. Every reference has to be sorted into
+which of the two it means: =session_operations_handler.hpp= and =registrar.cpp=
+want the operations one for =get_active_sessions_request= and the samples one
+for =get_session_samples_request=; the shell's session commands and the HTTP
+session routes want the entity one for the list.
+
+*And the list callers need a rewrite, not a rename.* The operation model's
+=list_sessions_request= carries =account_id=, =limit= and =offset=, and its
+response carries =sessions=, =total_count=, =success= and =message=. The derived
+one carries =offset=, =limit= and =order=, and answers with the plural field,
+=total= and a =result= envelope -- so =result->total_count= becomes
+=result->total=, =result->success= becomes a branch on =result.outcome=, and the
+=account_id= scope moves to the derived =list_by_account_id= read, which is the
+verb the projection had been dropping until it was fixed. =accounts_commands.cpp=
+and =iam_routes.cpp= both need that treatment, exactly as =rbac_commands.cpp= and
+the role routes did.
+
+The hand-written handler loses its =list= and keeps =active= and =samples=, so
+the rename from the previous attempt stands and only the body shrinks.
+
+**What account's operation model keeps and what it gives up.** Worked out
+2026-09-21, because the split is not obvious from the message list: account
+declares thirteen addressable messages and only five of them are the derived
+CRUD set in disguise.
+
+Gives up, because the derivation states them: =save_account_request= and
+=update_account_request= and their responses, which are one verb stating two
+claims and become =put=; =delete_account_request=, which becomes =delete=; and
+=the list= -- =get_accounts_request=, =get_accounts_response= and
+=get_accounts_request_typed=. That last spelling is worth noting: the list
+request was declared twice, once plainly and once with a =_typed= suffix
+carrying the subject, which is the shape the =list_scoped= verb had before it was
+found to be dropping commands.
+
+Keeps, because no CRUD verb states them: =lock_account=, =unlock_account=,
+=list_login_info=, =reset_password=, =update_my_email=, =set_my_default_party=,
+=select_party=, =switch_party= and =change_password=. Eight of the nine are one
+thing -- an operation a table's columns cannot express -- and =change_password=
+is the ninth only because its request is suffixed =_typed= for the same reason
+the list's was.
+
+The hard part is not the model, it is the ninety-four references. They have to
+be sorted rather than renamed: the generated service answers the derived verbs,
+the renamed =account_operations_service= answers the workflows, and a caller
+that wants one has to stop being pointed at the other. That is a classification
+job over twelve files, and it is why this is the last entity rather than the
+first.
+
+**Account cannot be renamed in a step of its own.** Found 2026-09-21 by trying
+it. Session's first step was a rename, and account's is not, because the
+templates name a hand-written service and handler after the entity: the
+generated history provider registrar includes =<entity>_service.hpp=, which for
+account is the exact name a rename frees, so regenerating it points at a header
+that no longer exists. With the facets off there is no generated
+=account_service= to take that name, so the rename has nothing to hand it to.
+
+Two ways out, and the second is the better one: either the model gains a flag
+naming its hand-written service and handler, or the templates stop naming them
+and the registrar takes the service from the model. Until one of those exists,
+account's conversion is a single change: the model edits, the three facets, the
+rename, the ninety-four references and the regeneration all land together or not
+at all.
+
+**Account's conversion is much smaller than its reference count.** Worked out
+2026-09-21 by classifying the ninety-four references rather than counting them,
+which is what made the piece look unmanageable. The count is mostly one class
+name appearing; the *decisions* are few.
+
+The hand-written service has twenty-two methods and only five of them are the
+canonical CRUD set -- =list_accounts=, =get_account=, =delete_account=,
+=list_login_info= and =get_account_history=. The other sixteen are the
+workflows. And of the five, the callers are a handful: the hand-written handler,
+=iam_routes.cpp=, the generated history registrar and the tests. =get_account=
+is reached from nowhere but its own header.
+
+Which yields a shape rather than a rewrite. **The hand-written service keeps
+every method it has and is only renamed.** The routes call it directly rather
+than over NATS, so they keep working once the name moves; nothing has to be
+re-pointed at the generated service, because both services exist and answer
+different questions. The only subscription that has to move is the handler's:
+its CRUD subjects go to the generated registrar, and its workflows stay.
+
+So the change is: the five message deletions and the ownership lift, the rename,
+the registrar's CRUD subscriptions handed over, the handler's five CRUD methods
+removed, the facets on, and one regeneration. Session's conversion was this
+shape and took a round; account's is the same shape with a wider blast radius,
+not a different kind of job.
+
+**Account's writes are workflows, and the canonical verbs cannot state them.**
+Found 2026-09-21 by doing the conversion and watching it break, which is the only
+way this was going to surface.
+
+The conversion reached the hand-written shell unit and stopped at its create.
+That command takes a *principal and a password*, and the service hashes them:
+=create_account= is where password material is made. The canonical =put= carries
+=password_hash=, =password_salt= and =totp_secret= as ordinary write fields, so a
+client using it would supply the hash itself. Turning account into a regular
+entity would therefore hand every client the ability to write password material
+directly and bypass the hashing, the lockout counters and the TOTP secret --
+which the hand-written update avoided by being a *partial* update, where the
+canonical put is a full-row replace that must send every field or clear it.
+
+That is not a bug in the conversion; it is the conversion asking a question the
+model has not answered. Account's reads -- list, get, and the history -- are
+ordinary row reads and convert cleanly. Its writes are three cases and the model
+must say which it is:
+
+1. =password_hash=, =password_salt= and =totp_secret= become server-owned, as
+   =service_password_hash= already is in the domain projection. Then the
+   canonical put can no longer set them, and creating an account with a password
+   stops being a put at all -- it needs its own operation, which is what the
+   hand-written =create_account= already is.
+2. Account's writes stay workflows and only its reads are canonical: the
+   derived put and delete are switched off for the entity, and the operation
+   model keeps create, update and delete beside lock, unlock and the rest.
+3. The fields stay client-writable and the generated put is accepted as the way
+   an account is written, with hashing moved to the client. Nothing about this
+   option is good, and it is listed so the choice is explicit rather than
+   arrived at by default.
+
+The attempt was reverted rather than left half-done. What it bought is this
+question, and it is worth more than the wiring would have been.
+
+**The login_info list is declared twice, and the second one is the account
+model's.** Found 2026-09-21 by making login_info read-only and watching the shell
+reach the wrong subject. Two headers in the same namespace declare
+=list_login_info_request=:
+
+#+begin_src text
+  login_info_protocol.hpp          iam.v1.login_info.list
+  account_operations_protocol.hpp  iam.v1.accounts.login-info
+#+end_src
+
+The entity derives the first because login_info is a resource with reads; the
+account operation model declares the second by hand, as the spelling of
+"list an account's login info". They are the same read under two names, and the
+second is the one a client that includes the account header reaches.
+
+This is the =roles.list= duplication again, in a place the earlier sweep did not
+look, and it predates the read-only work: both headers have existed since account
+stopped owning its protocol. It only became visible when login_info gained a
+shell unit, because that is the first translation unit to reach for the entity's
+list while the operation model's is also in scope.
+
+The fix is the one roles took: the operation model gives up its copy, and its
+callers move to the derived subject -- the hand-written handler's =login_info=
+subscription and the shell's =accounts list-logins= among them. The entity's
+=account_id= is its primary key, so the derived protocol states
+=list_by_account_id_login_info= for the scoped read, which is the verb the
+account-scoped spelling was standing in for.
+
+**The junction is the one entity the shell facet cannot reach.** Measured
+2026-09-21. =account_party= derives eight subjects -- list, get, get_many, put,
+put_many, delete, delete_many and list_by_account_id -- and the hand-written
+=account_parties_commands= offers *two commands*: =list=, and =add=, which
+builds a =put_many_account_parties_request= and so does drive the canonical
+verb. Six subjects have no shell surface: =get=, =get_many=, =put=, =delete=,
+=delete_many= and =list_by_account_id=. An earlier count in this record said
+one command and seven verbs; that was a misread of the file, corrected here.
+The criterion that every IAM entity's verbs are exercised from the shell is
+unmet for this one entity and met for the other ten.
+
+The facet does not reach it because the shell archetypes serve =domain_entity=
+alone, and a junction is a different model type. Making them serve it is not the
+wrapper change it looks like: the junction's render context names its resource
+=name_singular= where a domain entity says =entity_singular=, and it carries no
+=shell= plan at all -- the plan is built for domain entities only. So the work is
+
+1. a normalising shim in =generate_from_model= so a junction presents the keys
+   the shell templates read. The shape already exists and is thrown away:
+   =junction_protocol_messages= builds a local =entity= dict carrying exactly
+   =entity_singular=, =entity_plural=, =entity_plural_short=, =primary_key= (one
+   column per side), =columns= and =current_state=, and then passes it to
+   =entity_protocol_messages= and drops it. So the first move is to lift that
+   dict into a named =junction_entity_shape(junction)= and call it from both
+   places, rather than rebuilding it. The plural needs no special handling: a
+   junction's =name= *is* its plural, which is why =account_party= answers on
+   =account_parties= without an irregular-plural rule anywhere.
+
+   What the shell data then needs on top of the lifted shape is =subcomponent=
+   (for the protocol include path), =entity_singular_upper= (for the header
+   guard), =entity_plural_words= (for the prose), =write_fields= from
+   =write_record_for(shape)=, and =shell= from =entity_shell_plan(shape)= with
+   the junction's own =operations= attached;
+2. =entity_shell_plan(junction)= beside the domain-entity call, which the
+   normalised keys make a one-liner;
+3. =junction= added to the shell facet's =#+model_types:= and to the three
+   archetypes', with the templates' ={{#domain_entity}}= wrapper reading the
+   normalised section instead.
+
+The reason not to simply expose the junction under =domain_entity= in the shared
+render data is that the protocol template has separate ={{#domain_entity}}= and
+={{#junction}}= blocks, so a junction that answered to both would render its
+header twice.
+
+Worth keeping from the design: a versioned table's update is the internal close
+of the current row, so it announces nothing -- the insert that follows it
+carries the change, and its version says created or updated. Announcing both
+would report one change twice. An operation model's own protocol takes its
+events with it, because the derived event type the events are stated in does
+not exist for an operation's spelling.
+
+**The junction reaches the shell, and the audit that forced it.** Done
+2026-09-21. =account_party= now renders a generated unit of *nine commands*:
+list, get, get-many, add, set, put-many, delete, delete-many and
+by-account-id. The hand-written =account_parties_commands= is gone; the only
+loss is =add='s party lookup, which sourced the tenant when an administrator
+associates another party's account, and =put-many= states the same verb without
+it. =delete= and =delete-many= are the material gain: nothing in the shell could
+remove an association before.
+
+The fix is the one this record already described, and it was smaller than it
+looked. =junction_protocol_messages= built the entity shape locally and then
+threw it away, so lifting it into =junction_entity_shape(junction)= and calling
+it from both derivations is the whole codegen change, plus three presentation
+keys (=subcomponent=, =entity_singular_upper=, =entity_plural_words=) and
+=junction= on the facet's and the three archetypes' =#+model_types:=. The shape
+is published under =domain_entity= for the shell templates only, because the
+protocol template reads both wrappers and would otherwise render its header
+twice.
+
+Two things the plan did not anticipate. A junction states its C++
+sub-component in the *C++ drawer*, not in the frontmatter a domain entity uses,
+so the include path has to read =cpp.subcomponent=. And the model needs
+=:ores.cpp.shell-command.enabled: true= explicitly: the facet is
+=#+default: disabled=, so without it the run logs "nothing to generate ...
+model type 'junction'" and reads as a gate failure when it is a missing opt-in.
+
+**Every raw IAM subject, audited against every generated constant.** The
+question that started this was whether the message set is generated; it is, and
+the escape-hatch messages are not, so a literal is where the wiring can silently
+disagree. An audit of all 35 raw =iam.v1.*= literals outside the protocol
+headers found four groups:
+
+| Group                                                    | Sites | What it is                                                        |
+|----------------------------------------------------------+-------+-------------------------------------------------------------------|
+| A constant already spells the value                      |    23 | Mechanical: the literal duplicates a generated constant           |
+| A message declared with no subject, and a caller typing one |   2 | =get_account_permissions_request=, =get_session_statistics_request= |
+| The server subscribes on one spelling, the shell sends another |  4 | =iam.v1.roles.by-account= served, =iam.v1.roles.for-account= sent  |
+| Declared only in SQL DQ metadata                         |     2 | The =publish-from-dq= pair                                        |
+
+The third group is the one that mattered. Converting the authorization messages
+to the canonical protocol renamed the subject the server subscribes to, and the
+hand-written shell was not moved with it: =accounts_commands= and
+=rbac_commands= published to =iam.v1.roles.for-account= and
+=iam.v1.permissions.for-account=, which no model declares and no service
+answers. Those are four call sites that could never succeed -- the same defect
+class as =iam.v1.accounts.list-logins=, found the same way, by comparing every
+literal against every generated constant rather than trusting the build.
+
+**The two subjectless messages, and what closing them cost.** Both were declared
+in an operation model and neither was ever served over NATS: the shell typed an
+address for each, and the HTTP layer worked around them, one by calling the
+service in process and one by refusing the request as not modelled.
+
+=account permissions= is now a real operation.
+=get_account_permissions_request= states
+=:subject: iam.v1.roles.permissions-by-account=, so the constant exists;
+=authorization_handler= gained an =account_permissions= method wrapping the
+=authorization_service::get_effective_permissions= that already existed; and the
+registrar subscribes.
+
+=session statistics= is dropped, which took more than the "its shell command
+goes" the decision named. A subjectless message produces no shell command by
+construction, so leaving the pair declared and subjectless leaves exactly the
+hole this exercise is about, while giving it a subject regenerates the command.
+Removing the declaration therefore took the =session_statistics= payload, its
+two =domain_session_tests= cases, and the HTTP route that only ever answered
+=501 not modelled=. The SQL continuous aggregates that fed it are a data asset
+and stay. The HTTP surface loses an endpoint; recorded here so it is not
+discovered as a surprise.
+
+**The publish triggers, and why they were unreachable until this branch.** The
+two =publish-from-dq= subjects were declared nowhere in C++: the DQ
+artefact-type rows in =dq_artefact_types_populate.sql= are their only source,
+and =registrar.cpp= carried the same strings as literals -- the "registered in
+SQL, never subscribed" failure the backlog story [[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject
+constants per component]] was filed for. They are declared now, in
+=account_messages= and =account_contact_information=, as messages with a subject
+and no response, which is what a fire-and-forget trigger is; the registrar
+subscribes on the generated constants. The feature that makes this possible is
+PR #2115, already merged: a domain entity declares extra protocol messages
+beside its derived CRUD set. The separator is left as it is on the wire, because
+the hyphen form is the convention across every component's publish-from-dq family
+(=marketdata.v1.market-data-observations.publish-from-dq=,
+=refdata.v1.crm-topology-bundles.publish-from-dq=), so changing IAM's alone
+would break a system-wide convention rather than fix a slip. Whether that family
+should use the protocol's underscore form is a question for the specification.
+
+**One literal is left, and it cannot be fixed from here.**
+=ores.nats/src/service/jwks.cpp= requests =iam.v1.auth.public-key= as a literal.
+=ores.nats= links =ores.logging= and =ores.utility= alone, so referencing the
+generated constant would invert the layering: transport infrastructure would
+depend on a domain component's API. The subject belongs to IAM and the code that
+sends it cannot see IAM's headers, which is the case the aggregate-constants
+story has to solve with a neutral owner rather than a per-component header. The
+=iam.v1.accounts.list= example in =ores.nats/service/client.hpp='s
+=make_subject= doc comment is illustrative and stays.
+
+**The shell surface is proved against the fleet, and the recipes are generated.**
+Done 2026-09-21. The question that opened this was whether every command has a
+recipe, and the answer could not be a hand-written set: 124 IAM commands today
+and roughly a thousand across the components. So the recipes are a codegen
+facet, =ores.doc.shell-recipe=, and the grid below is what it produced and what
+it proved.
+
+| Measure | Value |
+|---------+-------|
+| Generated IAM shell commands | 124 |
+| Generated recipe documents | 20, one per model that renders a shell unit |
+| Generated library scripts | 124, one per command |
+| Commands with a recipe | 124 of 124 |
+| Commands run against the fleet | 123 of 124, all answered |
+
+*One document per model, one script per section.* A recipe is literate first:
+the model's shell projection already knows what each command does, what it asks
+for and where it is addressed, so the document states all three and the
+runnable line is that document's export rather than a second description of it.
+The tangle makes this possible: =org-babel-tangle-file= redirects every block
+into one file only because =ores-build-recipe-scripts.el= hands it a
+=TARGET-FILE=; given none it honours each block's own =:tangle=, so one document
+exports one script per section. The two modes are exclusive, because a block
+with no =:tangle= is skipped when there is no target -- which is why the
+existing single-section recipes were untouched.
+
+*Two capabilities the facet needed from codegen.*
+
+A recipe is a view of another facet's output, so it must exist exactly where
+that facet produced something. =#+requires_facet:= says so, and it is resolved
+against the graph rather than against the run: =--address= narrows a run to one
+facet, and a dependant that looked only at this run's units would never see its
+dependee fire. That is what the first attempt did, and it logged "nothing to
+generate" for a facet that was working.
+
+A generated script cannot invent a real id. A command that failed at the client
+-- an unparseable uuid, a refused arity -- would prove nothing about the
+service, so each field gets a type-correct sentinel that addresses no row:
+=00000000-0000-0000-0000-000000000000= for a uuid, =__none__= for text,
+=system.new_record= for a reason code. A script that reaches the handler and is
+refused on its merits has checked the wiring, which is the whole point. The
+evidence is the shape of the replies: =tenant_types get __none__= answers
+=missing/not_found=, not a client error.
+
+*The sweep destroyed the environment twice, and the cause is now in the model.*
+The first sweep ran every script under the IAM menus -- which included the
+pre-existing hand-written recipes, whose blocks carry values captured from a
+real run, =tenants delete <a real id>= among them. The second ran only the
+generated scripts and still ended in bootstrap mode. The cause was one command:
+
+=reset reset-system= returns the system to its pre-bootstrap state. The SQL says
+it plainly -- "Purge all non-system tenants (hard-delete)", "Re-enable system
+bootstrap mode" -- and the damage matched exactly: the tenant rows gone, their
+accounts orphaned, the flag flipped so every later login failed.
+
+Nothing in the recipe said so, because nothing in the *shape* says so: a reset
+and a status read are both a bare command name. So the fact is declared where
+the protocol is declared. =:destructive: true= on the message is carried into
+the projection, the document warns the reader, and the generated script carries
+the warning as a comment. A runner can now refuse such a command instead of
+discovering it by running it. Both reset operations are marked.
+
+What this does *not* fix: a recipe library is a script library, and most of its
+writes are safe only because a sentinel addresses nothing. Replaying the whole
+library against an environment anyone needs is not a supported operation, and
+the marker is a warning, not a sandbox.
+
+*A rebuilt tree needs restarted services.* One command failed the sweep with
+"no service is handling subject 'iam.roles.permissions-by-account'" -- the
+operation added earlier in this task. The subscription was in
+=libores.iam.core.so=; the running process had been started from a binary the
+compiler replaced while the fleet was still coming up. Restarting
+=ores.iam.service= fixed it and the command answered. The lesson costs one
+restart and saves a hunt: after a build, restart before believing a "no
+subscriber" error.
+
+*The inventory is generated too, and it had already fallen behind.* The first
+draft of this note said the index was the one piece left. It is done, and the
+state it was in is the argument for doing it: =doc/recipes/shell/shell.org= held
+97 entries for 122 recipes, so a reader browsing it never saw the generated
+documents at all, nor four hand-written CRM recipes that had been added and
+never listed. Nothing else looked, because nothing else does.
+
+=regenerate_shell_recipe_inventory.py= follows the pattern the other catalogue
+generators use -- scan the sources, rewrite the derived part, =--check= for CI
+-- with one difference that suits a document made of prose. The head of the
+file and the paragraph under each heading are read back from the current
+inventory and carried forward, so only the link lists are rewritten and the
+writing stays where a writer looks for it. A note beside a link is kept for the
+same reason: that a recipe is currently broken is something only a human knows.
+The gate is wired into the codegen-drift workflow, and ten tests pin what a
+regeneration would otherwise quietly destroy.
+
+The inventory also made a small defect visible. A generated recipe was titled
+"Tenant Types shell commands", which reads badly beside the hand-written
+recipes, because a recipe here is titled as the question it answers. It is now
+"How do I run the tenant_types commands from the shell?".
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2120][#2120]] | [iam,codegen,shell] Adopt the canonical NATS entity protocol in IAM |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =:destructive:= accepts three spellings but its error message names one | =org_loader.py= | Accepted | The message names the three. |
+| 2 | =event_action= and its =to_string= are dead code | =entity_event.hpp= | Accepted | Removed. It appeared in nothing but its own header, across the templates and the tree; added by this branch, never wired, never tested. Typing the action field is an event-protocol change, not a cleanup. |
+| 3 | The =nats-handler= prose documents a removed =read_for_cache= handler | =ores.cpp.nats-handler.nats_handler_header.org= | Accepted, premise corrected | The section is still live -- =ores.refdata.party= and =currency_pair_convention= set the flag -- so the flag is vestigial rather than dead: it emits the two includes the removed method needed, and no generated handler uses them. The prose says that, and says that removing the flag is a change to those models and their generated headers. |
+| 4 | The inventory script raises a raw traceback when the index is missing | =regenerate_shell_recipe_inventory.py= | Accepted | It names the path it looked for; a test pins it. |
+| 5 | The three =subjects=/=requiresSession= blocks in =ts_protocol= could be a partial | =ts_protocol.ts.mustache= | Declined | They mirror the three blocks in the C++ protocol template and are expected to diverge: an operation has no key record and no versions sub-resource. A partial would hide which block a change lands in. |
+| 6 | =gather()= walks the tree two to three times per run | =regenerate_shell_recipe_inventory.py= | Accepted | It walks once. |
+| 7 | A doc example names =ores::iam::eventing::tenant_type_event= | =entity_event_traits.hpp= | Accepted | The generated type lives in =ores::iam::messaging=. |
+
+The reviewer recorded that it could not run =compass=, =git fetch= or =gh= in
+its sandbox, so it read the tree statically rather than diffing it. That is why
+finding 3's premise was off: verifying it took one grep.
 
 * Result
+
+The canonical protocol is adopted in =ores.iam=, and the shell surface it
+generates is proved against the running fleet.
+
+Twenty-one protocol headers, each with its TypeScript twin; twenty generated
+shell units covering every derived verb of every IAM entity, the =account_party=
+junction included; and twenty literate recipe documents exporting one script per
+command, 124 in all, with an inventory that lists every one of them and a gate
+that fails if it stops doing so.
+
+Every raw IAM subject outside a protocol header now references a generated
+constant, with one exception that cannot be fixed from inside IAM: =ores.nats=
+fetches the JWKS signing key from a literal, because it links =ores.logging= and
+=ores.utility= alone and referencing IAM's constant would invert the layering.
+The aggregate-constants backlog story ([[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject
+constants per component]]) has to solve that with a neutral owner.
+
+Verified: the whole tree compiles; the fleet is up and serving; the codegen test
+suite passes; component drift, model drift, protocol twin coverage, handler
+permissions and populate references are clean; and of the 124 generated
+commands, 123 were run against the live fleet and all 123 answered.
+
+Two things this task leaves behind that it did not start with. The recipe set is
+generated from the models rather than hand-written, because a hand-written set
+cannot stay true across a thousand commands. And =reset reset-system= is declared
+destructive in its own model, because an unattended replay of the library ran it
+and took the environment's tenants with it: the shape of a command says nothing
+about whether it is safe to replay.

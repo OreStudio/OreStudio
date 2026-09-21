@@ -37,8 +37,9 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   key: 'id',
   keyField: 'email',
   subjects: {
-    list: subjects.get_account_contact_informations_request,
-    save: subjects.save_account_contact_information_request,
+    list: subjects.list_account_contact_informations_request,
+    get: subjects.get_account_contact_information_request,
+    save: subjects.put_account_contact_information_request,
   },
   rowsField: 'account_contact_informations',
   timestampFields: ['recorded_at'],

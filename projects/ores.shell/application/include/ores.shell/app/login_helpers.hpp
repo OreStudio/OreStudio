@@ -21,6 +21,7 @@
 #define ORES_SHELL_APP_LOGIN_HELPERS_HPP
 
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/request_helpers.hpp"

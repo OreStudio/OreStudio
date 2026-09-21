@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 2F99474E-6068-5415-BB56-40DD110CA312
+:END:
+#+title: How do I run the account_history commands from the shell?
+#+description: Every command the account_history submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_history:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> account_history get-account-history=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =get-account-history=
+:PROPERTIES:
+:ID: 78DB5BCB-1280-57C7-8980-8B5DCB53DE62
+:END:
+
+Sends =get_account_history_request= and prints =get_account_history_response=, so the shape is the protocol's and the meaning is the service's. It reads =username=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_history get-account-history <username>
+#+end_example
+
+It is addressed at =iam.v1.accounts.history=.
+
+#+name: account_history-get-account-history
+#+begin_src ores-shell :tangle account_history-get-account-history.ores :exports none
+account_history get-account-history __none__
+#+end_src
+

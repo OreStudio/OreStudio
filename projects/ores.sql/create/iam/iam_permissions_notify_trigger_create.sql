@@ -27,23 +27,38 @@ create or replace function ores_iam_permissions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.iam.permission';
-    change_timestamp timestamptz := NOW();
+    change_action text;
+    changed_version integer := 0;
     changed_id uuid;
+    changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
+        change_action := 'deleted';
         changed_id := OLD.id;
         changed_tenant_id := OLD.tenant_id::text;
+    elsif TG_OP = 'UPDATE' then
+        change_action := 'updated';
+        changed_id := NEW.id;
+        changed_version := 0;
+        changed_tenant_id := NEW.tenant_id::text;
     else
+        change_action := 'created';
+        changed_version := 0;
         changed_id := NEW.id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
+    changed_key := jsonb_build_object('id', changed_id);
+
     notification_payload := jsonb_build_object(
-        'entity', entity_name,
-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_id),
+        'event_id', gen_random_uuid()::text,
+        'entity', 'ores.iam.permission',
+        'key', changed_key::text,
+        'action', change_action,
+        'version', changed_version,
+        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
+        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
         'tenant_id', changed_tenant_id
     );
 

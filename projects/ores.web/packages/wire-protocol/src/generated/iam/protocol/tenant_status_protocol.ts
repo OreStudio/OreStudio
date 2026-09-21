@@ -23,50 +23,183 @@
  * To modify, update the template and regenerate.
  */
 import type { TenantStatus } from '../domain/tenant_status.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetTenantStatusesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetTenantStatusesResponse {
-    statuses: TenantStatus[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveTenantStatusRequest {
-    data: TenantStatus;
-}
-
-export interface SaveTenantStatusResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteTenantStatusRequest {
-    statuss: string[];
-}
-
-export interface DeleteTenantStatusResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetTenantStatusHistoryRequest {
+export interface TenantStatusKey {
     status: string;
 }
 
-export interface GetTenantStatusHistoryResponse {
-    history: TenantStatus[];
-    success: boolean;
-    message: string;
+export interface TenantStatusWrite {
+    status: string;
+    name: string;
+    description: string;
+    display_order: number;
+}
+
+export interface TenantStatusChange {
+    write: TenantStatusWrite;
+    precondition: Precondition;
+}
+
+export interface TenantStatusRemoval {
+    key: TenantStatusKey;
+    precondition: Precondition;
+}
+
+export interface TenantStatusLookup {
+    key: TenantStatusKey;
+    tenant_status: TenantStatus | null;
+}
+
+export interface TenantStatusEvent {
+    event_id: string;
+    key: TenantStatusKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface TenantStatusVersionKey {
+    tenant_status: TenantStatusKey;
+    version: number;
+}
+
+export interface TenantStatusVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListTenantStatusesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListTenantStatusesResponse {
+    result: Result;
+    statuses: TenantStatus[];
+    total: number;
+}
+
+export interface GetTenantStatusRequest {
+    key: TenantStatusKey;
+}
+
+export interface GetTenantStatusResponse {
+    result: Result;
+    tenant_status: TenantStatus | null;
+}
+
+export interface GetManyTenantStatusesRequest {
+    keys: TenantStatusKey[];
+}
+
+export interface GetManyTenantStatusesResponse {
+    result: Result;
+    entries: TenantStatusLookup[];
+}
+
+export interface PutTenantStatusRequest {
+    change: TenantStatusChange;
+    intent: ChangeIntent;
+}
+
+export interface PutTenantStatusResponse {
+    result: Result;
+    tenant_status: TenantStatus;
+}
+
+export interface PutManyTenantStatusesRequest {
+    changes: TenantStatusChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyTenantStatusesResponse {
+    result: Result;
+    statuses: TenantStatus[];
+}
+
+export interface DeleteTenantStatusRequest {
+    removal: TenantStatusRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteTenantStatusResponse {
+    result: Result;
+}
+
+export interface DeleteManyTenantStatusesRequest {
+    removals: TenantStatusRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyTenantStatusesResponse {
+    result: Result;
+}
+
+export interface ListTenantStatusVersionsRequest {
+    key: TenantStatusKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TenantStatusVersionsFilter | null;
+}
+
+export interface ListTenantStatusVersionsResponse {
+    result: Result;
+    versions: TenantStatus[];
+    total: number;
+}
+
+export interface GetTenantStatusVersionRequest {
+    key: TenantStatusVersionKey;
+}
+
+export interface GetTenantStatusVersionResponse {
+    result: Result;
+    version: TenantStatus;
 }
 
 export const subjects = {
-    get_tenant_statuses_request: "iam.v1.tenant_statuses.list",
-    save_tenant_status_request: "iam.v1.tenant_statuses.save",
+    list_tenant_statuses_request: "iam.v1.tenant_statuses.list",
+    get_tenant_status_request: "iam.v1.tenant_statuses.get",
+    get_many_tenant_statuses_request: "iam.v1.tenant_statuses.get_many",
+    put_tenant_status_request: "iam.v1.tenant_statuses.put",
+    put_many_tenant_statuses_request: "iam.v1.tenant_statuses.put_many",
     delete_tenant_status_request: "iam.v1.tenant_statuses.delete",
-    get_tenant_status_history_request: "iam.v1.tenant_statuses.history",
+    delete_many_tenant_statuses_request: "iam.v1.tenant_statuses.delete_many",
+    list_tenant_status_versions_request: "iam.v1.tenant_statuses_versions.list",
+    get_tenant_status_version_request: "iam.v1.tenant_statuses_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_tenant_statuses_request: true,
+    get_tenant_status_request: true,
+    get_many_tenant_statuses_request: true,
+    put_tenant_status_request: true,
+    put_many_tenant_statuses_request: true,
+    delete_tenant_status_request: true,
+    delete_many_tenant_statuses_request: true,
+    list_tenant_status_versions_request: true,
+    get_tenant_status_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.tenant_statuses_events.created",
+    updated: "iam.v1.tenant_statuses_events.updated",
+    deleted: "iam.v1.tenant_statuses_events.deleted",
 } as const;

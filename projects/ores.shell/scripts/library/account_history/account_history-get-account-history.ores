@@ -1,0 +1,6 @@
+# =get-account-history=
+#
+# GENERATED from doc/recipes/shell/account_history/account_history.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+account_history get-account-history __none__

@@ -148,9 +148,21 @@ _UI_META_FACETS = frozenset({
 # must not render a second, competing header at the same output path, where
 # the last writer would silently discard the other. Without an operation
 # model, the entity keeps its derived CRUD header.
+# The facets that speak a resource's protocol. An event carries that
+# protocol's key record and is published on that protocol's subjects, so a
+# protocol an operation model owns takes the events with it: the derived event
+# type the events are stated in does not exist for an operation's own spelling.
 _PROTOCOL_FACETS = frozenset({
     "ores.cpp.protocol",
     "ores.ts.protocol",
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.cpp.eventing-integration-test",
+    # The shell's entity unit names the derived request types and their
+    # subjects, so it depends on the derived protocol exactly as the eventing
+    # facets do. An entity whose protocol an operation model owns has no such
+    # types, and its declared operations are what the shell renders instead.
+    "ores.cpp.shell-command",
 })
 
 # The BFF route descriptor imports its subjects from the entity's own
@@ -427,6 +439,13 @@ def resolve_targets(
             pass  # not under projects/ — falls back to dotted full_name
     units: list[dict] = []
     seen: set[str] = set()
+    # A facet whose output is a view of another facet's output states that
+    # dependency rather than repeating its opt-in: a recipe documents the
+    # commands a generated unit registers, so it exists exactly where that unit
+    # does. The dependency is resolved against the graph rather than against
+    # this run's units, because `--address` narrows the run to one facet and the
+    # dependant would then never see its dependee fire.
+    deferred: list[tuple[str, dict, str]] = []
     for facet in sorted(gen_facets):
         ts = graph.facet_ts.get(facet, "")
         for arch in graph.facet_archetypes.get(facet, []):
@@ -453,17 +472,41 @@ def resolve_targets(
                 log.debug("skipping archetype %s — output %r did not resolve: %s",
                           arch.get("address", "?"), pattern, exc)
                 continue
-            if resolved in seen:
-                continue
-            seen.add(resolved)
-            units.append({
-                "template": template_name,
-                "output": resolved,
-                # data-scope: the dataset-relative payload file this archetype
-                # renders from (empty for entity/component archetypes).
-                "data_source": arch.get("data_source", ""),
-            })
+            deferred.append((facet, arch, resolved))
+    for facet, arch, resolved in deferred:
+        requires = arch.get("requires_facet")
+        if requires and not _facet_renders(graph, requires, model_type,
+                                           overrides):
+            log.debug("skipping archetype %s — %s renders nothing for this model",
+                      arch.get("address", "?"), requires)
+            continue
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        units.append({
+            "template": arch.get("template"),
+            "output": resolved,
+            # data-scope: the dataset-relative payload file this archetype
+            # renders from (empty for entity/component archetypes).
+            "data_source": arch.get("data_source", ""),
+        })
     return units, model_type, model_data
+
+
+def _facet_renders(graph, facet: str, model_type: str,
+                   overrides: dict[str, bool]) -> bool:
+    """Whether ``facet`` would render anything for a model of ``model_type``.
+
+    Two questions, both answerable without running the facet: it must serve
+    this model type, and it must be enabled for this model. An archetype that
+    narrows the model types further is not consulted -- the facets that state a
+    dependency declare the same set at both levels.
+    """
+    model_types = graph.facet_model_types.get(facet, [])
+    if model_types and model_type not in model_types:
+        return False
+    return is_enabled(facet, facet, graph.facet_ts.get(facet, ""), overrides,
+                      graph.facet_default.get(facet, True))
 
 
 def _generate_single(

@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 84CA2C80-6E6A-5384-AF4B-0904CD1394F1
+:END:
+#+title: How do I run the signup commands from the shell?
+#+description: Every command the signup submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:signup:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> signup signup=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =signup=
+:PROPERTIES:
+:ID: 69F081CD-081B-5DF5-8B1E-1057089E116F
+:END:
+
+Sends =signup_request= and prints =signup_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =email=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+signup signup <principal> <password> <email>
+#+end_example
+
+It is addressed at =iam.v1.auth.signup=.
+
+#+name: signup-signup
+#+begin_src ores-shell :tangle signup-signup.ores :exports none
+signup signup __none__ __none__ __none__
+#+end_src
+

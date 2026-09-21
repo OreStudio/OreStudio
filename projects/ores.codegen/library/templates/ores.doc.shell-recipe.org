@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 14E8EF57-7C0A-4DCE-ACD8-1569893708A6
+:END:
+#+title: ores.doc.shell-recipe
+#+description: Literate shell recipes: one org document per model that renders a shell unit, one section per command, each section exporting its own script into the shell's library.
+#+type: facet
+#+model_types: domain_entity junction operation
+#+level: cross
+#+facet_group: ores.doc
+#+default: enabled
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+This page is the literate source for the =ores.doc.shell-recipe= facet of the
+codegen template library. The archetype below is documented, and holds its
+=mustache= source, in its own linked page — this page is the facet-level
+summary and the routing table to it.
+
+* Summary
+
+One document that is both the recipe a reader opens and the source of the
+scripts the shell loads. A recipe is a literate document first: it says what a
+command is for, what it asks for, and where it is addressed. The script is the
+same document's export, so the prose and the runnable line cannot describe
+different commands.
+
+* The ores.doc.shell-recipe facet
+
+The facet consumes a =domain_entity=, =junction= or =operation= model and
+writes one org document per model into =doc/recipes/shell/<menu>/=. It reads
+the same shell projection the generated command unit reads, so the document is
+a view of that unit rather than a second description of it: a command the unit
+gains arrives in the document that documents it, in the same commit.
+
+The facet renders only where =ores.cpp.shell-command= rendered something for
+the same model. That dependency is stated as =#+requires_facet:= rather than as
+a second per-model opt-in, because two flags for one decision drift: a model
+that opts into the unit and not the document would ship commands with no
+recipe, and the reverse would ship a recipe for commands that do not exist.
+
+*Opt-in* is the unit's, in other words: =:ores.cpp.shell-command.enabled:= in
+the model's properties drawer. The facet itself is enabled by default and
+resolves to nothing wherever the unit does.
+
+* Where the scripts go
+
+Each command's block carries =:tangle <menu>-<command>.ores=. The tangle run
+honours that per block and moves the result into
+=projects/ores.shell/scripts/library/<menu>/=, so the document states the
+script's name and the build owns its directory. The library is what
+=compass shell -f= loads.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:3ADD47D1-AA6F-40F7-99BC-E9C378DCD1A6][ores.doc.shell-recipe.recipe]] | One literate shell recipe per entity or operation: a section per command, each section exporting its own script into the shell's library. |
+
+* See also
+
+- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the parent technical space's catalogue of documentation facets.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the unit this facet documents.

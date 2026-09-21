@@ -17,440 +17,443 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
-#define ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CORE_MESSAGING_ROLE_HANDLER_HPP
+#define ORES_IAM_CORE_MESSAGING_ROLE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.api/domain/permission_codes.hpp"
-#include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/tenant_lookups.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.api/messaging/role_protocol.hpp"
+#include "ores.iam.core/service/role_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <optional>
 
 namespace ores::iam::messaging {
 
 namespace {
-
 inline auto& role_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.role_handler");
     return instance;
 }
-
 } // namespace
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::log_handler_entry;
-using namespace ores::logging;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for role operations.
+ */
 class role_handler {
 public:
     role_handler(ores::nats::service::client& nats,
                  ores::database::context ctx,
-                 ores::security::jwt::jwt_authenticator signer)
+                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
+    /**
+     * @brief Serves iam.v1.roles.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_roles(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_roles_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
-            auto roles = svc.list_roles();
+            auto response = svc.list_roles(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, list_roles_response{.roles = std::move(roles)});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, list_roles_response{});
+            list_roles_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void get(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
+    /**
+     * @brief Serves iam.v1.roles.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_role(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
         auto req = decode<get_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
-
-            // A UUID identifier is a role id; anything else is a role name.
-            std::optional<boost::uuids::uuid> role_id;
-            try {
-                boost::uuids::string_generator sg;
-                role_id = sg(req->identifier);
-            } catch (const std::exception&) {
-            }
-
-            auto found = role_id ? svc.find_role(*role_id) : svc.find_role_by_name(req->identifier);
-
-            get_role_response resp;
-            if (found) {
-                resp.found = true;
-                resp.role = std::move(found);
-            } else {
-                resp.error_message = "Role not found: " + req->identifier;
-            }
+            auto response = svc.get_role(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, std::move(resp));
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_role_response{.error_message = e.what()});
+            get_role_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void assign(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<assign_role_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_roles(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_roles_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
-            boost::uuids::string_generator sg;
-            svc.assign_role(sg(req->account_id), sg(req->role_id), ctx.actor());
+            auto response = svc.get_many_roles(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, assign_role_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, assign_role_response{.success = false, .error_message = e.what()});
+            get_many_roles_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void revoke(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<revoke_role_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_role(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_role_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
-            service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
-                BOOST_LOG_SEV(role_handler_lg(), warn)
-                    << msg.subject << " denied: caller lacks iam::roles:revoke permission";
-                reply(nats_,
-                      msg,
-                      revoke_role_response{.success = false,
-                                           .error_message =
-                                               "Permission denied: iam::roles:revoke required"});
-                return;
-            }
-            svc.revoke_role(sg(req->account_id), sg(req->role_id));
+            auto response = svc.put_role(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, revoke_role_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, revoke_role_response{.success = false, .error_message = e.what()});
+            put_role_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void by_account(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<get_account_roles_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_roles(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_roles_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
-            boost::uuids::string_generator sg;
-            auto roles = svc.get_account_roles(sg(req->account_id));
+            auto response = svc.put_many_roles(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_account_roles_response{.roles = std::move(roles)});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_roles_response{});
+            put_many_roles_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void permissions(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<get_role_permissions_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_role(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_role_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
-            boost::uuids::string_generator sg;
-            auto codes = svc.get_role_permissions(sg(req->role_id));
+            auto response = svc.delete_role(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_role_permissions_response{.permission_codes = std::move(codes)});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_role_permissions_response{});
+            delete_role_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void assign_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<assign_role_by_name_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_roles(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_roles_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-
-            // Parse principal: username@hostname
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos == std::string::npos) {
-                reply(nats_,
-                      msg,
-                      assign_role_by_name_response{
-                          .success = false,
-                          .error_message = "Principal must be in username@hostname format"});
-                return;
-            }
-            const auto username = req->principal.substr(0, at_pos);
-            const auto hostname = req->principal.substr(at_pos + 1);
-
-            // Resolve tenant by hostname
-            const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
-            if (tenants.empty()) {
-                reply(nats_,
-                      msg,
-                      assign_role_by_name_response{
-                          .success = false,
-                          .error_message = "Tenant not found for hostname: " + hostname});
-                return;
-            }
-
-            using ores::database::service::tenant_context;
-            auto tenant_ctx =
-                tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
-
-            // Look up account by username in the target tenant
-            repository::account_repository acct_repo;
-            auto accounts = acct_repo.read_latest_by_username(tenant_ctx, username);
-            if (accounts.empty()) {
-                reply(nats_,
-                      msg,
-                      assign_role_by_name_response{
-                          .success = false, .error_message = "Account not found: " + username});
-                return;
-            }
-
-            // Resolve role by name
-            service::authorization_service auth_svc(tenant_ctx);
-            auto role = auth_svc.find_role_by_name(req->role_name);
-            if (!role) {
-                reply(nats_,
-                      msg,
-                      assign_role_by_name_response{
-                          .success = false, .error_message = "Role not found: " + req->role_name});
-                return;
-            }
-
-            auth_svc.assign_role(accounts.front().id, role->id, ctx.actor());
+            auto response = svc.delete_many_roles(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, assign_role_by_name_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  assign_role_by_name_response{.success = false, .error_message = e.what()});
+            delete_many_roles_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void revoke_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<revoke_role_by_name_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_role_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_role_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            // Authenticate and check roles:revoke permission
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
-            service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
-                BOOST_LOG_SEV(role_handler_lg(), warn)
-                    << msg.subject << " denied: caller lacks iam::roles:revoke permission";
-                reply(nats_,
-                      msg,
-                      revoke_role_by_name_response{
-                          .success = false,
-                          .error_message = "Permission denied: iam::roles:revoke required"});
-                return;
-            }
-
-            // Parse principal: username@hostname
-            const auto at_pos = req->principal.rfind('@');
-            if (at_pos == std::string::npos) {
-                reply(nats_,
-                      msg,
-                      revoke_role_by_name_response{
-                          .success = false,
-                          .error_message = "Principal must be in username@hostname format"});
-                return;
-            }
-            const auto username = req->principal.substr(0, at_pos);
-            const auto hostname = req->principal.substr(at_pos + 1);
-
-            // Resolve tenant by hostname
-            const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
-            if (tenants.empty()) {
-                reply(nats_,
-                      msg,
-                      revoke_role_by_name_response{
-                          .success = false,
-                          .error_message = "Tenant not found for hostname: " + hostname});
-                return;
-            }
-
-            using ores::database::service::tenant_context;
-            auto tenant_ctx =
-                tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
-
-            // Look up account by username in the target tenant
-            repository::account_repository acct_repo;
-            auto accounts = acct_repo.read_latest_by_username(tenant_ctx, username);
-            if (accounts.empty()) {
-                reply(nats_,
-                      msg,
-                      revoke_role_by_name_response{
-                          .success = false, .error_message = "Account not found: " + username});
-                return;
-            }
-
-            // Resolve role by name
-            service::authorization_service auth_svc(tenant_ctx);
-            auto role = auth_svc.find_role_by_name(req->role_name);
-            if (!role) {
-                reply(nats_,
-                      msg,
-                      revoke_role_by_name_response{
-                          .success = false, .error_message = "Role not found: " + req->role_name});
-                return;
-            }
-
-            auth_svc.revoke_role(accounts.front().id, role->id);
+            auto response = svc.list_role_versions(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, revoke_role_by_name_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  revoke_role_by_name_response{.success = false, .error_message = e.what()});
+            list_role_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void suggest_commands(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
-        auto req = decode<suggest_role_commands_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+    /**
+     * @brief Serves iam.v1.roles_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_role_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(role_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_role_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::role_service svc(req_ctx);
         try {
-            using ores::database::repository::execute_parameterized_string_query;
-            std::vector<std::string> results;
-            if (!req->tenant_id.empty()) {
-                results = execute_parameterized_string_query(
-                    ctx_,
-                    "SELECT command FROM "
-                    "ores_iam_generate_role_commands_fn($1, NULL, $2::uuid)",
-                    {req->username, req->tenant_id},
-                    role_handler_lg(),
-                    "Suggest role commands by tenant_id");
-            } else if (!req->hostname.empty()) {
-                results =
-                    execute_parameterized_string_query(ctx_,
-                                                       "SELECT command FROM "
-                                                       "ores_iam_generate_role_commands_fn($1, $2)",
-                                                       {req->username, req->hostname},
-                                                       role_handler_lg(),
-                                                       "Suggest role commands by hostname");
-            } else {
-                reply(nats_, msg, suggest_role_commands_response{});
-                return;
-            }
+            auto response = svc.get_role_version(*req);
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, suggest_role_commands_response{.commands = std::move(results)});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, suggest_role_commands_response{});
+            get_role_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    ores::security::jwt::jwt_authenticator signer_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
 } // namespace ores::iam::messaging
+
 #endif

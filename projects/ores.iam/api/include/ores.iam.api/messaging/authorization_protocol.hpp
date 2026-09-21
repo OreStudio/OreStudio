@@ -25,45 +25,23 @@
 #ifndef ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
-#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::iam::messaging {
 
-struct list_roles_request {
-    using response_type = struct list_roles_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.list";
-};
-
-struct list_roles_response {
-    std::vector<ores::iam::domain::role> roles;
-};
-
-struct list_permissions_request {};
-
-struct list_permissions_response {
-    std::vector<ores::iam::domain::permission> permissions;
-};
-
-struct get_role_request {
-    using response_type = struct get_role_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.get";
-    std::string identifier;
-};
-
-struct get_role_response {
-    bool found = false;
-    std::optional<ores::iam::domain::role> role;
-    std::string error_message;
-};
-
 struct assign_role_request {
     using response_type = struct assign_role_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.assign";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
     std::string role_id;
 };
@@ -81,6 +59,13 @@ struct assign_role_by_name_response {
 struct assign_role_by_name_request {
     using response_type = struct assign_role_by_name_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.assign-by-name";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string principal;
     std::string role_name;
 };
@@ -88,6 +73,13 @@ struct assign_role_by_name_request {
 struct revoke_role_request {
     using response_type = struct revoke_role_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.revoke";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
     std::string role_id;
 };
@@ -105,6 +97,13 @@ struct revoke_role_by_name_response {
 struct revoke_role_by_name_request {
     using response_type = struct revoke_role_by_name_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.revoke-by-name";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string principal;
     std::string role_name;
 };
@@ -112,6 +111,13 @@ struct revoke_role_by_name_request {
 struct get_account_roles_request {
     using response_type = struct get_account_roles_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.by-account";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
 };
 
@@ -120,6 +126,15 @@ struct get_account_roles_response {
 };
 
 struct get_account_permissions_request {
+    using response_type = struct get_account_permissions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions-by-account";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string account_id;
 };
 
@@ -130,6 +145,13 @@ struct get_account_permissions_response {
 struct get_role_permissions_request {
     using response_type = struct get_role_permissions_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.permissions";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string role_id;
 };
 
@@ -140,6 +162,13 @@ struct get_role_permissions_response {
 struct suggest_role_commands_request {
     using response_type = struct suggest_role_commands_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.suggest-commands";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string username;
     std::string tenant_id;
     std::string hostname;

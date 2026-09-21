@@ -81,16 +81,17 @@ def test_the_junction_protocol_imports_the_interface_it_carries(tmp_path):
     protocol = (tmp_path / "account_party_protocol.ts").read_text(encoding="utf-8")
     assert ("import type { AccountParty } from '../domain/account_party.js';"
             in protocol)
-    # The unscoped read carries the junction rows; the by-side read carries
-    # the view that wraps them.
+    # Both reads reply with link rows; a caller resolves what it displays with
+    # get_many rather than through a payload type of the junction's own.
     assert "account_parties: AccountParty[];" in protocol
-    assert "account_parties: AccountPartyView[];" in protocol
-    assert "account_party: AccountParty;" in protocol
-    assert "account_ids: string[];" in protocol
-    assert "party_ids: string[];" in protocol
-    assert ('get_account_parties_request: "iam.v1.account_parties.list",'
+    assert "AccountPartyView" not in protocol
+    assert "account_party: AccountParty | null;" in protocol
+    # The key record names both sides, so a link is addressed unambiguously.
+    assert "account_id: string;" in protocol
+    assert "party_id: string;" in protocol
+    assert ('list_account_parties_request: "iam.v1.account_parties.list",'
             in protocol)
-    assert ('get_account_parties_by_account_request: '
+    assert ('list_by_account_id_account_parties_request: '
             '"iam.v1.account_parties.list_by_account_id",' in protocol)
 
 

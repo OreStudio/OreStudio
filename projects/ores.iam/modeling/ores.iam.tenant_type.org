@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F
 :ores.ts.web.enabled: true
 :END:
@@ -163,18 +164,18 @@ drop function if exists ores_iam_validate_tenant_type_fn;
 :collection_name:        tenant_types
 :item_var:               tenant_type
 :key_field:              type
-:get_request_class:      iam::messaging::get_tenant_types_request
-:get_response_class:     iam::messaging::get_tenant_types_response
-:get_message_type:       get_tenant_types_request
-:save_request_class:     iam::messaging::save_tenant_type_request
-:save_response_class:    iam::messaging::save_tenant_type_response
-:save_message_type:      save_tenant_type_request
+:get_request_class:      iam::messaging::list_tenant_types_request
+:get_response_class:     iam::messaging::list_tenant_types_response
+:get_message_type:       list_tenant_types_request
+:save_request_class:     iam::messaging::put_tenant_type_request
+:save_response_class:    iam::messaging::put_tenant_type_response
+:save_message_type:      put_tenant_type_request
 :delete_request_class:   iam::messaging::delete_tenant_type_request
 :delete_response_class:  iam::messaging::delete_tenant_type_response
 :delete_message_type:    delete_tenant_type_request
-:history_request_class:  iam::messaging::get_tenant_type_history_request
-:history_response_class: iam::messaging::get_tenant_type_history_response
-:history_message_type:   get_tenant_type_history_request
+:history_request_class:  iam::messaging::list_tenant_type_versions_request
+:history_response_class: iam::messaging::list_tenant_type_versions_response
+:history_message_type:   list_tenant_type_versions_request
 :settings_group:         TenantTypeListWindow
 :window_title:           Tenant Types
 :icon:                   Tag

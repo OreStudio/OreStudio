@@ -103,18 +103,17 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
 void tenants_commands::process_get_tenants(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request.";
 
-    iam::messaging::get_tenants_request req;
+    iam::messaging::list_tenants_request req;
     req.limit = list_limit;
 
-    auto result = do_auth_request<iam::messaging::get_tenants_response>(
-        out, session, "iam.v1.tenants.list", req);
+    auto result = do_auth_request<iam::messaging::list_tenants_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->tenants.size() << " tenants.";
     out << result->tenants << std::endl;
-    out << result->tenants.size() << " of " << result->total_available_count << " tenants shown."
-        << std::endl;
+    out << result->tenants.size() << " of " << result->total << " tenants shown." << std::endl;
 }
 
 void tenants_commands::process_add_tenant(std::ostream& out,
@@ -131,37 +130,37 @@ void tenants_commands::process_add_tenant(std::ostream& out,
         fail(out) << "You must be logged in to add a tenant." << std::endl;
         return;
     }
-    const auto& modified_by = session.auth().username;
-
     // Generate a new UUID for the tenant
     boost::uuids::random_generator gen;
     auto new_id = gen();
 
-    auto req = iam::messaging::save_tenant_request::from(
-        iam::domain::tenant{.version = 0,
-                            .id = new_id,
-                            .code = std::move(code),
-                            .name = std::move(name),
-                            .type = std::move(type),
-                            .description = std::move(description),
-                            .hostname = std::move(hostname),
-                            .status = "active",
-                            .modified_by = modified_by,
-                            .change_reason_code = "new_record",
-                            .change_commentary = "Created via shell",
-                            .recorded_at = std::chrono::system_clock::now()});
+    // A write carries the user-owned fields alone. The tenant, the actor and
+    // the provenance are the service's to derive from the authenticated
+    // context, and the version is the database's.
+    iam::messaging::put_tenant_request req;
+    req.change.write.id = new_id;
+    req.change.write.code = std::move(code);
+    req.change.write.name = std::move(name);
+    req.change.write.type = std::move(type);
+    req.change.write.description = std::move(description);
+    req.change.write.hostname = std::move(hostname);
+    req.change.write.status = "active";
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+    req.intent.reason_code = "new_record";
+    req.intent.commentary = "Created via shell";
 
-    auto result = do_auth_request<iam::messaging::save_tenant_response>(
-        out, session, "iam.v1.tenants.save", req);
+    auto result = do_auth_request<iam::messaging::put_tenant_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added tenant with ID: " << new_id;
         out << "✓ Tenant added successfully!" << std::endl;
         out << "  ID: " << new_id << std::endl;
     } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        const auto& msg =
+            result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
         fail(out) << "Failed to add tenant: " << msg << std::endl;
     }
@@ -181,21 +180,22 @@ void tenants_commands::process_tenant_history(std::ostream& out,
         return;
     }
 
-    iam::messaging::get_tenant_history_request req;
-    req.id = tenant_id;
+    // The format was validated above, so the key can be parsed from it.
+    iam::messaging::list_tenant_versions_request req;
+    req.key.id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
 
-    auto result = do_auth_request<iam::messaging::get_tenant_history_response>(
-        out, session, "iam.v1.tenants.history", req);
+    auto result = do_auth_request<iam::messaging::list_tenant_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant history: " << result->result.message;
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
-    const auto& versions = result->history;
+    const auto& versions = result->versions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << versions.size()
                               << " history entries.";
 
@@ -248,19 +248,21 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
     }
 
     iam::messaging::delete_tenant_request req;
-    req.ids = {tenant_id};
+    req.removal.key.id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
+    req.intent.reason_code = "deleted_via_shell";
+    req.intent.commentary = "Deleted via shell";
 
     auto result = do_auth_request<iam::messaging::delete_tenant_response>(
-        out, session, "iam.v1.tenants.delete", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant: " << tenant_id;
         out << "✓ Tenant deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->message;
-        fail(out) << "Failed to delete tenant: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->result.message;
+        fail(out) << "Failed to delete tenant: " << result->result.message << std::endl;
     }
 }
 

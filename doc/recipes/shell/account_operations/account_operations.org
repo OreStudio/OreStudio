@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 76F232AB-8D75-572F-9309-49288505E73A
+:END:
+#+title: How do I run the account_operations commands from the shell?
+#+description: Every command the account_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_operations:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =account_operations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =save-account=
+:PROPERTIES:
+:ID: CECDEF58-CA57-54F5-9DE1-B4487D74A8CF
+:END:
+
+Sends =save_account_request= and prints =save_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =totp_secret=, =email=, =account_type=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations save-account <principal> <password> <totp_secret> <email> <account_type>
+#+end_example
+
+It is addressed at =iam.v1.accounts.save=.
+
+#+name: account_operations-save-account
+#+begin_src ores-shell :tangle account_operations-save-account.ores :exports none
+account_operations save-account __none__ __none__ __none__ __none__ __none__
+#+end_src
+
+** =update-account=
+:PROPERTIES:
+:ID: 659DC575-FC0F-5BBF-9A37-C71962918DFA
+:END:
+
+Sends =update_account_request= and prints =update_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =email=, =full_name=, =default_party_id=, =job_title=, =reports_to_account_id=, =image_id=, =change_reason_code=, =change_commentary=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations update-account <account_id> <email> <full_name> <default_party_id> <job_title> <reports_to_account_id> <image_id> <change_reason_code> <change_commentary>
+#+end_example
+
+It is addressed at =iam.v1.accounts.update=.
+
+#+name: account_operations-update-account
+#+begin_src ores-shell :tangle account_operations-update-account.ores :exports none
+account_operations update-account __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+
+** =delete-account=
+:PROPERTIES:
+:ID: BA5BEA5E-E4EE-5D2F-8535-29B3391B7A2A
+:END:
+
+Sends =delete_account_request= and prints =delete_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations delete-account <account_id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.delete=.
+
+#+name: account_operations-delete-account
+#+begin_src ores-shell :tangle account_operations-delete-account.ores :exports none
+account_operations delete-account __none__
+#+end_src
+
+** =lock-account=
+:PROPERTIES:
+:ID: 22003F33-BF78-514F-84FC-7176569BD31E
+:END:
+
+Sends =lock_account_request= and prints =lock_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations lock-account <account_ids>
+#+end_example
+
+It is addressed at =iam.v1.accounts.lock=.
+
+#+name: account_operations-lock-account
+#+begin_src ores-shell :tangle account_operations-lock-account.ores :exports none
+account_operations lock-account __none__
+#+end_src
+
+** =unlock-account=
+:PROPERTIES:
+:ID: 8C5D1878-DCAD-56A7-B3FB-76D6908BFE68
+:END:
+
+Sends =unlock_account_request= and prints =unlock_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations unlock-account <account_ids>
+#+end_example
+
+It is addressed at =iam.v1.accounts.unlock=.
+
+#+name: account_operations-unlock-account
+#+begin_src ores-shell :tangle account_operations-unlock-account.ores :exports none
+account_operations unlock-account __none__
+#+end_src
+
+** =reset-password=
+:PROPERTIES:
+:ID: 4126C3E1-941E-5C41-BC6E-DB41E44C73F0
+:END:
+
+Sends =reset_password_request= and prints =reset_password_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_ids=, =new_password=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations reset-password <account_ids> <new_password>
+#+end_example
+
+It is addressed at =iam.v1.accounts.reset-password=.
+
+#+name: account_operations-reset-password
+#+begin_src ores-shell :tangle account_operations-reset-password.ores :exports none
+account_operations reset-password __none__ __none__
+#+end_src
+
+** =update-my-email=
+:PROPERTIES:
+:ID: B7BB878A-B697-56F8-8C40-3B20843DCE01
+:END:
+
+Sends =update_my_email_request= and prints =update_my_email_response=, so the shape is the protocol's and the meaning is the service's. It reads =email=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations update-my-email <email>
+#+end_example
+
+It is addressed at =iam.v1.accounts.update-email=.
+
+#+name: account_operations-update-my-email
+#+begin_src ores-shell :tangle account_operations-update-my-email.ores :exports none
+account_operations update-my-email __none__
+#+end_src
+
+** =set-my-default-party=
+:PROPERTIES:
+:ID: 78BA3078-5B98-5BBA-B354-3EE45D36F372
+:END:
+
+Sends =set_my_default_party_request= and prints =set_my_default_party_response=, so the shape is the protocol's and the meaning is the service's. It reads =party_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations set-my-default-party <party_id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.set-default-party=.
+
+#+name: account_operations-set-my-default-party
+#+begin_src ores-shell :tangle account_operations-set-my-default-party.ores :exports none
+account_operations set-my-default-party __none__
+#+end_src
+
+** =select-party=
+:PROPERTIES:
+:ID: 10AE1675-8891-5EB0-9108-55F10562B709
+:END:
+
+Sends =select_party_request= and prints =select_party_response=, so the shape is the protocol's and the meaning is the service's. It reads =party_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations select-party <party_id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.select-party=.
+
+#+name: account_operations-select-party
+#+begin_src ores-shell :tangle account_operations-select-party.ores :exports none
+account_operations select-party __none__
+#+end_src
+
+** =switch-party=
+:PROPERTIES:
+:ID: 63461DAE-E3D6-5E2D-A79C-A6D756A972D6
+:END:
+
+Sends =switch_party_request= and prints =select_party_response=, so the shape is the protocol's and the meaning is the service's. It reads =party_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations switch-party <party_id>
+#+end_example
+
+It is addressed at =iam.v1.accounts.switch-party=.
+
+#+name: account_operations-switch-party
+#+begin_src ores-shell :tangle account_operations-switch-party.ores :exports none
+account_operations switch-party __none__
+#+end_src
+
+** =change-password=
+:PROPERTIES:
+:ID: 4049DFA2-68BD-5AC0-BAB7-DD226B409AEA
+:END:
+
+Sends =change_password_request_typed= and prints =change_password_response=, so the shape is the protocol's and the meaning is the service's. It reads =current_password=, =new_password=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations change-password <current_password> <new_password>
+#+end_example
+
+It is addressed at =iam.v1.accounts.change-password=.
+
+#+name: account_operations-change-password
+#+begin_src ores-shell :tangle account_operations-change-password.ores :exports none
+account_operations change-password __none__ __none__
+#+end_src
+

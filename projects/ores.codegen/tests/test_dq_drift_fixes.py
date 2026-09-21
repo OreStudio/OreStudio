@@ -94,10 +94,11 @@ A plain column.
 """
 
 
-def _generate_handler(tmp_path, body=COMPOUND_KEY_ENTITY):
-    model_path = tmp_path / "ores.testcomp.compound_key_history_entity.org"
+def _generate(tmp_path, template, output_name, body):
+    """Render one template for one model into its own directory."""
+    model_path = tmp_path / f"ores.testcomp.{output_name}.org"
     model_path.write_text(body, encoding="utf-8")
-    output_dir = tmp_path / "out"
+    output_dir = tmp_path / output_name
     output_dir.mkdir()
     generate_from_model(
         str(model_path),
@@ -105,26 +106,41 @@ def _generate_handler(tmp_path, body=COMPOUND_KEY_ENTITY):
         TEMPLATES_DIR,
         output_dir,
         is_processing_batch=True,
-        target_template="cpp_nats_handler.hpp.mustache",
-        target_output="compound_key_history_entity_handler.hpp",
+        target_template=template,
+        target_output=output_name,
     )
-    return (output_dir / "compound_key_history_entity_handler.hpp").read_text(encoding="utf-8")
+    return (output_dir / output_name).read_text(encoding="utf-8")
 
 
-def test_composite_text_pk_history_passes_every_key_column(tmp_path):
-    """A composite text PK's history() must not silently drop every column
-    after the first -- see subject_area's name+domain_name key, which the
-    handler previously truncated to svc.get_..._history(req->name) alone."""
+def _generate_handler(tmp_path, body=COMPOUND_KEY_ENTITY):
+    return _generate(tmp_path, "cpp_nats_handler.hpp.mustache",
+                     "compound_key_history_entity_handler.hpp", body)
+
+
+def _generate_protocol(tmp_path, body=COMPOUND_KEY_ENTITY):
+    return _generate(tmp_path, "cpp_protocol.hpp.mustache",
+                     "compound_key_history_entity_protocol.hpp", body)
+
+
+def test_a_composite_key_reaches_the_service_whole(tmp_path):
+    """A composite key must not lose a column on the way to the service --
+    see subject_area's name+domain_name key, which the handler used to
+    truncate to the first column alone. The key record now names every
+    column and the handler passes the whole request, so the number of key
+    columns a request carries and the number the service receives are one
+    fact stated once."""
+    protocol = _generate_protocol(tmp_path)
     handler = _generate_handler(tmp_path)
-    assert "svc.get_entity_history(req->name, req->domain_name)" in handler
+    assert "struct compound_key_history_entity_key {" in protocol
+    assert "std::string name;" in protocol
+    assert "std::string domain_name;" in protocol
+    assert "svc.get_compound_key_history_entity(*req)" in handler
+    assert "svc.delete_compound_key_history_entity(*req)" in handler
+    assert "req->name" not in handler
+    assert "req->domain_name" not in handler
 
 
-def test_composite_text_pk_delete_passes_every_key_column(tmp_path):
-    handler = _generate_handler(tmp_path)
-    assert "svc.delete_entities(req->names, req->domain_names)" in handler
-
-
-def test_single_column_pk_history_unaffected(tmp_path):
+def test_a_single_column_key_is_passed_the_same_way(tmp_path):
     """A single-column PK entity gets no extra args -- the composite-PK fix
     must be a no-op for the common case."""
     body = """\
@@ -190,8 +206,10 @@ A plain column.
 :END:
 """
     handler = _generate_handler(tmp_path, body=body)
-    assert "svc.get_entity_history(req->code)" in handler
-    assert "svc.get_entity_history(req->code, req->" not in handler
+    # One call form for one key and for a composite key: the request is the
+    # argument, so no case needs an argument list of its own.
+    assert "svc.get_single_key_history_entity(*req)" in handler
+    assert "svc.delete_single_key_history_entity(*req)" in handler
 
 
 JUNCTION_WITH_IDX = """\

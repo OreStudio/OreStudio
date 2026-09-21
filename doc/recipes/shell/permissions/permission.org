@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: ADCE3FA3-359E-503C-9F11-8DD2E01DA71E
+:END:
+#+title: How do I run the permissions commands from the shell?
+#+description: Every command the permissions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:permissions:
+
+This file documents the permissions resource at the shell, one section per command. Every command is a subcommand of =permissions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2AD28123-0122-5654-BA3E-A5B0C1E280EB
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.permissions.list=.
+
+#+name: permissions-list
+#+begin_src ores-shell :tangle permissions-list.ores :exports none
+permissions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7C2F12F6-0638-5A67-BD85-5809CBDBACA3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions get <id>
+#+end_example
+
+It is addressed at =iam.v1.permissions.get=.
+
+#+name: permissions-get
+#+begin_src ores-shell :tangle permissions-get.ores :exports none
+permissions get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 30006662-051F-53D7-9AB9-DF9EE67578D5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.permissions.get_many=.
+
+#+name: permissions-get-many
+#+begin_src ores-shell :tangle permissions-get-many.ores :exports none
+permissions get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FCFD5BBC-6239-5494-AA6F-5A998798A1FE
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions add <id> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.permissions.put=.
+
+#+name: permissions-add
+#+begin_src ores-shell :tangle permissions-add.ores :exports none
+permissions add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5DDFF919-35D0-586F-A8B7-E7D10EF84EED
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions set <id> <code> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.permissions.put=.
+
+#+name: permissions-set
+#+begin_src ores-shell :tangle permissions-set.ores :exports none
+permissions set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7C4342CD-D1D2-5E17-97C4-3EFB86F19A86
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions put-many --count <n> <id> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.permissions.put_many=.
+
+#+name: permissions-put-many
+#+begin_src ores-shell :tangle permissions-put-many.ores :exports none
+permissions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B29BAEAE-EC6E-504C-9B4F-1E65D1703C16
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.permissions.delete=.
+
+#+name: permissions-delete
+#+begin_src ores-shell :tangle permissions-delete.ores :exports none
+permissions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 68E3AECD-D9EC-5919-8263-A170F0E2FA47
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+permissions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.permissions.delete_many=.
+
+#+name: permissions-delete-many
+#+begin_src ores-shell :tangle permissions-delete-many.ores :exports none
+permissions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+

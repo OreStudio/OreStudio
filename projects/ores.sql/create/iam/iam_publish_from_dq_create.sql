@@ -61,6 +61,12 @@ declare
     r record;
     v_account_id uuid;
 begin
+    -- This publish replaces whatever is there: the artefact is the source of
+    -- truth for the dataset it publishes. It states that once, here, rather
+    -- than leaving every version at zero and relying on the store to read a
+    -- zero as "do not check".
+    perform ores_utility_allow_version_replace_fn();
+
     v_target_party_id := (p_params ->> 'party_id')::uuid;
     if v_target_party_id is null then
         raise exception 'ores_iam_publish_accounts_from_dq_fn requires params.party_id';
@@ -106,7 +112,7 @@ begin
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 
-        -- account_service::login() requires a row here (see
+        -- account_operations_service::login() requires a row here (see
         -- ores_iam_system_provisioner_create.sql for the same pattern on
         -- super_admin/tenant_admin) -- without it, password login throws
         -- "Login tracking information missing" for every bulk-created
@@ -232,6 +238,9 @@ declare
     r record;
     v_account_id uuid;
 begin
+    -- Replaces, as the accounts publish above does, and for the same reason.
+    perform ores_utility_allow_version_replace_fn();
+
     for r in
         select * from ores_dq_account_contact_informations_artefact_tbl
         where dataset_id = p_dataset_id

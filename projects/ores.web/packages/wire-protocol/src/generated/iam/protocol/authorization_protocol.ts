@@ -22,33 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { Permission } from '../domain/permission.js';
 import type { Role } from '../domain/role.js';
-
-
-export interface ListRolesRequest {
-}
-
-export interface ListRolesResponse {
-    roles: Role[];
-}
-
-export interface ListPermissionsRequest {
-}
-
-export interface ListPermissionsResponse {
-    permissions: Permission[];
-}
-
-export interface GetRoleRequest {
-    identifier: string;
-}
-
-export interface GetRoleResponse {
-    found: boolean;
-    role: Role | null;
-    error_message: string;
-}
 
 export interface AssignRoleRequest {
     account_id: string;
@@ -125,13 +99,27 @@ export interface SuggestRoleCommandsResponse {
 }
 
 export const subjects = {
-    list_roles_request: "iam.v1.roles.list",
-    get_role_request: "iam.v1.roles.get",
     assign_role_request: "iam.v1.roles.assign",
     assign_role_by_name_request: "iam.v1.roles.assign-by-name",
     revoke_role_request: "iam.v1.roles.revoke",
     revoke_role_by_name_request: "iam.v1.roles.revoke-by-name",
     get_account_roles_request: "iam.v1.roles.by-account",
+    get_account_permissions_request: "iam.v1.roles.permissions-by-account",
     get_role_permissions_request: "iam.v1.roles.permissions",
     suggest_role_commands_request: "iam.v1.roles.suggest-commands",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    assign_role_request: true,
+    assign_role_by_name_request: true,
+    revoke_role_request: true,
+    revoke_role_by_name_request: true,
+    get_account_roles_request: true,
+    get_account_permissions_request: true,
+    get_role_permissions_request: true,
+    suggest_role_commands_request: true,
 } as const;

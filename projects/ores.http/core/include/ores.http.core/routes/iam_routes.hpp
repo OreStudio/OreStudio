@@ -27,7 +27,7 @@
 #include "ores.http.core/export.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -86,7 +86,6 @@ struct ORES_HTTP_CORE_EXPORT auth_result {
  *
  * Sessions:
  * - GET /api/v1/sessions - list_sessions_request
- * - GET /api/v1/sessions/statistics - get_session_statistics_request
  * - GET /api/v1/sessions/active - get_active_sessions_request
  */
 class ORES_HTTP_CORE_EXPORT iam_routes final {
@@ -194,9 +193,6 @@ private:
     handle_list_sessions(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
-    handle_get_session_statistics(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
     handle_get_active_sessions(const http::domain::http_request& req);
 
     /**
@@ -234,7 +230,7 @@ private:
     }
 
     database::context ctx_;
-    iam::service::account_service account_service_;
+    iam::service::account_operations_service account_service_;
     iam::repository::session_repository session_repo_;
     std::shared_ptr<variability::service::system_settings_service> system_flags_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;

@@ -1,0 +1,6 @@
+# =signup=
+#
+# GENERATED from doc/recipes/shell/signup/signup.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+signup signup __none__ __none__ __none__

@@ -165,21 +165,6 @@ public:
      * @param password Admin account password
      * @param email Admin account email
      */
-    static void process_bootstrap(std::ostream& out,
-                                  ores::nats::service::nats_client& session,
-                                  std::string principal,
-                                  std::string password,
-                                  std::string email);
-
-    /**
-     * @brief Process a list sessions request.
-     *
-     * Lists session history for the current user or specified account.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Optional account ID (empty for own sessions)
-     */
     static void process_list_sessions(std::ostream& out,
                                       ores::nats::service::nats_client& session,
                                       std::string account_id = "");
@@ -194,19 +179,6 @@ public:
      */
     static void process_active_sessions(std::ostream& out,
                                         ores::nats::service::nats_client& session);
-
-    /**
-     * @brief Process a session statistics request.
-     *
-     * Displays session statistics for the specified time range.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param days Number of days to retrieve statistics for (default 30)
-     */
-    static void process_session_stats(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      int days = 30);
 
     /**
      * @brief Process a get account history request.

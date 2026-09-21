@@ -9,25 +9,25 @@
 #+created: 2026-05-21
 #+updated: 2026-08-10
 
-Recipes related to *Shell recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
+Recipes related to *Shell recipes*. Each entry below is a single how-do-I question with executable steps. The link lists are generated from the recipes themselves by =projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py=, so a new recipe appears here as soon as that runs; the paragraph under each heading, and any note beside a link, are hand-written and are kept.
 
 * General
 
 - [[id:C9170C1C-8297-4401-B093-12A01D9AE742][Help]]
-- [[id:09F74DC2-68AA-41EC-9A2E-ABD7A59F3ABE][Version]]
 - [[id:1914D31E-4CD9-453B-9800-49B6851244B8][Help Menu]]
+- [[id:09F74DC2-68AA-41EC-9A2E-ABD7A59F3ABE][Version]]
 
 * Provisioning
 
 End-to-end and per-stage provisioning flows. Each is tangled into the
 runnable script library (=projects/ores.shell/scripts/library/=).
 
-- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]]
+- [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
+- [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
 - [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
-- [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]]
-- [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
-- [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
 
 * Market data
 
@@ -35,9 +35,13 @@ Non-interactive market data import via =marketdata import=, reusing
 =ores.marketdata.core= 's =import_service= as-is. Each is tangled into
 the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
 
-- [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
-- [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
 - [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] (currently broken — see recipe)
+- [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
+- [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
+- [[id:6812613B-127C-4E0E-A652-ACEFB56F6D56][How do I view a CRM as a grid matrix from the shell?]]
+- [[id:715AFB54-B3F8-4A87-B633-393D43A4B5F8][How do I view exotics CRM rates from the shell?]]
+- [[id:C22C8331-9E37-485B-84DD-9F2046720450][How do I view majors CRM rates from the shell?]]
+- [[id:A2798131-D6A9-45BB-9B74-0D72607B88AF][How do I view scandies CRM rates from the shell?]]
 
 * ORE documents
 
@@ -54,120 +58,192 @@ Compute grid verbs, speaking to =ores.compute= over NATS. Each is
 tangled into the runnable script library
 (=projects/ores.shell/scripts/library/compute/=).
 
-- [[id:D3E963FF-767E-4626-8145-9AEE846F9AA3][How do I list compute apps from the shell?]]
-- [[id:7E0FA5FE-EA78-441B-955F-398BD3242F92][How do I list compute app versions from the shell?]]
-- [[id:9CF4FA67-3F04-4F02-B135-4B5966C4CE35][How do I list compute platforms from the shell?]]
-- [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]
-- [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]
 - [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]]
-- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]]
-- [[id:95D4148C-45C3-4DAE-B672-F910E47FEF54][How do I list compute workunits from the shell?]]
-- [[id:A5E76D14-5E3D-482D-9E2C-10DE2B28539C][How do I list compute results from the shell?]]
-- [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]]
 - [[id:714B212F-3EF9-4F8B-A7FB-867F2B47951E][How do I delete a compute host from the shell?]]
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]]
 - [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]]
 - [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]]
+- [[id:7E0FA5FE-EA78-441B-955F-398BD3242F92][How do I list compute app versions from the shell?]]
+- [[id:D3E963FF-767E-4626-8145-9AEE846F9AA3][How do I list compute apps from the shell?]]
+- [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]
+- [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]
+- [[id:9CF4FA67-3F04-4F02-B135-4B5966C4CE35][How do I list compute platforms from the shell?]]
+- [[id:A5E76D14-5E3D-482D-9E2C-10DE2B28539C][How do I list compute results from the shell?]]
+- [[id:95D4148C-45C3-4DAE-B672-F910E47FEF54][How do I list compute workunits from the shell?]]
 - [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]]
+- [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]]
 
 * Accounts
 
-- [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]
+- [[id:35555992-6F01-40F5-A1A7-1EF0FA6FCAB3][Account Permissions]]
+- [[id:F5B4CC6B-0602-4023-9EB1-B941FB333061][Account Roles]]
+- [[id:67378649-0C9D-40D0-B348-DBC83AC90928][Assign Role]]
+- [[id:E0BF1E20-9CEE-43BB-9C0E-325088DE368C][Assign Role By Name]]
 - [[id:28B359CC-1D56-4347-96EC-5D244C1FCAA7][Auto connect]]
+- [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]]
 - [[id:67362277-05E4-4FA6-8420-51C97236DF61][Basic connect]]
 - [[id:A89F12B0-C212-4FD4-B034-F102FC6CFF68][Bootstrap]]
-- [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]]
-- [[id:E8DA8B33-81D9-4F22-8439-216D7D916093][Login logout]]
-- [[id:92E184F9-0A3D-44B5-BD4C-9521B818A69F][Login]]
-- [[id:0E9D3DCD-0E8D-4F5A-A675-C88E9BC125D1][Logout]]
 - [[id:EEC4F8BE-26BB-42A6-9C60-E65AC9CEFC41][Create]]
+- [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]
+- [[id:887AF33E-E237-417A-9636-5006881A6790][History]]
+- [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I run the accounts commands from the shell?]]
 - [[id:6BA720D5-1F2E-475B-ACB0-477F516EA8C9][Info]]
 - [[id:E706EF2D-00BA-44A1-BC3F-E206EF6ECA30][List]]
 - [[id:784CD3C0-1267-4B0A-AC31-4E3AE8794E6F][List Login Info]]
 - [[id:2D8ECBDF-6896-4DC1-B38E-CC7CFC479FE2][Lock]]
-- [[id:6906C683-5D50-464E-9520-FE5199136AB1][Unlock]]
-- [[id:F5B4CC6B-0602-4023-9EB1-B941FB333061][Account Roles]]
-- [[id:35555992-6F01-40F5-A1A7-1EF0FA6FCAB3][Account Permissions]]
-- [[id:67378649-0C9D-40D0-B348-DBC83AC90928][Assign Role]]
+- [[id:92E184F9-0A3D-44B5-BD4C-9521B818A69F][Login]]
+- [[id:E8DA8B33-81D9-4F22-8439-216D7D916093][Login logout]]
+- [[id:0E9D3DCD-0E8D-4F5A-A675-C88E9BC125D1][Logout]]
 - [[id:AD073CBD-91A1-47D7-B0FB-26492327DED1][Revoke Role]]
-- [[id:E0BF1E20-9CEE-43BB-9C0E-325088DE368C][Assign Role By Name]]
 - [[id:A330AEFF-E2AB-43BC-A3F7-4427CA47C8CC][Revoke Role By Name]]
-- [[id:887AF33E-E237-417A-9636-5006881A6790][History]]
+- [[id:6906C683-5D50-464E-9520-FE5199136AB1][Unlock]]
 
 * Tenants
 
-- [[id:6BA77EF7-5F06-48CB-8BE9-A4E9B670E910][Help Menu]]
-- [[id:691AEA4F-4CB2-425D-8231-FD47EFA16B71][Get Tenants]]
-- [[id:E40F0DAB-8E2F-4F2E-BF0A-CA1DFD9A681E][Get All Tenants]]
 - [[id:D7D6BCCB-26CC-47C9-B763-220C07062939][Add Tenant]]
 - [[id:B7B55734-CD7D-4EAA-B0D2-5262A05C6438][Create Account on Tenant]]
+- [[id:74A76D6B-FF31-42F6-8E1D-09501F09FA9F][Delete Tenant]]
+- [[id:E40F0DAB-8E2F-4F2E-BF0A-CA1DFD9A681E][Get All Tenants]]
+- [[id:691AEA4F-4CB2-425D-8231-FD47EFA16B71][Get Tenants]]
+- [[id:6BA77EF7-5F06-48CB-8BE9-A4E9B670E910][Help Menu]]
+- [[id:C22B769D-A74A-552A-9519-5DCF1D14A469][How do I run the tenants commands from the shell?]]
 - [[id:41576369-A684-4BC4-AF5E-32ECDAADAA7C][List accounts on Tenant]]
 - [[id:4406CC4D-23BF-4A8F-AB95-FFED42437ED7][Tenant History]]
-- [[id:74A76D6B-FF31-42F6-8E1D-09501F09FA9F][Delete Tenant]]
 
 * Variability
 
-- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
-- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
 - [[id:E53146D5-0B0C-4760-BBCC-400AA9C445CA][Add Feature Flag]]
 - [[id:61B7F668-5B49-4470-9C52-4BC547E3AB4F][Delete Feature Flag]]
 - [[id:660DD54D-8319-4508-B398-C02AA956C979][Feature Flag History]]
+- [[id:1CA91A21-F6F3-4089-9C36-DED598DBB19E][Help Menu]]
+- [[id:0DA49716-852D-4814-AA83-13452DB3FAE4][List Feature Flags]]
 
 * Currencies
 
-- [[id:A9E5D960-D1DC-43B5-84E9-F7730D927080][Help Menu]]
-- [[id:53E30B9F-E327-4250-8F8F-A4865FD5FE23][Get]]
 - [[id:EF2D7EDC-4470-4976-8A29-4189103CDC15][Add]]
 - [[id:51B7ADAA-2673-444E-A4AC-9367C4ADD568][Delete]]
+- [[id:53E30B9F-E327-4250-8F8F-A4865FD5FE23][Get]]
+- [[id:A9E5D960-D1DC-43B5-84E9-F7730D927080][Help Menu]]
 - [[id:F807E5C7-198D-4D13-9105-68513D07C193][History]]
 
 * Roles
 
-- [[id:307F49C9-6738-43ED-A233-241D6E0C4E08][Help]]
-- [[id:DD903837-76FB-4061-A1AD-83F3F059FD3A][List]]
 - [[id:8AB40575-D912-4A89-A653-314A7610B43C][Get]]
+- [[id:307F49C9-6738-43ED-A233-241D6E0C4E08][Help]]
+- [[id:62EF06D0-D41D-5D6A-ADD5-6958FF8A43C0][How do I run the roles commands from the shell?]]
+- [[id:DD903837-76FB-4061-A1AD-83F3F059FD3A][List]]
 
 * Permissions
 
 - [[id:329950A6-28DF-4A63-AC55-12286FEDFFBB][Help Permissions]]
+- [[id:ADCE3FA3-359E-503C-9F11-8DD2E01DA71E][How do I run the permissions commands from the shell?]]
 - [[id:E864DC84-A0DF-4997-ACED-E69C870F0AFE][List Permissions]]
 - [[id:AFDD8573-8D4F-4B2F-8246-23F68D2E304D][Suggest Role Commands]]
 
 * Events
 
-- [[id:D4F96BAB-F96E-4441-8E53-584BBC046398][Help Menu]]
 - [[id:54371D4E-6B27-4EBB-9368-158A63FAEC9A][Channels]]
+- [[id:D4F96BAB-F96E-4441-8E53-584BBC046398][Help Menu]]
 - [[id:23DF494F-F41E-42F4-8F49-2341C9F7ABFE][Listen]]
-- [[id:81E40906-7F17-4688-80E5-9ABA0D63E3E2][Unlisten]]
-- [[id:924633E4-E663-42F8-B496-3F2439E8FD70][Subscriptions]]
 - [[id:43CD4A31-E209-4FA8-B2B9-486345D711C8][Notifications]]
+- [[id:924633E4-E663-42F8-B496-3F2439E8FD70][Subscriptions]]
+- [[id:81E40906-7F17-4688-80E5-9ABA0D63E3E2][Unlisten]]
 
 * Compression
 
-- [[id:9FF8EDCA-06CA-4C31-9684-C79545775FBC][Show Status]]
 - [[id:EC0DD331-1B7F-4971-851A-73C9780CE891][Disable Compression]]
 - [[id:03440980-7776-4C85-B51B-EAA9CDBA2B4C][Enable All Compression]]
 - [[id:970B8F52-0560-430F-A4FF-CFA83FC25545][Enable Specific Algorithm]]
+- [[id:9FF8EDCA-06CA-4C31-9684-C79545775FBC][Show Status]]
 
 * Countries
 
-- [[id:3CC3A006-31A6-424F-8176-A1BA8CA9A2B5][Help]]
-- [[id:11E13D6C-39EE-445A-A758-1DEA7E83D589][Get]]
 - [[id:911100ED-309C-48A8-BC69-A81336F04E68][Add]]
 - [[id:A9DB4566-672B-4565-A27E-F28DDB9C00A3][Delete]]
+- [[id:11E13D6C-39EE-445A-A758-1DEA7E83D589][Get]]
+- [[id:3CC3A006-31A6-424F-8176-A1BA8CA9A2B5][Help]]
 - [[id:39BF64EC-A6C4-4359-8FAE-00E135826794][History]]
 
 * Change Reasons
 
-- [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
-- [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
 - [[id:66C9469C-9049-4410-89B3-B1D453405E38][Add]]
 - [[id:8A23C49D-61FB-4A0E-8829-ABCD0463DEC8][Delete]]
+- [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
+- [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
 - [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
 
 * Change Reason Categories
 
-- [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
-- [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
 - [[id:DC91A742-8C16-45DC-9689-7CD122B9E48A][Add]]
 - [[id:4E3F1039-7FDA-4263-81D5-296E935AACCE][Delete]]
+- [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
+- [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
 - [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]
+
+* Account Contact Informations
+
+- [[id:04C8F03D-5BB8-58F2-A556-63A54274108F][How do I run the account_contact_informations commands from the shell?]]
+
+* Account History
+
+- [[id:2F99474E-6068-5415-BB56-40DD110CA312][How do I run the account_history commands from the shell?]]
+
+* Account Operations
+
+- [[id:76F232AB-8D75-572F-9309-49288505E73A][How do I run the account_operations commands from the shell?]]
+
+* Account Parties
+
+- [[id:C21B8496-BA73-5BCF-8E1D-FD61A605239A][How do I run the account_parties commands from the shell?]]
+
+* Account Types
+
+- [[id:60803D77-F933-54BA-9E26-F559A3863A91][How do I run the account_types commands from the shell?]]
+
+* Authorization
+
+- [[id:788B9C8F-08A8-5B70-9794-3447973C6090][How do I run the authorization commands from the shell?]]
+
+* Bootstrap
+
+- [[id:567A34ED-0B68-5C66-A733-77163A4B45F6][How do I run the bootstrap commands from the shell?]]
+
+* Entity commands
+
+- [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]]
+
+* Login Info
+
+- [[id:E5F57DD2-8258-5688-BB05-DEF61B680A9A][How do I run the login_info commands from the shell?]]
+
+* Reset
+
+- [[id:9F267AE7-4C61-5746-ABA9-23660FB44E6F][How do I run the reset commands from the shell?]]
+
+* Session Operations
+
+- [[id:84B782E8-D992-574E-8094-29E6454141D7][How do I run the session_operations commands from the shell?]]
+
+* Session Samples
+
+- [[id:3513ED5C-330C-50FD-8D58-A0652D033B54][How do I run the session_samples commands from the shell?]]
+
+* Sessions
+
+- [[id:0E61EABD-0AF3-59A0-B796-0519EEE06FC9][How do I run the sessions commands from the shell?]]
+
+* Signup
+
+- [[id:84CA2C80-6E6A-5384-AF4B-0904CD1394F1][How do I run the signup commands from the shell?]]
+
+* Tenant Provisioning
+
+- [[id:7640B5F6-3480-5422-9EB5-F12B9609B724][How do I run the tenant_provisioning commands from the shell?]]
+
+* Tenant Statuses
+
+- [[id:5CF80075-6E0E-57A5-9A76-DD3BC0E17211][How do I run the tenant_statuses commands from the shell?]]
+
+* Tenant Types
+
+- [[id:8427B6C2-8E9C-5846-866B-DBBF5973DAFB][How do I run the tenant_types commands from the shell?]]

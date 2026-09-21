@@ -1,0 +1,6 @@
+# =set-my-default-party=
+#
+# GENERATED from doc/recipes/shell/account_operations/account_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+account_operations set-my-default-party __none__

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 082C5D76-93C2-41E6-8193-9598B79DD07A
 :END:
 #+title: ores.iam.account_messages
@@ -6,7 +7,7 @@
 #+type: ores.codegen.operation
 #+component: iam
 #+subcomponent: api
-#+entity_singular: account
+#+entity_singular: account_operations
 #+namespace: ores::iam::messaging
 #+brief: account protocol messages.
 #+filetags: :model:operation:iam:
@@ -26,32 +27,26 @@ The account protocol messages.
 
 * Messages
 
-** get_accounts_request
+The publish trigger is declared here beside the operations, because it is a
+subject IAM owns and nothing else states it: the DQ artefact-type row that
+publishes onto it carries the same string in SQL, and a constant generated
+from here is what the registrar subscribes with.
 
-*** offset
+** publish_accounts_from_dq_request
 :PROPERTIES:
-:cpp_type: int
-:default: 0
+:subject: iam.v1.accounts.publish-from-dq
 :END:
 
-*** limit
-:PROPERTIES:
-:cpp_type: int
-:default: 100
-:END:
-
-** get_accounts_response
-
-*** accounts
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::account>
-:END:
-
-*** total_available_count
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared accounts bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+#+end_src
 
 ** save_account_request
 :PROPERTIES:
@@ -274,19 +269,6 @@ The account protocol messages.
 :cpp_type: std::vector<account_operation_result>
 :END:
 
-** list_login_info_request
-:PROPERTIES:
-:subject: iam.v1.accounts.login-info
-:response: list_login_info_response
-:END:
-
-** list_login_info_response
-
-*** login_infos
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::login_info>
-:END:
-
 ** reset_password_request
 :PROPERTIES:
 :subject: iam.v1.accounts.reset-password
@@ -418,7 +400,7 @@ The account protocol messages.
  * Deliberately a separate subject/handler from select_party rather than a
  * relaxed version of it: select_party only accepts a narrowly-scoped,
  * single-use token (audience "select_party_only") issued exclusively by
- * the login flow, by design -- see account_handler.hpp's select_party for
+ * the login flow, by design -- see account_operations_handler.hpp's select_party for
  * why. switch_party accepts a normal, already-authenticated session token
  * instead (any token that is NOT that single-use one), so an account with
  * access to more than one party (e.g. a tenant admin with cross-entity
@@ -505,24 +487,6 @@ The account protocol messages.
  * Clients re-arm the proactive refresh timer using this value.
  */
 #+end_src
-
-** get_accounts_request_typed
-:PROPERTIES:
-:subject: iam.v1.accounts.list
-:response: get_accounts_response
-:END:
-
-*** offset
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** limit
-:PROPERTIES:
-:cpp_type: int
-:default: 100
-:END:
 
 ** change_password_request_typed
 :PROPERTIES:

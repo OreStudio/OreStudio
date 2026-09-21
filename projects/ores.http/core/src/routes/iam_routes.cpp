@@ -29,10 +29,15 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
+#include "ores.iam.api/messaging/permission_protocol.hpp"
+#include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/signup_service.hpp"
@@ -163,7 +168,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .auth_required()
             .query_param("offset", "integer", "", false, "Pagination offset", "0")
             .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-            .response<iam::messaging::get_accounts_response>()
+            .response<iam::messaging::list_accounts_response>()
             .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -400,18 +405,6 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .handler([this](const http_request& req) { return handle_list_sessions(req); });
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());
-
-    auto session_stats = router->get("/api/v1/sessions/statistics")
-                             .summary("Get session statistics")
-                             .description("Get aggregated session statistics")
-                             .tags({"sessions"})
-                             .auth_required()
-                             .response<iam::messaging::get_session_statistics_response>()
-                             .handler([this](const http_request& req) {
-                                 return handle_get_session_statistics(req);
-                             });
-    router->add_route(session_stats.build());
-    registry->register_route(session_stats.build());
 
     auto active_sessions =
         router->get("/api/v1/sessions/active")
@@ -801,7 +794,7 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
-        iam::messaging::get_accounts_response resp;
+        iam::messaging::list_accounts_response resp;
         resp.accounts = accounts;
 
         co_return http_response::json(rfl::json::write(resp));
@@ -1055,7 +1048,7 @@ asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_req
         auto login_infos = account_service_.list_login_info();
 
         iam::messaging::list_login_info_response resp;
-        resp.login_infos = login_infos;
+        resp.login_info = login_infos;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1163,6 +1156,7 @@ asio::awaitable<http_response> iam_routes::handle_list_roles(const http_request&
 
         iam::messaging::list_roles_response resp;
         resp.roles = roles;
+        resp.total = resp.roles.size();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1226,6 +1220,7 @@ asio::awaitable<http_response> iam_routes::handle_list_permissions(const http_re
 
         iam::messaging::list_permissions_response resp;
         resp.permissions = permissions;
+        resp.total = resp.permissions.size();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1395,33 +1390,13 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
 
         iam::messaging::list_sessions_response resp;
         resp.sessions = std::move(sessions_list);
-        resp.total_count = total_count;
-        resp.success = true;
+        resp.total = total_count;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "List sessions error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
-}
-
-asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const http_request& req) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling get session statistics request";
-
-    auto auth = check_auth(req, "", "get_session_statistics");
-    if (!auth) {
-        co_return auth.error();
-    }
-
-    // Nothing can answer this request yet. The daily aggregate is the
-    // ores_iam_session_stats_daily_vw continuous aggregate, which the schema
-    // creates only under the Timescale licence, and the hand-written read this
-    // replaced queried ores_iam_session_stats_tbl, which no schema ever
-    // created. The request says so rather than replying with an empty list
-    // that reads as "no sessions in range".
-    BOOST_LOG_SEV(lg(), warn) << "Session statistics are not modelled; refusing the request";
-    co_return http_response::error(http_status::not_implemented,
-                                   "Session statistics are not modelled yet");
 }
 
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {
@@ -1450,7 +1425,6 @@ asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http
 
         iam::messaging::get_active_sessions_response resp;
         resp.sessions = std::move(active_sessions);
-        resp.success = true;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

@@ -4,396 +4,340 @@
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-{{^has_audit_group}}
-{{^current_state}}
-#include "ores.shell/app/commands/history_diff_renderer.hpp"
-{{/current_state}}
-{{/has_audit_group}}
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
-#include "ores.{{component}}.api/domain/{{entity_singular}}_table_io.hpp" // IWYU pragma: keep.
-#include "ores.{{component}}.api/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-{{^has_audit_group}}
 #include <chrono>
-{{/has_audit_group}}
 #include <cli/cli.h>
+#include <cstddef>
 #include <functional>
-{{^has_audit_group}}
 #include <optional>
-{{/has_audit_group}}
 #include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
-namespace domain = ores::{{component}}::domain;
-{{#has_bool_columns}}
+namespace messaging = ores::{{component}}::messaging;
+{{#shell.has_helpers}}
 
 namespace {
 
-bool parse_flag(const std::string& value, bool& out) {
-    if (value.empty()) {
-        out = false;
-        return true;
+/**
+ * @brief Fill one request member from one token.
+ *
+ * A member's own type decides how its token reads, so the caller states the
+ * token and the name it answers to and nothing else. The four cases are the
+ * four shapes a token has: a word, a flag, a comma-separated list and
+ * everything from_token already converts.
+ */
+template <typename T>
+void read_token(T& target, const std::string& raw, const std::string& name) {
+    if constexpr (std::is_same_v<T, std::string>) {
+        target = raw;
+    } else if constexpr (std::is_same_v<T, bool>) {
+        if (raw.empty() || raw == "false") {
+            target = false;
+        } else if (raw == "true") {
+            target = true;
+        } else {
+            throw std::invalid_argument(name + " must be 'true' or 'false'");
+        }
+    } else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>) {
+        target = ores::platform::time::datetime::from_iso8601_utc(raw);
+    } else if constexpr (std::is_same_v<T, boost::asio::ip::address>) {
+        target = boost::asio::ip::make_address(raw);
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        target.clear();
+        std::string current;
+        for (const char c : raw) {
+            if (c == ',') {
+                target.push_back(current);
+                current.clear();
+            } else {
+                current.push_back(c);
+            }
+        }
+        target.push_back(current);
+    } else {
+        target = ores::shell::app::from_token<T>(raw, name);
     }
-    if (value == "true") {
-        out = true;
-        return true;
-    }
-    if (value == "false") {
-        out = false;
-        return true;
-    }
-    return false;
 }
+{{#shell.has_order}}
+
+/// Apply the page and the order a caller stated, leaving the defaults alone.
+template <typename Request>
+void apply_page(Request& req, const parsed_args& parsed) {
+    if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
+        req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
+    }
+    if (const auto& raw = parsed.flag("limit"); !raw.empty()) {
+        req.limit = ores::shell::app::from_token<std::uint32_t>(raw, "limit");
+    }
+    if (const auto& raw = parsed.flag("order"); !raw.empty()) {
+        req.order.field = raw;
+    }
+    req.order.descending = parsed.flag_set("desc");
+}
+{{/shell.has_order}}
 
 } // namespace
-{{/has_bool_columns}}
+{{/shell.has_helpers}}
 
-void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu,
-                                                     nats_client& session,
-                                                     pagination_context& pagination) {
-    auto {{entity_plural}}_menu = std::make_unique<cli::Menu>("{{entity_plural}}");
+void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("{{entity_plural}}");
+{{#shell.commands}}
 
-    {{entity_plural}}_menu->Insert(
-        "get",
-        [&session, &pagination](std::ostream& out) {
-            process_get_{{entity_plural}}(
-                std::ref(out), std::ref(session), std::ref(pagination));
-        },
-        "Retrieve {{entity_plural_words}} from the server (paginated)");
-
-    pagination.register_list_callback("{{entity_plural}}", [&session, &pagination](
-                                                               std::ostream& out) {
-        process_get_{{entity_plural}}(out, session, pagination);
-    });
-
-    {{entity_plural}}_menu->Insert(
-        "add",
+    menu->Insert(
+        "{{command}}",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_add_{{entity_singular}}(std::ref(out), std::ref(session), args);
+            process_{{identifier}}(std::ref(out), std::ref(session), std::move(args));
         },
-        "Add {{entity_singular_words}} ({{#primary_key.columns}}{{#is_user_supplied}}{{column}} "
-        "{{/is_user_supplied}}{{/primary_key.columns}}{{#columns}}{{#is_user_supplied}}{{name}} "
-        "{{/is_user_supplied}}{{/columns}}change_reason_code "
-        "\"change_commentary\")");
+        "{{usage}}");
+{{/shell.commands}}
 
-    {{entity_plural}}_menu->Insert(
-        "delete",
-        [&session](std::ostream& out, std::string id) {
-            process_delete_{{entity_singular}}(std::ref(out), std::ref(session), std::move(id));
-        },
-        "Delete {{entity_singular_words}} by {{primary_key.column}}");
-
-{{^current_state}}
-{{#has_audit_group}}
-    {{entity_plural}}_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string id) {
-            process_get_{{entity_singular}}_history(
-                std::ref(out), std::ref(session), std::move(id));
-        },
-        "Show {{entity_singular_words}}'s version history");
-{{/has_audit_group}}
-{{^has_audit_group}}
-    {{entity_plural}}_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_{{entity_singular}}_history(std::ref(out), std::ref(session), args);
-        },
-        "Show {{entity_singular_words}}'s version history (--diff for a unified diff, --version "
-        "<n> to pick one)",
-        {"{{primary_key.column}} [--diff] [--version <n>]"});
-{{/has_audit_group}}
-{{/current_state}}
-
-    root_menu.Insert(std::move({{entity_plural}}_menu));
+    root_menu.Insert(std::move(menu));
 }
+{{#shell.commands}}
 
-void {{entity_singular}}_commands::process_get_{{entity_plural}}(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get {{entity_singular_words}} request.";
-
-    auto& state = pagination.state_for("{{entity_plural}}");
-
-    {{component}}::messaging::get_{{entity_plural}}_request req;
-    req.offset = state.current_offset;
-    req.limit = pagination.page_size();
-
-    auto result = do_auth_request<{{component}}::messaging::get_{{entity_plural}}_response>(
-        out, session, "{{component}}.v1.{{entity_plural}}.list", req);
-    if (!result)
-        return;
-
-    state.total_count = result->total_available_count;
-    pagination.set_last_entity("{{entity_plural}}");
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->{{entity_plural_short}}.size()
-                              << " {{entity_plural_words}}.";
-    out << result->{{entity_plural_short}} << std::endl;
-
-    const auto page = (state.current_offset / pagination.page_size()) + 1;
-    const auto total_pages =
-        state.total_count > 0 ?
-            ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
-            1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->{{entity_plural_short}}.size() << " of " << state.total_count << " total)"
-        << std::endl;
-}
-
-void {{entity_singular}}_commands::process_add_{{entity_singular}}(
+void {{entity_singular}}_commands::process_{{identifier}}(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add {{entity_singular_words}} request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
 
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add {{entity_singular_words}}." << std::endl;
-        return;
+    using request_type = messaging::{{request}};
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run {{command}}." << std::endl;
+            return;
+        }
     }
 
-    const auto parsed = parse_args(args, {});
+    const std::vector<flag_spec> specs{
+{{#flags}}
+        {.name = "{{.}}", .requires_value = true, .default_value = ""},
+{{/flags}}
+{{#switches}}
+        {.name = "{{.}}", .requires_value = false, .default_value = "false"},
+{{/switches}}
+    };
+    const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
 
-    constexpr std::size_t positional_count = {{user_supplied_count}} + 2;
-    if (parsed->positionals.size() != positional_count) {
-        fail(out) << "Expected " << positional_count << " arguments, got "
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+{{#is_paged}}
+
+    apply_page(req, *parsed);
+    if (!parsed->positionals.empty()) {
+        fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
+                  << std::endl;
+        return;
+    }
+{{/is_paged}}
+{{#is_list_by}}
+
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                  << std::endl;
+        return;
+    }
+{{#is_string}}
+    req.{{relation.name}} = parsed->positionals[next++];
+{{/is_string}}
+{{^is_string}}
+    req.{{relation.name}} = ores::shell::app::from_token<{{relation.cpp_type}}>(
+        parsed->positionals[next++], "{{relation.name}}");
+{{/is_string}}
+    if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+        req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree
+                                    : ores::utility::domain::scope::direct;
+    }
+    apply_page(req, *parsed);
+{{/is_list_by}}
+{{#is_versions}}
+
+    if (parsed->positionals.size() != {{key_arity}}) {
+        fail(out) << "Expected {{key_arity}} arguments, got " << parsed->positionals.size()
+                  << "." << std::endl;
+        return;
+    }
+{{#keys}}
+{{#is_user}}
+    read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
+{{/keys}}
+    apply_page(req, *parsed);
+{{/is_versions}}
+{{#is_key_read}}
+
+    if (parsed->positionals.size() != {{key_arity}}) {
+        fail(out) << "Expected {{key_arity}} arguments, got " << parsed->positionals.size()
+                  << "." << std::endl;
+        return;
+    }
+{{#keys}}
+{{#is_user}}
+    read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
+{{/keys}}
+{{/is_key_read}}
+{{#is_version_read}}
+
+    if (parsed->positionals.size() != {{key_arity}}) {
+        fail(out) << "Expected {{key_arity}} arguments, got " << parsed->positionals.size()
+                  << "." << std::endl;
+        return;
+    }
+{{#keys}}
+{{#is_user}}
+    read_token(req.key.{{entity_singular}}.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
+{{/keys}}
+    req.key.version = ores::shell::app::from_token<std::uint32_t>(
+        parsed->flag("version"), "version");
+{{/is_version_read}}
+{{#is_put}}
+
+    if (parsed->positionals.size() != {{write_arity}} + 2) {
+        fail(out) << "Expected " << ({{write_arity}} + 2) << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
         return;
     }
-
-    domain::{{entity_singular}} v;
-    std::size_t next = 0;
-    try {
-{{#has_identity_group}}
-        if (const auto tenant =
-                utility::uuid::tenant_id::from_string(session.auth().tenant_id);
-            tenant) {
-            v.identity.tenant_id = *tenant;
-        }
-{{/has_identity_group}}
-{{#primary_key.columns}}
-{{#is_user_supplied}}
-        v.{{member_access}} = ores::shell::app::from_token<{{{cpp_type}}}>(
-            parsed->positionals[next++], "{{column}}");
-{{/is_user_supplied}}
+{{#writes}}
+{{#is_user}}
+    read_token(req.change.write.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
 {{#is_minted}}
-        v.{{member_access}} = boost::uuids::random_generator()();
+    req.change.write.{{name}} = boost::uuids::random_generator()();
 {{/is_minted}}
-{{/primary_key.columns}}
-{{#columns}}
-{{#is_user_supplied}}
-{{#is_enum}}
-        if (const auto& raw_{{name}} = parsed->positionals[next++]; !raw_{{name}}.empty()) {
-            const auto parsed_{{name}} = domain::{{enum_short_name}}_from_string(raw_{{name}});
-            if (!parsed_{{name}}) {
-                fail(out) << "Invalid {{name}}: " << raw_{{name}} << std::endl;
-                return;
-            }
-            v.{{member_access}} = *parsed_{{name}};
-        }
-{{/is_enum}}
-{{#is_bool}}
-        if (!parse_flag(parsed->positionals[next++], v.{{member_access}})) {
-            fail(out) << "{{name}} must be 'true' or 'false'." << std::endl;
-            return;
-        }
-{{/is_bool}}
-{{^is_enum}}
-{{^is_bool}}
-        v.{{member_access}} = ores::shell::app::from_token<{{{cpp_type}}}>(
-            parsed->positionals[next++], "{{name}}");
-{{/is_bool}}
-{{/is_enum}}
-{{/is_user_supplied}}
 {{#is_session_party}}
-        const auto& party = session.auth().default_party_id;
-        if (party.empty()) {
-            fail(out) << "The logged-in account has no default party. Set one before adding "
-                      << "{{entity_plural_words}}." << std::endl;
-            return;
-        }
-        v.{{member_access}} = ores::shell::app::from_token<boost::uuids::uuid>(party, "{{name}}");
+    req.change.write.{{name}} = ores::shell::app::from_token<boost::uuids::uuid>(
+        session.auth().default_party_id, "{{name}}");
 {{/is_session_party}}
-{{/columns}}
-{{#has_audit_group}}
-        v.audit.modified_by = session.auth().username;
-        v.audit.change_reason_code = std::move(parsed->positionals[next++]);
-        v.audit.change_commentary = std::move(parsed->positionals[next++]);
-{{/has_audit_group}}
-{{^has_audit_group}}
-        v.change_reason_code = std::move(parsed->positionals[next++]);
-        v.change_commentary = std::move(parsed->positionals[next++]);
-        v.recorded_at = std::chrono::system_clock::now();
-{{/has_audit_group}}
+{{/writes}}
+    req.intent.reason_code = parsed->positionals[next++];
+    req.intent.commentary = parsed->positionals[next++];
+    req.change.precondition.kind =
+        ores::utility::domain::precondition_kind::{{precondition}};
+{{#allows_version}}
+    if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+        req.change.precondition.kind =
+            ores::utility::domain::precondition_kind::must_match_version;
+        req.change.precondition.version =
+            ores::shell::app::from_token<std::uint32_t>(raw, "version");
+    }
+{{/allows_version}}
+{{/is_put}}
+{{#is_delete}}
+
+    if (parsed->positionals.size() != {{key_arity}} + 2) {
+        fail(out) << "Expected " << ({{key_arity}} + 2) << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+{{#keys}}
+{{#is_user}}
+    read_token(req.removal.key.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
+{{/keys}}
+    req.intent.reason_code = parsed->positionals[next++];
+    req.intent.commentary = parsed->positionals[next++];
+{{#allows_version}}
+    if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+        req.removal.precondition.kind =
+            ores::utility::domain::precondition_kind::must_match_version;
+        req.removal.precondition.version =
+            ores::shell::app::from_token<std::uint32_t>(raw, "version");
+    }
+{{/allows_version}}
+{{/is_delete}}
+{{#is_get_many}}
+
+    if (parsed->positionals.empty() || parsed->positionals.size() % {{key_arity}} != 0) {
+        fail(out) << "Expected a multiple of {{key_arity}} arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+    for (std::size_t i = 0; i < parsed->positionals.size(); i += {{key_arity}}) {
+        messaging::{{entity_singular}}_key key;
+{{#keys}}
+        read_token(key.{{name}}, parsed->positionals[i + {{index}}], "{{name}}");
+{{/keys}}
+        req.keys.push_back(std::move(key));
+    }
+{{/is_get_many}}
+{{#is_delete_many}}
+
+    if (parsed->positionals.size() < {{key_arity}} + 2 ||
+        (parsed->positionals.size() - 2) % {{key_arity}} != 0) {
+        fail(out) << "Expected a whole number of key groups and an intent, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+    const std::size_t key_groups = (parsed->positionals.size() - 2) / {{key_arity}};
+    for (std::size_t i = 0; i < key_groups; ++i) {
+        messaging::{{entity_singular}}_key key;
+{{#keys}}
+        read_token(key.{{name}}, parsed->positionals[i * {{key_arity}} + {{index}}],
+                   "{{name}}");
+{{/keys}}
+        req.removals.push_back(messaging::{{entity_singular}}_removal{.key = std::move(key)});
+    }
+    req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
+    req.intent.commentary = parsed->positionals[parsed->positionals.size() - 1];
+{{/is_delete_many}}
+{{#is_put_many}}
+
+    const auto count_raw = parsed->flag("count");
+    if (count_raw.empty()) {
+        fail(out) << "--count is required." << std::endl;
+        return;
+    }
+    const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
+    if (parsed->positionals.size() != change_count * {{write_arity}} + 2) {
+        fail(out) << "Expected " << (change_count * {{write_arity}} + 2)
+                  << " arguments, got " << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+    for (std::uint32_t i = 0; i < change_count; ++i) {
+        messaging::{{entity_singular}}_change change;
+{{#writes}}
+        read_token(change.write.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/writes}}
+        change.precondition.kind =
+            ores::utility::domain::precondition_kind::must_not_exist;
+        req.changes.push_back(std::move(change));
+    }
+    req.intent.reason_code = parsed->positionals[next++];
+    req.intent.commentary = parsed->positionals[next++];
+{{/is_put_many}}
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto req = {{component}}::messaging::save_{{entity_singular}}_request::from(std::move(v));
-
-    auto result = do_auth_request<{{component}}::messaging::save_{{entity_singular}}_response>(
-        out, session, "{{component}}.v1.{{entity_plural}}.save", req);
+    auto result = do_auth_request<messaging::{{response_type}}>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully added {{entity_singular_words}}.";
-        out << "✓ {{entity_singular_words}} added successfully!" << std::endl;
-    } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add {{entity_singular_words}}: " << msg;
-        fail(out) << "Failed to add {{entity_singular_words}}: " << msg << std::endl;
-    }
+    out << rfl::json::write(*result) << std::endl;
 }
-
-void {{entity_singular}}_commands::process_delete_{{entity_singular}}(
-    std::ostream& out, nats_client& session, std::string {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete {{entity_singular_words}} request for: "
-                               << {{primary_key.column}};
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete {{entity_singular_words}}." << std::endl;
-        return;
-    }
-
-    {{component}}::messaging::delete_{{entity_singular}}_request req;
-    req.{{delete_request_id_field}} = {std::move({{primary_key.column}})};
-
-    auto result =
-        do_auth_request<{{component}}::messaging::delete_{{entity_singular}}_response>(
-            out, session, "{{component}}.v1.{{entity_plural}}.delete", req);
-    if (!result)
-        return;
-
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted {{entity_singular_words}}.";
-        out << "✓ {{entity_singular_words}} deleted successfully!" << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete {{entity_singular_words}}: "
-                                  << result->message;
-        fail(out) << "Failed to delete {{entity_singular_words}}: " << result->message
-                  << std::endl;
-    }
-}
-
-{{^current_state}}
-{{#has_audit_group}}
-void {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
-    std::ostream& out, nats_client& session, std::string {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get {{entity_singular_words}} history for: "
-                               << {{primary_key.column}};
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get {{entity_singular_words}} history." << std::endl;
-        return;
-    }
-
-    {{component}}::messaging::get_{{entity_singular}}_history_request req;
-    req.{{history_request_id_field}} = std::move({{primary_key.column}});
-
-    auto result =
-        do_auth_request<{{component}}::messaging::get_{{entity_singular}}_history_response>(
-            out, session, "{{component}}.v1.{{entity_plural}}.history", req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get {{entity_singular_words}} history: "
-                                  << result->message;
-        fail(out) << result->message << std::endl;
-        return;
-    }
-
-    if (result->history.empty()) {
-        out << "No history found for this {{entity_singular_words}}." << std::endl;
-        return;
-    }
-
-    out << result->history << std::endl;
-}
-{{/has_audit_group}}
-{{^has_audit_group}}
-void {{entity_singular}}_commands::process_get_{{entity_singular}}_history(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    const std::vector<flag_spec> specs{
-        {.name = "diff", .requires_value = false, .default_value = "false"},
-        {.name = "version", .requires_value = true, .default_value = ""}};
-    auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: {{entity_plural}} history {{primary_key.column}} [--diff] [--version <n>]"
-                  << std::endl;
-        return;
-    }
-
-    auto {{primary_key.column}} = parsed->positionals.front();
-
-    std::optional<int> version;
-    if (const auto& raw_version = parsed->flag("version"); !raw_version.empty()) {
-        const auto parsed_version = parse_uint32(raw_version);
-        if (!parsed_version) {
-            fail(out) << "Invalid --version value: " << raw_version << std::endl;
-            return;
-        }
-        version = static_cast<int>(*parsed_version);
-    }
-
-    if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, "ores.{{component}}.{{entity_singular}}",
-                            std::move({{primary_key.column}}), version);
-        return;
-    }
-
-    if (version) {
-        fail(out) << "--version is only supported together with --diff." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get {{entity_singular_words}} history for: "
-                               << {{primary_key.column}};
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get {{entity_singular_words}} history." << std::endl;
-        return;
-    }
-
-    {{component}}::messaging::get_{{entity_singular}}_history_request req;
-    req.{{history_request_id_field}} = {{primary_key.column}};
-
-    auto result =
-        do_auth_request<{{component}}::messaging::get_{{entity_singular}}_history_response>(
-            out, session, "{{component}}.v1.{{entity_plural}}.history", req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get {{entity_singular_words}} history: "
-                                  << result->message;
-        fail(out) << result->message << std::endl;
-        return;
-    }
-
-    if (result->history.empty()) {
-        out << "No history found for this {{entity_singular_words}}." << std::endl;
-        return;
-    }
-
-    out << result->history << std::endl;
-}
-{{/has_audit_group}}
-{{/current_state}}
+{{/shell.commands}}
 
 }
 {{/domain_entity}}

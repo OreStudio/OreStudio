@@ -5,10 +5,19 @@
 
 #include <cstdint>
 #include <stdexcept>
+{{#protocol_derived}}
+#include <algorithm>
+#include <iterator>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+{{/protocol_derived}}
 {{#has_uuid_include}}
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_include}}
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
@@ -20,6 +29,396 @@ using namespace ores::logging;
 {{entity_singular}}_service::{{entity_singular}}_service(context ctx)
     : ctx_(std::move(ctx))
 <<paste:4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B>>{}
+{{#protocol_derived}}
+namespace {
+
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A key record carries each column with the column's own type, and the
+ * repository takes the text form every one of its key parameters shares, so
+ * the conversion lives here rather than at every call site.
+ */
+std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}}_repository& repo,
+                                                const ores::database::context& ctx,
+                                                const messaging::{{entity_singular}}_key& key) {
+    return repo.read_latest(ctx,
+                            {{#primary_key.key_columns}}{{#is_uuid}}boost::uuids::to_string(key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}key.{{column}}{{/is_timestamp}}{{/is_uuid}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
+}
+{{#put_operations}}
+
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v) {
+    messaging::{{entity_singular}}_key key;
+{{#primary_key.key_columns}}
+    key.{{column}} = v.{{column}};
+{{/primary_key.key_columns}}
+    return key;
+}
+
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy,
+ * provenance, the version and the validity window are the service's and the
+ * database's to state, and are set after this conversion.
+ */
+domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write& write) {
+    domain::{{entity_singular}} v;
+{{#write_fields}}
+    v.{{domain_member}} = write.{{name}};
+{{/write_fields}}
+    return v;
+}
+{{/put_operations}}
+
+} // namespace
+
+{{#list_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+{{#has_order}}
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+{{/has_order}}
+{{#has_filter}}
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+{{/has_filter}}
+    response.{{entity_plural_short}} = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_);
+    return response;
+}
+
+{{/list_operations}}
+{{#list_scoped_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+{{#has_order}}
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+{{/has_order}}
+{{#has_filter}}
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+{{/has_filter}}
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+{{#leading_is_uuid}}
+    const auto relation = boost::uuids::to_string(request.{{leading}});
+{{/leading_is_uuid}}
+{{^leading_is_uuid}}
+    const auto relation = request.{{leading}};
+{{/leading_is_uuid}}
+    response.{{entity_plural_short}} = repo_.read_latest_by_{{leading}}(
+        ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_{{entity_singular_short}}_count_by_{{leading}}(ctx_, relation);
+    return response;
+}
+
+{{/list_scoped_operations}}
+{{#get_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    auto found = read_one(repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.{{entity_singular}} = std::move(found.front());
+    return response;
+}
+
+{{/get_operations}}
+{{#get_many_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    for (const auto& k : request.keys) {
+        messaging::{{entity_singular}}_lookup entry;
+        entry.key = k;
+        auto found = read_one(repo_, ctx_, k);
+        if (!found.empty())
+            entry.{{entity_singular}} = std::move(found.front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+{{/get_many_operations}}
+{{#put_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    domain::{{entity_singular}} value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(ctx_, value, request.change.precondition);
+    auto written = read_one(repo_, ctx_, key_from(value));
+    if (!written.empty())
+        response.{{entity_singular}} = std::move(written.front());
+    return response;
+}
+
+{{/put_operations}}
+{{#put_many_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    std::vector<domain::{{entity_singular}}> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::{{entity_singular}} value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
+    response.{{entity_plural_short}}.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, ctx_, key_from(value));
+        response.{{entity_plural_short}}.push_back(
+            written.empty() ? value : std::move(written.front()));
+    }
+    return response;
+}
+
+{{/put_many_operations}}
+{{#delete_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result.outcome = outcome::invalid;
+        response.result.code = "precondition_not_supported";
+        response.result.message = "A removal cannot require that a row is absent.";
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_incomplete";
+            response.result.message = "A versioned removal must state the version it expects.";
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(ctx_, {{{primary_key.removal_key_args}}}, expected)) {
+    case repository::{{entity_singular}}_repository::remove_status::removed:
+        break;
+    case repository::{{entity_singular}}_repository::remove_status::missing:
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        break;
+    case repository::{{entity_singular}}_repository::remove_status::conflicting:
+        response.result.outcome = outcome::conflict;
+        response.result.code = "version_conflict";
+        break;
+    case repository::{{entity_singular}}_repository::remove_status::unsupported:
+        response.result.outcome = outcome::invalid;
+        response.result.code = "precondition_not_supported";
+        response.result.message = "This resource keeps no version to match.";
+        break;
+    }
+    return response;
+}
+
+{{/delete_operations}}
+{{#delete_many_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result.outcome = outcome::invalid;
+            response.result.code = "batch_removal_is_unconditional";
+            response.result.message =
+                "A batch removal is unconditional; remove the rows one at a time "
+                "to state a version.";
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+{{#primary_key.key_columns}}
+    std::vector<std::string> {{column}}_keys;
+    {{column}}_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(removal.key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(removal.key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}removal.key.{{column}}{{/is_timestamp}}{{/is_uuid}});
+{{/primary_key.key_columns}}
+    repo_.remove(ctx_, {{{primary_key.batch_keys_args}}});
+    return response;
+}
+
+{{/delete_many_operations}}
+{{#list_versions_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+{{#has_order}}
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+{{/has_order}}
+{{#has_filter}}
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+{{/has_filter}}
+    auto all = repo_.read_all(ctx_, {{{primary_key.key_request_args}}});
+    // The store reads versions newest first, and the order a caller gets when
+    // it states none is key order, which for a version key is oldest first.
+    std::reverse(all.begin(), all.end());
+    response.total = all.size();
+    const auto begin = std::min<std::size_t>(request.offset, all.size());
+    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
+    response.versions.assign(std::make_move_iterator(all.begin() + begin),
+                             std::make_move_iterator(all.begin() + end));
+    return response;
+}
+
+{{/list_versions_operations}}
+{{#get_version_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    auto found = repo_.read_at_version(
+        ctx_, {{{primary_key.version_key_args}}}, request.key.version);
+    if (!found) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.version = std::move(*found);
+    return response;
+}
+
+{{/get_version_operations}}
+{{#put_operations}}
+ores::utility::domain::result
+{{entity_singular}}_service::prepare_change(
+    const messaging::{{entity_singular}}_change& change,
+    const ores::utility::domain::change_intent& intent,
+    domain::{{entity_singular}}& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, ctx_, key_from(out));
+    switch (change.precondition.kind) {
+    case precondition_kind::must_not_exist:
+        if (!current.empty()) {
+            result.outcome = outcome::conflict;
+            result.code = "already_exists";
+            return result;
+        }
+        break;
+    case precondition_kind::must_match_version:
+{{#has_audit_columns}}
+        if (current.empty()) {
+            result.outcome = outcome::missing;
+            result.code = "not_found";
+            return result;
+        }
+        // The protocol states the version as a uint32 and the row carries it
+        // as an int, so the comparison states the conversion.
+        if (!change.precondition.version
+            || static_cast<std::uint32_t>(current.front().version)
+                   != *change.precondition.version) {
+            result.outcome = outcome::conflict;
+            result.code = "version_conflict";
+            return result;
+        }
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        result.outcome = outcome::invalid;
+        result.code = "precondition_not_supported";
+        result.message = "This resource keeps no version to match.";
+        return result;
+{{/has_audit_columns}}
+        break;
+    case precondition_kind::any:
+        break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out, ctx_,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{#has_audit_columns}}
+    out.change_commentary = intent.commentary;
+{{/has_audit_columns}}
+    return result;
+}
+
+{{/put_operations}}
+{{/protocol_derived}}
 
 std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
@@ -46,16 +445,7 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
 }
 
-{{#has_as_of_lookup}}
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_service::list_{{entity_plural_short}}_at_timepoint(
-    const std::string& as_of, const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} at timepoint: " << as_of;
-    if ({{primary_key.column}}.empty())
-        return repo_.read_at_timepoint(ctx_, as_of);
-    return repo_.read_at_timepoint(ctx_, as_of, {{primary_key.column}});
-}
-{{/has_as_of_lookup}}
+
 
 {{#foreign_keys}}
 {{#list_by}}
@@ -86,6 +476,7 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{co
 {{/list_by_uuid}}
 {{/list_by}}
 
+
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}_as_of(
@@ -96,6 +487,7 @@ std::vector<domain::{{entity_singular}}>
     return repo_.read_by_{{column}}_as_of(ctx_, {{column}}, valid_from_bound, valid_to_bound);
 }
 {{/list_by_as_of}}
+
 {{/foreign_keys}}
 {{#has_audit_columns}}
 std::optional<domain::{{entity_singular}}>
@@ -148,13 +540,11 @@ std::optional<domain::{{entity_singular}}>
 }
 {{/parent_column}}
 {{/service_find_by_code}}
-{{#has_batch_read}}
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_plural_short}}({{{primary_key.batch_params}}}) {
     return repo_.read_latest(ctx_, {{{primary_key.batch_args}}});
 }
-{{/has_batch_read}}
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.columns}}
@@ -488,52 +878,8 @@ void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string
                               << "/" << {{right.column}};
 }
 
-{{#left.replace_by}}
-void {{name_singular}}_service::replace_{{name_short}}_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}},
-{{/left.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{left.column_title_lower}}: "
-                               << {{left.column}};
-    repo_.replace_by_{{left.column_short}}({{left.column}}, {{name_short}}, modified_by,
-                                           performed_by, change_reason_code, change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced {{name_words}} for {{left.column_title_lower}}: "
-                              << {{left.column}};
-}
 
-{{/left.replace_by}}
-{{#right.replace_by}}
-void {{name_singular}}_service::replace_{{name_short}}_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}},
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}},
-{{/right.is_uuid}}
-    const std::vector<domain::{{name_singular}}>& {{name_short}},
-    const std::string& modified_by,
-    const std::string& performed_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Replacing {{name_words}} for {{right.column_title_lower}}: "
-                               << {{right.column}};
-    repo_.replace_by_{{right.column_short}}({{right.column}}, {{name_short}}, modified_by,
-                                            performed_by, change_reason_code, change_commentary);
-    BOOST_LOG_SEV(lg(), info) << "Replaced {{name_words}} for {{right.column_title_lower}}: "
-                              << {{right.column}};
-}
-
-{{/right.replace_by}}
 {{/wire_write_enabled}}
 }
 {{/junction}}

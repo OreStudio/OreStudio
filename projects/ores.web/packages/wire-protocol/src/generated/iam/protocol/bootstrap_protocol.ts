@@ -85,3 +85,13 @@ export const subjects = {
     create_initial_admin_request: "iam.v1.bootstrap.create-admin",
     provision_tenant_request: "iam.v1.bootstrap.provision-tenant",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    bootstrap_status_request: false,
+    create_initial_admin_request: false,
+    provision_tenant_request: false,
+} as const;

@@ -92,7 +92,7 @@ bool auto_login(ores::nats::service::nats_client& session,
         req.principal = login_config.username;
         req.password = login_config.password;
         auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
-            session, "iam.v1.auth.login", req);
+            session, iam::messaging::login_request::nats_subject, req);
         if (!result || !result->success) {
             out << "✗ Auto-login failed: " << (result ? result->message : "parse error")
                 << std::endl;

@@ -28,6 +28,9 @@ from codegen.org_loader import (  # noqa: E402
 
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
+TENANT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant.org"
+ACCOUNT_PARTY = (
+    REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_junction.org")
 
 # A member the projection cannot state: it has no registered wire shape, so
 # ``_ts_domain_type`` returns None and the domain interface would emit
@@ -79,6 +82,13 @@ def _entity(**overrides):
         },
     }
     entity.update(overrides)
+    # The version column, which the enrichment derives from the two shape
+    # flags: an ordinary entity keeps one, a current-state table has no
+    # history at all, and an audit-less table has a validity window with no
+    # version in it.
+    entity.setdefault("has_audit_columns",
+                      not entity.get("current_state")
+                      and not entity.get("no_audit_columns"))
     return entity
 
 
@@ -86,94 +96,201 @@ def _by_name(messages):
     return {message["name"]: message for message in messages}
 
 
-def test_the_standard_crud_set_is_derived_in_the_cpp_order():
+def test_the_canonical_set_is_derived_in_the_specification_order():
+    """The auxiliary records first, then each operation, request before reply."""
     messages = entity_protocol_messages(_entity())
     assert [m["name"] for m in messages] == [
-        "get_tenant_types_request", "get_tenant_types_response",
-        "save_tenant_type_request", "save_tenant_type_response",
+        "tenant_type_key", "tenant_type_write", "tenant_type_change",
+        "tenant_type_removal", "tenant_type_lookup",
+        "tenant_type_event",
+        "tenant_type_version_key", "tenant_type_versions_filter",
+        "list_tenant_types_request", "list_tenant_types_response",
+        "get_tenant_type_request", "get_tenant_type_response",
+        "get_many_tenant_types_request", "get_many_tenant_types_response",
+        "put_tenant_type_request", "put_tenant_type_response",
+        "put_many_tenant_types_request", "put_many_tenant_types_response",
         "delete_tenant_type_request", "delete_tenant_type_response",
-        "get_tenant_type_history_request", "get_tenant_type_history_response",
+        "delete_many_tenant_types_request", "delete_many_tenant_types_response",
+        "list_tenant_type_versions_request",
+        "list_tenant_type_versions_response",
+        "get_tenant_type_version_request", "get_tenant_type_version_response",
     ]
+    # A record carries no subject, because only an operation is addressed.
+    for message in messages:
+        assert ("subject" in message) == message["name"].endswith("_request")
 
 
-def test_subjects_match_the_cpp_header():
+def test_subjects_speak_the_four_segment_grammar():
     messages = _by_name(entity_protocol_messages(_entity()))
     assert {
         name: message["subject"]
         for name, message in messages.items() if "subject" in message
     } == {
-        "get_tenant_types_request": "iam.v1.tenant_types.list",
-        "save_tenant_type_request": "iam.v1.tenant_types.save",
+        "list_tenant_types_request": "iam.v1.tenant_types.list",
+        "get_tenant_type_request": "iam.v1.tenant_types.get",
+        "get_many_tenant_types_request": "iam.v1.tenant_types.get_many",
+        "put_tenant_type_request": "iam.v1.tenant_types.put",
+        "put_many_tenant_types_request": "iam.v1.tenant_types.put_many",
         "delete_tenant_type_request": "iam.v1.tenant_types.delete",
-        "get_tenant_type_history_request": "iam.v1.tenant_types.history",
+        "delete_many_tenant_types_request": "iam.v1.tenant_types.delete_many",
+        "list_tenant_type_versions_request":
+            "iam.v1.tenant_types_versions.list",
+        "get_tenant_type_version_request": "iam.v1.tenant_types_versions.get",
     }
 
 
 def test_the_response_collection_uses_the_short_plural():
     messages = _by_name(entity_protocol_messages(_entity()))
-    fields = {f["name"]: f for f in messages["get_tenant_types_response"]["fields"]}
+    fields = {f["name"]: f
+              for f in messages["list_tenant_types_response"]["fields"]}
     assert fields["types"]["ts_type"] == "TenantType[]"
-    assert fields["total_available_count"]["ts_type"] == "number"
+    assert fields["total"]["ts_type"] == "number"
 
 
-def test_a_uuid_key_deletes_by_ids_and_a_text_key_by_its_column():
+def test_the_key_record_carries_each_key_column_with_its_own_type():
+    """A uuid key is not flattened to a string, and a composite key is whole."""
     text = _by_name(entity_protocol_messages(_entity()))
-    assert [f["name"] for f in text["delete_tenant_type_request"]["fields"]] == [
-        "types"]
+    assert [(f["name"], f["ts_type"])
+            for f in text["tenant_type_key"]["fields"]] == [("type", "string")]
 
     uuid = _by_name(entity_protocol_messages(_entity(
         entity_singular="tenant", entity_plural="tenants",
         entity_plural_short="tenants",
         primary_key={"column": "id",
                      "columns": [{"column": "id", "is_uuid": True}]})))
-    assert [f["name"] for f in uuid["delete_tenant_request"]["fields"]] == ["ids"]
+    assert uuid["tenant_key"]["fields"][0]["cpp_type"] == "boost::uuids::uuid"
+
+    composite = _by_name(entity_protocol_messages(_entity(
+        primary_key={"column": "type", "columns": [
+            {"column": "type", "is_uuid": False},
+            {"column": "name", "is_uuid": False}]})))
+    assert [f["name"] for f in composite["tenant_type_key"]["fields"]] == [
+        "type", "name"]
 
 
-def test_a_batch_save_and_a_list_filter_are_honoured():
+def test_the_write_record_drops_every_server_owned_field():
+    messages = _by_name(entity_protocol_messages(_entity(columns=[
+        {"column": "type", "cpp_type": "std::string"},
+        {"column": "name", "cpp_type": "std::string"},
+        {"column": "tenant_id", "cpp_type": "boost::uuids::uuid"},
+        {"column": "version", "cpp_type": "std::uint32_t"},
+        {"column": "change_reason_code", "cpp_type": "std::string"},
+    ])))
+    assert [f["name"] for f in messages["tenant_type_write"]["fields"]] == [
+        "type", "name"]
+
+
+def test_a_key_column_is_never_stripped_as_server_owned():
+    """A junction links parties, so its ``party_id`` is half of its key."""
     messages = _by_name(entity_protocol_messages(_entity(
-        has_batch_save=True, list_filter_column="node_id",
-        has_as_of_lookup=True)))
-    save = messages["save_tenant_type_request"]["fields"]
-    assert save[0]["name"] == "types"
-    assert save[0]["ts_type"] == "TenantType[]"
-    assert [f["name"] for f in messages["get_tenant_types_request"]["fields"]] == [
-        "offset", "limit", "node_id", "as_of"]
+        columns=[{"column": "party_id", "cpp_type": "boost::uuids::uuid"}],
+        primary_key={"column": "party_id",
+                     "columns": [{"column": "party_id", "is_uuid": True}]})))
+    assert [f["name"] for f in messages["tenant_type_write"]["fields"]] == [
+        "party_id"]
 
 
-def test_an_extra_list_request_becomes_its_own_message_pair():
+def test_the_filter_record_holds_one_optional_member_per_filterable_column():
+    """Filtering is a record, so every member is optional and carries its type."""
     messages = _by_name(entity_protocol_messages(_entity(
-        extra_list_requests=[{
-            "name_suffix": "by_account_id",
-            "nats_suffix": "list_by_account_id",
-            "filter_column": "account_id",
-            "default_limit": 100,
-        }])))
-    extra = messages["get_tenant_types_by_account_id_request"]
-    assert extra["subject"] == "iam.v1.tenant_types.list_by_account_id"
-    assert [f["name"] for f in extra["fields"]] == [
-        "account_id", "offset", "limit"]
-    assert messages["get_tenant_types_by_account_id_response"]["fields"][0][
+        list_filter_column="name",
+        columns=[{"column": "name", "cpp_type": "std::string"},
+                 {"column": "account_id", "cpp_type": "boost::uuids::uuid"}],
+        extra_list_requests=[{"filter_column": "account_id",
+                              "nats_suffix": "list_by_account_id"}])))
+    assert [(f["name"], f["ts_type"])
+            for f in messages["tenant_types_filter"]["fields"]] == [
+        ("name", "string | null"), ("account_id", "string | null")]
+    list_request = {f["name"]: f
+                    for f in messages["list_tenant_types_request"]["fields"]}
+    assert list_request["filter"]["ts_type"] == "TenantTypesFilter | null"
+
+
+def test_a_resource_that_filters_on_nothing_has_no_filter_record():
+    messages = _by_name(entity_protocol_messages(_entity()))
+    assert "tenant_types_filter" not in messages
+    assert "filter" not in {f["name"] for f in
+                            messages["list_tenant_types_request"]["fields"]}
+
+
+def test_the_page_and_the_order_are_unconditional():
+    fields = {f["name"]: f for f in _by_name(entity_protocol_messages(
+        _entity()))["list_tenant_types_request"]["fields"]}
+    assert fields["offset"]["default"] == "0"
+    assert fields["limit"]["default"] == "100"
+    assert fields["order"]["ts_type"] == "Order"
+
+
+def test_a_scoped_read_is_the_list_with_the_relation_in_its_addressing():
+    messages = _by_name(entity_protocol_messages(_entity(
+        columns=[{"column": "account_id", "cpp_type": "boost::uuids::uuid"}],
+        extra_list_requests=[{"filter_column": "account_id",
+                              "nats_suffix": "list_by_account_id"}])))
+    request = messages["list_by_account_id_tenant_types_request"]
+    assert request["subject"] == "iam.v1.tenant_types.list_by_account_id"
+    assert [f["name"] for f in request["fields"]] == [
+        "account_id", "scope", "offset", "limit", "order", "filter"]
+    scope = {f["name"]: f for f in request["fields"]}["scope"]
+    assert scope["ts_type"] == "Scope"
+    assert scope["default"] == "ores::utility::domain::scope::direct"
+    assert messages["list_by_account_id_tenant_types_response"]["fields"][0][
+        "ts_type"] == "Result"
+
+
+def test_a_parent_relation_is_a_scoped_read_like_any_other():
+    """Reading a subtree is the same verb, with ``scope`` saying so."""
+    messages = _by_name(entity_protocol_messages(_entity(
+        has_parent_id=True,
+        presentation={"parent_id_field": "account_id"},
+        columns=[{"column": "account_id", "cpp_type": "boost::uuids::uuid"}])))
+    assert "list_by_account_id_tenant_types_request" in messages
+    assert "get_tenant_type_hierarchy_request" not in messages
+
+
+def test_the_versions_sub_resource_is_read_only():
+    """A version is written by the database, so only the reads exist for it."""
+    messages = _by_name(entity_protocol_messages(_entity()))
+    assert messages["list_tenant_type_versions_request"]["subject"] == (
+        "iam.v1.tenant_types_versions.list")
+    assert messages["get_tenant_type_version_request"]["subject"] == (
+        "iam.v1.tenant_types_versions.get")
+    assert {f["name"]
+            for f in messages["tenant_type_versions_filter"]["fields"]} == {
+        "version", "from_version", "to_version"}
+    assert [f["name"]
+            for f in messages["get_tenant_type_version_request"]["fields"]] == [
+        "key"]
+
+
+def test_a_version_is_the_domain_row_itself():
+    """A version carries the audit provenance, so it needs no record of its own."""
+    messages = _by_name(entity_protocol_messages(_entity()))
+    assert "tenant_type_version" not in messages
+    assert messages["list_tenant_type_versions_response"]["fields"][1][
         "ts_type"] == "TenantType[]"
+    assert messages["get_tenant_type_version_response"]["fields"][1][
+        "cpp_type"] == "ores::iam::domain::tenant_type"
 
 
-def test_a_read_for_cache_pair_is_derived_only_when_flagged():
-    without = _by_name(entity_protocol_messages(_entity()))
-    assert "read_tenant_types_for_cache_request" not in without
+def test_a_batch_is_the_same_element_repeated():
+    messages = _by_name(entity_protocol_messages(_entity()))
+    assert messages["put_many_tenant_types_request"]["fields"][0][
+        "cpp_type"] == "std::vector<tenant_type_change>"
+    assert messages["delete_many_tenant_types_request"]["fields"][0][
+        "cpp_type"] == "std::vector<tenant_type_removal>"
+    # The element states its own belief, and the set states one intent.
+    assert messages["tenant_type_change"]["fields"][1]["name"] == "precondition"
+    assert "precondition" not in {f["name"] for f in
+                                  messages["put_many_tenant_types_request"]["fields"]}
 
-    with_cache = _by_name(entity_protocol_messages(
-        _entity(read_for_cache=True)))
-    request = with_cache["read_tenant_types_for_cache_request"]
-    assert request["subject"] == "iam.v1.tenant_types.read"
-    assert [f["name"] for f in request["fields"]] == ["tenant_id"]
 
-
-def test_a_registered_utility_type_projects_on_the_hierarchy_response():
-    """The hierarchy response carries the shared utility interface, so the
-    derived field names it rather than leaving a gap the guard refuses."""
-    messages = _by_name(entity_protocol_messages(_entity(has_parent_id=True)))
-    hierarchy = messages["get_tenant_type_hierarchy_response"]
-    roots = {f["name"]: f for f in hierarchy["fields"]}["roots"]
-    assert roots["ts_type"] == "HierarchyNode[]"
+def test_the_shared_records_project_to_the_wire_protocol_package():
+    messages = _by_name(entity_protocol_messages(_entity()))
+    response = {f["name"]: f
+                for f in messages["list_tenant_types_response"]["fields"]}
+    assert response["result"]["ts_type"] == "Result"
+    put = {f["name"]: f for f in messages["put_tenant_type_request"]["fields"]}
+    assert put["intent"]["ts_type"] == "ChangeIntent"
 
 
 def test_domain_member_types_project():
@@ -244,10 +361,11 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
     protocol = (tmp_path / "tenant_type_protocol.ts").read_text(encoding="utf-8")
     assert ("import type { TenantType } from '../domain/tenant_type.js';"
             in protocol)
-    assert "data: TenantType;" in protocol
+    assert "tenant_type: TenantType | null;" in protocol
+    assert "tenant_type: TenantType;" in protocol
     assert "types: TenantType[];" in protocol
     assert "type: string;" in protocol
-    assert 'get_tenant_types_request: "iam.v1.tenant_types.list",' in protocol
+    assert 'list_tenant_types_request: "iam.v1.tenant_types.list",' in protocol
 
 
 @pytest.mark.parametrize("cpp_type, expected", [
@@ -352,3 +470,70 @@ def test_declared_messages_and_the_paste_point_are_mutually_exclusive(tmp_path):
 
     with pytest.raises(ValueError, match="Messages section"):
         org_document_to_model(parse_org(text))
+
+
+# The cases above read a hand-built entity dict. Such a dict is shaped the way
+# the code expects rather than the way the loader produces a model, so four
+# defects reached the real models before any of them showed here. These cases
+# run the derivation over the committed models, which is what catches them.
+def test_a_real_model_derives_named_and_typed_members():
+    from codegen.core import load_model
+
+    entity = load_model(TENANT)["domain_entity"]
+    messages = _by_name(entity_protocol_messages(entity))
+
+    # An enriched * Columns entry is named ``name``, not ``column``. Reading
+    # only one spelling rendered members with no name at all.
+    for message in messages.values():
+        assert all(f["name"] for f in message["fields"]), message["name"]
+
+    # A key column's type is its own ``cpp_type``, not an ``is_uuid`` flag.
+    key = {f["name"]: f for f in messages["tenant_key"]["fields"]}
+    assert key["id"]["cpp_type"] == "boost::uuids::uuid"
+    assert key["id"]["ts_type"] == "string"
+
+
+def test_a_real_model_states_its_key_in_the_write_record():
+    """The loader partitions the primary key and the natural keys out of
+    ``columns``, so a write record built from ``columns`` alone left a create
+    unable to say what it creates."""
+    from codegen.core import load_model
+    from codegen.org_loader import _column_name
+
+    entity = load_model(TENANT)["domain_entity"]
+    assert entity["columns"], "the fixture is only meaningful on a real model"
+    assert "id" not in [_column_name(c) for c in entity["columns"]]
+    assert "code" in [_column_name(c) for c in entity["natural_keys"]]
+
+    write = [f["name"]
+             for f in _by_name(entity_protocol_messages(entity))["tenant_write"]
+             ["fields"]]
+    assert write[:2] == ["id", "code"]
+    # Tenancy and version are still derived, not sent.
+    assert "tenant_id" not in write
+    assert "version" not in write
+
+
+def test_a_junction_keeps_the_key_column_named_like_provenance():
+    """An account_party's party_id is half its key, not the acting party.
+
+    The server-owned set is stated by name, so it stripped the column that
+    says which party the link names, and the write could not say what it
+    linked.
+    """
+    from codegen.org_loader import (
+        _column_name,
+        junction_protocol_messages,
+        load_org_junction_model,
+    )
+
+    junction = load_org_junction_model(ACCOUNT_PARTY)["junction"]
+    assert junction["left"]["column"] == "account_id"
+    assert junction["right"]["column"] == "party_id"
+    assert _column_name(junction["right"]) == "party_id"
+
+    messages = _by_name(junction_protocol_messages(junction))
+    assert [f["name"] for f in messages["account_party_key"]["fields"]] == [
+        "account_id", "party_id"]
+    assert [f["name"] for f in messages["account_party_write"]["fields"]] == [
+        "account_id", "party_id"]

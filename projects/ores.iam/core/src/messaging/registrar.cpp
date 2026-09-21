@@ -18,7 +18,9 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
+#include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -26,6 +28,8 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.iam.core/messaging/session_registrar.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -34,18 +38,23 @@
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/messaging/account_contact_information_registrar.hpp"
-#include "ores.iam.core/messaging/account_handler.hpp"
+#include "ores.iam.core/messaging/account_operations_handler.hpp"
+#include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.iam.core/messaging/reset_handler.hpp"
-#include "ores.iam.core/messaging/role_handler.hpp"
-#include "ores.iam.core/messaging/session_handler.hpp"
-#include "ores.iam.core/messaging/tenant_handler.hpp"
+#include "ores.iam.core/messaging/authorization_handler.hpp"
+#include "ores.iam.core/messaging/role_registrar.hpp"
+#include "ores.iam.core/messaging/account_type_registrar.hpp"
+#include "ores.iam.core/messaging/login_info_registrar.hpp"
+#include "ores.iam.core/messaging/permission_registrar.hpp"
+#include "ores.iam.core/messaging/session_operations_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
-#include "ores.iam.core/messaging/tenant_status_handler.hpp"
-#include "ores.iam.core/messaging/tenant_type_handler.hpp"
+#include "ores.iam.core/messaging/tenant_registrar.hpp"
+#include "ores.iam.core/messaging/tenant_status_registrar.hpp"
+#include "ores.iam.core/messaging/tenant_type_registrar.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/cache/party_cache_registrar.hpp"
@@ -137,12 +146,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             bh->provision_tenant(std::move(msg));
         }));
 
-    // --- Accounts ---
-    auto acth = std::make_shared<account_handler>(nats, ctx, signer, pc);
-    subs.push_back(nats.queue_subscribe(
-        get_accounts_request_typed::nats_subject, qg, [acth](ores::nats::message msg) {
-            acth->list(std::move(msg));
-        }));
+    // --- Accounts: the derived reads ---
+    for (auto& sub : register_account_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // --- Accounts: the operations a table's columns cannot state ---
+    auto acth = std::make_shared<account_operations_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         save_account_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->save(std::move(msg));
@@ -158,10 +167,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         unlock_account_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->unlock(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        list_login_info_request::nats_subject, qg, [acth](ores::nats::message msg) {
-            acth->login_info(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         reset_password_request::nats_subject, qg, [acth](ores::nats::message msg) {
@@ -197,42 +202,52 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Account parties ---
+    // The associations are stored in a junction the codegen owns, but their
+    // messaging layer is hand-written, so their subjects are wired here. One
+    // subscription per canonical operation, in the order the protocol states
+    // them.
     auto aph = std::make_shared<account_party_handler>(nats, ctx, signer);
     subs.push_back(nats.queue_subscribe(
-        get_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->list(std::move(msg));
+        list_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->list_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_account_parties_by_account_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->by_account(std::move(msg));
+        list_by_account_id_account_parties_request::nats_subject,
+        qg,
+        [aph](ores::nats::message msg) {
+            aph->list_by_account_id_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        save_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->save(std::move(msg));
+        get_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->get_account_party(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->get_many_account_parties(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->put_account_party(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->put_many_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         delete_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->remove(std::move(msg));
+            aph->delete_account_party(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        replace_account_parties_by_account_request::nats_subject,
-        qg,
-        [aph](ores::nats::message msg) { aph->replace_by_account(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        count_account_parties_by_account_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->count_by_account(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        count_account_parties_by_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->count_by_party(std::move(msg));
+        delete_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->delete_many_account_parties(std::move(msg));
         }));
 
-    // --- Sessions ---
-    auto sh = std::make_shared<session_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        list_sessions_request::nats_subject, qg, [sh](ores::nats::message msg) {
-            sh->list(std::move(msg));
-        }));
+    // --- Sessions: the derived CRUD protocol ---
+    for (auto& sub : register_session_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // --- Sessions: the operations a session's CRUD verbs cannot state ---
+    auto sh = std::make_shared<session_operations_handler>(nats, ctx, signer);
     subs.push_back(nats.queue_subscribe(
         get_active_sessions_request::nats_subject, qg, [sh](ores::nats::message msg) {
             sh->active(std::move(msg));
@@ -242,16 +257,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             sh->samples(std::move(msg));
         }));
 
-    // --- Roles ---
-    auto rh = std::make_shared<role_handler>(nats, ctx, signer);
-    subs.push_back(
-        nats.queue_subscribe(list_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
-            rh->list(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(get_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
-            rh->get(std::move(msg));
-        }));
+    // --- Roles: the derived CRUD protocol ---
+    for (auto& sub : register_role_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // --- Authorization: the operations a role's CRUD verbs cannot state ---
+    auto rh = std::make_shared<authorization_handler>(nats, ctx, signer);
     subs.push_back(
         nats.queue_subscribe(assign_role_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->assign(std::move(msg));
@@ -263,6 +274,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_account_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->by_account(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_account_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->account_permissions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
@@ -286,25 +301,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         signer, [pc](const std::string& tenant_id, const boost::uuids::uuid& party_id) {
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
-    auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
+    // --- Tenant provisioning ---
+    // The provisioning workflow is hand-written, so its two commands are
+    // wired here beside the handler that serves them.
     auto tph =
         std::make_shared<tenant_provisioning_handler>(nats, ctx, signer, std::move(impersonation));
-    subs.push_back(
-        nats.queue_subscribe(get_tenants_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->list(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(save_tenant_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_history_request::nats_subject, qg, [th](ores::nats::message msg) {
-            th->history(std::move(msg));
-        }));
     subs.push_back(nats.queue_subscribe(
         complete_tenant_provisioning_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->complete_provisioning(std::move(msg));
@@ -314,43 +315,27 @@ registrar::register_handlers(ores::nats::service::client& nats,
             tph->provision_acme(std::move(msg));
         }));
 
-    // --- Tenant statuses ---
-    auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_statuses_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_tenant_status_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_status_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_status_history_request::nats_subject, qg, [tsh](ores::nats::message msg) {
-            tsh->history(std::move(msg));
-        }));
+    // --- Tenants, tenant statuses and tenant types ---
+    // The generated registrars own these subjects, so the component registrar
+    // asks each of them for its subscriptions rather than naming the subjects
+    // again here. A subject added to the protocol is then wired by the same
+    // change that declares it.
+    for (auto& sub : register_tenant_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_tenant_status_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_tenant_type_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
 
-    // --- Tenant types ---
-    auto tth = std::make_shared<tenant_type_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_types_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_tenant_type_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenant_type_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->remove(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_tenant_type_history_request::nats_subject, qg, [tth](ores::nats::message msg) {
-            tth->history(std::move(msg));
-        }));
+    // The rest of the derived resource protocols. Each entity already had a
+    // generated header, service and registrar; only the wiring was missing, so
+    // the subject had no handler and the shell reached nothing.
+    for (auto& sub : register_account_type_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_login_info_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_permission_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
 
     // --- System reset ---
     auto rsh = std::make_shared<reset_handler>(nats, ctx, signer);
@@ -404,9 +389,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // --- Publish-from-DQ workflow step handlers ---
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        // The subjects are the protocol's own. The DQ artefact-type rows that
+        // publish onto them carry the same strings in SQL, so a subscription
+        // that falls behind the model is a compile-time name, not a literal a
+        // reviewer has to compare against a table.
         static constexpr std::array publish_subjects{
-            "iam.v1.accounts.publish-from-dq",
-            "iam.v1.account-contact-informations.publish-from-dq",
+            publish_accounts_from_dq_request::nats_subject,
+            publish_account_contact_informations_from_dq_request::nats_subject,
         };
         for (const auto subject : publish_subjects) {
             subs.push_back(nats.queue_subscribe(

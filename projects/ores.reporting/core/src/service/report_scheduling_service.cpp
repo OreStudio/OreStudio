@@ -267,35 +267,35 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     constexpr std::uint32_t page_size = 100;
     try {
         std::uint32_t offset = 0;
-        int total_available = 0;
+        std::uint64_t total_available = 0;
         while (true) {
-            ores::iam::messaging::get_tenants_request tenant_req;
+            ores::iam::messaging::list_tenants_request tenant_req;
             tenant_req.offset = offset;
             tenant_req.limit = page_size;
 
             const auto reply_msg = svc_nats_.authenticated_request(
-                ores::iam::messaging::get_tenants_request::nats_subject, codec.encode(tenant_req));
+                ores::iam::messaging::list_tenants_request::nats_subject,
+                codec.encode(tenant_req));
 
-            auto resp = codec.decode<ores::iam::messaging::get_tenants_response>(reply_msg.data);
+            auto resp = codec.decode<ores::iam::messaging::list_tenants_response>(reply_msg.data);
             if (!resp) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to parse tenant list response; aborting reconciliation.";
                 co_return;
             }
-            if (!resp->success) {
-                BOOST_LOG_SEV(lg(), error) << "IAM failed to list tenants: " << resp->message
+            if (resp->result.outcome != ores::utility::domain::outcome::ok) {
+                BOOST_LOG_SEV(lg(), error) << "IAM failed to list tenants: " << resp->result.message
                                            << "; aborting reconciliation.";
                 co_return;
             }
 
-            total_available = resp->total_available_count;
+            total_available = resp->total;
             auto& page = resp->tenants;
             for (auto& t : page)
                 tenants.push_back(std::move(t));
 
             offset += static_cast<std::uint32_t>(page.size());
-            const auto received_all =
-                page.empty() || offset >= static_cast<std::uint32_t>(total_available);
+            const auto received_all = page.empty() || offset >= total_available;
             if (received_all)
                 break;
         }

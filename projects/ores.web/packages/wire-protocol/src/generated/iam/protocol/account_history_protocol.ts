@@ -70,3 +70,11 @@ export interface GetAccountHistoryResponse {
 export const subjects = {
     get_account_history_request: "iam.v1.accounts.history",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_account_history_request: true,
+} as const;

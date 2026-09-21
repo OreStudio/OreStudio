@@ -7,7 +7,7 @@
 #+description: Interactive REPL for connecting to ORE Studio via NATS — currency queries, account management, and auto-login.
 #+type: ores.codegen.component
 #+component_kind: composite
-#+parts: api trading application modeling
+#+parts: api trading iam application modeling
 #+level: cross
 #+filetags: :shell:repl:tool:component:
 #+created: 2026-05-20

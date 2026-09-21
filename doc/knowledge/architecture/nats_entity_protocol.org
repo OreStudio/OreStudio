@@ -37,7 +37,7 @@ Four things are outside it and keep their own homes:
 
 - *The encoding.* Whether the payload is JSON or MessagePack is a
   process-wide choice made once at startup, not a per-message negotiation. See
-  [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]].
+  [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]].
 - *The transport, certificates and deployment.* Those are operational
   concerns and are not part of a message's contract.
 - *Which components exist and which subjects they own.* That is the namespace
@@ -861,7 +861,7 @@ a per-check opinion.
 
 * See also
 
-- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]] — the envelope and the payload encoding this
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the envelope and the payload encoding this
   specification assumes.
 - [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — which component owns which
   namespace.

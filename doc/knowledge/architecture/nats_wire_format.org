@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8883F219-5D1F-4C29-B3F9-47D1622C9248
 :END:
-#+title: NATS wire format: payload, envelope, and multi-protocol support
+#+title: NATS Wire Format
 #+description: Explains the NATS message envelope (headers, subject, correlation) versus the encoded payload body, and how wire_codec makes the payload's protocol (JSON or MessagePack) a single process-wide, decided-once-at-startup choice -- including which fields are the wire encoding versus embedded/persisted JSON strings that stay JSON regardless of wire_format.
 #+type: knowledge
 #+level: cross

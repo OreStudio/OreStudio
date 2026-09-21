@@ -28,9 +28,9 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | The protocol conversion is proved end to end: the database rebuilds from the create scripts, =ores.iam.core.tests= passes 96 test cases and 224 assertions including all five eventing integration tests, and every gate passes. The role duplication the acceptance criteria name is resolved -- no IAM subject is declared by two protocols, and the derived role CRUD is served by the code that owns it instead of by a hand-written handler that shadowed it. Two entities still own their protocol through an operation model and so have no derived CRUD to generate a shell unit from: =account= and =session=. The shell facet also still speaks the superseded =list=/=save=/=delete=/=history= verbs, so it cannot be enabled on anything yet. |
+| Now          | The pilot is complete for IAM and every gate passes: 21 protocol headers each with a TypeScript twin; 19 generated shell units covering every derived verb of every IAM entity, junction included; the database rebuilds from the create scripts; 523 codegen tests pass; and the component-drift, model-drift, twin-coverage, handler-permission and populate-reference checks are clean. Every raw IAM subject outside a protocol header now references a generated constant except one in =ores.nats=, where the constant cannot be reached without inverting the layering. The live pass that proved the write lifecycle predates this round, so the junction unit and the account-permissions handler are proved by the build and the codegen tests rather than over the wire. |
 | Waiting on   | Nothing.                               |
-| Next         | Settled 2026-09-21. (1) Teach =ores.cpp.shell-command= to render an =operation= model, so the shell can address declared operations and not only a derived CRUD set. This depends on nothing below it: a declared model already carries the subjects and field types the unit needs, so it can go first and it is the direct answer to the shell work. (2) Make =account= and =session= regular entities: stop their operation models owning the protocol, let the canonical CRUD derive, and re-enable the generated service, handler and registrar. Their genuine workflow operations stay in an operation model with a hand-written handler beside it, as the authorization split already does. This is needed where a verb is wrong, not to unlock shell commands. (3) Convert the facet to the canonical protocol and every verb. (4) Scaffold =ores.shell.iam=, enable the facet on every IAM model, generate, and wire the aggregator. (5) Prove entity and verb coverage and exercise every command against the live service. |
+| Next         | Run the live pass again over the new surface -- the nine =account_party= commands and =accounts permissions= -- and then split delivery: PR 1 is this conversion, PR 2 is exercising all IAM functionality against the running fleet. The aggregate-constants backlog story ([[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject constants per component]]) is the only protocol gap left in IAM. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -1023,9 +1023,13 @@ account-scoped spelling was standing in for.
 **The junction is the one entity the shell facet cannot reach.** Measured
 2026-09-21. =account_party= derives eight subjects -- list, get, get_many, put,
 put_many, delete, delete_many and list_by_account_id -- and the hand-written
-=account_parties_commands= offers *one command*: =list=. The other seven verbs
-have no shell surface at all, so the criterion that every IAM entity's verbs are
-exercised from the shell is unmet for this one entity and met for the other ten.
+=account_parties_commands= offers *two commands*: =list=, and =add=, which
+builds a =put_many_account_parties_request= and so does drive the canonical
+verb. Six subjects have no shell surface: =get=, =get_many=, =put=, =delete=,
+=delete_many= and =list_by_account_id=. An earlier count in this record said
+one command and seven verbs; that was a misread of the file, corrected here.
+The criterion that every IAM entity's verbs are exercised from the shell is
+unmet for this one entity and met for the other ten.
 
 The facet does not reach it because the shell archetypes serve =domain_entity=
 alone, and a junction is a different model type. Making them serve it is not the
@@ -1066,6 +1070,103 @@ carries the change, and its version says created or updated. Announcing both
 would report one change twice. An operation model's own protocol takes its
 events with it, because the derived event type the events are stated in does
 not exist for an operation's spelling.
+
+**The junction reaches the shell, and the audit that forced it.** Done
+2026-09-21. =account_party= now renders a generated unit of *nine commands*:
+list, get, get-many, add, set, put-many, delete, delete-many and
+by-account-id. The hand-written =account_parties_commands= is gone; the only
+loss is =add='s party lookup, which sourced the tenant when an administrator
+associates another party's account, and =put-many= states the same verb without
+it. =delete= and =delete-many= are the material gain: nothing in the shell could
+remove an association before.
+
+The fix is the one this record already described, and it was smaller than it
+looked. =junction_protocol_messages= built the entity shape locally and then
+threw it away, so lifting it into =junction_entity_shape(junction)= and calling
+it from both derivations is the whole codegen change, plus three presentation
+keys (=subcomponent=, =entity_singular_upper=, =entity_plural_words=) and
+=junction= on the facet's and the three archetypes' =#+model_types:=. The shape
+is published under =domain_entity= for the shell templates only, because the
+protocol template reads both wrappers and would otherwise render its header
+twice.
+
+Two things the plan did not anticipate. A junction states its C++
+sub-component in the *C++ drawer*, not in the frontmatter a domain entity uses,
+so the include path has to read =cpp.subcomponent=. And the model needs
+=:ores.cpp.shell-command.enabled: true= explicitly: the facet is
+=#+default: disabled=, so without it the run logs "nothing to generate ...
+model type 'junction'" and reads as a gate failure when it is a missing opt-in.
+
+**Every raw IAM subject, audited against every generated constant.** The
+question that started this was whether the message set is generated; it is, and
+the escape-hatch messages are not, so a literal is where the wiring can silently
+disagree. An audit of all 35 raw =iam.v1.*= literals outside the protocol
+headers found four groups:
+
+| Group                                                    | Sites | What it is                                                        |
+|----------------------------------------------------------+-------+-------------------------------------------------------------------|
+| A constant already spells the value                      |    23 | Mechanical: the literal duplicates a generated constant           |
+| A message declared with no subject, and a caller typing one |   2 | =get_account_permissions_request=, =get_session_statistics_request= |
+| The server subscribes on one spelling, the shell sends another |  4 | =iam.v1.roles.by-account= served, =iam.v1.roles.for-account= sent  |
+| Declared only in SQL DQ metadata                         |     2 | The =publish-from-dq= pair                                        |
+
+The third group is the one that mattered. Converting the authorization messages
+to the canonical protocol renamed the subject the server subscribes to, and the
+hand-written shell was not moved with it: =accounts_commands= and
+=rbac_commands= published to =iam.v1.roles.for-account= and
+=iam.v1.permissions.for-account=, which no model declares and no service
+answers. Those are four call sites that could never succeed -- the same defect
+class as =iam.v1.accounts.list-logins=, found the same way, by comparing every
+literal against every generated constant rather than trusting the build.
+
+**The two subjectless messages, and what closing them cost.** Both were declared
+in an operation model and neither was ever served over NATS: the shell typed an
+address for each, and the HTTP layer worked around them, one by calling the
+service in process and one by refusing the request as not modelled.
+
+=account permissions= is now a real operation.
+=get_account_permissions_request= states
+=:subject: iam.v1.roles.permissions-by-account=, so the constant exists;
+=authorization_handler= gained an =account_permissions= method wrapping the
+=authorization_service::get_effective_permissions= that already existed; and the
+registrar subscribes.
+
+=session statistics= is dropped, which took more than the "its shell command
+goes" the decision named. A subjectless message produces no shell command by
+construction, so leaving the pair declared and subjectless leaves exactly the
+hole this exercise is about, while giving it a subject regenerates the command.
+Removing the declaration therefore took the =session_statistics= payload, its
+two =domain_session_tests= cases, and the HTTP route that only ever answered
+=501 not modelled=. The SQL continuous aggregates that fed it are a data asset
+and stay. The HTTP surface loses an endpoint; recorded here so it is not
+discovered as a surprise.
+
+**The publish triggers, and why they were unreachable until this branch.** The
+two =publish-from-dq= subjects were declared nowhere in C++: the DQ
+artefact-type rows in =dq_artefact_types_populate.sql= are their only source,
+and =registrar.cpp= carried the same strings as literals -- the "registered in
+SQL, never subscribed" failure the backlog story [[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject
+constants per component]] was filed for. They are declared now, in
+=account_messages= and =account_contact_information=, as messages with a subject
+and no response, which is what a fire-and-forget trigger is; the registrar
+subscribes on the generated constants. The feature that makes this possible is
+PR #2115, already merged: a domain entity declares extra protocol messages
+beside its derived CRUD set. The separator is left as it is on the wire, because
+the hyphen form is the convention across every component's publish-from-dq family
+(=marketdata.v1.market-data-observations.publish-from-dq=,
+=refdata.v1.crm-topology-bundles.publish-from-dq=), so changing IAM's alone
+would break a system-wide convention rather than fix a slip. Whether that family
+should use the protocol's underscore form is a question for the specification.
+
+**One literal is left, and it cannot be fixed from here.**
+=ores.nats/src/service/jwks.cpp= requests =iam.v1.auth.public-key= as a literal.
+=ores.nats= links =ores.logging= and =ores.utility= alone, so referencing the
+generated constant would invert the layering: transport infrastructure would
+depend on a domain component's API. The subject belongs to IAM and the code that
+sends it cannot see IAM's headers, which is the case the aggregate-constants
+story has to solve with a neutral owner rather than a per-component header. The
+=iam.v1.accounts.list= example in =ores.nats/service/client.hpp='s
+=make_subject= doc comment is illustrative and stays.
 
 * PRs
 

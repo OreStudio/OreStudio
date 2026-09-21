@@ -28,9 +28,9 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | The conversion is proved end to end. The database rebuilds from the create scripts in 46 seconds and =ores.iam.core.tests= passes: 96 test cases, 224 assertions, including all five eventing integration tests, which observe the events the regenerated trigger publishes. The version sentinel is gone from the store, the account_party junction converted, and the events speak =iam.v1.<plural>_events.<action>=. Rebuilding the database exposed two defects in the converted SQL and both are fixed. Every IAM entity speaks the canonical protocol, the whole tree compiles, and every gate passes: component drift, twin coverage, handler permissions, model drift, the four doc checks, and 442 codegen tests. The four TypeScript workspaces typecheck and =compass lint= is clean. |
+| Now          | The protocol conversion is proved end to end: the database rebuilds from the create scripts, =ores.iam.core.tests= passes 96 test cases and 224 assertions including all five eventing integration tests, and every gate passes. The role duplication the acceptance criteria name is resolved -- no IAM subject is declared by two protocols, and the derived role CRUD is served by the code that owns it instead of by a hand-written handler that shadowed it. Two entities still own their protocol through an operation model and so have no derived CRUD to generate a shell unit from: =account= and =session=. The shell facet also still speaks the superseded =list=/=save=/=delete=/=history= verbs, so it cannot be enabled on anything yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 4: enable =ores.cpp.shell-command= on the IAM models, so the generated command units and their tests exercise every verb. Then step 5: the UI, where the BFF route descriptor and the web screens consume the canonical messages. |
+| Next         | Settled 2026-09-21, in this order. (1) Make =account= and =session= regular entities: stop their operation models owning the protocol, let the canonical CRUD derive, and re-enable the generated service, handler and registrar. Their genuine workflow operations stay in an operation model with a hand-written handler beside it, as the authorization split already does. (2) Teach =ores.cpp.shell-command= to render an =operation= model, so the shell can address declared operations and not only a derived CRUD set. (3) Convert the facet to the canonical protocol and every verb. (4) Scaffold =ores.shell.iam=, enable the facet on every IAM model, generate, and wire the aggregator. (5) Prove entity and verb coverage and exercise every command against the live service. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -494,6 +494,38 @@ the five earlier failures was exactly as diagnosed: those tests exercise the
 *deployed* trigger, and the regenerated trigger had not been applied, so the
 store still notified the old payload shape, which no longer parses as an event
 notification. Nothing was wrong with the templates' event contract.
+
+**The role duplication was three duplications and a shadowed handler.** An
+operation model and an entity model both declared =iam.v1.roles.list= and
+=iam.v1.roles.get=, and the authorization model also declared a permission list
+the permission entity derives. Two headers in the same namespace declared the
+same four struct names, so any translation unit that included both would not
+compile. The derived role protocol was worse off than duplicated: the role
+entity disabled its generated handler and registrar, and the hand-written
+handler that took their place included the *authorization* header and declared a
+class of the same name at the same path. The derived messages were therefore
+generated, registered nowhere, and served by nobody -- the state the acceptance
+criteria call out. The authorization model now keeps only what a role's CRUD
+verbs cannot state, the hand-written handler became =authorization_handler= and
+lost the two reads, and the generated handler and registrar serve role CRUD
+again. =uniq -d= over every subject in every IAM protocol header is now empty.
+
+**Two entities cannot derive a CRUD protocol, and one of them should not.**
+=account= and =session= own their protocol through an operation model, so no
+shell unit can be derived for them. They are not alike. A session's list request
+is a scoped read in the old shape, and its generated service already implements
+save and delete, so the derivation costs nothing and gains a =list_by_account_id=
+read. An account's writes are workflows -- =create_account=, =login=,
+=lock_account=, =change_password=, =set_my_default_party= -- and its entity
+service is switched off entirely. Forcing the generic =put=/=delete= shape onto
+that would push a password and a TOTP secret through a write record, and would
+offer the shell =add= and =delete= for accounts where the product has distinct
+operations. Settled 2026-09-21: account becomes a regular entity *and* keeps its
+workflow operations, so the shell gains both a CRUD unit and the workflow units;
+and the shell facet learns to render an =operation= model, which is what makes
+the second half possible. That facet change also covers =login=, =signup=,
+=bootstrap=, =reset=, =provisioning=, =authorization=, =session= and
+=account_history=, none of which are entities at all.
 
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it

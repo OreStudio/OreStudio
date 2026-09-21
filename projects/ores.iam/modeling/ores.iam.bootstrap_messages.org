@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 4B98E2D0-8FE3-4321-8CFD-90A4C13422EA
 :END:
 #+title: ores.iam.bootstrap_messages
@@ -26,6 +27,7 @@ The bootstrap protocol messages.
 ** bootstrap_status_request
 :PROPERTIES:
 :subject: iam.v1.bootstrap.status
+:auth: none
 :response: bootstrap_status_response
 :END:
 
@@ -45,6 +47,7 @@ The bootstrap protocol messages.
 ** create_initial_admin_request
 :PROPERTIES:
 :subject: iam.v1.bootstrap.create-admin
+:auth: none
 :response: create_initial_admin_response
 :END:
 
@@ -94,6 +97,7 @@ The bootstrap protocol messages.
 ** provision_tenant_request
 :PROPERTIES:
 :subject: iam.v1.bootstrap.provision-tenant
+:auth: none
 :response: provision_tenant_response
 :END:
 

@@ -41,6 +41,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_operations_commands.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -124,11 +125,13 @@ void {{entity_singular}}_operations_commands::register_commands(cli::Menu& root_
 void {{entity_singular}}_operations_commands::process_{{identifier}}(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating {{command}} request.";
+{{^public}}
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to run {{command}}." << std::endl;
         return;
     }
+{{/public}}
 
     const std::vector<flag_spec> specs{
 {{#flags}}
@@ -196,8 +199,15 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
         return;
     }
 
+{{#public}}
+    // The caller has no session yet, so the command presents no token.
+    auto result = do_request<{{namespace}}::{{response_type}}>(
+        out, session, std::string(req.nats_subject), req);
+{{/public}}
+{{^public}}
     auto result = do_auth_request<{{namespace}}::{{response_type}}>(
         out, session, std::string(req.nats_subject), req);
+{{/public}}
     if (!result)
         return;
 

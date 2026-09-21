@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 13C6E76E-B616-49D5-ABC7-A8A70C7ADA61
 :END:
 #+title: ores.iam.account_history_messages

@@ -76,6 +76,7 @@ TEST_CASE("{{entity_singular}}_operations_registers_every_declared_command", tag
     CHECK(true);
 }
 {{#shell_commands}}
+{{^public}}
 
 TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
@@ -91,6 +92,7 @@ TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_requires_a_sess
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
+{{/public}}
 {{#positional_count}}
 
 TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_reports_the_expected_count",
@@ -129,6 +131,8 @@ TEST_CASE("{{entity_singular}}_operations_process_{{identifier}}_reaches_the_tra
         out, session, tokens({{positional_count}}));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
     CHECK(command_feedback::failed());
 }

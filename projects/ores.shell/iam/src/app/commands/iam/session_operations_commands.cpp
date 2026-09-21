@@ -1,0 +1,155 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_operation_implementation.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.shell/app/commands/iam/session_operations_commands.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/command_token.hpp"
+#include "ores.shell/app/request_helpers.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <cli/cli.h>
+#include <cstddef>
+#include <functional>
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace ores::shell::app::commands {
+
+using namespace logging;
+using ores::nats::service::nats_client;
+
+void session_operations_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("session");
+
+    menu->Insert(
+        "list-sessions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_sessions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-sessions <account_id> [--limit <v>] [--offset <v>]");
+
+    menu->Insert(
+        "get-active-sessions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_active_sessions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-active-sessions");
+
+    root_menu.Insert(std::move(menu));
+}
+
+void session_operations_commands::process_list_sessions(std::ostream& out,
+                                                        nats_client& session,
+                                                        const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-sessions request.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to run list-sessions." << std::endl;
+        return;
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "offset", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    ores::iam::messaging::list_sessions_request req;
+    std::size_t next = 0;
+    try {
+        req.account_id = parsed->positionals[next++];
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<int>(raw_limit, "limit");
+        }
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<int>(raw_offset, "offset");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<ores::iam::messaging::list_sessions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void session_operations_commands::process_get_active_sessions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-active-sessions request.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to run get-active-sessions." << std::endl;
+        return;
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    ores::iam::messaging::get_active_sessions_request req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<ores::iam::messaging::get_active_sessions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+}

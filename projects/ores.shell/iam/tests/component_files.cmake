@@ -17,6 +17,15 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "account_history_operations_commands_tests.cpp"
+    "account_operations_commands_tests.cpp"
+    "authorization_operations_commands_tests.cpp"
+    "bootstrap_operations_commands_tests.cpp"
+    "login_operations_commands_tests.cpp"
     "main.cpp"
+    "reset_operations_commands_tests.cpp"
+    "session_operations_commands_tests.cpp"
     "session_samples_operations_commands_tests.cpp"
+    "signup_operations_commands_tests.cpp"
+    "tenant_provisioning_operations_commands_tests.cpp"
 )

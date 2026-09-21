@@ -160,9 +160,36 @@ class TestHowFieldsArrive:
         assert commands[0]["unsupported"] == []
 
 
+class TestAuthentication:
+    """An operation that establishes the session cannot present one."""
+
+    def test_a_message_without_the_property_requires_a_session(self):
+        commands = shell_command_projection([
+            _message("logout_request", "iam.v1.auth.logout", "logout_response"),
+        ])
+        assert commands[0]["public"] is False
+
+    def test_the_none_value_marks_a_pre_authentication_command(self):
+        message = _message("login_request", "iam.v1.auth.login", "login_response")
+        message["auth"] = "none"
+        commands = shell_command_projection([message])
+        assert commands[0]["public"] is True
+
+    def test_the_value_is_read_whatever_its_case(self):
+        message = _message("login_request", "iam.v1.auth.login", "login_response")
+        message["auth"] = "NONE"
+        assert shell_command_projection([message])[0]["public"] is True
+
+    def test_another_value_is_refused_rather_than_read_as_authenticated(self):
+        # A typo must not quietly produce a command that presents no token.
+        message = _message("login_request", "iam.v1.auth.login", "login_response")
+        message["auth"] = "optional"
+        with pytest.raises(ValueError, match="unknown :auth:"):
+            shell_command_projection([message])
+
+
 class TestTheRefusal:
     """A field no token can fill fails the model rather than vanishing."""
-
     def _command_with(self, cpp_type):
         return shell_command_projection([
             _message("op_request", "iam.v1.op", "op_response",
@@ -235,3 +262,22 @@ class TestTheRealModels:
         # account declares a vector and a defaulted int, so both are.
         account = self._operation("ores.iam.account_messages.org")
         assert account["shell_has_list"] is True
+
+    def test_the_pre_authentication_operations_are_exactly_the_session_establishing_ones(self):
+        # The shell has one guard for the operations that act on a caller and
+        # none for the operations that produce the caller's session, so this
+        # set is what decides whether `login` can run at all.
+        public = set()
+        for path in sorted(IAM_MODELING.glob("*.org")):
+            try:
+                operation = load_org_operation_model(path)["operation"]
+            except ValueError:
+                continue
+            public.update(
+                command["command"] for command in operation["shell_commands"]
+                if command["public"]
+            )
+        assert public == {
+            "login", "service-login", "signup",
+            "bootstrap-status", "create-initial-admin", "provision-tenant",
+        }

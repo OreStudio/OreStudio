@@ -18,7 +18,16 @@
  *
  */
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
+#include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/login_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/account_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/account_history_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/session_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/reset_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -30,7 +39,16 @@ void iam_commands::register_commands(cli::Menu& root_menu,
                                      pagination_context& /*pagination*/) {
     BOOST_LOG_SEV(lg(), debug) << "Registering IAM command surface.";
 
+    bootstrap_operations_commands::register_commands(root_menu, session);
+    login_operations_commands::register_commands(root_menu, session);
+    signup_operations_commands::register_commands(root_menu, session);
+    account_operations_commands::register_commands(root_menu, session);
+    account_history_operations_commands::register_commands(root_menu, session);
+    authorization_operations_commands::register_commands(root_menu, session);
+    session_operations_commands::register_commands(root_menu, session);
     session_samples_operations_commands::register_commands(root_menu, session);
+    reset_operations_commands::register_commands(root_menu, session);
+    tenant_provisioning_operations_commands::register_commands(root_menu, session);
 }
 
 }

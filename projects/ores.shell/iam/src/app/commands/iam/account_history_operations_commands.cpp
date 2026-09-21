@@ -22,8 +22,8 @@
  * Template: cpp_shell_operation_implementation.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
-#include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.shell/app/commands/iam/account_history_operations_commands.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
@@ -44,26 +44,26 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
-void session_samples_operations_commands::register_commands(cli::Menu& root_menu,
+void account_history_operations_commands::register_commands(cli::Menu& root_menu,
                                                             nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("session_samples");
+    auto menu = std::make_unique<cli::Menu>("account_history");
 
     menu->Insert(
-        "get-session-samples",
+        "get-account-history",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_session_samples(std::ref(out), std::ref(session), std::move(args));
+            process_get_account_history(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-session-samples <session_id>");
+        "get-account-history <username>");
 
     root_menu.Insert(std::move(menu));
 }
 
-void session_samples_operations_commands::process_get_session_samples(
+void account_history_operations_commands::process_get_account_history(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-session-samples request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-account-history request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-session-samples." << std::endl;
+        fail(out) << "You must be logged in to run get-account-history." << std::endl;
         return;
     }
 
@@ -81,16 +81,16 @@ void session_samples_operations_commands::process_get_session_samples(
         return;
     }
 
-    ores::iam::messaging::get_session_samples_request req;
+    ores::iam::messaging::get_account_history_request req;
     std::size_t next = 0;
     try {
-        req.session_id = parsed->positionals[next++];
+        req.username = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_session_samples_response>(
+    auto result = do_auth_request<ores::iam::messaging::get_account_history_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

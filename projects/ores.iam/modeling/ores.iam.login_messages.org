@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 72596DEE-01BE-40A5-B084-4C38DB212191
 :END:
 #+title: ores.iam.login_messages
@@ -49,6 +50,7 @@ The login protocol messages.
 ** login_request
 :PROPERTIES:
 :subject: iam.v1.auth.login
+:auth: none
 :response: login_response
 :END:
 
@@ -216,6 +218,7 @@ The login protocol messages.
 ** public_key_request
 :PROPERTIES:
 :subject: iam.v1.auth.public-key
+:auth: none
 :END:
 
 ** refresh_request
@@ -274,6 +277,7 @@ The login protocol messages.
 ** service_login_request
 :PROPERTIES:
 :subject: iam.v1.auth.service-login
+:auth: none
 :response: service_login_response
 :END:
 

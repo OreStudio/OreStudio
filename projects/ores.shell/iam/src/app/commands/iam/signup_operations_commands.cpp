@@ -22,8 +22,8 @@
  * Template: cpp_shell_operation_implementation.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
-#include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
@@ -44,28 +44,23 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
-void session_samples_operations_commands::register_commands(cli::Menu& root_menu,
-                                                            nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("session_samples");
+void signup_operations_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("signup");
 
     menu->Insert(
-        "get-session-samples",
+        "signup",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_session_samples(std::ref(out), std::ref(session), std::move(args));
+            process_signup(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-session-samples <session_id>");
+        "signup <principal> <password> <email>");
 
     root_menu.Insert(std::move(menu));
 }
 
-void session_samples_operations_commands::process_get_session_samples(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-session-samples request.";
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to run get-session-samples." << std::endl;
-        return;
-    }
+void signup_operations_commands::process_signup(std::ostream& out,
+                                                nats_client& session,
+                                                const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating signup request.";
 
     const std::vector<flag_spec> specs{};
     const auto parsed = parse_args(args, specs);
@@ -74,23 +69,26 @@ void session_samples_operations_commands::process_get_session_samples(
         return;
     }
 
-    constexpr std::size_t positional_count = 1;
+    constexpr std::size_t positional_count = 3;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
         return;
     }
 
-    ores::iam::messaging::get_session_samples_request req;
+    ores::iam::messaging::signup_request req;
     std::size_t next = 0;
     try {
-        req.session_id = parsed->positionals[next++];
+        req.principal = parsed->positionals[next++];
+        req.password = parsed->positionals[next++];
+        req.email = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<ores::iam::messaging::get_session_samples_response>(
+    // The caller has no session yet, so the command presents no token.
+    auto result = do_request<ores::iam::messaging::signup_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

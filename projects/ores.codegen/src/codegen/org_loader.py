@@ -3121,6 +3121,11 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
         # the model key takes the alias's own name.
         if "response" in props:
             entry["response_type"] = props["response"]
+        # How a caller authenticates. An operation that establishes the session
+        # cannot present one, so the model states it beside the subject rather
+        # than leaving each client to guess from the name.
+        if "auth" in props:
+            entry["auth"] = props["auth"]
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3337,6 +3342,10 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
     command regardless, so an unfillable field fails the build rather than
     disappearing from the surface; :func:`_reject_silent_shell_gap` reports it
     when the model has opted in.
+
+    ``public`` marks an operation a caller runs before it has a session --
+    logging in, signing up, reading the signing key. Such a command presents no
+    token and refuses none, because the caller has none to present.
     """
     commands: list[dict[str, Any]] = []
     for message in messages:
@@ -3344,6 +3353,13 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         response = message.get("response_type")
         if not subject or not response:
             continue
+        auth = str(message.get("auth", "")).strip().lower()
+        if auth not in ("", "none"):
+            raise ValueError(
+                f"{message['name']}: unknown :auth: {message['auth']!r}; the "
+                "only value is 'none', which marks a command that runs before "
+                "the caller has a session"
+            )
         fields = [_shell_field(field) for field in message.get("fields") or []]
         positionals = [field for field in fields if not field["is_optional"]]
         flags = [field for field in fields if field["is_optional"]]
@@ -3354,6 +3370,7 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             "request": message["name"],
             "response_type": response,
             "subject": subject,
+            "public": auth == "none",
             "positionals": positionals,
             "flags": flags,
             "positional_count": len(positionals),

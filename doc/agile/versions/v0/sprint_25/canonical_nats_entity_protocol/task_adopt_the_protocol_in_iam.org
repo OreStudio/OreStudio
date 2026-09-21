@@ -663,6 +663,35 @@ registrations goes. The hand-written =login= also does party selection after
 authenticating, which the generated one does not, so retiring it means deciding
 where that behaviour belongs.
 
+**A generated command is proved end to end, and login is a client's own.**
+Settled 2026-09-21. The collision is gone: the hand-written =bootstrap= is
+retired, because its three commands are the generated unit's, its server call
+was the same =create_initial_admin_request= and the only thing it added was a
+friendlier print. =bootstrap bootstrap-status= now runs from the REPL, over
+mTLS, into the service and back:
+
+#+begin_src text
+  {"is_in_bootstrap_mode":false,"message":""}
+#+end_src
+
+which is the first generated command proved against the real service rather than
+only shaped right.
+
+Login is not retired, and the facet is switched off for it. A login operation
+does not change the store, it changes *this client's own session*: something has
+to take the token out of the reply and hand it to the session, and
+=accounts_commands= does that, including the party selection that follows. A unit
+which sends a request and prints the reply cannot express that, and one that
+appeared to log in while leaving the session signed out would be worse than no
+command. So =login= and =logout= stay hand-written, and the reason is recorded
+rather than left as a silent collision. The shell surface is sixteen units and
+101 commands.
+
+The authenticated pass still needs a provisioned environment. The bootstrap admin
+lands in the system tenant while login resolves the tenant from the principal's
+hostname, so =account not found for username: tenant_admin= is what the service
+log says and no usable login exists yet.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

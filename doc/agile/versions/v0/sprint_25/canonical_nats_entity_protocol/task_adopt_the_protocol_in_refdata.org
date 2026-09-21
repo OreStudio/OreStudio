@@ -126,7 +126,10 @@ The shared types live in
    commands are hand-written in =ores.shell/application=, and eight subjects
    are raw literals. Refdata gains a shell adapter part like
    =projects/ores.shell/iam=, the models switch the facet on, and the
-   hand-written commands retire.
+   hand-written commands retire. The adapter part ships its
+   =ores.shell.refdata.puml= and =.png= with its =component_overview.org=,
+   because =validate_docs.sh= fails a component whose =modeling/= holds no
+   diagram -- which is the one thing the IAM pilot left behind.
 6. *The web.* The 77 protocol twins regenerate, the UI metadata and BFF route
    descriptors generate, and the hand-written =operations.ts=, the country
    pages, the component registry and the BFF change-events file follow the
@@ -154,6 +157,17 @@ The shared types live in
   allow, and DQ's populate data names them.
 
 * Notes
+
+- *The IAM pilot left =validate_docs.sh= red.* =projects/ores.shell/iam/modeling/=
+  holds a =component_overview.org= and no =.puml=, so the check reports
+  =[MISSING_PUML] ores.shell.iam= on =origin/main= before this task starts.
+  The IAM verification task ([[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]])
+  owns the fix; this task does not carry it, and its own shell adapter part
+  ships the diagram.
+- *Scale.* A dry run of =check_component_drift.py --component refdata
+  --dry-run --address ores= reports 825 changed and 65 created files, none of
+  them errors: the generation itself is already correct, and the work is the
+  models and the lockstep surfaces the plan lists.
 
 * Test Scenarios
 

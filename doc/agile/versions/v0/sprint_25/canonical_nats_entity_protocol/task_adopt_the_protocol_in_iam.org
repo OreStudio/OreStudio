@@ -727,6 +727,39 @@ handling subject 'iam.v1.account_types.list'*. Three of the eight entities the
 shell renders a unit for reached nothing at all, and the generated tests could
 not have caught it: they stop at the transport by design.
 
+**The write lifecycle works end to end, and a domain rule proved the chain.**
+Settled 2026-09-21. One entity taken through every write verb, over mTLS into the
+live service and back:
+
+| Command | Reply |
+|---------|-------|
+| =tenant_types add e2e_probe ...= | =ok=, the row at version 1 |
+| =tenant_types get e2e_probe= | =ok=, version 1 |
+| =tenant_types versions e2e_probe= | =ok=, one version |
+| =tenant_types set e2e_probe ...= | =ok=, the row at **version 2** |
+| =tenant_types versions e2e_probe= | =ok=, **two versions** |
+| =tenant_types delete e2e_probe ...= | =ok= |
+| =tenant_types list= | =ok=, empty |
+| =account_contact_informations by-account-id <uuid>= | =ok= |
+
+So a create, a compare-and-swap replace that bumped the version, the bitemporal
+history holding both, and a delete that left the table empty. The scoped read is
+the shape the projection had been dropping entirely, and it answers too.
+
+The first attempt failed, and that is the reassuring part. =add= came back
+=failed=/=internal_error= with
+
+#+begin_src text
+  Invalid change_reason_code: e2e.reason. Reason must exist in
+  ores_dq_change_reasons_tbl.
+#+end_src
+
+raised by =ores_iam_tenant_types_insert_fn=. A domain rule, enforced in the
+database, refusing a value the shell invented: the request reached the service,
+the service reached the repository, and the repository reached the trigger. Every
+layer of the chain is therefore proved by that failure, and the verbs are proved
+by the run that then used a reason the tenant actually has.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

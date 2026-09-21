@@ -13,6 +13,8 @@ nothing, or the CI gate built on it would fail on every commit.
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/scripts"))
 
@@ -128,6 +130,14 @@ class TestTheInventory:
         text = rsri.build_index()
         assert "11111111-1111-1111-1111-111111111111" in text.split("* ")[0]
         assert text.count("11111111-1111-1111-1111-111111111111") == 1
+
+    def test_a_missing_inventory_says_where_it_looked(self, tmp_path):
+        # The CI gate is this script, so a misconfigured path has to read as
+        # a sentence rather than as a traceback out of read_text.
+        _tree(tmp_path, RECIPES, INDEX)
+        rsri.INDEX.unlink()
+        with pytest.raises(SystemExit, match="no inventory at"):
+            rsri.read_index()
 
 
 class TestTheHeadings:

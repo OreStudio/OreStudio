@@ -29,29 +29,6 @@
 namespace ores::eventing::domain {
 
 /**
- * @brief What happened to the entity an event announces.
- *
- * An event reports what happened and no caller asked for it, so the last
- * segment of an event subject is an action rather than a verb.
- */
-enum class event_action { created, updated, deleted };
-
-/**
- * @brief The action's own word, which is also the last subject segment.
- */
-[[nodiscard]] constexpr std::string_view to_string(event_action action) {
-    switch (action) {
-    case event_action::created:
-        return "created";
-    case event_action::updated:
-        return "updated";
-    case event_action::deleted:
-        return "deleted";
-    }
-    return "";
-}
-
-/**
  * @brief What the store said about a change, before it is typed.
  *
  * The notification trigger publishes this on a Postgres channel as the change

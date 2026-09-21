@@ -3182,7 +3182,8 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
             if destructive not in ("true", "yes", "1"):
                 raise ValueError(
                     f"message {node.title} states :destructive: "
-                    f"{props['destructive']!r}; the only value is 'true'"
+                    f"{props['destructive']!r}; the values that mean yes are "
+                    "'true', 'yes' and '1'"
                 )
             entry["destructive"] = True
         comment = node.src_blocks.get("comment")

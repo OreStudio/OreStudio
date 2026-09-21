@@ -38,10 +38,10 @@ namespace ores::eventing::domain {
  *
  * @code
  *     template<>
- *     struct entity_event_traits<ores::iam::eventing::tenant_type_event> {
+ *     struct entity_event_traits<ores::iam::messaging::tenant_type_event> {
  *         static constexpr std::string_view subject_prefix =
  *             "iam.v1.tenant_types_events";
- *         static ores::iam::eventing::tenant_type_event
+ *         static ores::iam::messaging::tenant_type_event
  *         from_notification(const entity_event_notification& n);
  *     };
  * @endcode

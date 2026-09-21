@@ -9,27 +9,32 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-09-21
 
 Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile.
 
 Model flags consumed by this template:
 
-- =read_for_cache= (bool, Flags) — emit a =read_for_cache= handler method
-  that swaps to the request's tenant and calls the entity's existing
-  paginated =list_<entity_plural_short>= service method with an
-  unbounded limit. Requires =has_tenant_id=.
+- =read_for_cache= (bool, Flags) — emit the two includes the bulk
+  =read_for_cache= handler method used to need
+  (=ores.database/service/tenant_context.hpp= and =<limits>=). Requires
+  =has_tenant_id=.
 
-  Requires a valid signed JWT (=make_request_context=), like =list=/
-  =history=, but no specific permission check (=has_permission=) —
-  the caller (e.g. a =nats-event-cache= consumer warming its own
-  cache) legitimately reads across tenants under one service-account
-  identity, so a per-tenant permission would not model the real
-  access pattern. A caller wanting to invoke this subject must
-  therefore hold a valid service-account JWT — see the
-  =nats-event-cache.cache_header= archetype's optional
-  =token_provider= constructor parameter, which attaches one to every
-  =load()= call.
+  *The method itself is gone.* A cache is fed by events now, so the
+  handler serves the canonical verbs and nothing else, and this flag
+  emits no method — only the includes, which no generated handler uses
+  any more. Two entities still set the flag (=ores.refdata.party= and
+  =ores.refdata.currency_pair_convention=), so removing the flag and its
+  section is a change to those models and their generated headers rather
+  than a one-line deletion here.
+
+  The prose that stood here described the removed method: it swapped to
+  the request's tenant and called the entity's paginated
+  =list_<entity_plural_short>= with an unbounded limit, taking a valid
+  signed JWT (=make_request_context=) but no permission check, because a
+  =nats-event-cache= consumer warming its own cache legitimately reads
+  across tenants under one service-account identity. That is why the
+  flag exists at all; it is also why it is now vestigial.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

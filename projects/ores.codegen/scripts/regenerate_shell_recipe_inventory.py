@@ -139,10 +139,25 @@ def render_links(recipes: list[dict[str, str]],
     return "\n".join(lines)
 
 
-def build_index() -> str:
+def read_index() -> str:
+    """The inventory as it stands.
+
+    A missing index is a misconfiguration rather than a crash: the file is
+    derived from the recipes beside it, so the useful thing to say is where
+    it was looked for.
+    """
+    if not INDEX.exists():
+        raise SystemExit(
+            f"no inventory at {INDEX}\n"
+            f"  the inventory is derived from the recipes under {RECIPES_ROOT}, "
+            "so both have to exist")
+    return INDEX.read_text(encoding="utf-8")
+
+
+def build_index(by_category: dict[str, list[dict[str, str]]] | None = None) -> str:
     """The whole inventory: the file's own head, then a section per category."""
-    by_category = gather()
-    head, existing = split_index(INDEX.read_text(encoding="utf-8"))
+    by_category = gather() if by_category is None else by_category
+    head, existing = split_index(read_index())
 
     # A section is matched to a category by its heading, which heading_for()
     # derives from the key. A heading no category claims is dropped, so a
@@ -184,8 +199,10 @@ def main() -> int:
                         help="Exit non-zero if the inventory is stale.")
     args = parser.parse_args()
 
-    desired = build_index()
-    current = INDEX.read_text(encoding="utf-8")
+    by_category = gather()
+    desired = build_index(by_category)
+    current = read_index()
+    count = sum(len(recipes) for recipes in by_category.values())
     if args.check:
         if current != desired:
             print("stale shell recipe inventory:", file=sys.stderr)
@@ -197,12 +214,11 @@ def main() -> int:
         return 0
     if current == desired:
         print(f"{INDEX.relative_to(REPO_ROOT)} is up to date "
-              f"({sum(len(v) for v in gather().values())} recipes)")
+              f"({count} recipes)")
         return 0
     INDEX.write_text(desired, encoding="utf-8", newline="\n")
     print(f"wrote {INDEX.relative_to(REPO_ROOT)} "
-          f"({sum(len(v) for v in gather().values())} recipes in "
-          f"{len(gather())} categories)")
+          f"({count} recipes in {len(by_category)} categories)")
     return 0
 
 

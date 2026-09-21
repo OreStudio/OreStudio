@@ -207,6 +207,25 @@ the include guard, the includes, the =paste:= marker and the namespace. Add
 =ores.utility/domain/protocol.hpp= and =key_record_fields='s uuid header to the
 includes when the generated messages reference them.
 
+**Do this before the composite: give the shared records a TypeScript twin.**
+=org_loader._ts_type= maps scalars, containers, optionals and a component's own
+domain types. It does **not** map =ores::utility::domain::*=, so
+=ores::utility::domain::result= returns =None= and a field carrying it would
+render with no TypeScript type at all -- which the guard added in
+=test_protocol_subject_grammar.py= now fails on rather than letting through.
+
+The mechanism already exists and =hierarchy_node= uses it: the utility-domain map
+at =org_loader.py:2248= pairs a C++ type with its TypeScript name and import
+module, =("HierarchyNode", "utility/hierarchy")=, and the function at line 2404
+resolves it inside containers as well as alone. The four records need entries
+pointing at a new =utility/protocol= module, and that module has to exist
+before the entries do, or the generated TypeScript imports something that is
+not there.
+
+=std::optional=, =std::vector=, the fixed-width integers and =boost::uuids::uuid=
+all map correctly already -- probed and confirmed -- so this is the only
+projection gap on the codegen path.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

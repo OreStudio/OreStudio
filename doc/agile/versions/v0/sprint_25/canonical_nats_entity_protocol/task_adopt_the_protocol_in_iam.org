@@ -1034,14 +1034,21 @@ wrapper change it looks like: the junction's render context names its resource
 =shell= plan at all -- the plan is built for domain entities only. So the work is
 
 1. a normalising shim in =generate_from_model= so a junction presents the keys
-   the shell templates read. Checked 2026-09-21, and it is more than a rename:
-   the junction carries =name_singular=, =name_singular_short=, =columns=,
-   =operations= and the per-verb operation lists, and it carries *no*
-   =primary_key=, no =write_fields=, no =entity_singular=, no =entity_plural=,
-   no =entity_plural_short= and no =shell=. The shim has to build those from
-   what is there -- and the plural is the awkward one, because a junction's is
-   irregular (=account_party= answers on =account_parties=) and is not derived
-   anywhere the junction dict exposes;
+   the shell templates read. The shape already exists and is thrown away:
+   =junction_protocol_messages= builds a local =entity= dict carrying exactly
+   =entity_singular=, =entity_plural=, =entity_plural_short=, =primary_key= (one
+   column per side), =columns= and =current_state=, and then passes it to
+   =entity_protocol_messages= and drops it. So the first move is to lift that
+   dict into a named =junction_entity_shape(junction)= and call it from both
+   places, rather than rebuilding it. The plural needs no special handling: a
+   junction's =name= *is* its plural, which is why =account_party= answers on
+   =account_parties= without an irregular-plural rule anywhere.
+
+   What the shell data then needs on top of the lifted shape is =subcomponent=
+   (for the protocol include path), =entity_singular_upper= (for the header
+   guard), =entity_plural_words= (for the prose), =write_fields= from
+   =write_record_for(shape)=, and =shell= from =entity_shell_plan(shape)= with
+   the junction's own =operations= attached;
 2. =entity_shell_plan(junction)= beside the domain-entity call, which the
    normalised keys make a one-liner;
 3. =junction= added to the shell facet's =#+model_types:= and to the three

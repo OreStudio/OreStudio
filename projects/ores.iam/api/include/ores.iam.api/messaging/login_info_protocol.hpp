@@ -39,6 +39,27 @@ struct login_info_key {
     boost::uuids::uuid account_id;
 };
 
+struct login_info_write {
+    boost::uuids::uuid account_id;
+    boost::asio::ip::address last_ip;
+    boost::asio::ip::address last_attempt_ip;
+    int failed_logins;
+    bool locked;
+    std::chrono::system_clock::time_point last_login;
+    bool online;
+    bool password_reset_required;
+};
+
+struct login_info_change {
+    login_info_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct login_info_removal {
+    login_info_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
 struct login_info_lookup {
     login_info_key key;
     std::optional<ores::iam::domain::login_info> login_info;
@@ -108,6 +129,80 @@ struct get_many_login_info_request {
 struct get_many_login_info_response {
     ores::utility::domain::result result;
     std::vector<login_info_lookup> entries;
+};
+
+struct put_login_info_request {
+    using response_type = struct put_login_info_response;
+    static constexpr std::string_view nats_subject = "iam.v1.login_info.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    login_info_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_login_info_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::login_info login_info;
+};
+
+struct put_many_login_info_request {
+    using response_type = struct put_many_login_info_response;
+    static constexpr std::string_view nats_subject = "iam.v1.login_info.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<login_info_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_login_info_response {
+    ores::utility::domain::result result;
+    std::vector<ores::iam::domain::login_info> login_info;
+};
+
+struct delete_login_info_request {
+    using response_type = struct delete_login_info_response;
+    static constexpr std::string_view nats_subject = "iam.v1.login_info.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    login_info_removal removal;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_login_info_response {
+    ores::utility::domain::result result;
+};
+
+struct delete_many_login_info_request {
+    using response_type = struct delete_many_login_info_response;
+    static constexpr std::string_view nats_subject = "iam.v1.login_info.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<login_info_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_login_info_response {
+    ores::utility::domain::result result;
 };
 
 /**

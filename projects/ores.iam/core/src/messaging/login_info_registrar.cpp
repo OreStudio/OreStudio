@@ -51,6 +51,22 @@ register_login_info_handlers(ores::nats::service::client& nats,
         get_many_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->get_many_login_info(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        put_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_login_info(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_login_info_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_many_login_info(std::move(msg));
+        }));
     return subs;
 }
 

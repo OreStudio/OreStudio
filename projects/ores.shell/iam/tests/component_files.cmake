@@ -24,7 +24,6 @@ set(files
     "account_type_commands_tests.cpp"
     "authorization_operations_commands_tests.cpp"
     "bootstrap_operations_commands_tests.cpp"
-    "login_info_commands_tests.cpp"
     "main.cpp"
     "permission_commands_tests.cpp"
     "reset_operations_commands_tests.cpp"

@@ -40,12 +40,48 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 - The generated BFF route descriptor and the web screens consume the canonical messages, including a single-record read.
 - The duplicate iam.v1.roles.list subject and its unregistered derived messages are resolved.
 - The C++ build, the codegen tests, the drift gate and the TypeScript checks pass.
+- No component other than =ores.iam= is changed, and nothing is carried for backwards compatibility.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Agreed scope, 2026-09-21. IAM is the pilot and nothing else is touched:
+
+- *IAM only.* The other components keep the output they have. The system is
+  unstable and their committed generated code is not regenerated, not
+  reconciled and not built against this.
+- *No backwards compatibility.* The old verbs, message names and subjects are
+  replaced, not carried alongside. No aliases, no deprecation window, no dual
+  serving.
+- *All layers in one PR.* Codegen, IAM's generated C++, its hand-written
+  service layer, the generated shell commands and their tests, the BFF route
+  descriptors and the web screens ship together. A partial change leaves the
+  tree uncompilable, because renaming a verb changes handler signatures and
+  registration.
+- *A second PR verifies.* Once this lands, the verification task exercises
+  every IAM entity through the shell and the UI and fixes what it finds.
+
+The order the work has to happen in, because each step gates the next:
+
+1. The derivation. =org_loader.entity_protocol_messages= and
+   =junction_protocol_messages= emit the eight verbs, the specification's
+   message names and subjects, the result envelope, the write record with no
+   server-owned field, per-element preconditions, the versions sub-resource and
+   the bounds.
+2. The templates. =cpp_protocol.hpp.mustache= and =ts_protocol.ts.mustache=
+   render what the derivation produces. The handler, service and registrar
+   templates move with them, since the verb set is what they branch on.
+3. Regenerate IAM and compile. The generated C++ has to build before anything
+   downstream is worth attempting.
+4. The shell. Enable =ores.cpp.shell-command= on the IAM models and let the
+   generated command units and their tests exercise every verb.
+5. The UI. The BFF route descriptor and the web screens follow the generated
+   protocol.
+
+The event subject prefix is the one cross-component concern, and it is
+deliberately accepted here: IAM adopts ={component}.v1.{resource}_events.{action}=
+while the other components still announce =ores.{component}.{entity}_changed=,
+so their event fan-out is inconsistent until they are converted. That is the
+price of piloting one component and it is the agreed scope.
 
 * Notes
 

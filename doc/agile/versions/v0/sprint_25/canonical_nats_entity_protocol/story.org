@@ -23,10 +23,10 @@ One target-state specification defines every common, entity-related message a co
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The specification is written and =ores.iam= is converted to it, with the generated shell surface proved against the running fleet. What remains is the reconciliation of the NATS document estate, the conformance gate, and the =ores.web= half of the IAM verification. |
+| Now           | The specification is written and =ores.iam= is converted to it. The conversion PR (#2120) is merged, with the generated shell surface proved against the running fleet: 124 commands, 123 of them answered. The web half of the verification is now started on its own branch. What remains is the reconciliation of the NATS document estate and the conformance gate. |
 | Waiting on    | Nothing.                               |
-| Next          | Open the conversion PR, then verify every IAM entity through =ores.web=. |
-| Last touched  | 2026-09-21                               |
+| Next          | Verify every IAM entity through =ores.web= against a provisioned deployment. |
+| Last touched  | 2026-09-22                               |
 
 * Acceptance
 
@@ -46,7 +46,7 @@ One target-state specification defines every common, entity-related message a co
 | [[id:4620D5A7-61E1-4907-A8F4-B5C1396AC49D][Reconcile every NATS document to one responsibility]] | BACKLOG | | | Around thirty documents describe ORE Studio's NATS messaging, and they disagree: three competing history subjects, two event subject prefixes, three different claims about the payload format, and two unreconciled error channels. This task gives every one of them exactly one responsibility and resolves the conflicts. |
 | [[id:D9A4776C-AB42-4461-8F2F-AD077C20716E][Adopt the canonical protocol in ores.iam]] | DONE | 2026-09-21 | 2026-09-21 | The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes. The shell surface is proved against the running fleet, and the recipes that exercise it are generated. |
 | [[id:3663F420-C591-4E77-80CD-E68726522C32][Enforce the protocol with a conformance gate]] | BACKLOG | | | A specification without a gate drifts, which is exactly what the protocol twin coverage check proved when its written rule and its implementation disagreed for a whole component. This task lands the check that keeps generated messages honest. |
-| [[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]] | BACKLOG | | | The second PR of the IAM pilot. The shell half landed with the conversion: 124 generated commands, 123 of them run against the live fleet. What remains is the UI: exercise every IAM entity through =ores.web= and fix what the sweep finds. |
+| [[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]] | STARTED | 2026-09-22 | | The second PR of the IAM pilot, and now the web half of it. The shell half landed with the conversion: 124 generated commands, 123 of them run against the live fleet. This task exercises every IAM entity through =ores.web= and fixes what the sweep finds. |
 
 * Decisions
 

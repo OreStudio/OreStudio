@@ -862,6 +862,33 @@ the exact list of what is hand-written, and anything absent from that list is
 generated and must not be renamed by hand. The service half is undone and the
 handler half kept.
 
+**What lifting session's ownership actually costs.** Worked out 2026-09-21 so
+the next attempt does not rediscover it. Two consequences the five-step plan
+does not show.
+
+*There will be two session headers, not one renamed.* =session_protocol.hpp= is
+the operation model's today. After the lift the entity derives a header of that
+same name, so the operation model's moves to =session_operations_protocol.hpp=
+and a new =session_protocol.hpp= appears. Every reference has to be sorted into
+which of the two it means: =session_operations_handler.hpp= and =registrar.cpp=
+want the operations one for =get_active_sessions_request= and the samples one
+for =get_session_samples_request=; the shell's session commands and the HTTP
+session routes want the entity one for the list.
+
+*And the list callers need a rewrite, not a rename.* The operation model's
+=list_sessions_request= carries =account_id=, =limit= and =offset=, and its
+response carries =sessions=, =total_count=, =success= and =message=. The derived
+one carries =offset=, =limit= and =order=, and answers with the plural field,
+=total= and a =result= envelope -- so =result->total_count= becomes
+=result->total=, =result->success= becomes a branch on =result.outcome=, and the
+=account_id= scope moves to the derived =list_by_account_id= read, which is the
+verb the projection had been dropping until it was fixed. =accounts_commands.cpp=
+and =iam_routes.cpp= both need that treatment, exactly as =rbac_commands.cpp= and
+the role routes did.
+
+The hand-written handler loses its =list= and keeps =active= and =samples=, so
+the rename from the previous attempt stands and only the body shrinks.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/adopt-the-protocol-in-iam
-#+pr:
+#+pr: 2120
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
@@ -1270,7 +1270,7 @@ recipes, because a recipe here is titled as the question it answers. It is now
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2120][#2120]] | [iam,codegen,shell] Adopt the canonical NATS entity protocol in IAM |
 
 * Review
 

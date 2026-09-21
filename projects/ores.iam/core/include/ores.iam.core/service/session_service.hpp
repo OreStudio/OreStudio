@@ -44,9 +44,9 @@ namespace ores::iam::service {
  * Provides a higher-level interface for session operations,
  * wrapping the underlying repository.
  */
-class ORES_IAM_CORE_EXPORT session_operations_service {
+class ORES_IAM_CORE_EXPORT session_service {
 private:
-    inline static std::string_view logger_name = "ores.iam.service.session_operations_service";
+    inline static std::string_view logger_name = "ores.iam.service.session_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,11 +58,11 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a session_operations_service with a database context.
+     * @brief Constructs a session_service with a database context.
      *
      * @param ctx The database context for operations.
      */
-    explicit session_operations_service(context ctx);
+    explicit session_service(context ctx);
 
 
     /**

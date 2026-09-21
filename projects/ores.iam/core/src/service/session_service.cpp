@@ -22,7 +22,7 @@
  * Template: cpp_service.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.core/service/session_operations_service.hpp"
+#include "ores.iam.core/service/session_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <cstdint>
 #include <stdexcept>
@@ -33,22 +33,22 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-session_operations_service::session_operations_service(context ctx)
+session_service::session_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::session> session_operations_service::list_sessions(std::uint32_t offset,
+std::vector<domain::session> session_service::list_sessions(std::uint32_t offset,
                                                             std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all sessions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t session_operations_service::count_sessions() {
+std::uint32_t session_service::count_sessions() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total sessions count";
     return repo_.get_total_session_count(ctx_);
 }
 
 
-std::optional<domain::session> session_operations_service::get_session(const std::string& id,
+std::optional<domain::session> session_service::get_session(const std::string& id,
                                                             const std::string& start_time) {
     BOOST_LOG_SEV(lg(), debug) << "Getting session. " << "id: " << id
                                << " start_time: " << start_time;
@@ -59,12 +59,12 @@ std::optional<domain::session> session_operations_service::get_session(const std
 }
 
 std::vector<domain::session>
-session_operations_service::get_sessions(const std::vector<std::string>& ids,
+session_service::get_sessions(const std::vector<std::string>& ids,
                               const std::vector<std::string>& start_times) {
     return repo_.read_latest(ctx_, ids, start_times);
 }
 
-void session_operations_service::save_session(const domain::session& v) {
+void session_service::save_session(const domain::session& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Session id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving session. " << "id: " << v.id
@@ -76,7 +76,7 @@ void session_operations_service::save_session(const domain::session& v) {
                               << " start_time: " << v.start_time;
 }
 
-void session_operations_service::save_sessions(const std::vector<domain::session>& sessions) {
+void session_service::save_sessions(const std::vector<domain::session>& sessions) {
     for (const auto& e : sessions) {
         if (e.id.is_nil())
             throw std::invalid_argument("Session id cannot be empty.");
@@ -89,7 +89,7 @@ void session_operations_service::save_sessions(const std::vector<domain::session
     repo_.write(ctx_, ts);
 }
 
-void session_operations_service::delete_session(const std::string& id, const std::string& start_time) {
+void session_service::delete_session(const std::string& id, const std::string& start_time) {
     BOOST_LOG_SEV(lg(), debug) << "Removing session. " << "id: " << id
                                << " start_time: " << start_time;
     repo_.remove(ctx_, id, start_time);
@@ -97,7 +97,7 @@ void session_operations_service::delete_session(const std::string& id, const std
                               << " start_time: " << start_time;
 }
 
-void session_operations_service::delete_sessions(const std::vector<std::string>& ids,
+void session_service::delete_sessions(const std::vector<std::string>& ids,
                                       const std::vector<std::string>& start_times) {
     repo_.remove(ctx_, ids, start_times);
 }

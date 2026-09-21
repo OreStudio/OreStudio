@@ -67,9 +67,9 @@ namespace ores::iam::domain {
  * ores.iam.session_messages.
  *
  * The entity's CRUD handler and sub-registrar are switched off below: the
- * hand-written session_operations_handler already owns the iam.v1.sessions.*
+ * hand-written session_handler already owns the iam.v1.sessions.*
  * subjects that ores.iam.session_messages declares, and the generated
- * session_operations_handler.hpp would overwrite it. The generated
+ * session_handler.hpp would overwrite it. The generated
  * session_protocol.hpp is suppressed by the same one-owner gate that
  * the operation model already satisfies; only the competing handler is
  * switched off here.

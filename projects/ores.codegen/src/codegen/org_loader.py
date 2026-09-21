@@ -3435,6 +3435,173 @@ def _reject_silent_shell_gap(
     )
 
 
+def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The shell's view of an entity's derived operation set.
+
+    One command per operation the entity derives, so the REPL covers exactly
+    the verbs the entity answers and a verb the model gains appears without an
+    edit here. A put becomes two commands, because a create and a replace are
+    one verb that states two different claims.
+
+    ``kind`` is the shape of the handler rather than the verb: six shapes serve
+    the verbs, because a versions read is a paged read addressed by a key and a
+    list-by-relation read is a paged read addressed by a relation. The template
+    branches on the shape and builds each member path itself, so the projection
+    carries names and types rather than C++.
+
+    ``keys`` and ``writes`` are what a caller types. A key column and a write
+    field are shaped alike, because one token fills either; what differs is
+    where the template puts them -- under the key, under the removal, under the
+    change, or inside the loop of a batch verb.
+
+    Only an entity that derives its own protocol reaches here. One whose
+    protocol an operation model owns has no derived request types to name, and
+    its declared operations are what the shell renders instead.
+    """
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    namespace = f"ores::{component}::messaging"
+
+    supplies: dict[str, str] = {}
+    for column in list(entity.get("columns") or []) + list(
+            (entity.get("primary_key") or {}).get("columns") or []):
+        name = column.get("name") or column.get("column")
+        if not name:
+            continue
+        if column.get("is_minted"):
+            supplies[name] = "minted"
+        elif column.get("is_session_party"):
+            supplies[name] = "session_party"
+        else:
+            supplies[name] = "user"
+
+    def _input(name: str, cpp_type: str) -> dict[str, Any]:
+        cpp = (cpp_type or "std::string").strip()
+        supply = supplies.get(name, "user")
+        return {
+            "name": name,
+            "cpp_type": cpp,
+            "is_user": supply == "user",
+            "is_minted": supply == "minted",
+            "is_session_party": supply == "session_party",
+            "is_string": cpp == "std::string",
+            "is_bool": cpp == "bool",
+            "is_list": cpp == _SHELL_LIST_TYPE,
+            "needs_from_token": cpp not in ("std::string", "bool"),
+            "fillable": cpp == _SHELL_LIST_TYPE or cpp in _SHELL_TOKEN_TYPES,
+        }
+
+    keys = [
+        _input(column.get("column", ""), column.get("cpp_type", ""))
+        for column in (entity.get("primary_key") or {}).get("columns") or []
+    ]
+    writes = [
+        _input(field.get("name", ""), field.get("cpp_type", ""))
+        for field in entity.get("write_fields") or []
+    ]
+
+    # verb -> (kind, command). A put is absent because it becomes two commands.
+    shapes = {
+        "list": ("paged", "list"),
+        "get": ("key_read", "get"),
+        "get_many": ("get_many", "get-many"),
+        "put_many": ("put_many", "put-many"),
+        "delete": ("delete", "delete"),
+        "delete_many": ("delete_many", "delete-many"),
+        "list_versions": ("versions", "versions"),
+        "get_version": ("version_read", "version"),
+    }
+
+    def _used_inputs(kind: str) -> list[dict[str, Any]]:
+        if kind in ("put", "put_many"):
+            return writes
+        if kind in ("paged", "list_by"):
+            return []
+        return keys
+
+    def _command(operation: dict[str, Any], kind: str, name: str,
+                 precondition: str = "",
+                 relation: dict[str, Any] | None = None) -> dict[str, Any]:
+        command = {
+            "command": name,
+            "identifier": name.replace("-", "_"),
+            "verb": operation.get("verb", ""),
+            "kind": kind,
+            "request": operation["request"],
+            "response_type": operation["response"],
+            "subject": operation["subject"],
+            "keys": keys,
+            "writes": writes,
+            "key_arity": len(keys),
+            "write_arity": len(writes),
+            "relation": relation,
+            "has_order": bool(operation.get("has_order")),
+            "has_intent": operation.get("verb") in
+                ("put", "put_many", "delete", "delete_many"),
+            "precondition": precondition,
+            "allows_version": kind in ("put", "delete") and precondition != "must_not_exist",
+            # Only what the handler actually asks for: a paged read takes no
+            # key, and a write takes the write record rather than the key,
+            # because the key travels inside it.
+            "unsupported": sorted(
+                item["name"] for item in _used_inputs(kind) if not item["fillable"]),
+        }
+        command["usage"] = _entity_shell_usage(command)
+        return command
+
+    commands: list[dict[str, Any]] = []
+    for operation in entity.get("operations") or []:
+        verb = operation.get("verb", "")
+        if verb == "put":
+            commands.append(_command(operation, "put", "add", "must_not_exist"))
+            commands.append(_command(operation, "put", "set", "any"))
+            continue
+        if verb.startswith("list_by_"):
+            relation = verb[len("list_by_"):]
+            addressed_by = _input(
+                relation, _column_cpp_type(entity, relation))
+            command = _command(operation, "list_by",
+                               f"by-{relation.replace('_', '-')}",
+                               relation=addressed_by)
+            command["unsupported"] = sorted(
+                item["name"] for item in [addressed_by] if not item["fillable"])
+            command["usage"] = _entity_shell_usage(command)
+            commands.append(command)
+            continue
+        if verb in shapes:
+            kind, name = shapes[verb]
+            commands.append(_command(operation, kind, name))
+    return commands
+
+
+def _entity_shell_usage(command: dict[str, Any]) -> str:
+    """The one-line help a generated entity command registers.
+
+    What a command asks for follows from its shape: a paged read is addressed
+    by nothing, a write by its write record, and everything else by the key.
+    """
+    kind = command["kind"]
+    parts = [command["command"]]
+    if kind in ("put", "put_many"):
+        if kind == "put_many":
+            parts.append("--count <n>")
+        parts.extend(f"<{field['name']}>" for field in command["writes"])
+    elif kind == "list_by":
+        parts.append(f"<{command['relation']['name']}>")
+    elif kind != "paged":
+        parts.extend(f"<{key['name']}>" for key in command["keys"])
+    if command["has_intent"]:
+        parts.append("<reason> \"<commentary>\"")
+    if kind == "version_read":
+        parts.append("--version <n>")
+    elif command["allows_version"]:
+        parts.append("[--version <n>]")
+    if command["has_order"]:
+        parts.extend(["[--offset <n>]", "[--limit <n>]",
+                      "[--order <field>]", "[--desc]"])
+    return " ".join(parts)
+
+
 def junction_ts_fields(junction: dict[str, Any]) -> list[dict[str, Any]]:
     """The junction members that need a TypeScript projection, in the order
 

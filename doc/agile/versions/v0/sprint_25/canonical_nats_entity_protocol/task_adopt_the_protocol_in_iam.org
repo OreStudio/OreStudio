@@ -575,6 +575,33 @@ The shell reads the protocol's statement rather than a duplicate: =if constexpr
 projection keeps one flag, for choosing which test cases to emit, and a test
 asserts the two agree.
 
+**The entity unit is projected, and three entities cannot take it yet.** The
+shell's entity archetypes still speak the superseded verbs, so the projection
+they will render from is written and tested ahead of the template: one command
+per derived operation, a put becoming two because a create and a replace are one
+verb stating two claims, and six handler shapes serving the ten verbs because a
+versions read is a paged read addressed by a key. A command is measured against
+the inputs its shape actually reads -- a paged read takes no key, a write takes
+the write record rather than the key, because the key travels inside it -- so an
+unfillable column the read never touches does not condemn it.
+
+Seven of the ten IAM domain entities can take a unit today. Each derives its own
+protocol and every input a token can fill: =account_contact_information=,
+=account_type=, =permission=, =role=, =tenant=, =tenant_status= and
+=tenant_type=.
+
+The three that cannot are each a different reason, and none is the template's
+fault. =login_info= derives a protocol but its write record carries =last_ip=
+and =last_attempt_ip=, which are =boost::asio::ip::address= -- a type no token
+fills, and two facts the server records rather than a client sends. It needs the
+same decision as =account= and =session=. Those two are now excluded by the
+ownership gate, which is where they belong: the shell facet names the derived
+request types, so it joined =_PROTOCOL_FACETS= beside the eventing facets, and a
+model that owns the protocol leaves the entity no such type to name. The
+=account_party= junction is a fourth case: the entity archetypes serve
+=domain_entity= alone, so its shell surface stays the hand-written
+=account_parties_commands=.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

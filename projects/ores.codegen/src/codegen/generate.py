@@ -158,6 +158,11 @@ _PROTOCOL_FACETS = frozenset({
     "ores.cpp.nats-eventing",
     "ores.cpp.nats-event-registrar",
     "ores.cpp.eventing-integration-test",
+    # The shell's entity unit names the derived request types and their
+    # subjects, so it depends on the derived protocol exactly as the eventing
+    # facets do. An entity whose protocol an operation model owns has no such
+    # types, and its declared operations are what the shell renders instead.
+    "ores.cpp.shell-command",
 })
 
 # The BFF route descriptor imports its subjects from the entity's own

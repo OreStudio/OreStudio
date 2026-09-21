@@ -32,7 +32,7 @@
 #include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
-#include "ores.iam.core/service/account_operations_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
@@ -210,7 +210,7 @@ public:
             return;
         }
         try {
-            service::account_operations_service acct_svc(ctx_);
+            service::account_service acct_svc(ctx_);
             auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct = setup_svc.create_account(
@@ -257,7 +257,7 @@ public:
                 }
             }
 
-            service::account_operations_service svc(login_ctx);
+            service::account_service svc(login_ctx);
             auto ip = boost::asio::ip::address_v4::loopback();
             auto acct = svc.login(username, req->password, ip);
 
@@ -458,7 +458,7 @@ public:
                     // Update the login_info online flag
                     try {
                         auto account_id = sg(claims_result->subject);
-                        service::account_operations_service svc(ctx_);
+                        service::account_service svc(ctx_);
                         svc.logout(account_id);
                     } catch (const std::exception& e) {
                         BOOST_LOG_SEV(auth_handler_lg(), warn)

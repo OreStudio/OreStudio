@@ -29,7 +29,7 @@
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
-#include "ores.iam.core/service/account_operations_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
@@ -56,7 +56,7 @@ namespace ores::iam::messaging {
 namespace {
 
 inline auto& account_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_operations_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_handler");
     return instance;
 }
 
@@ -129,9 +129,9 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class account_operations_handler {
+class account_handler {
 public:
-    account_operations_handler(ores::nats::service::client& nats,
+    account_handler(ores::nats::service::client& nats,
                     ores::database::context ctx,
                     ores::security::jwt::jwt_authenticator signer,
                     std::shared_ptr<service::cache::party_cache> party_cache)
@@ -165,7 +165,7 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto accounts = svc.list_accounts();
             get_accounts_response resp;
             resp.total_available_count = static_cast<int>(accounts.size());
@@ -225,7 +225,7 @@ public:
                 if (at_pos != std::string::npos)
                     username = req->principal.substr(0, at_pos);
 
-                service::account_operations_service acct_svc(wf_ctx);
+                service::account_service acct_svc(wf_ctx);
                 auto auth_svc = std::make_shared<service::authorization_service>(wf_ctx);
                 service::account_setup_service setup_svc(acct_svc, auth_svc);
                 auto acct = setup_svc.create_account(
@@ -293,7 +293,7 @@ public:
                 }
             }
 
-            service::account_operations_service acct_svc(op_ctx);
+            service::account_service acct_svc(op_ctx);
             auto auth_svc = std::make_shared<service::authorization_service>(op_ctx);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct =
@@ -328,7 +328,7 @@ public:
                 error_reply(nats_, msg, ores::service::error_code::forbidden);
                 return;
             }
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -358,7 +358,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::account_operations_service svc(ctx);
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
@@ -393,7 +393,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::account_operations_service svc(ctx);
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
@@ -419,7 +419,7 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto infos = svc.list_login_info();
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, list_login_info_response{.login_infos = std::move(infos)});
@@ -448,7 +448,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::account_operations_service svc(ctx);
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id_str : req->account_ids) {
             try {
@@ -503,7 +503,7 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto err = svc.change_password(account_id, req->new_password);
             if (err.empty()) {
                 BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -594,7 +594,7 @@ public:
                 }
             }
 
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             svc.update_account(account_id,
                                req->email,
                                req->full_name,
@@ -646,7 +646,7 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto err = svc.update_my_email(account_id, req->email);
             if (err.empty()) {
                 BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -725,7 +725,7 @@ public:
                 return;
             }
 
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto err = svc.set_my_default_party(account_id, party_id);
             if (err.empty()) {
                 BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -1122,7 +1122,7 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
+            service::account_service svc(ctx);
             auto accounts = svc.get_account_history(req->username);
             account_version_history avh;
             int vnum = static_cast<int>(accounts.size());

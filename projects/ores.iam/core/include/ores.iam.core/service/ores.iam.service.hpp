@@ -22,7 +22,7 @@
 /**
  * @brief Service layer for the IAM module.
  *
- * Contains business logic services including account_operations_service for account
+ * Contains business logic services including account_service for account
  * operations, authorization_service for RBAC, and bootstrap_mode_service
  * for initial system setup.
  */

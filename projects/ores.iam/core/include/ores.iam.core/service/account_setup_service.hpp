@@ -22,7 +22,7 @@
 
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.iam.core/service/account_operations_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <memory>
@@ -34,10 +34,10 @@ namespace ores::iam::service {
  * @brief Centralized service for complete account initialization.
  *
  * This service orchestrates the full account creation workflow:
- * 1. Creates the account record and login_info via account_operations_service
+ * 1. Creates the account record and login_info via account_service
  * 2. Assigns the default Viewer role via authorization_service
  *
- * Use this service instead of calling account_operations_service::create_account()
+ * Use this service instead of calling account_service::create_account()
  * directly to ensure accounts are properly initialized with roles.
  */
 class ORES_IAM_CORE_EXPORT account_setup_service {
@@ -54,17 +54,17 @@ public:
     /**
      * @brief Constructs an account_setup_service with required dependencies.
      *
-     * @param account_operations_service The service for account creation
+     * @param account_service The service for account creation
      * @param auth_service The service for role assignment
      */
-    account_setup_service(account_operations_service& account_svc,
+    account_setup_service(account_service& account_svc,
                           std::shared_ptr<authorization_service> auth_svc);
 
     /**
      * @brief Creates a new account with the default Viewer role.
      *
      * This method:
-     * 1. Creates the account via account_operations_service
+     * 1. Creates the account via account_service
      * 2. Looks up the Viewer role
      * 3. Assigns the Viewer role to the new account
      *
@@ -86,7 +86,7 @@ public:
      * @brief Creates a new account with a specific role.
      *
      * This method:
-     * 1. Creates the account via account_operations_service
+     * 1. Creates the account via account_service
      * 2. Assigns the specified role to the new account
      *
      * @param username The unique username for the account
@@ -107,7 +107,7 @@ public:
                              const std::string& change_commentary = "Account created");
 
 private:
-    account_operations_service& account_svc_;
+    account_service& account_svc_;
     std::shared_ptr<authorization_service> auth_svc_;
 };
 

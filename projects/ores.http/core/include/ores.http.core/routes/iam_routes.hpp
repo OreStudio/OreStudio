@@ -27,7 +27,7 @@
 #include "ores.http.core/export.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/service/account_operations_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -234,7 +234,7 @@ private:
     }
 
     database::context ctx_;
-    iam::service::account_operations_service account_service_;
+    iam::service::account_service account_service_;
     iam::repository::session_repository session_repo_;
     std::shared_ptr<variability::service::system_settings_service> system_flags_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;

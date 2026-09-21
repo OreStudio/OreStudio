@@ -37,9 +37,9 @@ variables and their semantics.
 
 The full template source. Edit here and re-tangle with
 =compass build --direct tangle_codegen_templates= to regenerate
-=library/templates/doc_shell_recipe.org.mustache=.
+=library/templates/shell_recipe.org.mustache=.
 
-#+begin_src mustache :tangle doc_shell_recipe.org.mustache
+#+begin_src mustache :tangle shell_recipe.org.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.doc.shell-recipe.recipe.org. Edit the org source. }}
 {{#shell_recipe}}
 :PROPERTIES:

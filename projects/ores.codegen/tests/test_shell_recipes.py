@@ -323,7 +323,7 @@ class TestTheGate:
                 REPO_ROOT / "projects/ores.codegen/library/templates",
                 REPO_ROOT / ".runtime/render/recipe",
                 is_processing_batch=False,
-                target_template="doc_shell_recipe.org.mustache",
+                target_template="shell_recipe.org.mustache",
                 target_output="probe.org")
         finally:
             core._RENDERER.render = original
@@ -365,7 +365,7 @@ class TestTheGate:
                         REPO_ROOT / "projects/ores.codegen/library/templates",
                         REPO_ROOT / ".runtime/render/recipe_all2",
                         is_processing_batch=False,
-                        target_template="doc_shell_recipe.org.mustache",
+                        target_template="shell_recipe.org.mustache",
                         target_output="probe.org")
                 except Exception:  # noqa: BLE001
                     continue

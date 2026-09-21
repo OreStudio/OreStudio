@@ -722,7 +722,7 @@ def _component_path_vars(entity):
 # The template that renders a model's literate shell recipe. Named once,
 # because three model branches build the document it reads and a repeated
 # literal is three places for the name to drift.
-_SHELL_RECIPE_TEMPLATE = "doc_shell_recipe.org.mustache"
+_SHELL_RECIPE_TEMPLATE = "shell_recipe.org.mustache"
 
 
 def resolve_output_path(output_pattern, model_data, model_type):

@@ -692,6 +692,41 @@ lands in the system tenant while login resolves the tenant from the principal's
 hostname, so =account not found for username: tenant_admin= is what the service
 log says and no usable login exists yet.
 
+**The end-to-end pass succeeded, and it found two defects the build could not.**
+Settled 2026-09-21. A scripted shell session logs in and runs eight generated
+commands over mTLS into the live service, one per handler shape: a paged read, a
+versions read addressed by a key, a key read, and the declared operations. Seven
+of the eight return =outcome ok=; =tenant_types get system= answers =missing=
+with code =not_found=, which is the canonical outcome for a row that is not
+there, in a tenant that has no types yet. Two return real data -- 382
+permissions and 26 roles -- so the replies are the store's and not a stub.
+
+The environment had to be built to get there, and that was the first thing the
+pass taught: the database was in bootstrap mode with no usable login. The
+hand-written bootstrap created an admin in the *system* tenant, while login
+resolves the tenant from the principal's hostname, so the service answered
+=account not found for username: tenant_admin=. The generated
+=bootstrap provision-tenant= then created the tenant properly and login followed.
+That is the generated surface doing the job the hand-written one could not.
+
+Two defects followed, and neither was visible from a build.
+
+The first is a stale process. The service had been running since before the
+protocol changed, so it answered the *old* response shape and the shell reported
+=Field named 'result' not found=. Nothing was wrong with either side; the
+running binary was simply not the built one. Restarting the service is part of
+running this pass, and it is worth stating because the failure reads like a
+protocol mismatch and is not.
+
+The second is real and is fixed. =account_type=, =login_info= and =permission=
+each had a generated protocol header, service and registrar, and the service
+included and called none of them -- =register_account_type_handlers=,
+=register_login_info_handlers= and =register_permission_handlers= existed and
+were never wired. The shell's =account_types list= was answered *no service is
+handling subject 'iam.v1.account_types.list'*. Three of the eight entities the
+shell renders a unit for reached nothing at all, and the generated tests could
+not have caught it: they stop at the transport by design.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

@@ -213,14 +213,19 @@ def test_a_key_column_is_never_stripped_even_when_its_name_is_server_owned():
 
 def test_a_derived_protocol_is_not_assumed_where_an_operation_model_owns_it():
     """The service speaks the derived names, so an owned protocol must not be
-    assumed: account's list request is spelled differently and session has no
-    save at all."""
+    assumed: account's list request is spelled differently, and its workflows
+    live in the operation model beside it.
+
+    Session used to be in the first group and is not any more -- its operation
+    model was renamed, so the entity derives its own protocol. That is the
+    conversion the shell pilot exists to make, and this case now states it.
+    """
     assert _protocol_owned_by_operation(
         IAM_MODELING / "ores.iam.account.org",
         {"component": "iam", "entity_singular": "account"}) is True
     assert _protocol_owned_by_operation(
         IAM_MODELING / "ores.iam.session.org",
-        {"component": "iam", "entity_singular": "session"}) is True
+        {"component": "iam", "entity_singular": "session"}) is False
     assert _protocol_owned_by_operation(
         IAM_MODELING / "ores.iam.tenant_type.org",
         {"component": "iam", "entity_singular": "tenant_type"}) is False

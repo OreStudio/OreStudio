@@ -11,19 +11,18 @@
 
 * Summary
 
-Two mistakes account for most of the damage in this cluster, and they sit at
-opposite ends of a message. The first is treating a subject as a string rather
-than an address: a subject in the wrong namespace, or one two components both
-believe they own, is answered by a service that was never meant to answer it,
-and request/reply reports nothing unusual when it happens. The second is
-treating the payload as the contract: identity, tenancy and provenance are
-established by the connection and the token it carries, so a message that
-restates them is not more explicit, it is forgeable.
+Components in ORE Studio communicate over NATS. A message is addressed by a
+four-segment subject -- component, version, resource, verb -- and the component
+that owns the first segment is the one that serves it, so a subject is answered
+by exactly one service or by none. Request and reply is one pattern on the bus;
+events published under the =events= segment are the other, and a request is
+answered once where an event may have any number of independent consumers.
 
-Read the cluster as: what the bus gives you, where a subject may live, what a
-message must look like, and only then how a service binds to it. The binding
-comes last because it is the part that looks like the work and is mostly
-mechanical once the shape is settled.
+A payload carries business data and nothing else. Identity, tenancy, version and
+audit provenance are derived server-side from the authenticated connection and
+never travel on the wire. Entity operations share one verb set and one pair of
+envelopes across every component, so a client that has read one component's
+protocol has read them all.
 
 * Reading order
 

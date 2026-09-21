@@ -11,17 +11,17 @@
 
 * Summary
 
-Every common, entity-related message that crosses the bus follows one
-specification: one subject grammar, one canonical verb set, one request
-envelope and one response envelope. The specification is target state and
-names no component; a component's own operations extend it without departing
-from it. Two rules carry the most weight. A write request carries only
-user-owned fields, because identity, tenancy, version and audit provenance
-are derived server-side from the authenticated context and never travel on
-the wire. And a verb exists because the model declares the operation, not
-because a repository or a column happens to permit it. The whole of it is
-mechanically checkable, so it is enforced by a conformance gate rather than
-by review.
+Every common, entity-related message that crosses the bus has the same shape. A
+subject has four segments -- component, version, resource, verb -- and its
+resource is a plural noun. A request carries the operation's parameters and its
+keys; a response carries one result, and the data the operation produced when
+the outcome is =ok=.
+
+Two rules govern what a message may assert. A write carries a write record of
+user-owned fields alone: tenancy, version and audit provenance are derived
+server-side from the authenticated context. And the verbs a resource supports
+are the ones its model declares, so what an entity can be asked for is a
+property of the model.
 
 * Detail
 

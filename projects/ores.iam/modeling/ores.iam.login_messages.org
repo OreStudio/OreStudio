@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: 72596DEE-01BE-40A5-B084-4C38DB212191
 :END:
 #+title: ores.iam.login_messages

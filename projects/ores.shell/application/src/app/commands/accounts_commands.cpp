@@ -234,20 +234,6 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
 
     root_menu.Insert(std::move(accounts_menu));
 
-    // Bootstrap command at root level (doesn't require authentication)
-    root_menu.Insert(
-        "bootstrap",
-        [&session](
-            std::ostream& out, std::string principal, std::string password, std::string email) {
-            process_bootstrap(std::ref(out),
-                              std::ref(session),
-                              std::move(principal),
-                              std::move(password),
-                              std::move(email));
-        },
-        "Create initial admin (principal password email) - principal is username@hostname or "
-        "username");
-
     // Top-level login/logout aliases for convenience
     root_menu.Insert(
         "login",
@@ -466,37 +452,6 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
         fail(out) << "Logout failed: " << e.what() << std::endl;
     }
     session.clear_auth();
-}
-
-void accounts_commands::process_bootstrap(std::ostream& out,
-                                          nats_client& session,
-                                          std::string principal,
-                                          std::string password,
-                                          std::string email) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for principal: " << principal;
-
-    iam::messaging::create_initial_admin_request req;
-    req.principal = std::move(principal);
-    req.password = std::move(password);
-    req.email = std::move(email);
-
-    auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out, session, iam::messaging::create_initial_admin_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Bootstrap successful. Admin account ID: "
-                                  << result->account_id << ", tenant: " << result->tenant_name
-                                  << " (" << result->tenant_id << ")";
-        out << "✓ Initial admin account created successfully!" << std::endl;
-        out << "  Account ID: " << result->account_id << std::endl;
-        out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
-        out << "  You can now login with the credentials provided." << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << result->error_message;
-        fail(out) << "Bootstrap failed: " << result->error_message << std::endl;
-    }
 }
 
 void accounts_commands::process_list_sessions(std::ostream& out,

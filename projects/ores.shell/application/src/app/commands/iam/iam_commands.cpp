@@ -19,7 +19,6 @@
  */
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
-#include "ores.shell/app/commands/iam/login_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_history_operations_commands.hpp"
@@ -48,8 +47,10 @@ void iam_commands::register_commands(cli::Menu& root_menu,
 
     // The declared operations first, so an entity's own verbs are registered
     // last and a name the two share resolves to the entity's.
+    // The login operations are absent on purpose: they change this client's
+    // own session rather than the store, which a unit that sends a request and
+    // prints the reply cannot express. accounts_commands owns them.
     bootstrap_operations_commands::register_commands(root_menu, session);
-    login_operations_commands::register_commands(root_menu, session);
     signup_operations_commands::register_commands(root_menu, session);
     account_operations_commands::register_commands(root_menu, session);
     account_history_operations_commands::register_commands(root_menu, session);

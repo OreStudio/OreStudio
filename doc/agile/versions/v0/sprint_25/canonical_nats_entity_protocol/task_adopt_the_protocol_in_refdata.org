@@ -146,6 +146,42 @@ The shared types live in
    and populate gates, the full ctest run, and the shell surface against the
    running fleet, as the pilot did.
 
+* What the pilot left for its successors.* The pilot converted the entity
+path only, and its own plan names two pieces it judged off its critical path
+because no IAM model reaches them: "=cpp_nats_event_cache.hpp= renders for a
+=read_for_cache= entity and IAM declares none", and the template rewrite is
+"unconditional and deletes the branches". Refdata reaches both, and the
+reconnaissance found a third:
+
+- *The junction C++ stack is unconverted.* The junction branch of
+  =cpp_protocol.hpp= is canonical, but the junction branches of the
+  repository, service, handler and registrar templates still emit
+  =list=/=save=/=remove=/=count_by=/=replace_by= and the message types that
+  went with them. The pilot's junction (=ores.iam.account_party=) renders none
+  of them because its model disables =ores.cpp.nats-handler=,
+  =ores.cpp.nats-sub-registrar= and =ores.cpp.service=. Refdata's nine
+  junctions enable all three, so the branches must be converted before refdata
+  can be regenerated.
+- *The event cache warms through the retired bulk read.*
+  =cpp_nats_event_cache.hpp= sends =read_<plural>_for_cache_request=, which
+  the canonical derivation no longer emits, and its registrar subscribes with
+  the retired =event_traits= and =entity_change_event=. Two refdata models use
+  the facet: =party= (consumed by =ores.iam=) and
+  =currency_pair_convention= (consumed by =ores.refdata.client=). The
+  specification's answer is a list paged to its end, and the canonical events.
+- *The single write verb's interception hook was retired.* The paste point at
+  the top of the handler's save method carried =party='s orchestration
+  override, which must run before authentication. The generic handler renders
+  it again, guarded to the =put= verb, so a model that does not implement it is
+  unaffected.
+- *The point-in-time read is gone, not moved.* =has_as_of_lookup= drove
+  =read_at_timepoint= in the repository, and no template emits it now. The
+  specification replaces the version axis with a filter on the versions
+  sub-resource, which is a different read: a caller that wants "the row as of
+  date T" lists the versions and picks. Consumers that relied on the old
+  semantics must change, and the plan accepts that as the protocol's decision
+  rather than a gap to repair.
+
 * Risks carried into the work.*
 
 - The party junctions are read by =ores.iam='s tenant provisioning, so a

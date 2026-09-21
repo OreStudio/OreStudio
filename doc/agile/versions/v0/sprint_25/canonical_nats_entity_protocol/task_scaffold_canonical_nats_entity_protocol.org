@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/canonical-nats-entity-protocol
-#+pr:
+#+pr: 2118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2118][#2118]] | [doc] Specify the canonical NATS entity protocol |
 
 * Review
 

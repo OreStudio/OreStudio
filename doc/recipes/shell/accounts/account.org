@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5CE9A9DA-423C-55CD-A7CD-8CC84F89813E
 :END:
-#+title: Accounts shell commands
+#+title: How do I run the accounts commands from the shell?
 #+description: Every command the accounts submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

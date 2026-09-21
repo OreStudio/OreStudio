@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: ADCE3FA3-359E-503C-9F11-8DD2E01DA71E
 :END:
-#+title: Permissions shell commands
+#+title: How do I run the permissions commands from the shell?
 #+description: Every command the permissions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2F99474E-6068-5415-BB56-40DD110CA312
 :END:
-#+title: Account History shell commands
+#+title: How do I run the account_history commands from the shell?
 #+description: Every command the account_history submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

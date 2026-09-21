@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7640B5F6-3480-5422-9EB5-F12B9609B724
 :END:
-#+title: Tenant Provisioning shell commands
+#+title: How do I run the tenant_provisioning commands from the shell?
 #+description: Every command the tenant_provisioning submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

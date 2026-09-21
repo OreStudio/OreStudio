@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 04C8F03D-5BB8-58F2-A556-63A54274108F
 :END:
-#+title: Account Contact Informations shell commands
+#+title: How do I run the account_contact_informations commands from the shell?
 #+description: Every command the account_contact_informations submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

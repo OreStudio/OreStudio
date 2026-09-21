@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: E5F57DD2-8258-5688-BB05-DEF61B680A9A
 :END:
-#+title: Login Info shell commands
+#+title: How do I run the login_info commands from the shell?
 #+description: Every command the login_info submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

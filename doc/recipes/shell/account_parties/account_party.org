@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: C21B8496-BA73-5BCF-8E1D-FD61A605239A
 :END:
-#+title: Account Parties shell commands
+#+title: How do I run the account_parties commands from the shell?
 #+description: Every command the account_parties submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

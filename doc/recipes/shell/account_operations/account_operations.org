@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 76F232AB-8D75-572F-9309-49288505E73A
 :END:
-#+title: Account Operations shell commands
+#+title: How do I run the account_operations commands from the shell?
 #+description: Every command the account_operations submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

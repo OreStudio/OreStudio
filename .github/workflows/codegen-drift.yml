@@ -22,6 +22,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
       - "projects/ores.sql/populate/**"
+      - "doc/recipes/shell/**"
 
   pull_request:
     branches: ["main"]
@@ -29,6 +30,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
       - "projects/ores.sql/populate/**"
+      - "doc/recipes/shell/**"
 
   workflow_dispatch:
 
@@ -119,3 +121,21 @@ jobs:
       - name: Check every handler permission is seeded
         run: |
           python3 projects/ores.codegen/scripts/check_handler_permissions.py
+
+  # Shell recipe inventory: doc/recipes/shell/shell.org is derived from the
+  # recipes under it, and a recipe that is not listed is invisible to a
+  # reader browsing the inventory -- nothing else looks. The index had 97
+  # entries for 122 recipes before this check existed. Reads the recipes and
+  # the index only, so it needs neither codegen nor a formatter.
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check the shell recipe inventory lists every recipe
+        run: |
+          python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check

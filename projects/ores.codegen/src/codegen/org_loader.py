@@ -3630,7 +3630,10 @@ def shell_recipe_document(component: str, menu: str, singular: str,
     twice over one list with different keys, so the document is assembled here
     rather than in the template.
     """
-    titled = " ".join(word.capitalize() for word in menu.replace("_", " ").split())
+    # A recipe is titled as the question it answers, so a generated one reads
+    # like the hand-written recipes it is catalogued beside rather than like a
+    # section heading that wandered into the list.
+    title = f"How do I run the {menu} commands from the shell?"
     rendered: list[dict[str, Any]] = []
     for command in commands:
         name = command["command"]
@@ -3662,7 +3665,7 @@ def shell_recipe_document(component: str, menu: str, singular: str,
         "menu": menu,
         "singular": singular,
         "plural": plural,
-        "title": f"{titled} shell commands",
+        "title": title,
         "description": (
             f"Every command the {menu} submenu answers, with the script each "
             "one exports into the shell's script library."),

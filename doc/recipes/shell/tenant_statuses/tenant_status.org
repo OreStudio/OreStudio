@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5CF80075-6E0E-57A5-9A76-DD3BC0E17211
 :END:
-#+title: Tenant Statuses shell commands
+#+title: How do I run the tenant_statuses commands from the shell?
 #+description: Every command the tenant_statuses submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

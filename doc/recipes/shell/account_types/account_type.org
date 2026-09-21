@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 60803D77-F933-54BA-9E26-F559A3863A91
 :END:
-#+title: Account Types shell commands
+#+title: How do I run the account_types commands from the shell?
 #+description: Every command the account_types submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 62EF06D0-D41D-5D6A-ADD5-6958FF8A43C0
 :END:
-#+title: Roles shell commands
+#+title: How do I run the roles commands from the shell?
 #+description: Every command the roles submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

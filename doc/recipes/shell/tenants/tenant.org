@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: C22B769D-A74A-552A-9519-5DCF1D14A469
 :END:
-#+title: Tenants shell commands
+#+title: How do I run the tenants commands from the shell?
 #+description: Every command the tenants submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

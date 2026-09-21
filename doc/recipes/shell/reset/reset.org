@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9F267AE7-4C61-5746-ABA9-23660FB44E6F
 :END:
-#+title: Reset shell commands
+#+title: How do I run the reset commands from the shell?
 #+description: Every command the reset submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

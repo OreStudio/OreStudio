@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 567A34ED-0B68-5C66-A733-77163A4B45F6
 :END:
-#+title: Bootstrap shell commands
+#+title: How do I run the bootstrap commands from the shell?
 #+description: Every command the bootstrap submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8427B6C2-8E9C-5846-866B-DBBF5973DAFB
 :END:
-#+title: Tenant Types shell commands
+#+title: How do I run the tenant_types commands from the shell?
 #+description: Every command the tenant_types submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

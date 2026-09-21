@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3513ED5C-330C-50FD-8D58-A0652D033B54
 :END:
-#+title: Session Samples shell commands
+#+title: How do I run the session_samples commands from the shell?
 #+description: Every command the session_samples submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

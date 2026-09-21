@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 788B9C8F-08A8-5B70-9794-3447973C6090
 :END:
-#+title: Authorization shell commands
+#+title: How do I run the authorization commands from the shell?
 #+description: Every command the authorization submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0E61EABD-0AF3-59A0-B796-0519EEE06FC9
 :END:
-#+title: Sessions shell commands
+#+title: How do I run the sessions commands from the shell?
 #+description: Every command the sessions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

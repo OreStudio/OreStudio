@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 84CA2C80-6E6A-5384-AF4B-0904CD1394F1
 :END:
-#+title: Signup shell commands
+#+title: How do I run the signup commands from the shell?
 #+description: Every command the signup submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
 #+level: cross

@@ -84,10 +84,8 @@ public:
     /**
      * @brief Lists account parties for a specific account, with pagination.
      */
-    std::vector<domain::account_party>
-    list_account_parties_by_account(const boost::uuids::uuid& account_id,
-                                    std::uint32_t offset,
-                                    std::uint32_t limit);
+    std::vector<domain::account_party> list_account_parties_by_account(
+        const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active account parties for an account.
@@ -122,13 +120,13 @@ public:
      * inserts the rows in @p account_parties, so the active set exactly
      * matches the caller's list.
      */
-    void replace_account_parties_by_account(
-        const boost::uuids::uuid& account_id,
-        const std::vector<domain::account_party>& account_parties,
-        const std::string& modified_by,
-        const std::string& performed_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+    void
+    replace_account_parties_by_account(const boost::uuids::uuid& account_id,
+                                       const std::vector<domain::account_party>& account_parties,
+                                       const std::string& modified_by,
+                                       const std::string& performed_by,
+                                       const std::string& change_reason_code,
+                                       const std::string& change_commentary);
 
 private:
     repository::account_party_repository repo_;

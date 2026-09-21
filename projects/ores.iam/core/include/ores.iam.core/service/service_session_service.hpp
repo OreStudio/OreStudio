@@ -72,10 +72,9 @@ public:
      * @return The created session if successful, nullopt if account not found
      *         or account is not a service account.
      */
-    std::optional<domain::session>
-    start_service_session(const std::string& username,
-                          const std::string& client_identifier,
-                          const std::string& protocol = "binary");
+    std::optional<domain::session> start_service_session(const std::string& username,
+                                                         const std::string& client_identifier,
+                                                         const std::string& protocol = "binary");
 
     /**
      * @brief Starts a session for a service account by account ID.
@@ -86,10 +85,9 @@ public:
      * @return The created session if successful, nullopt if account not found
      *         or account is not a service account.
      */
-    std::optional<domain::session>
-    start_service_session(const boost::uuids::uuid& account_id,
-                          const std::string& client_identifier,
-                          const std::string& protocol = "binary");
+    std::optional<domain::session> start_service_session(const boost::uuids::uuid& account_id,
+                                                         const std::string& client_identifier,
+                                                         const std::string& protocol = "binary");
 
     /**
      * @brief Ends a service session.

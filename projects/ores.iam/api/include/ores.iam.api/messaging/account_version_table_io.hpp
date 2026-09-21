@@ -30,7 +30,8 @@ namespace ores::iam::messaging {
 /**
  * @brief Dumps the account version object to a stream in table format.
  */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<account_version>& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                             const std::vector<account_version>& v);
 
 }
 

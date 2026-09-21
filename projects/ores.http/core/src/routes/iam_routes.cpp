@@ -616,8 +616,12 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
                 // We need the start_time to update the session. Read it first.
                 auto session = session_repo_.read(ctx_, session_id);
                 if (session) {
-                    session_repo_.end_session(
-                        ctx_, session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
+                    session_repo_.end_session(ctx_,
+                                              session_id,
+                                              session->start_time,
+                                              now,
+                                              0,
+                                              0); // No byte tracking for HTTP
                     BOOST_LOG_SEV(lg(), debug)
                         << "HTTP session ended: " << *req.authenticated_user->session_id;
                 }
@@ -896,11 +900,11 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
             existing ? existing->default_party_id : std::optional<boost::uuids::uuid>{};
         const auto full_name = existing ? existing->full_name : std::string{};
         const auto job_title = existing ? existing->job_title : std::string{};
-        const auto reports_to_account_id =
-            existing && existing->reports_to_account_id ? *existing->reports_to_account_id
-                                                        : boost::uuids::nil_uuid();
-        const auto image_id = existing && existing->image_id ? *existing->image_id
-                                                             : boost::uuids::nil_uuid();
+        const auto reports_to_account_id = existing && existing->reports_to_account_id ?
+                                               *existing->reports_to_account_id :
+                                               boost::uuids::nil_uuid();
+        const auto image_id =
+            existing && existing->image_id ? *existing->image_id : boost::uuids::nil_uuid();
 
         bool success =
             account_service_.update_account(uuid,
@@ -1415,11 +1419,9 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
     // replaced queried ores_iam_session_stats_tbl, which no schema ever
     // created. The request says so rather than replying with an empty list
     // that reads as "no sessions in range".
-    BOOST_LOG_SEV(lg(), warn)
-        << "Session statistics are not modelled; refusing the request";
-    co_return http_response::error(
-        http_status::not_implemented,
-        "Session statistics are not modelled yet");
+    BOOST_LOG_SEV(lg(), warn) << "Session statistics are not modelled; refusing the request";
+    co_return http_response::error(http_status::not_implemented,
+                                   "Session statistics are not modelled yet");
 }
 
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {

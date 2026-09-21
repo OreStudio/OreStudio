@@ -18,7 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.iam.api/domain/account_table_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/domain/account_table_io.hpp"    // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -544,8 +544,7 @@ void accounts_commands::process_list_sessions(std::ostream& out,
         if (!s.end_time.empty()) {
             const auto end = ores::platform::time::datetime::from_iso8601_utc(s.end_time);
             out << " - End: " << format_time(end);
-            const auto dur =
-                std::chrono::duration_cast<std::chrono::seconds>(end - s.start_time);
+            const auto dur = std::chrono::duration_cast<std::chrono::seconds>(end - s.start_time);
             out << " (" << format_duration(dur) << ")";
         } else {
             out << " [ACTIVE]";

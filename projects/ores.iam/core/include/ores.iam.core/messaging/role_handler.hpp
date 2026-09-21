@@ -233,9 +233,7 @@ public:
             boost::uuids::string_generator sg;
             auto codes = svc.get_role_permissions(sg(req->role_id));
             BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_role_permissions_response{.permission_codes = std::move(codes)});
+            reply(nats_, msg, get_role_permissions_response{.permission_codes = std::move(codes)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_role_permissions_response{});

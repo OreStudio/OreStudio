@@ -46,7 +46,8 @@ public:
     static std::vector<refdata::messaging::calendar_adjustment> map(const calendaradjustment& v);
 
     static newcalendar reverse(const refdata::messaging::calendar_adjustment& v);
-    static calendaradjustment reverse(const std::vector<refdata::messaging::calendar_adjustment>& v);
+    static calendaradjustment
+    reverse(const std::vector<refdata::messaging::calendar_adjustment>& v);
 };
 
 }

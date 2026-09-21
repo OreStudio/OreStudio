@@ -152,8 +152,8 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
     return domain::save_data(mapped);
 }
 
-std::string
-exporter::export_calendar_adjustments(const std::vector<refdata::messaging::calendar_adjustment>& v) {
+std::string exporter::export_calendar_adjustments(
+    const std::vector<refdata::messaging::calendar_adjustment>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting " << v.size() << " calendar adjustments.";
     const auto xsd = domain::calendar_adjustment_mapper::reverse(v);
     return domain::save_data(xsd);

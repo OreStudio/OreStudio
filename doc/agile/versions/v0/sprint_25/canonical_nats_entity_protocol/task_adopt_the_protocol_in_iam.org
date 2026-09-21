@@ -98,6 +98,11 @@ The order the work has to happen in, because each step gates the next:
    the bounds. Auxiliary records -- the key, the write record, the version, the
    result -- are emitted as entries with no subject, which the existing renderer
    already writes as plain structs, so no new template machinery is needed.
+
+   Started: =request_subject=, =event_subject= and =versions_subject= build the
+   grammar, refuse the vocabulary being replaced, and keep a scoped read at four
+   segments by carrying the relation in the verb slot.
+   =test_protocol_subject_grammar.py= holds all three to it.
 2. The rest of the templates. The handler, service and registrar templates
    branch on the verb set, so they move with it.
 3. Regenerate IAM and compile. The generated C++ has to build before anything

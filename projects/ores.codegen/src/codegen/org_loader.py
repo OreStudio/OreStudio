@@ -2423,6 +2423,58 @@ def ts_utility_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+# The specification's vocabulary. A subject has exactly four segments and its
+# last is one of these verbs; a scoped read adds a relation to the verb rather
+# than a segment, so it stays four. An event's last segment is an action
+# instead, drawn from its own closed set, because an event reports what
+# happened and no caller asked for it.
+SPEC_VERBS = (
+    "get", "get_many", "list", "put", "put_many", "delete", "delete_many")
+SPEC_EVENT_ACTIONS = ("created", "updated", "deleted")
+SPEC_VERSIONS_VERBS = ("list", "get")
+
+
+def request_subject(component: str, plural: str, verb: str) -> str:
+    """``iam.v1.tenants.get`` -- one subject per resource and verb.
+
+    ``verb`` is one of ``SPEC_VERBS``, or ``list_by_<relation>`` for a read
+    scoped to a related entity. The relation is part of the verb, not a fifth
+    segment, which is what keeps the grammar at four.
+    """
+    if verb not in SPEC_VERBS and not verb.startswith("list_by_"):
+        raise ValueError(
+            f"{verb!r} is not a verb of this protocol; "
+            f"expected one of {SPEC_VERBS} or list_by_<relation>")
+    return f"{component}.v1.{plural}.{verb}"
+
+
+def event_subject(component: str, plural: str, action: str) -> str:
+    """``iam.v1.tenants_events.created`` -- an announcement, not an operation.
+
+    The resource segment names the events collection rather than the resource,
+    in the ``{resource}_{collection}`` form a sub-resource uses, so the subject
+    still has four segments and still sits inside its component's namespace.
+    """
+    if action not in SPEC_EVENT_ACTIONS:
+        raise ValueError(
+            f"{action!r} is not an event action; "
+            f"expected one of {SPEC_EVENT_ACTIONS}")
+    return f"{component}.v1.{plural}_events.{action}"
+
+
+def versions_subject(component: str, plural: str, verb: str) -> str:
+    """``iam.v1.tenants_versions.list`` -- an entity's versions, read-only.
+
+    Versions are written by the database and never by a caller, so only the
+    read verbs exist for the collection.
+    """
+    if verb not in SPEC_VERSIONS_VERBS:
+        raise ValueError(
+            f"{verb!r} is not a read; a versions collection is read-only, "
+            f"so expected one of {SPEC_VERSIONS_VERBS}")
+    return f"{component}.v1.{plural}_versions.{verb}"
+
+
 def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive an entity's standard CRUD message list.
 

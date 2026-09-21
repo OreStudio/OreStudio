@@ -97,6 +97,19 @@ struct change_intent {
     std::string commentary;
 };
 
+/**
+ * @brief The order a page is returned in.
+ *
+ * Stated rather than implied, because a page of an unordered set is not
+ * reproducible and paging through it can repeat or skip rows. An empty @c
+ * field means the order by key, which is what makes a caller that names no
+ * order still get a stable page.
+ */
+struct order {
+    std::string field;
+    bool descending = false;
+};
+
 }
 
 #endif

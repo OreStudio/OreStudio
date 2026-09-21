@@ -28,9 +28,9 @@ ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Reconnaissance is done and the plan is written. The conversion has not started. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Fix the models the canonical derivation no longer honours, then regenerate refdata. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -44,9 +44,114 @@ ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Agreed scope, 2026-09-22. =ores.refdata= is the second component converted,
+after the IAM pilot, and the method is the pilot's:
+
+- *Refdata only.* The other components keep their output. Their committed
+  generated code is not regenerated and not reconciled here, and a consumer
+  outside refdata changes only where the protocol it reads changed.
+- *No backwards compatibility.* The old verbs, message names and subjects are
+  replaced, not carried alongside. No aliases, no deprecation window, no dual
+  serving.
+- *All layers in one PR.* Codegen, refdata's generated and hand-written C++,
+  the generated shell commands and their tests, the generated recipes, the BFF
+  route descriptors and the web screens ship together. Renaming a verb changes
+  handler signatures and registration, so a partial change leaves the tree
+  uncompilable.
+- *The mechanism already exists.* The pilot rewrote the templates
+  unconditionally, so this task contains no template work. Codegen already
+  derives the canonical message set in
+  =org_loader.entity_protocol_messages= and =junction_protocol_messages=, and
+  =cpp_protocol.hpp.mustache= is a pure ={{#messages}}= renderer. The work is
+  the models, the regeneration, and every surface that must move with it.
+
+* What the target is.* For one resource: the key, write, change, removal and
+lookup records; a filter; an event payload; the five verbs =list=, =get=,
+=get_many=, =put=, =put_many=, =delete=, =delete_many=, two per side for
+=:list_by:=, and a versions sub-resource read. The write record carries no
+server-owned field, the write request carries a =precondition= and a
+=change_intent=, and every response carries an =ores::utility::domain::result=.
+The shared types live in
+=projects/ores.utility/include/ores.utility/domain/protocol.hpp=.
+
+* The order the work has to happen in, because each step gates the next:
+
+0. *Reconnaissance* (done, 2026-09-22). The scale: a dry run of
+   =check_component_drift.py --component refdata --dry-run --address ores=
+   reports 825 files changed and 65 created -- 210 core/src, 203 core/include,
+   130 =ores.sql/create/refdata=, 77 =wire-protocol= twins, 77 api/include
+   changed plus 65 eventing headers created, 65 service/src and 63 core/tests.
+   The models are 65 entities, 9 junctions and 3 operations.
+1. *Fix the models first.* A property the canonical derivation does not read
+   is dropped in silence, so every one is decided here rather than discovered
+   later; the pilot's own note is that "the model is what gets fixed, not the
+   template".
+   - =:read_for_cache:= (party, currency_pair_convention) has no successor in
+     the specification: a cache is fed by events or by a =get_many=, not by a
+     bulk read. Removing it moves =ores.iam='s =party_cache= onto one of those.
+   - =:has_as_of_lookup:= (book_status, country, currency,
+     regulatory_book_type) is already ignored. The as-of read it used to add
+     is the versions sub-resource now.
+   - =:list_by:= (18 models, with =:list_by_as_of:= and =:list_by_uuid:=
+     variants) becomes =list_by_<relation>= plus the =scope= field.
+   - =:has_parent_id:= stays live, but the hierarchy message family it used to
+     emit is gone; the parent-scoped read is the relation-scoped list.
+   - The three operation models keep their declared messages, because a
+     domain operation is not derived. Their subjects must obey the grammar:
+     =refdata.v1.asset-classes.list= is hyphenated and becomes
+     =refdata.v1.asset_classes.list=. =calendar_adjustments.export= and
+     =calendar_dates.regenerate= stay, as component operations the
+     specification allows.
+   - The 92 =:implements <UUID>= paste blocks in 41 models are the old
+     hand-written message path. Each is either a message that moves into the
+     model's =* Messages= section or dead code that goes, and the loader
+     refuses a model that keeps both.
+2. *Regenerate and compile.* Nothing downstream is worth attempting until the
+   generated C++ builds.
+3. *The C++ lockstep.* The hand-written files that name the old protocol must
+   move with it: =api/.../messaging/protocol.hpp= (a 26-protocol umbrella),
+   the four operation stacks (=asset_class=, =calendar_adjustment=,
+   =calendar_materialisation=, =publish_from_dq=) with their =registrar.cpp=,
+   the hand-written =asset_class_repository= and =asset_class_service=, and
+   the =calendar_materialisation= and =calendar_adjustment_export= services.
+   The operation handlers adopt the outcome contract, or the model is
+   reclassified as an out-of-scope component operation.
+4. *SQL.* Regeneration rewrites =refdata_*_create.sql= and
+   =refdata_*_notify_trigger_create.sql= to the new trigger payload and the
+   version compare-and-swap; the table DDL does not change and no hand
+   migration is written. =refdata_publish_from_dq_create.sql= counts its
+   subjects in snake_case.
+5. *The shell.* The pilot's new =ores.doc.shell-recipe= facet follows
+   =ores.cpp.shell-command= automatically. Refdata has neither today: its shell
+   commands are hand-written in =ores.shell/application=, and eight subjects
+   are raw literals. Refdata gains a shell adapter part like
+   =projects/ores.shell/iam=, the models switch the facet on, and the
+   hand-written commands retire.
+6. *The web.* The 77 protocol twins regenerate, the UI metadata and BFF route
+   descriptors generate, and the hand-written =operations.ts=, the country
+   pages, the component registry and the BFF change-events file follow the
+   canonical names.
+7. *The consumers outside refdata.* =ores.http= risk routes, =ores.iam='s
+   tenant-provisioning handler and party cache, =ores.marketdata='s import
+   service, =ores.ore='s calendar-adjustment mapper, exporter, importer and
+   import handler, and the shell commands that read refdata directly. The DQ
+   populate SQL names about twenty publish-from-dq subjects.
+8. *Gates and verification.* Add =refdata= to =COMPONENTS_UNDER_TEST=, which
+   is the claim that its regeneration leaves the tree clean, that every
+   protocol header has its twin and that its seeds are complete. Then the
+   whole build, the codegen suite, the drift, twin, model, handler-permission
+   and populate gates, the full ctest run, and the shell surface against the
+   running fleet, as the pilot did.
+
+* Risks carried into the work.*
+
+- The party junctions are read by =ores.iam='s tenant provisioning, so a
+  protocol change there is a cross-component change even though the conversion
+  is refdata's alone.
+- 58 models declare custom repository methods, which the new contract must
+  still allow; the pilot added conditional write and remove beneath them.
+- =publish_from_dq= serves 31 kebab-case subjects that the grammar does not
+  allow, and DQ's populate data names them.
 
 * Notes
 

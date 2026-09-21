@@ -152,16 +152,38 @@ while the other components still announce =ores.{component}.{entity}_changed=,
 so their event fan-out is inconsistent until they are converted. That is the
 price of piloting one component and it is the agreed scope.
 
-*Open question: is event derivation in this task or not?* =event_subject= and
-=SPEC_EVENT_ACTIONS= are built and tested, but nothing calls them. No entity
-derives an events message, so IAM's =*_changed_event= registrars and their
-subjects are untouched by everything else in this task, and the paragraph above
-describes an adoption that does not happen yet. Either events are derived here
--- which needs the event payload to be stated, the registrar template to move to
-the new subject form, and the other components' =*_changed_event= producers to
-stay as they are for now -- or the paragraph is wrong and events are a separate
-task. It changes the shape of step 2 enough that it is worth settling before the
-service and handler templates are written.
+*Events are in this task* (settled 2026-09-21). IAM derives its events and
+adopts ={component}.v1.{plural}_events.{action}= in this PR; the other
+components keep announcing =ores.{component}.{entity}_changed= until
+=4620D5A7= converts them.
+
+That decision exposes a modelling gap the specification leaves open, and it
+should be settled before the derivation is written, because it decides whether
+the templates grow an events block:
+
+The specification states one payload and three subjects. Every event carries
+=event_id=, =key=, =action=, =version=, =occurred_at= and =correlation_id=, and
+the action is one of three -- yet the subject's last segment *is* the action, so
+one payload type is addressed by three subjects. A message as the renderer
+states it carries at most one =nats_subject=, and the =subjects= map is keyed by
+message name, so "one type, three subjects" has no expression today.
+
+Three ways out, and the choice is a protocol decision rather than a code one:
+
+- Three payload types, =<singular>_event_created= and its two siblings, each
+  with the full field list and its own subject. No new machinery, but the
+  payload is stated three times and =action= becomes redundant with the type
+  that carries it.
+- One payload, =<singular>_event=, beside three subject holders that carry the
+  subject and no fields. Also no new machinery, but it invents three empty
+  types whose only job is to hold a string.
+- One payload and an =events= block in both templates, rendering
+  =event_subjects= per action the way =subjects= is rendered per message. This
+  is the only one that states the protocol as written, and it is the one that
+  costs template work.
+
+The third is the honest reading and the one to take unless the specification is
+changed to give each action its own payload type.
 
 * Notes
 

@@ -992,6 +992,34 @@ must say which it is:
 The attempt was reverted rather than left half-done. What it bought is this
 question, and it is worth more than the wiring would have been.
 
+**The login_info list is declared twice, and the second one is the account
+model's.** Found 2026-09-21 by making login_info read-only and watching the shell
+reach the wrong subject. Two headers in the same namespace declare
+=list_login_info_request=:
+
+#+begin_src text
+  login_info_protocol.hpp          iam.v1.login_info.list
+  account_operations_protocol.hpp  iam.v1.accounts.login-info
+#+end_src
+
+The entity derives the first because login_info is a resource with reads; the
+account operation model declares the second by hand, as the spelling of
+"list an account's login info". They are the same read under two names, and the
+second is the one a client that includes the account header reaches.
+
+This is the =roles.list= duplication again, in a place the earlier sweep did not
+look, and it predates the read-only work: both headers have existed since account
+stopped owning its protocol. It only became visible when login_info gained a
+shell unit, because that is the first translation unit to reach for the entity's
+list while the operation model's is also in scope.
+
+The fix is the one roles took: the operation model gives up its copy, and its
+callers move to the derived subject -- the hand-written handler's =login_info=
+subscription and the shell's =accounts list-logins= among them. The entity's
+=account_id= is its primary key, so the derived protocol states
+=list_by_account_id_login_info= for the scoped read, which is the verb the
+account-scoped spelling was standing in for.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

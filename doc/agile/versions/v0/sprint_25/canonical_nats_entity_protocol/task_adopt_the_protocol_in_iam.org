@@ -28,9 +28,9 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | The pilot is complete for IAM and every gate passes: 21 protocol headers each with a TypeScript twin; 19 generated shell units covering every derived verb of every IAM entity, junction included; the database rebuilds from the create scripts; 523 codegen tests pass; and the component-drift, model-drift, twin-coverage, handler-permission and populate-reference checks are clean. Every raw IAM subject outside a protocol header now references a generated constant except one in =ores.nats=, where the constant cannot be reached without inverting the layering. The live pass that proved the write lifecycle predates this round, so the junction unit and the account-permissions handler are proved by the build and the codegen tests rather than over the wire. |
+| Now          | The shell surface is proved against the running fleet. The whole tree compiles; the fleet is up; 550 codegen tests pass; the component-drift, model-drift, twin-coverage, handler-permission and populate-reference checks are clean; and every one of the 124 generated IAM shell commands has a recipe, of which 123 were run and all 123 answered. The recipe set is now generated rather than hand-written: one literate document per model, one script per command. One command, `reset reset-system`, is deliberately not replayed, and the model declares it destructive. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the live pass again over the new surface -- the nine =account_party= commands and =accounts permissions= -- and then split delivery: PR 1 is this conversion, PR 2 is exercising all IAM functionality against the running fleet. The aggregate-constants backlog story ([[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][Codegen: generate NATS subject constants per component]]) is the only protocol gap left in IAM. |
+| Next         | Run the second half of the rejig: PR 1 is this conversion plus the shell verification, PR 2 is `ores.web`. Before PR 1 opens, the shell recipe inventory at `doc/recipes/shell/shell.org` needs the generated documents linked into it -- the same argument that made the recipes generated applies to their index. Then the same facet rolls out to the next component. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -1167,6 +1167,89 @@ sends it cannot see IAM's headers, which is the case the aggregate-constants
 story has to solve with a neutral owner rather than a per-component header. The
 =iam.v1.accounts.list= example in =ores.nats/service/client.hpp='s
 =make_subject= doc comment is illustrative and stays.
+
+**The shell surface is proved against the fleet, and the recipes are generated.**
+Done 2026-09-21. The question that opened this was whether every command has a
+recipe, and the answer could not be a hand-written set: 124 IAM commands today
+and roughly a thousand across the components. So the recipes are a codegen
+facet, =ores.doc.shell-recipe=, and the grid below is what it produced and what
+it proved.
+
+| Measure | Value |
+|---------+-------|
+| Generated IAM shell commands | 124 |
+| Generated recipe documents | 20, one per model that renders a shell unit |
+| Generated library scripts | 124, one per command |
+| Commands with a recipe | 124 of 124 |
+| Commands run against the fleet | 123 of 124, all answered |
+
+*One document per model, one script per section.* A recipe is literate first:
+the model's shell projection already knows what each command does, what it asks
+for and where it is addressed, so the document states all three and the
+runnable line is that document's export rather than a second description of it.
+The tangle makes this possible: =org-babel-tangle-file= redirects every block
+into one file only because =ores-build-recipe-scripts.el= hands it a
+=TARGET-FILE=; given none it honours each block's own =:tangle=, so one document
+exports one script per section. The two modes are exclusive, because a block
+with no =:tangle= is skipped when there is no target -- which is why the
+existing single-section recipes were untouched.
+
+*Two capabilities the facet needed from codegen.*
+
+A recipe is a view of another facet's output, so it must exist exactly where
+that facet produced something. =#+requires_facet:= says so, and it is resolved
+against the graph rather than against the run: =--address= narrows a run to one
+facet, and a dependant that looked only at this run's units would never see its
+dependee fire. That is what the first attempt did, and it logged "nothing to
+generate" for a facet that was working.
+
+A generated script cannot invent a real id. A command that failed at the client
+-- an unparseable uuid, a refused arity -- would prove nothing about the
+service, so each field gets a type-correct sentinel that addresses no row:
+=00000000-0000-0000-0000-000000000000= for a uuid, =__none__= for text,
+=system.new_record= for a reason code. A script that reaches the handler and is
+refused on its merits has checked the wiring, which is the whole point. The
+evidence is the shape of the replies: =tenant_types get __none__= answers
+=missing/not_found=, not a client error.
+
+*The sweep destroyed the environment twice, and the cause is now in the model.*
+The first sweep ran every script under the IAM menus -- which included the
+pre-existing hand-written recipes, whose blocks carry values captured from a
+real run, =tenants delete <a real id>= among them. The second ran only the
+generated scripts and still ended in bootstrap mode. The cause was one command:
+
+=reset reset-system= returns the system to its pre-bootstrap state. The SQL says
+it plainly -- "Purge all non-system tenants (hard-delete)", "Re-enable system
+bootstrap mode" -- and the damage matched exactly: the tenant rows gone, their
+accounts orphaned, the flag flipped so every later login failed.
+
+Nothing in the recipe said so, because nothing in the *shape* says so: a reset
+and a status read are both a bare command name. So the fact is declared where
+the protocol is declared. =:destructive: true= on the message is carried into
+the projection, the document warns the reader, and the generated script carries
+the warning as a comment. A runner can now refuse such a command instead of
+discovering it by running it. Both reset operations are marked.
+
+What this does *not* fix: a recipe library is a script library, and most of its
+writes are safe only because a sentinel addresses nothing. Replaying the whole
+library against an environment anyone needs is not a supported operation, and
+the marker is a warning, not a sandbox.
+
+*A rebuilt tree needs restarted services.* One command failed the sweep with
+"no service is handling subject 'iam.roles.permissions-by-account'" -- the
+operation added earlier in this task. The subscription was in
+=libores.iam.core.so=; the running process had been started from a binary the
+compiler replaced while the fleet was still coming up. Restarting
+=ores.iam.service= fixed it and the command answered. The lesson costs one
+restart and saves a hunt: after a build, restart before believing a "no
+subscriber" error.
+
+*One thing the facet does not yet do.* =doc/recipes/shell/shell.org= is the
+hand-maintained inventory and the generated documents are not linked from it.
+Nothing gates on that -- the search index reads content, not the inventory --
+but a reader browsing the inventory will not find the generated recipes. The
+same argument that made the recipes generated applies to their index, and it is
+the next piece of this facet.
 
 * PRs
 

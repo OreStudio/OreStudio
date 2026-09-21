@@ -53,6 +53,15 @@ export interface RoleLookup {
     role: Role | null;
 }
 
+export interface RoleEvent {
+    event_id: string;
+    key: RoleKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface RoleVersionKey {
     role: RoleKey;
     version: number;
@@ -165,4 +174,15 @@ export const subjects = {
     delete_many_roles_request: "iam.v1.roles.delete_many",
     list_role_versions_request: "iam.v1.roles_versions.list",
     get_role_version_request: "iam.v1.roles_versions.get",
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.roles_events.created",
+    updated: "iam.v1.roles_events.updated",
+    deleted: "iam.v1.roles_events.deleted",
 } as const;

@@ -57,6 +57,15 @@ export interface TenantLookup {
     tenant: Tenant | null;
 }
 
+export interface TenantEvent {
+    event_id: string;
+    key: TenantKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface TenantVersionKey {
     tenant: TenantKey;
     version: number;
@@ -169,4 +178,15 @@ export const subjects = {
     delete_many_tenants_request: "iam.v1.tenants.delete_many",
     list_tenant_versions_request: "iam.v1.tenants_versions.list",
     get_tenant_version_request: "iam.v1.tenants_versions.get",
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.tenants_events.created",
+    updated: "iam.v1.tenants_events.updated",
+    deleted: "iam.v1.tenants_events.deleted",
 } as const;

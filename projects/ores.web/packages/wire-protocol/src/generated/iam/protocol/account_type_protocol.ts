@@ -54,6 +54,15 @@ export interface AccountTypeLookup {
     account_type: AccountType | null;
 }
 
+export interface AccountTypeEvent {
+    event_id: string;
+    key: AccountTypeKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface AccountTypeVersionKey {
     account_type: AccountTypeKey;
     version: number;
@@ -166,4 +175,15 @@ export const subjects = {
     delete_many_account_types_request: "iam.v1.account_types.delete_many",
     list_account_type_versions_request: "iam.v1.account_types_versions.list",
     get_account_type_version_request: "iam.v1.account_types_versions.get",
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.account_types_events.created",
+    updated: "iam.v1.account_types_events.updated",
+    deleted: "iam.v1.account_types_events.deleted",
 } as const;

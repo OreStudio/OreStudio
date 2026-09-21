@@ -58,6 +58,15 @@ export interface LoginInfoLookup {
     login_info: LoginInfo | null;
 }
 
+export interface LoginInfoEvent {
+    event_id: string;
+    key: LoginInfoKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListLoginInfoRequest {
     offset: number;
     limit: number;
@@ -134,4 +143,15 @@ export const subjects = {
     put_many_login_info_request: "iam.v1.login_info.put_many",
     delete_login_info_request: "iam.v1.login_info.delete",
     delete_many_login_info_request: "iam.v1.login_info.delete_many",
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.login_info_events.created",
+    updated: "iam.v1.login_info_events.updated",
+    deleted: "iam.v1.login_info_events.deleted",
 } as const;

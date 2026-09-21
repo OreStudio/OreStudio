@@ -58,6 +58,15 @@ export interface AccountPartiesFilter {
     account_id: string | null;
 }
 
+export interface AccountPartyEvent {
+    event_id: string;
+    key: AccountPartyKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
 export interface ListAccountPartiesRequest {
     offset: number;
     limit: number;

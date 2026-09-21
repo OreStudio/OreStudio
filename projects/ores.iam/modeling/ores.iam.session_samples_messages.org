@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: AC8F2B43-AC9F-41CF-AC5B-B0F37CADC556
 :END:
 #+title: ores.iam.session_samples_messages

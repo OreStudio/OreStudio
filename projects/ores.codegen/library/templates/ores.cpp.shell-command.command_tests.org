@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp
 #+facet: ores.cpp.shell-command
+#+model_types: domain_entity
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-16

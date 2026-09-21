@@ -45,6 +45,7 @@
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
+#include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
@@ -92,6 +93,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     countries_commands::register_commands(*root, session_, pagination_);
     currencies_commands::register_commands(*root, session_, pagination_);
     trading_commands::register_commands(*root, session_, pagination_);
+    iam_commands::register_commands(*root, session_, pagination_);
     accounts_commands::register_commands(*root, session_, pagination_);
     variability_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);

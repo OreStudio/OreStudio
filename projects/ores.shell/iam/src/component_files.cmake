@@ -16,8 +16,11 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/application)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+set(files
+    "app/commands/iam/session_samples_operations_commands.cpp"
+)
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
+)

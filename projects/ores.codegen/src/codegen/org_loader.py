@@ -3209,7 +3209,30 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)
 
+    # The shell's view of the same list: one command per addressable message,
+    # so the REPL surface and the protocol are one declaration.
+    op["shell_commands"] = shell_command_projection(messages)
+    # The unit-local helpers are emitted only when a command needs them, so an
+    # unused static function is not compiled into every unit.
+    op["shell_has_bool"] = any(
+        field["is_bool"]
+        for command in op["shell_commands"]
+        for field in command["positionals"] + command["flags"]
+    )
+    op["shell_has_list"] = any(
+        field["is_list"]
+        for command in op["shell_commands"]
+        for field in command["positionals"] + command["flags"]
+    )
+    # The anonymous namespace holds those two helpers, so it is emitted only
+    # when one of them is.
+    op["shell_has_helpers"] = bool(op["shell_has_bool"] or op["shell_has_list"])
+    # Mustache cannot ask a list for its length, so the count the unit's own
+    # test asserts is derived here.
+    op["shell_command_count"] = len(op["shell_commands"])
+
     _reject_silent_ts_gap(path, messages, doc.file_properties)
+    _reject_silent_shell_gap(path, op["shell_commands"], doc.file_properties)
 
     return {"operation": op}
 
@@ -3245,9 +3268,145 @@ def _reject_silent_ts_gap(
     )
 
 
+# The C++ types a generated shell command fills from one command-line token.
+# A type outside this set has no token form, so the model must map it here or
+# switch the facet off rather than render a unit that cannot compile.
+_SHELL_TOKEN_TYPES = frozenset({
+    "std::string",
+    "bool",
+    "int",
+    "std::uint32_t",
+    "std::uint64_t",
+    "boost::uuids::uuid",
+    "std::chrono::system_clock::time_point",
+})
+# The one container form the shell can fill: a comma-separated token.
+_SHELL_LIST_TYPE = "std::vector<std::string>"
+# The trailing words a message name carries that are not part of the action.
+_SHELL_NAME_NOISE = frozenset({"request", "command", "typed"})
+
+
+def shell_command_name(message_name: str) -> str:
+    """The REPL command a declared message becomes.
+
+    The trailing words name the artefact rather than the action, so they are
+    dropped in whatever order the model wrote them: ``save_account_request``
+    becomes ``save-account``, and ``get_accounts_request_typed`` becomes the
+    same command as ``get_accounts_request``.
+    """
+    words = message_name.split("_")
+    # The last word stands even when it is noise: a message named after the
+    # artefact alone would otherwise give the menu an empty command.
+    while len(words) > 1 and words[-1] in _SHELL_NAME_NOISE:
+        words.pop()
+    return "-".join(words)
+
+
+def _shell_field(field: dict[str, Any]) -> dict[str, Any]:
+    """One declared request field, as the shell unit asks for it.
+
+    A field the model gave a ``:default:`` is optional, so it arrives as a
+    ``--<name>`` flag and the struct's own initialiser stands when the caller
+    omits it. A field without one is a positional argument.
+    """
+    cpp = (field.get("cpp_type") or "std::string").strip()
+    is_list = cpp == _SHELL_LIST_TYPE
+    return {
+        "name": field["name"],
+        "cpp_type": cpp,
+        "default": field.get("default"),
+        "is_optional": field.get("default") is not None,
+        "is_list": is_list,
+        "is_string": cpp == "std::string",
+        "is_bool": cpp == "bool",
+        "is_number": cpp in ("int", "std::uint32_t", "std::uint64_t"),
+        "needs_from_token": not is_list and cpp not in ("std::string", "bool"),
+        "fillable": is_list or cpp in _SHELL_TOKEN_TYPES,
+    }
+
+
+def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The shell commands a declared protocol yields, one per addressable message.
+
+    A message is addressable when it states a subject and a response: the
+    subject is what the command sends to and the response is what it prints, so
+    a payload struct has neither and a request with no response answers with
+    nothing the shell could show.
+
+    ``unsupported`` lists the fields a token cannot fill. The renderer emits the
+    command regardless, so an unfillable field fails the build rather than
+    disappearing from the surface; :func:`_reject_silent_shell_gap` reports it
+    when the model has opted in.
+    """
+    commands: list[dict[str, Any]] = []
+    for message in messages:
+        subject = message.get("subject")
+        response = message.get("response_type")
+        if not subject or not response:
+            continue
+        fields = [_shell_field(field) for field in message.get("fields") or []]
+        positionals = [field for field in fields if not field["is_optional"]]
+        flags = [field for field in fields if field["is_optional"]]
+        command = shell_command_name(message["name"])
+        commands.append({
+            "command": command,
+            "identifier": command.replace("-", "_"),
+            "request": message["name"],
+            "response_type": response,
+            "subject": subject,
+            "positionals": positionals,
+            "flags": flags,
+            "positional_count": len(positionals),
+            "has_positionals": bool(positionals),
+            "has_flags": bool(flags),
+            "usage": shell_command_usage(command, positionals, flags),
+            "unsupported": [field["name"] for field in fields
+                            if not field["fillable"]],
+        })
+    return commands
+
+
+def shell_command_usage(command: str, positionals: list[dict[str, Any]],
+                        flags: list[dict[str, Any]]) -> str:
+    """The one-line help a generated command registers."""
+    parts = [command]
+    parts.extend(f"<{field['name']}>" for field in positionals)
+    parts.extend(f"[--{field['name']} <v>]" for field in flags)
+    return " ".join(parts)
+
+
+def _reject_silent_shell_gap(
+    path: Path | str, commands: list[dict[str, Any]],
+    file_properties: dict[str, str],
+) -> None:
+    """Reject an opted-in model whose tokens cannot fill a declared field.
+
+    The facet is opt-in, so a model that has not asked for a shell unit is left
+    alone: the same projection serves every operation model and most of them
+    render no unit at all.
+    """
+    unsupported = sorted({
+        f"{command['command']}.{name}"
+        for command in commands
+        for name in command["unsupported"]
+    })
+    if not unsupported:
+        return
+    enabled = str(
+        file_properties.get("ores.cpp.shell-command.enabled", "")
+    ).strip().lower()
+    if enabled not in ("true", "yes", "1"):
+        return
+    raise ValueError(
+        f"{Path(path).name}: no shell token form for {unsupported}; map the "
+        "type in org_loader._SHELL_TOKEN_TYPES, or set "
+        "':ores.cpp.shell-command.enabled: nil' in the file's :PROPERTIES: "
+        "drawer to skip the shell facet"
+    )
+
+
 def junction_ts_fields(junction: dict[str, Any]) -> list[dict[str, Any]]:
     """The junction members that need a TypeScript projection, in the order
-    ``domain_types.ts.mustache`` emits them.
 
     The audit tail is hard-coded as strings by the template, so it is not
     listed here. Only the left and right columns and the junction's own

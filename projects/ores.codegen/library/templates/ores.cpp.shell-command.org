@@ -4,7 +4,7 @@
 #+title: ores.cpp.shell-command
 #+description: Shell REPL command units for entity CRUD verbs: the per-entity submenu, its get/add/delete/history handlers, and the per-menu registrar.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity operation
 #+level: cross
 #+facet_group: ores.cpp
 #+default: disabled
@@ -89,6 +89,9 @@ the template names it directly and fills it from the session.
 | [[id:7CF22895-824F-45C4-85A1-A31C3CA78EFF][ores.cpp.shell-command.command_header]] | Shell REPL command unit header: submenu and process_* declarations for one entity. |
 | [[id:9409FEC6-FDF7-496D-BAA1-EEF027BB1D76][ores.cpp.shell-command.command_implementation]] | Shell REPL command unit implementation: the registration lambdas and the process_* bodies for one entity. |
 | [[id:B5C41D0E-7A93-4E6B-8F52-2D6C9A17E4B3][ores.cpp.shell-command.command_tests]] | Shell REPL command unit tests: one case per handler guard, the arity check, a malformed token, and a valid token vector that reaches the transport. |
+| [[id:045D02A8-3BE9-4074-8F12-6F2FC2A298D3][ores.cpp.shell-command.operation_header]] | Shell REPL command unit header for an =operation= model: the submenu and one =process_*= per message the model declares with a subject and a response. |
+| [[id:D11BCA02-A837-4189-97A8-79C00C52F98A][ores.cpp.shell-command.operation_implementation]] | Shell REPL command unit implementation for an =operation= model: one body per declared message, each filling its request from a token vector. |
+| [[id:BF811B0F-FF26-4413-87D7-1A687BE72875][ores.cpp.shell-command.operation_tests]] | Shell REPL command unit tests for an =operation= model: a signed-out guard, the argument count, and a token vector that reaches the transport, per declared command. |
 
 * See also
 

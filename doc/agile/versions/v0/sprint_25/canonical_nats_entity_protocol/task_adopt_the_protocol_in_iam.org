@@ -554,19 +554,26 @@ argument. Proved on =session_samples=: the unit compiles, its three generated
 tests pass, and =ores.shell.iam= exists as an adapter part with an aggregator the
 host calls.
 
-The open item is authentication. The shell has two helpers: =do_request= sends
-without a token and =do_auth_request= sends with one. The generated unit uses
-=do_auth_request= and refuses a signed-out session, which is right for every
-operation that acts on a logged-in caller -- and wrong for the six that
-establish the session in the first place: =login=, =service-login=, =signup=,
-=public-key=, =bootstrap.status= and =bootstrap.create-admin=. Those must send
-with =do_request=, and the model states nothing that distinguishes them, so
-enabling the facet on =login_messages= or =bootstrap_messages= today would
-generate a =login= command that refuses to run because nobody is logged in.
-Either the message declares it, as a =:auth: none= property beside its
-=:subject:=, or the generated unit sends unauthenticated and lets the service
-refuse. The first keeps the decision with the model, which is where every other
-decision of this kind lives.
+**The fact lives in the protocol, not in the shell.** Settled 2026-09-21. The
+shell has two helpers: =do_request= sends without a token and =do_auth_request=
+sends with one, and the generated unit originally used the second
+unconditionally, which is wrong for the six operations that establish the
+session. The first attempt fixed that in the shell's own projection, which put
+the fact in the wrong place: the web client must decide whether to attach a
+token before it has one, and every later client must decide the same thing, so a
+fact only the shell carries is a fact each consumer re-derives.
+
+A message now states it as =:auth: none= beside its =:subject:=. Both protocol
+twins carry it -- a C++ constant beside the subject, a TypeScript map beside the
+subjects -- and a value other than =none= is refused where the message is
+parsed, so a typo fails the model rather than producing an operation every
+client calls without a token. Every derived entity operation states =true=,
+because the derivation has no unauthenticated verb.
+
+The shell reads the protocol's statement rather than a duplicate: =if constexpr
+(request_type::requires_session)= chooses the guard and the helper. The
+projection keeps one flag, for choosing which test cases to emit, and a test
+asserts the two agree.
 
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it

@@ -28,7 +28,7 @@ returns trigger as $$
 declare
     notification_payload jsonb;
     change_action text;
-    change_version integer := 0;
+    changed_version integer := 0;
     changed_id uuid;
     changed_key jsonb;
     changed_tenant_id text;

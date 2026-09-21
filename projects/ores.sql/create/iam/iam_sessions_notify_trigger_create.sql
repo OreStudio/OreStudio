@@ -28,7 +28,7 @@ returns trigger as $$
 declare
     notification_payload jsonb;
     change_action text;
-    change_version integer := 0;
+    changed_version integer := 0;
     changed_id uuid;
     changed_start_time timestamp with time zone;
     changed_key jsonb;
@@ -38,7 +38,6 @@ begin
         change_action := 'deleted';
         changed_id := OLD.id;
         changed_start_time := OLD.start_time;
-        changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
         change_action := 'updated';

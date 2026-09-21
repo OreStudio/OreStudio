@@ -13,7 +13,7 @@ returns trigger as $$
 declare
     notification_payload jsonb;
     change_action text;
-    change_version integer := 0;
+    changed_version integer := 0;
     {{primary_key.notify_declarations}}
     changed_key jsonb;
     changed_tenant_id text;
@@ -21,7 +21,9 @@ begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
         {{primary_key.notify_assign_old}}
+{{#has_audit_columns}}
         changed_version := OLD.version;
+{{/has_audit_columns}}
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
 {{#has_audit_columns}}

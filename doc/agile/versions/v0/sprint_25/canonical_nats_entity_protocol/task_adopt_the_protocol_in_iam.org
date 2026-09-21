@@ -28,9 +28,9 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Steps 0 and 1 are DONE: the protocol has one source of truth and the derivation states the specification. The handler, service, registrar, event-cache, shell-command and entity-doc templates still branch on the verbs being replaced. |
-| Waiting on   | Nothing.                               |
-| Next         | Step 2: move the remaining templates onto the verb set. Step 3: regenerate IAM and compile. |
+| Now          | Step 2 is DONE for every entity whose messaging layer codegen owns. The repository, service, handler and registrar templates speak the canonical verbs, IAM is regenerated, the whole tree compiles, and 437 codegen tests pass. The account_party junction is the one exception and it is the decision the task is waiting on. |
+| Waiting on   | A ruling on the account_party junction: its protocol must be generated canonically (the twin gate forbids silencing one twin), which forces its hand-written handler and five callers onto the new shapes. |
+| Next         | Convert the account_party junction's hand-written messaging layer and its callers. Then step 4: the generated shell commands. Then step 5: the UI. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -364,6 +364,53 @@ derives one for every entity, so =has_get= is true rather than permanently
 false. The delete and versions routes stay gated on the key being the natural
 key, because the path segment carries one value and a key record may name
 several.
+
+**Step 2 landed, and what it found.** The repository, service, handler and
+registrar templates now speak the canonical verbs, and the whole tree
+compiles. The work found five things worth keeping.
+
+- *The database already arbitrates the version.* Every bitemporal table's
+  insert trigger reads the current row =for update=, raises
+  =P0002= when the stated version differs, and treats a zero version as
+  "no claim". So =must_match_version= needed no new storage mechanism:
+  the repository reads the current row first, to answer =missing= and
+  =conflicting= as outcomes rather than exceptions, and the trigger
+  remains the arbiter that makes the check and the write one transaction. A
+  write with =must_not_exist= is the one case the trigger cannot answer,
+  because it treats "no row" and "any row" alike; the read before the write
+  is what tells them apart.
+- *The versions sub-resource is gated on the version column, not on the
+  current-state flag.* =permission= carries =no_audit_columns=
+  and is not a current-state table: it keeps a validity window with no
+  version in it, so it derived a versions pair it could not answer. The gate
+  is =has_audit_columns=, which is exactly "has a version column".
+- *A relation is often a natural key.* =account_contact_information='s
+  =account_id= is a foreign key and a natural key, and the loader
+  partitions natural keys out of =columns=. The scoped read therefore
+  typed the relation =std::string= while the write record typed the same
+  column a uuid. One lookup, both spellings.
+- *The batch read was never exercised.* It was gated on a model flag no IAM
+  entity sets, so making it unconditional exposed two latent defects: it
+  filtered the exact requested key-tuples by comparing a mapped row against
+  text, which cannot match a uuid or a timestamp column, and the conditional
+  removal compared an =int= column to the protocol's =uint32=.
+- *The service keeps its plain accessors.* The canonical methods take a
+  request and answer its response, so the handler decides nothing; the
+  existing accessors stay because hand-written callers use them. One wire
+  protocol, one internal convenience surface.
+
+**The account_party junction is the open decision.** Its handler, service and
+registrar are hand-written and its protocol was generated. The protocol now
+derives a canonical set, so the hand-written layer no longer compiles against
+it. The model can state that codegen owns no protocol for the junction --
+which is what it does now -- but =check_protocol_twin_coverage= forbids
+silencing one twin, and a model that silences both still trips the rule as it
+stands. Converting the junction means the hand-written handler plus five
+callers: the component registrar, the shell's =account_parties= and
+=provision= commands, =tenant_provisioning_handler=, and
+=ores.refdata='s =provision_parties_workflow=. The alternative is to
+make the rule state its own purpose: forbid a header that ships without its
+twin, which is a model that keeps one facet and silences the other.
 
 * Test Scenarios
 

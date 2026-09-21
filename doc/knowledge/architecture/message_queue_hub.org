@@ -11,18 +11,23 @@
 
 * Summary
 
-Components in ORE Studio communicate over NATS. A message is addressed by a
-four-segment subject -- component, version, resource, verb -- and the component
-that owns the first segment is the one that serves it, so a subject is answered
-by exactly one service or by none. Request and reply is one pattern on the bus;
-events published under the =events= segment are the other, and a request is
-answered once where an event may have any number of independent consumers.
+Components in ORE Studio are separate processes with their own databases and no
+shared memory, so the only way one acts on another's data is by sending it a
+message. A service's public surface is exactly the set of subjects it answers,
+and a message is the entire interface: what a component keeps private is
+reachable by no other means.
 
-A payload carries business data and nothing else. Identity, tenancy, version and
-audit provenance are derived server-side from the authenticated connection and
-never travel on the wire. Entity operations share one verb set and one pair of
-envelopes across every component, so a client that has read one component's
-protocol has read them all.
+The cluster covers that interface in the four concerns it separates. The *bus*
+supplies the patterns a message may use -- request and reply, publish and
+subscribe, queue groups, streams. The *namespace* decides which component owns
+an address, and therefore which one answers. The *contract* fixes what a message
+may contain: the grammar of a subject, the verbs an entity supports, what a
+write may assert, and how a failure is reported. The *binding* turns subjects
+into handlers inside a service.
+
+Read in that order. Each concern rests on the one before it: a contract cannot
+be tested without a namespace to address it in, and a binding is mechanical once
+the contract is fixed.
 
 * Reading order
 

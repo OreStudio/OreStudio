@@ -1034,9 +1034,14 @@ wrapper change it looks like: the junction's render context names its resource
 =shell= plan at all -- the plan is built for domain entities only. So the work is
 
 1. a normalising shim in =generate_from_model= so a junction presents the keys
-   the shell templates read -- =entity_singular=, =entity_plural=,
-   =entity_plural_short=, =primary_key=, =write_fields= -- from the junction's own
-   spellings, rather than the templates learning two vocabularies;
+   the shell templates read. Checked 2026-09-21, and it is more than a rename:
+   the junction carries =name_singular=, =name_singular_short=, =columns=,
+   =operations= and the per-verb operation lists, and it carries *no*
+   =primary_key=, no =write_fields=, no =entity_singular=, no =entity_plural=,
+   no =entity_plural_short= and no =shell=. The shim has to build those from
+   what is there -- and the plural is the awkward one, because a junction's is
+   irregular (=account_party= answers on =account_parties=) and is not derived
+   anywhere the junction dict exposes;
 2. =entity_shell_plan(junction)= beside the domain-entity call, which the
    normalised keys make a one-liner;
 3. =junction= added to the shell facet's =#+model_types:= and to the three

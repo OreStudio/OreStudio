@@ -810,6 +810,45 @@ waits on a decision about scope: either =login_info= becomes read-only and
 =ores.cli= is carried with it, or the pilot ships with one entity whose write
 verbs exist and have no shell command.
 
+**The account and session refactor, as a sequence.** Worked out 2026-09-21 so it
+does not have to be re-derived. The shape is the one the role split already
+proved, and it is all-or-nothing per entity: the tree is red from the first step
+to the last, because renaming a request type changes the handler that decodes it.
+
+1. *Rename the hand-written pair.* =account_handler= →
+   =account_operations_handler= and =account_service= →
+   =account_operations_service=, file names, class names and logger names
+   together. Nothing else changes, so this step alone is green. It is needed
+   because the generated facets emit a class of each of those names at each of
+   those paths, and a rename is cheaper than teaching the templates to avoid a
+   collision.
+2. *Lift the ownership.* In =ores.iam.account_messages.org= change
+   =:entity_singular: account= to =account_operations=, which is what makes the
+   operation model stop owning the entity's protocol. Then delete the messages
+   the derivation will state instead -- =save_account_request=,
+   =update_account_request=, =delete_account_request=, =get_accounts_request_typed=
+   and =change_password_request_typed= -- and keep only the genuine workflows:
+   lock, unlock, login-info, reset-password, update-email, set-default-party,
+   select-party, switch-party.
+3. *Re-enable the generated facets.* Remove =:ores.cpp.nats-handler.enabled: nil=,
+   =:ores.cpp.nats-sub-registrar.enabled: nil= and =:ores.cpp.service.enabled: nil=
+   from =ores.iam.account.org=, and enable =:ores.cpp.shell-command:.
+4. *Rewire the callers.* =registrar.cpp= delegates the canonical set to
+   =register_account_handlers= and the workflows to the operations handler;
+   =iam_routes.cpp= moves its list and get onto the derived message names;
+   =accounts_commands.cpp= moves onto the canonical subjects; and the web screens
+   for account are wired to a generated declaration, which does not exist yet
+   because the entity has no shell or web facet enabled.
+5. *Regenerate and rebuild.* The account protocol header, service, handler,
+   registrar, TypeScript twin, both shell units and the web descriptor all appear
+   at once.
+
+=session= follows the same five steps and is smaller: =session_messages.org= is
+half the size and its =active= and =samples= operations are the only bespoke
+ones. Its list request is already a scoped read in the old shape, so step 2 is
+mostly a deletion, and its =session_view= record is declared, documented and
+referenced by nothing.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

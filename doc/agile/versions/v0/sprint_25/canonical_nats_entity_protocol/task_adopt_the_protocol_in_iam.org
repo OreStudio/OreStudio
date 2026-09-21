@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
-#+branch: feature/canonical-nats-entity-protocol
+#+branch: feature/adopt-the-protocol-in-iam
 #+pr:
 #+blocked_on:
 #+blocked_since:

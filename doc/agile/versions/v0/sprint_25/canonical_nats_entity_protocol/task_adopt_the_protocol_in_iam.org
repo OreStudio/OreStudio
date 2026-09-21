@@ -917,6 +917,21 @@ that wants one has to stop being pointed at the other. That is a classification
 job over twelve files, and it is why this is the last entity rather than the
 first.
 
+**Account cannot be renamed in a step of its own.** Found 2026-09-21 by trying
+it. Session's first step was a rename, and account's is not, because the
+templates name a hand-written service and handler after the entity: the
+generated history provider registrar includes =<entity>_service.hpp=, which for
+account is the exact name a rename frees, so regenerating it points at a header
+that no longer exists. With the facets off there is no generated
+=account_service= to take that name, so the rename has nothing to hand it to.
+
+Two ways out, and the second is the better one: either the model gains a flag
+naming its hand-written service and handler, or the templates stop naming them
+and the registrar takes the service from the model. Until one of those exists,
+account's conversion is a single change: the model edits, the three facets, the
+rename, the ninety-four references and the regeneration all land together or not
+at all.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

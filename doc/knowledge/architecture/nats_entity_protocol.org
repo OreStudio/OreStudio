@@ -61,15 +61,19 @@ Four things are outside it and keep their own homes:
 
 ** Subject grammar
 
-Every subject has exactly four dot-separated segments:
+Every subject has exactly four dot-separated segments, and the second is always
+the literal =v1= rather than a variable. The first and the last differ according
+to whether the subject performs an operation or announces one:
 
 #+begin_example
-{component}.v1.{resource}.{verb}
+{component}.v1.{resource}.{verb}            -- a request
+{component}.v1.{resource}_events.{action}   -- an event
 #+end_example
 
-Each segment is lower snake_case. =v1= is a literal version segment, not a
-variable. All four are mandatory: a subject with three segments, or with five,
-does not belong to this protocol.
+Each segment is lower snake_case. All four are mandatory: a subject with three
+segments, or with five, does not belong to this protocol. The resource segment
+is a plural noun, and an event's resource segment names the events collection
+in the same ={resource}_{collection}= form a sub-resource uses.
 
 *** The component namespace
 
@@ -87,8 +91,9 @@ on.
 
 *** The verb suffix
 
-The last segment is one verb from the closed set. The resource segment is a
-plural noun in snake_case. =list_by_<relation>= carries one further word so that
+On a request subject, the last segment is one verb from the closed set. The
+resource segment is a plural noun in snake_case. =list_by_<relation>= carries
+one further word so that
 a scoped read is still one subject per operation, and a sub-resource's name
 carries the collection it holds after the resource it belongs to.
 
@@ -364,7 +369,8 @@ entry. Keys may repeat, and each occurrence gets its own entry, because a
 positional reply is only unambiguous if it answers the question that was
 asked.
 
-A set is bounded, so that one request cannot ask for an unbounded reply.
+A key set carries at most =1000= keys, the same bound a batch carries (see
+*Batching*), so that one request cannot ask for an unbounded reply.
 
 *** An entity's versions
 
@@ -663,13 +669,14 @@ A change to an entity is announced as an event, and events are a separate
 namespace from request/reply.
 
 #+begin_example
-{component}.v1.events.{resource}.{action}
+{component}.v1.{resource}_events.{action}
 #+end_example
 
-The =events= segment occupies the position the verb occupies for a request, so
-an event subject is still four segments and still inside its component's
-namespace. =action= names what happened -- for instance =created=, =updated= or
-=deleted=.
+An event subject has the same four segments as a request and stays inside its
+component's namespace. Its resource segment names the events collection rather
+than the resource, and its last segment is the action -- =created=, =updated= or
+=deleted= -- which is an action and not a verb because an event reports what
+happened and no caller asked for it.
 
 Every event carries:
 

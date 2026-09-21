@@ -28,6 +28,9 @@ from codegen.org_loader import (  # noqa: E402
 
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
+TENANT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant.org"
+ACCOUNT_PARTY = (
+    REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_junction.org")
 
 # A member the projection cannot state: it has no registered wire shape, so
 # ``_ts_domain_type`` returns None and the domain interface would emit
@@ -459,3 +462,70 @@ def test_declared_messages_and_the_paste_point_are_mutually_exclusive(tmp_path):
 
     with pytest.raises(ValueError, match="Messages section"):
         org_document_to_model(parse_org(text))
+
+
+# The cases above read a hand-built entity dict. Such a dict is shaped the way
+# the code expects rather than the way the loader produces a model, so four
+# defects reached the real models before any of them showed here. These cases
+# run the derivation over the committed models, which is what catches them.
+def test_a_real_model_derives_named_and_typed_members():
+    from codegen.core import load_model
+
+    entity = load_model(TENANT)["domain_entity"]
+    messages = _by_name(entity_protocol_messages(entity))
+
+    # An enriched * Columns entry is named ``name``, not ``column``. Reading
+    # only one spelling rendered members with no name at all.
+    for message in messages.values():
+        assert all(f["name"] for f in message["fields"]), message["name"]
+
+    # A key column's type is its own ``cpp_type``, not an ``is_uuid`` flag.
+    key = {f["name"]: f for f in messages["tenant_key"]["fields"]}
+    assert key["id"]["cpp_type"] == "boost::uuids::uuid"
+    assert key["id"]["ts_type"] == "string"
+
+
+def test_a_real_model_states_its_key_in_the_write_record():
+    """The loader partitions the primary key and the natural keys out of
+    ``columns``, so a write record built from ``columns`` alone left a create
+    unable to say what it creates."""
+    from codegen.core import load_model
+    from codegen.org_loader import _column_name
+
+    entity = load_model(TENANT)["domain_entity"]
+    assert entity["columns"], "the fixture is only meaningful on a real model"
+    assert "id" not in [_column_name(c) for c in entity["columns"]]
+    assert "code" in [_column_name(c) for c in entity["natural_keys"]]
+
+    write = [f["name"]
+             for f in _by_name(entity_protocol_messages(entity))["tenant_write"]
+             ["fields"]]
+    assert write[:2] == ["id", "code"]
+    # Tenancy and version are still derived, not sent.
+    assert "tenant_id" not in write
+    assert "version" not in write
+
+
+def test_a_junction_keeps_the_key_column_named_like_provenance():
+    """An account_party's party_id is half its key, not the acting party.
+
+    The server-owned set is stated by name, so it stripped the column that
+    says which party the link names, and the write could not say what it
+    linked.
+    """
+    from codegen.org_loader import (
+        _column_name,
+        junction_protocol_messages,
+        load_org_junction_model,
+    )
+
+    junction = load_org_junction_model(ACCOUNT_PARTY)["junction"]
+    assert junction["left"]["column"] == "account_id"
+    assert junction["right"]["column"] == "party_id"
+    assert _column_name(junction["right"]) == "party_id"
+
+    messages = _by_name(junction_protocol_messages(junction))
+    assert [f["name"] for f in messages["account_party_key"]["fields"]] == [
+        "account_id", "party_id"]
+    assert [f["name"] for f in messages["account_party_write"]["fields"]] == [
+        "account_id", "party_id"]

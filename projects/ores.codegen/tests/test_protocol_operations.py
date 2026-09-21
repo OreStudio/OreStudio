@@ -220,12 +220,13 @@ def test_a_derived_protocol_is_not_assumed_where_an_operation_model_owns_it():
     model was renamed, so the entity derives its own protocol. That is the
     conversion the shell pilot exists to make, and this case now states it.
     """
-    assert _protocol_owned_by_operation(
-        IAM_MODELING / "ores.iam.account.org",
-        {"component": "iam", "entity_singular": "account"}) is True
-    assert _protocol_owned_by_operation(
-        IAM_MODELING / "ores.iam.session.org",
-        {"component": "iam", "entity_singular": "session"}) is False
+    # Account and session were both owned. Neither is now: each derives its own
+    # protocol, and account's writes are declared beside it rather than instead
+    # of it, because a row write cannot state what making an account involves.
+    for name in ("ores.iam.account.org", "ores.iam.session.org"):
+        assert _protocol_owned_by_operation(
+            IAM_MODELING / name,
+            {"component": "iam", "entity_singular": name.split(".")[-2]}) is False
     assert _protocol_owned_by_operation(
         IAM_MODELING / "ores.iam.tenant_type.org",
         {"component": "iam", "entity_singular": "tenant_type"}) is False

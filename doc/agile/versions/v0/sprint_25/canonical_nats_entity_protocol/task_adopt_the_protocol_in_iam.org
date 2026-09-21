@@ -602,6 +602,38 @@ model that owns the protocol leaves the entity no such type to name. The
 =domain_entity= alone, so its shell surface stays the hand-written
 =account_parties_commands=.
 
+**The shell surface is complete for the entities that can take it, and a gate
+found what reading did not.** Seventeen units and 105 commands: ten operation
+units over the declared protocols, seven entity units over the derived ones, all
+installed by one aggregator. The entity archetypes render the projection rather
+than a fixed verb list, so a verb the model gains appears as a command and a
+verb it loses takes its command with it.
+
+Two facts only generating and compiling could show. The shell's =from_token=
+refused every unsigned width while the derived requests carry =std::uint32_t=
+for the page and the version, so an entity the projection accepted would not
+compile; the token set now matches, and the projection's notion of fillable was
+aligned with it -- the two had drifted in opposite directions, with the
+projection claiming a =time_point= was fillable when no conversion exists.
+
+The third fact was found by a gate and not by reading. A scoped read derives its
+verb as =list_scoped= and names the relation in the operation's =leading= field,
+never in the verb, so a projection that looked for a verb beginning =list_by_=
+matched nothing and emitted no command: =account_contact_information='s
+=list_by_account_id= subject could not be reached from the shell and nothing
+said so. The plan now names every verb it has no shape for, and a test asserts
+that list is empty for every IAM entity that renders a unit. It failed on its
+first run, on this. The synthetic case that was supposed to cover relations had
+been passing because it invented a verb the derivation never produces -- which is
+precisely the difference between a gate written from the real models and a
+fixture written from the intent.
+
+Worth recording too: the generated tests cost about half a second per case, so
+=ores.shell.iam.tests= is now 449 cases and 220 seconds. That is not this work's
+doing -- =ores.shell.trading.tests= has the same shape at 420 cases and 159
+seconds -- but the pilot has made it visible and it will not survive many more
+units.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

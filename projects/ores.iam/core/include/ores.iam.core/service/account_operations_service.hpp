@@ -38,9 +38,9 @@ namespace ores::iam::service {
 /**
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
-class ORES_IAM_CORE_EXPORT account_service {
+class ORES_IAM_CORE_EXPORT account_operations_service {
 private:
-    inline static std::string_view logger_name = "ores.iam.service.account_service";
+    inline static std::string_view logger_name = "ores.iam.service.account_operations_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,13 +54,13 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs an account_service with required repositories and
+     * @brief Constructs an account_operations_service with required repositories and
      * security components.
      *
      * @param account_repo The repository for managing account data.
      * @param login_info_repo The repository for managing login tracking data.
      */
-    explicit account_service(database::context ctx);
+    explicit account_operations_service(database::context ctx);
 
     /**
      * @brief Creates a new account with the provided details.

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
@@ -33,7 +33,7 @@ namespace reason = ores::dq::domain::change_reason_constants;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
 
-void account_service::throw_if_empty(const std::string& name, const std::string& value) {
+void account_operations_service::throw_if_empty(const std::string& name, const std::string& value) {
     BOOST_LOG_SEV(lg(), debug) << name << ": '" << value << "'";
     if (value.empty()) {
         BOOST_LOG_SEV(lg(), error) << name << " cannot be empty.";
@@ -41,14 +41,14 @@ void account_service::throw_if_empty(const std::string& name, const std::string&
     }
 }
 
-account_service::account_service(database::context ctx)
+account_operations_service::account_operations_service(database::context ctx)
     : ctx_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     BOOST_LOG_SEV(lg(), debug) << "DML for login_info: " << login_info_repo_.sql();
 }
 
-domain::account account_service::create_account(const std::string& username,
+domain::account account_operations_service::create_account(const std::string& username,
                                                 const std::string& email,
                                                 const std::string& password,
                                                 const std::string& modified_by,
@@ -99,7 +99,7 @@ domain::account account_service::create_account(const std::string& username,
     return new_account;
 }
 
-domain::account account_service::create_service_account(const std::string& username,
+domain::account account_operations_service::create_service_account(const std::string& username,
                                                         const std::string& email,
                                                         const std::string& account_type,
                                                         const std::string& modified_by,
@@ -161,7 +161,7 @@ domain::account account_service::create_service_account(const std::string& usern
     return new_account;
 }
 
-std::optional<domain::account> account_service::get_account(const boost::uuids::uuid& account_id) {
+std::optional<domain::account> account_operations_service::get_account(const boost::uuids::uuid& account_id) {
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
         return std::nullopt;
@@ -169,24 +169,24 @@ std::optional<domain::account> account_service::get_account(const boost::uuids::
     return accounts[0];
 }
 
-std::vector<domain::account> account_service::list_accounts() {
+std::vector<domain::account> account_operations_service::list_accounts() {
     return account_repo_.read_latest(ctx_);
 }
 
-std::vector<domain::account> account_service::list_accounts(std::uint32_t offset,
+std::vector<domain::account> account_operations_service::list_accounts(std::uint32_t offset,
                                                             std::uint32_t limit) {
     return account_repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t account_service::get_total_account_count() {
+std::uint32_t account_operations_service::get_total_account_count() {
     return account_repo_.get_total_account_count(ctx_);
 }
 
-std::vector<domain::login_info> account_service::list_login_info() {
+std::vector<domain::login_info> account_operations_service::list_login_info() {
     return login_info_repo_.read_latest(ctx_);
 }
 
-void account_service::delete_account(const boost::uuids::uuid& account_id) {
+void account_operations_service::delete_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << boost::uuids::to_string(account_id);
 
     // Verify account exists before attempting deletion
@@ -204,7 +204,7 @@ void account_service::delete_account(const boost::uuids::uuid& account_id) {
                               << boost::uuids::to_string(account_id);
 }
 
-domain::account account_service::login(const std::string& username,
+domain::account account_operations_service::login(const std::string& username,
                                        const std::string& password,
                                        const boost::asio::ip::address& ip_address) {
 
@@ -278,7 +278,7 @@ domain::account account_service::login(const std::string& username,
     return account;
 }
 
-bool account_service::lock_account(const boost::uuids::uuid& account_id) {
+bool account_operations_service::lock_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Locking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -310,7 +310,7 @@ bool account_service::lock_account(const boost::uuids::uuid& account_id) {
     return true;
 }
 
-bool account_service::unlock_account(const boost::uuids::uuid& account_id) {
+bool account_operations_service::unlock_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -343,7 +343,7 @@ bool account_service::unlock_account(const boost::uuids::uuid& account_id) {
     return true;
 }
 
-void account_service::logout(const boost::uuids::uuid& account_id) {
+void account_operations_service::logout(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Logging out account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -368,7 +368,7 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
     login_info_repo_.write(ctx_, login_info);
 }
 
-bool account_service::update_account(const boost::uuids::uuid& account_id,
+bool account_operations_service::update_account(const boost::uuids::uuid& account_id,
                                      const std::string& email,
                                      const std::string& full_name,
                                      const std::optional<boost::uuids::uuid>& default_party_id,
@@ -414,7 +414,7 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
 }
 
 std::optional<domain::account>
-account_service::find_account_by_username(const std::string& username) {
+account_operations_service::find_account_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Finding account by username: " << username;
 
     auto accounts = account_repo_.read_latest_by_username(ctx_, username);
@@ -426,7 +426,7 @@ account_service::find_account_by_username(const std::string& username) {
 }
 
 std::optional<domain::account>
-account_service::find_account_by_id(const boost::uuids::uuid& account_id) {
+account_operations_service::find_account_by_id(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding account by id: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
@@ -438,7 +438,7 @@ account_service::find_account_by_id(const boost::uuids::uuid& account_id) {
     return accounts.front();
 }
 
-std::vector<domain::account> account_service::get_account_history(const std::string& username) {
+std::vector<domain::account> account_operations_service::get_account_history(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: " << username;
 
     // First look up the account by username to get the ID
@@ -459,7 +459,7 @@ std::vector<domain::account> account_service::get_account_history(const std::str
     return all_versions;
 }
 
-bool account_service::set_password_reset_required(const boost::uuids::uuid& account_id) {
+bool account_operations_service::set_password_reset_required(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
                                << boost::uuids::to_string(account_id);
 
@@ -486,7 +486,7 @@ bool account_service::set_password_reset_required(const boost::uuids::uuid& acco
     return true;
 }
 
-std::string account_service::change_password(const boost::uuids::uuid& account_id,
+std::string account_operations_service::change_password(const boost::uuids::uuid& account_id,
                                              const std::string& new_password) {
     BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
                                << boost::uuids::to_string(account_id);
@@ -543,7 +543,7 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
     return ""; // Empty string indicates success
 }
 
-domain::login_info account_service::get_login_info(const boost::uuids::uuid& account_id) {
+domain::login_info account_operations_service::get_login_info(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting login_info for account: "
                                << boost::uuids::to_string(account_id);
 
@@ -557,7 +557,7 @@ domain::login_info account_service::get_login_info(const boost::uuids::uuid& acc
     return login_info_vec[0];
 }
 
-std::string account_service::update_my_email(const boost::uuids::uuid& account_id,
+std::string account_operations_service::update_my_email(const boost::uuids::uuid& account_id,
                                              const std::string& new_email) {
     BOOST_LOG_SEV(lg(), debug) << "Updating email for account: "
                                << boost::uuids::to_string(account_id);
@@ -597,7 +597,7 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
     return ""; // Empty string indicates success
 }
 
-std::string account_service::set_my_default_party(const boost::uuids::uuid& account_id,
+std::string account_operations_service::set_my_default_party(const boost::uuids::uuid& account_id,
                                                   const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
                                << boost::uuids::to_string(account_id);

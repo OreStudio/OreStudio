@@ -269,7 +269,7 @@ struct select_party_request {
  * Deliberately a separate subject/handler from select_party rather than a
  * relaxed version of it: select_party only accepts a narrowly-scoped,
  * single-use token (audience "select_party_only") issued exclusively by
- * the login flow, by design -- see account_handler.hpp's select_party for
+ * the login flow, by design -- see account_operations_handler.hpp's select_party for
  * why. switch_party accepts a normal, already-authenticated session token
  * instead (any token that is NOT that single-use one), so an account with
  * access to more than one party (e.g. a tenant admin with cross-entity

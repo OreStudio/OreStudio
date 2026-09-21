@@ -36,7 +36,7 @@
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/messaging/account_contact_information_registrar.hpp"
-#include "ores.iam.core/messaging/account_handler.hpp"
+#include "ores.iam.core/messaging/account_operations_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
@@ -144,7 +144,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Accounts ---
-    auto acth = std::make_shared<account_handler>(nats, ctx, signer, pc);
+    auto acth = std::make_shared<account_operations_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         get_accounts_request_typed::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->list(std::move(msg));

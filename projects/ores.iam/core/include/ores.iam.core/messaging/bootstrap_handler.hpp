@@ -26,7 +26,7 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
-#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
@@ -210,7 +210,7 @@ public:
 
             // Create the admin account in the new tenant's context.
             auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
-            service::account_service svc(tenant_ctx);
+            service::account_operations_service svc(tenant_ctx);
             auto acct = svc.create_account(
                 req->principal, req->email, req->password, ctx_.service_account());
 

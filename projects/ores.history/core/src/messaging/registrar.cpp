@@ -33,7 +33,10 @@ register_history_handlers(ores::nats::service::client& nats,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     auto handler =
         std::make_shared<history_handler>(nats, registry, std::move(ctx), std::move(verifier));
-    const std::string subject = std::string(component) + ".v1.history.get";
+    // The subject rule is the protocol's, generated from the model beside the
+    // messages, so the service that listens and the clients that send read it
+    // from one place instead of each composing it.
+    const std::string subject = history_subject_by_component(component);
     return nats.queue_subscribe(subject, queue_group, [handler](ores::nats::message msg) {
         handler->history(std::move(msg));
     });

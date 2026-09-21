@@ -146,3 +146,25 @@ def test_a_key_is_never_a_vector_of_strings():
 
 def test_an_entity_has_at_least_one_identifying_column():
     assert key_record_fields(_entity({"column": "id", "is_uuid": True}))
+
+
+# --- the shape the renderer consumes ---------------------------------------
+
+def test_every_derived_field_carries_the_types_the_renderer_reads():
+    """A field with no name, cpp_type or ts_type renders a member with a hole.
+
+    This is the guard for the defect write_record_fields shipped with: it
+    returned raw column dicts, whose keys are not the ones the message
+    templates read. The tests passed because they asserted the shape the
+    helper produced rather than the shape the renderer consumes, so every
+    derived field is now held to the consumer's contract.
+    """
+    entity = _entity({"column": "id", "is_uuid": True})
+    entity["columns"] = _columns("code", "name", "version")
+
+    derived = key_record_fields(entity) + write_record_fields(entity["columns"])
+    assert derived, "nothing derived, so this guard proves nothing"
+    for field in derived:
+        assert field["name"], field
+        assert field["cpp_type"], field
+        assert field.get("ts_type"), field

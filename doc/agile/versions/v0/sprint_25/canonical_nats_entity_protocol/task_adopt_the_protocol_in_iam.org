@@ -760,6 +760,22 @@ the service reached the repository, and the repository reached the trigger. Ever
 layer of the chain is therefore proved by that failure, and the verbs are proved
 by the run that then used a reason the tenant actually has.
 
+**Step 5 was mostly done, and the gap was one list.** The BFF needed nothing:
+five IAM entities have a generated route descriptor, the server registers all
+five, and the factory builds the list, the single-record read and the history
+route from the descriptor -- which states the collection, the key and the
+canonical subjects and no function. A hand-written handler per entity would have
+been five places to keep in step; there are none.
+
+The web registry knew about one of the five. =tenant_type= was wired, =tenant=
+and =role= were placeholders marked planned, and =account_contact_information=,
+=account_type= and =tenant_status= were referenced nowhere, so three entities the
+model declares a screen for had no screen and =tenant='s own declaration was
+ignored in favour of a placeholder. All five are wired now, each taking its route
+segment from its declaration, so the sidebar link and the router path are one
+string rather than two -- which is what =assertWiredPath= checks, and what its
+test covers.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

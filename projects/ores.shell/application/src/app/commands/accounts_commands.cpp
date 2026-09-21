@@ -202,18 +202,6 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         "List your currently active sessions");
 
     accounts_menu->Insert(
-        "session-stats",
-        [&session](std::ostream& out) { process_session_stats(std::ref(out), std::ref(session)); },
-        "Show session statistics for the last 30 days");
-
-    accounts_menu->Insert(
-        "session-stats-days",
-        [&session](std::ostream& out, int days) {
-            process_session_stats(std::ref(out), std::ref(session), days);
-        },
-        "Show session statistics for the specified number of days");
-
-    accounts_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string username) {
             process_get_account_history(std::ref(out), std::ref(session), std::move(username));
@@ -299,8 +287,8 @@ void accounts_commands::process_login(std::ostream& out,
     req.principal = std::move(principal);
     req.password = std::move(password);
 
-    auto result =
-        do_request<iam::messaging::login_response>(out, session, "iam.v1.auth.login", req);
+    auto result = do_request<iam::messaging::login_response>(
+        out, session, iam::messaging::login_request::nats_subject, req);
     if (!result)
         return;
 
@@ -338,7 +326,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::lock_account_response>(
-        out, session, "iam.v1.accounts.lock", req);
+        out, session, iam::messaging::lock_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -376,7 +364,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::unlock_account_response>(
-        out, session, "iam.v1.accounts.unlock", req);
+        out, session, iam::messaging::unlock_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -411,7 +399,7 @@ void accounts_commands::process_create_account(std::ostream& out,
     req.email = std::move(email);
 
     auto result = do_auth_request<iam::messaging::save_account_response>(
-        out, session, "iam.v1.accounts.save", req);
+        out, session, iam::messaging::save_account_request::nats_subject, req);
     if (!result)
         return;
 
@@ -449,7 +437,10 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
 
     try {
         auto result = do_auth_request<iam::messaging::logout_response>(
-            out, session, "iam.v1.auth.logout", iam::messaging::logout_request{});
+            out,
+            session,
+            iam::messaging::logout_request::nats_subject,
+            iam::messaging::logout_request{});
         if (result && result->success) {
             out << "✓ Logged out successfully." << std::endl;
         } else {
@@ -533,7 +524,10 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
-        out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
+        out,
+        session,
+        iam::messaging::get_active_sessions_request::nats_subject,
+        iam::messaging::get_active_sessions_request{});
     if (!result)
         return;
     if (!result->success) {
@@ -568,76 +562,6 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
     }
 }
 
-void accounts_commands::process_session_stats(std::ostream& out, nats_client& session, int days) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating session statistics request for " << days << " days.";
-
-    auto end_date = std::chrono::system_clock::now();
-    auto start_time = end_date - std::chrono::hours(24 * days);
-
-    iam::messaging::get_session_statistics_request req;
-    req.account_id = "";
-    req.start_time = start_time;
-    req.end_time = end_date;
-
-    auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
-        out, session, "iam.v1.sessions.statistics", req);
-    if (!result)
-        return;
-    if (!result->success) {
-        fail(out) << result->message << std::endl;
-        return;
-    }
-
-    const auto& stats = result->statistics;
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << stats.size() << " daily statistics.";
-
-    if (stats.empty()) {
-        out << "No session statistics available for the last " << days << " days." << std::endl;
-        return;
-    }
-
-    out << "Session Statistics (last " << days << " days):" << std::endl;
-    out << std::string(80, '-') << std::endl;
-
-    std::uint64_t total_sessions = 0;
-    std::uint64_t total_bytes_sent = 0;
-    std::uint64_t total_bytes_recv = 0;
-    double total_duration = 0;
-
-    for (const auto& s : stats) {
-        total_sessions += s.session_count;
-        total_bytes_sent += s.total_bytes_sent;
-        total_bytes_recv += s.total_bytes_received;
-        total_duration += s.avg_duration_seconds * s.session_count;
-    }
-
-    double avg_duration = total_sessions > 0 ? total_duration / total_sessions : 0;
-
-    out << "  Total Sessions: " << total_sessions << std::endl;
-    out << "  Avg Duration: "
-        << format_duration(std::chrono::seconds(static_cast<int>(avg_duration))) << std::endl;
-    out << "  Total Data Sent: " << format_bytes(total_bytes_sent) << std::endl;
-    out << "  Total Data Received: " << format_bytes(total_bytes_recv) << std::endl;
-
-    if (!stats.empty()) {
-        const auto& latest = stats.front();
-        if (latest.unique_countries > 0) {
-            out << "  Countries (latest): " << latest.unique_countries << std::endl;
-        }
-    }
-
-    out << std::endl << "Daily breakdown:" << std::endl;
-    for (const auto& s : stats) {
-        out << "  " << format_time(s.period_start).substr(0, 10) << ": " << s.session_count
-            << " sessions";
-        if (s.avg_duration_seconds > 0) {
-            out << ", avg "
-                << format_duration(std::chrono::seconds(static_cast<int>(s.avg_duration_seconds)));
-        }
-        out << std::endl;
-    }
-}
-
 void accounts_commands::process_get_account_history(std::ostream& out,
                                                     nats_client& session,
                                                     std::string username) {
@@ -652,7 +576,7 @@ void accounts_commands::process_get_account_history(std::ostream& out,
     req.username = std::move(username);
 
     auto result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", req);
+        out, session, iam::messaging::get_account_history_request::nats_subject, req);
     if (!result)
         return;
 
@@ -737,7 +661,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     hist_req.username = username;
 
     auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", hist_req);
+        out, session, iam::messaging::get_account_history_request::nats_subject, hist_req);
     if (!history_result)
         return;
 
@@ -782,7 +706,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "-----" << std::endl;
 
     auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "iam.v1.roles.for-account", roles_req);
+        out, session, iam::messaging::get_account_roles_request::nats_subject, roles_req);
     if (!roles_result) {
         out << "  (failed to retrieve roles)" << std::endl;
     } else if (roles_result->roles.empty()) {
@@ -806,7 +730,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "---------------------" << std::endl;
 
     auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "iam.v1.permissions.for-account", perms_req);
+        out, session, iam::messaging::get_account_permissions_request::nats_subject, perms_req);
     if (!perms_result) {
         out << "  (failed to retrieve permissions)" << std::endl;
     } else if (perms_result->permission_codes.empty()) {

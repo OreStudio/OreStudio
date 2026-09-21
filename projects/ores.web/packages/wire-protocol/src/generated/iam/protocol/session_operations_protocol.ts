@@ -25,23 +25,6 @@
 import type { Session } from '../domain/session.js';
 
 /**
- * @brief Aggregated session statistics for a time period, computed from
- * the sessions hypertable's continuous aggregates.
- */
-export interface SessionStatistics {
-    period_start: string;
-    period_end: string;
-    account_id: string;
-    session_count: number;
-    avg_duration_seconds: number;
-    total_bytes_sent: number;
-    total_bytes_received: number;
-    avg_bytes_sent: number;
-    avg_bytes_received: number;
-    unique_countries: number;
-}
-
-/**
  * @brief A session with its party-scoped context.
  *
  * The session is the entity; party_id, visible_party_ids and username are
@@ -60,18 +43,6 @@ export interface GetActiveSessionsRequest {
 
 export interface GetActiveSessionsResponse {
     sessions: Session[];
-    success: boolean;
-    message: string;
-}
-
-export interface GetSessionStatisticsRequest {
-    account_id: string;
-    start_time: string;
-    end_time: string;
-}
-
-export interface GetSessionStatisticsResponse {
-    statistics: SessionStatistics[];
     success: boolean;
     message: string;
 }

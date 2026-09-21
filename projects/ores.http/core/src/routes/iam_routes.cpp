@@ -406,18 +406,6 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());
 
-    auto session_stats = router->get("/api/v1/sessions/statistics")
-                             .summary("Get session statistics")
-                             .description("Get aggregated session statistics")
-                             .tags({"sessions"})
-                             .auth_required()
-                             .response<iam::messaging::get_session_statistics_response>()
-                             .handler([this](const http_request& req) {
-                                 return handle_get_session_statistics(req);
-                             });
-    router->add_route(session_stats.build());
-    registry->register_route(session_stats.build());
-
     auto active_sessions =
         router->get("/api/v1/sessions/active")
             .summary("Get active sessions")
@@ -1409,25 +1397,6 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         BOOST_LOG_SEV(lg(), error) << "List sessions error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
-}
-
-asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const http_request& req) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling get session statistics request";
-
-    auto auth = check_auth(req, "", "get_session_statistics");
-    if (!auth) {
-        co_return auth.error();
-    }
-
-    // Nothing can answer this request yet. The daily aggregate is the
-    // ores_iam_session_stats_daily_vw continuous aggregate, which the schema
-    // creates only under the Timescale licence, and the hand-written read this
-    // replaced queried ores_iam_session_stats_tbl, which no schema ever
-    // created. The request says so rather than replying with an empty list
-    // that reads as "no sessions in range".
-    BOOST_LOG_SEV(lg(), warn) << "Session statistics are not modelled; refusing the request";
-    co_return http_response::error(http_status::not_implemented,
-                                   "Session statistics are not modelled yet");
 }
 
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {

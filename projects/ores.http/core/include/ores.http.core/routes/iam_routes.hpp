@@ -86,7 +86,6 @@ struct ORES_HTTP_CORE_EXPORT auth_result {
  *
  * Sessions:
  * - GET /api/v1/sessions - list_sessions_request
- * - GET /api/v1/sessions/statistics - get_session_statistics_request
  * - GET /api/v1/sessions/active - get_active_sessions_request
  */
 class ORES_HTTP_CORE_EXPORT iam_routes final {
@@ -192,9 +191,6 @@ private:
     // Session handlers
     boost::asio::awaitable<http::domain::http_response>
     handle_list_sessions(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_session_statistics(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_get_active_sessions(const http::domain::http_request& req);

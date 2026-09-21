@@ -35,23 +35,6 @@
 namespace ores::iam::messaging {
 
 /**
- * @brief Aggregated session statistics for a time period, computed from
- * the sessions hypertable's continuous aggregates.
- */
-struct session_statistics {
-    std::chrono::system_clock::time_point period_start;
-    std::chrono::system_clock::time_point period_end;
-    boost::uuids::uuid account_id;
-    std::uint64_t session_count = 0;
-    double avg_duration_seconds = 0.0;
-    std::uint64_t total_bytes_sent = 0;
-    std::uint64_t total_bytes_received = 0;
-    double avg_bytes_sent = 0.0;
-    double avg_bytes_received = 0.0;
-    std::uint32_t unique_countries = 0;
-};
-
-/**
  * @brief A session with its party-scoped context.
  *
  * The session is the entity; party_id, visible_party_ids and username are
@@ -79,18 +62,6 @@ struct get_active_sessions_request {
 
 struct get_active_sessions_response {
     std::vector<ores::iam::domain::session> sessions;
-    bool success = false;
-    std::string message;
-};
-
-struct get_session_statistics_request {
-    std::string account_id;
-    std::chrono::system_clock::time_point start_time;
-    std::chrono::system_clock::time_point end_time;
-};
-
-struct get_session_statistics_response {
-    std::vector<session_statistics> statistics;
     bool success = false;
     std::string message;
 };

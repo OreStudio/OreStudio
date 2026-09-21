@@ -181,19 +181,6 @@ public:
                                         ores::nats::service::nats_client& session);
 
     /**
-     * @brief Process a session statistics request.
-     *
-     * Displays session statistics for the specified time range.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param days Number of days to retrieve statistics for (default 30)
-     */
-    static void process_session_stats(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      int days = 30);
-
-    /**
      * @brief Process a get account history request.
      *
      * Retrieves the version history for an account by username.

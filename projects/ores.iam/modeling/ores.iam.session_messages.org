@@ -18,16 +18,11 @@ The session protocol messages.
 
 The session itself is an entity (=ores.iam.session=): the list and active
 responses carry =ores::iam::domain::session=, the generated table type.
-Two shapes no table backs live here instead:
-
-- =session_statistics= is a computed shape, aggregated from the sessions
-  hypertable by the continuous aggregates in
-  =projects/ores.sql/create/iam/iam_session_stats_create.sql=. There is no
-  =session_statistics= table, so it is a message payload.
-- =session_view= is the denormalised, party-scoped projection of a
-  session: the entity plus =party_id=, =visible_party_ids= and =username=.
-  None of those three has a column, so none may be an entity member; they
-  are message fields here, beside the entity they annotate.
+One shape no table backs lives here instead: =session_view= is the
+denormalised, party-scoped projection of a session -- the entity plus
+=party_id=, =visible_party_ids= and =username=. None of those three has a
+column, so none may be an entity member; they are message fields here,
+beside the entity they annotate.
 
 * Includes
 
@@ -41,72 +36,6 @@ Two shapes no table backs live here instead:
 #+end_src
 
 * Messages
-
-** session_statistics
-
-#+begin_src cpp :name comment
-/**
- * @brief Aggregated session statistics for a time period, computed from
- * the sessions hypertable's continuous aggregates.
- */
-#+end_src
-
-*** period_start
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** period_end
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** account_id
-:PROPERTIES:
-:cpp_type: boost::uuids::uuid
-:END:
-
-*** session_count
-:PROPERTIES:
-:cpp_type: std::uint64_t
-:default: 0
-:END:
-
-*** avg_duration_seconds
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-
-*** total_bytes_sent
-:PROPERTIES:
-:cpp_type: std::uint64_t
-:default: 0
-:END:
-
-*** total_bytes_received
-:PROPERTIES:
-:cpp_type: std::uint64_t
-:default: 0
-:END:
-
-*** avg_bytes_sent
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-
-*** avg_bytes_received
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-
-*** unique_countries
-:PROPERTIES:
-:cpp_type: std::uint32_t
-:default: 0
-:END:
 
 ** session_view
 
@@ -151,41 +80,6 @@ Two shapes no table backs live here instead:
 *** sessions
 :PROPERTIES:
 :cpp_type: std::vector<ores::iam::domain::session>
-:END:
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-** get_session_statistics_request
-
-*** account_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** start_time
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** end_time
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-** get_session_statistics_response
-
-*** statistics
-:PROPERTIES:
-:cpp_type: std::vector<session_statistics>
 :END:
 
 *** success

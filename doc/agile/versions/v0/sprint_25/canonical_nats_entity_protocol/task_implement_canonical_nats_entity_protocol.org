@@ -166,3 +166,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The specification is written and registered:
+=doc/knowledge/architecture/nats_entity_protocol.org=, linked from the
+knowledge index and pointed at by the code review checklist's protocol section.
+
+It fixes a subject grammar of four segments and eight orthogonal verbs, one
+request and one response envelope with a closed set of outcomes, a key record
+that carries every identifying column, the pagination and filtering contract,
+the write model that keeps server-owned fields off the wire, the concurrency
+precondition that replaces the version sentinel, the event contract with
+at-least-once delivery and idempotent consumers, the header registry, the
+security rules including cross-tenant access, and the reserved namespace for a
+component's own operations.
+
+Two things came out of writing it rather than being planned. Batching turned out
+to be present but incoherent -- a batch read answered with a short list, and a
+batch write carried one set-level precondition, which cannot describe rows at
+different versions -- so the element-versus-set distinction was made explicit.
+And an entity's versions and a hierarchy's subtree were verbs where every read
+of a collection should be a resource, so both became collections read with the
+existing verbs and the verb set fell from ten to eight.
+
+The cluster also gained its structure note, =Message Queue=, which orders the
+thirteen pages the subject spans. Its first two summaries were rejected and the
+third is in place; the rule that came out of that is recorded as the
+=knowledge_pages_state_facts= memory.
+
+Remaining, and named rather than left implicit: re-pointing the backlog captures
+this protocol absorbs belongs to the document reconciliation task, and the
+components other than =ores.iam= adopt the specification under the shared
+component list.

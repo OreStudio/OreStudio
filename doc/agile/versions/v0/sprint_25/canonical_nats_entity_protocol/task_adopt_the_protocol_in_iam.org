@@ -889,6 +889,34 @@ the role routes did.
 The hand-written handler loses its =list= and keeps =active= and =samples=, so
 the rename from the previous attempt stands and only the body shrinks.
 
+**What account's operation model keeps and what it gives up.** Worked out
+2026-09-21, because the split is not obvious from the message list: account
+declares thirteen addressable messages and only five of them are the derived
+CRUD set in disguise.
+
+Gives up, because the derivation states them: =save_account_request= and
+=update_account_request= and their responses, which are one verb stating two
+claims and become =put=; =delete_account_request=, which becomes =delete=; and
+=the list= -- =get_accounts_request=, =get_accounts_response= and
+=get_accounts_request_typed=. That last spelling is worth noting: the list
+request was declared twice, once plainly and once with a =_typed= suffix
+carrying the subject, which is the shape the =list_scoped= verb had before it was
+found to be dropping commands.
+
+Keeps, because no CRUD verb states them: =lock_account=, =unlock_account=,
+=list_login_info=, =reset_password=, =update_my_email=, =set_my_default_party=,
+=select_party=, =switch_party= and =change_password=. Eight of the nine are one
+thing -- an operation a table's columns cannot express -- and =change_password=
+is the ninth only because its request is suffixed =_typed= for the same reason
+the list's was.
+
+The hard part is not the model, it is the ninety-four references. They have to
+be sorted rather than renamed: the generated service answers the derived verbs,
+the renamed =account_operations_service= answers the workflows, and a caller
+that wants one has to stop being pointed at the other. That is a classification
+job over twelve files, and it is why this is the last entity rather than the
+first.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

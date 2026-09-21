@@ -132,10 +132,17 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- the "Temporal composite entity versioning" architecture doc.
 --
 -- Deliberately does NOT duplicate the version/valid_from/valid_to
--- management here: it fetches the current row, resets version to the
--- 0 sentinel, and re-inserts — the table's own insert trigger (below)
--- then performs the exact same close-current/bump-version dance a
--- normal application save does. This also sidesteps a real footgun:
+-- management here: it fetches the current row, states the version it
+-- read, and re-inserts — the table's own insert trigger (below) then
+-- performs the exact same close-current/bump-version dance a
+-- normal application save does. Stating the version read, rather than
+-- the zero sentinel, is what makes the store see a replace: zero means
+-- "no current row exists", so a touch that wrote zero over the live row
+-- it had just read would be refused as a create that collides. Because
+-- the read above holds the row lock, the version it states is still
+-- current when the trigger re-reads it, so the compare-and-swap passes
+-- for the same reason an application's own stated version does. This
+-- also sidesteps a real footgun:
 -- current_timestamp is frozen for the whole transaction, so a
 -- same-transaction bulk import (parent + child created together, as
 -- GLEIF provisioning does) would otherwise make the just-inserted
@@ -184,7 +191,8 @@ begin
         return;
     end if;
 
-    rec.version := 0;
+    -- Left at the version just read: the insert trigger's
+    -- compare-and-swap needs a replace, not a create.
     rec.modified_by := p_modified_by;
     rec.performed_by := p_performed_by;
     rec.change_reason_code := p_reason_code;

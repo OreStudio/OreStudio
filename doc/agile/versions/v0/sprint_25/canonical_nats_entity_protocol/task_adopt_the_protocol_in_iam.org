@@ -542,6 +542,32 @@ the second half possible. That facet change also covers =login=, =signup=,
 =bootstrap=, =reset=, =provisioning=, =authorization=, =session= and
 =account_history=, none of which are entities at all.
 
+**The shell facet renders a declared protocol, and one thing is still open.**
+Settled and built 2026-09-21: =ores.cpp.shell-command= admits =operation=, and
+three archetypes render one command per message that carries a subject and a
+response. The declaration is already the whole surface -- a field without a
+=:default:= is a positional and one with a default is a =--<name>= flag, a list
+field is one comma-separated token, the request goes out on its own
+=nats_subject=, and the reply is printed as JSON. A field no token can fill is
+refused rather than dropped, so a model that opts in cannot silently lose an
+argument. Proved on =session_samples=: the unit compiles, its three generated
+tests pass, and =ores.shell.iam= exists as an adapter part with an aggregator the
+host calls.
+
+The open item is authentication. The shell has two helpers: =do_request= sends
+without a token and =do_auth_request= sends with one. The generated unit uses
+=do_auth_request= and refuses a signed-out session, which is right for every
+operation that acts on a logged-in caller -- and wrong for the six that
+establish the session in the first place: =login=, =service-login=, =signup=,
+=public-key=, =bootstrap.status= and =bootstrap.create-admin=. Those must send
+with =do_request=, and the model states nothing that distinguishes them, so
+enabling the facet on =login_messages= or =bootstrap_messages= today would
+generate a =login= command that refuses to run because nobody is logged in.
+Either the message declares it, as a =:auth: none= property beside its
+=:subject:=, or the generated unit sends unauthenticated and lets the service
+refuse. The first keeps the decision with the model, which is where every other
+decision of this kind lives.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

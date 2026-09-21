@@ -294,6 +294,27 @@ struct get_account_contact_information_version_response {
 };
 
 /**
+ * @brief The workflow step that publishes a DQ-cleared contact-information
+ * bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+struct publish_account_contact_informations_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "iam.v1.account-contact-informations.publish-from-dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
  * @brief The subjects this resource's changes are announced on.
  *
  * An event reports what happened and no caller asked for it, so its last

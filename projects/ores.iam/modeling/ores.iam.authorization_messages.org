@@ -162,6 +162,10 @@ The authorization protocol messages.
 :END:
 
 ** get_account_permissions_request
+:PROPERTIES:
+:subject: iam.v1.roles.permissions-by-account
+:response: get_account_permissions_response
+:END:
 
 *** account_id
 :PROPERTIES:

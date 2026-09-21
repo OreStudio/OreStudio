@@ -18,7 +18,9 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
+#include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -274,6 +276,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             rh->by_account(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        get_account_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->account_permissions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         get_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->permissions(std::move(msg));
         }));
@@ -383,9 +389,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // --- Publish-from-DQ workflow step handlers ---
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        // The subjects are the protocol's own. The DQ artefact-type rows that
+        // publish onto them carry the same strings in SQL, so a subscription
+        // that falls behind the model is a compile-time name, not a literal a
+        // reviewer has to compare against a table.
         static constexpr std::array publish_subjects{
-            "iam.v1.accounts.publish-from-dq",
-            "iam.v1.account-contact-informations.publish-from-dq",
+            publish_accounts_from_dq_request::nats_subject,
+            publish_account_contact_informations_from_dq_request::nats_subject,
         };
         for (const auto subject : publish_subjects) {
             subs.push_back(nats.queue_subscribe(

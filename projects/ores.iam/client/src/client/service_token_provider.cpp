@@ -45,8 +45,13 @@ inline static std::string_view logger_name = "ores.iam.client.client.service_tok
     return instance;
 }
 
-constexpr std::string_view service_login_subject = "iam.v1.auth.service-login";
-constexpr std::string_view refresh_subject = "iam.v1.auth.refresh";
+// The service account logs in and refreshes through the addresses the
+// protocol declares, so a subject the model renames cannot leave this file
+// sending to the old one.
+constexpr std::string_view service_login_subject =
+    ores::iam::messaging::service_login_request::nats_subject;
+constexpr std::string_view refresh_subject =
+    ores::iam::messaging::refresh_request::nats_subject;
 
 struct token_state {
     ores::nats::service::client& nats;

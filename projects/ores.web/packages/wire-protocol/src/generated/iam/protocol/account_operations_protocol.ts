@@ -22,6 +22,17 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+/**
+ * @brief The workflow step that publishes a DQ-cleared accounts bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+export interface PublishAccountsFromDqRequest {
+}
+
 export interface SaveAccountRequest {
     principal: string;
     password: string;
@@ -196,6 +207,7 @@ export interface ChangePasswordRequestTyped {
 }
 
 export const subjects = {
+    publish_accounts_from_dq_request: "iam.v1.accounts.publish-from-dq",
     save_account_request: "iam.v1.accounts.save",
     update_account_request: "iam.v1.accounts.update",
     delete_account_request: "iam.v1.accounts.delete",
@@ -214,6 +226,7 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
+    publish_accounts_from_dq_request: true,
     save_account_request: true,
     update_account_request: true,
     delete_account_request: true,

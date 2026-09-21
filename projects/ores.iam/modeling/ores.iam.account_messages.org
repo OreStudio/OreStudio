@@ -27,6 +27,27 @@ The account protocol messages.
 
 * Messages
 
+The publish trigger is declared here beside the operations, because it is a
+subject IAM owns and nothing else states it: the DQ artefact-type row that
+publishes onto it carries the same string in SQL, and a constant generated
+from here is what the registrar subscribes with.
+
+** publish_accounts_from_dq_request
+:PROPERTIES:
+:subject: iam.v1.accounts.publish-from-dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared accounts bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+#+end_src
+
 ** save_account_request
 :PROPERTIES:
 :subject: iam.v1.accounts.save

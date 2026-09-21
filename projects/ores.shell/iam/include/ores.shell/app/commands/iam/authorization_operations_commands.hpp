@@ -98,6 +98,13 @@ public:
                                           const std::vector<std::string>& args);
 
     /**
+     * @brief get-account-permissions <account_id>
+     */
+    static void process_get_account_permissions(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
+
+    /**
      * @brief get-role-permissions <role_id>
      */
     static void process_get_role_permissions(std::ostream& out,

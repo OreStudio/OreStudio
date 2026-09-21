@@ -104,6 +104,7 @@ export const subjects = {
     revoke_role_request: "iam.v1.roles.revoke",
     revoke_role_by_name_request: "iam.v1.roles.revoke-by-name",
     get_account_roles_request: "iam.v1.roles.by-account",
+    get_account_permissions_request: "iam.v1.roles.permissions-by-account",
     get_role_permissions_request: "iam.v1.roles.permissions",
     suggest_role_commands_request: "iam.v1.roles.suggest-commands",
 } as const;
@@ -118,6 +119,7 @@ export const requiresSession = {
     revoke_role_request: true,
     revoke_role_by_name_request: true,
     get_account_roles_request: true,
+    get_account_permissions_request: true,
     get_role_permissions_request: true,
     suggest_role_commands_request: true,
 } as const;

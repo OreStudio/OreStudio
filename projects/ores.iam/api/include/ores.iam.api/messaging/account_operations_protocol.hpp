@@ -32,6 +32,25 @@
 
 namespace ores::iam::messaging {
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared accounts bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+struct publish_accounts_from_dq_request {
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.publish-from-dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
 struct save_account_request {
     using response_type = struct save_account_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.save";

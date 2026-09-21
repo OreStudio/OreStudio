@@ -193,6 +193,18 @@ export interface GetAccountContactInformationVersionResponse {
     version: AccountContactInformation;
 }
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared contact-information
+ * bundle.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply, so it states a subject and no response. Its body is the DQ artefact
+ * the server-side function knows how to expand, which is why it declares no
+ * fields.
+ */
+export interface PublishAccountContactInformationsFromDqRequest {
+}
+
 export const subjects = {
     list_account_contact_informations_request: "iam.v1.account_contact_informations.list",
     get_account_contact_information_request: "iam.v1.account_contact_informations.get",
@@ -204,6 +216,7 @@ export const subjects = {
     list_by_account_id_account_contact_informations_request: "iam.v1.account_contact_informations.list_by_account_id",
     list_account_contact_information_versions_request: "iam.v1.account_contact_informations_versions.list",
     get_account_contact_information_version_request: "iam.v1.account_contact_informations_versions.get",
+    publish_account_contact_informations_from_dq_request: "iam.v1.account-contact-informations.publish-from-dq",
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -221,6 +234,7 @@ export const requiresSession = {
     list_by_account_id_account_contact_informations_request: true,
     list_account_contact_information_versions_request: true,
     get_account_contact_information_version_request: true,
+    publish_account_contact_informations_from_dq_request: true,
 } as const;
 
 /**

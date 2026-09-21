@@ -252,7 +252,7 @@ void rbac_commands::process_assign_role(std::ostream& out,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "iam.v1.roles.assign", req);
+            out, session, iam::messaging::assign_role_request::nats_subject, req);
         if (!result)
             return;
 
@@ -272,7 +272,7 @@ void rbac_commands::process_assign_role(std::ostream& out,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "iam.v1.roles.assign-by-name", req);
+            out, session, iam::messaging::assign_role_by_name_request::nats_subject, req);
         if (!result)
             return;
 
@@ -302,7 +302,7 @@ void rbac_commands::process_revoke_role(std::ostream& out,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "iam.v1.roles.revoke", req);
+            out, session, iam::messaging::revoke_role_request::nats_subject, req);
         if (!result)
             return;
 
@@ -322,7 +322,7 @@ void rbac_commands::process_revoke_role(std::ostream& out,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "iam.v1.roles.revoke-by-name", req);
+            out, session, iam::messaging::revoke_role_by_name_request::nats_subject, req);
         if (!result)
             return;
 
@@ -350,7 +350,7 @@ void rbac_commands::process_get_account_roles(std::ostream& out,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "iam.v1.roles.for-account", req);
+        out, session, iam::messaging::get_account_roles_request::nats_subject, req);
     if (!result)
         return;
 
@@ -376,7 +376,7 @@ void rbac_commands::process_get_account_permissions(std::ostream& out,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "iam.v1.permissions.for-account", req);
+        out, session, iam::messaging::get_account_permissions_request::nats_subject, req);
     if (!result)
         return;
 
@@ -407,7 +407,7 @@ void rbac_commands::process_suggest_role_commands(std::ostream& out,
     }
 
     auto result = do_auth_request<iam::messaging::suggest_role_commands_response>(
-        out, session, "iam.v1.roles.suggest-commands", req);
+        out, session, iam::messaging::suggest_role_commands_request::nats_subject, req);
     if (!result)
         return;
 

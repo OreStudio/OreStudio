@@ -124,8 +124,10 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "save_account";
             s.description = "Create IAM account for the party's principal.";
-            s.command_subject = "iam.v1.accounts.save";
-            s.compensation_subject = "iam.v1.accounts.delete";
+            s.command_subject =
+                std::string(ores::iam::messaging::save_account_request::nats_subject);
+            s.compensation_subject =
+                std::string(ores::iam::messaging::delete_account_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
                                  const std::vector<std::string>&) -> std::string {

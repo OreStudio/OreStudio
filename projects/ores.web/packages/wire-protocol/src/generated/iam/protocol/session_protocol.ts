@@ -23,75 +23,131 @@
  * To modify, update the template and regenerate.
  */
 import type { Session } from '../domain/session.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-/**
- * @brief Aggregated session statistics for a time period, computed from
- * the sessions hypertable's continuous aggregates.
- */
-export interface SessionStatistics {
-    period_start: string;
-    period_end: string;
-    account_id: string;
-    session_count: number;
-    avg_duration_seconds: number;
-    total_bytes_sent: number;
-    total_bytes_received: number;
-    avg_bytes_sent: number;
-    avg_bytes_received: number;
-    unique_countries: number;
+export interface SessionKey {
+    id: string;
+    start_time: string;
 }
 
-/**
- * @brief A session with its party-scoped context.
- *
- * The session is the entity; party_id, visible_party_ids and username are
- * the denormalised fields reached through the account-party association.
- * They are message fields because no column backs them.
- */
-export interface SessionView {
-    session: Session;
-    party_id: string;
-    visible_party_ids: string[];
-    username: string;
+export interface SessionWrite {
+    id: string;
+    start_time: string;
+    account_id: string;
+    end_time: string;
+    client_ip: string;
+    client_identifier: string;
+    client_version_major: number;
+    client_version_minor: number;
+    bytes_sent: number;
+    bytes_received: number;
+    country_code: string;
+    protocol: string;
+}
+
+export interface SessionChange {
+    write: SessionWrite;
+    precondition: Precondition;
+}
+
+export interface SessionRemoval {
+    key: SessionKey;
+    precondition: Precondition;
+}
+
+export interface SessionLookup {
+    key: SessionKey;
+    session: Session | null;
+}
+
+export interface SessionEvent {
+    event_id: string;
+    key: SessionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
 }
 
 export interface ListSessionsRequest {
-    account_id: string;
-    limit: number;
     offset: number;
+    limit: number;
+    order: Order;
 }
 
 export interface ListSessionsResponse {
+    result: Result;
     sessions: Session[];
-    total_count: number;
-    success: boolean;
-    message: string;
+    total: number;
 }
 
-export interface GetActiveSessionsRequest {
+export interface GetSessionRequest {
+    key: SessionKey;
 }
 
-export interface GetActiveSessionsResponse {
+export interface GetSessionResponse {
+    result: Result;
+    session: Session | null;
+}
+
+export interface GetManySessionsRequest {
+    keys: SessionKey[];
+}
+
+export interface GetManySessionsResponse {
+    result: Result;
+    entries: SessionLookup[];
+}
+
+export interface PutSessionRequest {
+    change: SessionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutSessionResponse {
+    result: Result;
+    session: Session;
+}
+
+export interface PutManySessionsRequest {
+    changes: SessionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManySessionsResponse {
+    result: Result;
     sessions: Session[];
-    success: boolean;
-    message: string;
 }
 
-export interface GetSessionStatisticsRequest {
-    account_id: string;
-    start_time: string;
-    end_time: string;
+export interface DeleteSessionRequest {
+    removal: SessionRemoval;
+    intent: ChangeIntent;
 }
 
-export interface GetSessionStatisticsResponse {
-    statistics: SessionStatistics[];
-    success: boolean;
-    message: string;
+export interface DeleteSessionResponse {
+    result: Result;
+}
+
+export interface DeleteManySessionsRequest {
+    removals: SessionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManySessionsResponse {
+    result: Result;
 }
 
 export const subjects = {
     list_sessions_request: "iam.v1.sessions.list",
-    get_active_sessions_request: "iam.v1.sessions.active",
+    get_session_request: "iam.v1.sessions.get",
+    get_many_sessions_request: "iam.v1.sessions.get_many",
+    put_session_request: "iam.v1.sessions.put",
+    put_many_sessions_request: "iam.v1.sessions.put_many",
+    delete_session_request: "iam.v1.sessions.delete",
+    delete_many_sessions_request: "iam.v1.sessions.delete_many",
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -100,5 +156,21 @@ export const subjects = {
  */
 export const requiresSession = {
     list_sessions_request: true,
-    get_active_sessions_request: true,
+    get_session_request: true,
+    get_many_sessions_request: true,
+    put_session_request: true,
+    put_many_sessions_request: true,
+    delete_session_request: true,
+    delete_many_sessions_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "iam.v1.sessions_events.created",
+    updated: "iam.v1.sessions_events.updated",
+    deleted: "iam.v1.sessions_events.deleted",
 } as const;

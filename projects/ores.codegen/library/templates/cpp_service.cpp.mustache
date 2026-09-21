@@ -17,6 +17,7 @@
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_include}}
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
@@ -42,7 +43,7 @@ std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}
                                                 const ores::database::context& ctx,
                                                 const messaging::{{entity_singular}}_key& key) {
     return repo.read_latest(ctx,
-                            {{#primary_key.key_columns}}{{#is_uuid}}boost::uuids::to_string(key.{{column}}){{/is_uuid}}{{^is_uuid}}key.{{column}}{{/is_uuid}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
+                            {{#primary_key.key_columns}}{{#is_uuid}}boost::uuids::to_string(key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}key.{{column}}{{/is_timestamp}}{{/is_uuid}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
 }
 {{#put_operations}}
 
@@ -300,7 +301,7 @@ messaging::{{response}}
     std::vector<std::string> {{column}}_keys;
     {{column}}_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(removal.key.{{column}}){{/is_uuid}}{{^is_uuid}}removal.key.{{column}}{{/is_uuid}});
+        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(removal.key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(removal.key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}removal.key.{{column}}{{/is_timestamp}}{{/is_uuid}});
 {{/primary_key.key_columns}}
     repo_.remove(ctx_, {{{primary_key.batch_keys_args}}});
     return response;

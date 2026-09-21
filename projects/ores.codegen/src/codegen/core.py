@@ -4085,10 +4085,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # protocol keeps each column's own type). One entry per prefix a
             # template reads a key record through.
             def _key_record_args(prefix: str) -> str:
-                return ', '.join(
-                    (f'boost::uuids::to_string({prefix}{c["column"]})'
-                     if c.get('is_uuid') else f'{prefix}{c["column"]}')
-                    for c in pk_columns)
+                # Every key parameter the repository takes is text, so a
+                # timestamp key column converts here as a uuid one does.
+                def one(column: dict[str, Any]) -> str:
+                    member = f'{prefix}{column["column"]}'
+                    if column.get('is_uuid'):
+                        return f'boost::uuids::to_string({member})'
+                    if column.get('is_timestamp'):
+                        return f'ores::platform::time::datetime::to_db_string({member})'
+                    return member
+
+                return ', '.join(one(column) for column in pk_columns)
 
             # The versions list addresses the entity's own key, while the
             # single-version read nests that key inside the version key, as

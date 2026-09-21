@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_SESSION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -53,12 +53,6 @@ public:
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer)) {}
-
-    void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, list_sessions_response{.success = true});
-    }
 
     void active(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);

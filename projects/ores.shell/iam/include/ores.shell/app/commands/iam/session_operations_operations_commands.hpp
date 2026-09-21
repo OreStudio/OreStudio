@@ -22,8 +22,8 @@
  * Template: cpp_shell_operation_header.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_SHELL_APP_COMMANDS_SESSION_OPERATIONS_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_SESSION_OPERATIONS_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_SESSION_OPERATIONS_OPERATIONS_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_SESSION_OPERATIONS_OPERATIONS_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -40,15 +40,15 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief The operations session declares that no entity's CRUD verbs state.
+ * @brief The operations session_operations declares that no entity's CRUD verbs state.
  *
  * One command per message the protocol declares with a subject and a response,
  * so the REPL surface and the protocol stay one declaration.
  */
-class session_operations_commands {
+class session_operations_operations_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.shell.app.commands.iam.session_operations_commands";
+        "ores.shell.app.commands.iam.session_operations_operations_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -58,16 +58,9 @@ private:
 
 public:
     /**
-     * @brief Register the session operations on the root menu.
+     * @brief Register the session_operations operations on the root menu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief list-sessions <account_id> [--limit <v>] [--offset <v>]
-     */
-    static void process_list_sessions(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      const std::vector<std::string>& args);
 
     /**
      * @brief get-active-sessions

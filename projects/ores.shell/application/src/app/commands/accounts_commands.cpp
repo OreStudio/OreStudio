@@ -27,6 +27,7 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -459,38 +460,38 @@ void accounts_commands::process_list_sessions(std::ostream& out,
                                               std::string account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
 
+    // The derivation states no scoped read for sessions, because an account is
+    // not a relation the session resource is addressed by. Saying so is what
+    // the specification asks of an implementation that cannot answer a scope,
+    // rather than quietly returning every session instead.
+    if (!account_id.empty()) {
+        fail(out) << "Listing sessions by account is not served. "
+                     "Use 'sessions' for the page." << std::endl;
+        return;
+    }
+
     iam::messaging::list_sessions_request req;
     req.limit = 50;
 
-    if (!account_id.empty()) {
-        try {
-            req.account_id = account_id;
-        } catch (const boost::bad_lexical_cast&) {
-            BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-            fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
-            return;
-        }
-    }
-
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
-        out, session, "iam.v1.sessions.list", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
-    if (!result->success) {
-        fail(out) << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << result->result.message << std::endl;
         return;
     }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
-                              << " sessions (total: " << result->total_count << ").";
+                              << " sessions (total: " << result->total << ").";
 
     if (sessions.empty()) {
         out << "No sessions found." << std::endl;
         return;
     }
 
-    out << "Sessions (showing " << sessions.size() << " of " << result->total_count
+    out << "Sessions (showing " << sessions.size() << " of " << result->total
         << "):" << std::endl;
     out << std::string(80, '-') << std::endl;
 

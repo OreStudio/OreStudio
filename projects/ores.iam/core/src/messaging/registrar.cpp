@@ -26,6 +26,8 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.iam.core/messaging/session_registrar.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -241,12 +243,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             aph->delete_many_account_parties(std::move(msg));
         }));
 
-    // --- Sessions ---
+    // --- Sessions: the derived CRUD protocol ---
+    for (auto& sub : register_session_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // --- Sessions: the operations a session's CRUD verbs cannot state ---
     auto sh = std::make_shared<session_operations_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        list_sessions_request::nats_subject, qg, [sh](ores::nats::message msg) {
-            sh->list(std::move(msg));
-        }));
     subs.push_back(nats.queue_subscribe(
         get_active_sessions_request::nats_subject, qg, [sh](ores::nats::message msg) {
             sh->active(std::move(msg));

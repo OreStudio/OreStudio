@@ -7,7 +7,7 @@
 #+type: ores.codegen.operation
 #+component: iam
 #+subcomponent: api
-#+entity_singular: session
+#+entity_singular: session_operations
 #+namespace: ores::iam::messaging
 #+brief: session protocol messages.
 #+filetags: :model:operation:iam:
@@ -136,53 +136,6 @@ Two shapes no table backs live here instead:
 :END:
 
 *** username
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-** list_sessions_request
-:PROPERTIES:
-:subject: iam.v1.sessions.list
-:response: list_sessions_response
-:END:
-
-*** account_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** limit
-:PROPERTIES:
-:cpp_type: int
-:default: 50
-:END:
-
-*** offset
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-** list_sessions_response
-
-*** sessions
-:PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::session>
-:END:
-
-*** total_count
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
 :PROPERTIES:
 :cpp_type: std::string
 :END:

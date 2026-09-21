@@ -2791,7 +2791,8 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
             _ts_field("precondition", _PRECONDITION)]),
         _ts_message(f"{singular}_removal", fields=[
             _ts_field("key", key),
-            _ts_field("precondition", _PRECONDITION)]),
+            _ts_field("precondition", _PRECONDITION,
+                      default="ores::utility::domain::removal_precondition")]),
         _ts_message(f"{singular}_lookup", fields=[
             _ts_field("key", key),
             _ts_field(singular, f"std::optional<{domain_type}>")]),

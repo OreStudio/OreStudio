@@ -413,32 +413,30 @@ void provision_commands::process_tenant(std::ostream& out,
         parties_req.limit = 1000;
         auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
         if (parties) {
-            iam::messaging::save_account_party_request assoc_req;
+            iam::messaging::put_many_account_parties_request assoc_req;
+            assoc_req.intent.reason_code =
+                std::string(dq::domain::change_reason_constants::codes::new_record);
+            assoc_req.intent.commentary =
+                "Tenant provisioning: tenant admin associated with party";
             try {
                 const auto account_uuid =
                     boost::lexical_cast<boost::uuids::uuid>(session.auth().account_id);
                 for (const auto& party : parties->parties) {
                     if (party.party_category != "Operational")
                         continue;
-                    iam::domain::account_party association;
-                    association.tenant_id = party.tenant_id.to_string();
-                    association.account_id = account_uuid;
-                    association.party_id = party.id;
-                    association.modified_by = username;
-                    association.performed_by = username;
-                    association.change_reason_code =
-                        std::string(dq::domain::change_reason_constants::codes::new_record);
-                    association.change_commentary =
-                        "Tenant provisioning: tenant admin associated with party";
-                    assoc_req.account_parties.push_back(std::move(association));
+                    iam::messaging::account_party_change change;
+                    change.write.account_id = account_uuid;
+                    change.write.party_id = party.id;
+                    change.precondition.kind = ores::utility::domain::precondition_kind::any;
+                    assoc_req.changes.push_back(std::move(change));
                 }
             } catch (const boost::bad_lexical_cast&) {
                 out << "⚠ Session account id is not a UUID; skipping association." << std::endl;
             }
-            if (!assoc_req.account_parties.empty()) {
+            if (!assoc_req.changes.empty()) {
                 auto assoc = do_request(out, session, assoc_req, std::chrono::seconds(30), true);
-                if (assoc && assoc->success)
-                    linked = static_cast<int>(assoc_req.account_parties.size());
+                if (assoc && assoc->result.outcome == ores::utility::domain::outcome::ok)
+                    linked = static_cast<int>(assoc_req.changes.size());
                 else
                     out << "⚠ Party association failed; continuing (associate "
                            "manually with account-parties add)."

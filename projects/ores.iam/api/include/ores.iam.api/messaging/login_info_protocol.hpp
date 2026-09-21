@@ -57,7 +57,7 @@ struct login_info_change {
 
 struct login_info_removal {
     login_info_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct login_info_lookup {

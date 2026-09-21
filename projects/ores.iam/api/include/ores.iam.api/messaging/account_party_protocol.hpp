@@ -26,112 +26,144 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_PARTY_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account_party.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::iam::messaging {
 
-/**
- * @brief The account party row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct account_party_view {
-    ores::iam::domain::account_party account_party;
+struct account_party_key {
+    boost::uuids::uuid account_id;
+    boost::uuids::uuid party_id;
 };
 
-struct get_account_parties_request {
-    using response_type = struct get_account_parties_response;
+struct account_party_write {
+    boost::uuids::uuid account_id;
+    boost::uuids::uuid party_id;
+};
+
+struct account_party_change {
+    account_party_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct account_party_removal {
+    account_party_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct account_party_lookup {
+    account_party_key key;
+    std::optional<ores::iam::domain::account_party> account_party;
+};
+
+struct account_parties_filter {
+    std::optional<boost::uuids::uuid> account_id;
+};
+
+struct list_account_parties_request {
+    using response_type = struct list_account_parties_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_parties_filter> filter;
 };
 
-struct get_account_parties_response {
+struct list_account_parties_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct get_account_parties_by_account_request {
-    using response_type = struct get_account_parties_by_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_parties.list_by_account_id";
-    std::string account_id;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+struct get_account_party_request {
+    using response_type = struct get_account_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.get";
+    account_party_key key;
 };
 
-struct get_account_parties_by_account_response {
-    std::vector<account_party_view> account_parties;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+struct get_account_party_response {
+    ores::utility::domain::result result;
+    std::optional<ores::iam::domain::account_party> account_party;
 };
 
-struct save_account_party_request {
-    using response_type = struct save_account_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_parties.save";
+struct get_many_account_parties_request {
+    using response_type = struct get_many_account_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.get_many";
+    std::vector<account_party_key> keys;
+};
+
+struct get_many_account_parties_response {
+    ores::utility::domain::result result;
+    std::vector<account_party_lookup> entries;
+};
+
+struct put_account_party_request {
+    using response_type = struct put_account_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.put";
+    account_party_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_account_party_response {
+    ores::utility::domain::result result;
+    ores::iam::domain::account_party account_party;
+};
+
+struct put_many_account_parties_request {
+    using response_type = struct put_many_account_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.put_many";
+    std::vector<account_party_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_account_parties_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
-
-    static save_account_party_request from(std::vector<ores::iam::domain::account_party> v) {
-        return {.account_parties = std::move(v)};
-    }
-};
-
-struct save_account_party_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_account_party_request {
     using response_type = struct delete_account_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.account_parties.delete";
-    std::vector<std::string> account_ids;
-    std::vector<std::string> party_ids;
+    account_party_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_account_party_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct replace_account_parties_by_account_request {
-    using response_type = struct replace_account_parties_by_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_parties.replace_by_account_id";
-    std::string account_id;
+struct delete_many_account_parties_request {
+    using response_type = struct delete_many_account_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.delete_many";
+    std::vector<account_party_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_account_parties_response {
+    ores::utility::domain::result result;
+};
+
+struct list_by_account_id_account_parties_request {
+    using response_type = struct list_by_account_id_account_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_parties.list_by_account_id";
+    boost::uuids::uuid account_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<account_parties_filter> filter;
+};
+
+struct list_by_account_id_account_parties_response {
+    ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_party> account_parties;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
+    std::uint64_t total;
 };
 
-struct replace_account_parties_by_account_response {
-    bool success = false;
-    std::string message;
-};
-
-struct count_account_parties_by_account_request {
-    using response_type = struct count_account_parties_by_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_parties.count_by_account_id";
-    std::string account_id;
-};
-
-struct count_account_parties_by_account_response {
-    int total_available_count = 0;
-};
-
-struct count_account_parties_by_party_request {
-    using response_type = struct count_account_parties_by_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_parties.count_by_party_id";
-    std::string party_id;
-};
-
-struct count_account_parties_by_party_response {
-    int total_available_count = 0;
-};
 }
 
 #endif

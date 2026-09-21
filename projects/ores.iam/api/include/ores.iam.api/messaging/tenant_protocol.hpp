@@ -56,7 +56,7 @@ struct tenant_change {
 
 struct tenant_removal {
     tenant_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct tenant_lookup {

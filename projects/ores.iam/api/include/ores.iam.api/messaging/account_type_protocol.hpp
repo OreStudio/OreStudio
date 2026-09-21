@@ -53,7 +53,7 @@ struct account_type_change {
 
 struct account_type_removal {
     account_type_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct account_type_lookup {

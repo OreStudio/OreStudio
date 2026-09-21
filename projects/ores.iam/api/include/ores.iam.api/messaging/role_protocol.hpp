@@ -52,7 +52,7 @@ struct role_change {
 
 struct role_removal {
     role_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct role_lookup {

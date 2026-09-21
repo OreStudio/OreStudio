@@ -53,7 +53,7 @@ struct tenant_type_change {
 
 struct tenant_type_removal {
     tenant_type_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct tenant_type_lookup {

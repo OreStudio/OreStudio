@@ -77,15 +77,15 @@ void account_parties_commands::process_list(std::ostream& out, nats_client& sess
 
     BOOST_LOG_SEV(lg(), debug) << "Listing account-party associations.";
 
-    iam::messaging::get_account_parties_request req;
-    auto result = do_auth_request<iam::messaging::get_account_parties_response>(
+    iam::messaging::list_account_parties_request req;
+    auto result = do_auth_request<iam::messaging::list_account_parties_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
     out << result->account_parties << std::endl;
-    out << result->account_parties.size() << " of " << result->total_available_count
-        << " associations shown." << std::endl;
+    out << result->account_parties.size() << " of " << result->total << " associations shown."
+        << std::endl;
 }
 
 void account_parties_commands::process_add(std::ostream& out,
@@ -124,26 +124,28 @@ void account_parties_commands::process_add(std::ostream& out,
         return;
     }
 
-    iam::domain::account_party association;
-    association.tenant_id = party->tenant_id.to_string();
-    association.account_id = *account_uuid;
-    association.party_id = *party_uuid;
-    association.modified_by = session.auth().username;
-    association.performed_by = session.auth().username;
-    association.change_reason_code =
+    // The tenant is the party's, not the caller's: this shell command runs as
+    // an administrator associating an account it does not own, and the handler
+    // refuses a stated order it cannot serve. The write carries the pair and
+    // the intent; the provenance is the service's to derive.
+    iam::messaging::put_many_account_parties_request req;
+    iam::messaging::account_party_change change;
+    change.write.account_id = *account_uuid;
+    change.write.party_id = *party_uuid;
+    change.precondition.kind = ores::utility::domain::precondition_kind::any;
+    req.changes.push_back(std::move(change));
+    req.intent.reason_code =
         std::string(dq::domain::change_reason_constants::codes::new_record);
-    association.change_commentary = "Associated via shell";
+    req.intent.commentary = "Associated via shell";
 
-    iam::messaging::save_account_party_request req;
-    req.account_parties.push_back(std::move(association));
-
-    auto result = do_auth_request<iam::messaging::save_account_party_response>(
+    auto result = do_auth_request<iam::messaging::put_many_account_parties_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (!result->success) {
-        fail(out) << "Failed to associate account with party: " << result->message << std::endl;
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to associate account with party: " << result->result.message
+                  << std::endl;
         return;
     }
     out << "✓ Account " << account_id << " associated with party '" << party->full_name << "'."

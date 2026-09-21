@@ -197,34 +197,44 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // --- Account parties ---
+    // The associations are stored in a junction the codegen owns, but their
+    // messaging layer is hand-written, so their subjects are wired here. One
+    // subscription per canonical operation, in the order the protocol states
+    // them.
     auto aph = std::make_shared<account_party_handler>(nats, ctx, signer);
     subs.push_back(nats.queue_subscribe(
-        get_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->list(std::move(msg));
+        list_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->list_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_account_parties_by_account_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->by_account(std::move(msg));
+        list_by_account_id_account_parties_request::nats_subject,
+        qg,
+        [aph](ores::nats::message msg) {
+            aph->list_by_account_id_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        save_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->save(std::move(msg));
+        get_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->get_account_party(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->get_many_account_parties(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->put_account_party(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->put_many_account_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         delete_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->remove(std::move(msg));
+            aph->delete_account_party(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        replace_account_parties_by_account_request::nats_subject,
-        qg,
-        [aph](ores::nats::message msg) { aph->replace_by_account(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        count_account_parties_by_account_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->count_by_account(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        count_account_parties_by_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
-            aph->count_by_party(std::move(msg));
+        delete_many_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
+            aph->delete_many_account_parties(std::move(msg));
         }));
 
     // --- Sessions ---

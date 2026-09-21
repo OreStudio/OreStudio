@@ -161,7 +161,7 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             s.name = "link_account_party";
             s.description = "Link the IAM account to the party record.";
             s.command_subject =
-                std::string(ores::iam::messaging::save_account_party_request::nats_subject);
+                std::string(ores::iam::messaging::put_many_account_parties_request::nats_subject);
             s.compensation_subject =
                 std::string(ores::iam::messaging::delete_account_party_request::nats_subject);
 
@@ -178,26 +178,31 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                 if (!ar || ar->account_id.empty())
                     return "{}";
 
-                ores::iam::domain::account_party link;
-                link.account_id = boost::lexical_cast<boost::uuids::uuid>(ar->account_id);
-                link.party_id = boost::lexical_cast<boost::uuids::uuid>(wr->party_id);
-                link.change_commentary = "Provisioned by workflow";
+                ores::iam::messaging::account_party_change change;
+                change.write.account_id = boost::lexical_cast<boost::uuids::uuid>(ar->account_id);
+                change.write.party_id = boost::lexical_cast<boost::uuids::uuid>(wr->party_id);
+                change.precondition.kind = ores::utility::domain::precondition_kind::any;
 
-                return rfl::json::write(ores::iam::messaging::save_account_party_request{
-                    .account_parties = {std::move(link)}});
+                return rfl::json::write(ores::iam::messaging::put_many_account_parties_request{
+                    .changes = {std::move(change)},
+                    .intent = {.commentary = "Provisioned by workflow"}});
             };
 
             s.build_compensation = [](const std::string& cmd_json,
                                       const std::string&) -> std::string {
-                auto cr =
-                    rfl::json::read<ores::iam::messaging::save_account_party_request>(cmd_json);
-                if (!cr || cr->account_parties.empty())
+                auto cr = rfl::json::read<ores::iam::messaging::put_many_account_parties_request>(
+                    cmd_json);
+                if (!cr || cr->changes.empty())
                     return "{}";
-                const auto& ap = cr->account_parties.front();
+                const auto& link = cr->changes.front().write;
+                ores::iam::messaging::account_party_removal removal;
+                removal.key.account_id = link.account_id;
+                removal.key.party_id = link.party_id;
 
                 return rfl::json::write(ores::iam::messaging::delete_account_party_request{
-                    .account_ids = {boost::uuids::to_string(ap.account_id)},
-                    .party_ids = {boost::uuids::to_string(ap.party_id)}});
+                    .removal = std::move(removal),
+                    .intent = {.reason_code = "workflow_compensation",
+                               .commentary = "Provisioning rolled back"}});
             };
 
             steps.push_back(std::move(s));

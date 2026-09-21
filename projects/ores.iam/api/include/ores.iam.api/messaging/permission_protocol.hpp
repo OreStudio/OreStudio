@@ -52,7 +52,7 @@ struct permission_change {
 
 struct permission_removal {
     permission_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct permission_lookup {

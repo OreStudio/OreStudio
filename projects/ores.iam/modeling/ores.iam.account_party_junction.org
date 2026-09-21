@@ -2,8 +2,6 @@
 :ores.cpp.nats-handler.enabled: nil
 :ores.cpp.nats-sub-registrar.enabled: nil
 :ores.cpp.service.enabled: nil
-:ores.cpp.protocol.enabled: nil
-:ores.ts.protocol.enabled: nil
 :ID: D96E6889-A53B-41AF-A7F5-A3497A188BA0
 :END:
 #+title: ores.iam.account_party

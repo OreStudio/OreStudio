@@ -23,91 +23,132 @@
  * To modify, update the template and regenerate.
  */
 import type { AccountParty } from '../domain/account_party.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetAccountPartiesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetAccountPartiesResponse {
-    account_parties: AccountParty[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetAccountPartiesByAccountRequest {
+export interface AccountPartyKey {
     account_id: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetAccountPartiesByAccountResponse {
-    account_parties: AccountPartyView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveAccountPartyRequest {
-    account_parties: AccountParty[];
-}
-
-export interface SaveAccountPartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteAccountPartyRequest {
-    account_ids: string[];
-    party_ids: string[];
-}
-
-export interface DeleteAccountPartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface ReplaceAccountPartiesByAccountRequest {
-    account_id: string;
-    account_parties: AccountParty[];
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-}
-
-export interface ReplaceAccountPartiesByAccountResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface CountAccountPartiesByAccountRequest {
-    account_id: string;
-}
-
-export interface CountAccountPartiesByAccountResponse {
-    total_available_count: number;
-}
-
-export interface CountAccountPartiesByPartyRequest {
     party_id: string;
 }
 
-export interface CountAccountPartiesByPartyResponse {
-    total_available_count: number;
+export interface AccountPartyWrite {
+    account_id: string;
+    party_id: string;
 }
 
-export interface AccountPartyView {
+export interface AccountPartyChange {
+    write: AccountPartyWrite;
+    precondition: Precondition;
+}
+
+export interface AccountPartyRemoval {
+    key: AccountPartyKey;
+    precondition: Precondition;
+}
+
+export interface AccountPartyLookup {
+    key: AccountPartyKey;
+    account_party: AccountParty | null;
+}
+
+export interface AccountPartiesFilter {
+    account_id: string | null;
+}
+
+export interface ListAccountPartiesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AccountPartiesFilter | null;
+}
+
+export interface ListAccountPartiesResponse {
+    result: Result;
+    account_parties: AccountParty[];
+    total: number;
+}
+
+export interface GetAccountPartyRequest {
+    key: AccountPartyKey;
+}
+
+export interface GetAccountPartyResponse {
+    result: Result;
+    account_party: AccountParty | null;
+}
+
+export interface GetManyAccountPartiesRequest {
+    keys: AccountPartyKey[];
+}
+
+export interface GetManyAccountPartiesResponse {
+    result: Result;
+    entries: AccountPartyLookup[];
+}
+
+export interface PutAccountPartyRequest {
+    change: AccountPartyChange;
+    intent: ChangeIntent;
+}
+
+export interface PutAccountPartyResponse {
+    result: Result;
     account_party: AccountParty;
 }
 
+export interface PutManyAccountPartiesRequest {
+    changes: AccountPartyChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyAccountPartiesResponse {
+    result: Result;
+    account_parties: AccountParty[];
+}
+
+export interface DeleteAccountPartyRequest {
+    removal: AccountPartyRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteAccountPartyResponse {
+    result: Result;
+}
+
+export interface DeleteManyAccountPartiesRequest {
+    removals: AccountPartyRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyAccountPartiesResponse {
+    result: Result;
+}
+
+export interface ListByAccountIdAccountPartiesRequest {
+    account_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: AccountPartiesFilter | null;
+}
+
+export interface ListByAccountIdAccountPartiesResponse {
+    result: Result;
+    account_parties: AccountParty[];
+    total: number;
+}
+
 export const subjects = {
-    get_account_parties_request: "iam.v1.account_parties.list",
-    get_account_parties_by_account_request: "iam.v1.account_parties.list_by_account_id",
-    save_account_party_request: "iam.v1.account_parties.save",
+    list_account_parties_request: "iam.v1.account_parties.list",
+    get_account_party_request: "iam.v1.account_parties.get",
+    get_many_account_parties_request: "iam.v1.account_parties.get_many",
+    put_account_party_request: "iam.v1.account_parties.put",
+    put_many_account_parties_request: "iam.v1.account_parties.put_many",
     delete_account_party_request: "iam.v1.account_parties.delete",
-    replace_account_parties_by_account_request: "iam.v1.account_parties.replace_by_account_id",
-    count_account_parties_by_account_request: "iam.v1.account_parties.count_by_account_id",
-    count_account_parties_by_party_request: "iam.v1.account_parties.count_by_party_id",
+    delete_many_account_parties_request: "iam.v1.account_parties.delete_many",
+    list_by_account_id_account_parties_request: "iam.v1.account_parties.list_by_account_id",
 } as const;

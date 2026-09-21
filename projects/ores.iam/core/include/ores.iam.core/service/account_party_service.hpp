@@ -26,6 +26,7 @@
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -91,6 +92,16 @@ public:
      * @brief Gets the total count of active account parties for an account.
      */
     std::uint32_t get_total_account_party_count_by_account(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Finds one association by both of the columns that name it.
+     *
+     * A link is named by the pair, and the repository reads a page by one
+     * column at a time, so the pair is resolved here. Returns nothing when the
+     * account is not associated with that party.
+     */
+    std::optional<domain::account_party> find_account_party(
+        const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id);
 
     /**
      * @brief Gets the total count of active account parties for a party.

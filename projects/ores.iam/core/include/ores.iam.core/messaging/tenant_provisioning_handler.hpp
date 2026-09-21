@@ -1189,16 +1189,14 @@ private:
         onboarding_req.party_id = boost::uuids::to_string(party.id);
         client.request(onboarding_req);
 
-        ores::iam::domain::account_party assoc;
-        assoc.tenant_id = tenant_id;
-        assoc.account_id = account_id;
-        assoc.party_id = party.id;
-        assoc.modified_by = username;
-        assoc.performed_by = username;
-        assoc.change_reason_code = "system.external_data_import";
-        assoc.change_commentary = "Associated during Acme provisioning";
-        ores::iam::messaging::save_account_party_request assoc_req;
-        assoc_req.account_parties = {std::move(assoc)};
+        ores::iam::messaging::put_many_account_parties_request assoc_req;
+        ores::iam::messaging::account_party_change change;
+        change.write.account_id = account_id;
+        change.write.party_id = party.id;
+        change.precondition.kind = ores::utility::domain::precondition_kind::any;
+        assoc_req.changes.push_back(std::move(change));
+        assoc_req.intent.reason_code = "system.external_data_import";
+        assoc_req.intent.commentary = "Associated during Acme provisioning";
         client.request(assoc_req);
 
         if (set_default) {

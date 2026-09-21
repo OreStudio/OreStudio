@@ -57,6 +57,15 @@ std::vector<domain::account_party> account_party_service::list_account_parties_b
     return repo_.read_latest_by_account(account_id, offset, limit);
 }
 
+std::optional<domain::account_party> account_party_service::find_account_party(
+    const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id) {
+    for (auto& row : list_account_parties_by_account(account_id)) {
+        if (row.party_id == party_id)
+            return row;
+    }
+    return std::nullopt;
+}
+
 std::uint32_t account_party_service::get_total_account_party_count_by_account(
     const boost::uuids::uuid& account_id) {
     return repo_.get_total_account_party_count_by_account(account_id);

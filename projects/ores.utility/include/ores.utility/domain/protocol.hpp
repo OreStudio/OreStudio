@@ -89,6 +89,17 @@ struct precondition {
 };
 
 /**
+ * @brief The precondition a removal states when it states none.
+ *
+ * A removal that required the row to be absent would never be satisfiable, so
+ * the default is the claim a removal actually makes: remove whatever is
+ * current. A caller that wants the version checked says so, and states the
+ * version.
+ */
+inline constexpr precondition removal_precondition{
+    precondition_kind::any, std::nullopt};
+
+/**
  * @brief Why a write is being made. User-owned, unlike the audit provenance,
  * which the service derives from the authenticated context.
  */

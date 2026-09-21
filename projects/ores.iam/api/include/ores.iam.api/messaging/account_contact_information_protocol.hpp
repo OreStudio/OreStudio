@@ -60,7 +60,7 @@ struct account_contact_information_change {
 
 struct account_contact_information_removal {
     account_contact_information_key key;
-    ores::utility::domain::precondition precondition;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
 struct account_contact_information_lookup {

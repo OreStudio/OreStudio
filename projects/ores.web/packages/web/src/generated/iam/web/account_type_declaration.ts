@@ -36,7 +36,7 @@ export const accountTypeDescriptor: EntityDescriptor = {
     component: 'iam',
     entity: 'account_type',
     meta: accountTypeMeta,
-    routeSegment: 'account_type',
+    routeSegment: 'account-type',
     apiBase: '/api/account_types',
     keyParam: 'id',
     capabilities: {

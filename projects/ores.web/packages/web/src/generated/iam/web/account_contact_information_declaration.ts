@@ -36,7 +36,7 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
     component: 'iam',
     entity: 'account_contact_information',
     meta: accountContactInformationMeta,
-    routeSegment: 'account_contact_information',
+    routeSegment: 'account-contact-information',
     apiBase: '/api/account_contact_informations',
     keyParam: 'id',
     capabilities: {

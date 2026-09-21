@@ -1758,6 +1758,17 @@ def _ui_camel(name):
     return pascal[:1].lower() + pascal[1:]
 
 
+def _ui_kebab(name):
+    """``tenant_type`` -> ``tenant-type``; the entity's web route segment.
+
+    The router echoes this segment into the browser address verbatim, and
+    every other route in the registry is kebab-case, so the address is built
+    here rather than left in the model's own snake_case. The entity name and
+    the label-key prefix stay snake_case; only the address changes.
+    """
+    return name.replace('_', '-')
+
+
 def _ui_str(value):
     return "'" + str(value).replace('\\', '\\\\').replace("'", "\\'") + "'"
 
@@ -2016,7 +2027,7 @@ def web_declaration_projection(entity, model_path):
         'component': component,
         'entity': entity_singular,
         'entity_camel': _ui_camel(entity_singular),
-        'route_segment': entity_singular,
+        'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
         'can_create': _ui_bool(not read_only),

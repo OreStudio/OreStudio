@@ -31,13 +31,14 @@ import { assertWiredPath, findEntity, iamComponent } from './registry.js';
  */
 describe('wired entity paths', () => {
   it('resolves the registry entity at the declaration route segment', () => {
+    expect(tenantTypeDescriptor.routeSegment).toBe('tenant-type');
     const resolved = findEntity(iamComponent.id, tenantTypeDescriptor.routeSegment);
     expect(resolved?.entity.id).toBe('tenantType');
     expect(() => assertWiredPath(tenantTypeDescriptor)).not.toThrow();
   });
 
   it('refuses a declaration whose route segment the registry does not declare', () => {
-    const disagreeing = { ...tenantTypeDescriptor, routeSegment: 'tenant-type' };
-    expect(() => assertWiredPath(disagreeing)).toThrow(/tenant-type/);
+    const disagreeing = { ...tenantTypeDescriptor, routeSegment: 'tenant-types' };
+    expect(() => assertWiredPath(disagreeing)).toThrow(/tenant-types/);
   });
 });

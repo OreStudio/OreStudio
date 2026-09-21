@@ -112,7 +112,7 @@ def test_the_route_api_and_key_are_stated_rather_than_composed_by_a_screen():
                           collection_name="book_statuses", key_field="code")
     assert projection["entity"] == "book_status"
     assert projection["entity_camel"] == "bookStatus"
-    assert projection["route_segment"] == "book_status"
+    assert projection["route_segment"] == "book-status"
     assert projection["api_base"] == "/api/book_statuses"
     assert projection["key_field"] == "code"
 

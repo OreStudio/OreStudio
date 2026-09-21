@@ -18,4 +18,4 @@ Usage: imported by the check scripts, never run.
 """
 
 # The components under test. Every other catalogue component is to-do.
-COMPONENTS_UNDER_TEST = ("iam", "refdata")
+COMPONENTS_UNDER_TEST = ("history", "iam", "refdata")

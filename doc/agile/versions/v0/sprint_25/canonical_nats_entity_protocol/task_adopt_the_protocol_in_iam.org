@@ -30,7 +30,7 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
 | Now          | The protocol conversion is proved end to end: the database rebuilds from the create scripts, =ores.iam.core.tests= passes 96 test cases and 224 assertions including all five eventing integration tests, and every gate passes. The role duplication the acceptance criteria name is resolved -- no IAM subject is declared by two protocols, and the derived role CRUD is served by the code that owns it instead of by a hand-written handler that shadowed it. Two entities still own their protocol through an operation model and so have no derived CRUD to generate a shell unit from: =account= and =session=. The shell facet also still speaks the superseded =list=/=save=/=delete=/=history= verbs, so it cannot be enabled on anything yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Settled 2026-09-21, in this order. (1) Make =account= and =session= regular entities: stop their operation models owning the protocol, let the canonical CRUD derive, and re-enable the generated service, handler and registrar. Their genuine workflow operations stay in an operation model with a hand-written handler beside it, as the authorization split already does. (2) Teach =ores.cpp.shell-command= to render an =operation= model, so the shell can address declared operations and not only a derived CRUD set. (3) Convert the facet to the canonical protocol and every verb. (4) Scaffold =ores.shell.iam=, enable the facet on every IAM model, generate, and wire the aggregator. (5) Prove entity and verb coverage and exercise every command against the live service. |
+| Next         | Settled 2026-09-21. (1) Teach =ores.cpp.shell-command= to render an =operation= model, so the shell can address declared operations and not only a derived CRUD set. This depends on nothing below it: a declared model already carries the subjects and field types the unit needs, so it can go first and it is the direct answer to the shell work. (2) Make =account= and =session= regular entities: stop their operation models owning the protocol, let the canonical CRUD derive, and re-enable the generated service, handler and registrar. Their genuine workflow operations stay in an operation model with a hand-written handler beside it, as the authorization split already does. This is needed where a verb is wrong, not to unlock shell commands. (3) Convert the facet to the canonical protocol and every verb. (4) Scaffold =ores.shell.iam=, enable the facet on every IAM model, generate, and wire the aggregator. (5) Prove entity and verb coverage and exercise every command against the live service. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -512,7 +512,22 @@ again. =uniq -d= over every subject in every IAM protocol header is now empty.
 
 **Two entities cannot derive a CRUD protocol, and one of them should not.**
 =account= and =session= own their protocol through an operation model, so no
-shell unit can be derived for them. They are not alike. A session's list request
+shell unit can be derived for them *by the facet as it stands*. The operation
+models are not the obstacle: =ores.cpp.protocol= lists =operation= among its
+model types, so a declared model already yields its subjects, request and
+response types, and every field's =cpp_type=, in both twins. The hand-crafted
+artefacts for an operation model are the ones whose facets exclude =operation= --
+=nats-handler=, =service=, =repository= and =shell-command= take only
+=domain_entity=, =schema= and =junction=. That is why =session_handler=,
+=bootstrap_handler=, =reset_handler=, =authorization_handler= and the login
+wiring in the account handler are hand-written while the protocol beside each is
+generated. Canonicalising an operation model is therefore *not* a prerequisite
+for generating shell commands from it; it is needed only where a verb is
+actually wrong. The facet change is what unlocks the commands, and the protocol
+template already shows the shape it takes: walk ={{#operation}}{{#messages}}= and
+emit one unit per declared message.
+
+They are not alike. A session's list request
 is a scoped read in the old shape, and its generated service already implements
 save and delete, so the derivation costs nothing and gains a =list_by_account_id=
 read. An account's writes are workflows -- =create_account=, =login=,

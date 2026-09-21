@@ -48,7 +48,7 @@ import type { LiveSession } from './sessions.js';
  * words rather than a 500 carrying ours.
  */
 export interface EntityRouteDescriptor {
-  /** The collection segment of the path, without `/api/`, e.g. `tenant-types`. */
+  /** The collection segment of the path, without `/api/`, e.g. `tenant_types`. */
   readonly collection: string;
   /** The name of the path parameter holding the natural key, e.g. `id`. */
   readonly key: string;

@@ -241,6 +241,7 @@ triage across ~25 files.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] -- a related but distinct NATS
   serialisation convention (type-specific subjects), orthogonal to the
   JSON/MessagePack payload choice this document covers.

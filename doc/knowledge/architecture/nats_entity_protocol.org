@@ -869,6 +869,7 @@ a per-check opinion.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS Wire Format]] — the envelope and the payload encoding this
   specification assumes.
 - [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — which component owns which

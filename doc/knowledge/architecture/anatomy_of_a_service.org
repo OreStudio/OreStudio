@@ -201,6 +201,7 @@ missing):
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — the step-by-step registry procedure.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — the generator and its profiles.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the api/core/service component meta-model.

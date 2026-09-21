@@ -125,6 +125,7 @@ its archetypes exist; link them here as for NATS.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — where the top-level registrar sits in the
   service runtime.
 - [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] — the handler facet the NATS sub-registrar wires up.

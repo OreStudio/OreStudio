@@ -62,6 +62,7 @@ generic/cross-entity subject must follow the same shape.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport library: request/reply, subject naming, queue
   groups, JetStream.
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the upstream messaging technology this is built on.

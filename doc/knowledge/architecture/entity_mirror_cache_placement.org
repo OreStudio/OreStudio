@@ -74,6 +74,7 @@ every other =_upper=/=_dir= variable the facet exposes.
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache + codegen facet]] -- the story that
   built =partitioned_cache= and the =nats-event-cache= facet, with
   =party_cache= as the worked single-consumer exemplar.

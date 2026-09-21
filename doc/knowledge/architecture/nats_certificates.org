@@ -287,6 +287,7 @@ only when it reports drift, recreate:
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — the command recipe (=--force=, =--hostname=, adding services).
 - [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — =compass nats init=, the config + JetStream store side.
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env configure=, which calls cert generation automatically.

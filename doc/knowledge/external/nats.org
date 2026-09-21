@@ -134,6 +134,7 @@ older distro base). See =external/nats/manifest.json= and
 
 * See also
 
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the ORE Studio C++ transport library wrapping =nats.c=.
 - [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Protocol Reference]] — the subject namespace and
   message types for every domain service.

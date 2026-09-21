@@ -158,27 +158,9 @@ drop function if exists ores_iam_validate_tenant_type_fn;
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant_type.hpp
-:domain_class:           iam::domain::tenant_type
-:protocol_include:       ores.iam.api/messaging/tenant_type_protocol.hpp
 :collection_name:        tenant_types
-:item_var:               tenant_type
 :key_field:              type
-:get_request_class:      iam::messaging::list_tenant_types_request
-:get_response_class:     iam::messaging::list_tenant_types_response
-:get_message_type:       list_tenant_types_request
-:save_request_class:     iam::messaging::put_tenant_type_request
-:save_response_class:    iam::messaging::put_tenant_type_response
-:save_message_type:      put_tenant_type_request
-:delete_request_class:   iam::messaging::delete_tenant_type_request
-:delete_response_class:  iam::messaging::delete_tenant_type_response
-:delete_message_type:    delete_tenant_type_request
-:history_request_class:  iam::messaging::list_tenant_type_versions_request
-:history_response_class: iam::messaging::list_tenant_type_versions_response
 :history_message_type:   list_tenant_type_versions_request
-:settings_group:         TenantTypeListWindow
-:window_title:           Tenant Types
-:icon:                   Tag
 :END:
 
 *** Detail fields

@@ -37,9 +37,10 @@ coverage is not a valid end state. The drift check lives at
 modes: =--component <name>= regenerates one component in place and
 exits non-zero on any diff against the checked-in files or on any
 untracked file the regeneration materializes; =--all= runs the same
-check over the script's =KNOWN_DRIFT_FREE= registry, the set the
+check over the shared =COMPONENTS_UNDER_TEST= list in
+=component_registry.py=, the set the
 compass-pr-raise gate covers. Measure a component not yet at zero drift with
-=--component=; it cannot pass =--all= until it joins the registry.
+=--component=; it cannot pass =--all= until it joins the list.
 This is the tool that measures, the surveys and regenerations below do
 the work.
 
@@ -130,8 +131,8 @@ the work.
    family unwired and unrecorded.
 
 8. *Extend the drift gate last.* Add the component to the
-   =KNOWN_DRIFT_FREE= registry in check_component_drift.py. Two things
-   then run =check_component_drift.py --all= over that registry: the
+   =COMPONENTS_UNDER_TEST= list in component_registry.py. Two things
+   then run =check_component_drift.py --all= over that list: the
    =codegen-drift.yml= workflow, which gates a PR on
    =projects/*/modeling/**= and =projects/ores.codegen/**=, and the
    compass-pr-raise skill's local codegen-drift check. The gate lands

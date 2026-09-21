@@ -32,8 +32,8 @@
  * <entity>.type.<value> for a combo option.
  *
  * Field grouping into tabs is deliberately absent: it is a domain
- * judgement the model does not carry. See counterpartyIdentifier_field_groups.ts
- * beside this file.
+ * judgement the model does not carry, so regeneration cannot invent it. The
+ * model cannot express a grouping yet, so every field renders in one group.
  */
 import type { ColumnMeta, FieldMeta } from '../../../ui-contract.js';
 

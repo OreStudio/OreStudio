@@ -70,6 +70,24 @@ export function invalidRequest(message: string): HttpFailure {
 }
 
 /**
+ * The deployment has not been provisioned yet.
+ *
+ * Its own code rather than a 401, because it is not a credential problem: there
+ * are no accounts to be wrong about. A caller that cannot tell the two apart
+ * shows "invalid username or password" to somebody whose only mistake was being
+ * the first person to arrive.
+ */
+export function bootstrapRequired(): HttpFailure {
+  return new HttpFailure(409, {
+    code: 'bootstrap-mode',
+    message:
+      'This deployment is in bootstrap mode: it has not been provisioned yet, ' +
+      'so there are no accounts to sign in with. An administrator must ' +
+      'complete the setup wizard first.',
+  });
+}
+
+/**
  * Translates any thrown value into an {@link HttpFailure}.
  *
  * Returns the original failure when it already is one, so a route can throw a

@@ -115,6 +115,33 @@ function loginReply(overrides: Record<string, unknown> = {}): Record<string, unk
   };
 }
 
+describe('OresClient bootstrap status', () => {
+  it('reports the deployment as unprovisioned before any credential is used', async () => {
+    const transport = new ScriptedTransport({
+      'iam.v1.bootstrap.status': [
+        { body: { is_in_bootstrap_mode: true, message: '' } },
+      ],
+    });
+    const client = new OresClient({ transport });
+
+    const status = await client.bootstrapStatus();
+
+    expect(status.isInBootstrapMode).toBe(true);
+    expect(transport.calls[0]?.headers).toEqual({});
+  });
+
+  it('reads a provisioned deployment as one a login may proceed against', async () => {
+    const transport = new ScriptedTransport({
+      'iam.v1.bootstrap.status': [
+        { body: { is_in_bootstrap_mode: false, message: '' } },
+      ],
+    });
+    const client = new OresClient({ transport });
+
+    expect((await client.bootstrapStatus()).isInBootstrapMode).toBe(false);
+  });
+});
+
 describe('OresClient login', () => {
   it('sends the credential in the principal field', async () => {
     const transport = new ScriptedTransport({ 'iam.v1.auth.login': [{ body: loginReply() }] });

@@ -314,6 +314,27 @@ const pt: SourceCatalogue = {
     officialNamePh: 'Introduza o nome oficial do país',
   },
 
+  tenant_type: {
+    title: 'Tipos de inquilino',
+    singular: 'tipo de inquilino',
+    newTitle: 'Novo tipo de inquilino',
+    description: 'Classificações de tipos de inquilino e a ordem em que são apresentadas.',
+    colType: 'Tipo',
+    colName: 'Nome',
+    colDescription: 'Descrição',
+    colDisplayOrder: 'Ordem de apresentação',
+    colVersion: 'Versão',
+    colModifiedBy: 'Modificado por',
+    colRecordedAt: 'Registado em',
+    searchPlaceholder: 'Tipo, nome ou descrição',
+    fldType: 'Tipo',
+    fldName: 'Nome',
+    fldDescription: 'Descrição',
+    typePh: 'Introduza o código do tipo de inquilino',
+    namePh: 'Introduza o nome a apresentar',
+    descriptionPh: 'Introduza a descrição',
+  },
+
   table: {
     chooseColumns: 'Escolher colunas',
     rowActions: 'Ações',

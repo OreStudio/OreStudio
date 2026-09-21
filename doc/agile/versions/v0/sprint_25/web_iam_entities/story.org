@@ -1,0 +1,377 @@
+:PROPERTIES:
+:ID: 131C14D1-31D1-46EE-B697-B52EE3612F5F
+:END:
+#+title: Story: Implement every IAM entity in the web client
+#+description: Rebuild every IAM entity the Qt client shipped inside ores.web, each one as a declaration that the shared entity shell renders, so the component reaches parity with ores.qt without the screens being copied from one another.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The IAM component has a screen for every entity its TypeScript messages describe, and each one is built the same way. The entity's columns and fields come from the generated TypeScript metadata; its grouping, capabilities and relationships come from a single declaration; the shared shell renders its list, detail and history screens. Adding an entity touches one declaration file and no shared component. Where entity_specification.org and the current implementation disagree, the disagreement is recorded rather than inherited.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Analysis done; approach recorded below. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first two tasks, which are the prerequisite. |
+| Last touched  | 2026-09-20                               |
+
+* Acceptance
+
+- Every IAM entity in the classification has its screens, or is recorded as an exception with a stated reason.
+- No entity is implemented by copying another: a new entity touches one declaration and no shared component.
+- The screens conform to entity_specification.org, and gaps.org records what stays open.
+- No IAM secret field reaches the browser in any response.
+- The shared gaps a second entity would inherit are closed before the rollout depends on them.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FEA81310-1D51-489D-8877-9362B74C191F][Drive the entity screens from one declaration]] | STARTED | 2026-09-20 | | Task for: Implement every IAM entity in the web client |
+| [[id:BB459070-1A52-4119-8873-CF277EBA3ECE][Close the entity-shell gaps a second entity would inherit]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:8B4A89EB-C62D-4910-9E28-9CA9EF82F3F7][Related records: children and junctions]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:3FC079C9-A221-415B-8DEB-03D8A3311E7A][The IAM reference lookups: account type, tenant type and tenant status]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:97C2E606-06E3-4D33-AF61-3CC66AA10F0D][The IAM audited entities: tenant and role]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:B3C0E7DC-0312-4F80-A85B-2EA2D8D01FD0][The IAM account archetype: secrets, children, relationships and actions]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:22A801A3-7289-45BE-86D7-24DD1742BE0C][The IAM read-only surfaces: permission, session and session statistics]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+
+* What a new entity costs today
+
+Measured, not estimated, against the one entity that is on the shared shell.
+=country= is the reference implementation and it is the only one.
+
+| Artefact | Where | Lines | Is it the entity's own judgement? |
+|---+---+---+---|
+| API module | =web/src/api/countries.ts= | 206 | No |
+| Detail screen | =CountryDetailPage.tsx= | 322 | No |
+| History screen | =CountryHistoryPage.tsx= | 161 | No |
+| List screen | =CountryListPage.tsx= | 151 | No |
+| Field groups | =country_field_groups.ts= | 37 | /Yes, and it is the only one/ |
+| Routes | =main.tsx= | 4 routes and their imports | No |
+| Declaration | =registry.ts= | 1 line | Yes |
+| Catalogue | =i18n/locales/*.ts=, three locales | about 28 each | Yes, the words |
+| BFF routes | =bff/src/server.ts= | 4 handlers | No |
+| Verification | =scripts/verify-country.ts= | a script per entity | No |
+
+That is about 877 lines of new files plus edits to six shared files, for an entity
+whose distinguishing content is 37 lines of field grouping, one line of
+declaration, and some catalogue words. Repeating it for the nine remaining IAM
+entities is roughly eight thousand lines, and every repetition is a chance to
+differ.
+
+Three defects are already in the tree. They are the argument, not a prediction.
+
+**The shared detail screen hardcodes one entity's keys.** =entity/EntityDetailPage.tsx=
+reads =account.fldVersion=, =account.fldModifiedBy=, =account.fldPerformedBy=,
+=account.fldRecordedAt=, =account.fldChangeReason=, =account.fldCommentary= and
+=account.notRecorded= when it renders the Provenance tab. So the provenance labels
+of /every/ entity are drawn from the =account= block of the catalogue. Entity two
+either inherits account's words or somebody adds a conditional to shared code.
+
+**The main IAM entity bypasses the shell entirely.** =pages/AccountsPage.tsx=
+imports nothing from =entity/=; it is 193 lines of bespoke screen built from raw
+primitives. The web client therefore has two unrelated implementations of "an
+entity screen", and the IAM component sits on the one entity_specification.org
+names as the archetype /not/ to keep for behaviour.
+
+**A convention is documented but does not exist.** =generated/iam/ui/tenant_ui.ts=
+says field grouping is deliberately absent and points at a =tenant_field_groups.ts=
+beside it. That file exists nowhere in the repository; =country_field_groups.ts= is
+the only one of its kind. Field-group models exist for trading and dq and the
+entity meta-model can resolve them, but no entity binds one and the generated UI
+metadata does not emit a grouping. So the one genuinely per-entity artefact is also
+the one with no mechanism behind it.
+
+The BFF states the risk in its own comment on the countries route: "A hundred
+entities with a hundred route shapes is a hundred chances to differ." The current
+answer to that is a comment asking the next person to be careful.
+
+* What the Qt client did, and why the web must not repeat it
+
+Measured against the reference checkout at =/home/marco/Development/OreStudio/ores.qt=.
+This matters because "the same approach as ores.qt" is the brief, and the Qt
+client's approach was /inheritance for the machinery and copy-paste for the
+entity/.
+
+It had a real specification, enforced by base classes rather than by a document:
+=EntityController=, =EntityListMdiWindow=, =AbstractClientModel=,
+=DetailDialogBase=, =HistoryDialogBase=, =ColumnMetadata=, =ChangeReasonDialog=
+and =ChildEntityTableWidget=, about 7 200 lines, which every entity inherited. A
+regular entity then added 2 268 to 2 776 lines across nine to twelve files on top
+of that. The hand-written account added 6 586 lines across twenty files, roughly
+three times the standard, because it hand-rolled a delegate, two junction widgets,
+a child table, a bespoke history dialog and multi-selection.
+
+The entity-specific part of those 2 500 lines was mostly the same file again with
+the type renamed. The three tenant lookup screens are the clean measurement:
+
+| Pair | Lines differing | File size | Share |
+|---+---+---+---|
+| =TenantTypeController.cpp= against =TenantStatusController.cpp= | 234 | 545 | 43% |
+| =TenantTypeDetailDialog.cpp= against =TenantStatusDetailDialog.cpp= | 154 | 332 | 46% |
+| =ClientTenantTypeModel.cpp= against =ClientTenantStatusModel.cpp= | 125 | 329 | 38% |
+| =TenantTypeMdiWindow.cpp= against =TenantStatusMdiWindow.cpp= | 128 | 373 | 34% |
+| =TenantTypeDetailDialog.ui= against =TenantStatusDetailDialog.ui= | 12 | 178 | 7% |
+
+So the screen a person actually looks at was 93% identical between two entities,
+and the code behind it was 40 to 46% identical with the nouns changed. That is the
+failure mode this story exists to avoid, and the Qt client is the evidence that
+"follow the same approach" cannot mean "write the same code again".
+
+/What Qt did that is worth keeping./ The base classes' division of labour: one
+list window, one detail dialog and one history dialog, all generic, with the entity
+supplying a column list, a field list, a key field and a pair of request types. The
+enumeration of what an entity genuinely had to decide is small and closed:
+
+| Decision | Qt declared it in |
+|---+---|
+| The columns and their order, style and default visibility | a =Column= enum and a =kColumns= array, or a =switch= in =data()= |
+| The fields and their control types | the =.ui= form |
+| How fields group into tabs | the =.ui= =QTabWidget=, literally |
+| The natural key, read-only after create | code, per entity |
+| Which fields are lookups rather than free text | code, per entity |
+| The save and delete request types | code, per entity |
+| The change-reason category | code, per entity |
+
+That is the same list a declaration can carry, and it is why the target below is
+reachable: the decisions are few, they are stable, and none of them is behaviour.
+
+* A note on the word "shell"
+
+It means the web entity machinery, not =ores.shell=. The two are unrelated and the
+collision is this story's fault for using the short word.
+
+/The entity shell/ is =packages/web/src/entity/= in =ores.web=: =EntityListPage=,
+=EntityDetailPage=, =EntityHistoryPage=, =DataTable=, =FieldControl=,
+=ChangeReasonDialog= and their neighbours. The React machinery a screen is built
+from.
+
+=ores.shell= is the C++ command-line client. It has the same problem this story is
+about, and it has already solved it -- which is the reason the approach below is
+codegen-first rather than declaration-first.
+
+* The precedent: ores.shell already does this
+
+=ores.shell= is where the per-entity hand-written unit problem was first met. Every
+entity had a =<entity>_commands.cpp= written by hand. The answer was a facet,
+=ores.cpp.shell-command=, whose output path is
+=projects/ores.shell/{component}/src/app/commands/{component}/{entity}_commands.cpp=
+-- into the owning component's own part -- opted into per model with
+=:ores.cpp.shell-command.enabled: true=.
+
+It is more than half done, measured:
+
+| Location | Count |
+|---+---|
+| Hand-written, still at the top level of =application/src/app/commands/= | 24 |
+| Generated, in a component part such as =ores.shell/trading/= | 49 |
+
+So the recipe is not a proposal. It is: teach the model to emit the per-entity
+unit into the owning component's directory, opt in per model, retire the
+hand-written file, and let the drift gate hold the line.
+
+The web covers three facets today -- =ores.ts.domain=, =ores.ts.protocol= and
+=ores.ts.ui= -- and =entity_lifecycle.org= already lists "TypeScript UI metadata
+(=ores.web=, generated by =--address ores.ts.ui=)" as a layer. What it emits is the
+columns and the fields. Everything else the screens need is hand-written, and that
+is the 877 lines measured above.
+
+* The approach
+
+Make the /model/ the only per-entity artefact and have codegen emit the rest. The
+test is the one in =component_specification.org= -- adding an entity touches one
+new file and the protocol schemas codegen already produces -- tightened by the
+=ores.shell= precedent: the one new file is the /model/, and the web artifacts are
+emitted from it. If adding an entity requires writing TypeScript by hand, the facet
+is missing an archetype, and that archetype is the work.
+
+**1. One model per entity, and codegen emits its web declaration.** The entity's
+=.org= model already produces =domain/<entity>.ts=, =protocol/<entity>_protocol.ts=
+and =ui/<entity>_ui.ts=. It should also produce the declaration the screens read:
+the collection, the route segment, the key field, the capabilities, the field
+grouping, the search fields, the row projection the table needs, and the
+save-request builder. None of that is a product decision; all of it is derivable
+from the model. What is genuinely a product decision -- the icon, the words -- is
+declared in the model too, so nothing is left to a hand-written TypeScript file.
+
+**2. One route table.** An =EntityRoutes= component, named in
+=component_specification.org= §5 and §6 and not yet built, renders list, detail and
+history from the registry. =main.tsx= stops naming entities.
+
+
+**3. One hook set.** =useEntityList=, =useEntity=, =useSaveEntity=,
+=useDeleteEntity= and =useEntityHistory=, taking a declaration and reading the
+protocol schemas. The per-entity page schema in =countries.ts= is a re-declaration
+of a shape the wire protocol already carries, and it is what an amend sends back,
+so it is derived rather than written twice.
+
+**4. One BFF route factory.** =registerEntityRoutes(server, descriptor)= for list,
+get, save, delete and history. Bespoke actions stay bespoke and are declared
+separately, so =lock=, =unlock= and =reset password= remain the account's own
+without the four ordinary routes being the account's own too.
+
+**5. Field grouping declared in the model, and emitted.** The entity model binds its
+field groups the way the C++ layer already can, and the generated metadata emits the
+grouping alongside the columns and the fields. That removes the last hand-written
+per-entity file and makes the convention the metadata already claims to follow true.
+
+**6. Provenance, audit and state labels come from one generic key set**, not from
+an entity's catalogue block. This is the =account.fldVersion= defect fixed at the
+root rather than renamed.
+
+**7. The per-entity codegen is a facet, not a one-off.** The archetypes land under
+=ores.ts.ui= (or a sibling =ores.ts.web=) beside =ui_meta=, so the next entity, and
+the next component, gets them by binding the same profile. That is the =ores.shell=
+recipe: output into the owning component's directory, opt in per model, and let the
+drift gate prove the tree matches what the templates render.
+
+**What stays hand-written, and nothing else.** The generator itself, once. After
+that, an entity's web presence is its model. The words are declared in the model
+rather than invented in TypeScript; the icon is declared in the model or, failing
+that, in a generated table the component owns.
+
+**What this does not do.** It does not make codegen invent product decisions. Where
+a decision cannot be derived -- an icon no field implies, a bespoke action such as
+lock or reset password -- it is declared in the model as a value, not written as
+TypeScript. A hand-written file per entity is the thing being removed; a declared
+value per entity is not.
+
+**Consequence for the tasks.** The first task carries the shared machinery /and/ the
+archetypes that emit an entity's web presence, because they are the same job: a
+shell with no generator leaves the hand-writing in place, and a generator with no
+shell emits files nothing consumes. The second task closes the correctness gaps the
+generated screens would otherwise inherit. The entity tasks are grouped by kind, not
+by entity, so that a kind is proven once and then repeated by binding a profile.
+
+* Three generator gaps the TypeScript rollout hits
+
+Found on 2026-09-20 by regenerating every TS facet for every component, which is
+the step the BFF route descriptor and the screens both need. The regeneration was
+reverted: the output does not compile, and generated code that does not compile is
+worse than absent generated code because it looks like progress.
+
+Three separate gaps, each a generator fix rather than a model fix.
+
+**Resolved on the same day, for the record.** Gap 1 below was not a generator
+gap: =ores.ts.domain= emits its files correctly, and =--all= had simply aborted
+before reaching those components, so their protocol modules imported a domain
+module that had not been generated yet. Regenerating per component gives
+analytics, compute, marketdata, ore, reporting and scheduler their domain files
+and the imports resolve. Gap 3 is fixed: =ores::utility::domain::hierarchy_node=
+projects to a hand-written =HierarchyNode=, whose import the protocol template
+emits, and refdata's sixty-five protocol modules now generate and typecheck.
+
+Gap 2, the trading field-group composition, remains open, and two more were found
+while doing this: =cron_expression= is another hand-written utility type with no
+projection, and =domain::scope= and =domain::binding_mode= are nested domain enums
+that project to nothing. All three are the same shape of fix.
+
+**1. The domain facet is withheld where the protocol facet still emits an import.**
+=ores.ts.domain= emits nothing for analytics, compute, marketdata, ore and
+scheduler, while =ores.ts.protocol= emits modules for them that open with
+=import ... from '../domain/<entity>.js'=. Twenty of the twenty-eight protocol
+errors are that import resolving to nothing. Either the protocol import is
+conditional on the domain interface existing, or the domain gate is wrong; either
+way the two facets disagree about whether the component has domain types.
+
+**2. The domain facet cannot express field-group composition.**
+Fifty-eight errors in trading, all of the same shape: the emitted interface
+references =AuditRecord=, =InstrumentIdentity=, =TradeIdentity=, =TradeParties=,
+=TradeClassification=, =TradeLifecycle= and =ProductType=, and no module defines
+any of them. A composed entity's domain class folds its field groups into member
+types, and the domain template emits the member but not the type. The field-group
+models exist; what is missing is a domain projection for the group itself.
+
+**3. =hierarchy_node= has no TypeScript projection.**
+=ores::utility::domain::hierarchy_node= is deliberately excluded from the domain
+projection by =_TS_DOMAIN_TYPE_RE=, which refuses =ores::utility::= outright, and
+the gap guard then refuses =refdata.business_unit= and =synthetic.folder= rather
+than emit a silent hole. It is a four-member recursive tree --
+=id=, =name=, =parent_id=, =children= -- so the projection is easy; the open
+question is where the shared interface lives, since =ores.utility= has no entity
+models and therefore no generated domain module to put it in.
+
+**Also found, and independent of the above:** four models fail validation with
+"Missing primary key: no field in 'Columns' is flagged =:primary_key: true=" --
+=database_info=, =workflow_instance=, =workflow_step= and =workspace=. That is a
+model question rather than a generator one, but it stops a component-wide
+regeneration just as firmly.
+
+None of these is a reason to abandon the rollout; they are the reasons it is
+component by component rather than one switch. The gaps are worth their own
+tasks under whichever story owns the TypeScript projection.
+
+* Classification of the IAM wire types
+
+
+From the generated TypeScript for the component: eleven domain types and two
+relationships served by messages. Grouped by the shape they have rather than by the
+name they carry.
+
+| Kind | Wire types | Screens | Why |
+|---+---+---+---|
+| Reference lookup | =account_type=, =tenant_type=, =tenant_status= | List and detail, no history | One shape: a natural text key, a name, a description and a display order. Versioned and audited, but no history provider |
+| Audited entity | =tenant=, =role= | List, detail, history | All six properties of an entity, with a history provider already registered |
+| Archetype | =account= | List, detail, history, related, actions | The richest: secrets, two foreign keys and a self-reference, one child, two junctions, three bespoke actions |
+| Read-only | =permission=, =session=, =login_info= | List only, or a panel | =permission= has no version and no audit fields; =session= is observational; =login_info= is per-account state and belongs on the account |
+| Relationship | =account_party=, =account_contact_information=, account to role, role to permission | No screen; a Related tab | A junction and a child are never listed independently |
+
+=login_info= is on the account's detail screen rather than in the list, and account
+to role and role to permission are served by =assign_role=, =revoke_role=,
+=get_account_roles= and =get_role_permissions= rather than by a junction model, so
+their related sections are built from messages that already exist.
+
+**Two scope findings from the Qt client and the messages.**
+
+/role's permissions have no write path./ The service serves
+=get_role_permissions= and there is no =save_role_permissions=, =assign_permission=
+or =revoke_permission= anywhere in =ores.iam/modeling/=, and the shell only reads
+them. The Qt client was the same: =RoleDetailDialog= listed the codes read-only and
+no role-to-permission assignment editor existed. So role's permissions tab is
+read-only in this story, and adding the write path is a protocol change recorded as
+out of scope rather than smuggled into a screen.
+
+/account_type and tenant_status were dead screens in Qt./ The Qt controllers for
+Account Types, Tenant Statuses and standalone Account Contact Information were
+compiled but never instantiated — no menu entry, no caller. Their live use was an
+inline combo in account and in tenant. The web registry already declares them as
+entities and codegen already emits =account_type_ui.ts= and =tenant_status_ui.ts=,
+so they are built as lookup entities here; noting it so that "Qt had them" is not
+mistaken for "Qt used them".
+
+/system_setting is out of scope./ The registry files it under IAM, following the Qt
+menu, but it has no model in =projects/ores.iam/modeling/= and it is a variability
+entity. It is not one of the eleven IAM wire types and this story does not cover it.
+
+* Decisions
+
+**The per-entity web artefact is generated, not hand-written.** Stated on
+2026-09-20, before the work started, and it reverses the first draft of this
+approach. The draft made each entity a hand-written TypeScript declaration, which
+is better than four copied page files but still one hand-written file per entity
+and one more place to diverge. The =ores.shell= facet shows the better shape and
+already works in this repository: the model emits the per-entity unit into the
+owning component's directory, the model opts in, and the hand-written file is
+retired. Nothing per entity is written by hand; the generator is written once.
+
+**A declaration of values is not hand-written code.** An icon no field implies and
+a bespoke action such as lock or reset password are declared in the model as
+values. The line is not "no per-entity artefact"; it is "no per-entity behaviour
+in TypeScript".
+
+* Out of scope
+
+-

@@ -1,0 +1,50 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_web_declaration.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+/**
+ * Where the {{{web_declaration.entity}}} screens live and what they can do.
+ *
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
+ */
+import { {{{web_declaration.entity_camel}}}Meta } from '../ui/{{{web_declaration.entity}}}_ui.js';
+import type { EntityDescriptor } from '../../../entity/descriptor.js';
+
+export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
+    component: '{{{web_declaration.component}}}',
+    entity: '{{{web_declaration.entity}}}',
+    meta: {{{web_declaration.entity_camel}}}Meta,
+    routeSegment: '{{{web_declaration.route_segment}}}',
+    apiBase: '{{{web_declaration.api_base}}}',
+    keyParam: '{{{web_declaration.key_param}}}',
+    capabilities: {
+        create: {{{web_declaration.can_create}}},
+        edit: {{{web_declaration.can_edit}}},
+        remove: {{{web_declaration.can_remove}}},
+        history: {{{web_declaration.can_history}}},
+    },
+    searchFields: [
+{{{web_declaration.search_fields_block}}}    ],
+};

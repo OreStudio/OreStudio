@@ -318,6 +318,27 @@ export const en: SourceCatalogue = {
     officialNamePh: 'Enter official country name',
   },
 
+  tenant_type: {
+    title: 'Tenant types',
+    singular: 'tenant type',
+    newTitle: 'New tenant type',
+    description: 'Tenant type classifications and the order they are shown in.',
+    colType: 'Type',
+    colName: 'Name',
+    colDescription: 'Description',
+    colDisplayOrder: 'Display order',
+    colVersion: 'Version',
+    colModifiedBy: 'Modified by',
+    colRecordedAt: 'Recorded at',
+    searchPlaceholder: 'Type, name or description',
+    fldType: 'Type',
+    fldName: 'Name',
+    fldDescription: 'Description',
+    typePh: 'Enter the tenant type code',
+    namePh: 'Enter the display name',
+    descriptionPh: 'Enter the description',
+  },
+
   table: {
     chooseColumns: 'Choose columns',
     rowActions: 'Actions',

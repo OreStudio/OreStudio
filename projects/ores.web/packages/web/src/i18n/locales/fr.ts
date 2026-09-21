@@ -309,6 +309,27 @@ const fr: SourceCatalogue = {
     officialNamePh: 'Saisissez le nom officiel du pays',
   },
 
+  tenant_type: {
+    title: 'Types de locataire',
+    singular: 'type de locataire',
+    newTitle: 'Nouveau type de locataire',
+    description: 'Classifications des types de locataire et leur ordre d’affichage.',
+    colType: 'Type',
+    colName: 'Nom',
+    colDescription: 'Description',
+    colDisplayOrder: 'Ordre d’affichage',
+    colVersion: 'Version',
+    colModifiedBy: 'Modifié par',
+    colRecordedAt: 'Enregistré le',
+    searchPlaceholder: 'Type, nom ou description',
+    fldType: 'Type',
+    fldName: 'Nom',
+    fldDescription: 'Description',
+    typePh: 'Saisissez le code du type de locataire',
+    namePh: 'Saisissez le nom affiché',
+    descriptionPh: 'Saisissez la description',
+  },
+
   table: {
     chooseColumns: 'Choisir les colonnes',
     rowActions: 'Actions',

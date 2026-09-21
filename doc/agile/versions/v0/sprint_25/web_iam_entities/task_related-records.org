@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 8B4A89EB-C62D-4910-9E28-9CA9EF82F3F7
+:END:
+#+title: Task: Related records: children and junctions
+#+description: Task for: Implement every IAM entity in the web client
+#+type: task
+#+level: s1
+#+filetags: :web_iam_entities:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-iam-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generic Related tab from entity_specification.org section 9 and gaps.org item 24: one declaration per relationship produces a read-only table with Add and Delete, shown on the parent's detail screen. It serves an account's contact information, an account's parties, an account's roles and a role's permissions, so none of them gets a table of its own. Adding or removing a related record carries an audit reason, which the Qt client did not do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- One declaration per relationship, and no relationship table is hand-built.
+- The table is read-only and a row opens a child dialog.
+- Add and Delete carry an audit reason.
+- Adding before the parent is saved is refused with a message that says so.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -32,6 +32,7 @@ import {
 } from './errors.js';
 import {
   SUBJECTS,
+  bootstrapStatusResponseSchema,
   emptyRequestSchema,
   loginRequestSchema,
   loginResponseSchema,
@@ -45,6 +46,7 @@ import {
   type LoginResponse,
   type WireAccountPage,
 } from './operations.js';
+import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
 import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
@@ -176,6 +178,30 @@ export class OresClient {
    */
   get currentSessionId(): string {
     return this.#session?.sessionId ?? '';
+  }
+
+  /**
+   * Whether the deployment still needs provisioning.
+   *
+   * Asked before a login, not after it. A deployment in bootstrap mode has no
+   * accounts to sign in with, so the answer decides whether a login is worth
+   * attempting at all: the Qt client checked this first and never reached the
+   * credential form.
+   */
+  async bootstrapStatus(): Promise<{
+    isInBootstrapMode: boolean;
+    message: string;
+  }> {
+    const reply = await this.#call(
+      bootstrapSubjects.bootstrap_status_request,
+      emptyRequestSchema.parse({}),
+      bootstrapStatusResponseSchema,
+      { timeoutMs: this.#timeouts.fastMs },
+    );
+    return {
+      isInBootstrapMode: reply.is_in_bootstrap_mode,
+      message: reply.message,
+    };
   }
 
   /**

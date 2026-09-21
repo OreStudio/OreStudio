@@ -39,6 +39,8 @@
  * Titles and descriptions are translation keys. See `modeling/component_specification.org`.
  */
 import type { ComponentDefinition, EntityDefinition, ResolvedEntity } from './types.js';
+import type { EntityDescriptor } from '../entity/descriptor.js';
+import { tenantTypeDescriptor } from '../generated/iam/web/tenant_type_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -64,6 +66,43 @@ function entity(
   };
 }
 
+/**
+ * Declares an entity whose screen comes from a generated declaration.
+ *
+ * The route segment is the declaration's, because the model carries it and the
+ * router reads it from there. Deriving it here means the link the sidebar builds
+ * and the route the router registers are one string rather than two that have to
+ * be kept in step.
+ */
+function wired(
+  descriptor: EntityDescriptor,
+  id: string,
+  icon: EntityDefinition['icon'],
+): EntityDefinition {
+  return { id, icon, path: descriptor.routeSegment };
+}
+
+/**
+ * Fails when no registry entity sits at a wired declaration's route segment.
+ *
+ * The router builds its paths from the declaration's segment and the sidebar
+ * builds its links from the registry's, so a declaration the registry does not
+ * mirror at that segment is a link that 404s. The check runs where the routes are
+ * built, which is the one point both declarations are known.
+ */
+export function assertWiredPath(descriptor: EntityDescriptor): void {
+  const component = findComponent(descriptor.component);
+  const declared = component?.entities.some(
+    (candidate) => candidate.path === descriptor.routeSegment,
+  );
+  if (declared !== true) {
+    throw new Error(
+      `wired entity ${descriptor.component}/${descriptor.entity} routes at ` +
+        `'${descriptor.routeSegment}' but the registry declares no such path`,
+    );
+  }
+}
+
 export const iamComponent: ComponentDefinition = {
   id: 'iam',
   titleKey: 'nav.iam',
@@ -73,7 +112,7 @@ export const iamComponent: ComponentDefinition = {
     entity('account', 'personAccounts'),
     entity('role', 'keyMultiple', planned),
     entity('tenant', 'buildingSkyscraper', planned),
-    entity('tenantType', 'classification', planned),
+    wired(tenantTypeDescriptor, 'tenantType', 'classification'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

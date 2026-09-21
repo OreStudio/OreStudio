@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: FEA81310-1D51-489D-8877-9362B74C191F
+:END:
+#+title: Task: Drive the entity screens from one declaration
+#+description: Task for: Implement every IAM entity in the web client
+#+type: task
+#+level: s1
+#+filetags: :web_iam_entities:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-iam-entities
+#+pr: 2116
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shared shell renders an entity's list, detail and history screens from generated metadata, so no entity owns page files, an API module or any other TypeScript of its own. Codegen emits the entity's web declaration from the model, the way =ores.cpp.shell-command= already emits a shell command unit into the owning component's part. Country is the first entity through it and its bespoke files are deleted. main.tsx stops naming entities: the route table comes from the registry, through the EntityRoutes component the specification names.
+
+The streamlining reaches the other layers, because a declaration that streamlines only the screens leaves the copy and paste in place:
+
+- One hook set -- useEntityList, useEntity, useSaveEntity, useDeleteEntity and useEntityHistory -- reading the protocol schemas, so the 206-line per-entity API module and its re-declared page schema go.
+- One BFF route factory for list, get, save, delete and history, so the four ordinary routes stop being rewritten per entity. Its per-entity descriptor is generated, not typed. Bespoke actions stay bespoke.
+- The Provenance, audit and state labels move to one generic key set, so =entity/EntityDetailPage.tsx= stops reading =account.fldVersion= and its siblings out of the account catalogue block.
+- =pages/AccountsPage.tsx= is deleted and the account is re-expressed on the shell, because the IAM component must not sit on the archetype the specification says not to keep. Whatever the account needs that the shell cannot yet do becomes an abstraction in the shell, not a bespoke page.
+
+**The generator is part of this task, not a follow-up.** A shell with no generator leaves the hand-writing in place and a generator with no shell emits files nothing consumes, so they are the same job. The archetypes land under =ores.ts.ui= or a sibling =ores.ts.web= facet, beside =ui_meta=, with their output under =packages/web/src/generated/<component>/= and their enablement driven by the entity's profile. The drift gate must cover them, so a hand edit to a generated file fails the build rather than accumulating.
+
+This task is a prerequisite for every entity task after it. While it is open, each entity task would reproduce the footprint measured in the story and entrench the divergence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
+| Now          | Started. The BFF route factory and the ores.ts.web facet are in; the shell and the hooks are next. |
+| Waiting on   | Nothing.                               |
+| Next         | Build the shell against an IAM lookup -- tenant_type is the simplest, and its protocol, domain and metadata are all generated -- then convert country. |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Adding an entity touches one declaration file and no shared component.
+- main.tsx contains no per-entity route.
+- Country's three screens are rendered by the shared shell, with no per-entity page component.
+- The React Query hooks are derived once from the declaration and the protocol schemas, not copied per entity.
+- The BFF has one route factory for the five ordinary operations, and only bespoke actions are written per entity.
+- No shared component names an entity: =grep= for an entity identifier under =entity/= returns nothing.
+- pages/AccountsPage.tsx is gone and the account renders through the shell.
+- Field grouping reaches the screens from one declared place. If it stays hand-written per entity, this task records why, because the generated metadata already claims a =<entity>_field_groups.ts= exists and none does.
+- Adding an entity requires no hand-written TypeScript at all: =grep= for the entity's name under =packages/web/src= and =packages/bff/src=, excluding =generated/=, returns only the generated declaration and the catalogue.
+- The archetypes are a facet, so binding a profile is what turns them on, and the drift gate covers their output. A hand edit to a generated file fails the build.
+- The =ores.shell= precedent is matched or beaten: the shell has 49 generated command units against 24 hand-written ones, and the web should reach zero hand-written per-entity files rather than half-way.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+**The first entity through the shell is an IAM lookup, not country.** Found on
+2026-09-20 while starting the shell, and it reorders the work.
+
+The generated TypeScript is not uniformly distributed. Measured:
+
+| Component | Wire protocol and domain generated | UI metadata generated |
+|---+---+---|
+| iam | yes, and only iam | yes |
+| refdata, compute, analytics, marketdata, reporting, synthetic | no | yes |
+
+So =country= has a generated =country_ui.ts= and a /hand-written/ protocol: its
+schemas and subjects live in =wire-protocol/src/entities/country.ts=, 254 lines
+that codegen has not produced for refdata. Building the shell against country
+would therefore have the generated declaration import hand-written schemas and
+would leave hand-written code in the middle of the first slice, which is the
+thing this task exists to remove.
+
+An IAM lookup has the whole stack generated: =tenant_type= has
+=generated/iam/domain/tenant_type.ts=, =generated/iam/protocol/tenant_type_protocol.ts=
+with its four subjects, and =web/src/generated/iam/ui/tenant_type_ui.ts=. It is
+the smallest entity in the tree for which a declaration, an API module, a screen
+set and the BFF routes can all be generated end to end.
+
+Country is still the target and still gets converted; it moves after, and its
+conversion carries refdata's protocol generation with it. That is the same
+conclusion the story's classification reaches from the other direction: IAM is
+the component whose TypeScript is generated, which is why the story is scoped to
+it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2116][#2116]] | [web] Drive the IAM entity screens from one declaration |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Route segment breaks the kebab-case URL convention | src/codegen/core.py | Applied | =_ui_kebab= derives the segment at the projection; the web test pins it (61bb435ae6) |
+| 2 | Collection doc example is hyphenated, the codegen emits snake_case | bff/src/entity-routes.ts | Applied | Example is now =tenant_types=, matching =/api/tenant_types= (81882924a7) |
+
+* Result
+
+The branch also carries one out-of-scope fix, because it gated this task's
+merge. The codegen gates each kept a component list of their own, and the
+twin-coverage gate scoped itself by committed output, so committing the
+first TypeScript twin for dq, marketdata, ore, compute and reporting
+enrolled them and then failed on 25 hand-written protocol headers that
+have no org model to project from. Every generated header already had its
+twin. One list, =COMPONENTS_UNDER_TEST= in =component_registry.py=, now
+names the components under test -- IAM, with every other component to-do --
+and the drift and twin gates read it. The permissions gate is left alone:
+IAM's generated handlers check 13 permission codes
+=iam_permissions_populate.sql= does not seed, so pointing it at the shared
+list today would turn a green check red.

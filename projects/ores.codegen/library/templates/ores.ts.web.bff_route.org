@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 6a28993e-6f1f-4fc4-a5e5-f0eda941cbfc
+:END:
+#+title: ores.ts.web.bff_route
+#+description: One entity's BFF route descriptor: the collection, the key and the subjects its routes travel on.
+#+type: archetype
+#+output: projects/ores.web/packages/bff/src/generated/{component}/{entity}_route.ts
+#+facet: ores.ts.web
+#+model_types: domain_entity
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+
+One entity's BFF route descriptor, as a TypeScript data module: the
+collection the route listens on, the path parameter that carries the
+natural key, the wire field that key lives in, the array fields a batch
+delete and a list response use, and the subjects the requests travel on.
+The generic factory reads the descriptor and registers the five routes, so
+an entity adds no handler of its own.
+
+The module holds values and one value import. There is no function in it,
+which is what makes it safe to generate: nothing here is behaviour that a
+template would have to be taught to reproduce.
+
+The subjects are not written here. They are imported from the entity's
+own generated protocol module, which is rendered from the same model, so
+the descriptor and the wire shape cannot disagree about a subject name.
+The projection names the messages =org_loader.entity_protocol_messages=
+derives -- the list request after the plural, the save, delete and history
+requests after the singular -- by reading the enriched entity's derived
+message list, so a rename in the derivation moves the descriptor with it.
+
+The delete and history requests are keyed by the entity's primary key, and
+the path segment is the natural key. The projection states those members
+only when the primary key *is* the natural key: otherwise the factory
+would send the natural key's value in a primary-key field, and the service
+would match no row or fail to decode the message. The route is withheld
+rather than registered, so a caller gets the not-found answer instead of a
+success that changed nothing.
+
+The optional members are gated on the presence of the subject, not on the
+=has_get=/=has_remove=/=has_history= literal: pystache reads the string
+=false= as truthy, so a section on the literal would emit the member it
+means to omit. The literals are still projected for a consumer that wants
+them. No domain entity derives a single-record get, so =get= is absent
+today; a current-state entity derives no history pair, so =history= is
+absent for it.
+
+A junction is deliberately not served: its delete request names one array
+per side, and the generic factory sends a single key, so a junction route
+would silently drop half its key. The archetype admits =domain_entity=
+only, and junction routes stay hand-written until the factory states the
+pair.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/ts_bff_route.ts.mustache=.
+
+#+begin_src mustache :tangle ts_bff_route.ts.mustache
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_bff_route.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+/**
+ * How the BFF reaches the {{{bff_route.entity}}} service.
+ *
+ * The descriptor holds values and no functions: the collection, the natural
+ * key, the array fields and the subjects. The generic factory builds the
+ * routes from it, so the entity adds no handler of its own.
+ */
+import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
+
+export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
+  collection: '{{{bff_route.collection}}}',
+  key: '{{{bff_route.key}}}',
+  keyField: '{{{bff_route.key_field}}}',
+{{#bff_route.delete_keys_field}}  deleteKeysField: '{{{bff_route.delete_keys_field}}}',
+{{/bff_route.delete_keys_field}}  subjects: {
+    list: subjects.{{{bff_route.subjects_list}}},
+{{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
+{{/bff_route.subjects_get}}    save: subjects.{{{bff_route.subjects_save}}},
+{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
+{{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
+{{/bff_route.subjects_history}}  },
+  rowsField: '{{{bff_route.rows_field}}}',
+{{#bff_route.history_rows_field}}  historyRowsField: '{{{bff_route.history_rows_field}}}',
+{{/bff_route.history_rows_field}}{{#bff_route.timestamp_fields_block}}  timestampFields: [{{{bff_route.timestamp_fields_block}}}],
+{{/bff_route.timestamp_fields_block}}};
+#+end_src
+
+* Template variables
+
+| Variable | Meaning |
+|----------+---------|
+| =component= | The component, as the registry names it |
+| =entity= | The entity's singular name, which is also its protocol module's name |
+| =entity_camel= | The same name in camel case, for the exported constant |
+| =collection= | The collection segment of the route, e.g. =tenant_types= |
+| =key= | The path parameter carrying the natural key, e.g. =id= |
+| =key_field= | The wire field the natural key lives in, e.g. =type= |
+| =delete_keys_field= | The array field a batch delete names its keys in; present only when the route is |
+| =rows_field= | The array field the list response holds its rows in |
+| =history_rows_field= | The array field the history response holds its versions in; present only when the route is |
+| =subjects_list=, =subjects_get=, =subjects_save=, =subjects_remove=, =subjects_history= | The protocol module's =subjects= members, by message name |
+| =has_get=, =has_remove=, =has_history= | Whether the optional members are present, as TypeScript literals |
+| =timestamp_fields_block= | The audit timestamp members the save route fills when empty, pre-rendered as a TypeScript array |
+
+* See also
+
+- Parent facet: [[id:ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9][ores.ts.web]]
+- [[id:e1526f95-6b47-4abb-9a56-f27262e3d2b8][ores.ts.web.entity_declaration]] — the entity's screens, emitted beside this descriptor.
+- [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the module the subjects are imported from.

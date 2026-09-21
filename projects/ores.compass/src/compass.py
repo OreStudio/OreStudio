@@ -4138,13 +4138,23 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
             return 1
         print(f"✅ created and switched to {branch} (off {base})")
     else:
-        sw = subprocess.run(["git", "branch", branch, base],
-                            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
-        if sw.returncode != 0:
-            print(f"❌ git branch {branch} {base} failed:\n{sw.stderr.strip()}",
-                  file=sys.stderr)
-            return 1
-        print(f"✅ created branch {branch} (off {base}); worktree unchanged")
+        # Several tasks may share one feature branch, which is what --branch is
+        # for, so an existing branch is the expected case rather than a failure.
+        # The branch is reused when it exists and created from the base when it
+        # does not.
+        existing = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"],
+            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+        if existing.returncode == 0:
+            print(f"✅ reusing existing branch {branch}; worktree unchanged")
+        else:
+            sw = subprocess.run(["git", "branch", branch, base],
+                                cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+            if sw.returncode != 0:
+                print(f"❌ git branch {branch} {base} failed:\n{sw.stderr.strip()}",
+                      file=sys.stderr)
+                return 1
+            print(f"✅ created branch {branch} (off {base}); worktree unchanged")
 
     # 2. scaffold story (new mode only) + task(s) via codegen. A new
     # story also gets a scaffold task: the scaffolding work (docs,

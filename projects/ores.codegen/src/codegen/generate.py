@@ -127,15 +127,19 @@ _NO_TEMPORAL_HISTORY_ARCHETYPES = frozenset({
     "ores.cpp.eventing-integration-test.nats_integration_test",
 })
 
-# The TypeScript UI metadata facet projects the presentation drawer's
-# column table. A model with no such table has no presentation metadata to
-# project, and an empty declaration would state that the entity has no
-# columns -- which is false for the market-data and staging entities that
-# deliberately carry no UI drawer at all. Six more entities get a drawer
-# from their bound profile, with flags but no table, and are equally
-# nothing to project.
+# The TypeScript screen facets project the presentation drawer's column
+# table: ores.ts.ui emits the table and detail form, ores.ts.web emits the
+# declaration and the BFF route descriptor. A model with no such table has
+# no presentation metadata to project, and an empty declaration would state
+# that the entity has no columns -- which is false for the market-data and
+# staging entities that deliberately carry no UI drawer at all. Six more
+# entities get a drawer from their bound profile, with flags but no table,
+# and are equally nothing to project. The descriptor reads the same table,
+# so ores.ts.web is withheld with ores.ts.ui; a descriptor rendered for a
+# model with no table would import subjects no protocol module exports.
 _UI_META_FACETS = frozenset({
     "ores.ts.ui",
+    "ores.ts.web",
 })
 
 # One model owns an entity's protocol header. C++ and TypeScript read the
@@ -147,6 +151,18 @@ _UI_META_FACETS = frozenset({
 _PROTOCOL_FACETS = frozenset({
     "ores.cpp.protocol",
     "ores.ts.protocol",
+})
+
+# The BFF route descriptor imports its subjects from the entity's own
+# generated protocol module. When an operation model owns that protocol the
+# module is generated from the operation, whose subjects need not carry the
+# derived CRUD names -- account's list request is spelled
+# ``get_accounts_request_typed`` and session has no save or delete at all --
+# so a descriptor rendered there would import names the module does not
+# export. The route stays hand-written, exactly as the protocol facets are
+# dropped, and the gate logs the reason.
+_OPERATION_OWNED_PROTOCOL_ARCHETYPES = frozenset({
+    "ores.ts.web.bff_route",
 })
 
 
@@ -333,6 +349,18 @@ def resolve_targets(
             # re-admit a facet the model has no input for.
             gen_facets = {f for f in gen_facets
                           if f not in _UI_META_FACETS}
+    suppressed_archetypes: frozenset[str] = frozenset()
+    if (model_type in ("domain_entity", "junction") and owner
+            and "ores.ts.web" in gen_facets):
+        # The column gate has run, so the entity genuinely has screens; the
+        # operation-owned protocol still makes the derived subjects
+        # unavailable. The declaration facet stays, because it names no
+        # subject; only the descriptor that would import them is dropped.
+        suppressed_archetypes = _OPERATION_OWNED_PROTOCOL_ARCHETYPES
+        log.info(
+            "%s: operation model %s owns this entity's protocol; not "
+            "rendering %s",
+            model_path.name, owner, ", ".join(sorted(suppressed_archetypes)))
     if model_type == "junction":
         junction = model_data.get("junction", {})
         left = (junction.get("left") or {}).get("list_by")
@@ -408,6 +436,8 @@ def resolve_targets(
             if not kind_matches(arch.get("kinds", []), component_kind):
                 continue
             if arch["address"] in no_temporal_archetypes:
+                continue
+            if arch["address"] in suppressed_archetypes:
                 continue
             if not is_enabled(arch["address"], facet, ts, overrides,
                               arch.get("default_enabled", True)):

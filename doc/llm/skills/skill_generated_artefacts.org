@@ -126,7 +126,7 @@ read the diff and decide whether it is plausible; it regenerates and compares.
 
 Model type, the profile it binds to, and the drift check guarding it.
 Not yet written. The registries it would be generated from now exist:
-=KNOWN_DRIFT_FREE= in =check_component_drift.py= names the components
+=COMPONENTS_UNDER_TEST= in =component_registry.py= names the components
 under artefact enforcement, and =check_model_drift.py --summary= reports
 how many models bind to a profile at all. 136 of 245 models carry a
 binding, so an inventory written today would be more gap than content.

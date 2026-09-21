@@ -28,6 +28,12 @@ import cookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
+import { registerEntityRoutes } from './entity-routes.js';
+import { accountContactInformationRoute } from './generated/iam/account_contact_information_route.js';
+import { accountTypeRoute } from './generated/iam/account_type_route.js';
+import { tenantRoute } from './generated/iam/tenant_route.js';
+import { tenantStatusRoute } from './generated/iam/tenant_status_route.js';
+import { tenantTypeRoute } from './generated/iam/tenant_type_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -67,7 +73,7 @@ import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
-import { invalidCredentials, invalidRequest, notAuthenticated, toHttpFailure, HttpFailure } from './errors.js';
+import { bootstrapRequired, invalidCredentials, invalidRequest, notAuthenticated, toHttpFailure, HttpFailure } from './errors.js';
 
 /**
  * The browser-facing HTTP server.
@@ -306,6 +312,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const { client, connect } = createClient();
     try {
       await connect();
+
+      /*
+       * Asked before the credentials are used, because a deployment in
+       * bootstrap mode has no accounts and a rejected login would send somebody
+       * hunting for a password that cannot exist. The Qt client checked the
+       * same thing in the same place: before the form, not after it.
+       */
+      const bootstrap = await client.bootstrapStatus();
+      if (bootstrap.isInBootstrapMode) {
+        await client.close().catch(() => undefined);
+        throw bootstrapRequired();
+      }
+
       const outcome = await client.login({
         principal: parsed.data.username,
         password: parsed.data.password,
@@ -545,16 +564,31 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
       countryHistoryResponseSchema,
     );
     /*
-     * The service returns newest first and that is what a person wants: what
-     * changed last is the question being asked. It is passed through rather than
-     * reordered, because reversing it here quietly made the screen compare the
-     * two oldest versions as though they were the current pair.
+     * The service returns the versions newest first, which is how a person
+     * reads a history: what changed last is the question being asked. The
+     * rows are passed through in that order.
      */
     return {
       versions: response.history.map(mapCountry),
       message: response.message,
     };
   });
+
+  /**
+   * The IAM entities, registered from their generated route descriptors.
+   *
+   * The descriptor states the collection, the key and the subjects; the factory
+   * states the envelopes. Neither states a function.
+   */
+  for (const route of [
+    accountContactInformationRoute,
+    accountTypeRoute,
+    tenantRoute,
+    tenantStatusRoute,
+    tenantTypeRoute,
+  ]) {
+    registerEntityRoutes(server, requireSession, route);
+  }
 
   /**
    * The reasons a write may carry.

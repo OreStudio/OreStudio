@@ -11,9 +11,10 @@ because both files are generated artefacts of a model that is itself
 valid.
 
   1. Every protocol header has a TypeScript twin. For every component
-     whose TypeScript protocol output is committed under
+     under test (``COMPONENTS_UNDER_TEST``) whose TypeScript protocol
+     output is committed under
      ``projects/ores.web/packages/wire-protocol/src/generated/<component>/protocol/``,
-     each generated header
+     every header
      ``projects/<project>/api/include/*/messaging/*_protocol.hpp`` must
      have its ``*_protocol.ts`` twin in that directory.
 
@@ -23,11 +24,14 @@ valid.
      TypeScript projection, so allowing it anywhere lets a header ship
      without its twin.
 
-The TypeScript projection is mid-roll-out, one component at a time, so
-rule 1 is scoped by committed output: a component joins the check the
-moment its first twin lands, exactly as it joins the TypeScript side of
-check_component_drift.py. Rule 2 is global on purpose: no model may take
-the shortcut anywhere.
+The TypeScript projection is mid-roll-out, one component per task, and IAM
+is the first and so far the only component finished. Every other component
+is to-do, and much of what it speaks is hand-written C++ with no org model
+to project from, so rule 1 takes its components from the shared list in
+component_registry.py instead of following committed output -- otherwise
+committing a twin for one of a to-do component's models would fail the
+gate on the headers no task has reached yet. Rule 2 is global on purpose:
+no model may take the shortcut anywhere, component under test or not.
 
 The check reads the tree and writes nothing.
 
@@ -47,6 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from codegen.manifest import all_components, get_component  # noqa: E402
 from codegen.physical_space import load_graph  # noqa: E402
 from check_component_drift import _component_dir_names  # noqa: E402
+from component_registry import COMPONENTS_UNDER_TEST  # noqa: E402
 
 TEMPLATES_DIR = CODEGEN_DIR / "library" / "templates"
 
@@ -110,14 +115,17 @@ def _committed_protocol_dirs(component: str, graph) -> list:
 def _committed_components(graph) -> list:
     """Triples ``(component, ts_dir, project_dir)`` for the checked components.
 
-    A component is checked when one of its model directory names has
-    committed TypeScript protocol output, so the pair is de-duplicated:
-    the ``iam`` and ``iam-cpp`` catalogue entries generate into the same
-    directories.
+    A component is checked when the shared list names it and one of its
+    model directory names has committed TypeScript protocol output. The
+    pair is de-duplicated because a catalogue name may carry a suffix its
+    models do not: the ``iam`` and ``iam-cpp`` entries generate into the
+    same directories.
     """
     checked = []
     seen = set()
     for component in all_components():
+        if not set(_component_dir_names(component)) & set(COMPONENTS_UNDER_TEST):
+            continue
         comp = get_component(component)
         modeling_dir = getattr(comp, "modeling_dir", None)
         if not modeling_dir:

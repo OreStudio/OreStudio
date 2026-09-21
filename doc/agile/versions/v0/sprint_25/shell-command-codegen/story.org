@@ -51,6 +51,9 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 | [[id:C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842][Migrate the rates instruments to the generated protocol]] | BACKLOG | | | Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 22. |
 | [[id:5BB7DD1E-1699-4249-97D3-F002E99D8B32][Give the trade model its field-group grammar]] | BACKLOG | | | Teach the trade entity model to state which field group each column belongs to, and teach the shell-command generator to read it, so the trade command unit can be generated. |
 | [[id:CADAD363-E952-448A-B19C-66025AEBE018][Generate container add verbs in the shell command facet]] | BACKLOG | | | The bond instrument add verb assembles a container across three services in one command: the issue, the instrument, and the engaged option or trs fact row. The facet renders one row from one entity model, so bond_instrument stays hand-written until the model and the facet can express the container. |
+| [[id:51049C54-2E2B-4549-A036-C71FD9AA6376][Retire the per-entity shell units the facet already generates]] | BACKLOG | | | Task for: Generate shell command units per component |
+| [[id:7AAED8E8-E531-4645-9F30-D2674BD9C7D4][Generate the compute and synthetic shell units]] | BACKLOG | | | Task for: Generate shell command units per component |
+| [[id:E9196184-D9BE-4975-9953-F90842E550BB][Account for every remaining hand-written shell unit]] | BACKLOG | | | Task for: Generate shell command units per component |
 
 * Decisions
 

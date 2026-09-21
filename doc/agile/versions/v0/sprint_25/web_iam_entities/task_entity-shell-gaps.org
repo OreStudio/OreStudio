@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: BB459070-1A52-4119-8873-CF277EBA3ECE
+:END:
+#+title: Task: Close the entity-shell gaps a second entity would inherit
+#+description: Task for: Implement every IAM entity in the web client
+#+type: task
+#+level: s1
+#+filetags: :web_iam_entities:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-iam-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-20
+#+updated: 2026-09-20
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the Tier 1, Tier 2 and Tier 3 findings in gaps.org so the second entity does not inherit them: a get-one route so a deep link resolves past the first page, a read-only historical mode so opening a version opens that version, sorting on the underlying value, remembered column visibility and order, keyboard navigation, validation on blur, the unsaved-changes prompt, the searchable foreign-key select, and a negative-path verification harness. gaps.org is updated to say what closed and what did not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-20                               |
+
+* Acceptance
+
+- Each Tier 1, 2 and 3 finding is met or explicitly re-scoped with a reason recorded in gaps.org.
+- A deep link to a record beyond the first page resolves.
+- Opening a historical version shows that version, read-only.
+- The verification script exercises a rejected or empty case as well as a good one.
+- Sorting uses the underlying value, not the displayed string.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

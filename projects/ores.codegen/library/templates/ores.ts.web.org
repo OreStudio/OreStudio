@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9
+:END:
+#+title: ores.ts.web
+#+description: Per-entity web declarations: where an entity's screens live, what it can do, and how its BFF routes are reached, as data.
+#+type: facet
+#+model_types: domain_entity junction
+#+level: cross
+#+facet_group: ores.ts
+#+default: disabled
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-09-20
+#+updated: 2026-09-21
+
+This page is the node for the =ores.ts.web= facet of the codegen template
+library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+For a model that opts in, one declaration and one BFF route descriptor are
+emitted beside the entity's protocol and presentation metadata: where its
+screens live, what it can do, what the list searches across, and how the
+BFF reaches the service. The shared shell renders the screens from the
+declaration, and the BFF registers its generic route factory from the
+descriptor, so neither side holds per-entity TypeScript: the model is the
+entity's only artefact on this side.
+
+This is the =ores.ts.ui= idea carried further. That facet emits what a
+table and a form need in order to draw; this one emits everything a
+/screen set/ needs in order to exist.
+
+* Why this facet rather than a hand-written declaration
+
+A hand-written declaration per entity is already far better than a
+screen per entity: it is one small file, and the screens are shared. It
+is still one file per entity, in a language nothing validates against
+the model, and it drifts the moment a model changes and nobody remembers
+to change it. =ores.shell= met this first and answers it the same way --
+the =ores.cpp.shell-command= facet emits a per-entity command unit into
+the owning component's part so that no unit is written by hand. The
+measurement there is 49 generated units against 24 left.
+
+* What the facet emits, and what it does not
+
+The declaration holds values and no behaviour: identifiers, a route, an
+API path, a key parameter, four capabilities, the search fields and the
+field grouping. It holds no functions, so there is nothing in it to
+diverge and nothing in it that only its author understands.
+
+Where a decision cannot be derived from the model -- an icon, or an
+action only some entities have -- it is declared in the model as a value,
+not written here as code. A generated file is not the place to put the
+part codegen could not work out.
+
+The declaration does not carry the wire field names either: those come
+from the protocol module beside it, which is generated from the same
+model, so the two cannot disagree.
+
+The route descriptor holds values too: the collection, the natural key,
+the array fields a batch delete and a list response use, and the subjects
+the requests travel on. It imports those subjects from the entity's own
+generated protocol module rather than restating them, so the descriptor
+and the wire shape cannot disagree either.
+
+* Which entities emit
+
+The facet is opt-in. A model opts in with =:ores.ts.web.enabled: true= in
+its file-level drawer, and nothing is emitted for a model without it. An
+entity opts in once its generated TypeScript protocol module is committed
+beside it, because the route descriptor imports that module: a model whose
+protocol is not generated here would emit a route importing a module that
+does not exist. The facet is =#+default: disabled= for that reason, and a
+component's other TypeScript facets say nothing about whether its entities
+are ready for this one.
+
+A model also needs a presentation drawer carrying a column table, which is
+the same input =ores.ts.ui= needs and for the same reason: an entity with no
+columns has no table to draw and no fields to show, so it has no screen
+set to declare. The facet is withheld for those models in =resolve_targets=
+before the per-archetype =enabled= overrides, so an override cannot
+re-admit it.
+
+Two cases narrow the descriptor further. A junction's delete request names
+one array per side and the generic factory sends a single key, so junction
+routes stay hand-written and the archetype admits =domain_entity= only. An
+operation model that owns the entity's protocol emits a different message
+set at the same path, so the descriptor is withheld for that entity as
+well; the declaration still renders, because it names no subject.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:e1526f95-6b47-4abb-9a56-f27262e3d2b8][ores.ts.web.entity_declaration]] | One entity's screens: route, API path, key, capabilities, search fields and field grouping. |
+| [[id:6a28993e-6f1f-4fc4-a5e5-f0eda941cbfc][ores.ts.web.bff_route]] | One entity's BFF route descriptor: the collection, the key and the subjects its routes travel on. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's facet catalogue and shared Mustache conventions.
+- [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]] — the sibling facet emitting the columns and fields these declarations sit beside.
+- [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] — the sibling facet emitting the wire payloads the shared hooks talk in.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this facet's template may read.

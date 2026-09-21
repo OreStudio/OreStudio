@@ -215,27 +215,9 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant.hpp
-:domain_class:           iam::domain::tenant
-:protocol_include:       ores.iam.api/messaging/tenant_protocol.hpp
 :collection_name:        tenants
-:item_var:               tenant
 :key_field:              code
-:get_request_class:      iam::messaging::list_tenants_request
-:get_response_class:     iam::messaging::list_tenants_response
-:get_message_type:       list_tenants_request
-:save_request_class:     iam::messaging::put_tenant_request
-:save_response_class:    iam::messaging::put_tenant_response
-:save_message_type:      put_tenant_request
-:delete_request_class:   iam::messaging::delete_tenant_request
-:delete_response_class:  iam::messaging::delete_tenant_response
-:delete_message_type:    delete_tenant_request
-:history_request_class:  iam::messaging::list_tenant_versions_request
-:history_response_class: iam::messaging::list_tenant_versions_response
 :history_message_type:   list_tenant_versions_request
-:settings_group:         TenantListWindow
-:window_title:           Tenants
-:icon:                   Building
 :END:
 
 *** Detail fields

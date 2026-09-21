@@ -932,6 +932,31 @@ account's conversion is a single change: the model edits, the three facets, the
 rename, the ninety-four references and the regeneration all land together or not
 at all.
 
+**Account's conversion is much smaller than its reference count.** Worked out
+2026-09-21 by classifying the ninety-four references rather than counting them,
+which is what made the piece look unmanageable. The count is mostly one class
+name appearing; the *decisions* are few.
+
+The hand-written service has twenty-two methods and only five of them are the
+canonical CRUD set -- =list_accounts=, =get_account=, =delete_account=,
+=list_login_info= and =get_account_history=. The other sixteen are the
+workflows. And of the five, the callers are a handful: the hand-written handler,
+=iam_routes.cpp=, the generated history registrar and the tests. =get_account=
+is reached from nowhere but its own header.
+
+Which yields a shape rather than a rewrite. **The hand-written service keeps
+every method it has and is only renamed.** The routes call it directly rather
+than over NATS, so they keep working once the name moves; nothing has to be
+re-pointed at the generated service, because both services exist and answer
+different questions. The only subscription that has to move is the handler's:
+its CRUD subjects go to the generated registrar, and its workflows stay.
+
+So the change is: the five message deletions and the ownership lift, the rename,
+the registrar's CRUD subscriptions handed over, the handler's five CRUD methods
+removed, the facets on, and one regeneration. Session's conversion was this
+shape and took a round; account's is the same shape with a wider blast radius,
+not a different kind of job.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

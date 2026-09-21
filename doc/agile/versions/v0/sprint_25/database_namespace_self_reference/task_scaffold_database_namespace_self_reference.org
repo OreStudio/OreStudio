@@ -20,30 +20,37 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the hotfix story and task on =hotfix/database-namespace-self-reference=
+off =origin/main=, and wire both into Sprint 25's =** Hotfixes= table.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
 
--
+- Story and task exist under =doc/agile/versions/v0/sprint_25/=.
+- The sprint's =** Hotfixes= table carries the story row.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffold only: =compass story new --kind hotfix= creates the branch, the
+story, the task and the sprint wiring in one step.
 
 * Notes
+
+The branch was created off the latest =origin/main= (=43f37eb312=), the commit
+named in the CI failure.
+
+=compass story new= wired the story into =** Hotfixes= directly, so no manual
+move from =** Product= was needed.
 
 * Test Scenarios
 
@@ -69,3 +76,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The hotfix branch, story and task exist, and Sprint 25's =** Hotfixes= table
+carries the story row.
+
+Acceptance met: =doc/agile/versions/v0/sprint_25/database_namespace_self_reference/=
+holds =story.org= and both task files, and the sprint row reads =STARTED= with
+a =2026-09-21= start date. The scaffold PR is #2119, which also carries the
+fix itself.

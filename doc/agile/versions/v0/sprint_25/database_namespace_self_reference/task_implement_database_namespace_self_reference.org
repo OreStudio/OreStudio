@@ -26,11 +26,11 @@ Restore the Windows MSVC build for ores.database. Remove the self-referential us
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] |
-| Now          | Fix verified locally.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -99,3 +99,22 @@ via its "Verifies task" field.
 | 1 | The guard has no automated regression test; the drift gate cannot catch a regression at this render seam. | projects/ores.codegen/tests/test_repository_namespace_guard.py | Accepted | Added the test. It renders both template families for a =database= component and for another component, and pins both halves of the seam. Confirmed it fails when the guard is removed. |
 
 * Result
+
+The self-referential using-directive is gone from both generated files, and
+the codegen templates no longer emit it for the =database= component.
+
+Shipped in PR #2119:
+
+- =database_info_mapper.cpp= and =database_info_repository.cpp= lose the
+  redundant =using namespace ores::database::repository;=.
+- The four template sites carry a ={{^component_is_database}}= guard, and
+  =component_is_database= is derived in =ores.codegen= for entity models.
+- The two =.mustache= files are re-tangled from their =.org= sources.
+- =tests/test_repository_namespace_guard.py= pins both halves of the guard.
+
+Acceptance met. =ores.database.lib= builds green locally, the full codegen
+suite passes (402 tests), and regeneration leaves every non-database file
+byte-identical. The C4515 diagnostic itself is MSVC-only, so neither
+acceptance check was observed on this host; Windows CI is scheduled rather
+than run per pull request, so it covers this fix on its next run after the
+merge.

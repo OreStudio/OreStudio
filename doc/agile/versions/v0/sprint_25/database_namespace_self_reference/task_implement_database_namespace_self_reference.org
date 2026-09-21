@@ -74,6 +74,7 @@ and no =:primary_key:= column), so codegen cannot regenerate the two files.
 The hand edit matches exactly what the guarded template now emits.
 
 Build check: =compass build ores.database.lib= is green on the local preset.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -89,12 +90,12 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #2119 | [database] Remove self-referential namespace using-directive |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The guard has no automated regression test; the drift gate cannot catch a regression at this render seam. | projects/ores.codegen/tests/test_repository_namespace_guard.py | Accepted | Added the test. It renders both template families for a =database= component and for another component, and pins both halves of the seam. Confirmed it fails when the guard is removed. |
 
 * Result

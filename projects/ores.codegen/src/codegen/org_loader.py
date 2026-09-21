@@ -2475,6 +2475,41 @@ def versions_subject(component: str, plural: str, verb: str) -> str:
     return f"{component}.v1.{plural}_versions.{verb}"
 
 
+# Fields the service derives and a client therefore never sends. The
+# specification lists them once, and a request that carries one is invalid
+# rather than silently overwritten, so a write record must not offer them.
+SERVER_OWNED_FIELDS = frozenset({
+    "tenant_id", "party_id", "version", "modified_by", "performed_by",
+    "recorded_at", "valid_from", "valid_to",
+})
+
+# Why a change is being made is user-owned, but it travels beside the write
+# record as change intent rather than inside it, so neither of these is a
+# write-record field either.
+CHANGE_INTENT_FIELDS = frozenset({
+    "change_reason_code", "change_commentary",
+})
+
+
+def _column_name(column: dict[str, Any]) -> str:
+    """A column's name, whichever of the two spellings it carries."""
+    return column.get("column") or column.get("field") or ""
+
+
+def write_record_fields(columns: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The columns a client may send, in the order the model declares them.
+
+    A write carries the user-owned fields and nothing else: tenancy and
+    provenance come from the authenticated context, the version and the
+    validity window from the database, and the change intent from beside the
+    record. What is left is what a caller actually decides, which for a create
+    includes the key.
+    """
+    return [column for column in columns
+            if _column_name(column) not in SERVER_OWNED_FIELDS
+            and _column_name(column) not in CHANGE_INTENT_FIELDS]
+
+
 def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive an entity's standard CRUD message list.
 

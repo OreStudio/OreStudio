@@ -70,3 +70,42 @@ def test_a_versions_collection_refuses_a_write():
     for write in ("put", "put_many", "delete", "delete_many"):
         with pytest.raises(ValueError):
             versions_subject("iam", "tenants", write)
+
+
+# --- the write record: user-owned fields, and nothing else -----------------
+
+from codegen.org_loader import (  # noqa: E402
+    CHANGE_INTENT_FIELDS, SERVER_OWNED_FIELDS, write_record_fields)
+
+
+def _columns(*names):
+    return [{"column": n, "cpp_type": "std::string"} for n in names]
+
+
+def test_a_write_record_offers_no_server_owned_field():
+    entity = _columns("code", "name", "tenant_id", "party_id", "version",
+                      "modified_by", "performed_by", "recorded_at",
+                      "valid_from", "valid_to")
+    kept = [c["column"] for c in write_record_fields(entity)]
+    assert kept == ["code", "name"]
+    for field in SERVER_OWNED_FIELDS:
+        assert field not in kept, field
+
+
+def test_change_intent_travels_beside_the_record_not_inside_it():
+    entity = _columns("code", "change_reason_code", "change_commentary")
+    kept = [c["column"] for c in write_record_fields(entity)]
+    assert kept == ["code"]
+    for field in CHANGE_INTENT_FIELDS:
+        assert field not in kept, field
+
+
+def test_a_create_keeps_its_key_because_the_caller_supplies_it():
+    assert [c["column"] for c in write_record_fields(_columns("id", "code"))] \
+        == ["id", "code"]
+
+
+def test_the_declared_order_is_preserved():
+    entity = _columns("zeta", "alpha", "version", "mu")
+    assert [c["column"] for c in write_record_fields(entity)] == \
+        ["zeta", "alpha", "mu"]

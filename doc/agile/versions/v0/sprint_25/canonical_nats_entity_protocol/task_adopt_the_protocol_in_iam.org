@@ -849,6 +849,19 @@ ones. Its list request is already a scoped read in the old shape, so step 2 is
 mostly a deletion, and its =session_view= record is declared, documented and
 referenced by nothing.
 
+**Check which half is generated before renaming it.** Learned the hard way
+2026-09-21. The session refactor began by renaming the hand-written pair,
+=session_service= and =session_handler=. Only the handler is hand-written: the
+entity switches off =nats-handler= and =nats-sub-registrar=, and nothing else, so
+the service is generated and renaming it did not free the name -- it duplicated
+the artefact. The drift gate said so on its next run, materialising
+=session_service.hpp= and =.cpp= beside the renamed pair.
+
+The rule the episode leaves: an entity's =:ores.<facet>.enabled: nil= entries are
+the exact list of what is hand-written, and anything absent from that list is
+generated and must not be renamed by hand. The service half is undone and the
+handler half kept.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

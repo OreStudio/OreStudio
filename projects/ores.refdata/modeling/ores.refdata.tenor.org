@@ -246,10 +246,6 @@ ctx.random_int(1, 30)
 Reads every tenor for the tenant ordered by =sort_order=, for populating
 a ladder or a tenor picker in display order.
 
-#+begin_src cpp :name declaration :implements 2D5F9A3C-7B1E-4C8A-A6D3-9F2E5B8C1A47
-std::vector<domain::tenor> read_all_ordered(context ctx);
-#+end_src
-
 * See also
 
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — domain concept.

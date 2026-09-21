@@ -65,7 +65,7 @@ Coding scheme the code belongs to, e.g. "ORE_ASSET_CLASS".
 
 ** get_asset_classes_request
 :PROPERTIES:
-:subject: refdata.v1.asset-classes.list
+:subject: refdata.v1.asset_classes.list
 :response: get_asset_classes_response
 :END:
 

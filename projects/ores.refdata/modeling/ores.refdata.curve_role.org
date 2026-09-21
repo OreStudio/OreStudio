@@ -121,7 +121,6 @@ drop function if exists ores_refdata_validate_curve_role_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository

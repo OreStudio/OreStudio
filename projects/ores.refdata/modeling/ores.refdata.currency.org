@@ -281,7 +281,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:      api
-:has_as_of_lookup:  true
 :END:
 
 ** Repository
@@ -1050,9 +1049,8 @@ and =helpers.hpp= are already in the standard template output.
 *** Repository implementations
 
 Note: pagination (=read_latest= with offset/limit), =get_total_currency_count=,
-filtered =read_all=, batch =remove=, and =read_at_timepoint= (both overloads)
-are now generated natively by the base =repository= template
-(=has_as_of_lookup: true=, tenant-aware). Only the unfiltered =read_all=
+filtered =read_all= and batch =remove= are generated natively by the base
+=repository= template, tenant-aware. Only the unfiltered =read_all=
 (used by the CLI's =export --all-versions= without =--key=) has no native
 equivalent and remains a custom paste.
 

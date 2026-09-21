@@ -105,6 +105,40 @@ The order the work has to happen in, because each step gates the next:
    =test_protocol_subject_grammar.py= holds all three to it.
 2. The rest of the templates. The handler, service and registrar templates
    branch on the verb set, so they move with it.
+
+   *Step 2 is deeper than that sentence.* The messages carry three things the
+   internal layers have no concept of, so this is not a rename:
+
+   - *A precondition.* The repository writes with
+     =write(context, const domain&)= and removes with =remove(context, key)=,
+     and neither takes an expected version. So =must_match_version= cannot be
+     honoured and =must_not_exist= cannot be told from an overwrite. Honouring
+     it needs a conditional write and a conditional remove, and the losing
+     writer has to be reported as =conflict= rather than thrown as an
+     exception.
+   - *Change intent.* The audit fields come from the domain object and the
+     authenticated context through =stamp()=. Intent has to reach the write
+     path. Partly there already: several entities carry
+     =change_reason_code=/=change_commentary= columns, which are exactly the
+     fields the write record strips.
+   - *A result envelope.* Every response now carries one, so the handler needs
+     a mapping from what the service decided to an outcome, and the service has
+     to report =missing=, =conflict= and =denied= rather than throw for them.
+
+   So the order is repository, then service, then handler, then registrar: the
+   repository gains conditional write and remove; the service gains an
+   outcome-returning interface over the eight verbs and the versions pair; the
+   handler becomes the adapter that decodes a canonical request, calls the
+   service and fills a result. The entity service and handler are *generated*
+   (=[GENERATED]= markers in =ores.iam/core/=), so all of this is template work
+   plus regeneration, with no hand-written IAM service to keep in step.
+
+   Two pieces are off the critical path. =cpp_nats_event_cache.hpp= renders for
+   a =read_for_cache= entity, and no IAM entity declares one, so it does not
+   block the build. The =** Presentation= protocol class names
+   (=get_request_class=, =save_request_class=, =history_request_class=) are read
+   by =doc_entity_org.org.mustache= alone, so the IAM model drawers need them
+   updated for the documentation facet, not for the compiler.
 3. Regenerate IAM and compile. The generated C++ has to build before anything
    downstream is worth attempting.
 4. The shell. Enable =ores.cpp.shell-command= on the IAM models and let the
@@ -117,6 +151,17 @@ deliberately accepted here: IAM adopts ={component}.v1.{resource}_events.{action
 while the other components still announce =ores.{component}.{entity}_changed=,
 so their event fan-out is inconsistent until they are converted. That is the
 price of piloting one component and it is the agreed scope.
+
+*Open question: is event derivation in this task or not?* =event_subject= and
+=SPEC_EVENT_ACTIONS= are built and tested, but nothing calls them. No entity
+derives an events message, so IAM's =*_changed_event= registrars and their
+subjects are untouched by everything else in this task, and the paragraph above
+describes an adoption that does not happen yet. Either events are derived here
+-- which needs the event payload to be stated, the registrar template to move to
+the new subject form, and the other components' =*_changed_event= producers to
+stay as they are for now -- or the paragraph is wrong and events are a separate
+task. It changes the shape of step 2 enough that it is worth settling before the
+service and handler templates are written.
 
 * Notes
 

@@ -30,7 +30,7 @@ ores.iam is the first component that speaks the canonical protocol end to end.
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
 | Now          | The shell surface is proved against the running fleet. The whole tree compiles; the fleet is up; 550 codegen tests pass; the component-drift, model-drift, twin-coverage, handler-permission and populate-reference checks are clean; and every one of the 124 generated IAM shell commands has a recipe, of which 123 were run and all 123 answered. The recipe set is now generated rather than hand-written: one literate document per model, one script per command. One command, `reset reset-system`, is deliberately not replayed, and the model declares it destructive. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the second half of the rejig: PR 1 is this conversion plus the shell verification, PR 2 is `ores.web`. Before PR 1 opens, the shell recipe inventory at `doc/recipes/shell/shell.org` needs the generated documents linked into it -- the same argument that made the recipes generated applies to their index. Then the same facet rolls out to the next component. |
+| Next         | Open PR 1: this conversion plus the shell verification, with `ores.web` as PR 2. The shell recipe inventory is generated and gated now, so the facet is complete for IAM; the next move is to roll it out to the next component once IAM has merged. |
 | Last touched | 2026-09-21                               |
 
 * Acceptance
@@ -1244,12 +1244,27 @@ compiler replaced while the fleet was still coming up. Restarting
 restart and saves a hunt: after a build, restart before believing a "no
 subscriber" error.
 
-*One thing the facet does not yet do.* =doc/recipes/shell/shell.org= is the
-hand-maintained inventory and the generated documents are not linked from it.
-Nothing gates on that -- the search index reads content, not the inventory --
-but a reader browsing the inventory will not find the generated recipes. The
-same argument that made the recipes generated applies to their index, and it is
-the next piece of this facet.
+*The inventory is generated too, and it had already fallen behind.* The first
+draft of this note said the index was the one piece left. It is done, and the
+state it was in is the argument for doing it: =doc/recipes/shell/shell.org= held
+97 entries for 122 recipes, so a reader browsing it never saw the generated
+documents at all, nor four hand-written CRM recipes that had been added and
+never listed. Nothing else looked, because nothing else does.
+
+=regenerate_shell_recipe_inventory.py= follows the pattern the other catalogue
+generators use -- scan the sources, rewrite the derived part, =--check= for CI
+-- with one difference that suits a document made of prose. The head of the
+file and the paragraph under each heading are read back from the current
+inventory and carried forward, so only the link lists are rewritten and the
+writing stays where a writer looks for it. A note beside a link is kept for the
+same reason: that a recipe is currently broken is something only a human knows.
+The gate is wired into the codegen-drift workflow, and ten tests pin what a
+regeneration would otherwise quietly destroy.
+
+The inventory also made a small defect visible. A generated recipe was titled
+"Tenant Types shell commands", which reads badly beside the hand-written
+recipes, because a recipe here is titled as the question it answers. It is now
+"How do I run the tenant_types commands from the shell?".
 
 * PRs
 

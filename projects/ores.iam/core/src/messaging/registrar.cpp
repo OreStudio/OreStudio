@@ -42,6 +42,9 @@
 #include "ores.iam.core/messaging/reset_handler.hpp"
 #include "ores.iam.core/messaging/authorization_handler.hpp"
 #include "ores.iam.core/messaging/role_registrar.hpp"
+#include "ores.iam.core/messaging/account_type_registrar.hpp"
+#include "ores.iam.core/messaging/login_info_registrar.hpp"
+#include "ores.iam.core/messaging/permission_registrar.hpp"
 #include "ores.iam.core/messaging/session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
@@ -317,6 +320,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_tenant_status_handlers(nats, ctx, signer))
         subs.push_back(std::move(sub));
     for (auto& sub : register_tenant_type_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
+    // The rest of the derived resource protocols. Each entity already had a
+    // generated header, service and registrar; only the wiring was missing, so
+    // the subject had no handler and the shell reached nothing.
+    for (auto& sub : register_account_type_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_login_info_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_permission_handlers(nats, ctx, signer))
         subs.push_back(std::move(sub));
 
     // --- System reset ---

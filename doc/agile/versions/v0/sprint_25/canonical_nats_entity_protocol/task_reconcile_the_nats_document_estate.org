@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 4620D5A7-61E1-4907-A8F4-B5C1396AC49D
+:END:
+#+title: Task: Reconcile every NATS document to one responsibility
+#+description: Around thirty documents describe ORE Studio's NATS messaging, and they disagree: three competing history subjects, two event subject prefixes, three different claims about the payload format, and two unreconciled error channels. This task gives every one of them exactly one responsibility and resolves the conflicts.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/canonical-nats-entity-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every document that describes NATS messaging states exactly one responsibility -- specification, architecture, security, operations, pattern or history -- and no two of them contradict each other.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- An inventory lists every NATS document with its responsibility, and whether it is target-state or historical.
+- The history subject conflict is resolved in favour of the component-scoped per-entity form.
+- The event subject prefix is one form across the knowledge and the codegen.
+- Every payload-format claim matches the process-wide wire codec, and the stale JSON-only claims are corrected.
+- The error-channel conflict is resolved and the stale binary-era error capture is superseded.
+- projects/modeling/messaging.org is scoped as the subject namespace index and links to the specification instead of standing in for it.
+- Superseded plans are marked historical, not deleted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+**The estate, by responsibility as it stands today.** No document owns the
+verb set or the message shapes. The pieces are spread as follows:
+
+| Where | Documents | Responsibility today |
+|-------+-----------+----------------------|
+| =doc/knowledge/architecture/= | =nats_wire_format= | Envelope and payload encoding |
+| | =polymorphic_types_over_nats= | One subject per concrete type |
+| | =optimistic_concurrency_versioning= | The version contract |
+| | =history_diff_architecture= | A generic history read, proposed |
+| | =entity_composed_registrars=, =entity_mirror_cache_placement= | Registrar and cache patterns |
+| | =anatomy_of_a_service=, =service_to_service_auth_patterns=, =internal_actor_impersonation= | Auth and the =X-Error= contract |
+| | =nats_certificates= | mTLS PKI |
+| | =code_review_checklist= | One subject-convention line, normative |
+| =projects/modeling/= | =messaging.org= | The namespace index every page links to |
+| =projects/ores.<component>/core/modeling/= | =ores.<component>.protocol.org= | Per-service subject inventories |
+| =doc/plans/= | the NATS and auth plans | Historical design proposals |
+| =doc/agile/= | =normalise_nats_protocol_message_shapes= (DONE) | The only written statement of the response convention |
+
+**Conflicts to resolve.**
+
+- *History subject, three ways.* =history.v1.get= with =entity_type= dispatch
+  (=history_diff_architecture=); =<component>.v1.history.get=
+  (=messaging.org=, which records the generic form as a fixed failure because
+  it fanned out to every service's queue group and won the request/reply race);
+  and =<component>.v1.<entity_plural>.history= (the codegen archetype and
+  =entity_composed_registrars=).
+- *Event subject prefix.* Events are =ores.{component}.{entity}_changed=
+  while request/reply is ={component}.v1.<resource>.<verb>=.
+- *Payload format, three claims.* A completed plan mandates MessagePack;
+  =nats_wire_format= makes it a process-wide JSON-or-MessagePack choice; the
+  =ores.nats= overview and =messaging.org= still say JSON.
+- *Two error channels, no arbiter.* The transport =X-Error= header with an
+  empty body versus =success=/=message= on every typed response. A third
+  proposal, =next/improve_handling_of_error_responses.org=, describes a typed
+  error message from the deleted binary protocol and is stale.
+- *Response-shape outliers.* The NATS monitor returns =success= without
+  =message=; =steps_query= uses =found=/=outcome=; the
+  =history_diff_architecture= request struct wrongly carries =success= and
+  =message=.
+- *Verb naming.* =entity_commissioning_reference= lists =list= and =get= as
+  distinct operations, while codegen names the paged read
+  =get_<plural>_request= on a =.list= subject.
+- *Queue groups.* One plan says the group is the service name; the registrars
+  use opaque per-subject groups; =messaging.org= records that several queue
+  groups on one subject fan out and break request/reply.
+- *Audit fields on the wire.* =shared_audit_record= proposes one flat set of
+  five; the junction =replace_by= request carries =modified_by= and
+  =performed_by=; =secure-stamping= declares both server-owned.
+
+**Under-specified, with no home document at all.** The standard verb set; the
+error envelope and its code enumeration; the header registry; correlation id
+naming and propagation; batch atomicity; the pagination and filtering
+contract; delivery guarantees, retry and dead-letter policy; idempotency
+outside the workflow engine; optimistic concurrency as a wire contract; the
+security rules for writes and the server-owned field list; whether a request
+may carry =tenant_id= at all; subject-prefix semantics; the =v1= versioning
+rule; JetStream stream and consumer naming; the changed-event payload shape;
+and compression, tracing and disconnect detection.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

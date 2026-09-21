@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 3663F420-C591-4E77-80CD-E68726522C32
+:END:
+#+title: Task: Enforce the protocol with a conformance gate
+#+description: A specification without a gate drifts, which is exactly what the protocol twin coverage check proved when its written rule and its implementation disagreed for a whole component. This task lands the check that keeps generated messages honest.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/canonical-nats-entity-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-21
+#+updated: 2026-09-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A gate fails when a generated message violates the specification, so the specification cannot drift from the code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-21                               |
+
+* Acceptance
+
+- A check validates every generated protocol message against the grammar and the canonical shapes.
+- The check fails on a hand-written subject, a non-canonical verb, a duplicate subject, and a server-owned field on a write request.
+- The gate runs in the drift workflow beside the component drift and twin coverage checks.
+- One list names the components that have adopted the protocol, and a component joins it when its protocol is converted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

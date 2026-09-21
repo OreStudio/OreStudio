@@ -120,3 +120,16 @@ via its "Verifies task" field.
 | 2 | Collection doc example is hyphenated, the codegen emits snake_case | bff/src/entity-routes.ts | Applied | Example is now =tenant_types=, matching =/api/tenant_types= (81882924a7) |
 
 * Result
+
+The branch also carries one out-of-scope fix, because it gated this task's
+merge. The codegen gates each kept a component list of their own, and the
+twin-coverage gate scoped itself by committed output, so committing the
+first TypeScript twin for dq, marketdata, ore, compute and reporting
+enrolled them and then failed on 25 hand-written protocol headers that
+have no org model to project from. Every generated header already had its
+twin. One list, =COMPONENTS_UNDER_TEST= in =component_registry.py=, now
+names the components under test -- IAM, with every other component to-do --
+and the drift and twin gates read it. The permissions gate is left alone:
+IAM's generated handlers check 13 permission codes
+=iam_permissions_populate.sql= does not seed, so pointing it at the shared
+list today would turn a green check red.

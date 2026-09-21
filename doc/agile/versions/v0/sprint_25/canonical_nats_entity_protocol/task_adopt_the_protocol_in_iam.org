@@ -1276,7 +1276,17 @@ recipes, because a recipe here is titled as the question it answers. It is now
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =:destructive:= accepts three spellings but its error message names one | =org_loader.py= | Accepted | The message names the three. |
+| 2 | =event_action= and its =to_string= are dead code | =entity_event.hpp= | Accepted | Removed. It appeared in nothing but its own header, across the templates and the tree; added by this branch, never wired, never tested. Typing the action field is an event-protocol change, not a cleanup. |
+| 3 | The =nats-handler= prose documents a removed =read_for_cache= handler | =ores.cpp.nats-handler.nats_handler_header.org= | Accepted, premise corrected | The section is still live -- =ores.refdata.party= and =currency_pair_convention= set the flag -- so the flag is vestigial rather than dead: it emits the two includes the removed method needed, and no generated handler uses them. The prose says that, and says that removing the flag is a change to those models and their generated headers. |
+| 4 | The inventory script raises a raw traceback when the index is missing | =regenerate_shell_recipe_inventory.py= | Accepted | It names the path it looked for; a test pins it. |
+| 5 | The three =subjects=/=requiresSession= blocks in =ts_protocol= could be a partial | =ts_protocol.ts.mustache= | Declined | They mirror the three blocks in the C++ protocol template and are expected to diverge: an operation has no key record and no versions sub-resource. A partial would hide which block a change lands in. |
+| 6 | =gather()= walks the tree two to three times per run | =regenerate_shell_recipe_inventory.py= | Accepted | It walks once. |
+| 7 | A doc example names =ores::iam::eventing::tenant_type_event= | =entity_event_traits.hpp= | Accepted | The generated type lives in =ores::iam::messaging=. |
+
+The reviewer recorded that it could not run =compass=, =git fetch= or =gh= in
+its sandbox, so it read the tree statically rather than diffing it. That is why
+finding 3's premise was off: verifying it took one grep.
 
 * Result
 

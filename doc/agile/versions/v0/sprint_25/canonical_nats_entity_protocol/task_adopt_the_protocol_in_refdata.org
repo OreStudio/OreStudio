@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: B81ABF43-5257-4677-96A8-4FD5E796EA60
+:END:
+#+title: Task: Adopt the canonical protocol in ores.refdata
+#+description: The second component converted to the specification. Codegen emits the canonical messages for every refdata entity, junction and operation; generated ores.shell commands and their tests exercise every verb; the BFF route descriptor and the web screens consume the new shapes; and refdata joins COMPONENTS_UNDER_TEST.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/adopt-the-protocol-in-refdata
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Codegen emits the canonical messages for every refdata entity, junction and operation, with no hand-written protocol header left and no dead generated surface.
+- Generated ores.shell commands and their tests exercise every verb for every refdata resource, with a generated literate recipe per command.
+- The generated BFF route descriptor and the web screens consume the canonical messages, including a single-record read.
+- refdata joins COMPONENTS_UNDER_TEST, so every gate covers it from then on.
+- The C++ build, the codegen tests, the drift gate, the TypeScript checks and the handler-permission check pass.
+- No component other than ores.refdata has its protocol converted, and nothing is carried for backwards compatibility.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

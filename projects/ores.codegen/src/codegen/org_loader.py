@@ -2246,6 +2246,10 @@ _TS_DOMAIN_TYPE_RE = re.compile(
 # projection, which is what keeps the gap loud.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
+    "ores::utility::domain::result": ("Result", "utility/protocol"),
+    "ores::utility::domain::precondition": ("Precondition", "utility/protocol"),
+    "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
+    "ores::utility::domain::order": ("Order", "utility/protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

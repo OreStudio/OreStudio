@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: CDE1FA26-BF34-4F50-89D3-067FCCDFD65E
+:END:
+#+title: ores.history.history_messages
+#+description: Codegen operation model for the generic entity-history protocol: one request every entity shares, dispatched server side by entity_type.
+#+type: ores.codegen.operation
+#+component: history
+#+subcomponent: api
+#+entity_singular: history
+#+namespace: ores::history::messaging
+#+brief: The generic entity-history protocol.
+#+filetags: :model:operation:history:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+The generic entity-history protocol, per [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]].
+
+One request, shared by every entity, carrying the entity's type and its key as
+strings. No typed domain payload crosses the wire for history: the fields arrive
+rendered, and the diff arrives computed, because the comparison is entity-agnostic
+once both sides are strings and belongs on the server where it is done once.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.diff/domain/diff_result.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include <chrono>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** entity_history_version
+
+#+begin_src cpp :name comment
+/**
+ * @brief One rendered, diffed version of an entity's history.
+ *
+ * fields is the full render of this version, in mapper order -- the
+ * detail panel's need for complete values. changes is the field-level
+ * diff, with intra-value spans, against the previous version; empty for
+ * the oldest version.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<ores::diff::domain::field_value>
+:END:
+
+*** changes
+:PROPERTIES:
+:cpp_type: ores::diff::domain::diff_result
+:END:
+
+** get_entity_history_request
+:PROPERTIES:
+:subject: {component}.v1.history.get
+:response: get_entity_history_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The one generic history request every entity shares.
+ *
+ * entity_type is the dispatch key (e.g. "ores.refdata.currency"); entity_id
+ * is the entity's own primary key rendered as a string, since key shapes vary
+ * across entities.
+ *
+ * The subject names the component that OWNS the entity, which this model
+ * cannot know: the same request reaches iam.v1.history.get for an IAM entity
+ * and refdata.v1.history.get for a refdata one. So the segment is left open
+ * and history_subject_for() derives it -- one rule, read by the service that
+ * subscribes and by every client that sends.
+ */
+#+end_src
+
+*** entity_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** entity_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_entity_history_response
+
+*** versions
+:PROPERTIES:
+:cpp_type: std::vector<entity_history_version>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] -- component group overview.

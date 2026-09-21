@@ -3238,6 +3238,59 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
     return messages
 
 
+# The segment a derived subject leaves to its caller. A cross-component request
+# is addressed to the component that OWNS the entity, which the model cannot
+# know: one history declaration reaches iam.v1.history.get for an IAM entity and
+# refdata.v1.history.get for a refdata one. So the model states the pattern and
+# codegen emits the rule, rather than every caller composing the subject itself
+# and no two of them being checked against each other.
+_DERIVED_SUBJECT_HOLE = "{component}"
+
+
+def derived_subject(messages: list[dict[str, Any]],
+                    entity_singular: str) -> dict[str, Any]:
+    """The subject rule a model states with a hole in it, if it states one.
+
+    One function per model rather than one per message: a model that derived two
+    different subjects from the same key would be stating two rules where its
+    caller has one, so a second pattern is refused rather than emitted.
+
+    The hole is the canonical component segment -- iam.v1.history.get is
+    component iam, resource history, verb get -- so the pattern is the canonical
+    subject grammar with the one segment the model cannot fill left open.
+    """
+    patterns = {
+        message["subject"] for message in messages
+        if _DERIVED_SUBJECT_HOLE in (message.get("subject") or "")
+    }
+    if not patterns:
+        return {}
+    if len(patterns) > 1:
+        raise ValueError(
+            f"{entity_singular}: more than one derived subject "
+            f"({', '.join(sorted(patterns))}); a model states one rule, so that "
+            "the subject is determined in one place")
+    head, _, tail = patterns.pop().partition(_DERIVED_SUBJECT_HOLE)
+    words = entity_singular.split("_")
+    return {
+        "derived_subject": True,
+        "derived_subject_prefix": head,
+        "derived_subject_suffix": tail,
+        # Two arities of one rule. A client holds the dispatch key of the
+        # resource it is asking about; a service subscribing knows only its own
+        # component. Both are generated from the one pattern, so neither has to
+        # spell the subject itself.
+        "subject_function": f"{entity_singular}_subject_for",
+        "subject_function_by_component": (
+            f"{entity_singular}_subject_by_component"),
+        # The TypeScript twin spells the same function the way its own language
+        # does, so the two say the same thing rather than sharing a spelling.
+        "subject_function_ts": (
+            words[0] + "".join(word.capitalize() for word in words[1:])
+            + "SubjectFor"),
+    }
+
+
 def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode protocol-operation model.
 
@@ -3294,7 +3347,13 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
         op["includes"] = _includes_from_named_block(inc)
 
     messages = parse_declared_messages(doc.root)
+    for message in messages:
+        if _DERIVED_SUBJECT_HOLE in (message.get("subject") or ""):
+            message["subject_is_derived"] = True
     op["messages"] = messages
+    # The subject rule the model states with a hole in it, emitted once for the
+    # whole model so the subscriber and every client read it from one place.
+    op.update(derived_subject(messages, op.get("entity_singular", "")))
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)
 
@@ -3446,6 +3505,13 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         subject = message.get("subject")
         response = message.get("response_type")
         if not subject or not response:
+            continue
+        # A derived subject is addressed to the component that owns the entity,
+        # which a command cannot know: it would have to be handed the component
+        # as an argument, and the shell's subject is a constant it sends to. So
+        # the message is not addressable as a command, and a model that wants a
+        # command for one states a fixed subject.
+        if message.get("subject_is_derived"):
             continue
         public = message.get("requires_session") == "false"
         fields = [_shell_field(field) for field in message.get("fields") or []]

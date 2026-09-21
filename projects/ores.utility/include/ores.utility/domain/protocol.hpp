@@ -110,6 +110,20 @@ struct order {
     bool descending = false;
 };
 
+/**
+ * @brief How much of a tree a scoped read covers.
+ *
+ * One verb with two answers rather than two operations: reading a node's
+ * children and reading everything beneath it differ only in reach, so a
+ * caller states which it means and the read is otherwise identical. An
+ * implementation that cannot answer @c subtree says so, rather than
+ * silently answering with the children.
+ */
+enum class scope {
+    direct,
+    subtree
+};
+
 }
 
 #endif

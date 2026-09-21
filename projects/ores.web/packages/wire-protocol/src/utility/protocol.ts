@@ -89,3 +89,10 @@ export interface Order {
     field: string;
     descending: boolean;
 }
+
+/**
+ * How much of a tree a scoped read covers. One verb with two answers rather
+ * than two operations: reading a node's children and reading everything beneath
+ * it differ only in reach.
+ */
+export type Scope = 'direct' | 'subtree';

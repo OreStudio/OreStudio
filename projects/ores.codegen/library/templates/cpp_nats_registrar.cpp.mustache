@@ -19,45 +19,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
-{{#list_only}}
+{{#operations}}
     subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-{{/list_only}}
-{{^list_only}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_{{entity_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_{{entity_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-{{^no_history}}
-{{^current_state}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_singular}}_history_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-{{/current_state}}
-{{/no_history}}
-{{/list_only}}
-{{#extra_list_requests}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_{{name_suffix}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list_{{name_suffix}}(std::move(msg)); }));
-{{/extra_list_requests}}
-{{#has_parent_id}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_singular}}_hierarchy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->hierarchy(std::move(msg));
-        }));
-{{/has_parent_id}}
-{{#read_for_cache}}
-    subs.push_back(nats.queue_subscribe(
-        read_{{entity_plural}}_for_cache_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
-{{/read_for_cache}}
+        {{request}}::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->{{method}}(std::move(msg)); }));
+{{/operations}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
@@ -126,56 +92,3 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
 
 } // namespace ores::{{component}}::messaging
 {{/junction}}
-{{#entity}}
-#include "ores.{{component_core}}/messaging/{{entity_singular}}_registrar.hpp"
-#include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
-#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
-<<paste:068323E2-D722-46F1-8B86-46BD32426003>>
-#include <memory>
-
-namespace ores::{{component}}::messaging {
-
-namespace {
-static constexpr std::string_view queue_group = "ores.{{component}}.service";
-} // namespace
-
-std::vector<ores::nats::service::subscription>
-register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
-                                       std::optional<ores::security::jwt::jwt_authenticator> verifier) {
-    std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
-{{#list_only}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-{{/list_only}}
-{{^list_only}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_{{entity_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_{{entity_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-{{^no_history}}
-{{^current_state}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_singular}}_history_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-{{/current_state}}
-{{/no_history}}
-{{/list_only}}
-{{#extra_list_requests}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{entity_plural}}_{{name_suffix}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list_{{name_suffix}}(std::move(msg)); }));
-{{/extra_list_requests}}
-<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
-    return subs;
-}
-
-} // namespace ores::{{component}}::messaging
-{{/entity}}

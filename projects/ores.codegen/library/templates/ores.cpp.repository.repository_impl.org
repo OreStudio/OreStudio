@@ -40,6 +40,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.sql.has_list_by_as_of}}
 #include "ores.platform/time/datetime.hpp"
 {{/domain_entity.sql.has_list_by_as_of}}
+{{#primary_key.has_timestamp_key}}
+#include "ores.platform/time/datetime.hpp"
+{{/primary_key.has_timestamp_key}}
 {{#has_parent_id}}
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -47,12 +50,10 @@ The full template source. Edit here and re-tangle with
 {{#primary_key.is_compound}}
 #include <stdexcept>
 {{/primary_key.is_compound}}
-{{#has_batch_read}}
 {{#primary_key.is_compound}}
 #include <set>
 #include <tuple>
 {{/primary_key.is_compound}}
-{{/has_batch_read}}
 <<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>
 
 namespace ores::{{component}}::repository {
@@ -578,36 +579,65 @@ std::vector<domain::{{entity_singular}}>
 }
 {{/list_by_as_of}}
 {{/foreign_keys}}
-void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}}) {
+{{entity_singular}}_repository::remove_status
+{{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}},
+                                      std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{^has_audit_columns}}
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+{{/has_audit_columns}}
+    const auto current = read_latest(ctx, {{{primary_key.args}}});
+    if (current.empty())
+        return remove_status::missing;
+{{#has_audit_columns}}
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+{{/has_audit_columns}}
 {{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{/current_state}}
+{{#has_audit_columns}}
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected =
+        version ? static_cast<int>(*version) : current.front().version;
+{{/has_audit_columns}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+        where("workspace_id"_c == wid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 
     execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
+    return remove_status::removed;
+}
+
+void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}}) {
+    static_cast<void>(remove(ctx, {{{primary_key.args}}}, std::nullopt));
 }
 
 std::vector<domain::{{entity_singular}}>
@@ -703,7 +733,6 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
     return count;
 }
 
-{{#has_batch_read}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(
     context ctx, {{{primary_key.batch_params}}}) {
@@ -765,7 +794,6 @@ std::vector<domain::{{entity_singular}}>
 {{/primary_key.is_compound}}
 }
 
-{{/has_batch_read}}
 void {{entity_singular}}_repository::remove(
     context ctx, {{{primary_key.batch_params}}}) {
 {{#primary_key.is_compound}}

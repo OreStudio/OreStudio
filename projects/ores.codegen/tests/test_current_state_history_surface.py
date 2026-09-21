@@ -126,6 +126,12 @@ def _enriched_entity(**overrides):
         },
     }
     entity.update(overrides)
+    # The version column, which the enrichment derives from the two shape
+    # flags. Read here rather than stated, so a case cannot claim a version
+    # column and a current-state table at once.
+    entity.setdefault("has_audit_columns",
+                      not entity.get("current_state")
+                      and not entity.get("no_audit_columns"))
     return entity
 
 
@@ -144,10 +150,21 @@ def test_a_current_state_entity_derives_no_history_message():
 
 
 def test_an_ordinary_entity_still_derives_the_versions_pair():
-    names = _message_names(_enriched_entity())
-    assert names[-2:] == [
+    names = _message_names(_enriched_entity(has_audit_columns=True))
+    assert names[-4:] == [
+        "list_current_state_entity_versions_request",
+        "list_current_state_entity_versions_response",
         "get_current_state_entity_version_request",
         "get_current_state_entity_version_response"]
+
+
+def test_an_entity_with_no_version_column_derives_no_versions_pair():
+    """The gate is the version column, which the model states separately from
+    the current-state flag. An audit-less table with a validity window keeps
+    history it cannot address a version in, so it derives no version key, no
+    versions filter and no versions operation."""
+    names = _message_names(_enriched_entity(no_audit_columns=True))
+    assert not [n for n in names if "version" in n]
 
 
 def test_the_current_state_derivation_keeps_the_rest_of_the_crud_set():
@@ -182,15 +199,16 @@ def test_a_current_state_handler_has_no_history_method(tmp_path):
     assert "get_current_state_entity_history_response" not in handler
     assert "history(" not in handler
     assert "svc.list_current_state_entities(" in handler
-    assert "svc.save_current_state_entity(" in handler
+    assert "svc.put_current_state_entity(" in handler
 
 
-def test_an_ordinary_handler_keeps_its_history_method(tmp_path):
+def test_an_ordinary_handler_serves_the_versions_operations(tmp_path):
     handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache",
                       "current_state_entity_handler.hpp", BITEMPORAL_MODEL)
-    assert "void history(ores::nats::message msg)" in handler
-    assert "get_current_state_entity_history_request" in handler
-    assert "svc.get_current_state_entity_history(" in handler
+    assert "void list_current_state_entity_versions(ores::nats::message msg)" in handler
+    assert "void get_current_state_entity_version(ores::nats::message msg)" in handler
+    assert "svc.list_current_state_entity_versions(*req)" in handler
+    assert "svc.get_current_state_entity_version(*req)" in handler
 
 
 def test_the_handler_calls_only_methods_the_service_declares(tmp_path):
@@ -209,15 +227,16 @@ def test_the_handler_calls_only_methods_the_service_declares(tmp_path):
 def test_a_current_state_registrar_subscribes_to_no_history_subject(tmp_path):
     registrar = _render(tmp_path, "cpp_nats_registrar.cpp.mustache",
                         "current_state_entity_registrar.cpp", CURRENT_STATE_MODEL)
-    assert "history" not in registrar
-    assert "get_current_state_entities_request::nats_subject" in registrar
+    assert "_versions" not in registrar
+    assert "list_current_state_entities_request::nats_subject" in registrar
 
 
-def test_an_ordinary_registrar_keeps_the_history_subscription(tmp_path):
+def test_an_ordinary_registrar_subscribes_to_the_versions_subjects(tmp_path):
     registrar = _render(tmp_path, "cpp_nats_registrar.cpp.mustache",
                         "current_state_entity_registrar.cpp", BITEMPORAL_MODEL)
-    assert "h->history(std::move(msg))" in registrar
-    assert "get_current_state_entity_history_request::nats_subject" in registrar
+    assert "h->list_current_state_entity_versions(std::move(msg))" in registrar
+    assert "list_current_state_entity_versions_request::nats_subject" in registrar
+    assert "get_current_state_entity_version_request::nats_subject" in registrar
 
 
 def test_a_current_state_protocol_header_states_no_history_pair(tmp_path):

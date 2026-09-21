@@ -2386,6 +2386,12 @@ def _ts_message(
         "name_pascal": _to_pascal_case(name),
         "comment": "",
         "fields": fields or [],
+        # Derived here rather than declared by a model's own * Messages
+        # section. The service and handler templates render the derived
+        # operations, because their names and subjects come from this
+        # derivation; a declared message's handler is written by hand beside
+        # the operation model that states it.
+        "derived": True,
     }
     if response_type:
         message["response_type"] = response_type
@@ -2543,12 +2549,20 @@ def write_record_fields(
     the message templates read ``name`` and ``cpp_type``, and a column dict
     passed through untouched would render an empty member.
     """
-    return [_ts_field(_column_name(column),
-                      column.get("cpp_type") or "std::string")
-            for column in columns
-            if _column_name(column) in key_columns
-            or (_column_name(column) not in SERVER_OWNED_FIELDS
-                and _column_name(column) not in CHANGE_INTENT_FIELDS)]
+    fields: list[dict[str, Any]] = []
+    for column in columns:
+        name = _column_name(column)
+        if name not in key_columns and (
+                name in SERVER_OWNED_FIELDS or name in CHANGE_INTENT_FIELDS):
+            continue
+        field = _ts_field(name, column.get("cpp_type") or "std::string")
+        # Where the domain type holds the member. A composed entity reaches
+        # its fields through a group member, so the record's own member name
+        # and the domain's access path are not the same string; the service
+        # that builds a domain object from a record reads this.
+        field["domain_member"] = (column.get("group_prefix") or "") + name
+        fields.append(field)
+    return fields
 
 
 def _key_cpp_type(column: dict[str, Any]) -> str:
@@ -2579,6 +2593,19 @@ def write_record_columns(entity: dict[str, Any]) -> list[dict[str, Any]]:
     for column in declared:
         by_name.setdefault(_column_name(column), column)
     return list(by_name.values())
+
+
+def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The write record's fields for one entity, derived once for every reader.
+
+    The protocol twin renders these as the record's members and the service
+    builds a domain object from them, so a field the record carries and a
+    field the service sets cannot disagree.
+    """
+    key_columns = frozenset(
+        _column_name(column)
+        for column in (entity.get("primary_key") or {}).get("columns") or [])
+    return write_record_fields(write_record_columns(entity), key_columns)
 
 
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
@@ -2614,8 +2641,16 @@ _WRITE_ONLY_RECORD_SUFFIXES = ("_write", "_change", "_removal")
 
 
 def _column_cpp_type(entity: dict[str, Any], name: str) -> str:
-    """One named column's own C++ type, or a string when the model is silent."""
-    for column in entity.get("columns") or []:
+    """One named column's own C++ type, or a string when the model is silent.
+
+    The loader partitions an entity's fields, so a relation stated by a scoped
+    read is often a natural key rather than a plain column -- a foreign key
+    that identifies the child within its parent is exactly that. Searching
+    ``columns`` alone would type such a relation ``std::string`` while the
+    write record types the same column from its own dict, and the two would
+    disagree about one column.
+    """
+    for column in write_record_columns(entity):
         if _column_name(column) == name:
             return column.get("cpp_type") or "std::string"
     return "std::string"
@@ -2749,9 +2784,8 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     # subject: a record is a shape, an operation is something a caller sends.
     messages = [
         _ts_message(key, fields=key_record_fields(entity)),
-        _ts_message(f"{singular}_write",
-                    fields=write_record_fields(write_record_columns(entity),
-                                               key_columns)),
+        _ts_message(f"{singular}_write", fields=write_record_fields(
+            write_record_columns(entity), key_columns)),
         _ts_message(f"{singular}_change", fields=[
             _ts_field("write", f"{singular}_write"),
             _ts_field("precondition", _PRECONDITION)]),
@@ -2764,10 +2798,14 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     ]
     if filter_fields:
         messages.append(_ts_message(f"{plural}_filter", fields=filter_fields))
-    if not entity.get("current_state"):
+    if entity.get("has_audit_columns"):
         # A versioned entity's version is addressed by the entity's own key plus
-        # the version number, so the pair is a record of its own. A
-        # current-state entity has no version to address.
+        # the version number, so the pair is a record of its own. An entity with
+        # no version column has no version to address -- a current-state table
+        # keeps no history at all, and a table the model marked
+        # ``no_audit_columns`` keeps a validity window with no version in it.
+        # The gate is the version column, not the current-state flag, because
+        # the two are not the same claim.
         messages.append(_ts_message(f"{singular}_version_key", fields=[
             _ts_field(singular, key),
             _ts_field("version", "std::uint32_t")]))
@@ -2844,7 +2882,7 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                        default="ores::utility::domain::scope::direct")],
             list_filter, plural_short, domain_type)
 
-    if not entity.get("current_state"):
+    if entity.get("has_audit_columns"):
         messages += paged_list_messages(
             f"list_{singular}_versions",
             versions_subject(component, plural, "list"),
@@ -2931,6 +2969,98 @@ def junction_protocol_messages(junction: dict[str, Any]) -> list[dict[str, Any]]
     return [message for message in messages
             if not message["name"].startswith(_WRITE_OPERATION_PREFIXES)
             and not message["name"].endswith(_WRITE_ONLY_RECORD_SUFFIXES)]
+
+
+# Which verb a derived request states, from the request's own name. A versions
+# list is a list and a single version is a get, but each answers a different
+# sub-resource and so takes a different body, so the suffix is read first.
+_OPERATION_PREFIXES = (
+    ("list_by_", "list_scoped"),
+    ("put_many_", "put_many"),
+    ("delete_many_", "delete_many"),
+    ("get_many_", "get_many"),
+    ("list_", "list"),
+    ("get_", "get"),
+    ("put_", "put"),
+    ("delete_", "delete"),
+)
+
+
+def _operation_verb(name: str) -> str:
+    """The verb one derived request states, or an empty string if none."""
+    if name.endswith("_versions_request"):
+        return "list_versions"
+    if name.endswith("_version_request"):
+        return "get_version"
+    for prefix, verb in _OPERATION_PREFIXES:
+        if name.startswith(prefix):
+            return verb
+    return ""
+
+
+def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The operations a resource addresses, in the order the messages state them.
+
+    A message with a subject is an operation; one without is a record. The
+    method name is the request's own name without its ``_request`` suffix, so
+    one rename moves the subject, the service method and the handler method
+    together rather than three names kept in step by hand.
+
+    Declared messages are left out: an operation model states its whole
+    protocol and its handler beside it, so the derived surface a generated
+    handler serves stops at what the derivation owns.
+    """
+    operations: list[dict[str, Any]] = []
+    for message in messages:
+        if not message.get("derived") or not message.get("subject"):
+            continue
+        fields = message.get("fields") or []
+        names = [field.get("name") for field in fields]
+        leading_type = fields[0].get("cpp_type", "") if fields else ""
+        verb = _operation_verb(message["name"])
+        operations.append({
+            "method": message["name"][:-len("_request")],
+            "request": message["name"],
+            "response": message.get("response_type", ""),
+            "subject": message["subject"],
+            "verb": verb,
+            "fields": fields,
+            # What the request carries, so a service body states the page, the
+            # order and the filter it was handed rather than assuming them.
+            "has_order": "order" in names,
+            "has_filter": "filter" in names,
+            "has_scope": "scope" in names,
+            # The field a paged list is scoped by: the relation for a scoped
+            # read, the key for a versions read, nothing for a plain list.
+            "leading": names[0] if names else "",
+            # The repository takes a relation as text whatever the column is,
+            # so a service body that passes one states the conversion from the
+            # column's own type.
+            "leading_is_uuid": "boost::uuids::uuid" in leading_type,
+            "leading_is_timestamp": "time_point" in leading_type,
+            # A write is an operation that changes state, and the permission
+            # it needs is the one the resource already names for that kind of
+            # change. A read needs authentication alone, so it names none.
+            "is_write": verb in ("put", "put_many", "delete", "delete_many"),
+            "permission": ("delete" if verb in ("delete", "delete_many")
+                           else "write" if verb in ("put", "put_many") else ""),
+        })
+    return operations
+
+
+def operations_by_verb(
+        operations: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """The same operations grouped by verb, for a template with a body per verb.
+
+    A handler method is uniform whatever the verb, because the service answers
+    the request; a service method is not, because the storage call it makes
+    depends on what the verb asks for. Grouping here keeps the branch in the
+    template instead of in the C++.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for operation in operations:
+        grouped.setdefault(operation["verb"], []).append(operation)
+    return grouped
 
 
 def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:

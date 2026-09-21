@@ -144,20 +144,21 @@ def test_deleting_the_operation_model_restores_the_bff_route(tmp_path):
     assert BFF_ROUTE_TEMPLATE in _templates(entity)
 
 
-def test_the_real_account_party_junction_now_owns_its_protocol(tmp_path):
-    """The pair the rule existed for is retired. The real junction declares
-    its list read and has no operation model, so it renders its own protocol
-    -- and it still keeps its hand-written messaging stack, whose facets the
-    model disables."""
+def test_the_real_account_party_junction_keeps_its_hand_written_stack(tmp_path):
+    """The junction speaks its own protocol, so codegen owns none of it.
+
+    Its handler, service and registrar are hand-written, and the protocol they
+    speak belongs with them: a derived protocol would be a header no generated
+    handler serves and no hand-written handler compiles against. Every facet
+    the codegen could own is therefore switched off in the model, and the
+    committed messaging layer stands."""
     junction = tmp_path / "ores.iam.account_party_junction.org"
     junction.write_text(ACCOUNT_PARTY_JUNCTION.read_text(encoding="utf-8"),
                         encoding="utf-8")
     _reload_owners()
 
     templates = _templates(junction)
-    assert PROTOCOL_TEMPLATES <= templates
-    # The hand-written service, handler and registrar stay: their generated
-    # facets are disabled in the model.
+    assert not (PROTOCOL_TEMPLATES & templates)
     assert "cpp_service.hpp.mustache" not in templates
     assert "cpp_nats_handler.hpp.mustache" not in templates
     assert "cpp_nats_registrar.cpp.mustache" not in templates

@@ -82,6 +82,13 @@ def _entity(**overrides):
         },
     }
     entity.update(overrides)
+    # The version column, which the enrichment derives from the two shape
+    # flags: an ordinary entity keeps one, a current-state table has no
+    # history at all, and an audit-less table has a validity window with no
+    # version in it.
+    entity.setdefault("has_audit_columns",
+                      not entity.get("current_state")
+                      and not entity.get("no_audit_columns"))
     return entity
 
 

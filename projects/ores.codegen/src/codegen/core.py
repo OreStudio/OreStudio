@@ -2127,6 +2127,24 @@ def _audit_timestamp_fields(entity):
     return [_AUDIT_TIMESTAMP_FIELD]
 
 
+def _protocol_owned_by_operation(model_path, entity) -> bool:
+    """Whether an operation model beside this one owns the entity's protocol.
+
+    The derived message names are what the generated service and handler
+    state their methods from, and a protocol an operation model owns need not
+    carry them: an operation states its own spelling, and an entity with no
+    client-facing write derives no write verbs at all. So the derivation asks
+    the same question ``resolve_targets`` asks before it renders a protocol
+    header, rather than rendering methods against names that will not exist.
+    """
+    # Deferred import: generate.py imports this module at load time.
+    from .generate import _operation_protocol_owners  # noqa: PLC0415
+    owner = _operation_protocol_owners(str(Path(model_path).parent)).get(
+        (entity.get('component'), entity.get('entity_singular')
+         or entity.get('name_singular')))
+    return bool(owner)
+
+
 def bff_route_projection(entity, model_path):
     """The ores.ts.web BFF route descriptor's data for one entity, or None.
 
@@ -3967,6 +3985,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # reads the row itself, so the fragment is empty.
         domain_entity['temporal_filter'] = (
             '' if current_state else ' && "valid_to"_c == max.value()')
+        # The same fragment for a removal that names the version the caller
+        # read. A table with no version column cannot be addressed that way,
+        # so the fragment is empty and the repository refuses the request
+        # rather than silently ignoring it.
+        domain_entity['version_filter'] = (
+            ' && "version"_c == expected'
+            if domain_entity.get('has_audit_columns') else '')
         # Add computed properties for primary key type detection. Applied to
         # both the top-level (back-compat, first-flagged-column) scalar dict
         # and, identically, to each entry of primary_key['columns'] -- a
@@ -4054,6 +4079,42 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'const std::string& {c["column"]}' for c in pk_columns
             )
             pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # The same key read from a protocol key record rather than from
+            # bare parameters (the repository's own key parameters are text
+            # for every column, so a uuid column is converted here and the
+            # protocol keeps each column's own type). One entry per prefix a
+            # template reads a key record through.
+            def _key_record_args(prefix: str) -> str:
+                return ', '.join(
+                    (f'boost::uuids::to_string({prefix}{c["column"]})'
+                     if c.get('is_uuid') else f'{prefix}{c["column"]}')
+                    for c in pk_columns)
+
+            # The versions list addresses the entity's own key, while the
+            # single-version read nests that key inside the version key, as
+            # the specification states it. One level apart, so both forms are
+            # stated rather than derived at the call site.
+            pk['key_request_args'] = _key_record_args('request.key.')
+            # A removal states its key inside a removal record, and the
+            # repository's versioned removal takes one key at a time.
+            pk['removal_key_args'] = _key_record_args('request.removal.key.')
+            # A single-version read nests the entity key inside the version
+            # key, as the specification states it, so the key is one level
+            # deeper than everywhere else.
+            pk['version_key_args'] = _key_record_args(
+                'request.key.'
+                + (domain_entity.get('entity_singular')
+                   or domain_entity.get('name_singular') or '') + '.')
+            # A key record's own columns: a batch removal builds one text
+            # vector per column from the key records it was handed, and the
+            # template loops these to state the conversion once per column.
+            # Copied before marking, because these dicts are the same objects
+            # the entity's own column list holds and its ``last`` flag is a
+            # different list's fact.
+            pk['key_columns'] = [dict(column) for column in pk_columns]
+            _mark_last_item(pk['key_columns'])
+            pk['batch_keys_args'] = ', '.join(
+                f'{c["column"]}_keys' for c in pk_columns)
             # Complete stream expressions (leading string literal, trailing
             # bare value -- not a string fragment), so templates splice
             # them in as `<< {{{primary_key.log_fields}}}` with no extra
@@ -4083,6 +4144,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'"{c["column"]}"_c.in({c["column"]}s)' for c in pk_columns
             )
             pk['batch_tuple_type'] = ', '.join('std::string' for _ in pk_columns)
+
+            def _key_as_text(expression: str, column: dict[str, Any]) -> str:
+                """One key column's value in the text form the batch takes it in.
+
+                The repository's batch parameters are text for every key
+                column, so a tuple built from a mapped row has to state the
+                same conversion the caller's key did, or the two halves of the
+                comparison are different types and the row never matches.
+                """
+                if column.get('is_uuid'):
+                    return f'boost::uuids::to_string({expression})'
+                if column.get('is_timestamp'):
+                    return (f'ores::platform::time::datetime::to_db_string('
+                            f'{expression})')
+                return expression
+
             pk['batch_requested_insert'] = (
                 'requested.emplace(' +
                 ', '.join(f"{c['column']}s[i]" for c in pk_columns) +
@@ -4090,8 +4167,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             )
             pk['batch_requested_size_check'] = pk_columns[0]['column'] + 's.size()'
             pk['batch_tuple_from_item'] = ', '.join(
-                f"item.{c['column']}" for c in pk_columns
+                _key_as_text(f"item.{c['column']}", c) for c in pk_columns
             )
+            pk['has_timestamp_key'] = any(
+                c.get('is_timestamp') for c in pk_columns)
             # Every batch loop is bounded by the first column's vector size
             # alone and indexes the rest unchecked -- guard against a caller
             # (e.g. a NATS request decoded with independently-sized vector
@@ -4785,6 +4864,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _to_pascal_case,
             _ts_domain_type,
             entity_protocol_messages,
+            operations_by_verb,
+            protocol_operations,
+            write_record_for,
         )
         for _field in (
             list(domain_entity.get('columns') or [])
@@ -4817,6 +4899,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states.
         domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # The write record's fields, which the service builds a domain object
+        # from: one derivation, so the record and the service agree.
+        domain_entity['write_fields'] = write_record_for(domain_entity)
+        # The same list as operations, which is what the service and handler
+        # state their methods from: one name per operation, so the subject,
+        # the service method and the handler method cannot drift apart.
+        _ops = protocol_operations(domain_entity['messages'])
+        domain_entity['operations'] = _ops
+        for _verb, _verb_ops in operations_by_verb(_ops).items():
+            domain_entity[f'{_verb}_operations'] = _verb_ops
+        # Whether this entity's protocol is derived from its own model or
+        # owned by an operation model beside it. The derived names are what
+        # the service speaks, so an owned protocol must not be assumed:
+        # account's list request is spelled differently and session has no
+        # save or delete at all. Read from the same place resolve_targets
+        # reads it, so one decision gates both.
+        domain_entity['protocol_derived'] = not _protocol_owned_by_operation(
+            model_path, domain_entity)
         # A field the protocol projection cannot express would render an
         # interface with the field missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the
@@ -4910,6 +5010,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _to_pascal_case,
             _ts_domain_type,
             junction_protocol_messages,
+            operations_by_verb,
+            protocol_operations,
         )
         for _side in (junction.get('left') or {}, junction.get('right') or {}):
             _mapped = _ts_domain_type(_side.get('cpp_type'))
@@ -4926,6 +5028,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The derivation needs the enriched junction (sides, columns, stamped
         # ts_type), so it runs here rather than in the loader.
         junction['messages'] = junction_protocol_messages(junction)
+        # The same list as operations, exactly as a domain entity states it:
+        # a junction addresses the same verbs and its handler is the same
+        # adapter, so the two are projected from one derivation.
+        _ops = protocol_operations(junction['messages'])
+        junction['operations'] = _ops
+        for _verb, _verb_ops in operations_by_verb(_ops).items():
+            junction[f'{_verb}_operations'] = _verb_ops
+        junction['protocol_derived'] = not _protocol_owned_by_operation(
+            model_path, junction)
         # A field the protocol projection cannot express would render an
         # interface with the field missing, which is a run-time failure in a
         # UI that reads it. Only the TypeScript twin refuses the model; the

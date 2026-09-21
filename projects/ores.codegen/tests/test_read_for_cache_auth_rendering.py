@@ -1,6 +1,14 @@
-"""Tests that the read_for_cache auth check and token-provider wiring
-actually appear in rendered template output, not just in model-flag
-validation.
+"""Tests that the handler serves no bulk read for cache warming, and that the
+cache header's token-provider wiring appears in rendered template output
+rather than only in model-flag validation.
+
+A cache is fed by events. The specification says so outright: "There is no verb
+for reading everything. A full read is a list paged to its end, and a cache is
+fed by events rather than by a bulk read." A model that still names a cache
+reader therefore gets no handler method for it, and the method it used to get
+-- authenticated but deliberately not tenant-scoped, so that a cache-warming
+account could read another tenant -- has no successor to be copied into the
+wrong place.
 
 Run::
 
@@ -37,11 +45,12 @@ FIXTURE_ENTITY = {
 }
 
 
-def test_handler_read_for_cache_requires_authentication():
+def test_the_handler_serves_no_bulk_read_for_cache_warming():
+    """The fixture asks for one; the template serves the canonical verbs and
+    nothing for a cache, because a cache is fed by events."""
     rendered = render_template(TEMPLATES_DIR / "cpp_nats_handler.hpp.mustache", FIXTURE_ENTITY)
-    assert "void read_for_cache(ores::nats::message msg) {" in rendered
-    assert "make_request_context(" in rendered
-    assert "Authentication-only, deliberately not tenant-scoped" in rendered
+    assert "read_for_cache" not in rendered
+    assert "Authentication-only, deliberately not tenant-scoped" not in rendered
 
 
 def test_cache_header_supports_token_provider():

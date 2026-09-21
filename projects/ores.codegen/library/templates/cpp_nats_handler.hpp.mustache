@@ -59,9 +59,18 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
           {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
 
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
+{{#operations}}
+    /**
+     * @brief Serves {{subject}}.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void {{method}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -69,179 +78,17 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        get_{{entity_plural}}_response resp;
-{{#list_filter_column}}
-        if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
-            try {
-                // Note: has_as_of_lookup is not currently supported in
-                // combination with list_filter_column -- the at_timepoint
-                // service method filters by primary key, not by
-                // {{list_filter_column}}, so req->as_of is intentionally
-                // ignored here. Wire this up (with a filter argument that
-                // matches list_filter_column's semantics) if/when this
-                // facet is rolled out to an entity that needs both.
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(
-                    req->offset, req->limit, req->{{list_filter_column}});
-                resp.total_available_count = static_cast<int>(
-                    svc.count_{{entity_plural_short}}(req->{{list_filter_column}}));
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-{{/list_filter_column}}
-{{^list_filter_column}}
-        if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
-            try {
-{{#has_as_of_lookup}}
-                if (!req->as_of.empty()) {
-                    resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}_at_timepoint(req->as_of);
-                    resp.total_available_count =
-                        static_cast<int>(resp.{{entity_plural_short}}.size());
-                } else {
-                    resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
-                    resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
-                }
-{{/has_as_of_lookup}}
-{{^has_as_of_lookup}}
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
-{{/has_as_of_lookup}}
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-{{/list_filter_column}}
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void save(ores::nats::message msg) {
-<<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:write")) {
+{{#is_write}}
+        if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:{{permission}}")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
-            try {
-{{#has_batch_save}}
-                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}});
-{{/has_batch_save}}
-{{^has_batch_save}}
-                svc.save_{{entity_singular_short}}(req->data);
-{{/has_batch_save}}
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_{{entity_singular}}_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_{{entity_singular}}_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
+{{/is_write}}
+        auto req = decode<{{request}}>(msg);
+        if (!req) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-{{^current_state}}
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
-            try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}}{{#history_request_extra_args}}, req->{{name}}{{/history_request_extra_args}});
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_{{entity_singular}}_history_response{
-                    .history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_{{entity_singular}}_history_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-{{/current_state}}
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
 {{#system_tenant_validation}}
@@ -252,146 +99,26 @@ public:
 {{^system_tenant_validation}}
         service::{{entity_singular}}_service svc(req_ctx);
 {{/system_tenant_validation}}
-        if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
-            try {
-{{#single_delete}}
-                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
-{{/single_delete}}
-{{^single_delete}}
-                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
-{{/single_delete}}
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_{{entity_singular}}_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_{{entity_singular}}_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-{{#extra_list_requests}}
-    void list_{{name_suffix}}(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        service::{{entity_singular}}_service svc(req_ctx);
-        if (auto req = decode<get_{{entity_plural}}_{{name_suffix}}_request>(msg)) {
-            get_{{entity_plural}}_{{name_suffix}}_response resp;
-            try {
-                resp.{{entity_plural_short}} =
-                    svc.{{service_method}}(req->{{filter_column}}, req->offset, req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.{{count_service_method}}(req->{{filter_column}}));
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
+        try {
+            auto response = svc.{{method}}(*req);
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                 << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            {{response}} failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-{{/extra_list_requests}}
-{{#has_parent_id}}
-    void hierarchy(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        service::{{entity_singular}}_service svc(req_ctx);
-        if (auto req = decode<get_{{entity_singular}}_hierarchy_request>(msg)) {
-            try {
-                boost::uuids::string_generator gen;
-                auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_{{entity_singular}}_hierarchy_response{
-                    .success = true, .roots = std::move(roots)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_{{entity_singular}}_hierarchy_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-{{/has_parent_id}}
-{{#read_for_cache}}
-    void read_for_cache(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        // Authentication-only, deliberately not tenant-scoped: this proves
-        // the caller holds *a* valid signed JWT, but does not check that
-        // token's own tenant against req->tenant_id below (the tenant a
-        // cache-warming service account reads is unrelated to any tenant
-        // its own token carries). Do not copy this method as a template
-        // for a tenant-authorized endpoint.
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        if (auto req = decode<read_{{entity_plural}}_for_cache_request>(msg)) {
-            try {
-                using ores::database::service::tenant_context;
-                auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
-                service::{{entity_singular}}_service svc(tctx);
-                // No dedicated unpaginated list method is generated; reuse
-                // the paginated one with an unbounded limit.
-                auto {{entity_plural_short}} = svc.list_{{entity_plural_short}}(
-                    0, std::numeric_limits<std::uint32_t>::max());
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject << " (tenant=" << req->tenant_id
-                    << ", count=" << {{entity_plural_short}}.size() << ")";
-                reply(nats_, msg, read_{{entity_plural}}_for_cache_response{
-                    .success = true, .{{entity_plural_short}} = std::move({{entity_plural_short}})});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, read_{{entity_plural}}_for_cache_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-{{/read_for_cache}}
+{{/operations}}
 <<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>
 private:
     ores::nats::service::client& nats_;
@@ -882,239 +609,3 @@ private:
 
 #endif
 {{/junction}}
-{{#entity}}
-#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
-#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
-
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
-#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
-#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
-{{#system_tenant_validation}}
-#include "ores.utility/uuid/tenant_id.hpp"
-{{/system_tenant_validation}}
-
-namespace ores::{{component}}::messaging {
-
-namespace {
-inline auto& {{entity_singular}}_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.{{component}}.messaging.{{entity_singular}}_handler");
-    return instance;
-}
-} // namespace
-
-using ores::service::messaging::reply;
-using ores::service::messaging::decode;
-using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
-using namespace ores::logging;
-
-/**
- * @brief NATS message handler for {{entity_singular_words}} operations.
-{{#system_tenant_validation}}
- *
- * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
- * operations use the system tenant context.
-{{/system_tenant_validation}}
- */
-class {{entity_singular}}_handler {
-public:
-    {{entity_singular}}_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier{{#handler_ctor_param}},
-        {{{handler_ctor_param}}}{{/handler_ctor_param}})
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)){{#handler_ctor_init}},
-          {{{handler_ctor_init}}}{{/handler_ctor_init}} {}
-
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        get_{{entity_plural}}_response resp;
-        if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
-            try {
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
-            try {
-{{#has_batch_save}}
-                svc.save_{{entity_plural_short}}(req->{{entity_plural_short}});
-{{/has_batch_save}}
-{{^has_batch_save}}
-                svc.save_{{entity_singular_short}}(req->data);
-{{/has_batch_save}}
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_{{entity_singular}}_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_{{entity_singular}}_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-{{^current_state}}
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
-            try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}}{{#history_request_extra_args}}, req->{{name}}{{/history_request_extra_args}});
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_{{entity_singular}}_history_response{
-                    .history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_{{entity_singular}}_history_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-{{/current_state}}
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-{{#system_tenant_validation}}
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::{{entity_singular}}_service svc(sys_ctx);
-{{/system_tenant_validation}}
-{{^system_tenant_validation}}
-        service::{{entity_singular}}_service svc(req_ctx);
-{{/system_tenant_validation}}
-        if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
-            try {
-{{#single_delete}}
-                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
-{{/single_delete}}
-{{^single_delete}}
-                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
-{{/single_delete}}
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_{{entity_singular}}_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_{{entity_singular}}_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-private:
-    ores::nats::service::client& nats_;
-    ores::database::context ctx_;
-    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
-};
-
-} // namespace ores::{{component}}::messaging
-
-#endif
-{{/entity}}

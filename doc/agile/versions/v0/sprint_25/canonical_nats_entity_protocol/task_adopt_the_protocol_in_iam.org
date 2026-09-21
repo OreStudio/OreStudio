@@ -776,6 +776,40 @@ segment from its declaration, so the sidebar link and the router path are one
 string rather than two -- which is what =assertWiredPath= checks, and what its
 test covers.
 
+**Three entities remain, and one of them is outside this PR's reach.** The
+acceptance criterion says the shell's commands exercise every verb for every IAM
+entity. Seven entities meet it. The three that do not are each a different
+problem, and none is unfinished mechanics.
+
+=account= and =session= are owned by operation models, so no canonical CRUD set
+is derived for them and their declared verbs are the old spellings --
+=iam.v1.accounts.save=, =.update=, =.delete= rather than put. Making them
+regular entities is the settled plan and it is a real refactor, not a wiring
+change: the operation model stops owning the protocol, the canonical set derives,
+the generated service, handler and registrar come back, and the genuine workflow
+operations -- =login=, =lock_account=, =change_password=,
+=set_my_default_party= -- move to an operation model with a hand-written handler
+beside it, as the authorization split already does. It also reaches the HTTP
+routes, the shell and the web screens.
+
+=login_info= is a different problem and it is *blocked by this PR's own scope*.
+Its entire write record is server-recorded: =last_ip= and =last_attempt_ip= are
+=boost::asio::ip::address=, =last_login= is a timestamp, and the rest are the
+failed-login count, the lock state and the online flag. A client should not send
+any of them, so the right answer is that the entity is read-only -- but codegen
+has no way to say that for a =domain_entity=. =:read_only:= is honoured for a
+junction and not by =entity_protocol_messages=, which derives put, put_many,
+delete and delete_many unconditionally. Teaching the derivation to honour it on
+a domain entity is small; the consequence is not. It removes
+=save_login_info=/=delete_login_info= from the generated service, and
+=projects/ores.cli= calls them -- thirty-nine references across seven files, one
+of them in a component this PR is explicitly forbidden to change.
+
+So the honest position is that two of the three are the next task and the third
+waits on a decision about scope: either =login_info= becomes read-only and
+=ores.cli= is carried with it, or the pilot ships with one entity whose write
+verbs exist and have no shell command.
+
 Worth keeping from the design: a versioned table's update is the internal close
 of the current row, so it announces nothing -- the insert that follows it
 carries the change, and its version says created or updated. Announcing both

@@ -114,8 +114,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             try {
                 boost::uuids::string_generator gen;
                 auto session_id = gen(session_id_str);
-                session_repo->update_bytes(
-                    ctx, session_id, start_time, bytes_sent, bytes_received);
+                session_repo->update_bytes(ctx, session_id, start_time, bytes_sent, bytes_received);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
             }

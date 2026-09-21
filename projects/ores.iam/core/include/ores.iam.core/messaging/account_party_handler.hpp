@@ -356,10 +356,10 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  replace_account_parties_by_account_response{.success = false,
-                                                              .message = e.what()});
+            reply(
+                nats_,
+                msg,
+                replace_account_parties_by_account_response{.success = false, .message = e.what()});
         }
     }
 
@@ -382,14 +382,15 @@ public:
             service::account_party_service svc(*ctx_expected);
             boost::uuids::string_generator sg;
             count_account_parties_by_account_response resp;
-            resp.total_available_count = static_cast<int>(
-                svc.get_total_account_party_count_by_account(sg(req->account_id)));
+            resp.total_available_count =
+                static_cast<int>(svc.get_total_account_party_count_by_account(sg(req->account_id)));
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, count_account_parties_by_account_response{.total_available_count = 0});
+            reply(
+                nats_, msg, count_account_parties_by_account_response{.total_available_count = 0});
         }
     }
 
@@ -412,8 +413,8 @@ public:
             service::account_party_service svc(*ctx_expected);
             boost::uuids::string_generator sg;
             count_account_parties_by_party_response resp;
-            resp.total_available_count = static_cast<int>(
-                svc.get_total_account_party_count_by_party(sg(req->party_id)));
+            resp.total_available_count =
+                static_cast<int>(svc.get_total_account_party_count_by_party(sg(req->party_id)));
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {

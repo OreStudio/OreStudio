@@ -33,8 +33,8 @@ std::vector<domain::account_party> account_party_service::list_account_parties()
     return repo_.read_latest();
 }
 
-std::vector<domain::account_party> account_party_service::list_account_parties(
-    std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::account_party>
+account_party_service::list_account_parties(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all account parties with offset: " << offset
                                << " limit: " << limit;
     return repo_.read_latest(offset, limit);
@@ -62,8 +62,8 @@ std::uint32_t account_party_service::get_total_account_party_count_by_account(
     return repo_.get_total_account_party_count_by_account(account_id);
 }
 
-std::uint32_t account_party_service::get_total_account_party_count_by_party(
-    const boost::uuids::uuid& party_id) {
+std::uint32_t
+account_party_service::get_total_account_party_count_by_party(const boost::uuids::uuid& party_id) {
     return repo_.get_total_account_party_count_by_party(party_id);
 }
 

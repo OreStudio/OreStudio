@@ -87,8 +87,7 @@ TEST_CASE("session_is_inactive_when_end_time_set", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.account_id = boost::uuids::random_generator()();
     sut.start_time = std::chrono::system_clock::now() - std::chrono::hours(1);
-    sut.end_time = ores::platform::time::datetime::to_iso8601_utc(
-        std::chrono::system_clock::now());
+    sut.end_time = ores::platform::time::datetime::to_iso8601_utc(std::chrono::system_clock::now());
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 

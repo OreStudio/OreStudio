@@ -46,9 +46,8 @@ public:
     explicit asset_class_service(context ctx)
         : ctx_(std::move(ctx)) {}
 
-    std::vector<messaging::asset_class_info> list_asset_classes(const std::string& coding_scheme = {},
-                                                             std::uint32_t offset = 0,
-                                                             std::uint32_t limit = 200);
+    std::vector<messaging::asset_class_info> list_asset_classes(
+        const std::string& coding_scheme = {}, std::uint32_t offset = 0, std::uint32_t limit = 200);
 
     std::uint32_t count_asset_classes(const std::string& coding_scheme = {});
 

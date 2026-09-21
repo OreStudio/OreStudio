@@ -54,9 +54,9 @@ public:
      * @param limit          Maximum number of rows to return.
      */
     std::vector<messaging::asset_class_info> read_latest(context ctx,
-                                                      const std::string& coding_scheme = {},
-                                                      std::uint32_t offset = 0,
-                                                      std::uint32_t limit = 200);
+                                                         const std::string& coding_scheme = {},
+                                                         std::uint32_t offset = 0,
+                                                         std::uint32_t limit = 200);
 
     std::uint32_t count_latest(context ctx, const std::string& coding_scheme = {});
 };

@@ -26,11 +26,11 @@ The shared web layer answers every point the review of PR #2127 raised, and the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | All five findings are answered; the PR is raised. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | CI green, then review.                 |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance

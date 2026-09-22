@@ -26,11 +26,11 @@ ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Reconnaissance is done and the plan is written. The conversion has not started. |
+| Now          | Nothing. The web half is its own task, [[id:__WEB_TASK__][Adopt the canonical protocol in the refdata web layer]]. |
 | Waiting on   | Nothing.                               |
-| Next          | Fix the models the canonical derivation no longer honours, then regenerate refdata. |
+| Next          | Nothing.                               |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -229,3 +229,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Refdata speaks the canonical protocol end to end, and the gaps the IAM
+pilot left for its successors are closed in codegen rather than worked
+around in the models.
+
+What the pilot left, and what this task did with it:
+
+- *The junction C++ stack* emitted the retired verbs. The repository gained
+  the precondition write and the remove that reports its outcome, the
+  service one method per derived operation, the handler the canonical
+  decode and reply, and the registrar one subscription per subject. The
+  entity branch was the reference throughout.
+- *The event cache* warmed through the retired bulk read and subscribed
+  with the retired traits. It now pages the canonical list to its end and
+  follows the three canonical event actions.
+- *The single write verb's interception hook* was retired by the handler
+  rewrite, and =party='s orchestration override needs it before
+  authentication. The generic handler renders the point again, guarded to
+  the =put= verb.
+- *The point-in-time read* was deleted outright. The two repository
+  overloads are back, the canonical list states the instant in =as_of=,
+  the service resolves it against the entity's own validity window, and
+  the four models that offer it declare the flag. The specification states
+  the read and its four consequences.
+
+Refdata itself: 79 models, and a regeneration of 926 files plus 72 shell
+command units, their tests and their recipes. The profiles refdata binds
+carry the shell facets, so the shell surface is generated and the
+hand-written country, currency, party and CRM commands are gone.
+
+Legacy removed: the model features the protocol retired, 696 dead
+presentation properties that named retired message types, the hand-written
+protocol umbrella, the stale names the doc template emitted, and the
+version-zero assertion the publish functions relied on.
+
+Verified: the whole tree builds; the codegen suite passes 569; the drift
+gate is clean with =iam= and =refdata= both under test; protocol twin
+coverage is 98 of 98 with no opt-out; model drift, handler permissions,
+populate references, the recipe inventory and the CMake source lists are
+clean; the web typechecks and its 36 tests pass; the database recreates
+from scratch; and the refdata suites pass 4 of 4.
+
+The web half is deliberately not here: the wire-protocol package carries a
+hand-written duplicate of the country protocol, and making that generated
+rather than hand-written is its own change. It is
+[[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]].

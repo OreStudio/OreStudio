@@ -114,10 +114,8 @@ void party_repository::write(context ctx,
 
 std::vector<domain::party> party_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<party_entity, domain::party>(
         ctx,
@@ -130,9 +128,8 @@ std::vector<domain::party> party_repository::read_latest(context ctx) {
 std::vector<domain::party> party_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<party_entity, domain::party>(
         ctx,
@@ -146,10 +143,8 @@ std::vector<domain::party> party_repository::read_latest_by_code(context ctx,
                                                                  const std::string& short_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<party_entity>> |
-        where("tenant_id"_c == tid && "short_code"_c == short_code && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("short_code"_c == short_code && "valid_to"_c == max.value());
 
     return execute_read_query<party_entity, domain::party>(
         ctx,
@@ -159,12 +154,25 @@ std::vector<domain::party> party_repository::read_latest_by_code(context ctx,
         "Reading latest party by short_code.");
 }
 
+std::vector<domain::party> party_repository::read_any_by_short_code(context ctx,
+                                                                    const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any party by short_code: " << short_code;
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("short_code"_c == short_code) | order_by("valid_from"_c.desc()) |
+                       sqlgen::limit(1);
+
+    return execute_read_query<party_entity, domain::party>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(),
+        "Reading any party by short_code.");
+}
+
 
 std::vector<domain::party> party_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. " << "id: " << id;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+    const auto query = sqlgen::read<std::vector<party_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<party_entity, domain::party>(
@@ -179,10 +187,8 @@ std::optional<domain::party>
 party_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party at version. " << "id: " << id
                                << " version: " << version;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
 
     const auto entities = execute_read_query<party_entity, domain::party>(
         ctx,
@@ -235,10 +241,9 @@ party_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t l
     BOOST_LOG_SEV(lg(), debug) << "Reading latest parties with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("id"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<party_entity, domain::party>(
         ctx,
@@ -256,10 +261,8 @@ std::uint32_t party_repository::get_total_party_count(context ctx) {
         long long count;
     };
 
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<party_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -274,9 +277,8 @@ std::vector<domain::party> party_repository::read_latest(context ctx,
     if (ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<party_entity, domain::party>(
         ctx,
         query,

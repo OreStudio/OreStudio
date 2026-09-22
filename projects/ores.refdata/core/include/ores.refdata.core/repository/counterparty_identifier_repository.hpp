@@ -112,6 +112,23 @@ public:
     std::vector<domain::counterparty_identifier> read_latest_by_code(
         context ctx, const std::string& counterparty_id, const std::string& id_scheme);
 
+    /**
+     * @brief Reads latest counterparty identifiers filtered by id_value.
+     */
+    std::vector<domain::counterparty_identifier>
+    read_latest_by_id_value(context ctx, const std::string& id_value);
+
+    /**
+     * @brief Reads the newest counterparty identifiers filtered by id_value, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::counterparty_identifier> read_any_by_id_value(context ctx,
+                                                                      const std::string& id_value);
+
 
     /**
      * @brief Reads all counterparty identifiers, possibly filtered by primary key.

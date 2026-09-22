@@ -106,6 +106,22 @@ public:
                                                         const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads latest business unit types filtered by code.
+     */
+    std::vector<domain::business_unit_type> read_latest_by_code(context ctx,
+                                                                const std::string& code);
+
+    /**
+     * @brief Reads the newest business unit types filtered by code, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::business_unit_type> read_any_by_code(context ctx, const std::string& code);
+
 
     /**
      * @brief Reads all business unit types, possibly filtered by primary key.

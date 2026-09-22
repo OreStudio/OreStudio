@@ -44,20 +44,22 @@ export const accountPartyFields: readonly FieldMeta[] = [
     {
         name: 'account_id',
         labelKey: 'account_party.fldAccountId',
-        control: 'line_edit',
+        control: 'dynamic_combo',
         required: true,
         isKey: true,
         readOnlyAfterCreate: true,
         nullable: false,
+        lookup: { collection: 'accounts', valueField: 'id', labelField: 'username' },
     },
     {
         name: 'party_id',
         labelKey: 'account_party.fldPartyId',
-        control: 'line_edit',
+        control: 'dynamic_combo',
         required: true,
         isKey: true,
         readOnlyAfterCreate: true,
         nullable: false,
+        lookup: { collection: 'parties', valueField: 'id', labelField: 'name' },
     }
 ];
 

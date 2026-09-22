@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 82FBA173-0DCC-4F07-94BF-A6836FE8632E
+:END:
+#+title: Assert the history field projection covers every member
+#+description: The generated render_<entity>_fields projection has no coverage check at all, so a field the projection template does not handle is silently absent from every diff; the one hand-written test that guarded this was deleted as a spot test.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:history:diff:tests:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the generator assert that the fields it renders for history cover
+every member of the entity it renders them for.
+
+=presentation_currency_history_field_mapper_tests.cpp= was the only test
+that checked this, and it did so by hand: it pinned
+=CHECK(fields.size() == 20)= against the domain struct's member count, with
+a comment dating the count. That caught the real failure — a member the
+projection template does not render never appears in any diff, so a change
+to that field is invisible in history — but it covered exactly one entity
+and it broke on every legitimate field addition.
+
+It was deleted because it was a spot test of generated code. The coverage
+it provided went with it.
+
+* Why
+
+A diff test generated from the same field list as the projection cannot
+detect a projection that omits a member: the test would omit it too. The
+member count is different. The generator knows both lists, so it can emit
+
+#+begin_src cpp
+CHECK(render_<entity>_fields(v).size() == <model member count>);
+#+end_src
+
+for every entity. The count comes from the model's field list and the
+rendered list comes from the projection template; when the template has no
+case for a member the two disagree and the assertion fails. That is not a
+tautology, and it holds for every entity at once rather than for one.
+
+* Notes
+
+- Reflection is not available on domain structs (=rfl::= appears in
+  =ores.diff= payloads but not in generated entity headers), so a generic
+  runtime check over members is not open to us yet. The count is the cheap
+  substitute and it catches the failure that matters.
+- The =ores.diff= engine tests stay. They cover the generic algorithm and
+  are not per entity.
+
+* See also
+
+- [[id:BF30A77D-3799-4DB1-8301-883AE9539F8F][ores.cpp.history-provider-registrar.history_provider_registrar_header]]
+- [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]

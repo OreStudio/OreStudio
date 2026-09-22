@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 2072F512-7694-4764-B980-5EE59A7BF458
+:END:
+#+title: PriorStates HFT trading system demo
+#+description: A public demo of a C++ low-latency trading system covering CME, BrokerTec and Tradeweb, with reference data and linear and ML model research; a reference point for ORE Studio's trading and research screens.
+#+type: capture
+#+level: cross
+#+filetags: :reference:trading:research:ui:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A public, browser-based demo of a C++ low-latency (HFT) trading system,
+at https://priorstates.com/demo/?tab=demo. Its author has extended it to
+cover CME, BrokerTec and Tradeweb. Besides live trading processes, the
+site shows reference data and a linear-model research process. It also
+supports other ML models: XGBoost, scikit-learn fitted models and
+PyTorch fitted models.
+
+* Why
+
+A working reference for how a trading system presents itself on the
+web: live processes, reference data and model research on one site.
+Look at it when designing ORE Studio's ores.web trading and research
+screens, and when deciding how model research (linear and ML) fits
+next to pricing and risk.
+
+Not reviewed yet. The capture records only what the author's post says.
+
+* References
+
+- Demo: https://priorstates.com/demo/?tab=demo
+- Source: a LinkedIn post by Zhendong Qin (C++ Low-Latency Trading
+  System Development), posted about 2026-09-19: "Expanding my HFT trading system
+  demo to cover CME, BrokerTec and Tradeweb. Besides live trading
+  processes, the site also provides reference data and shows
+  linear-model based research process. Other ML-based models are
+  supported too, e.g. XGBoost models, scikit-learn fitted models, and
+  pyTorch fitted models."
+
+
+* See also
+
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]: how ORE Studio presents trades today.

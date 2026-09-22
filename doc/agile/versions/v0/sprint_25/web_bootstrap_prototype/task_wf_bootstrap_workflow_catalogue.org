@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: DDCB8562-405D-4D16-8C82-0144CBAB3612
+:END:
+#+title: Task: Decide the bootstrap workflow catalogue
+#+description: [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: for system bootstrap, provision tenant (Empty operational or ACME demo), onboarding and provision party, what triggers each, in what order, and which screens carry them? Who may run each workflow is already decided in the seed profile contract. What does onboarding hold now that provisioning does the party setup? Blocked by: Decide the seed profile contract.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Agreed with the user on 2026-09-22.
+
+1. *Workflows* (server): system bootstrap (anyone, once), provision
+   tenant (system admin), provision party (tenant admin; also run by
+   provision tenant per party).
+2. *Onboard*: a person's first sign-in: new password
+   (=password_reset_required=), profile, default party. The
+   login-triggered tenant and party wizards go. A tenant still
+   /provisioning/ refuses sign-in with a clear message, so the
+   =tenant_bootstrap_mode= login flag goes from the contract.
+3. *Journeys*: a guided path over workflows and human steps.
+   - /First run/ = create system admin → new tenant steps → onboard
+     tenant admin → done.
+   - /New tenant/ = choose profile → tenant and admin details →
+     provisioning progress → handoff.
+   - /New party/ = party details (e.g. by LEI) → provisioning progress →
+     next steps.
+   Journeys are built from one library of steps. First run expands the
+   new tenant steps inline, so the user sees one flat step list, never
+   a journey inside a journey.
+4. *Handoff*: the web keeps the tenant admin's password in memory only
+   until the handoff. /Continue as tenant admin/ signs in automatically
+   and goes into onboarding, which forces a new password. /Hand off to
+   someone else/ signs out and shows the username.
+5. *Journey state is server-side*: a /journey/ entity in
+   =ores.workflow=, next to workflow instance: kind, current step,
+   subjects (tenant, party, workflow instance ids), actors who may
+   resume. A step is a /workflow step/ (start a workflow, wait for its
+   instance) or a /human step/ (wait for a named user action that the
+   owning service reports as an event, e.g. IAM sign-in or password
+   change). At sign-in a client asks for the active journey and resumes
+   it at the current step.
+6. *Shell runs journeys too*: =journey start first-run|new-tenant|new-party=,
+   =journey status= (current step, its inputs, the exact next command),
+   =journey next [--field value …]=, =journey abandon=. Each step
+   declares its inputs once; the web form and the shell flags come from
+   that definition. This lets LLM agents drive bootstrap through the
+   shell.
+7. *Pages*: Setup (the only page in bootstrap mode), Tenants (list with
+   state, new, retry, discard), Parties (same pattern), first sign-in.
+   Journeys walk through these pages; they are also the permanent
+   homes.
+8. *Codegen*: every new data type (journey, step, seed profile,
+   parameters) is generated with ores.codegen.

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: BC32C097-4A3A-4C33-9535-8FDC8955749F
+:END:
+#+title: Task: Scaffold story: Prototype ORE Studio bootstrap in ores.web
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr: 2125
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2125][#2125]] | [agile] Chart the ores.web bootstrap journeys |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Minor: file mode changes 644 to 755 | projects/ores.web/scripts/dev-stack.sh | Accept | The README runs it as scripts/dev-stack.sh, so it should be executable. |
+| 2 | Minor: NewPasswordField has no production caller yet | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | Shared by request; the journey screens are its first callers. The policy has its own tests. |
+| 3 | Minor: the confirmation is local state, so a parent that resets the password leaves it stale | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | No caller resets it today; remount the field if one does. |
+| 4 | Misspell check on the changed files | all changed files | Accept | Clean (exit 0). |
+| 5 | PR review: SignInPage hard-codes English; the signIn keys are unused | projects/ores.web/packages/web/src/pages/SignInPage.tsx | Decline | Older than this PR and affects every page; captured as "ores.web pages hard-code English instead of using translations". |
+| 6 | PR review: nav.iam indented one space too far in fr and pt | projects/ores.web/packages/web/src/i18n/locales/{fr,pt}.ts | Accept | Fixed. |
+
+Verdict: ready to merge. No critical or important findings.
+
+* Result
+
+Story scaffolded; the wayfinder map charted and worked to the end: two
+research tickets, the glossary, the seed profile contract, the workflow
+catalogue, and three journey prototypes, all DONE. The accepted
+prototypes are on the prototype/* branches; the branch keeps the shared
+password field and the dev-server host option.

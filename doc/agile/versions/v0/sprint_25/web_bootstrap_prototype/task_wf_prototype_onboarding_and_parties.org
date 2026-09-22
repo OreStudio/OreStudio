@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A
+:END:
+#+title: Task: Prototype the new party journey
+#+description: Web-idiomatic Parties page and new party journey.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: how should the Parties page (state, retry) and the new party journey (details by LEI, progress, next steps) look and behave on ores.web? Blocked by: nothing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Accepted by the user on 2026-09-22. Snapshot: branch
+=prototype/new-party-journey=; the route is =/refdata/party/new=.
+
+- *Same journey page* as the tenant journeys: Find the legal entity →
+  Describe the party → Review → Provisioning → Next steps.
+- *Find*: search GLEIF by name or LEI; results show country, LEI and
+  parent; "It has no LEI: add it by name" is the manual path.
+- *Describe*: a short name (from the legal name) and the *accounts
+  that work in it* -- the account-party association, now in the IAM
+  glossary. The tenant admin is ticked by default.
+- *No data choice*: counterparties are tenant-wide; a party's bundles
+  come from the tenant's seed profile. The Qt wizard's dataset-size
+  question is gone.
+- *Provisioning*: create, activate, publish essential data, link
+  accounts, complete; resume on failure as in the tenant journeys.
+- *Next steps*: switch to it, set up its books, add another party.
+
+Onboarding (first sign-in) is covered by the first run journey.

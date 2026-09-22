@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003
+:END:
+#+title: Task: Prototype the first run journey
+#+description: Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: how should the first run journey look and behave on ores.web: Setup page, flat step list, new tenant steps inline, handoff, onboarding? Blocked by: nothing. Build on the new tenant journey's variant A (stepper page); first run prepends Create system admin and appends onboarding.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Accepted by the user on 2026-09-22. Snapshot: branch
+=prototype/first-run-journey=; the route is =/setup=.
+
+- *Welcome*: the first screen of a new installation. Splash, "Welcome
+  to ORE Studio", one sentence, three unnumbered stage cards (create
+  the administrator, create the first tenant, sign in), *Get started*.
+- *One flat step rail*: Create the administrator → the new tenant
+  steps inline (starting point, describe, review, provisioning, hand
+  off) → First sign-in → Ready. Steps that change server state are
+  final: no going back past them.
+- *System administrator*: username defaults to =super_admin=, with the
+  shared =NewPasswordField=.
+- *Tenancy*: every deployment is multi-tenant; first run does not ask.
+- *ACME asks for nothing*, in first run and in the new tenant journey
+  alike: its details show as a summary behind *Change settings*; its
+  tenant admin reuses the calling super admin's password (the provision
+  request carries a flag, the server copies the hash); no forced
+  password change at first sign-in. Operational keeps the forced change.
+- *Journeys are data*: a journey is an ordered list of step definitions
+  rendered by one page; the new tenant steps are written once and
+  reused. The new party journey should be built the same way.
+
+Contract additions for the rework story: a "use caller's password"
+flag on provision tenant; =forcePasswordChange= and prefilled tenant
+details on the seed profile.

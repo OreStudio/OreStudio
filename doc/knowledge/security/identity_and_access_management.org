@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:security:iam:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-09-22
 
 /Identity and Access Management (IAM)/ is the security subsystem
 that governs who can do what in ORE Studio. It is realised by the
@@ -47,6 +47,46 @@ In essence, IAM centralises the policy framework and technical
 mechanisms that secure the system by guaranteeing the principle of
 least privilege: the right access for the right entity to the
 right resource.
+
+* Tenant lifecycle
+
+These terms name the stages that take ORE Studio from an empty
+database to a tenant that people use. Every client (ores.web,
+ores.shell, ores.qt) uses the same terms and runs the same server-side
+operation for each stage.
+
+- *System bootstrap*: the system goes from an empty database to a
+  usable state. It creates the system admin only. The system admin
+  then provisions every tenant, the first one included. While system
+  bootstrap is not complete, the system is in bootstrap mode and
+  nobody can log in. "System bootstrap" never means service startup.
+  For service startup, see [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]].
+- *Provision*: create an entity with the structure it needs to be
+  usable. A provisioned tenant has its admin, its reference data and
+  its parties. A provisioned party is active, onboarded and linked to
+  the accounts that use it. Provisioning runs on the server, and it
+  uses [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][internal actor impersonation]] to act as each party.
+- *Onboard*: a person's first use of a tenant or party that exists
+  already. Onboarding sets what the person needs to start work. It
+  does not create the tenant.
+- *Account-party association*: an account /works in/ a party when it is
+  associated with it. The association controls which parties the account
+  can act for: at sign-in, an account that works in more than one party
+  chooses one, and it can switch between them later. Provisioning a
+  party associates the accounts chosen for it.
+- *Journey*: a guided path that takes a person through workflows and
+  their own actions (sign-in, onboarding) in order. The journeys are
+  /first run/, /new tenant/ and /new party/. The server keeps the
+  journey's state, so any client can resume it where it stopped.
+- *Seed profile*: the data set that provisioning gives a new tenant.
+  The profile selects where the parties come from and which bundles
+  are published. The profiles are:
+  - /Empty operational/: a production tenant. It gets the base
+    reference data, a counterparty set and its own parties from a
+    GLEIF root LEI. It gets no test data.
+  - /ACME demo/: the Acme Corporation holding group, with its
+    parties, business units, books, staff and market data. All test
+    data lives in this profile.
 
 * See also
 

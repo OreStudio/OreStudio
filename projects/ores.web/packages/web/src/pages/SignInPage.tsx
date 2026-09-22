@@ -23,6 +23,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useSession } from '../session/SessionProvider.js';
 import { ApiFailure } from '../api/transport.js';
+import { PasswordInput } from '../ui/PasswordField.js';
 import { Button, Field, Input, Notice, Tag } from '../ui/Primitives.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
 
@@ -38,7 +39,6 @@ export function SignInPage(): ReactNode {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingParties, setPendingParties] = useState<readonly PartySummary[] | null>(null);
@@ -114,28 +114,16 @@ export function SignInPage(): ReactNode {
         </Field>
 
         <Field label="Password">
-          <div className="relative">
-            <Input
-              name="password"
-              type={reveal ? 'text' : 'password'}
-              value={password}
-              autoComplete="current-password"
-              className="pr-16"
-              required
-              onChange={(event) => {
-                setPassword(event.target.value);
-                setError(null);
-              }}
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 px-3 text-xs text-ink-faint hover:text-ink"
-              aria-pressed={reveal}
-              onClick={() => setReveal((value) => !value)}
-            >
-              {reveal ? 'Hide' : 'Show'}
-            </button>
-          </div>
+          <PasswordInput
+            name="password"
+            value={password}
+            autoComplete="current-password"
+            required
+            onChange={(event) => {
+              setPassword(event.target.value);
+              setError(null);
+            }}
+          />
         </Field>
 
         <Button

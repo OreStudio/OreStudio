@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 94C3AE99-8642-4418-982D-92C5FD805CCB
+:END:
+#+title: Task: Decide the seed profile contract
+#+description: [wayfinder:grilling] Shape the single server-side provision-tenant request.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: what is the single server-side provision tenant request and its seed profile shape (Empty operational, Synthetic, ACME demo), including progress events, so web and shell send the same thing? Blocked by: Inventory client-side provisioning orchestration; Define minimum data for an operational tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Agreed with the user on 2026-09-22.
+
+1. *Engine*: every bootstrap workflow is an =ores.workflow= definition.
+   A request returns an instance id straight away. Clients follow
+   progress through =workflow_instance_changed= events. Steps call the
+   real handlers through internal actor impersonation, never through
+   SQL shortcuts.
+2. *Workflows*: /System bootstrap/ creates the system admin only.
+   /Provision tenant/ creates every tenant, the first one included.
+   /Provision party/ (activate, onboard, membership, party bundles) is
+   its own workflow. Provision tenant runs it once per party, and an
+   admin can run it alone.
+3. *Seed profile*: registered data (rows, like DQ bundles) that orders
+   *step kinds* from a fixed catalogue in code: =publish_bundle=,
+   =import_lei_hierarchy=, =provision_party=, =load_staff=,
+   =attach_photos=, =start_market_feeds=. A new profile is data. A new
+   step kind is code. Keep it inflexible.
+   - /Empty operational/: =base=, a counterparty size, GLEIF root LEI
+     parties, =party_essentials= per party. No test data.
+   - /ACME demo/: a fully usable, realistic system with no parameters.
+     All test data lives here.
+4. *Parameters*: each profile declares a small schema (name, type,
+   default, required). The web builds its form from it. The shell takes
+   =--param key=value=.
+5. *New bundle*: =party_essentials= holds =ore.report_definitions= and
+   =crm_topology=. =risk_management= loses report definitions and
+   becomes ACME-only.
+6. *Failure*: steps are idempotent. A failed step stops the instance.
+   The tenant stays /provisioning/ and can be retried from that step.
+   /Discard tenant/ is a separate system-admin action.
+7. *Who runs what*: system bootstrap, anyone while in bootstrap mode.
+   Provision and discard tenant, the system admin. Provision party, the
+   tenant admin.
+8. *Clients*: ores.web and ores.shell are thin callers. The shell's
+   client-side orchestration is deleted. ores.qt is frozen as
+   reference.
+9. *Dropped*: the /Synthetic/ profile. The generator stays a shell
+   tool outside provisioning.

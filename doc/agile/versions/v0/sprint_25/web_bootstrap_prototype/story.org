@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8
+:END:
+#+title: Story: Prototype ORE Studio bootstrap in ores.web
+#+description: Revisit the ores.qt bootstrap wizards from first principles for ores.web, taking the ACME work into account.
+#+type: story
+#+level: s2
+#+filetags: :web:bootstrap:prototype:sprint_25:v0:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+This story is a wayfinder map: an index of decisions. Each decision
+lives in its task. Tasks carry a =[wayfinder:<type>]= tag. Each task
+names its blockers in its goal. The frontier is every BACKLOG task
+whose blockers are all DONE.
+
+** Destination
+
+A web-idiomatic screen spec plus a clickable ores.web prototype for
+the five bootstrap workflows: system bootstrap, operational tenant,
+demo (ACME) tenant, tenant onboarding and party provisioning. The
+screens use one server-side provisioning contract that ores.shell
+also uses. The tenant lifecycle terms are formalised in the IAM
+knowledge doc.
+
+** Notes
+
+- Screens are designed for the web, not cloned from ores.qt. Follow
+  [[file:../../../../../knowledge/ui/ui_design_principles.org][UI design principles]] and [[file:../../../../../knowledge/ui/ux_language.org][UX language]].
+- Every workflow runs server-side. Web, shell and Qt are thin callers
+  of the same request. Build on [[file:../../../../../knowledge/architecture/internal_actor_impersonation.org][internal actor impersonation]], as
+  the Acme provisioning does. No SQL shortcuts.
+- Seed profile, not source: profiles are data, not code branches.
+- Every new data type is generated with ores.codegen.
+- Grilling tasks: use the grilling and domain-modeling skills.
+  Research tasks: use the research skill.
+- Legacy reference: ores.qt SystemProvisionerWizard,
+  TenantProvisioningWizard, PartyProvisioningWizard and
+  TenantOnboardingWizard; ores.shell =provision tenant=.
+
+** Not yet specified
+
+- Re-provisioning or extending an existing tenant.
+
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | An implementation story for the server-side provisioning rework and the journey screens. |
+| Last touched  | 2026-09-22                               |
+
+* Acceptance
+
+- Every wayfinder task is DONE or ruled out of scope.
+- The screen spec and prototype cover all five workflows.
+- The server-side provisioning contract is decided and shared by web
+  and shell.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | DONE | 2026-09-22 | 2026-09-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
+| [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
+| [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
+| [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
+| [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding. |
+| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff. |
+| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic Parties page and new party journey. |
+
+* Decisions
+
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]]: every workflow is an =ores.workflow=
+  instance; system bootstrap makes the admin only; profiles are data
+  over a fixed step-kind catalogue; two profiles (Empty operational,
+  ACME demo); new =party_essentials= bundle; resume on failure; who
+  runs what is fixed.
+- [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]]: three workflows, three
+  journeys (first run, new tenant, new party) built from shared steps,
+  journey state in =ores.workflow=, journeys in web and shell,
+  onboarding is first sign-in only, automatic handoff sign-in.
+- [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]]: variant A, a stepper page with a
+  flat step rail; profiles may prefill tenant details (ACME does); a
+  shared password field for the whole app.
+- Every deployment is multi-tenant; "single-tenant" is just one tenant.
+  First run does not ask.
+- ACME's tenant admin reuses the creating super admin's password: the
+  provision request carries a flag and the server copies the hash, so
+  every journey behaves the same and asks for nothing. ACME forces no
+  password change at first sign-in (a profile flag); Operational does.
+  ACME's details stay hidden behind "Change settings".
+- [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]]: welcome screen, then one flat step
+  rail from super admin to first sign-in; ACME asks for nothing in any
+  journey; journeys are ordered step definitions rendered by one page.
+- [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]]: same journey page; find by LEI,
+  name it, choose the accounts that work in it; no data choice, since
+  bundles follow the tenant's seed profile.
+- [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
+  Onboard and Seed profile are defined in the IAM knowledge doc's
+  Tenant lifecycle section.
+- Contract only: this map decides the server-side contract. Building
+  the rework is a later story.
+- System bootstrap is open to any caller for now.
+- [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]]: GLEIF/synthetic
+  tenant and party provisioning run client-side in shell and Qt; only
+  Acme runs server-side, and its code must become profile data to host
+  the others. Progress is not streamed yet.
+- [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]]: =base= bundle plus a
+  counterparty size plus activated, onboarded parties. The party bundle
+  plan seeds test and synthetic data, so it is demo-only.
+
+* Out of scope
+
+- ORE data import: day-to-day data loading, not bootstrap. Bundle
+  publish of essential data (e.g. counterparties) stays in scope.
+- Building the server-side provisioning rework: a later story.
+- The Synthetic seed profile: dropped; ACME holds all test data.
+- How ores.web receives workflow progress events: an implementation
+  detail of the rework story, not a screen decision.
+- Localhost-only access until system bootstrap completes: a future
+  hardening.
+
+* Result
+
+The map reached its destination. The screen spec lives in the three
+prototype tasks' Results; the contract in the seed profile and workflow
+catalogue tasks. The accepted prototypes are on the branches
+=prototype/new-tenant-journey=, =prototype/first-run-journey= and
+=prototype/new-party-journey=. Merged from this story: the tenant
+lifecycle glossary, the shared password field, and the dev server host
+option. Re-provisioning an existing tenant is still unspecified.

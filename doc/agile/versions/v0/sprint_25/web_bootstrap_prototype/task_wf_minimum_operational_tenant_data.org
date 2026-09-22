@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 51075CB4-C21B-4D3E-84D9-708D49DCBD41
+:END:
+#+title: Task: Define minimum data for an operational tenant
+#+description: [wayfinder:research] Derive the minimum bundle set an operational tenant needs.
+#+type: task
+#+level: s1
+#+filetags: :web_bootstrap_prototype:sprint_25:v0:
+#+owner: marco
+#+branch: feature/web-bootstrap-prototype
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: what is the minimum data (counterparties, bundles from party_provisioning_bundle_plan, settings) a production tenant needs to be usable, as evidenced by the Acme spec and the bundle plan? Blocked by: nothing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Answer: an operational tenant needs the mandatory members of the =base=
+bundle, one counterparty dataset, and its own parties. The current party
+bundle plan is *not* a minimum. It seeds test data and synthetic market
+data, so an operational profile cannot reuse it unchanged.
+
+** Required: the =base= bundle (tenant-wide)
+
+Source: =projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql=
+lines 38-100.
+
+- Geography and currency: =assets.country_flags=, =geo.ip2country=,
+  =iso.countries=, =iso.currencies=, =refdata.currency_pairs= and
+  conventions, calendars, currency calendars, currency countries.
+- FpML code lists: 21 =fpml.*= datasets, including
+  =fpml.business_center=. Party import needs that list (see the Acme
+  handler, step 1 comment).
+- GLEIF: =gleif.lei_entities.small= and =gleif.lei_relationships.small=.
+- Badges: =ore.badge_severities=, =ore.badge_definitions=,
+  =ore.code_domains=, =ore.badge_mappings=.
+
+** Required choice: counterparties (optional members of =base=)
+
+=gleif.lei_counterparties.small= or =.large= and =gleif.lei_parties.small= or
+=.large= are marked optional (=true=). They load only through
+=opted_in_datasets=. The shell and Acme both opt in to
+=lei_counterparties.small= (about 13k rows). Party provisioning offers
+=--dataset-size small|large=. This is the "essential published data"
+the destination keeps in scope.
+
+** Required: the tenant's own parties
+
+At least one active, onboarded party the tenant admin belongs to. The
+parties come from the source: a GLEIF root LEI hierarchy, synthetic
+generation, or the Acme LEI import. Per party: activate
+(=save_party=), =complete_party_onboarding=, account-party membership.
+If a step is missed, the party is inactive or the onboarding wizard
+opens again on every login (Acme story: task "Fix remaining --source
+acme provisioning gaps").
+
+** Not minimal: the party bundle plan
+
+Source: =projects/ores.dq/api/include/ores.dq.api/messaging/party_provisioning_plan.hpp:65=.
+
+| Bundle | Content | Operational? |
+|--------+---------+--------------|
+| =risk_management= | =testdata.business_units=, =testdata.portfolios=, =testdata.books=, =ore.report_definitions= | No: test data. Only report definitions are general. |
+| =synthetic_realistic_2026= | Synthetic market data config | Demo only |
+| =synthetic_ore_samples_2016= | Synthetic market data config | Demo only |
+| =marketdata.reference_vintage_2026_05_05= | FX driver rates | Demo only (fixed vintage) |
+| =crm_topology= | CRM Cross-Rates Matrix topology | Probably general. Confirm in the contract ticket. |
+
+** Consequence for the seed profile contract
+
+- *Empty operational*: =base= + chosen counterparty size + GLEIF root
+  LEI parties + per-party activation/onboarding/membership. Per-party
+  bundles: only the general ones (report definitions, CRM topology),
+  which need a new non-test bundle.
+- *Synthetic* and *ACME demo*: add the current party bundle plan and
+  the profile extras.
+- The bundle plan becomes profile data, not one hard-coded list.
+
+Open for the contract ticket: split =ore.report_definitions= out of
+=risk_management=, and decide if =crm_topology= belongs to every
+profile.

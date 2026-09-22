@@ -402,18 +402,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     return sessionResponse(activated);
   });
 
-  server.get('/api/accounts', async (request) => {
-    const session = requireSession(request);
-    const query = request.query as Record<string, string | undefined>;
-    const input = listAccountsRequestSchema.parse({
-      offset: query['offset'] === undefined ? undefined : Number(query['offset']),
-      limit: query['limit'] === undefined ? undefined : Number(query['limit']),
-    });
-
-    const page = await session.client.listAccounts(input);
-    return { accounts: page.accounts, totalCount: page.totalCount };
-  });
-
   /**
    * The entities whose screens their models declare, registered from their
    * generated route descriptors.

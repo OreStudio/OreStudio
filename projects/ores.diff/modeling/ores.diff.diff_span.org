@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 3F2A7C41-8D6E-4B95-A1C3-7E5D9B2F4A68
+:END:
+#+title: ores.diff.diff_span
+#+description: Codegen entity model for the diff engine's byte span: a table-less value record that crosses the wire.
+#+type: ores.codegen.entity
+#+component: diff
+#+filetags: :model:entity:diff:
+#+brief: The byte range within a value that changed.
+#+entity_singular: diff_span
+#+entity_plural: diff_spans
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+A byte range within a rendered value. It is never stored: it is a member of a
+diff entry and reaches a client inside a history response.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: diff
+:subcomponent:
+:profile:   table-less-record
+:END:
+
+* Columns
+
+** offset
+:PROPERTIES:
+:type:         integer
+:cpp_type:     std::size_t
+:primary_key:  true
+:END:
+
+Where the changed run begins.
+
+** length
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::size_t
+:END:
+
+How many bytes it covers.

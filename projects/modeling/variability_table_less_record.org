@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 60D7964C-49DB-485B-B4FF-D0DA68B2E7FA
+:END:
+#+title: Profile: Table-less record
+#+description: A record that crosses the wire and is never stored: the domain type and its TypeScript twin, and nothing else.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Some records cross the wire without ever being stored. A diff engine's rendered
+field, a byte span, a change entry, and the result holding those entries: each
+is a member of a response and nothing else, so it has no table, no repository,
+no service, no handler, no subject and no screen. Before this profile they could
+not be modelled at all, and their C++ and TypeScript twins were both written by
+hand -- which is how a =std::size_t= came to project as a TypeScript type named
+=Size_t=, and how the two twins could drift with nothing to check them.
+
+Four records need the same combination, which is what makes it a profile rather
+than a local choice.
+
+* Reference entity
+
+=diff_span= -- the smallest of the four, and the shape the others compose: two
+byte offsets, no key, no table, no behaviour.
+
+* Assignments
+
+A table-less record is not an entity: it has no tenant, no workspace, no
+manufactured key and nothing to page or annotate. Any feature not listed is left
+to the model's own choice, and a model bound to this profile declares only its
+members.
+
+| Feature | Value |
+|---------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | false |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
+| [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
+| [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
+| [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
+| [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | false |
+| [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | false |
+
+* Physical space
+
+One row per address this profile fixes admission for. A record with no table has
+no SQL, no repository, no service, no handler, no protocol, no subject, no screen
+and no trigger, so the root row disables everything and two facets are let back
+in.
+
+The six explicit disables are not decoration. Admission is resolved in two
+steps, and the first one is not re-opened by the second: =compute_supported_set=
+asks whether the *facet* is enabled and drops the whole facet when it is not,
+before any archetype is considered. So a root disable plus
+=ores.cpp.domain.class_header= enabled yields nothing at all -- the facet was
+already dropped, and the more specific override is never consulted. The facet
+must be enabled, and the archetypes it brings that this profile does not want
+named individually.
+
+| Address | Enabled |
+|------------------------------------+---------|
+| =ores= | false |
+| =ores.cpp.domain= | true |
+| =ores.cpp.domain.json_io_header= | false |
+| =ores.cpp.domain.json_io_impl= | false |
+| =ores.cpp.domain.table_header= | false |
+| =ores.cpp.domain.table_impl= | false |
+| =ores.cpp.domain.table_io_header= | false |
+| =ores.cpp.domain.table_io_impl= | false |
+| =ores.ts.domain= | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

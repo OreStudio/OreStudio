@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/account_contact_informations/account_contact_information.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-account_contact_informations version 00000000-0000-0000-0000-000000000000 --version 1
+account_contact_informations version __none__ --version 1

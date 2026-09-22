@@ -85,7 +85,7 @@ Component: =ores.web= (the browser interface).
 
 TypeScript implements the web interface. Most of the component is authored
 by hand: the BFF that holds the NATS connection and the session, the browser
-client, and the wire-protocol plumbing. Two families are generated instead,
+client, and the wire-protocol plumbing. Four families are generated instead,
 from the same org entity models that drive the C++ facets, so the two
 projections cannot drift:
 
@@ -93,6 +93,18 @@ projections cannot drift:
 |-------+--------|
 | =ores.ts.ui= | =packages/web/src/generated/{component}/ui/{entity}_ui.ts= |
 | =ores.ts.protocol= | =packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts= |
+| =ores.ts.domain= | =packages/wire-protocol/src/generated/{component}/domain/{entity}.ts= |
+| =ores.ts.web= | =packages/bff/src/generated/{component}/{entity}_route.ts= and =packages/web/src/generated/{component}/web/{entity}_declaration.ts= |
+
+The =ores.ts.web= family is the screen set: a route descriptor the BFF's
+generic factory turns into the entity's canonical routes, and a declaration
+the browser's generic screens read for the route, the columns and the
+capabilities. It is opted into one entity at a time with
+=:ores.ts.web.enabled: true= in the model's property drawer, because a
+descriptor whose request shapes the entity's protocol does not derive is
+worse than no descriptor. An entity that declares a flag also states its
+image, so the shared screen renders the picker and the save carries the
+image the person chose.
 
 The generated tree is committed and covered by the codegen drift gate. A
 hand-written =packages/web/src/ui-contract.ts= holds the types both the

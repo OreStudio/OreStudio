@@ -28,18 +28,16 @@ import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage, PlannedPage } from './components/pages/HomePage.js';
 import { ComponentPage } from './components/pages/ComponentPage.js';
-import { COMPONENTS, PLATFORM_COMPONENTS, iamComponent } from './components/registry.js';
+import { COMPONENTS, PLATFORM_COMPONENTS, iamComponent, refdataComponent } from './components/registry.js';
 import { humanise } from './components/labels.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
 import { AccountsPage } from './pages/AccountsPage.js';
-import { CountryListPage } from './components/refdata/entities/country/CountryListPage.js';
-import { CountryDetailPage } from './components/refdata/entities/country/CountryDetailPage.js';
-import { CountryHistoryPage } from './components/refdata/entities/country/CountryHistoryPage.js';
 import { entityRoutes } from './entity/entityRoutes.js';
 import { tenantTypeDescriptor } from './generated/iam/web/tenant_type_declaration.js';
+import { countryDescriptor } from './generated/refdata/web/country_declaration.js';
 import './styles.css';
 
 /**
@@ -112,11 +110,6 @@ function App(): ReactNode {
           <Route path="/" element={<HomePage />} />
           <Route path="/iam/account" element={<AccountsPage />} />
 
-          {/* The first entity on the shared machinery. Every other entity will
-              look exactly like this: a list page and a detail page, both thin.
-              The identity is the natural key, so :id is the alpha-2 code. */}
-          <Route path="/refdata/country" element={<CountryListPage />} />
-
           {/* A landing page per component, with its tasks and its entities. */}
           {COMPONENTS.map((component) => (
             <Route
@@ -136,23 +129,13 @@ function App(): ReactNode {
           {plannedRoutes()}
 
           {/*
-            Entity detail routes. React Router 8 does not support a regular
-            expression in a path, so an unknown code is handled by the screen
-            rather than excluded by the route: a record that is not found says so,
-            which is better than a route that matches nothing and shows nothing.
-          */}
-          <Route path="/refdata/country/new" element={<CountryDetailPage mode="create" />} />
-          <Route path="/refdata/country/:id" element={<CountryDetailPage mode="read" />} />
-          <Route path="/refdata/country/:id/edit" element={<CountryDetailPage mode="edit" />} />
-          <Route path="/refdata/country/:id/history" element={<CountryHistoryPage />} />
-
-          {/*
             An entity on the shared machinery is one declaration and one line
             here. The factory reads the declaration: the paths, the screens and
             which of the five routes exist are all derived, so adding an entity is
             a model change rather than five more routes.
           */}
           {entityRoutes(tenantTypeDescriptor, iamComponent.path)}
+          {entityRoutes(countryDescriptor, refdataComponent.path)}
         </Route>
       ) : (
         <>

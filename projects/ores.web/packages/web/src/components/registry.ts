@@ -45,12 +45,7 @@ import { accountContactInformationDescriptor } from '../generated/iam/web/accoun
 import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
 import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
-import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
-import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
-import { accountDescriptor } from '../generated/iam/web/account_declaration.js';
-import { sessionDescriptor } from '../generated/iam/web/session_declaration.js';
-import { accountPartyDescriptor } from '../generated/iam/web/account_party_declaration.js';
-import { loginInfoDescriptor } from '../generated/iam/web/login_info_declaration.js';
+import { countryDescriptor } from '../generated/refdata/web/country_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -119,17 +114,13 @@ export const iamComponent: ComponentDefinition = {
   icon: 'peopleTeam',
   path: 'iam',
   entities: [
-    wired(accountDescriptor, 'account', 'personAccounts'),
-    wired(roleDescriptor, 'role', 'keyMultiple'),
+    entity('account', 'personAccounts'),
+    entity('role', 'keyMultiple', planned),
     wired(accountContactInformationDescriptor, 'accountContactInformation', 'peopleTeam'),
     wired(accountTypeDescriptor, 'accountType', 'settings'),
     wired(tenantDescriptor, 'tenant', 'buildingSkyscraper'),
     wired(tenantStatusDescriptor, 'tenantStatus', 'clock'),
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
-    wired(permissionDescriptor, 'permission', 'keyMultiple'),
-    wired(loginInfoDescriptor, 'loginInfo', 'lockClosed'),
-    wired(sessionDescriptor, 'session', 'plugConnected'),
-    wired(accountPartyDescriptor, 'accountParty', 'handshake'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [
@@ -169,7 +160,7 @@ export const refdataComponent: ComponentDefinition = {
     entity('party', 'handshake', planned),
     entity('counterparty', 'buildingBank', planned),
     entity('currency', 'currencyDollarEuro', planned),
-    entity('country', 'flag'),
+    wired(countryDescriptor, 'country', 'flag'),
     entity('calendar', 'calendarClock', planned),
     entity('currencyPair', 'arrowSync', planned),
     entity('dayCountFractionType', 'clock', planned),

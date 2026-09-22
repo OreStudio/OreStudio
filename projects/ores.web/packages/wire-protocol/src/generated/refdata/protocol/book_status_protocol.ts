@@ -78,6 +78,7 @@ export interface ListBookStatusesRequest {
     offset: number;
     limit: number;
     order: Order;
+    as_of: string | null;
 }
 
 export interface ListBookStatusesResponse {

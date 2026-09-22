@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: E6BF27D5-879E-46D7-A225-F25ABF2CF012
+:END:
+#+title: Document the mechanisms that only exist in the code
+#+description: Two generated and testing mechanisms work but appear nowhere in the knowledge base — the per-entity JSON stream operator, and the test logging switches. Both were only discoverable by reading source.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:codegen:testing:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Write down two mechanisms that work correctly today but are not described
+anywhere in =doc/knowledge=. Both were found by reading source, which is the
+signal that the documentation has a gap.
+
+**The per-entity JSON stream operator.** Every generated domain entity and
+every junction gets an =operator<<= that writes compact JSON. It is
+generated from =ores.cpp.domain.json_io_header.org= and
+=ores.cpp.domain.json_io_impl.org=, tangled to
+=cpp_domain_type_json_io.{hpp,cpp}.mustache= and emitted to
+=include/{component}/domain/<entity>_json_io.hpp= and
+=src/domain/<entity>_json_io.cpp=. The implementation is the same line
+everywhere:
+
+#+begin_src cpp
+std::ostream& operator<<(std::ostream& s, const tenant& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+#+end_src
+
+=rfl::json::write= is the compact writer; =rfl::json::pretty= is the
+indented one and appears nowhere in the tree. That is why test logs carry
+one-line JSON objects.
+
+**The test logging switches.** =projects/ores.testing/src/logging_listener.cpp=
+reads four environment variables:
+
+| variable | default | meaning |
+|-----------------------------+---------+-------------------------------|
+| =ORES_TEST_LOG_ENABLED= | false | master switch |
+| =ORES_TEST_LOG_LEVEL= | trace | level written to the file |
+| =ORES_TEST_LOG_CONSOLE= | false | also write to the console |
+| =ORES_TEST_LOG_DATABASE= | false | also write to the database |
+
+Logs land at =<cwd>/../log/<module>/<suite>/<test_case>.log=. The ctest
+working directory is =publish/bin=, so under the =linux-clang-debug-make=
+tree they collect in
+=build/output/linux-clang-debug-make/publish/log/<module>/<suite>/<test_case>.log=.
+
+* Why
+
+Both are load-bearing and neither is discoverable.
+
+The logging switches especially: with logging off by default, a failing
+test leaves nothing to inspect, and the natural conclusion is that the logs
+are broken rather than switched off. There is also a trap worth recording —
+=compass test logging on= sets =ORES_TEST_LOG_ENABLED=true= in =.env=, and
+=.env= is a CMake configure dependency, so the change has no effect until a
+rebuild. Without that written down, the switch looks like it does nothing.
+
+The stream operator matters because tests and diagnostics depend on it, and
+because "does every entity have one?" is a question someone will ask and
+have to answer by counting files.
+
+* Notes
+
+- The stream operator coverage is complete. Counted across the tree, every
+  entity that has a =table_io= header also has a =json_io= one; the types
+  that have =json_io= without =table_io= are non-entity types (=image=,
+  =tag=, =fsm_state=, =workflow_instance= and similar).
+- Where to put the logging page: the suggestion was =ores.testing=, since
+  that is the component that owns the listener.
+- This is a documentation task, not a code change.
+
+* See also
+
+- =projects/ores.testing/src/logging_listener.cpp=
+- =projects/ores.codegen/library/templates/ores.cpp.domain.json_io_impl.org=

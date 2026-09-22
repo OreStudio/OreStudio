@@ -175,6 +175,8 @@ currency_pair_convention_calendar_repository::read_latest(const std::string& pai
                                << "/" << calendar_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto pair_code_str = pair_code;
+    const auto calendar_code_str = calendar_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_convention_calendar_entity>> |
                        where("tenant_id"_c == tid && "pair_code"_c == pair_code &&
@@ -374,6 +376,8 @@ currency_pair_convention_calendar_repository::remove(const std::string& pair_cod
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto pair_code_str = pair_code;
+    const auto calendar_code_str = calendar_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<currency_pair_convention_calendar_entity> |
                        where("tenant_id"_c == tid && "pair_code"_c == pair_code &&

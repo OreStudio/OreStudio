@@ -91,6 +91,8 @@ tenor_convention_resolution_repository::read_latest(const std::string& conventio
                                << "/" << tenor_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto convention_code_str = convention_code;
+    const auto tenor_code_str = tenor_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
                        where("tenant_id"_c == tid && "convention_code"_c == convention_code &&

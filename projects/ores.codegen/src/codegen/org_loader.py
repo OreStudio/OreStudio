@@ -1935,6 +1935,15 @@ def _fk_side_from_section(node: OrgNode) -> dict[str, Any]:
         out["detail"] = detail
     if "generator" in node.src_blocks:
         out["generator_expr"] = node.src_blocks["generator"]
+    # A junction stores its key columns in the entity's own types, which are
+    # not the domain's: a uuid and a date are both text in the table. The
+    # templates branch on these flags to state the conversion once, so a
+    # query compares the column's type and a caller passes the domain's.
+    cpp_type = str(out.get("cpp_type", ""))
+    out["is_uuid"] = cpp_type == "boost::uuids::uuid"
+    out["is_date"] = cpp_type == "std::chrono::year_month_day"
+    out["is_timestamp"] = cpp_type == "std::chrono::system_clock::time_point"
+    out["query_needs_str"] = out["is_uuid"] or out["is_date"] or out["is_timestamp"]
     return out
 
 
@@ -3262,6 +3271,9 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             # column's own type.
             "leading_is_uuid": "boost::uuids::uuid" in leading_type,
             "leading_is_timestamp": "time_point" in leading_type,
+            # A relation the column admits as null is optional on the wire, so
+            # a scoped read has to say what it does when the request omits it.
+            "leading_is_optional": "optional" in leading_type,
             # A write is an operation that changes state, and the permission
             # it needs is the one the resource already names for that kind of
             # change. A read needs authentication alone, so it names none.

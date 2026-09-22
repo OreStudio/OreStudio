@@ -25,6 +25,7 @@
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/party_currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_currency_entity.hpp"
 #include "ores.refdata.core/repository/party_currency_mapper.hpp"
@@ -160,6 +161,7 @@ party_currency_repository::read_latest(const boost::uuids::uuid& party_id,
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto currency_iso_code_str = currency_iso_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<party_currency_entity>> |
@@ -337,6 +339,7 @@ party_currency_repository::remove(const boost::uuids::uuid& party_id,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto currency_iso_code_str = currency_iso_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_currency_entity> |
                        where("tenant_id"_c == tid && "party_id"_c == party_id_str &&

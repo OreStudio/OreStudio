@@ -78,7 +78,7 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "save_party";
             s.description = "Create party record in the reference data service.";
-            s.command_subject = "refdata.v1.parties.save";
+            s.command_subject = "refdata.v1.parties.put";
             s.compensation_subject = "refdata.v1.parties.delete";
 
             s.build_command = [](const std::string& request_json,
@@ -88,30 +88,36 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                     return "{}";
                 const auto& r = *wr;
 
-                ores::refdata::domain::party p;
-                p.id = boost::lexical_cast<boost::uuids::uuid>(r.party_id);
-                p.full_name = r.full_name;
-                p.short_code = r.short_code;
-                p.party_category = r.party_category;
-                p.party_type = r.party_type;
-                p.business_center_code = r.business_center_code;
+                // The write record carries the fields the caller owns: the
+                // audit provenance and the validity window are the server's,
+                // and the default precondition refuses a row that exists.
+                ores::refdata::messaging::party_write w;
+                w.id = boost::lexical_cast<boost::uuids::uuid>(r.party_id);
+                w.full_name = r.full_name;
+                w.short_code = r.short_code;
+                w.party_category = r.party_category;
+                w.party_type = r.party_type;
+                w.business_center_code = r.business_center_code;
                 if (r.parent_party_id)
-                    p.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(*r.parent_party_id);
-                p.status = r.status;
-                p.change_commentary = "Provisioned by workflow";
-                p.recorded_at = std::chrono::system_clock::now();
+                    w.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(*r.parent_party_id);
+                w.status = r.status;
 
-                return rfl::json::write(
-                    ores::refdata::messaging::save_party_request{.data = std::move(p)});
+                return rfl::json::write(ores::refdata::messaging::put_party_request{
+                    .change = {.write = std::move(w),
+                               .precondition = ores::utility::domain::precondition{}},
+                    .intent = {.reason_code = "workflow",
+                               .commentary = "Provisioned by workflow"}});
             };
 
             s.build_compensation = [](const std::string& cmd_json,
                                       const std::string&) -> std::string {
-                auto cr = rfl::json::read<ores::refdata::messaging::save_party_request>(cmd_json);
+                auto cr = rfl::json::read<ores::refdata::messaging::put_party_request>(cmd_json);
                 if (!cr)
                     return "{}";
                 return rfl::json::write(ores::refdata::messaging::delete_party_request{
-                    .ids = {boost::uuids::to_string(cr->data.id)}});
+                    .removal = {.key = {.id = cr->change.write.id}},
+                    .intent = {.reason_code = "workflow",
+                               .commentary = "Compensating a failed provisioning"}});
             };
 
             steps.push_back(std::move(s));

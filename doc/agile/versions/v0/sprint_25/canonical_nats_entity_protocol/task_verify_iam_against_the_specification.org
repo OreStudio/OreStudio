@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/verify-iam-against-the-specification
-#+pr:
+#+pr: 2126
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-21
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2126][#2126]] | [iam,web] Verify IAM against the canonical entity protocol |
 
 * Review
 

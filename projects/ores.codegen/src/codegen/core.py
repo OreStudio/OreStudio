@@ -2042,6 +2042,9 @@ def web_declaration_projection(entity, model_path):
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
     messages = entity.get('messages') or []
+    key_record = _protocol_message(messages, f'{entity_singular}_key')
+    key_field_names = [field['name']
+                       for field in (key_record or {}).get('fields') or []]
     can_write = bool(_protocol_subject_key(
         messages, f'put_{entity_singular}_request'))
     can_delete = bool(_protocol_subject_key(
@@ -2064,6 +2067,12 @@ def web_declaration_projection(entity, model_path):
         'can_remove': _ui_bool(can_delete and not read_only),
         'can_history': _ui_bool(can_read_history),
         'key_field': key_field,
+        # The key's members, in the order the model declares them. The screens
+        # address a record by all of them: a path carries one value per member,
+        # and a junction's key is the pair it links, so naming one field would
+        # address half a row.
+        'key_fields_block': '\n'.join(
+            f"        '{name}'," for name in key_field_names) + ('\n' if key_field_names else ''),
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
         # The members a write record states. The form builds the record it
@@ -2196,21 +2205,24 @@ def bff_route_projection(entity, model_path):
     subjects_history = _protocol_subject_key(
         messages, f'list_{singular}_versions_request')
 
-    natural_key = presentation.get('key_field', '')
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # A removal carries the entity's whole key as a record, never a flattened
-    # string, so the route states it only when one path segment can fill it.
-    # That is now the only condition: the key record is the key the model
-    # declares, which is the one the path segment carries, so the request and
-    # the address agree and nothing has to be translated between them.
+    # A route's address is its path, and a path segment carries one value. A
+    # key with more than one member is therefore addressed by that many
+    # segments, and the descriptor states every member so the factory can build
+    # the record from them. A junction's key is the pair it links, which is the
+    # case that needs this: stating one member would address half a row.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    delete_keys_field = key_members[0] if len(key_members) == 1 else ''
-    has_remove = bool(delete_keys_field) and bool(subjects_remove)
-    has_history = bool(history_response) and bool(subjects_history)
+    has_key = bool(key_members)
+    has_remove = has_key and bool(subjects_remove)
+    # The generic history request names one id, so it addresses a key with one
+    # member and cannot state one with more: the specification forbids sending
+    # half a key, and a pair joined into a string addresses no row.
+    has_history = (len(key_members) == 1 and bool(history_response)
+                   and bool(subjects_history))
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members
@@ -2233,21 +2245,11 @@ def bff_route_projection(entity, model_path):
         'entity': singular,
         'entity_camel': _ui_camel(singular),
         'collection': presentation.get('collection_name', ''),
-        'key': 'id',
-        'key_field': natural_key,
-        'row_field': singular,
-        'write_fields_block': ', '.join(
-            f"'{field}'" for field in write_fields),
-        'write_defaults_block': _write_defaults_block(entity),
-        'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
-        'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
-        'list_has_as_of': _ui_bool('as_of' in list_members),
-        'list_has_filter': _ui_bool('filter' in list_members),
-        'versions_has_filter': _ui_bool('filter' in versions_members),
+        'key_fields_block': ', '.join(f"'{name}'" for name in key_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
-        'has_get': _ui_bool(has_get),
+        'has_get': _ui_bool(bool(subjects_get) and has_key),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
     }
@@ -5195,6 +5197,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The derivation needs the enriched junction (sides, columns, stamped
         # ts_type), so it runs here rather than in the loader.
         junction['messages'] = junction_protocol_messages(junction)
+        # The record a caller sends, on the shape rather than on the junction
+        # dict: a junction states its fields as two sides, and the key the
+        # record carries is both of them. The screen builders read this, so it
+        # is derived here and not only where the shell commands are rendered.
+        junction['write_fields'] = write_record_for(
+            junction_entity_shape(junction))
         # The same list as operations, exactly as a domain entity states it:
         # a junction addresses the same verbs and its handler is the same
         # adapter, so the two are projected from one derivation.

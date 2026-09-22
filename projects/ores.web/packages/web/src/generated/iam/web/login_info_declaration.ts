@@ -38,7 +38,9 @@ export const loginInfoDescriptor: EntityDescriptor = {
     meta: loginInfoMeta,
     routeSegment: 'login-info',
     apiBase: '/api/login_info',
-    keyParam: 'id',
+    keyFields: [
+        'account_id',
+    ],
     capabilities: {
         create: false,
         edit: false,

@@ -36,8 +36,7 @@ export const roleRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'role',
   collection: 'roles',
-  key: 'id',
-  keyField: 'name',
+  keyFields: ['name'],
   subjects: {
     list: subjects.list_roles_request,
     get: subjects.get_role_request,

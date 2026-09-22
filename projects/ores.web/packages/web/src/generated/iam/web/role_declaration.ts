@@ -38,7 +38,9 @@ export const roleDescriptor: EntityDescriptor = {
     meta: roleMeta,
     routeSegment: 'role',
     apiBase: '/api/roles',
-    keyParam: 'id',
+    keyFields: [
+        'name',
+    ],
     capabilities: {
         create: true,
         edit: true,

@@ -38,7 +38,9 @@ export const accountDescriptor: EntityDescriptor = {
     meta: accountMeta,
     routeSegment: 'account',
     apiBase: '/api/accounts',
-    keyParam: 'id',
+    keyFields: [
+        'username',
+    ],
     capabilities: {
         create: false,
         edit: false,

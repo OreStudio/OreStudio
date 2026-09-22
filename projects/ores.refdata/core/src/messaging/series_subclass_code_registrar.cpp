@@ -40,20 +40,42 @@ std::vector<ores::nats::service::subscription> register_series_subclass_code_han
     std::vector<ores::nats::service::subscription> subs;
     auto h =
         std::make_shared<series_subclass_code_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_series_subclass_codes_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_series_subclass_code_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_series_subclass_code_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_series_subclass_code_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_series_subclass_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_series_subclass_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_series_subclass_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_series_subclass_code(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_series_subclass_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_series_subclass_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_series_subclass_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_series_subclass_code(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_series_subclass_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_series_subclass_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_series_subclass_code_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_series_subclass_code(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_series_subclass_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_series_subclass_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_series_subclass_code_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_series_subclass_code_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_series_subclass_code_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_series_subclass_code_version(std::move(msg)); }));
     return subs;
 }
 

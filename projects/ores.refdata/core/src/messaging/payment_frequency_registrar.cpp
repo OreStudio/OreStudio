@@ -39,20 +39,42 @@ std::vector<ores::nats::service::subscription> register_payment_frequency_handle
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<payment_frequency_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_payment_frequencies_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_payment_frequency_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_payment_frequencies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_payment_frequencies(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_payment_frequency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_payment_frequency(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_payment_frequencies_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_payment_frequencies(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_payment_frequency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_payment_frequency(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_payment_frequencies_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_payment_frequencies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_payment_frequency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_payment_frequency(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_payment_frequency_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_payment_frequencies_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_payment_frequencies(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_payment_frequency_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_payment_frequency_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_payment_frequency_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_payment_frequency_version(std::move(msg)); }));
     return subs;
 }
 

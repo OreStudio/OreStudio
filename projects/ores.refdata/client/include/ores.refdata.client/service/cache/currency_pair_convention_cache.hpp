@@ -34,6 +34,7 @@
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <string>
@@ -53,13 +54,13 @@ inline auto& currency_pair_convention_cache_lg() {
 /**
  * @brief In-process per-tenant cache of refdata currency_pair_conventions data.
  *
- * Populated via NATS request to refdata's read_currency_pair_conventions_for_cache
- * subject at startup, and reloaded on receipt of a currency_pair_convention
- * changed-event notification for the affected tenant (see the
- * nats-event-cache.registrar_wiring archetype). See the "Generic
- * entity-mirror cache primitive + codegen facet" story.
+ * Populated by paging refdata's list_currency_pair_conventions read to its
+ * end at startup, and reloaded on receipt of a currency_pair_convention event
+ * for the affected tenant (see the nats-event-cache.registrar_wiring
+ * archetype). See the "Generic entity-mirror cache primitive + codegen
+ * facet" story.
  *
- * read_currency_pair_conventions_for_cache requires a valid signed JWT (see the
+ * The canonical list read requires a valid signed JWT (see the
  * nats-handler archetype); pass a @c token_provider — typically
  * ores::iam::client::make_service_token_provider's return value — so
  * every load() attaches a fresh service-account Bearer token. Omit it
@@ -98,6 +99,10 @@ public:
     /**
      * @brief Loads (or reloads) one tenant's partition.
      *
+     * A full read is the canonical list paged to its end: the protocol has
+     * no bulk read, so the warm-up walks page by page until the response's
+     * total is reached.
+     *
      * @return An empty string on success. On failure, a human-readable
      * message describing what went wrong -- the failure is still logged
      * (@c warn) either way, but callers that can surface it to a user
@@ -112,32 +117,41 @@ public:
         using namespace ores::logging;
         try {
             const auto& codec = ores::nats::default_wire_codec();
-            const auto bytes = codec.encode(
-                ores::refdata::messaging::read_currency_pair_conventions_for_cache_request{
-                    .tenant_id = tenant_id});
             std::unordered_map<std::string, std::string> headers;
             if (token_provider_)
                 headers[std::string(ores::nats::headers::authorization)] =
                     std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
-            const auto reply = nats_.request_sync(
-                ores::refdata::messaging::read_currency_pair_conventions_for_cache_request::
-                    nats_subject,
-                bytes,
-                std::move(headers));
-            auto resp = codec.decode<
-                ores::refdata::messaging::read_currency_pair_conventions_for_cache_response>(
-                reply.data);
-            if (!resp || !resp->success) {
-                const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
-                BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)
-                    << "CurrencyPairConvention cache load failed for tenant " << tenant_id << ": "
-                    << msg;
-                return msg;
-            }
             auto entries_t = cache_t::entries_map{}.transient();
-            const auto count = resp->conventions.size();
-            for (auto& v : resp->conventions)
-                entries_t.set(v.pair_code, std::move(v));
+            std::uint64_t count = 0;
+            constexpr std::uint32_t page_size = 100;
+            std::uint32_t offset = 0;
+            while (true) {
+                const auto bytes =
+                    codec.encode(ores::refdata::messaging::list_currency_pair_conventions_request{
+                        .offset = offset, .limit = page_size});
+                const auto reply = nats_.request_sync(
+                    ores::refdata::messaging::list_currency_pair_conventions_request::nats_subject,
+                    bytes,
+                    headers);
+                auto resp =
+                    codec.decode<ores::refdata::messaging::list_currency_pair_conventions_response>(
+                        reply.data);
+                if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
+                    const auto msg =
+                        resp ? resp->result.message : "parse error (malformed or error reply)";
+                    BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)
+                        << "CurrencyPairConvention cache load failed for tenant " << tenant_id
+                        << ": " << msg;
+                    return msg;
+                }
+                const auto page_count = resp->conventions.size();
+                for (auto& v : resp->conventions)
+                    entries_t.set(v.pair_code, std::move(v));
+                count += page_count;
+                if (page_count == 0 || count >= resp->total)
+                    break;
+                offset += page_size;
+            }
             auto entries = entries_t.persistent();
             cache_.replace_partition(tenant_id, entries);
             BOOST_LOG_SEV(currency_pair_convention_cache_lg(), debug)

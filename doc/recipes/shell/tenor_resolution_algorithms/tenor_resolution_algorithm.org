@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: E2FE5D11-E8B1-52E1-AA59-2C46663EF553
+:END:
+#+title: How do I run the tenor_resolution_algorithms commands from the shell?
+#+description: Every command the tenor_resolution_algorithms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_resolution_algorithms:
+
+This file documents the tenor_resolution_algorithms resource at the shell, one section per command. Every command is a subcommand of =tenor_resolution_algorithms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EB07E8EE-D7C8-54C5-8079-58F77F5D3D39
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.list=.
+
+#+name: tenor_resolution_algorithms-list
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-list.ores :exports none
+tenor_resolution_algorithms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B97E41D9-9553-5AFE-8DEB-72159CA6FFE3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms get <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.get=.
+
+#+name: tenor_resolution_algorithms-get
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-get.ores :exports none
+tenor_resolution_algorithms get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 584B21B6-FDC2-5906-AA08-66484B746C4A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.get_many=.
+
+#+name: tenor_resolution_algorithms-get-many
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-get-many.ores :exports none
+tenor_resolution_algorithms get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8E87B84C-0B6A-5012-8149-F613EE89AE88
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.put=.
+
+#+name: tenor_resolution_algorithms-add
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-add.ores :exports none
+tenor_resolution_algorithms add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 43C36AB5-623C-5C7D-8F4B-B090D3C632D7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.put=.
+
+#+name: tenor_resolution_algorithms-set
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-set.ores :exports none
+tenor_resolution_algorithms set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 68994DC3-D910-5D83-97B7-0EFB5EADB7C4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.put_many=.
+
+#+name: tenor_resolution_algorithms-put-many
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-put-many.ores :exports none
+tenor_resolution_algorithms put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 47498C0A-7607-5F54-970F-B167AA833096
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.delete=.
+
+#+name: tenor_resolution_algorithms-delete
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-delete.ores :exports none
+tenor_resolution_algorithms delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1C425C4F-43E3-53B1-B09F-DE038AC31EFD
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms.delete_many=.
+
+#+name: tenor_resolution_algorithms-delete-many
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-delete-many.ores :exports none
+tenor_resolution_algorithms delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7A7961FE-7746-59D6-B594-BBA693133A88
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms_versions.list=.
+
+#+name: tenor_resolution_algorithms-versions
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-versions.ores :exports none
+tenor_resolution_algorithms versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E656AF6A-292B-52DF-97E1-815D5BAF5133
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_resolution_algorithms version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_resolution_algorithms_versions.get=.
+
+#+name: tenor_resolution_algorithms-version
+#+begin_src ores-shell :tangle tenor_resolution_algorithms-version.ores :exports none
+tenor_resolution_algorithms version __none__ --version 1
+#+end_src
+

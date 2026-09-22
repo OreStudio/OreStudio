@@ -2,7 +2,7 @@
 :ID: 60339A37-DFB7-4E47-B7B3-79261BAC3455
 :END:
 #+title: ores.cpp.nats-event-cache.registrar_wiring
-#+description: Startup warm-up + change-event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet.
+#+description: Startup warm-up + canonical event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet.
 #+type: archetype
 #+output: projects/{cache_component_dir}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache_registrar.hpp
 #+facet: ores.cpp.nats-event-cache
@@ -13,8 +13,9 @@
 
 A header-only free function, =warm_and_subscribe_{{entity}}_cache=,
 warming the cache_header archetype's cache class for a set of tenants
-at startup, then subscribing to the entity's changed-event subject
-(bound via =event_traits=, no hardcoded subject string) so the
+at startup, then subscribing to the entity's canonical created, updated
+and deleted event subjects (built with =event_subject= from the
+entity's =entity_event_traits=, no hardcoded subject string) so the
 affected tenant's partition is reloaded on every mutation. Meant to be
 called from a hand-written consumer service registrar (e.g. IAM's
 =registrar.cpp=) alongside its other subscriptions — this archetype
@@ -36,11 +37,11 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
 #define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
 
-#include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.{{cache_component}}.{{cache_subcomponent}}/service/cache/{{entity_singular}}_cache.hpp"
-#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_event.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include <memory>
@@ -60,12 +61,13 @@ inline auto& {{entity_singular}}_cache_registrar_lg() {
 
 /**
  * @brief Warms {{entity_singular}}_cache for every given tenant, then
- * subscribes to the {{entity_singular}} changed-event subject so each
- * affected tenant is reloaded on any mutation. Call once at service
- * startup and keep the returned subscription alive for the service's
- * lifetime.
+ * subscribes to the {{entity_singular}} created, updated and deleted
+ * event subjects so each affected tenant is reloaded on any mutation.
+ * Call once at service startup and keep every returned subscription
+ * alive for the service's lifetime.
  */
-inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_cache(
+inline std::vector<ores::nats::service::subscription>
+warm_and_subscribe_{{entity_singular}}_cache(
     ores::nats::service::client& nats,
     std::shared_ptr<{{entity_singular}}_cache> cache,
     const std::vector<std::string>& tenant_ids) {
@@ -75,19 +77,28 @@ inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_
     for (const auto& tenant_id : tenant_ids)
         (void)cache->load(tenant_id); // warm-up failure is logged; nothing here can react to it
 
-    using ores::eventing::domain::event_traits;
-    using ores::{{component}}::eventing::{{entity_singular}}_changed_event;
-    return nats.subscribe(
-        std::string(event_traits<{{entity_singular}}_changed_event>::name),
-        [cache](ores::nats::message msg) {
-            using ores::eventing::domain::entity_change_event;
-            auto evt = ores::nats::default_wire_codec().decode<entity_change_event>(msg.data);
-            if (evt && !evt->tenant_id.empty()) {
-                // Offload to a detached thread: load() calls request_sync,
-                // which would block the NATS callback thread if called inline.
-                std::thread([cache, tid = evt->tenant_id]() { (void)cache->load(tid); }).detach();
-            }
-        });
+    using ores::eventing::domain::entity_event_notification;
+    using ores::eventing::domain::event_subject;
+    using ores::{{component}}::messaging::{{entity_singular}}_event;
+
+    const auto on_change = [cache](ores::nats::message msg) {
+        auto evt = ores::nats::default_wire_codec().decode<entity_event_notification>(msg.data);
+        if (evt && !evt->tenant_id.empty()) {
+            // Offload to a detached thread: load() calls request_sync,
+            // which would block the NATS callback thread if called inline.
+            std::thread([cache, tid = evt->tenant_id]() { (void)cache->load(tid); }).detach();
+        }
+    };
+
+    std::vector<ores::nats::service::subscription> subs;
+    subs.reserve(3);
+    subs.push_back(nats.subscribe(
+        event_subject<{{entity_singular}}_event>("created"), on_change));
+    subs.push_back(nats.subscribe(
+        event_subject<{{entity_singular}}_event>("updated"), on_change));
+    subs.push_back(nats.subscribe(
+        event_subject<{{entity_singular}}_event>("deleted"), on_change));
+    return subs;
 }
 
 } // namespace ores::{{cache_component}}::service::cache

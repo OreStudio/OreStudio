@@ -377,7 +377,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Party cache warm-up failed: " << e.what();
     }
-    subs.push_back(service::cache::warm_and_subscribe_party_cache(nats, pc, tenant_ids));
+    // One subscription per event action, so the cache follows the canonical
+    // events rather than a single changed-event subject.
+    auto party_cache_subs = service::cache::warm_and_subscribe_party_cache(nats, pc, tenant_ids);
+    subs.insert(subs.end(),
+                std::make_move_iterator(party_cache_subs.begin()),
+                std::make_move_iterator(party_cache_subs.end()));
 
     // --- Account contact information ---
     auto aci_subs = register_account_contact_information_handlers(nats, ctx, signer);

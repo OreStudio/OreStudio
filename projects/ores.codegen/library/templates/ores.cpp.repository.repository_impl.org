@@ -450,6 +450,90 @@ std::optional<domain::{{entity_singular}}>
 }
 {{/has_audit_columns}}
 
+{{#has_as_of_lookup}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "workspace_id"_c == wid &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_plural_words}} at timepoint.");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at timepoint. "
+                               << {{primary_key.column}};
+    const auto ts = make_timestamp(as_of, lg());
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "workspace_id"_c == wid &&
+              "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}} &&
+              "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_singular_words}} at timepoint.");
+}
+{{/has_as_of_lookup}}
+
 {{#foreign_keys}}
 {{#list_by}}
 std::vector<domain::{{entity_singular}}>
@@ -637,6 +721,13 @@ std::vector<domain::{{entity_singular}}>
 {{/has_tenant_id}}
 
     execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
+{{#has_audit_columns}}
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, {{{primary_key.args}}}).empty())
+        return remove_status::conflicting;
+{{/has_audit_columns}}
     return remove_status::removed;
 }
 
@@ -885,8 +976,19 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 }
 {{/domain_entity}}
 {{#junction}}
+{{#junction}}
+{{#left.query_needs_str}}
+#include "ores.platform/time/datetime.hpp"
+{{/left.query_needs_str}}
+{{#right.query_needs_str}}
+#include "ores.platform/time/datetime.hpp"
+{{/right.query_needs_str}}
+{{/junction}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
 
+#include <cstddef>
+#include <optional>
+#include <stdexcept>
 #include <sqlgen/postgres.hpp>
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid_io.hpp>
@@ -920,19 +1022,76 @@ std::string {{name_singular}}_repository::sql() {
     : ctx_(std::move(ctx)) {}
 
 {{^read_only}}
+ores::utility::domain::precondition
+{{name_singular}}_repository::replace_claim(const domain::{{name_singular}}& v) {
+    const auto current = read_latest(v.{{left.column}}, v.{{right.column}});
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::{{name_singular}} {{name_singular}}_repository::apply_claim(
+    const domain::{{name_singular}}& v,
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+    case precondition_kind::must_not_exist:
+        // Zero states that no current row exists, which is the one meaning the
+        // store gives a zero version.
+        t.version = 0;
+        break;
+    case precondition_kind::must_match_version:
+        t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+        break;
+    case precondition_kind::any: {
+        // A caller that claims nothing still has to say what it replaces, so
+        // the row is read and its version stated. A row that moved on between
+        // this read and the write is a conflict the trigger raises, never a
+        // silent overwrite.
+        const auto current = read_latest(v.{{left.column}}, v.{{right.column}});
+        t.version = current.empty() ? 0 : current.front().version;
+        break;
+    }
+    }
+    return t;
+}
+
 void {{name_singular}}_repository::write(
     const domain::{{name_singular}}& {{name_singular_short}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_singular_words}} to database: "
-                               << {{name_singular_short}}.{{left.column}} << "/" << {{name_singular_short}}.{{right.column}};
-    execute_write_query(ctx_, {{name_singular}}_mapper::map({{name_singular_short}}),
-        lg(), "writing {{name_singular_words}} to database");
+    write({{name_singular_short}}, replace_claim({{name_singular_short}}));
 }
 
 void {{name_singular}}_repository::write(
     const std::vector<domain::{{name_singular}}>& {{name_short}}) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve({{name_short}}.size());
+    for (const auto& item : {{name_short}})
+        claims.push_back(replace_claim(item));
+    write({{name_short}}, claims);
+}
+
+void {{name_singular}}_repository::write(
+    const domain::{{name_singular}}& {{name_singular_short}},
+    const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_singular_words}} to database: "
+                               << {{name_singular_short}}.{{left.column}} << "/" << {{name_singular_short}}.{{right.column}};
+    const auto t = apply_claim({{name_singular_short}}, claim);
+    execute_write_query(ctx_, {{name_singular}}_mapper::map(t),
+        lg(), "writing {{name_singular_words}} to database");
+}
+
+void {{name_singular}}_repository::write(
+    const std::vector<domain::{{name_singular}}>& {{name_short}},
+    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{name_words}} to database. Count: "
                                << {{name_short}}.size();
-    execute_write_query(ctx_, {{name_singular}}_mapper::map({{name_short}}),
+    std::vector<domain::{{name_singular}}> batch;
+    batch.reserve({{name_short}}.size());
+    for (std::size_t i = 0; i < {{name_short}}.size(); ++i)
+        batch.push_back(apply_claim({{name_short}}[i], claims[i]));
+    execute_write_query(ctx_, {{name_singular}}_mapper::map(batch),
         lg(), "writing {{name_words}} to database");
 }
 
@@ -983,6 +1142,58 @@ std::vector<domain::{{name_singular}}>
         lg(), "Reading latest {{name_words}} (paginated).");
 }
 
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest(
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_singular_words}}. "
+                               << {{left.column}} << "/" << {{right.column}};
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("tenant_id"_c == tid &&
+{{#left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+{{/left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+              "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where(
+{{#left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+{{/left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+              "valid_to"_c == max.value());
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_singular_words}} by key.");
+}
+
 std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -1011,18 +1222,13 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
 
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}}) {
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}}) {
-{{/left.is_uuid}}
+    const {{left.cpp_type}}& {{left.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}};
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-{{#left.is_uuid}}
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{#left.query_needs_str}}
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1032,8 +1238,8 @@ std::vector<domain::{{name_singular}}>
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1043,7 +1249,7 @@ std::vector<domain::{{name_singular}}>
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
         order_by("{{order_column}}"_c);
 
     auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
@@ -1086,18 +1292,13 @@ std::vector<domain::{{name_singular}}>
 
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}}) {
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}}) {
-{{/right.is_uuid}}
+    const {{right.cpp_type}}& {{right.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}};
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-{{#right.is_uuid}}
-    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+{{#right.query_needs_str}}
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1107,8 +1308,8 @@ std::vector<domain::{{name_singular}}>
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1118,7 +1319,7 @@ std::vector<domain::{{name_singular}}>
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
         order_by("{{left.column}}"_c);
 
     auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
@@ -1162,13 +1363,13 @@ std::vector<domain::{{name_singular}}>
 {{#left.list_by}}
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{#left.query_needs_str}}
+    const {{left.cpp_type}}& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
     const std::string& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}} << " offset: " << offset << " limit: " << limit;
 
@@ -1176,22 +1377,22 @@ std::vector<domain::{{name_singular}}>
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-{{#left.is_uuid}}
+{{#left.query_needs_str}}
         where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
         where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
         order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-{{#left.is_uuid}}
+{{#left.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
         order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
 
@@ -1235,13 +1436,13 @@ std::vector<domain::{{name_singular}}>
 
 {{/left.list_by}}
 std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}}) {
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{#left.query_needs_str}}
+    const {{left.cpp_type}}& {{left.column}}) {
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
     const std::string& {{left.column}}) {
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{left.column_title}}: " << {{left.column}};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
@@ -1250,22 +1451,22 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-{{#left.is_uuid}}
+{{#left.query_needs_str}}
                        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
                        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-{{#left.is_uuid}}
+{{#left.query_needs_str}}
                        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
                        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
 
@@ -1280,13 +1481,13 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
 {{#right.list_by}}
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
-    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{#right.query_needs_str}}
+    const {{right.cpp_type}}& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
     const std::string& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}} << " offset: " << offset << " limit: " << limit;
 
@@ -1294,22 +1495,22 @@ std::vector<domain::{{name_singular}}>
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-{{#right.is_uuid}}
+{{#right.query_needs_str}}
         where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
         where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
         order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-{{#right.is_uuid}}
+{{#right.query_needs_str}}
         where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
         where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
         order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
 
@@ -1353,13 +1554,13 @@ std::vector<domain::{{name_singular}}>
 
 {{/right.list_by}}
 std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}}) {
-    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{#right.query_needs_str}}
+    const {{right.cpp_type}}& {{right.column}}) {
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
     const std::string& {{right.column}}) {
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{right.column_title}}: " << {{right.column}};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
@@ -1368,22 +1569,22 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-{{#right.is_uuid}}
+{{#right.query_needs_str}}
                        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
                        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-{{#right.is_uuid}}
+{{#right.query_needs_str}}
                        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
                        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
-{{/right.is_uuid}}
+{{/right.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
 
@@ -1397,93 +1598,118 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
 
 {{^read_only}}
 void {{name_singular}}_repository::remove(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}},
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}}) {
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}}) {
-{{/right.is_uuid}}
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}}) {
+    static_cast<void>(remove({{left.column}}, {{right.column}}, std::nullopt));
+}
+
+{{name_singular}}_repository::remove_status
+{{name_singular}}_repository::remove(
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}},
+    std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}} from database: "
                                << {{left.column}} << "/" << {{right.column}};
 
-{{#left.is_uuid}}
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
-{{/right.is_uuid}}
+    const auto current = read_latest({{left.column}}, {{right.column}});
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
 {{/has_tenant_id}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
 {{#has_tenant_id}}
         where("tenant_id"_c == tid &&
-{{#left.is_uuid}}
-{{#right.is_uuid}}
+{{#left.query_needs_str}}
+{{#right.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
-              "{{right.column}}"_c == {{right.column}}_str);
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
-              "{{right.column}}"_c == {{right.column}});
-{{/right.is_uuid}}
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-{{#right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#right.query_needs_str}}
               "{{left.column}}"_c == {{left.column}} &&
-              "{{right.column}}"_c == {{right.column}}_str);
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
               "{{left.column}}"_c == {{left.column}} &&
-              "{{right.column}}"_c == {{right.column}});
-{{/right.is_uuid}}
-{{/left.is_uuid}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+              "valid_to"_c == max.value() &&
+              "version"_c == expected);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-{{#left.is_uuid}}
-{{#right.is_uuid}}
+{{#left.query_needs_str}}
+{{#right.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}}_str &&
-              "{{right.column}}"_c == {{right.column}}_str);
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}}_str &&
-              "{{right.column}}"_c == {{right.column}});
-{{/right.is_uuid}}
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-{{#right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#right.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}} &&
-              "{{right.column}}"_c == {{right.column}}_str);
-{{/right.is_uuid}}
-{{^right.is_uuid}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
         where("{{left.column}}"_c == {{left.column}} &&
-              "{{right.column}}"_c == {{right.column}});
-{{/right.is_uuid}}
-{{/left.is_uuid}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+              "valid_to"_c == max.value() &&
+              "version"_c == expected);
 {{/has_tenant_id}}
 
     execute_delete_query(ctx_, query, lg(),
         "removing {{name_singular_words}} from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest({{left.column}}, {{right.column}}).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void {{name_singular}}_repository::remove(
+    const std::vector<{{left.cpp_type}}>& {{left.column}}s,
+    const std::vector<{{right.cpp_type}}>& {{right.column}}s) {
+    // A junction's key is the pair of columns, and a per-column .in() DELETE
+    // would be a cross-product over-delete (rows outside the requested pairs),
+    // so each pair is removed on its own.
+    if ({{left.column}}s.size() != {{right.column}}s.size())
+        throw std::invalid_argument(
+            "{{name_singular}}_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < {{left.column}}s.size(); ++i)
+        static_cast<void>(remove({{left.column}}s[i], {{right.column}}s[i], std::nullopt));
 }
 
 void {{name_singular}}_repository::remove_by_{{left.column_short}}(
-{{#left.is_uuid}}
-    const boost::uuids::uuid& {{left.column}}) {
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    const std::string& {{left.column}}) {
-{{/left.is_uuid}}
+    const {{left.cpp_type}}& {{left.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all {{name_words}} from database: "
                                << {{left.column}};
 
-{{#left.is_uuid}}
-    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{#left.query_needs_str}}
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
@@ -1493,8 +1719,8 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
         where("{{left.column}}"_c == {{left.column}}_str);
 {{/has_tenant_id}}
-{{/left.is_uuid}}
-{{^left.is_uuid}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
@@ -1504,7 +1730,7 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
         where("{{left.column}}"_c == {{left.column}});
 {{/has_tenant_id}}
-{{/left.is_uuid}}
+{{/left.query_needs_str}}
 
     execute_delete_query(ctx_, query, lg(),
         "removing all {{name_words}} from database");

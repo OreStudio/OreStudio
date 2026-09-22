@@ -1920,6 +1920,15 @@ def _fk_side_from_section(node: OrgNode) -> dict[str, Any]:
         out["detail"] = detail
     if "generator" in node.src_blocks:
         out["generator_expr"] = node.src_blocks["generator"]
+    # A junction stores its key columns in the entity's own types, which are
+    # not the domain's: a uuid and a date are both text in the table. The
+    # templates branch on these flags to state the conversion once, so a
+    # query compares the column's type and a caller passes the domain's.
+    cpp_type = str(out.get("cpp_type", ""))
+    out["is_uuid"] = cpp_type == "boost::uuids::uuid"
+    out["is_date"] = cpp_type == "std::chrono::year_month_day"
+    out["is_timestamp"] = cpp_type == "std::chrono::system_clock::time_point"
+    out["query_needs_str"] = out["is_uuid"] or out["is_date"] or out["is_timestamp"]
     return out
 
 
@@ -2847,9 +2856,15 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
                    if filter_fields else None)
 
-    messages += paged_list_messages(
+    plain_list = paged_list_messages(
         f"list_{plural}", request_subject(component, plural, "list"),
         [], list_filter, plural_short, domain_type)
+    if entity.get("has_as_of_lookup"):
+        # A stated instant resolves the row's own validity window rather than
+        # naming a version, so the list carries it beside the page it narrows.
+        plain_list[0]["fields"].append(
+            _ts_field("as_of", "std::optional<std::string>"))
+    messages += plain_list
 
     messages += [
         _ts_message(f"get_{singular}_request",
@@ -3107,10 +3122,19 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             # column's own type.
             "leading_is_uuid": "boost::uuids::uuid" in leading_type,
             "leading_is_timestamp": "time_point" in leading_type,
+            # A relation the column admits as null is optional on the wire, so
+            # a scoped read has to say what it does when the request omits it.
+            "leading_is_optional": "optional" in leading_type,
             # A write is an operation that changes state, and the permission
             # it needs is the one the resource already names for that kind of
             # change. A read needs authentication alone, so it names none.
             "is_write": verb in ("put", "put_many", "delete", "delete_many"),
+            # The single write verb has one hook the other verbs do not: a
+            # component may intercept its own save before authentication, for
+            # an orchestration command that carries its context in headers
+            # rather than in a token. ores.refdata's party is the one model
+            # that does, through an implementation block.
+            "is_put_one": verb == "put",
             "permission": ("delete" if verb in ("delete", "delete_many")
                            else "write" if verb in ("put", "put_many") else ""),
         })

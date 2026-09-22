@@ -176,6 +176,7 @@ tenant_repository::read_at_version(context ctx, const std::string& id, std::uint
     return entities.front();
 }
 
+
 tenant_repository::remove_status tenant_repository::remove(context ctx,
                                                            const std::string& id,
                                                            std::optional<std::uint32_t> version) {
@@ -198,6 +199,11 @@ tenant_repository::remove_status tenant_repository::remove(context ctx,
                              "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing tenant from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

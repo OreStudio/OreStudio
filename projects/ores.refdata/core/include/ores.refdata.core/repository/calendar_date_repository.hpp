@@ -29,6 +29,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -55,11 +58,49 @@ public:
 
     std::string sql();
 
-    void write(const domain::calendar_date& calendar_date);
-    void write(const std::vector<domain::calendar_date>& calendar_dates);
+    /**
+     * @brief Writes calendar dates to database.
+     *
+     * The plain form replaces the link the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a
+     * silent overwrite.
+     */
+    /**@{*/
+    void write(const domain::calendar_date& v);
+    void write(const std::vector<domain::calendar_date>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a calendar date, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const domain::calendar_date& v, const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of calendar dates, each honouring its own claim, as
+     * one statement.
+     */
+    void write(const std::vector<domain::calendar_date>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     std::vector<domain::calendar_date> read_latest();
     std::vector<domain::calendar_date> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Reads the calendar date rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::calendar_date> read_latest(const std::string& calendar_code,
+                                                   const std::chrono::year_month_day& date);
 
     /**
      * @brief Gets the total count of active calendar dates.
@@ -78,18 +119,64 @@ public:
      */
     std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
 
-    std::vector<domain::calendar_date> read_latest_by_date(const std::string& date);
+    std::vector<domain::calendar_date> read_latest_by_date(const std::chrono::year_month_day& date);
 
     /**
      * @brief Gets the total count of active calendar dates filtered by date.
      */
-    std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
+    std::uint32_t get_total_calendar_date_count_by_date(const std::chrono::year_month_day& date);
 
-    void remove(const std::string& calendar_code, const std::string& date);
+    /**
+     * @brief Deletes a calendar date by its pair of keys.
+     */
+    void remove(const std::string& calendar_code, const std::chrono::year_month_day& date);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a calendar date, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(const std::string& calendar_code,
+                         const std::chrono::year_month_day& date,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes calendar dates by their pairs of keys.
+     */
+    void remove(const std::vector<std::string>& calendar_codes,
+                const std::vector<std::chrono::year_month_day>& dates);
+
     void remove_by_calendar(const std::string& calendar_code);
 
 private:
     context ctx_;
+
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(const domain::calendar_date& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::calendar_date apply_claim(const domain::calendar_date& v,
+                                      const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B943E13B-E74B-58F4-8D98-CDABD01BD165
+:END:
+#+title: How do I run the purpose_types commands from the shell?
+#+description: Every command the purpose_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:purpose_types:
+
+This file documents the purpose_types resource at the shell, one section per command. Every command is a subcommand of =purpose_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5B561167-B267-5867-929E-5D0CF4AFE657
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.list=.
+
+#+name: purpose_types-list
+#+begin_src ores-shell :tangle purpose_types-list.ores :exports none
+purpose_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F4E62925-2C26-592F-ADB0-731D334CAF35
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.get=.
+
+#+name: purpose_types-get
+#+begin_src ores-shell :tangle purpose_types-get.ores :exports none
+purpose_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 383E3B9D-4EEF-5AAB-8C38-22B7310A70B1
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.get_many=.
+
+#+name: purpose_types-get-many
+#+begin_src ores-shell :tangle purpose_types-get-many.ores :exports none
+purpose_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D2118EC8-64F0-5BDF-BA60-94D13A4024B3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.put=.
+
+#+name: purpose_types-add
+#+begin_src ores-shell :tangle purpose_types-add.ores :exports none
+purpose_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B52D8F24-1E4F-5527-920C-A158A2A5683C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.put=.
+
+#+name: purpose_types-set
+#+begin_src ores-shell :tangle purpose_types-set.ores :exports none
+purpose_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 10C5D7A0-4320-5101-A002-44CA1CD3491C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.put_many=.
+
+#+name: purpose_types-put-many
+#+begin_src ores-shell :tangle purpose_types-put-many.ores :exports none
+purpose_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AD14E6B3-B63D-5006-83DC-4E354AE2160A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.delete=.
+
+#+name: purpose_types-delete
+#+begin_src ores-shell :tangle purpose_types-delete.ores :exports none
+purpose_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 26AEA8E7-F3ED-5BA4-A0EF-F03DCA47007C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types.delete_many=.
+
+#+name: purpose_types-delete-many
+#+begin_src ores-shell :tangle purpose_types-delete-many.ores :exports none
+purpose_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 01EFAD3B-ACAA-5EF9-A7AA-F82E0F9D70B9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types_versions.list=.
+
+#+name: purpose_types-versions
+#+begin_src ores-shell :tangle purpose_types-versions.ores :exports none
+purpose_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 19AF73C8-B4F9-5853-8FEB-4B5805D4B2C9
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+purpose_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.purpose_types_versions.get=.
+
+#+name: purpose_types-version
+#+begin_src ores-shell :tangle purpose_types-version.ores :exports none
+purpose_types version __none__ --version 1
+#+end_src
+

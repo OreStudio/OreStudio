@@ -39,24 +39,46 @@ register_calendar_rule_handlers(ores::nats::service::client& nats,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<calendar_rule_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_calendar_rules_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_calendar_rule_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_calendar_rules_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_calendar_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_rule_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_rule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_calendar_rules_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_calendar_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_calendar_rule_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_calendar_rule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_calendar_rules_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_calendar_rules(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
         delete_calendar_rule_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_calendar_rule(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_calendar_rule_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_calendar_rules_by_calendar_code_request::nats_subject,
+        delete_many_calendar_rules_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_calendar_code(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->delete_many_calendar_rules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_calendar_code_calendar_rules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_calendar_code_calendar_rules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_calendar_rule_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_calendar_rule_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_rule_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_rule_version(std::move(msg));
+        }));
     return subs;
 }
 

@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 17563C50-1133-5AEE-8288-18CF02D4DF7B
+:END:
+#+title: How do I run the calendar_rules commands from the shell?
+#+description: Every command the calendar_rules submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:calendar_rules:
+
+This file documents the calendar_rules resource at the shell, one section per command. Every command is a subcommand of =calendar_rules=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 10012B00-0F1E-5524-8250-3C57AEF9B58E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.list=.
+
+#+name: calendar_rules-list
+#+begin_src ores-shell :tangle calendar_rules-list.ores :exports none
+calendar_rules list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D4DB0EF8-14E7-5888-96BA-7D3D970C0A85
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules get <id>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.get=.
+
+#+name: calendar_rules-get
+#+begin_src ores-shell :tangle calendar_rules-get.ores :exports none
+calendar_rules get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D8277833-79A4-56F8-A1CF-3A19CE4D1B5E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.get_many=.
+
+#+name: calendar_rules-get-many
+#+begin_src ores-shell :tangle calendar_rules-get-many.ores :exports none
+calendar_rules get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D88BD5E3-B875-5AC5-89B3-AD69B27514A9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules add <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> <effective_from> <effective_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.put=.
+
+#+name: calendar_rules-add
+#+begin_src ores-shell :tangle calendar_rules-add.ores :exports none
+calendar_rules add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7D7A5648-12C4-57C1-862B-9344C6A52AB2
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules set <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> <effective_from> <effective_to> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.put=.
+
+#+name: calendar_rules-set
+#+begin_src ores-shell :tangle calendar_rules-set.ores :exports none
+calendar_rules set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5AC116B2-80EA-5ADE-AA6F-09BC47FFDB8C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules put-many --count <n> <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> <effective_from> <effective_to> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.put_many=.
+
+#+name: calendar_rules-put-many
+#+begin_src ores-shell :tangle calendar_rules-put-many.ores :exports none
+calendar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 88D016A3-206E-5C00-BE9D-8103085E927C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.delete=.
+
+#+name: calendar_rules-delete
+#+begin_src ores-shell :tangle calendar_rules-delete.ores :exports none
+calendar_rules delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6A61A3A5-777F-56F6-ABF9-7FC0DB3940B3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.delete_many=.
+
+#+name: calendar_rules-delete-many
+#+begin_src ores-shell :tangle calendar_rules-delete-many.ores :exports none
+calendar_rules delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-calendar-code=
+:PROPERTIES:
+:ID: EBE41591-7C08-54B3-856E-9E3378FB8A79
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules by-calendar-code <calendar_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules.list_by_calendar_code=.
+
+#+name: calendar_rules-by-calendar-code
+#+begin_src ores-shell :tangle calendar_rules-by-calendar-code.ores :exports none
+calendar_rules by-calendar-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 90785695-5CC1-5478-BC69-0D44C58DC005
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules_versions.list=.
+
+#+name: calendar_rules-versions
+#+begin_src ores-shell :tangle calendar_rules-versions.ores :exports none
+calendar_rules versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6367B1A0-700B-578C-9760-CFFEF4BC0DF2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_rules version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_rules_versions.get=.
+
+#+name: calendar_rules-version
+#+begin_src ores-shell :tangle calendar_rules-version.ores :exports none
+calendar_rules version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

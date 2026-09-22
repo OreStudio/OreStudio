@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 1283A57A-4E15-52ED-9C04-5C9D0D03A92D
+:END:
+#+title: How do I run the payment_frequencies commands from the shell?
+#+description: Every command the payment_frequencies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:payment_frequencies:
+
+This file documents the payment_frequencies resource at the shell, one section per command. Every command is a subcommand of =payment_frequencies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E3CF8D35-57F2-5C1E-A023-3FABC4B71B8E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.list=.
+
+#+name: payment_frequencies-list
+#+begin_src ores-shell :tangle payment_frequencies-list.ores :exports none
+payment_frequencies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CFE2657B-2A05-58B0-B886-AA097A33AC38
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies get <code>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.get=.
+
+#+name: payment_frequencies-get
+#+begin_src ores-shell :tangle payment_frequencies-get.ores :exports none
+payment_frequencies get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 510E1AFA-D3AB-5FB3-AD12-9C1B6BDB392F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.get_many=.
+
+#+name: payment_frequencies-get-many
+#+begin_src ores-shell :tangle payment_frequencies-get-many.ores :exports none
+payment_frequencies get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 53A4924D-0C57-5814-94BF-38E6415ED7B0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies add <code> <name> <description> <period_unit> <period_multiplier> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.put=.
+
+#+name: payment_frequencies-add
+#+begin_src ores-shell :tangle payment_frequencies-add.ores :exports none
+payment_frequencies add __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3BC8B04E-7159-5556-A1E3-65FE4372CFC2
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies set <code> <name> <description> <period_unit> <period_multiplier> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.put=.
+
+#+name: payment_frequencies-set
+#+begin_src ores-shell :tangle payment_frequencies-set.ores :exports none
+payment_frequencies set __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D376E3F9-6DAF-5606-A71B-EC19EB5D631D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies put-many --count <n> <code> <name> <description> <period_unit> <period_multiplier> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.put_many=.
+
+#+name: payment_frequencies-put-many
+#+begin_src ores-shell :tangle payment_frequencies-put-many.ores :exports none
+payment_frequencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4905D10E-AC32-5A68-8CEF-519553A8B78C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.delete=.
+
+#+name: payment_frequencies-delete
+#+begin_src ores-shell :tangle payment_frequencies-delete.ores :exports none
+payment_frequencies delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 74AE2682-0A6B-5FCD-8EE3-4A3BB399741C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies.delete_many=.
+
+#+name: payment_frequencies-delete-many
+#+begin_src ores-shell :tangle payment_frequencies-delete-many.ores :exports none
+payment_frequencies delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A02E7B9D-9D9E-5676-B56C-6B55557C57FC
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies_versions.list=.
+
+#+name: payment_frequencies-versions
+#+begin_src ores-shell :tangle payment_frequencies-versions.ores :exports none
+payment_frequencies versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C9090929-08F9-5623-AB6A-299864562401
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+payment_frequencies version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.payment_frequencies_versions.get=.
+
+#+name: payment_frequencies-version
+#+begin_src ores-shell :tangle payment_frequencies-version.ores :exports none
+payment_frequencies version __none__ --version 1
+#+end_src
+

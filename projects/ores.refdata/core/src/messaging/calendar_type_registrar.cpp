@@ -39,19 +39,41 @@ register_calendar_type_handlers(ores::nats::service::client& nats,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<calendar_type_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_calendar_types_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_calendar_type_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_calendar_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_calendar_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_calendar_types(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_calendar_type_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->history(std::move(msg));
+        get_calendar_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_type(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_calendar_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_calendar_types(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_calendar_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_calendar_type(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_calendar_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_calendar_types(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_calendar_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_calendar_type(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_calendar_types_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_calendar_types(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_calendar_type_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_calendar_type_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_type_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_type_version(std::move(msg));
         }));
     return subs;
 }

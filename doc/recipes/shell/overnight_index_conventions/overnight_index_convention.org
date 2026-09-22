@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: F83F0959-8CF5-5E5D-BAC7-03081BC3CC06
+:END:
+#+title: How do I run the overnight_index_conventions commands from the shell?
+#+description: Every command the overnight_index_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:overnight_index_conventions:
+
+This file documents the overnight_index_conventions resource at the shell, one section per command. Every command is a subcommand of =overnight_index_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 41A4895C-77FE-5420-8832-15C23EEA6277
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.list=.
+
+#+name: overnight_index_conventions-list
+#+begin_src ores-shell :tangle overnight_index_conventions-list.ores :exports none
+overnight_index_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FF17DBFC-C37C-5B49-B982-606C782FC97B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.get=.
+
+#+name: overnight_index_conventions-get
+#+begin_src ores-shell :tangle overnight_index_conventions-get.ores :exports none
+overnight_index_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 40F04105-C07A-5F37-92C1-1A2333F27758
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.get_many=.
+
+#+name: overnight_index_conventions-get-many
+#+begin_src ores-shell :tangle overnight_index_conventions-get-many.ores :exports none
+overnight_index_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C769FC10-E31C-53A2-8F7F-6DB8B58891B8
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions add <id> <fixing_calendar> <day_count_fraction> <settlement_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.put=.
+
+#+name: overnight_index_conventions-add
+#+begin_src ores-shell :tangle overnight_index_conventions-add.ores :exports none
+overnight_index_conventions add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2B01382B-A43D-53C2-85F6-51A90ACB37AE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions set <id> <fixing_calendar> <day_count_fraction> <settlement_days> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.put=.
+
+#+name: overnight_index_conventions-set
+#+begin_src ores-shell :tangle overnight_index_conventions-set.ores :exports none
+overnight_index_conventions set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 219212FF-A0F4-5683-8F61-3332932840CB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions put-many --count <n> <id> <fixing_calendar> <day_count_fraction> <settlement_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.put_many=.
+
+#+name: overnight_index_conventions-put-many
+#+begin_src ores-shell :tangle overnight_index_conventions-put-many.ores :exports none
+overnight_index_conventions put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: FE0DE635-1315-5611-AF9C-8AE9EE07C21C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.delete=.
+
+#+name: overnight_index_conventions-delete
+#+begin_src ores-shell :tangle overnight_index_conventions-delete.ores :exports none
+overnight_index_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DE8E2385-F51A-5CE0-ACB7-9B4E3818E4B7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions.delete_many=.
+
+#+name: overnight_index_conventions-delete-many
+#+begin_src ores-shell :tangle overnight_index_conventions-delete-many.ores :exports none
+overnight_index_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A1FFB235-C520-589F-9BD5-72F2D6044B56
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions_versions.list=.
+
+#+name: overnight_index_conventions-versions
+#+begin_src ores-shell :tangle overnight_index_conventions-versions.ores :exports none
+overnight_index_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 03BD449D-97D1-52CC-9DFF-4B51699091CD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+overnight_index_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.overnight_index_conventions_versions.get=.
+
+#+name: overnight_index_conventions-version
+#+begin_src ores-shell :tangle overnight_index_conventions-version.ores :exports none
+overnight_index_conventions version __none__ --version 1
+#+end_src
+

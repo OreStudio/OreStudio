@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: E83160B8-F626-584D-84B2-085B07AC6038
+:END:
+#+title: How do I run the deposit_conventions commands from the shell?
+#+description: Every command the deposit_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:deposit_conventions:
+
+This file documents the deposit_conventions resource at the shell, one section per command. Every command is a subcommand of =deposit_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 00209ECF-4E3C-5934-B9AE-14E5B6ABDBB8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.list=.
+
+#+name: deposit_conventions-list
+#+begin_src ores-shell :tangle deposit_conventions-list.ores :exports none
+deposit_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9FDAED0F-5A8C-517C-9904-7CC45C16C554
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.get=.
+
+#+name: deposit_conventions-get
+#+begin_src ores-shell :tangle deposit_conventions-get.ores :exports none
+deposit_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 942752CD-8416-5E03-8E64-B8C21D5730C6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.get_many=.
+
+#+name: deposit_conventions-get-many
+#+begin_src ores-shell :tangle deposit_conventions-get-many.ores :exports none
+deposit_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 54DD242C-8D43-51C8-B0CA-2F33197DA858
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions add <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.put=.
+
+#+name: deposit_conventions-add
+#+begin_src ores-shell :tangle deposit_conventions-add.ores :exports none
+deposit_conventions add __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BD97321C-AC15-5235-BA56-EF73E5F021AB
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions set <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.put=.
+
+#+name: deposit_conventions-set
+#+begin_src ores-shell :tangle deposit_conventions-set.ores :exports none
+deposit_conventions set __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4331DE44-EFAB-55FF-B3C7-2549B78235DB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions put-many --count <n> <id> <index_based> <index> <calendar> <convention> <end_of_month> <day_count_fraction> <settlement_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.put_many=.
+
+#+name: deposit_conventions-put-many
+#+begin_src ores-shell :tangle deposit_conventions-put-many.ores :exports none
+deposit_conventions put-many --count 1 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0E47AAE0-EEAF-5F9B-937C-9E210EC8A36F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.delete=.
+
+#+name: deposit_conventions-delete
+#+begin_src ores-shell :tangle deposit_conventions-delete.ores :exports none
+deposit_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8013F49F-D726-56B7-875A-9647E6A01C69
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions.delete_many=.
+
+#+name: deposit_conventions-delete-many
+#+begin_src ores-shell :tangle deposit_conventions-delete-many.ores :exports none
+deposit_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B8FEF541-D90D-5106-8B68-BBAB9C2BE4A9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions_versions.list=.
+
+#+name: deposit_conventions-versions
+#+begin_src ores-shell :tangle deposit_conventions-versions.ores :exports none
+deposit_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D6083F56-AB9D-5843-A29C-F087FE4E7053
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+deposit_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.deposit_conventions_versions.get=.
+
+#+name: deposit_conventions-version
+#+begin_src ores-shell :tangle deposit_conventions-version.ores :exports none
+deposit_conventions version __none__ --version 1
+#+end_src
+

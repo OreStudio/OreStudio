@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_schedule.hpp"
+#include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_schedule_repository.hpp"
 #include <chrono>
@@ -65,6 +66,41 @@ public:
     explicit tenor_schedule_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_tenor_schedules_response
+    list_tenor_schedules(const messaging::list_tenor_schedules_request& request);
+    messaging::get_tenor_schedule_response
+    get_tenor_schedule(const messaging::get_tenor_schedule_request& request);
+    messaging::get_many_tenor_schedules_response
+    get_many_tenor_schedules(const messaging::get_many_tenor_schedules_request& request);
+    messaging::put_tenor_schedule_response
+    put_tenor_schedule(const messaging::put_tenor_schedule_request& request);
+    messaging::put_many_tenor_schedules_response
+    put_many_tenor_schedules(const messaging::put_many_tenor_schedules_request& request);
+    messaging::delete_tenor_schedule_response
+    delete_tenor_schedule(const messaging::delete_tenor_schedule_request& request);
+    messaging::delete_many_tenor_schedules_response
+    delete_many_tenor_schedules(const messaging::delete_many_tenor_schedules_request& request);
+    messaging::list_by_calendar_code_tenor_schedules_response list_by_calendar_code_tenor_schedules(
+        const messaging::list_by_calendar_code_tenor_schedules_request& request);
+    messaging::list_by_diary_entry_type_tenor_schedules_response
+    list_by_diary_entry_type_tenor_schedules(
+        const messaging::list_by_diary_entry_type_tenor_schedules_request& request);
+    messaging::list_tenor_schedule_versions_response
+    list_tenor_schedule_versions(const messaging::list_tenor_schedule_versions_request& request);
+    messaging::get_tenor_schedule_version_response
+    get_tenor_schedule_version(const messaging::get_tenor_schedule_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists tenor schedules with pagination support.
      *
      * @param offset Number of records to skip.
@@ -100,6 +136,7 @@ public:
      */
     std::uint32_t count_schedules_by_calendar_code(const std::string& calendar_code);
 
+
     /**
      * @brief Lists tenor schedules filtered by diary_entry_type, with pagination.
      *
@@ -119,6 +156,7 @@ public:
      */
     std::uint32_t count_schedules_by_diary_entry_type(const std::string& diary_entry_type);
 
+
     /**
      * @brief Retrieves a single tenor schedule as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
@@ -135,6 +173,11 @@ public:
      * @return The tenor schedule if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_schedule> get_schedule(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of tenor schedules by primary key.
+     */
+    std::vector<domain::tenor_schedule> get_schedules(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a tenor schedule (creates or updates).
@@ -172,6 +215,23 @@ public:
 private:
     context ctx_;
     repository::tenor_schedule_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::tenor_schedule_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::tenor_schedule& out);
 };
 
 }

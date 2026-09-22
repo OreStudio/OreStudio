@@ -23,76 +23,156 @@
  * To modify, update the template and regenerate.
  */
 import type { CurrencyCurrencyGroup } from '../domain/currency_currency_group.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetCurrencyCurrencyGroupsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCurrencyCurrencyGroupsResponse {
-    currency_currency_groups: CurrencyCurrencyGroup[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetCurrencyCurrencyGroupsByCurrencyRequest {
+export interface CurrencyCurrencyGroupKey {
     currency_iso_code: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetCurrencyCurrencyGroupsByCurrencyResponse {
-    currency_currency_groups: CurrencyCurrencyGroupView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveCurrencyCurrencyGroupRequest {
-    currency_currency_groups: CurrencyCurrencyGroup[];
-}
-
-export interface SaveCurrencyCurrencyGroupResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteCurrencyCurrencyGroupRequest {
-    currency_iso_codes: string[];
-    currency_group_codes: string[];
-}
-
-export interface DeleteCurrencyCurrencyGroupResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface CountCurrencyCurrencyGroupsByCurrencyRequest {
-    currency_iso_code: string;
-}
-
-export interface CountCurrencyCurrencyGroupsByCurrencyResponse {
-    total_available_count: number;
-}
-
-export interface CountCurrencyCurrencyGroupsByGroupRequest {
     currency_group_code: string;
 }
 
-export interface CountCurrencyCurrencyGroupsByGroupResponse {
-    total_available_count: number;
+export interface CurrencyCurrencyGroupWrite {
+    currency_iso_code: string;
+    currency_group_code: string;
 }
 
-export interface CurrencyCurrencyGroupView {
+export interface CurrencyCurrencyGroupChange {
+    write: CurrencyCurrencyGroupWrite;
+    precondition: Precondition;
+}
+
+export interface CurrencyCurrencyGroupRemoval {
+    key: CurrencyCurrencyGroupKey;
+    precondition: Precondition;
+}
+
+export interface CurrencyCurrencyGroupLookup {
+    key: CurrencyCurrencyGroupKey;
+    currency_currency_group: CurrencyCurrencyGroup | null;
+}
+
+export interface CurrencyCurrencyGroupsFilter {
+    currency_iso_code: string | null;
+}
+
+export interface CurrencyCurrencyGroupEvent {
+    event_id: string;
+    key: CurrencyCurrencyGroupKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListCurrencyCurrencyGroupsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CurrencyCurrencyGroupsFilter | null;
+}
+
+export interface ListCurrencyCurrencyGroupsResponse {
+    result: Result;
+    currency_currency_groups: CurrencyCurrencyGroup[];
+    total: number;
+}
+
+export interface GetCurrencyCurrencyGroupRequest {
+    key: CurrencyCurrencyGroupKey;
+}
+
+export interface GetCurrencyCurrencyGroupResponse {
+    result: Result;
+    currency_currency_group: CurrencyCurrencyGroup | null;
+}
+
+export interface GetManyCurrencyCurrencyGroupsRequest {
+    keys: CurrencyCurrencyGroupKey[];
+}
+
+export interface GetManyCurrencyCurrencyGroupsResponse {
+    result: Result;
+    entries: CurrencyCurrencyGroupLookup[];
+}
+
+export interface PutCurrencyCurrencyGroupRequest {
+    change: CurrencyCurrencyGroupChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCurrencyCurrencyGroupResponse {
+    result: Result;
     currency_currency_group: CurrencyCurrencyGroup;
 }
 
+export interface PutManyCurrencyCurrencyGroupsRequest {
+    changes: CurrencyCurrencyGroupChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCurrencyCurrencyGroupsResponse {
+    result: Result;
+    currency_currency_groups: CurrencyCurrencyGroup[];
+}
+
+export interface DeleteCurrencyCurrencyGroupRequest {
+    removal: CurrencyCurrencyGroupRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCurrencyCurrencyGroupResponse {
+    result: Result;
+}
+
+export interface DeleteManyCurrencyCurrencyGroupsRequest {
+    removals: CurrencyCurrencyGroupRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCurrencyCurrencyGroupsResponse {
+    result: Result;
+}
+
+export interface ListByCurrencyIsoCodeCurrencyCurrencyGroupsRequest {
+    currency_iso_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CurrencyCurrencyGroupsFilter | null;
+}
+
+export interface ListByCurrencyIsoCodeCurrencyCurrencyGroupsResponse {
+    result: Result;
+    currency_currency_groups: CurrencyCurrencyGroup[];
+    total: number;
+}
+
 export const subjects = {
-    get_currency_currency_groups_request: "refdata.v1.currency_currency_groups.list",
-    get_currency_currency_groups_by_currency_request: "refdata.v1.currency_currency_groups.list_by_currency_iso_code",
-    save_currency_currency_group_request: "refdata.v1.currency_currency_groups.save",
+    list_currency_currency_groups_request: "refdata.v1.currency_currency_groups.list",
+    get_currency_currency_group_request: "refdata.v1.currency_currency_groups.get",
+    get_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.get_many",
+    put_currency_currency_group_request: "refdata.v1.currency_currency_groups.put",
+    put_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.put_many",
     delete_currency_currency_group_request: "refdata.v1.currency_currency_groups.delete",
-    count_currency_currency_groups_by_currency_request: "refdata.v1.currency_currency_groups.count_by_currency_iso_code",
-    count_currency_currency_groups_by_group_request: "refdata.v1.currency_currency_groups.count_by_currency_group_code",
+    delete_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.delete_many",
+    list_by_currency_iso_code_currency_currency_groups_request: "refdata.v1.currency_currency_groups.list_by_currency_iso_code",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_currency_currency_groups_request: true,
+    get_currency_currency_group_request: true,
+    get_many_currency_currency_groups_request: true,
+    put_currency_currency_group_request: true,
+    put_many_currency_currency_groups_request: true,
+    delete_currency_currency_group_request: true,
+    delete_many_currency_currency_groups_request: true,
+    list_by_currency_iso_code_currency_currency_groups_request: true,
 } as const;

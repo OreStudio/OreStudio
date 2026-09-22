@@ -63,7 +63,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.portfolios.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_portfolios(ores::nats::message msg) {
         BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -71,29 +80,122 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::portfolio_service svc(req_ctx);
-        get_portfolios_response resp;
-        if (auto req = decode<get_portfolios_request>(msg)) {
-            try {
-                resp.portfolios = svc.list_portfolios(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_portfolios());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_portfolios_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.list_portfolios(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_portfolios_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.portfolios.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_portfolio(ores::nats::message msg) {
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_portfolio_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.get_portfolio(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_portfolio_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.portfolios.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_portfolios(ores::nats::message msg) {
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_portfolios_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_portfolios(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_portfolios_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.portfolios.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_portfolio(ores::nats::message msg) {
         BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -105,24 +207,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::portfolio_service svc(req_ctx);
-        if (auto req = decode<save_portfolio_request>(msg)) {
-            try {
-                svc.save_portfolio(req->data);
-                BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_portfolio_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_portfolio_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_portfolio_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.put_portfolio(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_portfolio_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.portfolios.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_portfolios(ores::nats::message msg) {
         BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -130,28 +248,44 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::portfolio_service svc(req_ctx);
-        if (auto req = decode<get_portfolio_history_request>(msg)) {
-            try {
-                auto hist = svc.get_portfolio_history(req->id);
-                BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_portfolio_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_portfolio_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::portfolios:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_portfolios_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_portfolios(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_portfolios_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.portfolios.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_portfolio(ores::nats::message msg) {
         BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -163,20 +297,154 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::portfolio_service svc(req_ctx);
-        if (auto req = decode<delete_portfolio_request>(msg)) {
-            try {
-                svc.delete_portfolios(req->ids);
-                BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_portfolio_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_portfolio_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_portfolio_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.delete_portfolio(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_portfolio_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.portfolios.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_portfolios(ores::nats::message msg) {
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::portfolios:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_portfolios_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_portfolios(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_portfolios_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.portfolios_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_portfolio_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_portfolio_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.list_portfolio_versions(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_portfolio_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.portfolios_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_portfolio_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_portfolio_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::portfolio_service svc(req_ctx);
+        try {
+            auto response = svc.get_portfolio_version(*req);
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_portfolio_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

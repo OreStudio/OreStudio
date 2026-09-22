@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_unit.hpp"
+#include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_unit_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit tenor_unit_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_tenor_units_response
+    list_tenor_units(const messaging::list_tenor_units_request& request);
+    messaging::get_tenor_unit_response
+    get_tenor_unit(const messaging::get_tenor_unit_request& request);
+    messaging::get_many_tenor_units_response
+    get_many_tenor_units(const messaging::get_many_tenor_units_request& request);
+    messaging::put_tenor_unit_response
+    put_tenor_unit(const messaging::put_tenor_unit_request& request);
+    messaging::put_many_tenor_units_response
+    put_many_tenor_units(const messaging::put_many_tenor_units_request& request);
+    messaging::delete_tenor_unit_response
+    delete_tenor_unit(const messaging::delete_tenor_unit_request& request);
+    messaging::delete_many_tenor_units_response
+    delete_many_tenor_units(const messaging::delete_many_tenor_units_request& request);
+    messaging::list_tenor_unit_versions_response
+    list_tenor_unit_versions(const messaging::list_tenor_unit_versions_request& request);
+    messaging::get_tenor_unit_version_response
+    get_tenor_unit_version(const messaging::get_tenor_unit_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists tenor units with pagination support.
      *
      * @param offset Number of records to skip.
@@ -97,6 +128,11 @@ public:
      * @return The tenor unit if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_unit> get_unit(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of tenor units by primary key.
+     */
+    std::vector<domain::tenor_unit> get_units(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a tenor unit (creates or updates).
@@ -134,6 +170,23 @@ public:
 private:
     context ctx_;
     repository::tenor_unit_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::tenor_unit_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::tenor_unit& out);
 };
 
 }

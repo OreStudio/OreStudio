@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 680E90E4-651A-5AB8-A079-4584B9630EA0
+:END:
+#+title: How do I run the ibor_index_conventions commands from the shell?
+#+description: Every command the ibor_index_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ibor_index_conventions:
+
+This file documents the ibor_index_conventions resource at the shell, one section per command. Every command is a subcommand of =ibor_index_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5AC3157E-5205-50B6-A3A4-FBD8BED77041
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.list=.
+
+#+name: ibor_index_conventions-list
+#+begin_src ores-shell :tangle ibor_index_conventions-list.ores :exports none
+ibor_index_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2843BDDE-1FC4-5E29-8298-5F36CAB77313
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.get=.
+
+#+name: ibor_index_conventions-get
+#+begin_src ores-shell :tangle ibor_index_conventions-get.ores :exports none
+ibor_index_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 125373C4-FC4B-5DDD-A9C1-0021250CDDAB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.get_many=.
+
+#+name: ibor_index_conventions-get-many
+#+begin_src ores-shell :tangle ibor_index_conventions-get-many.ores :exports none
+ibor_index_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 10215B1C-8909-59FA-8823-243CCED78B87
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions add <id> <fixing_calendar> <day_count_fraction> <settlement_days> <business_day_convention> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.put=.
+
+#+name: ibor_index_conventions-add
+#+begin_src ores-shell :tangle ibor_index_conventions-add.ores :exports none
+ibor_index_conventions add __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9A0E78AA-D3CA-5D83-BDFD-0431A381F04F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions set <id> <fixing_calendar> <day_count_fraction> <settlement_days> <business_day_convention> <end_of_month> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.put=.
+
+#+name: ibor_index_conventions-set
+#+begin_src ores-shell :tangle ibor_index_conventions-set.ores :exports none
+ibor_index_conventions set __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 08295869-3DD9-59AE-BBB1-911A88D4983A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions put-many --count <n> <id> <fixing_calendar> <day_count_fraction> <settlement_days> <business_day_convention> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.put_many=.
+
+#+name: ibor_index_conventions-put-many
+#+begin_src ores-shell :tangle ibor_index_conventions-put-many.ores :exports none
+ibor_index_conventions put-many --count 1 __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B3E545CF-087B-5A44-A11E-E2BE67DA5838
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.delete=.
+
+#+name: ibor_index_conventions-delete
+#+begin_src ores-shell :tangle ibor_index_conventions-delete.ores :exports none
+ibor_index_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9A294279-DB83-5026-844E-FB1D7EDFE83D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions.delete_many=.
+
+#+name: ibor_index_conventions-delete-many
+#+begin_src ores-shell :tangle ibor_index_conventions-delete-many.ores :exports none
+ibor_index_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9AAA3C3D-0929-55DE-8473-27E8ACA27808
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions_versions.list=.
+
+#+name: ibor_index_conventions-versions
+#+begin_src ores-shell :tangle ibor_index_conventions-versions.ores :exports none
+ibor_index_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 35F065F7-A05A-5887-B37B-268206399CE4
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ibor_index_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.ibor_index_conventions_versions.get=.
+
+#+name: ibor_index_conventions-version
+#+begin_src ores-shell :tangle ibor_index_conventions-version.ores :exports none
+ibor_index_conventions version __none__ --version 1
+#+end_src
+

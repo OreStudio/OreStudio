@@ -1,0 +1,153 @@
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
+#include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/book_commands.hpp"
+#include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/book_status_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_centre_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_day_convention_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_unit_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_unit_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_date_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_event_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_exception_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_rule_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/cds_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/counterparty_commands.hpp"
+#include "ores.shell/app/commands/refdata/counterparty_contact_information_commands.hpp"
+#include "ores.shell/app/commands/refdata/counterparty_identifier_commands.hpp"
+#include "ores.shell/app/commands/refdata/country_commands.hpp"
+#include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
+#include "ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
+#include "ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_calendar_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_country_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_currency_group_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_group_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_market_tier_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_pair_classification_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_pair_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_pair_convention_calendar_commands.hpp"
+#include "ores.shell/app/commands/refdata/currency_pair_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_role_commands.hpp"
+#include "ores.shell/app/commands/refdata/day_count_fraction_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/deposit_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/derivation_kind_commands.hpp"
+#include "ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/ibor_index_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/instrument_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/leg_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
+#include "ores.shell/app/commands/refdata/ois_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/overnight_index_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_contact_information_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_counterparty_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_country_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_currency_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_id_scheme_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_identifier_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_status_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
+#include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
+#include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_convention_resolution_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_kind_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_resolution_algorithm_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_unit_commands.hpp"
+#include "ores.shell/app/commands/refdata/zero_convention_commands.hpp"
+
+namespace ores::shell::app::commands {
+
+void refdata_commands::register_commands(cli::Menu& root_menu,
+                                         ores::nats::service::nats_client& session) {
+    asset_class_code_commands::register_commands(root_menu, session);
+    book_commands::register_commands(root_menu, session);
+    book_purpose_type_commands::register_commands(root_menu, session);
+    book_status_commands::register_commands(root_menu, session);
+    business_centre_commands::register_commands(root_menu, session);
+    business_day_convention_type_commands::register_commands(root_menu, session);
+    business_unit_commands::register_commands(root_menu, session);
+    business_unit_type_commands::register_commands(root_menu, session);
+    calendar_commands::register_commands(root_menu, session);
+    calendar_date_commands::register_commands(root_menu, session);
+    calendar_event_commands::register_commands(root_menu, session);
+    calendar_exception_commands::register_commands(root_menu, session);
+    calendar_rule_commands::register_commands(root_menu, session);
+    calendar_type_commands::register_commands(root_menu, session);
+    cds_convention_commands::register_commands(root_menu, session);
+    contact_type_commands::register_commands(root_menu, session);
+    counterparty_commands::register_commands(root_menu, session);
+    counterparty_contact_information_commands::register_commands(root_menu, session);
+    counterparty_identifier_commands::register_commands(root_menu, session);
+    country_commands::register_commands(root_menu, session);
+    crm_driver_pair_commands::register_commands(root_menu, session);
+    crm_enabled_derived_pair_commands::register_commands(root_menu, session);
+    crm_topology_config_commands::register_commands(root_menu, session);
+    currency_calendar_commands::register_commands(root_menu, session);
+    currency_commands::register_commands(root_menu, session);
+    currency_country_commands::register_commands(root_menu, session);
+    currency_currency_group_commands::register_commands(root_menu, session);
+    currency_group_commands::register_commands(root_menu, session);
+    currency_market_tier_commands::register_commands(root_menu, session);
+    currency_pair_classification_commands::register_commands(root_menu, session);
+    currency_pair_commands::register_commands(root_menu, session);
+    currency_pair_convention_calendar_commands::register_commands(root_menu, session);
+    currency_pair_convention_commands::register_commands(root_menu, session);
+    curve_role_commands::register_commands(root_menu, session);
+    day_count_fraction_type_commands::register_commands(root_menu, session);
+    deposit_convention_commands::register_commands(root_menu, session);
+    derivation_kind_commands::register_commands(root_menu, session);
+    diary_entry_type_commands::register_commands(root_menu, session);
+    floating_index_type_commands::register_commands(root_menu, session);
+    fra_convention_commands::register_commands(root_menu, session);
+    ibor_index_convention_commands::register_commands(root_menu, session);
+    instrument_code_commands::register_commands(root_menu, session);
+    ledger_feed_type_commands::register_commands(root_menu, session);
+    leg_type_commands::register_commands(root_menu, session);
+    monetary_nature_commands::register_commands(root_menu, session);
+    ois_convention_commands::register_commands(root_menu, session);
+    overnight_index_convention_commands::register_commands(root_menu, session);
+    party_commands::register_commands(root_menu, session);
+    party_contact_information_commands::register_commands(root_menu, session);
+    party_counterparty_commands::register_commands(root_menu, session);
+    party_country_commands::register_commands(root_menu, session);
+    party_currency_commands::register_commands(root_menu, session);
+    party_id_scheme_commands::register_commands(root_menu, session);
+    party_identifier_commands::register_commands(root_menu, session);
+    party_status_commands::register_commands(root_menu, session);
+    party_type_commands::register_commands(root_menu, session);
+    payment_frequency_commands::register_commands(root_menu, session);
+    portfolio_commands::register_commands(root_menu, session);
+    purpose_type_commands::register_commands(root_menu, session);
+    regulatory_book_type_commands::register_commands(root_menu, session);
+    rounding_type_commands::register_commands(root_menu, session);
+    series_subclass_code_commands::register_commands(root_menu, session);
+    swap_convention_commands::register_commands(root_menu, session);
+    tenor_anchor_commands::register_commands(root_menu, session);
+    tenor_commands::register_commands(root_menu, session);
+    tenor_convention_commands::register_commands(root_menu, session);
+    tenor_convention_resolution_commands::register_commands(root_menu, session);
+    tenor_kind_commands::register_commands(root_menu, session);
+    tenor_resolution_algorithm_commands::register_commands(root_menu, session);
+    tenor_schedule_commands::register_commands(root_menu, session);
+    tenor_unit_commands::register_commands(root_menu, session);
+    zero_convention_commands::register_commands(root_menu, session);
+}
+
+}

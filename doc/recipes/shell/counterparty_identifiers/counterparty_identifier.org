@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 6A28FC85-8EF9-598B-925C-52AFE71AE0AD
+:END:
+#+title: How do I run the counterparty_identifiers commands from the shell?
+#+description: Every command the counterparty_identifiers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:counterparty_identifiers:
+
+This file documents the counterparty_identifiers resource at the shell, one section per command. Every command is a subcommand of =counterparty_identifiers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E0281D7A-03E1-5A2C-8CB4-73E0B50E6741
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.list=.
+
+#+name: counterparty_identifiers-list
+#+begin_src ores-shell :tangle counterparty_identifiers-list.ores :exports none
+counterparty_identifiers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 16FF5437-C909-5AF3-BDC3-4385C6AC96C6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers get <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.get=.
+
+#+name: counterparty_identifiers-get
+#+begin_src ores-shell :tangle counterparty_identifiers-get.ores :exports none
+counterparty_identifiers get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B8247126-4182-5582-868B-9DA1F45DC419
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.get_many=.
+
+#+name: counterparty_identifiers-get-many
+#+begin_src ores-shell :tangle counterparty_identifiers-get-many.ores :exports none
+counterparty_identifiers get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 12E04E79-1ECB-57AE-A49A-D2D17A55B8D1
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers add <id> <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.put=.
+
+#+name: counterparty_identifiers-add
+#+begin_src ores-shell :tangle counterparty_identifiers-add.ores :exports none
+counterparty_identifiers add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6CC50E85-D7CF-5BA0-AB3D-771778C4EA17
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers set <id> <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.put=.
+
+#+name: counterparty_identifiers-set
+#+begin_src ores-shell :tangle counterparty_identifiers-set.ores :exports none
+counterparty_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 612EA02E-F15F-5D13-9A55-4B3BD4694260
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers put-many --count <n> <id> <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.put_many=.
+
+#+name: counterparty_identifiers-put-many
+#+begin_src ores-shell :tangle counterparty_identifiers-put-many.ores :exports none
+counterparty_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 42E58C0F-3C60-5B9A-B77F-9189D6475A4B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.delete=.
+
+#+name: counterparty_identifiers-delete
+#+begin_src ores-shell :tangle counterparty_identifiers-delete.ores :exports none
+counterparty_identifiers delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 992AF425-51DA-5ABD-8291-A1D8FF06E2D6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.delete_many=.
+
+#+name: counterparty_identifiers-delete-many
+#+begin_src ores-shell :tangle counterparty_identifiers-delete-many.ores :exports none
+counterparty_identifiers delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-counterparty-id=
+:PROPERTIES:
+:ID: E2853F96-3DA9-5888-AE19-1D860DD24BF0
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers by-counterparty-id <counterparty_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers.list_by_counterparty_id=.
+
+#+name: counterparty_identifiers-by-counterparty-id
+#+begin_src ores-shell :tangle counterparty_identifiers-by-counterparty-id.ores :exports none
+counterparty_identifiers by-counterparty-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 78A0408E-CA46-541F-B9AE-377B1C3DDF4E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers_versions.list=.
+
+#+name: counterparty_identifiers-versions
+#+begin_src ores-shell :tangle counterparty_identifiers-versions.ores :exports none
+counterparty_identifiers versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: EA088AA1-2699-5EAC-B202-73ECCAA3C020
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_identifiers version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.counterparty_identifiers_versions.get=.
+
+#+name: counterparty_identifiers-version
+#+begin_src ores-shell :tangle counterparty_identifiers-version.ores :exports none
+counterparty_identifiers version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

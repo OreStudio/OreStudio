@@ -45,6 +45,7 @@ here is left to the model's own choice:
 
 | Address | Enabled |
 |---------+---------|
+| =ores.cpp.shell-command= | true |
 | =ores.cpp.eventing-integration-test= | true |
 
 * See also

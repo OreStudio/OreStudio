@@ -23,50 +23,183 @@
  * To modify, update the template and regenerate.
  */
 import type { MonetaryNature } from '../domain/monetary_nature.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetMonetaryNaturesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetMonetaryNaturesResponse {
-    types: MonetaryNature[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveMonetaryNatureRequest {
-    data: MonetaryNature;
-}
-
-export interface SaveMonetaryNatureResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteMonetaryNatureRequest {
-    codes: string[];
-}
-
-export interface DeleteMonetaryNatureResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetMonetaryNatureHistoryRequest {
+export interface MonetaryNatureKey {
     code: string;
 }
 
-export interface GetMonetaryNatureHistoryResponse {
-    history: MonetaryNature[];
-    success: boolean;
-    message: string;
+export interface MonetaryNatureWrite {
+    code: string;
+    name: string;
+    description: string;
+    display_order: number;
+}
+
+export interface MonetaryNatureChange {
+    write: MonetaryNatureWrite;
+    precondition: Precondition;
+}
+
+export interface MonetaryNatureRemoval {
+    key: MonetaryNatureKey;
+    precondition: Precondition;
+}
+
+export interface MonetaryNatureLookup {
+    key: MonetaryNatureKey;
+    monetary_nature: MonetaryNature | null;
+}
+
+export interface MonetaryNatureEvent {
+    event_id: string;
+    key: MonetaryNatureKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface MonetaryNatureVersionKey {
+    monetary_nature: MonetaryNatureKey;
+    version: number;
+}
+
+export interface MonetaryNatureVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListMonetaryNaturesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListMonetaryNaturesResponse {
+    result: Result;
+    types: MonetaryNature[];
+    total: number;
+}
+
+export interface GetMonetaryNatureRequest {
+    key: MonetaryNatureKey;
+}
+
+export interface GetMonetaryNatureResponse {
+    result: Result;
+    monetary_nature: MonetaryNature | null;
+}
+
+export interface GetManyMonetaryNaturesRequest {
+    keys: MonetaryNatureKey[];
+}
+
+export interface GetManyMonetaryNaturesResponse {
+    result: Result;
+    entries: MonetaryNatureLookup[];
+}
+
+export interface PutMonetaryNatureRequest {
+    change: MonetaryNatureChange;
+    intent: ChangeIntent;
+}
+
+export interface PutMonetaryNatureResponse {
+    result: Result;
+    monetary_nature: MonetaryNature;
+}
+
+export interface PutManyMonetaryNaturesRequest {
+    changes: MonetaryNatureChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyMonetaryNaturesResponse {
+    result: Result;
+    types: MonetaryNature[];
+}
+
+export interface DeleteMonetaryNatureRequest {
+    removal: MonetaryNatureRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteMonetaryNatureResponse {
+    result: Result;
+}
+
+export interface DeleteManyMonetaryNaturesRequest {
+    removals: MonetaryNatureRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyMonetaryNaturesResponse {
+    result: Result;
+}
+
+export interface ListMonetaryNatureVersionsRequest {
+    key: MonetaryNatureKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: MonetaryNatureVersionsFilter | null;
+}
+
+export interface ListMonetaryNatureVersionsResponse {
+    result: Result;
+    versions: MonetaryNature[];
+    total: number;
+}
+
+export interface GetMonetaryNatureVersionRequest {
+    key: MonetaryNatureVersionKey;
+}
+
+export interface GetMonetaryNatureVersionResponse {
+    result: Result;
+    version: MonetaryNature;
 }
 
 export const subjects = {
-    get_monetary_natures_request: "refdata.v1.monetary_natures.list",
-    save_monetary_nature_request: "refdata.v1.monetary_natures.save",
+    list_monetary_natures_request: "refdata.v1.monetary_natures.list",
+    get_monetary_nature_request: "refdata.v1.monetary_natures.get",
+    get_many_monetary_natures_request: "refdata.v1.monetary_natures.get_many",
+    put_monetary_nature_request: "refdata.v1.monetary_natures.put",
+    put_many_monetary_natures_request: "refdata.v1.monetary_natures.put_many",
     delete_monetary_nature_request: "refdata.v1.monetary_natures.delete",
-    get_monetary_nature_history_request: "refdata.v1.monetary_natures.history",
+    delete_many_monetary_natures_request: "refdata.v1.monetary_natures.delete_many",
+    list_monetary_nature_versions_request: "refdata.v1.monetary_natures_versions.list",
+    get_monetary_nature_version_request: "refdata.v1.monetary_natures_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_monetary_natures_request: true,
+    get_monetary_nature_request: true,
+    get_many_monetary_natures_request: true,
+    put_monetary_nature_request: true,
+    put_many_monetary_natures_request: true,
+    delete_monetary_nature_request: true,
+    delete_many_monetary_natures_request: true,
+    list_monetary_nature_versions_request: true,
+    get_monetary_nature_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.monetary_natures_events.created",
+    updated: "refdata.v1.monetary_natures_events.updated",
+    deleted: "refdata.v1.monetary_natures_events.deleted",
 } as const;

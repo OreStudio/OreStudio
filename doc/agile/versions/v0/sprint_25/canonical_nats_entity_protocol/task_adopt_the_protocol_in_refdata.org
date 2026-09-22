@@ -1,0 +1,279 @@
+:PROPERTIES:
+:ID: B81ABF43-5257-4677-96A8-4FD5E796EA60
+:END:
+#+title: Task: Adopt the canonical protocol in ores.refdata
+#+description: The second component converted to the specification. Codegen emits the canonical messages for every refdata entity, junction and operation; generated ores.shell commands and their tests exercise every verb; the BFF route descriptor and the web screens consume the new shapes; and refdata joins COMPONENTS_UNDER_TEST.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/adopt-the-protocol-in-refdata
+#+pr: 2124
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.refdata speaks the canonical protocol end to end, the way ores.iam does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Nothing. The web half is its own task, [[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]]. |
+| Waiting on   | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Codegen emits the canonical messages for every refdata entity, junction and operation, with no hand-written protocol header left and no dead generated surface.
+- Generated ores.shell commands and their tests exercise every verb for every refdata resource, with a generated literate recipe per command.
+- The generated BFF route descriptor and the web screens consume the canonical messages, including a single-record read.
+- refdata joins COMPONENTS_UNDER_TEST, so every gate covers it from then on.
+- The C++ build, the codegen tests, the drift gate, the TypeScript checks and the handler-permission check pass.
+- No component other than ores.refdata has its protocol converted, and nothing is carried for backwards compatibility.
+
+* Plan
+
+Agreed scope, 2026-09-22. =ores.refdata= is the second component converted,
+after the IAM pilot, and the method is the pilot's:
+
+- *Refdata only.* The other components keep their output. Their committed
+  generated code is not regenerated and not reconciled here, and a consumer
+  outside refdata changes only where the protocol it reads changed.
+- *No backwards compatibility.* The old verbs, message names and subjects are
+  replaced, not carried alongside. No aliases, no deprecation window, no dual
+  serving.
+- *All layers in one PR.* Codegen, refdata's generated and hand-written C++,
+  the generated shell commands and their tests, the generated recipes, the BFF
+  route descriptors and the web screens ship together. Renaming a verb changes
+  handler signatures and registration, so a partial change leaves the tree
+  uncompilable.
+- *The mechanism already exists.* The pilot rewrote the templates
+  unconditionally, so this task contains no template work. Codegen already
+  derives the canonical message set in
+  =org_loader.entity_protocol_messages= and =junction_protocol_messages=, and
+  =cpp_protocol.hpp.mustache= is a pure ={{#messages}}= renderer. The work is
+  the models, the regeneration, and every surface that must move with it.
+
+* What the target is.* For one resource: the key, write, change, removal and
+lookup records; a filter; an event payload; the five verbs =list=, =get=,
+=get_many=, =put=, =put_many=, =delete=, =delete_many=, two per side for
+=:list_by:=, and a versions sub-resource read. The write record carries no
+server-owned field, the write request carries a =precondition= and a
+=change_intent=, and every response carries an =ores::utility::domain::result=.
+The shared types live in
+=projects/ores.utility/include/ores.utility/domain/protocol.hpp=.
+
+* The order the work has to happen in, because each step gates the next:
+
+0. *Reconnaissance* (done, 2026-09-22). The scale: a dry run of
+   =check_component_drift.py --component refdata --dry-run --address ores=
+   reports 825 files changed and 65 created -- 210 core/src, 203 core/include,
+   130 =ores.sql/create/refdata=, 77 =wire-protocol= twins, 77 api/include
+   changed plus 65 eventing headers created, 65 service/src and 63 core/tests.
+   The models are 65 entities, 9 junctions and 3 operations.
+1. *Fix the models first.* A property the canonical derivation does not read
+   is dropped in silence, so every one is decided here rather than discovered
+   later; the pilot's own note is that "the model is what gets fixed, not the
+   template".
+   - =:read_for_cache:= (party, currency_pair_convention) has no successor in
+     the specification: a cache is fed by events or by a =get_many=, not by a
+     bulk read. Removing it moves =ores.iam='s =party_cache= onto one of those.
+   - =:has_as_of_lookup:= (book_status, country, currency,
+     regulatory_book_type) is already ignored. The as-of read it used to add
+     is the versions sub-resource now.
+   - =:list_by:= (18 models, with =:list_by_as_of:= and =:list_by_uuid:=
+     variants) becomes =list_by_<relation>= plus the =scope= field.
+   - =:has_parent_id:= stays live, but the hierarchy message family it used to
+     emit is gone; the parent-scoped read is the relation-scoped list.
+   - The three operation models keep their declared messages, because a
+     domain operation is not derived. Their subjects must obey the grammar:
+     =refdata.v1.asset-classes.list= is hyphenated and becomes
+     =refdata.v1.asset_classes.list=. =calendar_adjustments.export= and
+     =calendar_dates.regenerate= stay, as component operations the
+     specification allows.
+   - The 92 =:implements <UUID>= paste blocks in 41 models are the old
+     hand-written message path. Each is either a message that moves into the
+     model's =* Messages= section or dead code that goes, and the loader
+     refuses a model that keeps both.
+2. *Regenerate and compile.* Nothing downstream is worth attempting until the
+   generated C++ builds.
+3. *The C++ lockstep.* The hand-written files that name the old protocol must
+   move with it: =api/.../messaging/protocol.hpp= (a 26-protocol umbrella),
+   the four operation stacks (=asset_class=, =calendar_adjustment=,
+   =calendar_materialisation=, =publish_from_dq=) with their =registrar.cpp=,
+   the hand-written =asset_class_repository= and =asset_class_service=, and
+   the =calendar_materialisation= and =calendar_adjustment_export= services.
+   The operation handlers adopt the outcome contract, or the model is
+   reclassified as an out-of-scope component operation.
+4. *SQL.* Regeneration rewrites =refdata_*_create.sql= and
+   =refdata_*_notify_trigger_create.sql= to the new trigger payload and the
+   version compare-and-swap; the table DDL does not change and no hand
+   migration is written. =refdata_publish_from_dq_create.sql= counts its
+   subjects in snake_case.
+5. *The shell.* The pilot's new =ores.doc.shell-recipe= facet follows
+   =ores.cpp.shell-command= automatically. Refdata has neither today: its shell
+   commands are hand-written in =ores.shell/application=, and eight subjects
+   are raw literals. Refdata gains a shell adapter part like
+   =projects/ores.shell/iam=, the models switch the facet on, and the
+   hand-written commands retire. The adapter part ships its
+   =ores.shell.refdata.puml= and =.png= with its =component_overview.org=,
+   because =validate_docs.sh= fails a component whose =modeling/= holds no
+   diagram -- which is the one thing the IAM pilot left behind.
+6. *The web.* The 77 protocol twins regenerate, the UI metadata and BFF route
+   descriptors generate, and the hand-written =operations.ts=, the country
+   pages, the component registry and the BFF change-events file follow the
+   canonical names.
+7. *The consumers outside refdata.* =ores.http= risk routes, =ores.iam='s
+   tenant-provisioning handler and party cache, =ores.marketdata='s import
+   service, =ores.ore='s calendar-adjustment mapper, exporter, importer and
+   import handler, and the shell commands that read refdata directly. The DQ
+   populate SQL names about twenty publish-from-dq subjects.
+8. *Gates and verification.* Add =refdata= to =COMPONENTS_UNDER_TEST=, which
+   is the claim that its regeneration leaves the tree clean, that every
+   protocol header has its twin and that its seeds are complete. Then the
+   whole build, the codegen suite, the drift, twin, model, handler-permission
+   and populate gates, the full ctest run, and the shell surface against the
+   running fleet, as the pilot did.
+
+* What the pilot left for its successors.* The pilot converted the entity
+path only, and its own plan names two pieces it judged off its critical path
+because no IAM model reaches them: "=cpp_nats_event_cache.hpp= renders for a
+=read_for_cache= entity and IAM declares none", and the template rewrite is
+"unconditional and deletes the branches". Refdata reaches both, and the
+reconnaissance found a third:
+
+- *The junction C++ stack is unconverted.* The junction branch of
+  =cpp_protocol.hpp= is canonical, but the junction branches of the
+  repository, service, handler and registrar templates still emit
+  =list=/=save=/=remove=/=count_by=/=replace_by= and the message types that
+  went with them. The pilot's junction (=ores.iam.account_party=) renders none
+  of them because its model disables =ores.cpp.nats-handler=,
+  =ores.cpp.nats-sub-registrar= and =ores.cpp.service=. Refdata's nine
+  junctions enable all three, so the branches must be converted before refdata
+  can be regenerated.
+- *The event cache warms through the retired bulk read.*
+  =cpp_nats_event_cache.hpp= sends =read_<plural>_for_cache_request=, which
+  the canonical derivation no longer emits, and its registrar subscribes with
+  the retired =event_traits= and =entity_change_event=. Two refdata models use
+  the facet: =party= (consumed by =ores.iam=) and
+  =currency_pair_convention= (consumed by =ores.refdata.client=). The
+  specification's answer is a list paged to its end, and the canonical events.
+- *The single write verb's interception hook was retired.* The paste point at
+  the top of the handler's save method carried =party='s orchestration
+  override, which must run before authentication. The generic handler renders
+  it again, guarded to the =put= verb, so a model that does not implement it is
+  unaffected.
+- *The point-in-time read is gone, not moved.* =has_as_of_lookup= drove
+  =read_at_timepoint= in the repository, and no template emits it now. The
+  specification replaces the version axis with a filter on the versions
+  sub-resource, which is a different read: a caller that wants "the row as of
+  date T" lists the versions and picks. Consumers that relied on the old
+  semantics must change, and the plan accepts that as the protocol's decision
+  rather than a gap to repair.
+
+* Risks carried into the work.*
+
+- The party junctions are read by =ores.iam='s tenant provisioning, so a
+  protocol change there is a cross-component change even though the conversion
+  is refdata's alone.
+- 58 models declare custom repository methods, which the new contract must
+  still allow; the pilot added conditional write and remove beneath them.
+- =publish_from_dq= serves 31 kebab-case subjects that the grammar does not
+  allow, and DQ's populate data names them.
+
+* Notes
+
+- *The IAM pilot left =validate_docs.sh= red.* =projects/ores.shell/iam/modeling/=
+  holds a =component_overview.org= and no =.puml=, so the check reports
+  =[MISSING_PUML] ores.shell.iam= on =origin/main= before this task starts.
+  The IAM verification task ([[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]])
+  owns the fix; this task does not carry it, and its own shell adapter part
+  ships the diagram.
+- *Scale.* A dry run of =check_component_drift.py --component refdata
+  --dry-run --address ores= reports 825 changed and 65 created files, none of
+  them errors: the generation itself is already correct, and the work is the
+  models and the lockstep surfaces the plan lists.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2124][#2124]] | [refdata,codegen,shell] Adopt the canonical NATS entity protocol in refdata |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Refdata speaks the canonical protocol end to end, and the gaps the IAM
+pilot left for its successors are closed in codegen rather than worked
+around in the models.
+
+What the pilot left, and what this task did with it:
+
+- *The junction C++ stack* emitted the retired verbs. The repository gained
+  the precondition write and the remove that reports its outcome, the
+  service one method per derived operation, the handler the canonical
+  decode and reply, and the registrar one subscription per subject. The
+  entity branch was the reference throughout.
+- *The event cache* warmed through the retired bulk read and subscribed
+  with the retired traits. It now pages the canonical list to its end and
+  follows the three canonical event actions.
+- *The single write verb's interception hook* was retired by the handler
+  rewrite, and =party='s orchestration override needs it before
+  authentication. The generic handler renders the point again, guarded to
+  the =put= verb.
+- *The point-in-time read* was deleted outright. The two repository
+  overloads are back, the canonical list states the instant in =as_of=,
+  the service resolves it against the entity's own validity window, and
+  the four models that offer it declare the flag. The specification states
+  the read and its four consequences.
+
+Refdata itself: 79 models, and a regeneration of 926 files plus 72 shell
+command units, their tests and their recipes. The profiles refdata binds
+carry the shell facets, so the shell surface is generated and the
+hand-written country, currency, party and CRM commands are gone.
+
+Legacy removed: the model features the protocol retired, 696 dead
+presentation properties that named retired message types, the hand-written
+protocol umbrella, the stale names the doc template emitted, and the
+version-zero assertion the publish functions relied on.
+
+Verified: the whole tree builds; the codegen suite passes 569; the drift
+gate is clean with =iam= and =refdata= both under test; protocol twin
+coverage is 98 of 98 with no opt-out; model drift, handler permissions,
+populate references, the recipe inventory and the CMake source lists are
+clean; the web typechecks and its 36 tests pass; the database recreates
+from scratch; and the refdata suites pass 4 of 4.
+
+The web half is deliberately not here: the wire-protocol package carries a
+hand-written duplicate of the country protocol, and making that generated
+rather than hand-written is its own change. It is
+[[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]].

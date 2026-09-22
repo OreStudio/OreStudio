@@ -63,7 +63,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.countries.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_countries(ores::nats::message msg) {
         BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -71,34 +80,122 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::country_service svc(req_ctx);
-        get_countries_response resp;
-        if (auto req = decode<get_countries_request>(msg)) {
-            try {
-                if (!req->as_of.empty()) {
-                    resp.countries = svc.list_countries_at_timepoint(req->as_of);
-                    resp.total_available_count = static_cast<int>(resp.countries.size());
-                } else {
-                    resp.countries = svc.list_countries(req->offset, req->limit);
-                    resp.total_available_count = static_cast<int>(svc.count_countries());
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_countries_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.list_countries(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.countries.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_country(ores::nats::message msg) {
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_country_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.get_country(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.countries.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_countries(ores::nats::message msg) {
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_countries_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_countries(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.countries.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_country(ores::nats::message msg) {
         BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -110,24 +207,40 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::country_service svc(req_ctx);
-        if (auto req = decode<save_country_request>(msg)) {
-            try {
-                svc.save_country(req->data);
-                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_country_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_country_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_country_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.put_country(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.countries.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_countries(ores::nats::message msg) {
         BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -135,28 +248,44 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::country_service svc(req_ctx);
-        if (auto req = decode<get_country_history_request>(msg)) {
-            try {
-                auto hist = svc.get_country_history(req->alpha2_code);
-                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_country_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_country_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::countries:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_countries_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_countries(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.countries.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_country(ores::nats::message msg) {
         BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -168,20 +297,154 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::country_service svc(req_ctx);
-        if (auto req = decode<delete_country_request>(msg)) {
-            try {
-                svc.delete_countries(req->alpha2_codes);
-                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_country_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_country_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_country_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.delete_country(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.countries.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_countries(ores::nats::message msg) {
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::countries:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_countries_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_countries(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.countries_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_country_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_country_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.list_country_versions(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_country_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.countries_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_country_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_country_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::country_service svc(req_ctx);
+        try {
+            auto response = svc.get_country_version(*req);
+            BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(country_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_country_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

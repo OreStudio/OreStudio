@@ -28,7 +28,10 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,8 +40,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing tenor convention resolutions.
  *
- * This service provides functionality for:
- * - Managing tenor convention resolutions (CRUD operations)
+ * Provides a higher-level interface for tenor convention resolution operations,
+ * wrapping the underlying repository.
  */
 class tenor_convention_resolution_service {
 private:
@@ -55,52 +58,32 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a tenor_convention_resolution_service with required repositories.
+     * @brief Constructs a tenor_convention_resolution_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit tenor_convention_resolution_service(context ctx);
 
     /**
-     * @brief Lists all tenor convention resolutions.
-     */
-    std::vector<domain::tenor_convention_resolution> list_resolutions();
-
-    /**
-     * @brief Lists tenor convention resolutions with pagination.
-     */
-    std::vector<domain::tenor_convention_resolution> list_resolutions(std::uint32_t offset,
-                                                                      std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active tenor convention resolutions.
-     */
-    std::uint32_t get_total_resolution_count();
-
-    /**
-     * @brief Lists tenor convention resolutions for a specific convention.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param convention_code The convention to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::tenor_convention_resolution>
-    list_resolutions_by_convention(const std::string& convention_code);
-
-    /**
-     * @brief Lists tenor convention resolutions for a specific convention, with pagination.
-     */
-    std::vector<domain::tenor_convention_resolution> list_resolutions_by_convention(
-        const std::string& convention_code, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active tenor convention resolutions filtered by
-     * convention_code.
-     */
-    std::uint32_t get_total_resolution_count_by_convention(const std::string& convention_code);
-
-    /**
-     * @brief Gets the total count of active tenor convention resolutions filtered by tenor_code.
-     */
-    std::uint32_t get_total_resolution_count_by_tenor(const std::string& tenor_code);
+    /**@{*/
+    messaging::list_tenor_convention_resolutions_response list_tenor_convention_resolutions(
+        const messaging::list_tenor_convention_resolutions_request& request);
+    messaging::get_tenor_convention_resolution_response get_tenor_convention_resolution(
+        const messaging::get_tenor_convention_resolution_request& request);
+    messaging::get_many_tenor_convention_resolutions_response get_many_tenor_convention_resolutions(
+        const messaging::get_many_tenor_convention_resolutions_request& request);
+    messaging::list_by_convention_code_tenor_convention_resolutions_response
+    list_by_convention_code_tenor_convention_resolutions(
+        const messaging::list_by_convention_code_tenor_convention_resolutions_request& request);
+    /**@}*/
 
 private:
     context ctx_;

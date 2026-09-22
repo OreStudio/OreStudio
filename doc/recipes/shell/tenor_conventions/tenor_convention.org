@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 10D467BE-9F59-5C13-92BE-698C469DE6C2
+:END:
+#+title: How do I run the tenor_conventions commands from the shell?
+#+description: Every command the tenor_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_conventions:
+
+This file documents the tenor_conventions resource at the shell, one section per command. Every command is a subcommand of =tenor_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7D9D1D45-7940-52D9-9EE7-9289A4D1D283
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.list=.
+
+#+name: tenor_conventions-list
+#+begin_src ores-shell :tangle tenor_conventions-list.ores :exports none
+tenor_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 718B8B77-DC5D-5B28-A0C7-C5C5B559287D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions get <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.get=.
+
+#+name: tenor_conventions-get
+#+begin_src ores-shell :tangle tenor_conventions-get.ores :exports none
+tenor_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B215E671-DDBE-5C31-BC20-63FE419FE3EA
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.get_many=.
+
+#+name: tenor_conventions-get-many
+#+begin_src ores-shell :tangle tenor_conventions-get-many.ores :exports none
+tenor_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D1336552-B4AD-5C86-AB96-380C521302B3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions add <code> <description> <measured_from> <resolution_algorithm> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.put=.
+
+#+name: tenor_conventions-add
+#+begin_src ores-shell :tangle tenor_conventions-add.ores :exports none
+tenor_conventions add __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3D713558-6C07-5982-97A7-66EA87D7268E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions set <code> <description> <measured_from> <resolution_algorithm> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.put=.
+
+#+name: tenor_conventions-set
+#+begin_src ores-shell :tangle tenor_conventions-set.ores :exports none
+tenor_conventions set __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B754DCF5-0E8C-5EFF-88AB-D680676E4AF7
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions put-many --count <n> <code> <description> <measured_from> <resolution_algorithm> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.put_many=.
+
+#+name: tenor_conventions-put-many
+#+begin_src ores-shell :tangle tenor_conventions-put-many.ores :exports none
+tenor_conventions put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4D13956A-AA68-5481-A6D5-7BF67FEC1341
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.delete=.
+
+#+name: tenor_conventions-delete
+#+begin_src ores-shell :tangle tenor_conventions-delete.ores :exports none
+tenor_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6BB22535-9238-5CC8-94FA-42D85AA20B00
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions.delete_many=.
+
+#+name: tenor_conventions-delete-many
+#+begin_src ores-shell :tangle tenor_conventions-delete-many.ores :exports none
+tenor_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: ACD27719-0299-5122-81EB-08A0D2DC1F0A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions_versions.list=.
+
+#+name: tenor_conventions-versions
+#+begin_src ores-shell :tangle tenor_conventions-versions.ores :exports none
+tenor_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 908586B9-8F9B-511E-B1D7-2B58E5E86491
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_conventions version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_conventions_versions.get=.
+
+#+name: tenor_conventions-version
+#+begin_src ores-shell :tangle tenor_conventions-version.ores :exports none
+tenor_conventions version __none__ --version 1
+#+end_src
+

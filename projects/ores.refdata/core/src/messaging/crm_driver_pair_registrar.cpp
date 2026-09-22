@@ -39,20 +39,42 @@ register_crm_driver_pair_handlers(ores::nats::service::client& nats,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<crm_driver_pair_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_crm_driver_pairs_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_crm_driver_pair_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_crm_driver_pairs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_crm_driver_pairs(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_crm_driver_pair_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_crm_driver_pair(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_crm_driver_pairs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_crm_driver_pairs(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_crm_driver_pair_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_crm_driver_pair(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_crm_driver_pairs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_crm_driver_pairs(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
         delete_crm_driver_pair_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_crm_driver_pair(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_crm_driver_pair_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_crm_driver_pairs_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_crm_driver_pairs(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_crm_driver_pair_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_crm_driver_pair_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_crm_driver_pair_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_crm_driver_pair_version(std::move(msg)); }));
     return subs;
 }
 

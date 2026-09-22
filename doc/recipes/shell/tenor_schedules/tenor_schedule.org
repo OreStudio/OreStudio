@@ -1,0 +1,265 @@
+:PROPERTIES:
+:ID: 03C02F24-EAE2-5F3A-9859-8467F2C0C71F
+:END:
+#+title: How do I run the tenor_schedules commands from the shell?
+#+description: Every command the tenor_schedules submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_schedules:
+
+This file documents the tenor_schedules resource at the shell, one section per command. Every command is a subcommand of =tenor_schedules=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 58DE1C34-4552-5742-B122-0243181AA33B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.list=.
+
+#+name: tenor_schedules-list
+#+begin_src ores-shell :tangle tenor_schedules-list.ores :exports none
+tenor_schedules list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2164BCD6-B4B4-5C3A-9D05-CFDE41980A05
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules get <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.get=.
+
+#+name: tenor_schedules-get
+#+begin_src ores-shell :tangle tenor_schedules-get.ores :exports none
+tenor_schedules get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E6533EA9-497D-5C89-8C61-A93AF484A730
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.get_many=.
+
+#+name: tenor_schedules-get-many
+#+begin_src ores-shell :tangle tenor_schedules-get-many.ores :exports none
+tenor_schedules get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 074BC41B-0941-5758-A594-F55AC416C1BC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules add <code> <name> <description> <display_order> <schedule_source> <calendar_code> <diary_entry_type> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.put=.
+
+#+name: tenor_schedules-add
+#+begin_src ores-shell :tangle tenor_schedules-add.ores :exports none
+tenor_schedules add __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 67CDAD70-4690-5645-810E-12F06B05203E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules set <code> <name> <description> <display_order> <schedule_source> <calendar_code> <diary_entry_type> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.put=.
+
+#+name: tenor_schedules-set
+#+begin_src ores-shell :tangle tenor_schedules-set.ores :exports none
+tenor_schedules set __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2714CB1E-1489-5B26-ABC3-25C4892A0C76
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules put-many --count <n> <code> <name> <description> <display_order> <schedule_source> <calendar_code> <diary_entry_type> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.put_many=.
+
+#+name: tenor_schedules-put-many
+#+begin_src ores-shell :tangle tenor_schedules-put-many.ores :exports none
+tenor_schedules put-many --count 1 __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F8EA4719-58EB-5682-8B67-F5F07F14C483
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.delete=.
+
+#+name: tenor_schedules-delete
+#+begin_src ores-shell :tangle tenor_schedules-delete.ores :exports none
+tenor_schedules delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 4CC6DDA6-049F-5E0C-8725-131118C89E05
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.delete_many=.
+
+#+name: tenor_schedules-delete-many
+#+begin_src ores-shell :tangle tenor_schedules-delete-many.ores :exports none
+tenor_schedules delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-calendar-code=
+:PROPERTIES:
+:ID: 42DD13DD-BB81-5B99-BBAB-8739CE6CB93F
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules by-calendar-code <calendar_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.list_by_calendar_code=.
+
+#+name: tenor_schedules-by-calendar-code
+#+begin_src ores-shell :tangle tenor_schedules-by-calendar-code.ores :exports none
+tenor_schedules by-calendar-code __none__ --limit 1
+#+end_src
+
+** =by-diary-entry-type=
+:PROPERTIES:
+:ID: D6EBC9FE-EFB3-530E-946C-3DB5654D6E2C
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules by-diary-entry-type <diary_entry_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules.list_by_diary_entry_type=.
+
+#+name: tenor_schedules-by-diary-entry-type
+#+begin_src ores-shell :tangle tenor_schedules-by-diary-entry-type.ores :exports none
+tenor_schedules by-diary-entry-type __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7E030E23-9A88-525E-8CE4-B0C5CE0D8C05
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules_versions.list=.
+
+#+name: tenor_schedules-versions
+#+begin_src ores-shell :tangle tenor_schedules-versions.ores :exports none
+tenor_schedules versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C101B411-8730-5B42-8746-81D7641FE5EB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_schedules version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_schedules_versions.get=.
+
+#+name: tenor_schedules-version
+#+begin_src ores-shell :tangle tenor_schedules-version.ores :exports none
+tenor_schedules version __none__ --version 1
+#+end_src
+

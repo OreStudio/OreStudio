@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: A90DEF41-7495-5A64-93E9-717CF2386BE3
+:END:
+#+title: How do I run the ledger_feed_types commands from the shell?
+#+description: Every command the ledger_feed_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ledger_feed_types:
+
+This file documents the ledger_feed_types resource at the shell, one section per command. Every command is a subcommand of =ledger_feed_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DACC4940-BE8D-5806-8749-54D0DD33E2C8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.list=.
+
+#+name: ledger_feed_types-list
+#+begin_src ores-shell :tangle ledger_feed_types-list.ores :exports none
+ledger_feed_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 165726B7-DA05-52BF-9F0C-B8F28491FAA6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.get=.
+
+#+name: ledger_feed_types-get
+#+begin_src ores-shell :tangle ledger_feed_types-get.ores :exports none
+ledger_feed_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: CCF2926A-C5A7-5BF7-A40B-369AFA05A8D2
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.get_many=.
+
+#+name: ledger_feed_types-get-many
+#+begin_src ores-shell :tangle ledger_feed_types-get-many.ores :exports none
+ledger_feed_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D03E828E-7C18-5445-84EA-B192EDE17CB3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.put=.
+
+#+name: ledger_feed_types-add
+#+begin_src ores-shell :tangle ledger_feed_types-add.ores :exports none
+ledger_feed_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5D98DFF3-D08F-51C2-B853-30883B5CF303
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.put=.
+
+#+name: ledger_feed_types-set
+#+begin_src ores-shell :tangle ledger_feed_types-set.ores :exports none
+ledger_feed_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8FB5FFA3-DD5D-517F-BC0A-3F3E2F842DA8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.put_many=.
+
+#+name: ledger_feed_types-put-many
+#+begin_src ores-shell :tangle ledger_feed_types-put-many.ores :exports none
+ledger_feed_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F035B132-D853-51CD-B5F8-C6B905378EC2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.delete=.
+
+#+name: ledger_feed_types-delete
+#+begin_src ores-shell :tangle ledger_feed_types-delete.ores :exports none
+ledger_feed_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7EF1B99A-E70F-5988-BAAA-F2CEEF766DAE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types.delete_many=.
+
+#+name: ledger_feed_types-delete-many
+#+begin_src ores-shell :tangle ledger_feed_types-delete-many.ores :exports none
+ledger_feed_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A2AC44BD-25BC-52FF-8697-A80CCA97D129
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types_versions.list=.
+
+#+name: ledger_feed_types-versions
+#+begin_src ores-shell :tangle ledger_feed_types-versions.ores :exports none
+ledger_feed_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6133AA76-2D89-5136-8766-62FB5FC0AC51
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ledger_feed_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.ledger_feed_types_versions.get=.
+
+#+name: ledger_feed_types-version
+#+begin_src ores-shell :tangle ledger_feed_types-version.ores :exports none
+ledger_feed_types version __none__ --version 1
+#+end_src
+

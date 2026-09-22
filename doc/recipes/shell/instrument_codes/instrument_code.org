@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: E30A8D21-AC70-52F6-9F23-D15302271A80
+:END:
+#+title: How do I run the instrument_codes commands from the shell?
+#+description: Every command the instrument_codes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:instrument_codes:
+
+This file documents the instrument_codes resource at the shell, one section per command. Every command is a subcommand of =instrument_codes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 19A8737A-EC0D-559C-9214-636AEF1FA0EB
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.list=.
+
+#+name: instrument_codes-list
+#+begin_src ores-shell :tangle instrument_codes-list.ores :exports none
+instrument_codes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9C2CDE0E-38AE-59E6-938C-6D09348DADFE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes get <code>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.get=.
+
+#+name: instrument_codes-get
+#+begin_src ores-shell :tangle instrument_codes-get.ores :exports none
+instrument_codes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 11A4F177-99CB-543E-AD64-F7A9F6EA9F5C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.get_many=.
+
+#+name: instrument_codes-get-many
+#+begin_src ores-shell :tangle instrument_codes-get-many.ores :exports none
+instrument_codes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 75CF37F0-076B-5954-8D83-5006E50794D3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes add <code> <name> <description> <asset_class> <ore_trade_type> <display_order> <curve_role> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.put=.
+
+#+name: instrument_codes-add
+#+begin_src ores-shell :tangle instrument_codes-add.ores :exports none
+instrument_codes add __none__ __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6CF07CE2-8BC6-57C3-9BD7-41E360DD231B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes set <code> <name> <description> <asset_class> <ore_trade_type> <display_order> <curve_role> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.put=.
+
+#+name: instrument_codes-set
+#+begin_src ores-shell :tangle instrument_codes-set.ores :exports none
+instrument_codes set __none__ __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D425B027-B3C6-56A8-864F-B99C26DEB402
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes put-many --count <n> <code> <name> <description> <asset_class> <ore_trade_type> <display_order> <curve_role> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.put_many=.
+
+#+name: instrument_codes-put-many
+#+begin_src ores-shell :tangle instrument_codes-put-many.ores :exports none
+instrument_codes put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 66557037-9020-5EE8-AC47-B5F12CAE9A00
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.delete=.
+
+#+name: instrument_codes-delete
+#+begin_src ores-shell :tangle instrument_codes-delete.ores :exports none
+instrument_codes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8B128F99-F039-5453-9041-FBD156FD967F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes.delete_many=.
+
+#+name: instrument_codes-delete-many
+#+begin_src ores-shell :tangle instrument_codes-delete-many.ores :exports none
+instrument_codes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9F221759-A18A-5E01-9155-D0D9009D1587
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes_versions.list=.
+
+#+name: instrument_codes-versions
+#+begin_src ores-shell :tangle instrument_codes-versions.ores :exports none
+instrument_codes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C969F7AE-A938-50E5-BE7E-689A91B5D6BF
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+instrument_codes version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.instrument_codes_versions.get=.
+
+#+name: instrument_codes-version
+#+begin_src ores-shell :tangle instrument_codes-version.ores :exports none
+instrument_codes version __none__ --version 1
+#+end_src
+

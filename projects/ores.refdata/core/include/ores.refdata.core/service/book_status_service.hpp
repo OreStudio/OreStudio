@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/book_status_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit book_status_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_book_statuses_response
+    list_book_statuses(const messaging::list_book_statuses_request& request);
+    messaging::get_book_status_response
+    get_book_status(const messaging::get_book_status_request& request);
+    messaging::get_many_book_statuses_response
+    get_many_book_statuses(const messaging::get_many_book_statuses_request& request);
+    messaging::put_book_status_response
+    put_book_status(const messaging::put_book_status_request& request);
+    messaging::put_many_book_statuses_response
+    put_many_book_statuses(const messaging::put_many_book_statuses_request& request);
+    messaging::delete_book_status_response
+    delete_book_status(const messaging::delete_book_status_request& request);
+    messaging::delete_many_book_statuses_response
+    delete_many_book_statuses(const messaging::delete_many_book_statuses_request& request);
+    messaging::list_book_status_versions_response
+    list_book_status_versions(const messaging::list_book_status_versions_request& request);
+    messaging::get_book_status_version_response
+    get_book_status_version(const messaging::get_book_status_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists book statuses with pagination support.
      *
      * @param offset Number of records to skip.
@@ -80,17 +111,6 @@ public:
      */
     std::uint32_t count_statuses();
 
-    /**
-     * @brief Lists book statuses as they stood at a specific
-     * timepoint (valid_from <= as_of < valid_to), possibly filtered by
-     * code.
-     *
-     * @param as_of The timepoint to resolve against.
-     * @param code Optional code filter; empty for all.
-     * @return Vector of matching book statuses as of that timepoint.
-     */
-    std::vector<domain::book_status> list_statuses_at_timepoint(const std::string& as_of,
-                                                                const std::string& code = "");
 
     /**
      * @brief Retrieves a single book status as it stood at a specific
@@ -108,6 +128,11 @@ public:
      * @return The book status if found, std::nullopt otherwise.
      */
     std::optional<domain::book_status> get_status(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of book statuses by primary key.
+     */
+    std::vector<domain::book_status> get_statuses(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a book status (creates or updates).
@@ -145,6 +170,23 @@ public:
 private:
     context ctx_;
     repository::book_status_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::book_status_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::book_status& out);
 };
 
 }

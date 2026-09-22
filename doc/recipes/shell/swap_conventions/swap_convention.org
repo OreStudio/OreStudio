@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 5BE68D51-3A85-5D62-B840-8D9DFE299250
+:END:
+#+title: How do I run the swap_conventions commands from the shell?
+#+description: Every command the swap_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:swap_conventions:
+
+This file documents the swap_conventions resource at the shell, one section per command. Every command is a subcommand of =swap_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D66C8A65-3BE7-55BB-8A0C-E2057F20944F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.list=.
+
+#+name: swap_conventions-list
+#+begin_src ores-shell :tangle swap_conventions-list.ores :exports none
+swap_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0795B44A-58EA-5BFD-8CE9-5466C56EFBA0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.get=.
+
+#+name: swap_conventions-get
+#+begin_src ores-shell :tangle swap_conventions-get.ores :exports none
+swap_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BA6CC49A-38AD-55C5-A669-D6AEFCD0EA6C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.get_many=.
+
+#+name: swap_conventions-get-many
+#+begin_src ores-shell :tangle swap_conventions-get-many.ores :exports none
+swap_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0498E092-EC0B-5FDD-B2D5-372A12ED753D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions add <id> <fixed_calendar> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.put=.
+
+#+name: swap_conventions-add
+#+begin_src ores-shell :tangle swap_conventions-add.ores :exports none
+swap_conventions add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 35025561-D15E-580E-A7FC-DC56C9F4C8FB
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions set <id> <fixed_calendar> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.put=.
+
+#+name: swap_conventions-set
+#+begin_src ores-shell :tangle swap_conventions-set.ores :exports none
+swap_conventions set __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4BA5CE38-9CCC-503F-B17D-D53C406DD22D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions put-many --count <n> <id> <fixed_calendar> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <float_frequency> <sub_periods_coupon_type> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.put_many=.
+
+#+name: swap_conventions-put-many
+#+begin_src ores-shell :tangle swap_conventions-put-many.ores :exports none
+swap_conventions put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8CB755CE-8297-5455-8B61-D442A2124D5E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.delete=.
+
+#+name: swap_conventions-delete
+#+begin_src ores-shell :tangle swap_conventions-delete.ores :exports none
+swap_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 521AC55F-675E-51CC-AD68-E7480F272866
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions.delete_many=.
+
+#+name: swap_conventions-delete-many
+#+begin_src ores-shell :tangle swap_conventions-delete-many.ores :exports none
+swap_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8B5B79EE-1ED4-53D8-A122-E416526A851D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions_versions.list=.
+
+#+name: swap_conventions-versions
+#+begin_src ores-shell :tangle swap_conventions-versions.ores :exports none
+swap_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9FA23B90-0BC4-58BF-96B9-D99DC0813FF7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swap_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.swap_conventions_versions.get=.
+
+#+name: swap_conventions-version
+#+begin_src ores-shell :tangle swap_conventions-version.ores :exports none
+swap_conventions version __none__ --version 1
+#+end_src
+

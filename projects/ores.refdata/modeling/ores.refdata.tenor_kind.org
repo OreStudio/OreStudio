@@ -115,7 +115,6 @@ drop function if exists ores_refdata_validate_tenor_kind_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository
@@ -164,17 +163,6 @@ drop function if exists ores_refdata_validate_tenor_kind_fn;
 :collection_name:        kinds
 :item_var:               kind
 :key_field:              code
-:get_request_class:      refdata::messaging::get_tenor_kinds_request
-:get_response_class:     refdata::messaging::get_tenor_kinds_response
-:get_message_type:       get_tenor_kinds_request
-:save_request_class:     refdata::messaging::save_tenor_kind_request
-:save_response_class:    refdata::messaging::save_tenor_kind_response
-:save_message_type:      save_tenor_kind_request
-:delete_request_class:   refdata::messaging::delete_tenor_kind_request
-:delete_response_class:  refdata::messaging::delete_tenor_kind_response
-:delete_message_type:    delete_tenor_kind_request
-:history_request_class:  refdata::messaging::get_tenor_kind_history_request
-:history_response_class: refdata::messaging::get_tenor_kind_history_response
 :history_message_type:   get_tenor_kind_history_request
 :settings_group:         TenorKindListWindow
 :window_title:           Tenor Kinds

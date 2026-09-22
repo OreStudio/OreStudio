@@ -125,7 +125,6 @@ drop function if exists ores_refdata_validate_derivation_kind_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository

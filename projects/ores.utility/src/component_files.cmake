@@ -49,6 +49,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/convert/ores.utility.convert.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/crypto/sha256.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/domain/hierarchy.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/domain/protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/faker/datetime.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/faker/internet.hpp"

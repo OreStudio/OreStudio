@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 134432DF-FAC3-5872-AB19-49F395DFCF30
+:END:
+#+title: How do I run the book_statuses commands from the shell?
+#+description: Every command the book_statuses submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:book_statuses:
+
+This file documents the book_statuses resource at the shell, one section per command. Every command is a subcommand of =book_statuses=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 66F9E3DB-5520-575B-BA7E-D7BCB219E5F6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.list=.
+
+#+name: book_statuses-list
+#+begin_src ores-shell :tangle book_statuses-list.ores :exports none
+book_statuses list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B8454061-A10E-58AF-815C-F7B7D20D3E9D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses get <code>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.get=.
+
+#+name: book_statuses-get
+#+begin_src ores-shell :tangle book_statuses-get.ores :exports none
+book_statuses get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4CD80B56-FD08-548F-8607-38CB76AC9DC9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.get_many=.
+
+#+name: book_statuses-get-many
+#+begin_src ores-shell :tangle book_statuses-get-many.ores :exports none
+book_statuses get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 919B9CFC-C90A-5BD5-8271-6E68C260AF03
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.put=.
+
+#+name: book_statuses-add
+#+begin_src ores-shell :tangle book_statuses-add.ores :exports none
+book_statuses add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C5F2F831-E3DE-5962-817F-68B195AF0926
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.put=.
+
+#+name: book_statuses-set
+#+begin_src ores-shell :tangle book_statuses-set.ores :exports none
+book_statuses set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D9ABDC50-1D66-56D5-9FA8-3D7BB5D2EB9A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.put_many=.
+
+#+name: book_statuses-put-many
+#+begin_src ores-shell :tangle book_statuses-put-many.ores :exports none
+book_statuses put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 38E388B1-F960-54C9-A6BF-317182EE3F61
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.delete=.
+
+#+name: book_statuses-delete
+#+begin_src ores-shell :tangle book_statuses-delete.ores :exports none
+book_statuses delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 91C828B4-82F1-5C2A-AFD8-D8054087AACF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses.delete_many=.
+
+#+name: book_statuses-delete-many
+#+begin_src ores-shell :tangle book_statuses-delete-many.ores :exports none
+book_statuses delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E975C16B-D3E6-5D71-825A-3D0B6E78E23E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses_versions.list=.
+
+#+name: book_statuses-versions
+#+begin_src ores-shell :tangle book_statuses-versions.ores :exports none
+book_statuses versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 92B8E850-B59F-5CD1-A9D0-1EEF436FCF39
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+book_statuses version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.book_statuses_versions.get=.
+
+#+name: book_statuses-version
+#+begin_src ores-shell :tangle book_statuses-version.ores :exports none
+book_statuses version __none__ --version 1
+#+end_src
+

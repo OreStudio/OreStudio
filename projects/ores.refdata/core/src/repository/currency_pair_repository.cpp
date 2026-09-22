@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/currency_pair_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_pair_entity.hpp"
 #include "ores.refdata.core/repository/currency_pair_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -41,16 +42,73 @@ std::string currency_pair_repository::sql() {
     return generate_create_table_sql<currency_pair_entity>(lg());
 }
 
+ores::utility::domain::precondition
+currency_pair_repository::replace_claim(context ctx, const domain::currency_pair& v) {
+    const auto current = read_latest(ctx, v.pair_code);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::currency_pair currency_pair_repository::apply_claim(
+    context ctx, const domain::currency_pair& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.pair_code);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void currency_pair_repository::write(context ctx, const domain::currency_pair& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair. " << "pair_code: " << v.pair_code;
-    execute_write_query(
-        ctx, currency_pair_mapper::map(v), lg(), "Writing currency pair to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void currency_pair_repository::write(context ctx, const std::vector<domain::currency_pair>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pairs. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void currency_pair_repository::write(context ctx,
+                                     const domain::currency_pair& v,
+                                     const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair. " << "pair_code: " << v.pair_code;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, currency_pair_mapper::map(v), lg(), "Writing currency pairs to database.");
+        ctx, currency_pair_mapper::map(t), lg(), "Writing currency pair to database.");
+}
+
+void currency_pair_repository::write(
+    context ctx,
+    const std::vector<domain::currency_pair>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency pairs. Count: " << v.size();
+    std::vector<domain::currency_pair> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, currency_pair_mapper::map(batch), lg(), "Writing currency pairs to database.");
 }
 
 std::vector<domain::currency_pair> currency_pair_repository::read_latest(context ctx) {
@@ -126,15 +184,37 @@ std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
 }
 
 
-void currency_pair_repository::remove(context ctx, const std::string& pair_code) {
+currency_pair_repository::remove_status currency_pair_repository::remove(
+    context ctx, const std::string& pair_code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
+    const auto current = read_latest(ctx, pair_code);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<currency_pair_entity> |
-        where("tenant_id"_c == tid && "pair_code"_c == pair_code && "valid_to"_c == max.value());
+    const auto query = sqlgen::delete_from<currency_pair_entity> |
+                       where("tenant_id"_c == tid && "pair_code"_c == pair_code &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing currency pair from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, pair_code).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void currency_pair_repository::remove(context ctx, const std::string& pair_code) {
+    static_cast<void>(remove(ctx, pair_code, std::nullopt));
 }
 
 std::vector<domain::currency_pair>
@@ -174,6 +254,24 @@ std::uint32_t currency_pair_repository::get_total_pair_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active currency pair count: " << count;
     return count;
+}
+
+std::vector<domain::currency_pair>
+currency_pair_repository::read_latest(context ctx, const std::vector<std::string>& pair_codes) {
+    if (pair_codes.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<currency_pair_entity>> |
+        where("tenant_id"_c == tid && "pair_code"_c.in(pair_codes) && "valid_to"_c == max.value());
+    auto result = execute_read_query<currency_pair_entity, domain::currency_pair>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_pair_mapper::map(entities); },
+        lg(),
+        "Reading latest currency pairs by ids.");
+    return result;
 }
 
 void currency_pair_repository::remove(context ctx, const std::vector<std::string>& pair_codes) {

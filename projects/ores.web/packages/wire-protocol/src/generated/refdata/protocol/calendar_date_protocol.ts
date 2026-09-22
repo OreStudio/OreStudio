@@ -23,55 +23,93 @@
  * To modify, update the template and regenerate.
  */
 import type { CalendarDate } from '../domain/calendar_date.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetCalendarDatesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCalendarDatesResponse {
-    calendar_dates: CalendarDate[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetCalendarDatesByCalendarRequest {
+export interface CalendarDateKey {
     calendar_code: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetCalendarDatesByCalendarResponse {
-    calendar_dates: CalendarDateView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface CountCalendarDatesByCalendarRequest {
-    calendar_code: string;
-}
-
-export interface CountCalendarDatesByCalendarResponse {
-    total_available_count: number;
-}
-
-export interface CountCalendarDatesByDateRequest {
     date: string;
 }
 
-export interface CountCalendarDatesByDateResponse {
-    total_available_count: number;
+export interface CalendarDateLookup {
+    key: CalendarDateKey;
+    calendar_date: CalendarDate | null;
 }
 
-export interface CalendarDateView {
-    calendar_date: CalendarDate;
+export interface CalendarDatesFilter {
+    calendar_code: string | null;
+}
+
+export interface CalendarDateEvent {
+    event_id: string;
+    key: CalendarDateKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListCalendarDatesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CalendarDatesFilter | null;
+}
+
+export interface ListCalendarDatesResponse {
+    result: Result;
+    calendar_dates: CalendarDate[];
+    total: number;
+}
+
+export interface GetCalendarDateRequest {
+    key: CalendarDateKey;
+}
+
+export interface GetCalendarDateResponse {
+    result: Result;
+    calendar_date: CalendarDate | null;
+}
+
+export interface GetManyCalendarDatesRequest {
+    keys: CalendarDateKey[];
+}
+
+export interface GetManyCalendarDatesResponse {
+    result: Result;
+    entries: CalendarDateLookup[];
+}
+
+export interface ListByCalendarCodeCalendarDatesRequest {
+    calendar_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CalendarDatesFilter | null;
+}
+
+export interface ListByCalendarCodeCalendarDatesResponse {
+    result: Result;
+    calendar_dates: CalendarDate[];
+    total: number;
 }
 
 export const subjects = {
-    get_calendar_dates_request: "refdata.v1.calendar_dates.list",
-    get_calendar_dates_by_calendar_request: "refdata.v1.calendar_dates.list_by_calendar_code",
-    count_calendar_dates_by_calendar_request: "refdata.v1.calendar_dates.count_by_calendar_code",
-    count_calendar_dates_by_date_request: "refdata.v1.calendar_dates.count_by_date",
+    list_calendar_dates_request: "refdata.v1.calendar_dates.list",
+    get_calendar_date_request: "refdata.v1.calendar_dates.get",
+    get_many_calendar_dates_request: "refdata.v1.calendar_dates.get_many",
+    list_by_calendar_code_calendar_dates_request: "refdata.v1.calendar_dates.list_by_calendar_code",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_calendar_dates_request: true,
+    get_calendar_date_request: true,
+    get_many_calendar_dates_request: true,
+    list_by_calendar_code_calendar_dates_request: true,
 } as const;

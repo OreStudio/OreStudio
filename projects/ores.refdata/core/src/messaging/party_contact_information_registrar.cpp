@@ -40,24 +40,54 @@ std::vector<ores::nats::service::subscription> register_party_contact_informatio
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<party_contact_information_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_party_contact_informations_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_party_contact_information_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_party_contact_information_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_party_contact_information_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_party_contact_informations_by_party_id_request::nats_subject,
+        list_party_contact_informations_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_party_id(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->list_party_contact_informations(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_party_contact_information_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_party_contact_information(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_party_contact_informations_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_party_contact_informations(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_party_contact_information_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_party_contact_information(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_party_contact_informations_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_party_contact_informations(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_party_contact_information_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_party_contact_information(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_many_party_contact_informations_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_party_contact_informations(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_party_id_party_contact_informations_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_party_id_party_contact_informations(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(list_party_contact_information_versions_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_party_contact_information_versions(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(get_party_contact_information_version_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) {
+                                            h->get_party_contact_information_version(
+                                                std::move(msg));
+                                        }));
     return subs;
 }
 

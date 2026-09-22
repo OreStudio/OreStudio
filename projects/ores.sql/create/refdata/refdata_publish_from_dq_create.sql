@@ -59,6 +59,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -200,6 +204,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -336,6 +344,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -441,6 +453,10 @@ declare
     v_new_version integer;
     v_calendar_code text;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -589,6 +605,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -687,6 +707,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -785,6 +809,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -883,6 +911,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -983,6 +1015,10 @@ declare
     v_country_alpha2 text;
     v_city_name text;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1099,6 +1135,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1197,6 +1237,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1295,6 +1339,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1393,6 +1441,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1491,6 +1543,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1589,6 +1645,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1687,6 +1747,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1785,6 +1849,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1883,6 +1951,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -1981,6 +2053,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -2081,6 +2157,10 @@ declare
     v_rel_dataset_id uuid;
     v_bic_dataset_id uuid;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name, code into v_dataset_name, v_dataset_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -2386,6 +2466,10 @@ declare
     v_rel_dataset_id uuid;
     v_bic_dataset_id uuid;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name, code into v_dataset_name, v_dataset_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -2652,6 +2736,10 @@ declare
     v_max_depth int;
     v_level_count bigint;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
         (select id from ores_refdata_parties_tbl
@@ -2802,6 +2890,10 @@ declare
     v_max_depth int;
     v_level_count bigint;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
         (select id from ores_refdata_parties_tbl
@@ -2973,6 +3065,10 @@ declare
     v_portfolio_dataset_id uuid;
     v_inserted bigint := 0;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
         (select id from ores_refdata_parties_tbl
@@ -3124,6 +3220,10 @@ declare
     v_config_id uuid;
     v_actor text;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3270,6 +3370,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3369,6 +3473,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3470,6 +3578,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3566,6 +3678,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3660,6 +3776,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id
@@ -3754,6 +3874,10 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    -- A publish is an upsert by design: it replaces the row it finds.
+    -- Stating version 0 asserts the row does not exist, so the publish
+    -- asks for the version replace the store grants a bulk writer.
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id

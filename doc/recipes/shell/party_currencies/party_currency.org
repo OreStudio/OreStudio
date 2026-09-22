@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: AEC91FB7-31FD-532D-841F-5372C8AE7E7F
+:END:
+#+title: How do I run the party_currencies commands from the shell?
+#+description: Every command the party_currencies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_currencies:
+
+This file documents the party_currencies resource at the shell, one section per command. Every command is a subcommand of =party_currencies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D6C42391-5292-5A4B-9239-0FB239D396E5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.list=.
+
+#+name: party_currencies-list
+#+begin_src ores-shell :tangle party_currencies-list.ores :exports none
+party_currencies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A139022F-8EE4-5911-9807-880881380817
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies get <party_id> <currency_iso_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.get=.
+
+#+name: party_currencies-get
+#+begin_src ores-shell :tangle party_currencies-get.ores :exports none
+party_currencies get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 86091908-A24B-5255-A2A1-816031371082
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies get-many <party_id> <currency_iso_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.get_many=.
+
+#+name: party_currencies-get-many
+#+begin_src ores-shell :tangle party_currencies-get-many.ores :exports none
+party_currencies get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8954D297-5FF6-5602-BDB5-CFEEFDC59C37
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies add <party_id> <currency_iso_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.put=.
+
+#+name: party_currencies-add
+#+begin_src ores-shell :tangle party_currencies-add.ores :exports none
+party_currencies add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 086C3F6E-E902-5A50-A0FB-428CA10FEB11
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies set <party_id> <currency_iso_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.put=.
+
+#+name: party_currencies-set
+#+begin_src ores-shell :tangle party_currencies-set.ores :exports none
+party_currencies set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E92D2B79-6281-5CE5-9338-85DEEEF62EF3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies put-many --count <n> <party_id> <currency_iso_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.put_many=.
+
+#+name: party_currencies-put-many
+#+begin_src ores-shell :tangle party_currencies-put-many.ores :exports none
+party_currencies put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: EB3DEC74-67F5-539A-9ED9-3C0A5CB73714
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies delete <party_id> <currency_iso_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.delete=.
+
+#+name: party_currencies-delete
+#+begin_src ores-shell :tangle party_currencies-delete.ores :exports none
+party_currencies delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E184E5B7-4819-5583-A10D-50EF8543E59C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies delete-many <party_id> <currency_iso_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.delete_many=.
+
+#+name: party_currencies-delete-many
+#+begin_src ores-shell :tangle party_currencies-delete-many.ores :exports none
+party_currencies delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-party-id=
+:PROPERTIES:
+:ID: 403B3336-2331-5959-838A-FF7FCA452E4B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_currencies by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_currencies.list_by_party_id=.
+
+#+name: party_currencies-by-party-id
+#+begin_src ores-shell :tangle party_currencies-by-party-id.ores :exports none
+party_currencies by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

@@ -64,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_tenor_anchors(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -72,29 +81,125 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_anchor_service svc(req_ctx);
-        get_tenor_anchors_response resp;
-        if (auto req = decode<get_tenor_anchors_request>(msg)) {
-            try {
-                resp.anchors = svc.list_anchors(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_anchors());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_tenor_anchors_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.list_tenor_anchors(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_tenor_anchors_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_tenor_anchor(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_tenor_anchor_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.get_tenor_anchor(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_tenor_anchor_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_tenor_anchors(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_tenor_anchors_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_tenor_anchors(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_tenor_anchors_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_tenor_anchor(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -106,25 +211,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::tenor_anchor_service svc(req_ctx);
-        if (auto req = decode<save_tenor_anchor_request>(msg)) {
-            try {
-                svc.save_anchor(req->data);
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_tenor_anchor_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, save_tenor_anchor_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_tenor_anchor_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.put_tenor_anchor(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_tenor_anchor_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_tenor_anchors(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -132,29 +253,45 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_anchor_service svc(req_ctx);
-        if (auto req = decode<get_tenor_anchor_history_request>(msg)) {
-            try {
-                auto hist = svc.get_anchor_history(req->code);
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(
-                    nats_,
-                    msg,
-                    get_tenor_anchor_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_tenor_anchor_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_tenor_anchors_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_tenor_anchors(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_tenor_anchors_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_tenor_anchor(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -166,22 +303,158 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::tenor_anchor_service svc(req_ctx);
-        if (auto req = decode<delete_tenor_anchor_request>(msg)) {
-            try {
-                svc.delete_anchors(req->codes);
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_tenor_anchor_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_tenor_anchor_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_tenor_anchor_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.delete_tenor_anchor(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_tenor_anchor_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.tenor_anchors.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_tenor_anchors(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_tenor_anchors_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_tenor_anchors(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_tenor_anchors_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.tenor_anchors_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_tenor_anchor_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_tenor_anchor_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.list_tenor_anchor_versions(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_tenor_anchor_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.tenor_anchors_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_tenor_anchor_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_tenor_anchor_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_anchor_service svc(req_ctx);
+        try {
+            auto response = svc.get_tenor_anchor_version(*req);
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_anchor_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_tenor_anchor_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

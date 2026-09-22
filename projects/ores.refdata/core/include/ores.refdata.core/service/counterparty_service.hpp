@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
@@ -65,6 +66,36 @@ public:
      * @param ctx The database context for operations.
      */
     explicit counterparty_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_counterparties_response
+    list_counterparties(const messaging::list_counterparties_request& request);
+    messaging::get_counterparty_response
+    get_counterparty(const messaging::get_counterparty_request& request);
+    messaging::get_many_counterparties_response
+    get_many_counterparties(const messaging::get_many_counterparties_request& request);
+    messaging::put_counterparty_response
+    put_counterparty(const messaging::put_counterparty_request& request);
+    messaging::put_many_counterparties_response
+    put_many_counterparties(const messaging::put_many_counterparties_request& request);
+    messaging::delete_counterparty_response
+    delete_counterparty(const messaging::delete_counterparty_request& request);
+    messaging::delete_many_counterparties_response
+    delete_many_counterparties(const messaging::delete_many_counterparties_request& request);
+    messaging::list_counterparty_versions_response
+    list_counterparty_versions(const messaging::list_counterparty_versions_request& request);
+    messaging::get_counterparty_version_response
+    get_counterparty_version(const messaging::get_counterparty_version_request& request);
+    /**@}*/
 
     /**
      * @brief Lists counterparties with pagination support.
@@ -114,6 +145,11 @@ public:
      * @return The counterparty if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty> find_counterparty_by_code(const std::string& short_code);
+
+    /**
+     * @brief Retrieves a batch of counterparties by primary key.
+     */
+    std::vector<domain::counterparty> get_counterparties(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a counterparty (creates or updates).
@@ -176,6 +212,23 @@ public:
 private:
     context ctx_;
     repository::counterparty_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::counterparty_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::counterparty& out);
 };
 
 }

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 13202401-5160-5A92-9855-967C9F46979C
+:END:
+#+title: How do I run the diary_entry_types commands from the shell?
+#+description: Every command the diary_entry_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:diary_entry_types:
+
+This file documents the diary_entry_types resource at the shell, one section per command. Every command is a subcommand of =diary_entry_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 6650269B-61EB-5EB2-9902-43CBB3BFA459
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.list=.
+
+#+name: diary_entry_types-list
+#+begin_src ores-shell :tangle diary_entry_types-list.ores :exports none
+diary_entry_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5D797EF7-DA65-5A17-9886-30B759B6B4B4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.get=.
+
+#+name: diary_entry_types-get
+#+begin_src ores-shell :tangle diary_entry_types-get.ores :exports none
+diary_entry_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 13566B1F-4AF6-5871-B6AA-104CFA7793FF
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.get_many=.
+
+#+name: diary_entry_types-get-many
+#+begin_src ores-shell :tangle diary_entry_types-get-many.ores :exports none
+diary_entry_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 95C542B9-1F2B-544D-9498-106A0CD72222
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.put=.
+
+#+name: diary_entry_types-add
+#+begin_src ores-shell :tangle diary_entry_types-add.ores :exports none
+diary_entry_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1C08C9B3-EEA5-5F04-AD21-97EB8E637225
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.put=.
+
+#+name: diary_entry_types-set
+#+begin_src ores-shell :tangle diary_entry_types-set.ores :exports none
+diary_entry_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4627282C-9F61-50B4-9197-549F246F6608
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.put_many=.
+
+#+name: diary_entry_types-put-many
+#+begin_src ores-shell :tangle diary_entry_types-put-many.ores :exports none
+diary_entry_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D9226E20-72C3-51B6-A906-6B39BE6DE55E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.delete=.
+
+#+name: diary_entry_types-delete
+#+begin_src ores-shell :tangle diary_entry_types-delete.ores :exports none
+diary_entry_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 290463C7-043B-5838-BE96-1B1798631FD4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types.delete_many=.
+
+#+name: diary_entry_types-delete-many
+#+begin_src ores-shell :tangle diary_entry_types-delete-many.ores :exports none
+diary_entry_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: FFFB670B-29B5-5FCA-847C-B4FF1B708B87
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types_versions.list=.
+
+#+name: diary_entry_types-versions
+#+begin_src ores-shell :tangle diary_entry_types-versions.ores :exports none
+diary_entry_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: BADA68E5-4F99-55FE-9EAB-25E335510F51
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+diary_entry_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.diary_entry_types_versions.get=.
+
+#+name: diary_entry_types-version
+#+begin_src ores-shell :tangle diary_entry_types-version.ores :exports none
+diary_entry_types version __none__ --version 1
+#+end_src
+

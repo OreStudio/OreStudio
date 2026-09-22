@@ -42,6 +42,13 @@ namespace ores::refdata::messaging {
 struct regenerate_calendar_dates_request {
     using response_type = struct regenerate_calendar_dates_response;
     static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.regenerate";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::optional<std::string> calendar_code;
     std::optional<int> end_year;
 };

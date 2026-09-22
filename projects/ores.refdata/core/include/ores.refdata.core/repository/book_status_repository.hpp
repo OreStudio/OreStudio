@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -61,6 +62,11 @@ public:
 
     /**
      * @brief Writes book statuses to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
      */
     /**@{*/
     void write(context ctx, const domain::book_status& v);
@@ -68,25 +74,37 @@ public:
     /**@}*/
 
     /**
+     * @brief Writes a book status, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(context ctx,
+               const domain::book_status& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of book statuses, each honouring its own
+     * claim, as one statement.
+     */
+    void write(context ctx,
+               const std::vector<domain::book_status>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    /**
      * @brief Reads latest book statuses, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::book_status> read_latest(context ctx);
     std::vector<domain::book_status> read_latest(context ctx, const std::string& code);
+    std::vector<domain::book_status> read_latest(context ctx,
+                                                 const std::vector<std::string>& codes);
     /**@}*/
-    /**
-     * @brief Reads book statuses as they stood at a specific
-     * timepoint — valid_from <= as_of < valid_to — possibly filtered by
-     * code. Distinct from read_at_version (a specific
-     * version number) and from a parent/child *_as_of query (a validity
-     * window overlap): this resolves what this entity's own row meant at
-     * a single instant in time.
-     */
-    /**@{*/
-    std::vector<domain::book_status> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::book_status>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
-    /**@}*/
+
 
     /**
      * @brief Reads all book statuses, possibly filtered by primary key.
@@ -104,6 +122,25 @@ public:
      */
     std::optional<domain::book_status>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads book statuses as they stood at a specific
+     * timepoint — @c valid_from <= as_of < valid_to — optionally filtered by
+     * code.
+     *
+     * Distinct from a versions read, which names a version number, and from a
+     * composite child's as-of read, which overlaps a parent's validity window:
+     * this resolves what the entity's own row meant at one instant.
+     *
+     * @param ctx Repository context with database connection
+     * @param as_of The instant to resolve, as the store writes timestamps
+     * @param code Optional key filter; empty reads every key
+     */
+    /**@{*/
+    std::vector<domain::book_status> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::book_status>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
+    /**@}*/
 
     /**
      * @brief Reads latest book statuses with pagination support.
@@ -127,9 +164,49 @@ public:
     void remove(context ctx, const std::string& code);
 
     /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a book status, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status
+    remove(context ctx, const std::string& code, std::optional<std::uint32_t> version);
+
+    /**
      * @brief Deletes book statuses by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& codes);
+
+
+private:
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::book_status& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::book_status apply_claim(context ctx,
+                                    const domain::book_status& v,
+                                    const ores::utility::domain::precondition& claim);
 };
 
 }

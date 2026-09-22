@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: C65D7B78-A0C0-5E88-98E6-6CCA36FE8459
+:END:
+#+title: How do I run the party_id_schemes commands from the shell?
+#+description: Every command the party_id_schemes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_id_schemes:
+
+This file documents the party_id_schemes resource at the shell, one section per command. Every command is a subcommand of =party_id_schemes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EC4B2361-BE06-53E9-ABAC-9CEB86E356C9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.list=.
+
+#+name: party_id_schemes-list
+#+begin_src ores-shell :tangle party_id_schemes-list.ores :exports none
+party_id_schemes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E12634DF-308D-5D2D-88FE-B8FE339C195D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes get <code>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.get=.
+
+#+name: party_id_schemes-get
+#+begin_src ores-shell :tangle party_id_schemes-get.ores :exports none
+party_id_schemes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1BA1CEA1-1C89-5C17-9597-9A8EE1E827E4
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.get_many=.
+
+#+name: party_id_schemes-get-many
+#+begin_src ores-shell :tangle party_id_schemes-get-many.ores :exports none
+party_id_schemes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0F42F99E-021B-593E-B6E2-08C0FBB77569
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes add <code> <name> <description> <coding_scheme_code> <display_order> <max_cardinality> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.put=.
+
+#+name: party_id_schemes-add
+#+begin_src ores-shell :tangle party_id_schemes-add.ores :exports none
+party_id_schemes add __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F5C80604-0FCD-5EE8-9963-AC3F2309B180
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes set <code> <name> <description> <coding_scheme_code> <display_order> <max_cardinality> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.put=.
+
+#+name: party_id_schemes-set
+#+begin_src ores-shell :tangle party_id_schemes-set.ores :exports none
+party_id_schemes set __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: EE0D6DC5-C137-52E5-9486-FF8026DDDB4C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes put-many --count <n> <code> <name> <description> <coding_scheme_code> <display_order> <max_cardinality> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.put_many=.
+
+#+name: party_id_schemes-put-many
+#+begin_src ores-shell :tangle party_id_schemes-put-many.ores :exports none
+party_id_schemes put-many --count 1 __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 672E5256-6BAA-52DF-8ABE-A1403D2D3537
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.delete=.
+
+#+name: party_id_schemes-delete
+#+begin_src ores-shell :tangle party_id_schemes-delete.ores :exports none
+party_id_schemes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AA0C0D0A-0C17-5570-9FB0-A8D61336E748
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes.delete_many=.
+
+#+name: party_id_schemes-delete-many
+#+begin_src ores-shell :tangle party_id_schemes-delete-many.ores :exports none
+party_id_schemes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9C5986F3-5361-55FC-BEEF-128AC29A688A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes_versions.list=.
+
+#+name: party_id_schemes-versions
+#+begin_src ores-shell :tangle party_id_schemes-versions.ores :exports none
+party_id_schemes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 18046B43-0EA7-5D29-9762-656B2A2FEF19
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_id_schemes version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_id_schemes_versions.get=.
+
+#+name: party_id_schemes-version
+#+begin_src ores-shell :tangle party_id_schemes-version.ores :exports none
+party_id_schemes version __none__ --version 1
+#+end_src
+

@@ -27,17 +27,14 @@
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
-#include "ores.shell/app/commands/countries_commands.hpp"
-#include "ores.shell/app/commands/crm_commands.hpp"
-#include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
 #include "ores.shell/app/commands/orgmode_commands.hpp"
-#include "ores.shell/app/commands/parties_commands.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
@@ -89,10 +86,9 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     change_reason_categories_commands::register_commands(*root, session_);
     change_reasons_commands::register_commands(*root, session_, pagination_);
     connection_commands::register_commands(*root, session_, connection_template_);
-    countries_commands::register_commands(*root, session_, pagination_);
-    currencies_commands::register_commands(*root, session_, pagination_);
     trading_commands::register_commands(*root, session_, pagination_);
     iam_commands::register_commands(*root, session_, pagination_);
+    refdata_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     variability_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);
@@ -106,10 +102,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     lei_commands::register_commands(*root, session_);
     compute_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);
-    crm_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     synthetic_entity_commands::register_commands(*root, session_, pagination_);
-    parties_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);
 

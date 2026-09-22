@@ -23,55 +23,93 @@
  * To modify, update the template and regenerate.
  */
 import type { TenorConventionResolution } from '../domain/tenor_convention_resolution.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetTenorConventionResolutionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetTenorConventionResolutionsResponse {
-    tenor_convention_resolutions: TenorConventionResolution[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetTenorConventionResolutionsByConventionRequest {
+export interface TenorConventionResolutionKey {
     convention_code: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetTenorConventionResolutionsByConventionResponse {
-    tenor_convention_resolutions: TenorConventionResolutionView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface CountTenorConventionResolutionsByConventionRequest {
-    convention_code: string;
-}
-
-export interface CountTenorConventionResolutionsByConventionResponse {
-    total_available_count: number;
-}
-
-export interface CountTenorConventionResolutionsByTenorRequest {
     tenor_code: string;
 }
 
-export interface CountTenorConventionResolutionsByTenorResponse {
-    total_available_count: number;
+export interface TenorConventionResolutionLookup {
+    key: TenorConventionResolutionKey;
+    tenor_convention_resolution: TenorConventionResolution | null;
 }
 
-export interface TenorConventionResolutionView {
-    tenor_convention_resolution: TenorConventionResolution;
+export interface TenorConventionResolutionsFilter {
+    convention_code: string | null;
+}
+
+export interface TenorConventionResolutionEvent {
+    event_id: string;
+    key: TenorConventionResolutionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListTenorConventionResolutionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TenorConventionResolutionsFilter | null;
+}
+
+export interface ListTenorConventionResolutionsResponse {
+    result: Result;
+    tenor_convention_resolutions: TenorConventionResolution[];
+    total: number;
+}
+
+export interface GetTenorConventionResolutionRequest {
+    key: TenorConventionResolutionKey;
+}
+
+export interface GetTenorConventionResolutionResponse {
+    result: Result;
+    tenor_convention_resolution: TenorConventionResolution | null;
+}
+
+export interface GetManyTenorConventionResolutionsRequest {
+    keys: TenorConventionResolutionKey[];
+}
+
+export interface GetManyTenorConventionResolutionsResponse {
+    result: Result;
+    entries: TenorConventionResolutionLookup[];
+}
+
+export interface ListByConventionCodeTenorConventionResolutionsRequest {
+    convention_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TenorConventionResolutionsFilter | null;
+}
+
+export interface ListByConventionCodeTenorConventionResolutionsResponse {
+    result: Result;
+    tenor_convention_resolutions: TenorConventionResolution[];
+    total: number;
 }
 
 export const subjects = {
-    get_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.list",
-    get_tenor_convention_resolutions_by_convention_request: "refdata.v1.tenor_convention_resolutions.list_by_convention_code",
-    count_tenor_convention_resolutions_by_convention_request: "refdata.v1.tenor_convention_resolutions.count_by_convention_code",
-    count_tenor_convention_resolutions_by_tenor_request: "refdata.v1.tenor_convention_resolutions.count_by_tenor_code",
+    list_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.list",
+    get_tenor_convention_resolution_request: "refdata.v1.tenor_convention_resolutions.get",
+    get_many_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.get_many",
+    list_by_convention_code_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.list_by_convention_code",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_tenor_convention_resolutions_request: true,
+    get_tenor_convention_resolution_request: true,
+    get_many_tenor_convention_resolutions_request: true,
+    list_by_convention_code_tenor_convention_resolutions_request: true,
 } as const;

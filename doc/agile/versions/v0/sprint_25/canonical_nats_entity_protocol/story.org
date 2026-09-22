@@ -8,7 +8,7 @@
 #+filetags: :nats:messaging:protocol:architecture:codegen:sprint_25:v0:
 #+created: 2026-09-21
 #+updated: 2026-09-21
-#+environment: eager_maxwell
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -47,6 +47,8 @@ One target-state specification defines every common, entity-related message a co
 | [[id:D9A4776C-AB42-4461-8F2F-AD077C20716E][Adopt the canonical protocol in ores.iam]] | DONE | 2026-09-21 | 2026-09-21 | The first component converted to the specification. Codegen emits the canonical messages, generated ores.shell commands and their tests exercise every verb, and the BFF route descriptor and the web screens consume the new shapes. The shell surface is proved against the running fleet, and the recipes that exercise it are generated. |
 | [[id:3663F420-C591-4E77-80CD-E68726522C32][Enforce the protocol with a conformance gate]] | BACKLOG | | | A specification without a gate drifts, which is exactly what the protocol twin coverage check proved when its written rule and its implementation disagreed for a whole component. This task lands the check that keeps generated messages honest. |
 | [[id:90BD40AF-BBEA-49D8-AC68-E659E968F22E][Verify every IAM surface against the specification]] | BACKLOG | | | The second PR of the IAM pilot. The shell half landed with the conversion: 124 generated commands, 123 of them run against the live fleet. What remains is the UI: exercise every IAM entity through =ores.web= and fix what the sweep finds. |
+| [[id:B81ABF43-5257-4677-96A8-4FD5E796EA60][Adopt the canonical protocol in ores.refdata]] | STARTED | 2026-09-22 | | The second component converted to the specification. Codegen emits the canonical messages for every refdata entity, junction and operation; generated ores.shell commands and their tests exercise every verb; the BFF route descriptor and the web screens consume the new shapes; and refdata joins COMPONENTS_UNDER_TEST. |
+| [[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]] | BACKLOG | | | The refdata conversion's web half. The wire-protocol package carries a hand-written duplicate of the country protocol, and the BFF and the country screens name the retired save, delete and history subjects, so the schema and the subjects must come from the generated protocol or be generated themselves. |
 
 * Decisions
 

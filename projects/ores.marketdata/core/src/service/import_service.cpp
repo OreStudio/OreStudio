@@ -87,14 +87,14 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
         std::uint32_t offset = 0;
         constexpr std::uint32_t page_size = 200;
         for (;;) {
-            ores::refdata::messaging::get_currency_pairs_request req;
+            ores::refdata::messaging::list_currency_pairs_request req;
             req.offset = offset;
             req.limit = page_size;
             const auto& codec = ores::nats::default_wire_codec();
             const auto reply = auth_nats.authenticated_request(req.nats_subject, codec.encode(req));
             auto resp =
-                codec.decode<ores::refdata::messaging::get_currency_pairs_response>(reply.data);
-            if (!resp || !resp->success) {
+                codec.decode<ores::refdata::messaging::list_currency_pairs_response>(reply.data);
+            if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(import_helpers_lg(), warn)
                     << "Failed to fetch currency pairs for FX quote convention checking; "
                     << "reversed-key correction disabled for this import.";
@@ -103,8 +103,7 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
             for (const auto& p : resp->pairs)
                 pairs.emplace(p.base_currency, p.quote_currency);
             offset += static_cast<std::uint32_t>(resp->pairs.size());
-            if (resp->pairs.empty() ||
-                offset >= static_cast<std::uint32_t>(resp->total_available_count))
+            if (resp->pairs.empty() || offset >= static_cast<std::uint32_t>(resp->total))
                 break;
         }
     } catch (const std::exception& e) {

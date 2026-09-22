@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 16274B73-D144-54D4-BE72-5F4039178F02
+:END:
+#+title: How do I run the rounding_types commands from the shell?
+#+description: Every command the rounding_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:rounding_types:
+
+This file documents the rounding_types resource at the shell, one section per command. Every command is a subcommand of =rounding_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 24E5B595-5221-5C1F-8C56-AF71DA915C3F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.list=.
+
+#+name: rounding_types-list
+#+begin_src ores-shell :tangle rounding_types-list.ores :exports none
+rounding_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D4BA1B1F-7410-5A0A-AC01-108416D64861
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.get=.
+
+#+name: rounding_types-get
+#+begin_src ores-shell :tangle rounding_types-get.ores :exports none
+rounding_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3F0CA08B-7BEC-5D35-BABD-2636884417B9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.get_many=.
+
+#+name: rounding_types-get-many
+#+begin_src ores-shell :tangle rounding_types-get-many.ores :exports none
+rounding_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A0C39D48-3F8E-5FCE-9A61-85DFC4AD03C3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.put=.
+
+#+name: rounding_types-add
+#+begin_src ores-shell :tangle rounding_types-add.ores :exports none
+rounding_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 048FB7E5-FCCC-5A0B-B79B-57391531A3A9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.put=.
+
+#+name: rounding_types-set
+#+begin_src ores-shell :tangle rounding_types-set.ores :exports none
+rounding_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A68EA5DB-7397-5CEE-8311-5A83810BA2E1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.put_many=.
+
+#+name: rounding_types-put-many
+#+begin_src ores-shell :tangle rounding_types-put-many.ores :exports none
+rounding_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 45C81785-DBE4-5FF6-A860-74562C4F2F6D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.delete=.
+
+#+name: rounding_types-delete
+#+begin_src ores-shell :tangle rounding_types-delete.ores :exports none
+rounding_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C0653BD8-A63E-52A6-8C2B-F3A9163B8560
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types.delete_many=.
+
+#+name: rounding_types-delete-many
+#+begin_src ores-shell :tangle rounding_types-delete-many.ores :exports none
+rounding_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 048D2822-DABF-5D7B-BA93-281D5721055F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types_versions.list=.
+
+#+name: rounding_types-versions
+#+begin_src ores-shell :tangle rounding_types-versions.ores :exports none
+rounding_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 71D24B32-7053-5AE2-805F-C4F24FBE8B78
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+rounding_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.rounding_types_versions.get=.
+
+#+name: rounding_types-version
+#+begin_src ores-shell :tangle rounding_types-version.ores :exports none
+rounding_types version __none__ --version 1
+#+end_src
+

@@ -118,7 +118,6 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository
@@ -167,17 +166,6 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 :collection_name:        classes
 :item_var:               class_
 :key_field:              code
-:get_request_class:      refdata::messaging::get_asset_class_codes_request
-:get_response_class:     refdata::messaging::get_asset_class_codes_response
-:get_message_type:       get_asset_class_codes_request
-:save_request_class:     refdata::messaging::save_asset_class_code_request
-:save_response_class:    refdata::messaging::save_asset_class_code_response
-:save_message_type:      save_asset_class_code_request
-:delete_request_class:   refdata::messaging::delete_asset_class_code_request
-:delete_response_class:  refdata::messaging::delete_asset_class_code_response
-:delete_message_type:    delete_asset_class_code_request
-:history_request_class:  refdata::messaging::get_asset_class_code_history_request
-:history_response_class: refdata::messaging::get_asset_class_code_history_response
 :history_message_type:   get_asset_class_code_history_request
 :settings_group:         AssetClassCodeListWindow
 :window_title:           Asset Class Codes

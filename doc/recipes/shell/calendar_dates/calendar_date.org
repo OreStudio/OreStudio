@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: B93E32EE-696F-51A7-B326-47E00BB69204
+:END:
+#+title: How do I run the calendar_dates commands from the shell?
+#+description: Every command the calendar_dates submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:calendar_dates:
+
+This file documents the calendar_dates resource at the shell, one section per command. Every command is a subcommand of =calendar_dates=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D1AF3FF0-AE33-5DB5-8BB1-7344CF7FDC44
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_dates list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_dates.list=.
+
+#+name: calendar_dates-list
+#+begin_src ores-shell :tangle calendar_dates-list.ores :exports none
+calendar_dates list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 82C787E9-AC1F-53F8-B547-22594CAFB325
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_dates get <calendar_code> <date>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_dates.get=.
+
+#+name: calendar_dates-get
+#+begin_src ores-shell :tangle calendar_dates-get.ores :exports none
+calendar_dates get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 96A883AD-D3C5-58AF-BD94-72EE7E005D57
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_dates get-many <calendar_code> <date>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_dates.get_many=.
+
+#+name: calendar_dates-get-many
+#+begin_src ores-shell :tangle calendar_dates-get-many.ores :exports none
+calendar_dates get-many __none__ __none__
+#+end_src
+
+** =by-calendar-code=
+:PROPERTIES:
+:ID: 9E857D49-501E-50CA-9483-035A2CC7EC67
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_dates by-calendar-code <calendar_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_dates.list_by_calendar_code=.
+
+#+name: calendar_dates-by-calendar-code
+#+begin_src ores-shell :tangle calendar_dates-by-calendar-code.ores :exports none
+calendar_dates by-calendar-code __none__ --limit 1
+#+end_src
+

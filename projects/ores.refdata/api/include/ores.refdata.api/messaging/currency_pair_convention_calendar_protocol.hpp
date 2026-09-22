@@ -26,105 +26,222 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief The currency pair convention calendar row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct currency_pair_convention_calendar_view {
+struct currency_pair_convention_calendar_key {
+    std::string pair_code;
+    std::string calendar_code;
+};
+
+struct currency_pair_convention_calendar_write {
+    std::string pair_code;
+    std::string calendar_code;
+};
+
+struct currency_pair_convention_calendar_change {
+    currency_pair_convention_calendar_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct currency_pair_convention_calendar_removal {
+    currency_pair_convention_calendar_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct currency_pair_convention_calendar_lookup {
+    currency_pair_convention_calendar_key key;
+    std::optional<ores::refdata::domain::currency_pair_convention_calendar>
+        currency_pair_convention_calendar;
+};
+
+struct currency_pair_convention_calendars_filter {
+    std::optional<std::string> pair_code;
+};
+
+struct currency_pair_convention_calendar_event {
+    boost::uuids::uuid event_id;
+    currency_pair_convention_calendar_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct list_currency_pair_convention_calendars_request {
+    using response_type = struct list_currency_pair_convention_calendars_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_pair_convention_calendars.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<currency_pair_convention_calendars_filter> filter;
+};
+
+struct list_currency_pair_convention_calendars_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+        currency_pair_convention_calendars;
+    std::uint64_t total;
+};
+
+struct get_currency_pair_convention_calendar_request {
+    using response_type = struct get_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_pair_convention_calendars.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_pair_convention_calendar_key key;
+};
+
+struct get_currency_pair_convention_calendar_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::currency_pair_convention_calendar>
+        currency_pair_convention_calendar;
+};
+
+struct get_many_currency_pair_convention_calendars_request {
+    using response_type = struct get_many_currency_pair_convention_calendars_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_pair_convention_calendars.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_pair_convention_calendar_key> keys;
+};
+
+struct get_many_currency_pair_convention_calendars_response {
+    ores::utility::domain::result result;
+    std::vector<currency_pair_convention_calendar_lookup> entries;
+};
+
+struct put_currency_pair_convention_calendar_request {
+    using response_type = struct put_currency_pair_convention_calendar_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_pair_convention_calendars.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_pair_convention_calendar_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_currency_pair_convention_calendar_response {
+    ores::utility::domain::result result;
     ores::refdata::domain::currency_pair_convention_calendar currency_pair_convention_calendar;
 };
 
-struct get_currency_pair_convention_calendars_request {
-    using response_type = struct get_currency_pair_convention_calendars_response;
+struct put_many_currency_pair_convention_calendars_request {
+    using response_type = struct put_many_currency_pair_convention_calendars_response;
     static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_pair_convention_calendars.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+        "refdata.v1.currency_pair_convention_calendars.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_pair_convention_calendar_change> changes;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_currency_pair_convention_calendars_response {
+struct put_many_currency_pair_convention_calendars_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair_convention_calendar>
         currency_pair_convention_calendars;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct get_currency_pair_convention_calendars_by_pair_request {
-    using response_type = struct get_currency_pair_convention_calendars_by_pair_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_pair_convention_calendars.list_by_pair_code";
-    std::string pair_code;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_currency_pair_convention_calendars_by_pair_response {
-    std::vector<currency_pair_convention_calendar_view> currency_pair_convention_calendars;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct save_currency_pair_convention_calendar_request {
-    using response_type = struct save_currency_pair_convention_calendar_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_pair_convention_calendars.save";
-    std::vector<ores::refdata::domain::currency_pair_convention_calendar>
-        currency_pair_convention_calendars;
-
-    static save_currency_pair_convention_calendar_request
-    from(std::vector<ores::refdata::domain::currency_pair_convention_calendar> v) {
-        return {.currency_pair_convention_calendars = std::move(v)};
-    }
-};
-
-struct save_currency_pair_convention_calendar_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_currency_pair_convention_calendar_request {
     using response_type = struct delete_currency_pair_convention_calendar_response;
     static constexpr std::string_view nats_subject =
         "refdata.v1.currency_pair_convention_calendars.delete";
-    std::vector<std::string> pair_codes;
-    std::vector<std::string> calendar_codes;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_pair_convention_calendar_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_currency_pair_convention_calendar_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct count_currency_pair_convention_calendars_by_pair_request {
-    using response_type = struct count_currency_pair_convention_calendars_by_pair_response;
+struct delete_many_currency_pair_convention_calendars_request {
+    using response_type = struct delete_many_currency_pair_convention_calendars_response;
     static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_pair_convention_calendars.count_by_pair_code";
+        "refdata.v1.currency_pair_convention_calendars.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_pair_convention_calendar_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_currency_pair_convention_calendars_response {
+    ores::utility::domain::result result;
+};
+
+struct list_by_pair_code_currency_pair_convention_calendars_request {
+    using response_type = struct list_by_pair_code_currency_pair_convention_calendars_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_pair_convention_calendars.list_by_pair_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string pair_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<currency_pair_convention_calendars_filter> filter;
 };
 
-struct count_currency_pair_convention_calendars_by_pair_response {
-    int total_available_count = 0;
+struct list_by_pair_code_currency_pair_convention_calendars_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::currency_pair_convention_calendar>
+        currency_pair_convention_calendars;
+    std::uint64_t total;
 };
 
-struct count_currency_pair_convention_calendars_by_calendar_request {
-    using response_type = struct count_currency_pair_convention_calendars_by_calendar_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_pair_convention_calendars.count_by_calendar_code";
-    std::string calendar_code;
-};
-
-struct count_currency_pair_convention_calendars_by_calendar_response {
-    int total_available_count = 0;
-};
 }
 
 #endif

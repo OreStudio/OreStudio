@@ -55,5 +55,13 @@ export interface GetAssetClassesResponse {
 }
 
 export const subjects = {
-    get_asset_classes_request: "refdata.v1.asset-classes.list",
+    get_asset_classes_request: "refdata.v1.asset_classes.list",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_asset_classes_request: true,
 } as const;

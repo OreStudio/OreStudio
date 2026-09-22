@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: F2C0F428-7C2F-5D79-A4C8-A22F0E69113E
+:END:
+#+title: How do I run the derivation_kinds commands from the shell?
+#+description: Every command the derivation_kinds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:derivation_kinds:
+
+This file documents the derivation_kinds resource at the shell, one section per command. Every command is a subcommand of =derivation_kinds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0B561B46-D93B-5F3E-B16D-D631C0069989
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.list=.
+
+#+name: derivation_kinds-list
+#+begin_src ores-shell :tangle derivation_kinds-list.ores :exports none
+derivation_kinds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0CDCE9BF-316D-5554-A7EF-17309E25F4D3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds get <code>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.get=.
+
+#+name: derivation_kinds-get
+#+begin_src ores-shell :tangle derivation_kinds-get.ores :exports none
+derivation_kinds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 522A6066-E8AA-559E-BF40-EA053D726A67
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.get_many=.
+
+#+name: derivation_kinds-get-many
+#+begin_src ores-shell :tangle derivation_kinds-get-many.ores :exports none
+derivation_kinds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D56079EE-1F8E-5F4D-A675-237104FE3282
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.put=.
+
+#+name: derivation_kinds-add
+#+begin_src ores-shell :tangle derivation_kinds-add.ores :exports none
+derivation_kinds add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9AE7FA3F-5328-5687-A752-BBD9C2B9E39F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.put=.
+
+#+name: derivation_kinds-set
+#+begin_src ores-shell :tangle derivation_kinds-set.ores :exports none
+derivation_kinds set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B083FE26-E47C-56D0-B7B1-CC71D1DB7F5D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.put_many=.
+
+#+name: derivation_kinds-put-many
+#+begin_src ores-shell :tangle derivation_kinds-put-many.ores :exports none
+derivation_kinds put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 044257E5-8E7C-5E74-A0C5-9C498E210132
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.delete=.
+
+#+name: derivation_kinds-delete
+#+begin_src ores-shell :tangle derivation_kinds-delete.ores :exports none
+derivation_kinds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 77D89465-73BE-5B18-8E3F-83C16AA507EB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds.delete_many=.
+
+#+name: derivation_kinds-delete-many
+#+begin_src ores-shell :tangle derivation_kinds-delete-many.ores :exports none
+derivation_kinds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DC993AF0-95CE-51BB-BBB9-34E51D3A5AA2
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds_versions.list=.
+
+#+name: derivation_kinds-versions
+#+begin_src ores-shell :tangle derivation_kinds-versions.ores :exports none
+derivation_kinds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: EEA91B02-79BD-5B02-9262-ABD430217296
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+derivation_kinds version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.derivation_kinds_versions.get=.
+
+#+name: derivation_kinds-version
+#+begin_src ores-shell :tangle derivation_kinds-version.ores :exports none
+derivation_kinds version __none__ --version 1
+#+end_src
+

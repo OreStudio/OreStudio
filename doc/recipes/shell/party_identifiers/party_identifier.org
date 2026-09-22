@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: F760D166-11B7-5C39-BA37-F9A8D8588B5B
+:END:
+#+title: How do I run the party_identifiers commands from the shell?
+#+description: Every command the party_identifiers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_identifiers:
+
+This file documents the party_identifiers resource at the shell, one section per command. Every command is a subcommand of =party_identifiers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9FB66842-688A-54E0-A1BE-18FDFD9E5064
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.list=.
+
+#+name: party_identifiers-list
+#+begin_src ores-shell :tangle party_identifiers-list.ores :exports none
+party_identifiers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9D2854F0-BA7B-5D8B-BDC0-3A98F066C516
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers get <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.get=.
+
+#+name: party_identifiers-get
+#+begin_src ores-shell :tangle party_identifiers-get.ores :exports none
+party_identifiers get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9FDE2FD1-C2D7-5518-A9C5-F8A7678E4EAD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.get_many=.
+
+#+name: party_identifiers-get-many
+#+begin_src ores-shell :tangle party_identifiers-get-many.ores :exports none
+party_identifiers get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 702D5DF5-DD3C-57B8-9235-3B5F0D45FF98
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers add <id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.put=.
+
+#+name: party_identifiers-add
+#+begin_src ores-shell :tangle party_identifiers-add.ores :exports none
+party_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AD27CA17-958F-5E29-8813-15CF2B12D442
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers set <id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.put=.
+
+#+name: party_identifiers-set
+#+begin_src ores-shell :tangle party_identifiers-set.ores :exports none
+party_identifiers set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3C3D68B6-F465-540E-96EE-680E3EC9F3F6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers put-many --count <n> <id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.put_many=.
+
+#+name: party_identifiers-put-many
+#+begin_src ores-shell :tangle party_identifiers-put-many.ores :exports none
+party_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8AA12568-4765-58BB-9B4D-50D31D2D7F11
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.delete=.
+
+#+name: party_identifiers-delete
+#+begin_src ores-shell :tangle party_identifiers-delete.ores :exports none
+party_identifiers delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DC9576D5-C60F-5AD0-A633-1C9C1C1B13AF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.delete_many=.
+
+#+name: party_identifiers-delete-many
+#+begin_src ores-shell :tangle party_identifiers-delete-many.ores :exports none
+party_identifiers delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-party-id=
+:PROPERTIES:
+:ID: 3CA3259A-169A-5AC7-911A-95846FEF44B9
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers.list_by_party_id=.
+
+#+name: party_identifiers-by-party-id
+#+begin_src ores-shell :tangle party_identifiers-by-party-id.ores :exports none
+party_identifiers by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 883CA3A9-C924-5B4C-934A-8C29F3E4D900
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers_versions.list=.
+
+#+name: party_identifiers-versions
+#+begin_src ores-shell :tangle party_identifiers-versions.ores :exports none
+party_identifiers versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FFEC08F0-E6CA-5958-A295-8ECFE10286E2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_identifiers version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_identifiers_versions.get=.
+
+#+name: party_identifiers-version
+#+begin_src ores-shell :tangle party_identifiers-version.ores :exports none
+party_identifiers version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

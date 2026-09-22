@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
 #include <chrono>
@@ -66,6 +67,38 @@ public:
     explicit ir_curve_bootstrap_pillar_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_ir_curve_bootstrap_pillars_response list_ir_curve_bootstrap_pillars(
+        const messaging::list_ir_curve_bootstrap_pillars_request& request);
+    messaging::get_ir_curve_bootstrap_pillar_response
+    get_ir_curve_bootstrap_pillar(const messaging::get_ir_curve_bootstrap_pillar_request& request);
+    messaging::get_many_ir_curve_bootstrap_pillars_response get_many_ir_curve_bootstrap_pillars(
+        const messaging::get_many_ir_curve_bootstrap_pillars_request& request);
+    messaging::put_ir_curve_bootstrap_pillar_response
+    put_ir_curve_bootstrap_pillar(const messaging::put_ir_curve_bootstrap_pillar_request& request);
+    messaging::put_many_ir_curve_bootstrap_pillars_response put_many_ir_curve_bootstrap_pillars(
+        const messaging::put_many_ir_curve_bootstrap_pillars_request& request);
+    messaging::delete_ir_curve_bootstrap_pillar_response delete_ir_curve_bootstrap_pillar(
+        const messaging::delete_ir_curve_bootstrap_pillar_request& request);
+    messaging::delete_many_ir_curve_bootstrap_pillars_response
+    delete_many_ir_curve_bootstrap_pillars(
+        const messaging::delete_many_ir_curve_bootstrap_pillars_request& request);
+    messaging::list_ir_curve_bootstrap_pillar_versions_response
+    list_ir_curve_bootstrap_pillar_versions(
+        const messaging::list_ir_curve_bootstrap_pillar_versions_request& request);
+    messaging::get_ir_curve_bootstrap_pillar_version_response get_ir_curve_bootstrap_pillar_version(
+        const messaging::get_ir_curve_bootstrap_pillar_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists IR curve bootstrap pillars with pagination support.
      *
      * @param offset Number of records to skip.
@@ -99,6 +132,11 @@ public:
      * @return The IR curve bootstrap pillar if found, std::nullopt otherwise.
      */
     std::optional<domain::ir_curve_bootstrap_pillar> get_pillar(const std::string& id);
+
+    /**
+     * @brief Retrieves a batch of IR curve bootstrap pillars by primary key.
+     */
+    std::vector<domain::ir_curve_bootstrap_pillar> get_pillars(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a IR curve bootstrap pillar (creates or updates).
@@ -136,6 +174,24 @@ public:
 private:
     context ctx_;
     repository::ir_curve_bootstrap_pillar_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::ir_curve_bootstrap_pillar_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::ir_curve_bootstrap_pillar& out);
 };
 
 }

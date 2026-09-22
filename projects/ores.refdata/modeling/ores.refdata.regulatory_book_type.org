@@ -113,7 +113,6 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :has_as_of_lookup:   true
 :END:
 
@@ -163,17 +162,6 @@ faker::number::integer(1, 100)
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:get_request_class:      refdata::messaging::get_regulatory_book_types_request
-:get_response_class:     refdata::messaging::get_regulatory_book_types_response
-:get_message_type:       get_regulatory_book_types_request
-:save_request_class:     refdata::messaging::save_regulatory_book_type_request
-:save_response_class:    refdata::messaging::save_regulatory_book_type_response
-:save_message_type:      save_regulatory_book_type_request
-:delete_request_class:   refdata::messaging::delete_regulatory_book_type_request
-:delete_response_class:  refdata::messaging::delete_regulatory_book_type_response
-:delete_message_type:    delete_regulatory_book_type_request
-:history_request_class:  refdata::messaging::get_regulatory_book_type_history_request
-:history_response_class: refdata::messaging::get_regulatory_book_type_history_response
 :history_message_type:   get_regulatory_book_type_history_request
 :settings_group:         RegulatoryBookTypeListWindow
 :window_title:           Regulatory Book Types

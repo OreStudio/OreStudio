@@ -41,29 +41,53 @@ std::vector<ores::nats::service::subscription> register_currency_pair_convention
     auto h = std::make_shared<currency_pair_convention_calendar_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
-        nats.queue_subscribe(get_currency_pair_convention_calendars_request::nats_subject,
+        nats.queue_subscribe(list_currency_pair_convention_calendars_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_currency_pair_convention_calendars(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(get_currency_pair_convention_calendar_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) {
+                                            h->get_currency_pair_convention_calendar(
+                                                std::move(msg));
+                                        }));
     subs.push_back(
-        nats.queue_subscribe(get_currency_pair_convention_calendars_by_pair_request::nats_subject,
+        nats.queue_subscribe(get_many_currency_pair_convention_calendars_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->list_by_pair(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->get_many_currency_pair_convention_calendars(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(put_currency_pair_convention_calendar_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) {
+                                            h->put_currency_pair_convention_calendar(
+                                                std::move(msg));
+                                        }));
     subs.push_back(
-        nats.queue_subscribe(save_currency_pair_convention_calendar_request::nats_subject,
+        nats.queue_subscribe(put_many_currency_pair_convention_calendars_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->put_many_currency_pair_convention_calendars(std::move(msg));
+                             }));
     subs.push_back(
         nats.queue_subscribe(delete_currency_pair_convention_calendar_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_currency_pair_convention_calendar(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(count_currency_pair_convention_calendars_by_pair_request::nats_subject,
+        nats.queue_subscribe(delete_many_currency_pair_convention_calendars_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->count_by_pair(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_currency_pair_convention_calendars(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
-        count_currency_pair_convention_calendars_by_calendar_request::nats_subject,
+        list_by_pair_code_currency_pair_convention_calendars_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->count_by_calendar(std::move(msg)); }));
+        [h](ores::nats::message msg) {
+            h->list_by_pair_code_currency_pair_convention_calendars(std::move(msg));
+        }));
     return subs;
 }
 

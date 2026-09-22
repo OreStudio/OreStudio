@@ -64,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.swap_conventions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_swap_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -72,30 +81,128 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::swap_convention_service svc(req_ctx);
-        get_swap_conventions_response resp;
-        if (auto req = decode<get_swap_conventions_request>(msg)) {
-            try {
-                resp.swap_conventions = svc.list_swap_conventions(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_swap_conventions());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(swap_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_swap_conventions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.list_swap_conventions(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_swap_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.swap_conventions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_swap_convention(ores::nats::message msg) {
+        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_swap_convention_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_swap_convention(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_swap_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.swap_conventions.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_swap_conventions(ores::nats::message msg) {
+        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_swap_conventions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_swap_conventions(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_swap_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.swap_conventions.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_swap_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -107,27 +214,42 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::swap_convention_service svc(req_ctx);
-        if (auto req = decode<save_swap_convention_request>(msg)) {
-            try {
-                svc.save_swap_convention(req->data);
-                BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_swap_convention_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(swap_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_swap_convention_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_swap_convention_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.put_swap_convention(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_swap_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.swap_conventions.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_swap_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -135,30 +257,46 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::swap_convention_service svc(req_ctx);
-        if (auto req = decode<get_swap_convention_history_request>(msg)) {
-            try {
-                auto hist = svc.get_swap_convention_history(req->id);
-                BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_swap_convention_history_response{.history = std::move(hist),
-                                                           .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(swap_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_swap_convention_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::swap_conventions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_swap_conventions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_swap_conventions(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_swap_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.swap_conventions.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_swap_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -170,23 +308,162 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::swap_convention_service svc(req_ctx);
-        if (auto req = decode<delete_swap_convention_request>(msg)) {
-            try {
-                svc.delete_swap_conventions(req->ids);
-                BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_swap_convention_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(swap_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_swap_convention_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_swap_convention_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.delete_swap_convention(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_swap_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.swap_conventions.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_swap_conventions(ores::nats::message msg) {
+        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_conventions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_swap_conventions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_swap_conventions(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_swap_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.swap_conventions_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_swap_convention_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_swap_convention_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.list_swap_convention_versions(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_swap_convention_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.swap_conventions_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_swap_convention_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_swap_convention_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(swap_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::swap_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_swap_convention_version(*req);
+            BOOST_LOG_SEV(swap_convention_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(swap_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_swap_convention_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

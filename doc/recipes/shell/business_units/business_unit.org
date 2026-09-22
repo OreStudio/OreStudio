@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 000E583B-AFD8-59AF-ABB3-793C651006C8
+:END:
+#+title: How do I run the business_units commands from the shell?
+#+description: Every command the business_units submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:business_units:
+
+This file documents the business_units resource at the shell, one section per command. Every command is a subcommand of =business_units=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4650B7D2-CD82-5C71-89CA-6D687447A6B7
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_units.list=.
+
+#+name: business_units-list
+#+begin_src ores-shell :tangle business_units-list.ores :exports none
+business_units list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2B5E014B-C28C-55AF-8C29-11C345370847
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units get <id>
+#+end_example
+
+It is addressed at =refdata.v1.business_units.get=.
+
+#+name: business_units-get
+#+begin_src ores-shell :tangle business_units-get.ores :exports none
+business_units get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C2F50537-9ED5-59B8-9A82-864C6A7A02D1
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.business_units.get_many=.
+
+#+name: business_units-get-many
+#+begin_src ores-shell :tangle business_units-get-many.ores :exports none
+business_units get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1414B5E8-04FF-5D7B-BD35-AA8DFC313E37
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units add <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_units.put=.
+
+#+name: business_units-add
+#+begin_src ores-shell :tangle business_units-add.ores :exports none
+business_units add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5FEDF799-A6FB-540E-8E7D-0332A0A61D66
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units set <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_units.put=.
+
+#+name: business_units-set
+#+begin_src ores-shell :tangle business_units-set.ores :exports none
+business_units set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: BFC0B27C-A9A9-5D02-8F07-4B403440BCBE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units put-many --count <n> <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_units.put_many=.
+
+#+name: business_units-put-many
+#+begin_src ores-shell :tangle business_units-put-many.ores :exports none
+business_units put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 78F2B09E-E3E3-562A-941F-FCA10714C1F1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_units.delete=.
+
+#+name: business_units-delete
+#+begin_src ores-shell :tangle business_units-delete.ores :exports none
+business_units delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0F0B688A-0886-5AB5-B13A-44167F99A705
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_units.delete_many=.
+
+#+name: business_units-delete-many
+#+begin_src ores-shell :tangle business_units-delete-many.ores :exports none
+business_units delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 623479D0-5401-5172-A9D5-DE67342DD27A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_units_versions.list=.
+
+#+name: business_units-versions
+#+begin_src ores-shell :tangle business_units-versions.ores :exports none
+business_units versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B2565160-801D-52D5-AA55-5FEEBFD7B29A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_units version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.business_units_versions.get=.
+
+#+name: business_units-version
+#+begin_src ores-shell :tangle business_units-version.ores :exports none
+business_units version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -26,8 +26,10 @@
 #include "ores.refdata.core/messaging/book_purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/book_registrar.hpp"
 #include "ores.refdata.core/messaging/book_status_registrar.hpp"
+#include "ores.refdata.core/messaging/business_centre_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
+#include "ores.refdata.core/messaging/business_unit_type_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_adjustment_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_date_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_event_registrar.hpp"
@@ -95,15 +97,10 @@
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
 // Wired inline rather than through a generated sub-registrar: asset_class
-// is an operation protocol, business_centre and business_unit_type keep
-// their subjects here, and publish_from_dq is a bespoke multi-subject
+// is an operation protocol and publish_from_dq is a bespoke multi-subject
 // workflow handler.
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
-#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
-#include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
 #include "ores.refdata.core/messaging/asset_class_handler.hpp"
-#include "ores.refdata.core/messaging/business_centre_handler.hpp"
-#include "ores.refdata.core/messaging/business_unit_type_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 
 // Generic history.v1.get subject.
@@ -205,8 +202,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_book_handlers(nats, ctx, verifier));
     append(register_book_purpose_type_handlers(nats, ctx, verifier));
     append(register_book_status_handlers(nats, ctx, verifier));
+    append(register_business_centre_handlers(nats, ctx, verifier));
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_unit_handlers(nats, ctx, verifier));
+    append(register_business_unit_type_handlers(nats, ctx, verifier));
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_date_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
@@ -272,52 +271,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
     append(register_tenor_schedule_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
-
-    // ----------------------------------------------------------------
-    // Business unit types (no codegen model).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<business_unit_type_handler>(nats, ctx, verifier);
-        subs.push_back(
-            nats.queue_subscribe(get_business_unit_types_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(save_business_unit_type_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(delete_business_unit_type_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(get_business_unit_type_history_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-    }
-
-    // ----------------------------------------------------------------
-    // Business centres (no codegen model).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<business_centre_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_business_centres_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->list(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            save_business_centre_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->save(std::move(msg));
-            }));
-        subs.push_back(
-            nats.queue_subscribe(delete_business_centre_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(get_business_centre_history_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-    }
 
     // ----------------------------------------------------------------
     // Asset classes (no codegen model; list-only).

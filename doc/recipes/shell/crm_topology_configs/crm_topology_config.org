@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 6691ADF3-F294-5C86-84DF-677CE5D15F41
+:END:
+#+title: How do I run the crm_topology_configs commands from the shell?
+#+description: Every command the crm_topology_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:crm_topology_configs:
+
+This file documents the crm_topology_configs resource at the shell, one section per command. Every command is a subcommand of =crm_topology_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 849C74B2-D973-5BE7-84C3-D6DC88C13CA9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.list=.
+
+#+name: crm_topology_configs-list
+#+begin_src ores-shell :tangle crm_topology_configs-list.ores :exports none
+crm_topology_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4AE0DAF5-B4FF-5822-A155-51505F96ACDA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.get=.
+
+#+name: crm_topology_configs-get
+#+begin_src ores-shell :tangle crm_topology_configs-get.ores :exports none
+crm_topology_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BB359FE1-741E-51A4-BF5F-78BA96EE1366
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.get_many=.
+
+#+name: crm_topology_configs-get-many
+#+begin_src ores-shell :tangle crm_topology_configs-get-many.ores :exports none
+crm_topology_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5C1E1A2C-F17C-5974-BB35-195FF7C742E0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs add <id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.put=.
+
+#+name: crm_topology_configs-add
+#+begin_src ores-shell :tangle crm_topology_configs-add.ores :exports none
+crm_topology_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 585E1277-8D63-5B6C-B88F-CA8E2E104D67
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs set <id> <name> <pivot_currency_code> <enabled> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.put=.
+
+#+name: crm_topology_configs-set
+#+begin_src ores-shell :tangle crm_topology_configs-set.ores :exports none
+crm_topology_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 53A7E67B-9EA9-5C7D-A203-E0191C52D23E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs put-many --count <n> <id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.put_many=.
+
+#+name: crm_topology_configs-put-many
+#+begin_src ores-shell :tangle crm_topology_configs-put-many.ores :exports none
+crm_topology_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: DCCC1505-C29D-5F25-997E-F9B31989F5CE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.delete=.
+
+#+name: crm_topology_configs-delete
+#+begin_src ores-shell :tangle crm_topology_configs-delete.ores :exports none
+crm_topology_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F910515C-91A9-5967-82F3-D838E5A9AF11
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs.delete_many=.
+
+#+name: crm_topology_configs-delete-many
+#+begin_src ores-shell :tangle crm_topology_configs-delete-many.ores :exports none
+crm_topology_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A922C965-7E5C-5111-B8C6-D12EB56FC995
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs_versions.list=.
+
+#+name: crm_topology_configs-versions
+#+begin_src ores-shell :tangle crm_topology_configs-versions.ores :exports none
+crm_topology_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 37ADC88B-6949-59F3-99CD-07336BC904B1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_topology_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.crm_topology_configs_versions.get=.
+
+#+name: crm_topology_configs-version
+#+begin_src ores-shell :tangle crm_topology_configs-version.ores :exports none
+crm_topology_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

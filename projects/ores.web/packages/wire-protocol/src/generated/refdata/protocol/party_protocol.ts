@@ -25,67 +25,153 @@
 import type { Party } from '../domain/party.js';
 import type { PartyContactInformation } from '../domain/party_contact_information.js';
 import type { PartyIdentifier } from '../domain/party_identifier.js';
-import type { HierarchyNode } from '../../../utility/hierarchy.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetPartiesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetPartiesResponse {
-    parties: Party[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SavePartyRequest {
-    data: Party;
-}
-
-export interface SavePartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeletePartyRequest {
-    ids: string[];
-}
-
-export interface DeletePartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetPartyHistoryRequest {
+export interface PartyKey {
     id: string;
 }
 
-export interface GetPartyHistoryResponse {
-    history: Party[];
-    success: boolean;
-    message: string;
+export interface PartyWrite {
+    id: string;
+    short_code: string;
+    full_name: string;
+    codename: string;
+    transliterated_name: string | null;
+    party_category: string;
+    party_type: string;
+    parent_party_id: string | null;
+    business_center_code: string;
+    status: string;
+    image_id: string | null;
 }
 
-export interface GetPartyHierarchyRequest {
-    root_id: string;
-    from_root: boolean;
+export interface PartyChange {
+    write: PartyWrite;
+    precondition: Precondition;
 }
 
-export interface GetPartyHierarchyResponse {
-    success: boolean;
-    message: string;
-    roots: HierarchyNode[];
+export interface PartyRemoval {
+    key: PartyKey;
+    precondition: Precondition;
 }
 
-export interface ReadPartiesForCacheRequest {
-    tenant_id: string;
+export interface PartyLookup {
+    key: PartyKey;
+    party: Party | null;
 }
 
-export interface ReadPartiesForCacheResponse {
-    success: boolean;
-    message: string;
+export interface PartyEvent {
+    event_id: string;
+    key: PartyKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface PartyVersionKey {
+    party: PartyKey;
+    version: number;
+}
+
+export interface PartyVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListPartiesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListPartiesResponse {
+    result: Result;
     parties: Party[];
+    total: number;
+}
+
+export interface GetPartyRequest {
+    key: PartyKey;
+}
+
+export interface GetPartyResponse {
+    result: Result;
+    party: Party | null;
+}
+
+export interface GetManyPartiesRequest {
+    keys: PartyKey[];
+}
+
+export interface GetManyPartiesResponse {
+    result: Result;
+    entries: PartyLookup[];
+}
+
+export interface PutPartyRequest {
+    change: PartyChange;
+    intent: ChangeIntent;
+}
+
+export interface PutPartyResponse {
+    result: Result;
+    party: Party;
+}
+
+export interface PutManyPartiesRequest {
+    changes: PartyChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyPartiesResponse {
+    result: Result;
+    parties: Party[];
+}
+
+export interface DeletePartyRequest {
+    removal: PartyRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeletePartyResponse {
+    result: Result;
+}
+
+export interface DeleteManyPartiesRequest {
+    removals: PartyRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyPartiesResponse {
+    result: Result;
+}
+
+export interface ListPartyVersionsRequest {
+    key: PartyKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: PartyVersionsFilter | null;
+}
+
+export interface ListPartyVersionsResponse {
+    result: Result;
+    versions: Party[];
+    total: number;
+}
+
+export interface GetPartyVersionRequest {
+    key: PartyVersionKey;
+}
+
+export interface GetPartyVersionResponse {
+    result: Result;
+    version: Party;
 }
 
 /**
@@ -108,11 +194,42 @@ export interface GetPartyCompositeAsOfResponse {
 }
 
 export const subjects = {
-    get_parties_request: "refdata.v1.parties.list",
-    save_party_request: "refdata.v1.parties.save",
+    list_parties_request: "refdata.v1.parties.list",
+    get_party_request: "refdata.v1.parties.get",
+    get_many_parties_request: "refdata.v1.parties.get_many",
+    put_party_request: "refdata.v1.parties.put",
+    put_many_parties_request: "refdata.v1.parties.put_many",
     delete_party_request: "refdata.v1.parties.delete",
-    get_party_history_request: "refdata.v1.parties.history",
-    get_party_hierarchy_request: "refdata.v1.parties.hierarchy",
-    read_parties_for_cache_request: "refdata.v1.parties.read",
+    delete_many_parties_request: "refdata.v1.parties.delete_many",
+    list_party_versions_request: "refdata.v1.parties_versions.list",
+    get_party_version_request: "refdata.v1.parties_versions.get",
     get_party_composite_as_of_request: "refdata.v1.parties.composite_as_of",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_parties_request: true,
+    get_party_request: true,
+    get_many_parties_request: true,
+    put_party_request: true,
+    put_many_parties_request: true,
+    delete_party_request: true,
+    delete_many_parties_request: true,
+    list_party_versions_request: true,
+    get_party_version_request: true,
+    get_party_composite_as_of_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.parties_events.created",
+    updated: "refdata.v1.parties_events.updated",
+    deleted: "refdata.v1.parties_events.deleted",
 } as const;

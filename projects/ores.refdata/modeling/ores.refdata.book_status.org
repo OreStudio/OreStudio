@@ -117,7 +117,6 @@ drop function if exists ores_refdata_validate_book_status_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :has_as_of_lookup:   true
 :END:
 
@@ -167,17 +166,6 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :collection_name:        statuses
 :item_var:               status
 :key_field:              code
-:get_request_class:      refdata::messaging::get_book_statuses_request
-:get_response_class:     refdata::messaging::get_book_statuses_response
-:get_message_type:       get_book_statuses_request
-:save_request_class:     refdata::messaging::save_book_status_request
-:save_response_class:    refdata::messaging::save_book_status_response
-:save_message_type:      save_book_status_request
-:delete_request_class:   refdata::messaging::delete_book_status_request
-:delete_response_class:  refdata::messaging::delete_book_status_response
-:delete_message_type:    delete_book_status_request
-:history_request_class:  refdata::messaging::get_book_status_history_request
-:history_response_class: refdata::messaging::get_book_status_history_response
 :history_message_type:   get_book_status_history_request
 :settings_group:         BookStatusListWindow
 :window_title:           Book Statuses

@@ -117,7 +117,6 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository
@@ -166,17 +165,6 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:get_request_class:      refdata::messaging::get_purpose_types_request
-:get_response_class:     refdata::messaging::get_purpose_types_response
-:get_message_type:       get_purpose_types_request
-:save_request_class:     refdata::messaging::save_purpose_type_request
-:save_response_class:    refdata::messaging::save_purpose_type_response
-:save_message_type:      save_purpose_type_request
-:delete_request_class:   refdata::messaging::delete_purpose_type_request
-:delete_response_class:  refdata::messaging::delete_purpose_type_response
-:delete_message_type:    delete_purpose_type_request
-:history_request_class:  refdata::messaging::get_purpose_type_history_request
-:history_response_class: refdata::messaging::get_purpose_type_history_response
 :history_message_type:   get_purpose_type_history_request
 :settings_group:         PurposeTypeListWindow
 :window_title:           Purpose Types

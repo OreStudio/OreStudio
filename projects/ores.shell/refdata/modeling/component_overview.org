@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 0AB97FD9-D248-46FE-9E14-E7F772637A51
+:END:
+#+title: ores.shell.refdata
+#+description: The shell's refdata adapter part. Holds the generated command units that project the refdata domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:refdata:component:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+name: shell.refdata
+#+full_name: ores.shell.refdata
+#+brief: Shell refdata command units
+
+* Summary
+
+=ores.shell.refdata= is the adapter part that projects the refdata domain onto
+the shell's REPL menu. It holds the generated command units for the refdata
+models that opt in, and each unit owns one submenu.
+
+Refdata's models opt in through the profiles they bind to, because every one of
+them takes the same two facets: the command unit itself, and the literate recipe
+the =ores.doc.shell-recipe= facet writes beside it. A model that needs neither
+can bind a profile that does not carry them.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the shell surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The units are output of the =ores.cpp.shell-command= facet, which is opt-in per
+model. The facet writes here because the part is named after the domain the
+units project, which is the fractal naming rule in
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+
+* Inputs
+
+- Free-form token vectors from the command layer, parsed by =parse_args=.
+- The logged-in NATS session, passed by reference into every helper.
+- The refdata models under =projects/ores.refdata/modeling/= whose profiles opt
+  in to the =ores.cpp.shell-command= facet.
+
+* Outputs
+
+- One command unit per opted-in model, at
+  =src/app/commands/refdata/<unit>_commands.cpp= and
+  =include/ores.shell/app/commands/refdata/<unit>_commands.hpp=.
+- One literate recipe per unit, under =doc/recipes/shell/=, whose scripts
+  tangle into =projects/ores.shell/scripts/library/=.
+- NATS request messages to the refdata service, one per command.
+- Formatted text output of query results to stdout.
+
+* Entry points
+
+- =include/ores.shell/app/commands/refdata/= -- the generated unit headers.
+- =src/app/commands/refdata/= -- the generated unit implementations.
+- =refdata_commands= -- the component-level entry the host calls once to
+  install every unit below the refdata root menu.
+
+* Dependencies
+
+- =ores.shell.api= -- argument parsing, feedback, pagination, request helpers.
+- =ores.nats= -- NATS transport for service calls.
+- =ores.refdata.api= -- the domain types and protocol messages the units send.
+- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.platform= -- the date and time formatting a recipe reads back.
+- =ores.logging= -- logger factory.
+- =cli= -- the menu and handler types the units register against.
+
+* See also
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] -- the composite this part belongs to.
+- [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]] -- the shared shell plumbing.
+- [[id:35C549C4-A6C0-4037-84DF-63E677C8C61E][ores.shell.application]] -- the runnable host.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] -- the facet that emits the units.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.

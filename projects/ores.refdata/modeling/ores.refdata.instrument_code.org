@@ -200,7 +200,6 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
-:has_batch_remove:   true
 :END:
 
 ** Repository
@@ -252,17 +251,6 @@ drop function if exists ores_refdata_validate_instrument_code_fn;
 :collection_name:        codes
 :item_var:               code_
 :key_field:              code
-:get_request_class:      refdata::messaging::get_instrument_codes_request
-:get_response_class:     refdata::messaging::get_instrument_codes_response
-:get_message_type:       get_instrument_codes_request
-:save_request_class:     refdata::messaging::save_instrument_code_request
-:save_response_class:    refdata::messaging::save_instrument_code_response
-:save_message_type:      save_instrument_code_request
-:delete_request_class:   refdata::messaging::delete_instrument_code_request
-:delete_response_class:  refdata::messaging::delete_instrument_code_response
-:delete_message_type:    delete_instrument_code_request
-:history_request_class:  refdata::messaging::get_instrument_code_history_request
-:history_response_class: refdata::messaging::get_instrument_code_history_response
 :history_message_type:   get_instrument_code_history_request
 :settings_group:         InstrumentCodeListWindow
 :window_title:           Instrument Codes

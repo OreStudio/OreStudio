@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: FBCEE21A-CC3F-5EC1-BC7F-3E42C933DBAD
+:END:
+#+title: How do I run the tenor_convention_resolutions commands from the shell?
+#+description: Every command the tenor_convention_resolutions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_convention_resolutions:
+
+This file documents the tenor_convention_resolutions resource at the shell, one section per command. Every command is a subcommand of =tenor_convention_resolutions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 40DADAE9-6321-5B15-9D6B-1FC763011E05
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.list=.
+
+#+name: tenor_convention_resolutions-list
+#+begin_src ores-shell :tangle tenor_convention_resolutions-list.ores :exports none
+tenor_convention_resolutions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7460B197-E5C2-539A-9F5B-5D919AF3895A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions get <convention_code> <tenor_code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.get=.
+
+#+name: tenor_convention_resolutions-get
+#+begin_src ores-shell :tangle tenor_convention_resolutions-get.ores :exports none
+tenor_convention_resolutions get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 776C29F8-FA99-59BD-96B8-D4D879AF0134
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions get-many <convention_code> <tenor_code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.get_many=.
+
+#+name: tenor_convention_resolutions-get-many
+#+begin_src ores-shell :tangle tenor_convention_resolutions-get-many.ores :exports none
+tenor_convention_resolutions get-many __none__ __none__
+#+end_src
+
+** =by-convention-code=
+:PROPERTIES:
+:ID: 133714A4-F588-5BE5-BDE0-FD6BBC799F15
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_convention_resolutions by-convention-code <convention_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_convention_resolutions.list_by_convention_code=.
+
+#+name: tenor_convention_resolutions-by-convention-code
+#+begin_src ores-shell :tangle tenor_convention_resolutions-by-convention-code.ores :exports none
+tenor_convention_resolutions by-convention-code __none__ --limit 1
+#+end_src
+

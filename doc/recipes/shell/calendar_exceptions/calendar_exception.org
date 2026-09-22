@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 6B6F3AD7-3E55-53EB-816B-8332E697D5F7
+:END:
+#+title: How do I run the calendar_exceptions commands from the shell?
+#+description: Every command the calendar_exceptions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:calendar_exceptions:
+
+This file documents the calendar_exceptions resource at the shell, one section per command. Every command is a subcommand of =calendar_exceptions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B3CAE284-2267-5070-AB79-12DC8452763D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.list=.
+
+#+name: calendar_exceptions-list
+#+begin_src ores-shell :tangle calendar_exceptions-list.ores :exports none
+calendar_exceptions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 87976810-2B37-575E-AB70-134ED14038EB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.get=.
+
+#+name: calendar_exceptions-get
+#+begin_src ores-shell :tangle calendar_exceptions-get.ores :exports none
+calendar_exceptions get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1114E97B-6F57-574F-B759-3B53D4CA92BC
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.get_many=.
+
+#+name: calendar_exceptions-get-many
+#+begin_src ores-shell :tangle calendar_exceptions-get-many.ores :exports none
+calendar_exceptions get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D0E110A6-E56D-5699-8FEF-AFAB96E40D50
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions add <id> <calendar_code> <exception_date> <is_business_day> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.put=.
+
+#+name: calendar_exceptions-add
+#+begin_src ores-shell :tangle calendar_exceptions-add.ores :exports none
+calendar_exceptions add 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AAE51298-CAAC-5F0D-A20F-1BFFDE41663A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions set <id> <calendar_code> <exception_date> <is_business_day> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.put=.
+
+#+name: calendar_exceptions-set
+#+begin_src ores-shell :tangle calendar_exceptions-set.ores :exports none
+calendar_exceptions set 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A7B27976-F2BF-5BE4-ABA3-EC64829CD6D0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions put-many --count <n> <id> <calendar_code> <exception_date> <is_business_day> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.put_many=.
+
+#+name: calendar_exceptions-put-many
+#+begin_src ores-shell :tangle calendar_exceptions-put-many.ores :exports none
+calendar_exceptions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1A361C63-C421-5625-BC2C-F0C82EF27A0A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.delete=.
+
+#+name: calendar_exceptions-delete
+#+begin_src ores-shell :tangle calendar_exceptions-delete.ores :exports none
+calendar_exceptions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EE9DB0A1-F762-5DBB-9F3A-D634050C053E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.delete_many=.
+
+#+name: calendar_exceptions-delete-many
+#+begin_src ores-shell :tangle calendar_exceptions-delete-many.ores :exports none
+calendar_exceptions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-calendar-code=
+:PROPERTIES:
+:ID: 7DCAE2D2-4C85-5EF2-9F9E-E5CA8A1712A4
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions by-calendar-code <calendar_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions.list_by_calendar_code=.
+
+#+name: calendar_exceptions-by-calendar-code
+#+begin_src ores-shell :tangle calendar_exceptions-by-calendar-code.ores :exports none
+calendar_exceptions by-calendar-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C0E68014-2BA7-58D9-8427-A4206D3B542F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions_versions.list=.
+
+#+name: calendar_exceptions-versions
+#+begin_src ores-shell :tangle calendar_exceptions-versions.ores :exports none
+calendar_exceptions versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 265CCFFF-9337-5E85-BE4E-03B5B45DC579
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_exceptions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_exceptions_versions.get=.
+
+#+name: calendar_exceptions-version
+#+begin_src ores-shell :tangle calendar_exceptions-version.ores :exports none
+calendar_exceptions version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

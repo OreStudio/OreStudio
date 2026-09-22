@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/calendar_event.hpp"
+#include "ores.refdata.api/messaging/calendar_event_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include <chrono>
@@ -63,6 +64,41 @@ public:
      * @param ctx The database context for operations.
      */
     explicit calendar_event_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_calendar_events_response
+    list_calendar_events(const messaging::list_calendar_events_request& request);
+    messaging::get_calendar_event_response
+    get_calendar_event(const messaging::get_calendar_event_request& request);
+    messaging::get_many_calendar_events_response
+    get_many_calendar_events(const messaging::get_many_calendar_events_request& request);
+    messaging::put_calendar_event_response
+    put_calendar_event(const messaging::put_calendar_event_request& request);
+    messaging::put_many_calendar_events_response
+    put_many_calendar_events(const messaging::put_many_calendar_events_request& request);
+    messaging::delete_calendar_event_response
+    delete_calendar_event(const messaging::delete_calendar_event_request& request);
+    messaging::delete_many_calendar_events_response
+    delete_many_calendar_events(const messaging::delete_many_calendar_events_request& request);
+    messaging::list_by_calendar_code_calendar_events_response list_by_calendar_code_calendar_events(
+        const messaging::list_by_calendar_code_calendar_events_request& request);
+    messaging::list_by_diary_entry_type_calendar_events_response
+    list_by_diary_entry_type_calendar_events(
+        const messaging::list_by_diary_entry_type_calendar_events_request& request);
+    messaging::list_calendar_event_versions_response
+    list_calendar_event_versions(const messaging::list_calendar_event_versions_request& request);
+    messaging::get_calendar_event_version_response
+    get_calendar_event_version(const messaging::get_calendar_event_version_request& request);
+    /**@}*/
 
     /**
      * @brief Lists calendar events with pagination support.
@@ -101,6 +137,7 @@ public:
      */
     std::uint32_t count_calendar_events_by_calendar_code(const std::string& calendar_code);
 
+
     /**
      * @brief Lists calendar events filtered by calendar_code that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
@@ -115,6 +152,7 @@ public:
         const std::string& calendar_code,
         std::chrono::system_clock::time_point valid_from_bound,
         std::chrono::system_clock::time_point valid_to_bound);
+
     /**
      * @brief Lists calendar events filtered by diary_entry_type, with pagination.
      *
@@ -134,6 +172,7 @@ public:
      */
     std::uint32_t count_calendar_events_by_diary_entry_type(const std::string& diary_entry_type);
 
+
     /**
      * @brief Lists calendar events filtered by diary_entry_type that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
@@ -148,6 +187,7 @@ public:
         const std::string& diary_entry_type,
         std::chrono::system_clock::time_point valid_from_bound,
         std::chrono::system_clock::time_point valid_to_bound);
+
     /**
      * @brief Retrieves a single calendar event as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
@@ -164,6 +204,11 @@ public:
      * @return The calendar event if found, std::nullopt otherwise.
      */
     std::optional<domain::calendar_event> get_calendar_event(const std::string& id);
+
+    /**
+     * @brief Retrieves a batch of calendar events by primary key.
+     */
+    std::vector<domain::calendar_event> get_calendar_events(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a calendar event (creates or updates).
@@ -201,6 +246,23 @@ public:
 private:
     context ctx_;
     repository::calendar_event_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::calendar_event_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::calendar_event& out);
 };
 
 }

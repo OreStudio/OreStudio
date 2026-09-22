@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 7A3B7648-6664-5E45-A03B-BA62076DFC1A
+:END:
+#+title: How do I run the crm_enabled_derived_pairs commands from the shell?
+#+description: Every command the crm_enabled_derived_pairs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:crm_enabled_derived_pairs:
+
+This file documents the crm_enabled_derived_pairs resource at the shell, one section per command. Every command is a subcommand of =crm_enabled_derived_pairs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9765CDEB-897C-5CE7-8A65-D91ECAB61809
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.list=.
+
+#+name: crm_enabled_derived_pairs-list
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-list.ores :exports none
+crm_enabled_derived_pairs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: EE7173CC-C9D3-5119-B1EA-26DED7A5EF79
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.get=.
+
+#+name: crm_enabled_derived_pairs-get
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-get.ores :exports none
+crm_enabled_derived_pairs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3CEFABE5-C663-5224-A7AC-BBF144575D94
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.get_many=.
+
+#+name: crm_enabled_derived_pairs-get-many
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-get-many.ores :exports none
+crm_enabled_derived_pairs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E1DAE7AB-2F7F-5C16-9B29-2AA55FABE290
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs add <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.put=.
+
+#+name: crm_enabled_derived_pairs-add
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-add.ores :exports none
+crm_enabled_derived_pairs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 202CCAD5-2147-5E4D-898E-CC61C4E86B84
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs set <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.put=.
+
+#+name: crm_enabled_derived_pairs-set
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-set.ores :exports none
+crm_enabled_derived_pairs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 63056C05-1EC6-58A7-849D-5A75A10CBFDE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.put_many=.
+
+#+name: crm_enabled_derived_pairs-put-many
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-put-many.ores :exports none
+crm_enabled_derived_pairs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A732E832-1EE5-5713-A6B6-8D22867E3E8F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.delete=.
+
+#+name: crm_enabled_derived_pairs-delete
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-delete.ores :exports none
+crm_enabled_derived_pairs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FC03FB2D-27A2-56E9-B790-8B13754747FA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs.delete_many=.
+
+#+name: crm_enabled_derived_pairs-delete-many
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-delete-many.ores :exports none
+crm_enabled_derived_pairs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D06CB41B-888D-5E38-A2CC-C2B99E78CE1F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs_versions.list=.
+
+#+name: crm_enabled_derived_pairs-versions
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-versions.ores :exports none
+crm_enabled_derived_pairs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5E31E382-3942-5CB9-9F05-AA6EB4372CB2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_enabled_derived_pairs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.crm_enabled_derived_pairs_versions.get=.
+
+#+name: crm_enabled_derived_pairs-version
+#+begin_src ores-shell :tangle crm_enabled_derived_pairs-version.ores :exports none
+crm_enabled_derived_pairs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

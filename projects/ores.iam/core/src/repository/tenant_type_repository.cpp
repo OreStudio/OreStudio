@@ -180,6 +180,7 @@ std::optional<domain::tenant_type> tenant_type_repository::read_at_version(conte
     return entities.front();
 }
 
+
 tenant_type_repository::remove_status tenant_type_repository::remove(
     context ctx, const std::string& type, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenant type. " << "type: " << type;
@@ -201,6 +202,11 @@ tenant_type_repository::remove_status tenant_type_repository::remove(
                              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing tenant type from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, type).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

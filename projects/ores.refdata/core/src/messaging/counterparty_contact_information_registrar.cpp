@@ -40,24 +40,62 @@ std::vector<ores::nats::service::subscription> register_counterparty_contact_inf
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<counterparty_contact_information_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_counterparty_contact_informations_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_counterparty_contact_information_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_counterparty_contact_informations_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_counterparty_contact_informations(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        get_counterparty_contact_information_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_counterparty_contact_information(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_many_counterparty_contact_informations_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_many_counterparty_contact_informations(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        put_counterparty_contact_information_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_counterparty_contact_information(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_many_counterparty_contact_informations_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->put_many_counterparty_contact_informations(std::move(msg));
+                             }));
     subs.push_back(
         nats.queue_subscribe(delete_counterparty_contact_information_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_counterparty_contact_information(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(get_counterparty_contact_information_history_request::nats_subject,
+        nats.queue_subscribe(delete_many_counterparty_contact_informations_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_counterparty_contact_informations(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
-        get_counterparty_contact_informations_by_counterparty_id_request::nats_subject,
+        list_by_counterparty_id_counterparty_contact_informations_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_counterparty_id(std::move(msg)); }));
+        [h](ores::nats::message msg) {
+            h->list_by_counterparty_id_counterparty_contact_informations(std::move(msg));
+        }));
+    subs.push_back(
+        nats.queue_subscribe(list_counterparty_contact_information_versions_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_counterparty_contact_information_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_counterparty_contact_information_version_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_counterparty_contact_information_version(std::move(msg));
+                             }));
     return subs;
 }
 

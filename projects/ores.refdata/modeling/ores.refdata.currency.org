@@ -343,18 +343,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 :item_var:                    currency
 :key_field:                   iso_code
 :has_pagination:              true
-:get_request_class:           refdata::messaging::get_currencies_request
-:get_response_class:          refdata::messaging::get_currencies_response
-:get_message_type:            get_currencies_request
-:save_request_class:          refdata::messaging::save_currency_request
-:save_response_class:         refdata::messaging::save_currency_response
-:save_message_type:           save_currency_request
-:delete_request_class:        refdata::messaging::delete_currency_request
-:delete_response_class:       refdata::messaging::delete_currency_response
-:delete_message_type:         delete_currency_request
 :delete_request_id_field:     iso_codes
-:history_request_class:       refdata::messaging::get_currency_history_request
-:history_response_class:      refdata::messaging::get_currency_history_response
 :history_message_type:        get_currency_history_request
 :history_request_id_field:    iso_code
 :history_response_data_field: history
@@ -1050,9 +1039,8 @@ and =helpers.hpp= are already in the standard template output.
 *** Repository implementations
 
 Note: pagination (=read_latest= with offset/limit), =get_total_currency_count=,
-filtered =read_all=, batch =remove=, and =read_at_timepoint= (both overloads)
-are now generated natively by the base =repository= template
-(=has_as_of_lookup: true=, tenant-aware). Only the unfiltered =read_all=
+filtered =read_all= and batch =remove= are generated natively by the base
+=repository= template, tenant-aware. Only the unfiltered =read_all=
 (used by the CLI's =export --all-versions= without =--key=) has no native
 equivalent and remains a custom paste.
 

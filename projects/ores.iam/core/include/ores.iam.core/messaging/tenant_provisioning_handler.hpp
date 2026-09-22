@@ -766,7 +766,7 @@ private:
     // process_set_default_party -- there is no server-side filter-by-name).
     static std::optional<ores::refdata::domain::party> find_party(internal_request_client& client,
                                                                   const std::string& full_name) {
-        ores::refdata::messaging::get_parties_request req;
+        ores::refdata::messaging::list_parties_request req;
         req.limit = 1000;
         auto resp = client.request(req);
         for (auto& p : resp.parties)
@@ -874,7 +874,7 @@ private:
     // market config in the consistent world.
     static std::optional<ores::refdata::domain::party>
     find_system_party(internal_request_client& client) {
-        ores::refdata::messaging::get_parties_request req;
+        ores::refdata::messaging::list_parties_request req;
         req.limit = 1000;
         auto resp = client.request(req);
         for (auto& p : resp.parties)
@@ -1178,11 +1178,26 @@ private:
             }
         }
         if (changed) {
-            party.change_reason_code = "system.external_data_import";
-            party.change_commentary = "Activated (and logo attached) during Acme provisioning";
-            party.modified_by = username;
-            party.performed_by = username;
-            client.request(ores::refdata::messaging::save_party_request::from(party));
+            // The party was read above, so the write states the version it
+            // read and the store refuses a row that moved on.
+            ores::refdata::messaging::put_party_request save_req;
+            save_req.change.write = {.id = party.id,
+                                     .short_code = party.short_code,
+                                     .full_name = party.full_name,
+                                     .codename = party.codename,
+                                     .transliterated_name = party.transliterated_name,
+                                     .party_category = party.party_category,
+                                     .party_type = party.party_type,
+                                     .parent_party_id = party.parent_party_id,
+                                     .business_center_code = party.business_center_code,
+                                     .status = party.status,
+                                     .image_id = party.image_id};
+            save_req.change.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            save_req.change.precondition.version = static_cast<std::uint32_t>(party.version);
+            save_req.intent.reason_code = "system.external_data_import";
+            save_req.intent.commentary = "Activated (and logo attached) during Acme provisioning";
+            client.request(save_req);
         }
 
         ores::variability::messaging::complete_party_onboarding_request onboarding_req;

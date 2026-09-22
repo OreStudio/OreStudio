@@ -34,7 +34,6 @@ import { LandingPage } from './pages/LandingPage.js';
 import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
-import { AccountsPage } from './pages/AccountsPage.js';
 import { entityRoutes } from './entity/entityRoutes.js';
 import { tenantTypeDescriptor } from './generated/iam/web/tenant_type_declaration.js';
 import { countryDescriptor } from './generated/refdata/web/country_declaration.js';
@@ -108,7 +107,6 @@ function App(): ReactNode {
       {authenticated ? (
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/iam/account" element={<AccountsPage />} />
 
           {/* A landing page per component, with its tasks and its entities. */}
           {COMPONENTS.map((component) => (

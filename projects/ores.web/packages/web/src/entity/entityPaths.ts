@@ -41,63 +41,7 @@ export function entityBasePath(descriptor: EntityDescriptor): string {
   return `/${componentPath}/${descriptor.routeSegment}`;
 }
 
-/**
- * One record's path: one URL segment per key member, each encoded.
- *
- * The segments are the key's own members rather than one synthetic value,
- * because that is what the route serves and what the request fills. A
- * junction states two, so addressing it takes two.
- */
-export function entityRecordPath(
-  descriptor: EntityDescriptor,
-  row: Readonly<Record<string, unknown>>,
-): string {
-  const segments = descriptor.keyFields.map((field) =>
-    encodeURIComponent(String(row[field] ?? '')),
-  );
-  return `${entityBasePath(descriptor)}/${segments.join('/')}`;
-}
-
-/**
- * The key a route's parameters state, as the record a request fills.
- *
- * The route names one parameter per key member, so reading them back is the
- * inverse of building the path and the two cannot drift.
- */
-export function keyFromParams(
-  descriptor: EntityDescriptor,
-  params: Readonly<Record<string, string | undefined>>,
-): Record<string, string> {
-  const key: Record<string, string> = {};
-  for (const field of descriptor.keyFields) {
-    key[field] = params[field] ?? '';
-  }
-  return key;
-}
-
-/** The key a form's values state, as the record the request fills. */
-export function recordKeyFromValues(
-  descriptor: EntityDescriptor,
-  values: Readonly<Record<string, unknown>>,
-): Record<string, string> {
-  const key: Record<string, string> = {};
-  for (const field of descriptor.keyFields) {
-    key[field] = String(values[field] ?? '');
-  }
-  return key;
-}
-
-/**
- * A record named for a person: its key members' values, joined.
- *
- * A confirmation that says which row it is about names the whole key, because
- * half a junction's key names one side of the link and not the link.
- */
-export function recordLabel(
-  descriptor: EntityDescriptor,
-  row: Readonly<Record<string, unknown>>,
-): string {
-  return descriptor.keyFields
-    .map((field) => String(row[field] ?? ''))
-    .join(' / ');
+/** One record's path. The key is a URL segment, so it is encoded. */
+export function entityRecordPath(descriptor: EntityDescriptor, key: string): string {
+  return `${entityBasePath(descriptor)}/${encodeURIComponent(key)}`;
 }

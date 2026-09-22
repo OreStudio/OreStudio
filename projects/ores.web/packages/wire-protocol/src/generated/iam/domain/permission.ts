@@ -35,4 +35,5 @@ export interface Permission {
     id: string;
     code: string;
     description: string;
+    recorded_at: string;
 }

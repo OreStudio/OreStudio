@@ -23,7 +23,6 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { cx } from '../ui/Primitives.js';
 import type { FieldMeta } from '../ui-contract.js';
-import { useLookupOptions } from './useLookup.js';
 
 /**
  * One form control, chosen by the field's declaration.
@@ -114,10 +113,6 @@ function Control({
   readonly describedBy?: string;
 }): ReactNode {
   const { t } = useTranslation();
-  // A hook may not be called conditionally, and the control is chosen by the
-  // field's type, so a fetched combo's choices are read before the branch that
-  // uses them rather than inside it.
-  const lookupOptions = useLookupOptions(field.lookup);
   const text = value === null || value === undefined ? '' : String(value);
   const base = cx(
     'w-full rounded-md border bg-bg-secondary px-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none',
@@ -145,14 +140,7 @@ function Control({
     case 'static_combo':
     case 'dynamic_combo':
     case 'flagged_combo': {
-      /*
-       * A declared option list, or the choices a fetched one names. A field
-       * with neither renders an empty list rather than a free-text box, so the
-       * value always comes from the set the model allows.
-       */
-      const options =
-        field.options ??
-        lookupOptions.map((option) => ({ value: option.value, labelKey: option.label }));
+      const options = field.options ?? [];
       return (
         <select
           id={field.name}
@@ -166,12 +154,7 @@ function Control({
           <option value="">—</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
-              {/*
-               * A fetched option's label is the row's own display text, which
-               * is not a translation key; a declared one's is, and is looked
-               * up. The two are told apart by which list supplied it.
-               */}
-              {field.options === undefined ? option.labelKey : t(option.labelKey)}
+              {t(option.labelKey)}
             </option>
           ))}
         </select>

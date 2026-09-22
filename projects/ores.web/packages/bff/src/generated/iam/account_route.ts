@@ -34,16 +34,21 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_pro
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const accountRoute: EntityRouteDescriptor = {
-  component: 'iam',
-  entity: 'account',
   collection: 'accounts',
-  keyFields: ['username'],
+  key: 'id',
+  keyField: 'username',
+  rowField: 'account',
+  writeFields: [],
+  writeDefaults: { id: 'uuid', username: '', account_type: '', full_name: null, password_hash: '', password_salt: '', service_password_hash: null, totp_secret: '', email: '', default_party_id: null, image_id: null, job_title: null, reports_to_account_id: null },
+  intentFields: {
+    reason: 'change_reason_code',
+    commentary: 'change_commentary',
+  },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_accounts_request,
-    get: subjects.get_account_request,
-    history: subjects.list_account_versions_request,
   },
   rowsField: 'accounts',
-  getRowField: 'account',
-  historyRowsField: 'versions',
 };

@@ -155,3 +155,34 @@ export const businessDayConventionTypeMeta = {
     columns: businessDayConventionTypeColumns,
     fields: businessDayConventionTypeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const businessDayConventionTypeMessages = {
+        business_day_convention_type: {
+            title: 'Business Day Convention Types',
+            singular: 'business day convention type',
+            newTitle: 'New business day convention type',
+            description: 'Reference data table defining valid business day conventions used to adjust dates that fall on a non-business day (e.g. for coupon/settlement dates on instrument legs and currency pair conventions). Values are sourced from ORE\'s ore_types.xsd. Moved here from ores.trading (see [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]]) since every consumer of this type — the *_convention entities and now [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][currency_pair_convention]] — lives in ores.refdata, not ores.trading.',
+            fldCode: 'Code',
+            codePh: 'e.g. ModifiedFollowing',
+            fldName: 'Name',
+            namePh: 'e.g. Modified Following',
+            fldDescription: 'Description',
+            descriptionPh: 'Short description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

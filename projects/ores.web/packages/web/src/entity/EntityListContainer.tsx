@@ -145,7 +145,6 @@ export function EntityListContainer({
             }
           : {})}
         searchFields={descriptor.searchFields}
-        searchPlaceholderKey={`${descriptor.entity}.searchPlaceholder`}
         {...(descriptor.capabilities.asOf
           ? {
               asOf,

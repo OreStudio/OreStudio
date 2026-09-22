@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: AFAF296D-2962-48CE-A6E1-BFD5229E16C5
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.diary_entry_type
 #+description: Open-ended vocabulary classifying a calendar_event entry: holiday, central_bank_meeting, data_release, or other.

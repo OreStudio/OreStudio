@@ -146,3 +146,33 @@ export const monetaryNatureMeta = {
     columns: monetaryNatureColumns,
     fields: monetaryNatureFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const monetaryNatureMessages = {
+        monetary_nature: {
+            title: 'Monetary Natures',
+            singular: 'monetary nature',
+            newTitle: 'New monetary nature',
+            description: 'Reference data defining valid monetary natures for currencies. Values include: Fiat, Commodity, Synthetic, Supranational.',
+            fldCode: 'Code',
+            codePh: 'Enter monetary nature code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

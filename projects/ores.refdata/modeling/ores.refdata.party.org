@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D
+:ores.ts.web.enabled: true
 :ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.party

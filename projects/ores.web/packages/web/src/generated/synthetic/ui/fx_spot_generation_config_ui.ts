@@ -259,3 +259,52 @@ export const fxSpotGenerationConfigMeta = {
     columns: fxSpotGenerationConfigColumns,
     fields: fxSpotGenerationConfigFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const fxSpotGenerationConfigMessages = {
+        fx_spot_generation_config: {
+            title: 'FX Spot Generation Configs',
+            singular: 'fx spot generation config',
+            newTitle: 'New fx spot generation config',
+            description: 'A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise the tick stream for a single FX spot rate: which ORE market key it produces, the starting price, the tick cadence, and the price process. The price process is a Gaussian Mixture Model whose components are held separately as gmm_component rows. Scoped to a tenant and a party.',
+            fldBaseCurrencyCode: 'Base Currency',
+            baseCurrencyCodePh: 'Enter base currency code',
+            fldQuoteCurrencyCode: 'Quote Currency',
+            quoteCurrencyCodePh: 'Enter quote currency code',
+            fldPriceSource: 'Price Source',
+            priceSourcePh: 'fixed, or vintage',
+            fldGmmInitialPrice: 'Initial Price',
+            gmmInitialPricePh: 'Required if Price Source is fixed',
+            fldTicksPerHour: 'Ticks per Hour',
+            fldProcessType: 'Process Type',
+            processTypePh: 'geometric, arithmetic, or ornstein_uhlenbeck',
+            fldEnabled: 'Enabled',
+            fldAutoStart: 'Auto-Start',
+            fldVintageSource: 'Vintage Source',
+            vintageSourcePh: 'Required if Price Source is vintage, e.g. ore.reference',
+            fldVintageDate: 'Vintage Date',
+            vintageDatePh: 'Required if Price Source is vintage, YYYY-MM-DD',
+            colBaseCurrencyCode: 'Base Currency',
+            colQuoteCurrencyCode: 'Quote Currency',
+            colSourceName: 'Source Name',
+            colOreKey: 'ORE Key',
+            colPriceSource: 'Price Source',
+            colGmmInitialPrice: 'Initial Price',
+            colTicksPerHour: 'Ticks/Hr',
+            colProcessType: 'Process Type',
+            colEnabled: 'Enabled',
+            colAutoStart: 'Auto-Start',
+            colVintageSource: 'Vintage Source',
+            colVintageDate: 'Vintage Date',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

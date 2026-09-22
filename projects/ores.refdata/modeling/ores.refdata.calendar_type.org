@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1A454661-81B5-4F8F-93A6-06547412DD84
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.calendar_type
 #+description: Classification of a calendar's purpose: public holiday, central bank meeting, financial centre, data release, or other.

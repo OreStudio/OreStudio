@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5A63B4D1-0F55-468B-B734-A5DC37B26DC4
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.book
 #+description: Codegen entity model for the refdata =book= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

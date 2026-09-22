@@ -245,3 +245,44 @@ export const calendarRuleMeta = {
     columns: calendarRuleColumns,
     fields: calendarRuleFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const calendarRuleMessages = {
+        calendar_rule: {
+            title: 'Calendar Rules',
+            singular: 'calendar rule',
+            newTitle: 'New calendar rule',
+            description: 'One row per indefinite, timeless recurring holiday rule for a base-less [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] template -- the QuantLib-transcribed calendars and any base-less user-authored template alike. Mirrors ores::analytics::quant::domain::calendar_rule plus the usual refdata plumbing; a calendar\'s full rule set is the batch input to that pure engine at materialisation time (see the parent task\'s * Revision section for the two-stage rule/materialisation design). One-off irregular dates (jubilees, special closings) are *not* modelled here -- they belong in [[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] instead, so a rule stays a timeless, indefinitely-repeating pattern.',
+            fldCalendarCode: 'Calendar',
+            fldKind: 'Kind',
+            kindPh: 'fixed_date/nth_weekday_of_month/last_weekday_of_month/easter_offset',
+            fldMonth: 'Month',
+            fldDay: 'Day',
+            fldWeekday: 'Weekday',
+            fldOccurrence: 'Occurrence',
+            fldDayOffset: 'Day Offset',
+            fldShift: 'Shift',
+            shiftPh: 'none/nearest_weekday/roll_forward_to_monday',
+            fldEffectiveFrom: 'Eff. From',
+            fldEffectiveTo: 'Eff. To',
+            colCalendarCode: 'Calendar',
+            colKind: 'Kind',
+            colMonth: 'Month',
+            colDay: 'Day',
+            colWeekday: 'Weekday',
+            colOccurrence: 'Occurrence',
+            colDayOffset: 'Day Offset',
+            colShift: 'Shift',
+            colEffectiveFrom: 'From',
+            colEffectiveTo: 'To',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+        }
+};

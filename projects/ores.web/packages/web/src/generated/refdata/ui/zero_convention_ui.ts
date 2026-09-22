@@ -173,3 +173,38 @@ export const zeroConventionMeta = {
     columns: zeroConventionColumns,
     fields: zeroConventionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const zeroConventionMessages = {
+        zero_convention: {
+            title: 'Zero Conventions',
+            singular: 'zero convention',
+            newTitle: 'New zero convention',
+            description: 'Specifies the day count fraction and compounding method used when bootstrapping a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element).',
+            fldDayCountFraction: 'Day Count Fraction',
+            dayCountFractionPh: 'e.g. ACT/365.FIXED',
+            fldCompounding: 'Compounding',
+            compoundingPh: 'e.g. Continuous',
+            fldCompoundingFrequency: 'Compounding Frequency',
+            compoundingFrequencyPh: 'e.g. Annual',
+            fldTenorCalendar: 'Tenor Calendar',
+            tenorCalendarPh: 'e.g. TARGET',
+            fldSpotCalendar: 'Spot Calendar',
+            fldRollConvention: 'Roll Convention',
+            colId: 'Id',
+            colTenorBased: 'Tenor Based',
+            colDayCountFraction: 'DCF',
+            colCompounding: 'Compounding',
+            colTenorCalendar: 'Tenor Calendar',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

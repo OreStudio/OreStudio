@@ -225,3 +225,47 @@ export const oisConventionMeta = {
     columns: oisConventionColumns,
     fields: oisConventionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const oisConventionMessages = {
+        ois_convention: {
+            title: 'OIS Conventions',
+            singular: 'ois convention',
+            newTitle: 'New ois convention',
+            description: 'Defines the fixed-leg and overnight floating-leg parameters for an OIS. OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA, SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml.',
+            fldIndex: 'Index',
+            indexPh: 'e.g. EUR-EONIA',
+            fldSpotLag: 'Spot Lag',
+            fldFixedDayCountFraction: 'Fixed Day Count Fraction',
+            fixedDayCountFractionPh: 'e.g. ACT/360',
+            fldFixedCalendar: 'Fixed Calendar',
+            fixedCalendarPh: 'e.g. TARGET',
+            fldPaymentLag: 'Payment Lag',
+            fldFixedFrequency: 'Fixed Frequency',
+            fixedFrequencyPh: 'e.g. Annual',
+            fldFixedConvention: 'Fixed Convention',
+            fixedConventionPh: 'e.g. ModifiedFollowing',
+            fldFixedPaymentConvention: 'Fixed Payment Convention',
+            fixedPaymentConventionPh: 'e.g. Following',
+            fldRule: 'Rule',
+            rulePh: 'e.g. Backward',
+            fldPaymentCalendar: 'Payment Calendar',
+            paymentCalendarPh: 'e.g. TARGET',
+            fldRateCutoff: 'Rate Cutoff',
+            fldEndOfMonth: 'End Of Month',
+            colId: 'Id',
+            colIndex: 'Index',
+            colSpotLag: 'Spot Lag',
+            colFixedDayCountFraction: 'Fixed DCF',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

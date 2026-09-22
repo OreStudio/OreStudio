@@ -150,3 +150,34 @@ export const tenorResolutionAlgorithmMeta = {
     columns: tenorResolutionAlgorithmColumns,
     fields: tenorResolutionAlgorithmFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const tenorResolutionAlgorithmMessages = {
+        tenor_resolution_algorithm: {
+            title: 'Tenor Resolution Algorithms',
+            singular: 'tenor resolution algorithm',
+            newTitle: 'New tenor resolution algorithm',
+            description: 'Reference data table defining the valid [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor convention]] resolution algorithm values: ANCHOR_OFFSET (the common case — a tenor resolves from the convention\'s anchor plus a fixed or per-row offset) or IMM_ROLL (the convention resolves by rolling forward a count of IMM quarters instead of a calendar offset). Managed by the system tenant, like other tenor code tables.',
+            fldCode: 'Code',
+            codePh: 'Enter resolution algorithm code',
+            fldName: 'Name',
+            namePh: 'Enter name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

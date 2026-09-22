@@ -161,9 +161,20 @@ export function createTranslator(
  * Every key in the source must be present, and no key may be present that the
  * source does not have, because an extra key is a key somebody translated after
  * the message was renamed.
+ *
+ * ``untranslated`` names the keys that are exempt from the missing check: the
+ * words codegen emits from the models, which are English by construction. They
+ * are still checked for being known keys, and the translator still falls back
+ * to the source for them, so an untranslated entity label reads as English
+ * rather than as a key -- and the exemption is a list somebody can work
+ * through, not a silence.
  */
-export function catalogueSchema(source: Record<string, string>): z.ZodType<Record<string, string>> {
-  const keys = Object.keys(source);
+export function catalogueSchema(
+  source: Record<string, string>,
+  untranslated: readonly string[] = [],
+): z.ZodType<Record<string, string>> {
+  const exempt = new Set(untranslated);
+  const keys = Object.keys(source).filter((key) => !exempt.has(key));
   return z
     .record(z.string(), z.string())
     .superRefine((value, ctx) => {
@@ -182,4 +193,28 @@ export function catalogueSchema(source: Record<string, string>): z.ZodType<Recor
         });
       }
     });
+}
+
+/**
+ * Merges one catalogue over another, a key at a time.
+ *
+ * The generated words fill only what the hand-written catalogue does not
+ * state, and the merge is deep because an entity's block mixes the two: the
+ * model's field labels and the hand-written validation messages live under one
+ * key. A shallow merge would replace the block and lose the messages beside it.
+ */
+export function mergeCatalogues(
+  fallback: Catalogue,
+  preferred: Catalogue,
+): Catalogue {
+  const merged: Record<string, string | Catalogue> = { ...fallback };
+  for (const [key, value] of Object.entries(preferred)) {
+    const existing = merged[key];
+    merged[key] =
+      typeof existing === 'object' && existing !== null &&
+      typeof value === 'object' && value !== null
+        ? mergeCatalogues(existing, value)
+        : value;
+  }
+  return merged;
 }

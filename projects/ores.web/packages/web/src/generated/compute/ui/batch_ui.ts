@@ -105,3 +105,26 @@ export const batchMeta = {
     columns: batchColumns,
     fields: batchFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const batchMessages = {
+        batch: {
+            title: 'Compute Batches',
+            singular: 'batch',
+            newTitle: 'New batch',
+            description: 'Tracks the lifecycle of a collection of workunits that together constitute a financial computation (e.g., a risk report run). The Assimilator monitors batch completion to trigger downstream report generation.',
+            fldExternalRef: 'External Ref',
+            externalRefPh: 'Enter compute batch external ref',
+            colExternalRef: 'Reference',
+            colStatus: 'Status',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+        }
+};

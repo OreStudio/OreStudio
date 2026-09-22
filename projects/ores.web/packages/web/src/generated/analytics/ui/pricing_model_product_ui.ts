@@ -137,3 +137,31 @@ export const pricingModelProductMeta = {
     columns: pricingModelProductColumns,
     fields: pricingModelProductFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const pricingModelProductMessages = {
+        pricing_model_product: {
+            title: 'Pricing Model Products',
+            singular: 'pricing model product',
+            newTitle: 'New pricing model product',
+            description: 'Detail row within a pricing model configuration. Each row maps a pricing engine type (e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in pricing_model_product_parameters.',
+            fldPricingEngineTypeCode: 'Pricing Engine Type',
+            fldModel: 'Model',
+            modelPh: 'Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier)',
+            fldEngine: 'Engine',
+            enginePh: 'Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)',
+            colPricingEngineTypeCode: 'Engine Type',
+            colModel: 'Model',
+            colEngine: 'Engine',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

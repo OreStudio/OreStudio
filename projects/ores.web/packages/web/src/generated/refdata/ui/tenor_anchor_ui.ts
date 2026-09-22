@@ -140,3 +140,31 @@ export const tenorAnchorMeta = {
     columns: tenorAnchorColumns,
     fields: tenorAnchorFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const tenorAnchorMessages = {
+        tenor_anchor: {
+            title: 'Tenor Anchors',
+            singular: 'tenor anchor',
+            newTitle: 'New tenor anchor',
+            description: 'Small, mostly-static lookup of the reference points a [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] can be resolved from. Referenced by tenor_convention.measured_from as a convention\'s default anchor, and — for spot/forward-style conventions specifically — by a curve or ladder\'s own quoting-basis override (see [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is out of scope for this model and lives on the curve/ladder entity instead.',
+            fldCode: 'Code',
+            codePh: 'Enter anchor code (e.g. SPOT)',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

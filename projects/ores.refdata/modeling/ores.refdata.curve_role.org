@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D9A9B2C5-2C22-456A-851F-B458E0568CD3
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.curve_role
 #+description: Reference data table classifying an instrument_code by its role when deriving a rate from a curve: deposit, fra, swap, or NONE for non-curve instruments.

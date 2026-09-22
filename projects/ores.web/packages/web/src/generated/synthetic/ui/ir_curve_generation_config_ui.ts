@@ -313,3 +313,55 @@ export const irCurveGenerationConfigMeta = {
     columns: irCurveGenerationConfigColumns,
     fields: irCurveGenerationConfigFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const irCurveGenerationConfigMessages = {
+        ir_curve_generation_config: {
+            title: 'IR Curve Generation Configs',
+            singular: 'ir curve generation config',
+            newTitle: 'New ir curve generation config',
+            description: 'A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise a single currency+index interest-rate curve: which short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/ two_factor_gaussian, per ores.analytics.quant\'s IYieldCurveProcess engines) and that process\'s parameters, stored row-based as ir_curve_generation_config_process_parameter_value children joined onto the yield_curve_process_parameter_definition catalogue -- so a new process type or parameter is seed data, not a schema change. The actual instrument grid (which tenors to publish at which role) is held separately as ordered ir_curve_template_entry rows, the same one-config-many-children shape fx_spot_generation_config uses for its gmm_component rows. Scoped to a tenant and a party.',
+            fldCurrencyCode: 'Currency',
+            currencyCodePh: 'Enter currency code',
+            fldIndexFamily: 'Index Family',
+            fldTenor: 'Tenor',
+            fldRole: 'Role',
+            fldProcessType: 'Process Type',
+            processTypePh: 'VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or TWO_FACTOR_GAUSSIAN',
+            fldTicksPerHour: 'Ticks per Hour',
+            fldFixedLegPaymentFrequencyCode: 'Fixed Leg Payment Frequency',
+            fixedLegPaymentFrequencyCodePh: 'Enter payment frequency code (e.g. Annual)',
+            fldEnabled: 'Enabled',
+            fldAutoStart: 'Auto-Start',
+            fldPriceSource: 'Price Source',
+            priceSourcePh: 'fixed, or vintage',
+            fldVintageSource: 'Vintage Source',
+            vintageSourcePh: 'Required if Price Source is vintage, e.g. ore.reference',
+            fldVintageDate: 'Vintage Date',
+            vintageDatePh: 'Required if Price Source is vintage, YYYY-MM-DD',
+            fldDescription: 'Description',
+            descriptionPh: 'What this configuration represents',
+            colCurrencyCode: 'Currency',
+            colIndexFamily: 'Index Family',
+            colTenor: 'Tenor',
+            colRole: 'Role',
+            colProcessType: 'Process Type',
+            colTicksPerHour: 'Ticks/Hr',
+            colFixedLegPaymentFrequencyCode: 'Fixed Leg Payment Frequency',
+            colEnabled: 'Enabled',
+            colAutoStart: 'Auto-Start',
+            colPriceSource: 'Price Source',
+            colVintageSource: 'Vintage Source',
+            colVintageDate: 'Vintage Date',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

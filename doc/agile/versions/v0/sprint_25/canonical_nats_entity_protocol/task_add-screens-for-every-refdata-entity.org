@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: D2DBA1FB-DA28-4D67-8267-551D3EE801FD
+:END:
+#+title: Task: Add screens for every refdata entity
+#+description: Sixty-four refdata entities have generated protocol, domain and UI metadata, and one of them (country) has screens. This wires the rest onto the shared machinery: the model opts into ores.ts.web, codegen emits the declaration, the route descriptor and the catalogue words it already holds, and the navigation and the router read a generated list rather than one hand-written line per entity.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-screens-for-every-refdata-entity
+#+pr: 2129
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every refdata entity that declares a presentation has a screen set in ores.web, driven by generated declarations and their own model's words.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Every refdata domain entity with a UI column table opts into ores.ts.web and has a generated route descriptor and web declaration.
+- The entity's English words come from its own model, so no screen renders a raw catalogue key.
+- The navigation and the router read the wired entities from generated data rather than one hand-written line per entity.
+- A generated label with no French or Portuguese translation falls back to English explicitly, and the hand-written catalogue keeps its exact-parity guarantee.
+- The web typecheck, suites and build pass; the drift gate is clean; the site build succeeds.
+
+* Plan
+
+1. *Find where the words come from.* The metadata refers to catalogue keys,
+   and the words were hand-written, which does not scale past a handful of
+   entities. The model already states them -- the detail field's label, the
+   column's header, the placeholder, the title and the brief -- so the metadata
+   projection emits them beside the keys, and the English catalogue merges the
+   models' words under the hand-written ones, a key at a time (a shallow merge
+   would drop the validation messages that share an entity's block).
+2. *Keep the translation contract honest.* French and Portuguese hold exactly
+   the English key set, and no translation exists for 63 entities' labels. The
+   generated keys are exempt from the missing-key check by name, so the
+   hand-written catalogue keeps its exact guarantee and a generated label
+   falls back to the English the translator already reaches for. The exemption
+   is a list somebody can work through, and a test asserts it is neither empty
+   nor total.
+3. *Take the mark from the model.* The model states a Qt icon concept; the web
+   holds its own vocabulary. The projection translates the name and refuses
+   one the web does not draw, so a screen never renders nothing.
+4. *Let the model declare the screen, not a list.* The navigation merges every
+   generated declaration into its component, keeping the curated order and
+   marks, and the router iterates the declarations. The BFF keeps one registry
+   of all 68 generated routes, because a route that failed to load should be a
+   build failure rather than a screen that 404s.
+5. *Leave out what cannot be served.* =calendar_date='s protocol is owned by an
+   operation model, so codegen withholds its route; its declaration would be a
+   screen that 404s, so its model does not opt in.
+
+* Notes
+
+- 63 of refdata's 64 UI-bearing models are wired. The one left out is
+  =calendar_date=, whose protocol an operation model owns: its declaration
+  renders, its route does not, and a screen without a route is worse than no
+  screen. It needs a hand-written route before it can join.
+- An entity whose key record is a surrogate key keeps its list and save
+  screens and gets no delete, versions or single-record route, because the
+  path segment cannot fill a key the record does not carry.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2129][#2129]] | [codegen,web] Add screens for every refdata entity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every refdata entity that declares a presentation has a screen set, and none
+of it is hand-written per entity.
+
+- 63 generated route descriptors and 63 web declarations, each opting in
+  through its own model.
+- The model's words travel with the metadata: the detail field's label, the
+  column's header, the placeholder, the title and the brief, merged into the
+  English catalogue under what people wrote.
+- French and Portuguese keep exact parity for hand-written messages and are
+  exempt by name for the generated ones, which fall back to English.
+- The navigation adds every wired entity while keeping the curated order and
+  marks, and the router is one loop over the declarations. The BFF registers
+  all 68 generated routes from one registry.
+- The mark comes from the model, translated to the web vocabulary and refused
+  at codegen time when the web has no such icon.
+
+Verified locally: codegen 574 passed; the drift gate clean for iam and
+refdata; web typecheck and build clean; BFF 47, web 23 and wire-protocol 36
+tests pass; the site page build reports 162 files and 0 failures. CI on #2129
+agrees: drift, typescript, inventory, model, permissions and compass lint all
+pass.
+
+Left behind, and named in the PR: the generated labels are English, so French
+and Portuguese fall back until somebody translates the exemption list; and
+=calendar_date= stays out until it has a route of its own.

@@ -138,3 +138,32 @@ export const pricingModelConfigMeta = {
     columns: pricingModelConfigColumns,
     fields: pricingModelConfigFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const pricingModelConfigMessages = {
+        pricing_model_config: {
+            title: 'Pricing Model Configurations',
+            singular: 'pricing model config',
+            newTitle: 'New pricing model config',
+            description: 'Header entity for a pricing model configuration. Each config contains product mappings (in pricing_model_products) and parameters (in pricing_model_product_parameters). Corresponds to ORE\'s pricingengine.xml.',
+            fldName: 'Name',
+            namePh: 'Enter configuration name (e.g. Standard, AMC, DeltaGamma)',
+            fldConfigVariant: 'Variant',
+            configVariantPh: 'Optional variant tag (e.g. standard, amc, dg)',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description of this pricing model configuration',
+            colName: 'Name',
+            colConfigVariant: 'Variant',
+            colDescription: 'Description',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

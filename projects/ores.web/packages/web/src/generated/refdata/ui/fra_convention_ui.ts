@@ -109,3 +109,27 @@ export const fraConventionMeta = {
     columns: fraConventionColumns,
     fields: fraConventionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const fraConventionMessages = {
+        fra_convention: {
+            title: 'FRA Conventions',
+            singular: 'fra convention',
+            newTitle: 'New fra convention',
+            description: 'A FRA convention ties a FRA instrument to an IBOR index whose own conventions (calendar, day count, settlement) govern the FRA. Corresponds to the <FRA> element in ORE conventions.xml.',
+            fldIndex: 'Index',
+            indexPh: 'e.g. EUR-EURIBOR-6M',
+            colId: 'Id',
+            colIndex: 'Index',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

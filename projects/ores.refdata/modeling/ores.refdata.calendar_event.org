@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B20050A5-1245-4944-A328-2A0893C92AEC
+:ores.ts.web.enabled: true
 :ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.refdata.calendar_event

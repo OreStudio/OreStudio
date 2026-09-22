@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B4559030-A5E9-4E4D-890C-8B817AC99EE5
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.payment_frequency
 #+description: Codegen entity model for the refdata payment_frequency table: ORE's canonical frequencyType enumeration (external/ore/xsd/ore_types.xsd), used to derive a swap fixed leg's payment schedule.

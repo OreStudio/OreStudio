@@ -91,8 +91,9 @@ The full template source. Edit here and re-tangle with
  * How the BFF reaches the {{{bff_route.entity}}} service.
  *
  * The descriptor holds values and no functions: the collection, the natural
- * key, the array fields and the subjects. The generic factory builds the
- * routes from it, so the entity adds no handler of its own.
+ * key, the members a write record carries and the subjects. The generic
+ * factory builds the canonical envelopes from those, so the entity adds no
+ * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -101,8 +102,17 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   collection: '{{{bff_route.collection}}}',
   key: '{{{bff_route.key}}}',
   keyField: '{{{bff_route.key_field}}}',
-{{#bff_route.delete_keys_field}}  deleteKeysField: '{{{bff_route.delete_keys_field}}}',
-{{/bff_route.delete_keys_field}}  subjects: {
+  rowField: '{{{bff_route.row_field}}}',
+  writeFields: [{{{bff_route.write_fields_block}}}],
+  writeDefaults: {{{bff_route.write_defaults_block}}},
+  intentFields: {
+    reason: '{{{bff_route.intent_reason_field}}}',
+    commentary: '{{{bff_route.intent_commentary_field}}}',
+  },
+  listHasAsOf: {{bff_route.list_has_as_of}},
+  listHasFilter: {{bff_route.list_has_filter}},
+  versionsHasFilter: {{bff_route.versions_has_filter}},
+  subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
 {{/bff_route.subjects_get}}    save: subjects.{{{bff_route.subjects_save}}},
@@ -111,8 +121,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',
 {{#bff_route.history_rows_field}}  historyRowsField: '{{{bff_route.history_rows_field}}}',
-{{/bff_route.history_rows_field}}{{#bff_route.timestamp_fields_block}}  timestampFields: [{{{bff_route.timestamp_fields_block}}}],
-{{/bff_route.timestamp_fields_block}}};
+{{/bff_route.history_rows_field}}};
 #+end_src
 
 * Template variables
@@ -125,12 +134,15 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 | =collection= | The collection segment of the route, e.g. =tenant_types= |
 | =key= | The path parameter carrying the natural key, e.g. =id= |
 | =key_field= | The wire field the natural key lives in, e.g. =type= |
-| =delete_keys_field= | The array field a batch delete names its keys in; present only when the route is |
+| =row_field= | The wire field a single-record read answers in, e.g. =tenant= |
+| =write_fields_block= | The write record's members, pre-rendered as a TypeScript array |
+| =write_defaults_block= | The value each write member takes when the form does not carry it, pre-rendered as a TypeScript object |
+| =intent_reason_field=, =intent_commentary_field= | The row fields carrying the change intent, empty for an entity with no audit columns |
+| =list_has_as_of=, =list_has_filter=, =versions_has_filter= | Whether those requests carry the optional member, as TypeScript literals |
 | =rows_field= | The array field the list response holds its rows in |
 | =history_rows_field= | The array field the history response holds its versions in; present only when the route is |
 | =subjects_list=, =subjects_get=, =subjects_save=, =subjects_remove=, =subjects_history= | The protocol module's =subjects= members, by message name |
 | =has_get=, =has_remove=, =has_history= | Whether the optional members are present, as TypeScript literals |
-| =timestamp_fields_block= | The audit timestamp members the save route fills when empty, pre-rendered as a TypeScript array |
 
 * See also
 

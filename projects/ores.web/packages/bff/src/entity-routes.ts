@@ -20,7 +20,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { toWireTimestamp } from '@ores/wire-protocol';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { LiveSession } from './sessions.js';
 
@@ -29,23 +29,25 @@ import type { LiveSession } from './sessions.js';
  *
  * The declaration holds /values/ and no functions. That is the point: a
  * descriptor with a callback in it is code, and code cannot be generated from
- * an entity model. The request envelopes are regular across every entity in
- * the tree, so the factory builds them from the key field and the collection:
+ * an entity model. The canonical protocol states one envelope per verb, so the
+ * factory builds them from the descriptor's key, its write record's members and
+ * the subjects:
  *
- *   list     { offset, limit }
- *   save     { data }
- *   delete   { <keys>: [key] }
- *   history  { <keyField>: key }
+ *   list      { offset, limit, order, as_of?, filter? }
+ *   get       { key: { <keyField> } }
+ *   save      { change: { write, precondition }, intent }
+ *   delete    { removal: { key, precondition }, intent }
+ *   versions  { key: { <keyField> }, offset, limit, order, filter? }
  *
- * The delete and history envelopes carry the natural key, because the path
- * segment the web builds is the natural key. A descriptor states them only
- * when the entity's own request is keyed by that same key; an entity whose
- * request carries its surrogate primary key instead has no such route, rather
- * than a route that sends a value no row matches.
+ * Every request that names a row names it through the entity's key record, and
+ * the path segment the web builds carries the natural key, so a route exists
+ * only when the two are the same field: an entity whose key record holds its
+ * surrogate primary key has no delete or versions route, rather than a route
+ * that sends a value no row matches.
  *
- * A refusal is not a failure. When the service answers `success: false` the
- * client did nothing wrong, so the response is a 409 carrying the service's own
- * words rather than a 500 carrying ours.
+ * A refusal is not a failure. The service answers with a result whose outcome
+ * says what went wrong, so the client did nothing wrong and the response is a
+ * 409 carrying the service's own words rather than a 500 carrying ours.
  */
 export interface EntityRouteDescriptor {
   /** The collection segment of the path, without `/api/`, e.g. `tenant_types`. */
@@ -55,15 +57,47 @@ export interface EntityRouteDescriptor {
   /** The wire field the natural key lives in, e.g. `type`. */
   readonly keyField: string;
   /**
-   * The array field a batch delete names its keys in, e.g. `types`.
+   * The wire field a single-record read answers in, e.g. `tenant`.
    *
-   * Present exactly when `subjects.remove` is, which is when the delete
-   * request is keyed by the natural key. Stated rather than pluralised here:
-   * `code` to `codes` and `id` to `ids` are mechanical, `status` to `statuses`
-   * is not, and a wrong guess produces a request the service refuses with no
-   * clue why. The model knows the plural, so the model states it.
+   * The canonical get response carries the entity under its own singular
+   * name, which is the name the model gave it rather than a name to guess.
    */
-  readonly deleteKeysField?: string;
+  readonly rowField: string;
+  /**
+   * The write record's members, in the order the model declares them.
+   *
+   * A save sends these and nothing else. The record a form holds carries
+   * members the write record does not -- the version the edit was made
+   * against, the reason it was made -- and those travel in the precondition
+   * and the intent, while the rest are the server's to own.
+   */
+  readonly writeFields: readonly string[];
+  /**
+   * What each write member takes when the form does not carry it.
+   *
+   * A create sends the whole record, and a member the form does not show -- a
+   * surrogate key, a field the entity hides -- has no value on the row yet.
+   * The blank is the empty of that member's own type, and `'uuid'` means the
+   * caller mints the identifier, because the model says that member names a
+   * row the store has never seen.
+   */
+  readonly writeDefaults: Readonly<Record<string, unknown>>;
+  /**
+   * The row fields carrying the change intent, e.g. `change_reason_code`.
+   *
+   * Empty strings for an entity whose rows keep no audit columns, which is
+   * an entity whose intent is empty rather than one whose intent is refused.
+   */
+  readonly intentFields: {
+    readonly reason: string;
+    readonly commentary: string;
+  };
+  /** Whether the list request carries an as-of instant. */
+  readonly listHasAsOf: boolean;
+  /** Whether the list request carries a filter record. */
+  readonly listHasFilter: boolean;
+  /** Whether the versions request carries a filter record. */
+  readonly versionsHasFilter: boolean;
   readonly subjects: {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
@@ -72,7 +106,7 @@ export interface EntityRouteDescriptor {
     /** Present only when the delete request is keyed by the natural key. */
     readonly remove?: string;
     /**
-     * Present only when the entity is temporal and the history request is
+     * Present only when the entity is temporal and the versions request is
      * keyed by the natural key.
      */
     readonly history?: string;
@@ -80,20 +114,11 @@ export interface EntityRouteDescriptor {
   /** The array field the list response holds its rows in, e.g. `tenant_types`. */
   readonly rowsField: string;
   /**
-   * The array field the history response holds its versions in, e.g. `history`.
+   * The array field the versions response holds its rows in, e.g. `versions`.
    *
    * Present exactly when `subjects.history` is.
    */
   readonly historyRowsField?: string;
-  /**
-   * The audit timestamp fields the wire decoder refuses to see empty.
-   *
-   * The shared web container seeds every member, so an audit timestamp arrives
-   * at the save as an empty string. The service stamps the real time from its
-   * own clock; the save only has to send a value the decoder accepts, and an
-   * empty string is not one.
-   */
-  readonly timestampFields?: readonly string[];
   /**
    * The response schemas, when a caller wants them.
    *
@@ -107,8 +132,6 @@ export interface EntityRouteDescriptor {
   readonly removeResponse?: z.ZodTypeAny;
   readonly getResponse?: z.ZodTypeAny;
   readonly historyResponse?: z.ZodTypeAny;
-  /** The field a single-record read holds its row in, e.g. `data`. */
-  readonly getRowField?: string;
 }
 
 /** Passed in rather than imported, because the session store is per-server. */
@@ -129,6 +152,18 @@ const listRequestSchema = z.object({
   limit: z.int().positive().max(1000),
 });
 
+/**
+ * The order a page is returned in, when the caller names none.
+ *
+ * An empty field is the order by key, which is what makes a caller that names
+ * no order still get a stable page. The protocol carries the order on every
+ * list request, so a request that omitted it would not decode.
+ */
+const defaultOrder = { field: '', descending: false } as const;
+
+/** The versions a history route asks for: one record, newest first. */
+const HISTORY_LIMIT = 1000;
+
 /** A parsed-but-unvalidated body, read by field name. */
 function body(value: unknown): Record<string, unknown> {
   return (value ?? {}) as Record<string, unknown>;
@@ -139,63 +174,26 @@ function rows(value: unknown, field: string): readonly unknown[] {
   return Array.isArray(found) ? (found as readonly unknown[]) : [];
 }
 
-/** The value at a possibly-dotted field path of a save payload. */
-function readPath(root: Record<string, unknown>, path: string): unknown {
-  let current: unknown = root;
-  for (const part of path.split('.')) {
-    if (typeof current !== 'object' || current === null) {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[part];
-  }
-  return current;
+/** The outcome the service reported, or a value no caller can mistake for ok. */
+function outcome(value: unknown): string {
+  const result = body(body(value)['result']);
+  return typeof result['outcome'] === 'string' ? result['outcome'] : 'failed';
 }
 
-/** Sets a possibly-dotted field path, creating the members it walks through. */
-function writePath(
-  root: Record<string, unknown>,
-  path: string,
-  value: unknown,
-): void {
-  const parts = path.split('.');
-  const last = parts[parts.length - 1];
-  if (last === undefined) {
-    return;
-  }
-  let current = root;
-  for (const part of parts.slice(0, -1)) {
-    const next = current[part];
-    if (typeof next !== 'object' || next === null) {
-      current[part] = {};
-    }
-    current = current[part] as Record<string, unknown>;
-  }
-  current[last] = value;
+/** The service's own words about how the request ended. */
+function resultMessage(value: unknown): string {
+  const message = body(body(value)['result'])['message'];
+  return typeof message === 'string' ? message : '';
 }
 
 /**
- * A copy of a save payload whose empty audit timestamps carry the current time.
+ * The value a write member takes when the form carried none.
  *
- * The shared web container seeds every member, so an audit timestamp arrives
- * here as an empty string, and the service's decoder refuses an empty string as
- * a timestamp. The service stamps the real time; this value only has to decode.
+ * A member whose default is `'uuid'` names a row the store has never seen, so
+ * the caller mints it; every other default is already the value to send.
  */
-function stampTimestamps(
-  value: unknown,
-  fields: readonly string[],
-): unknown {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return value;
-  }
-  const stamped = { ...(value as Record<string, unknown>) };
-  for (const field of fields) {
-    const current = readPath(stamped, field);
-    if (typeof current === 'string' && current.length > 0) {
-      continue;
-    }
-    writePath(stamped, field, toWireTimestamp(new Date()));
-  }
-  return stamped;
+function blankWriteValue(blank: unknown): unknown {
+  return blank === 'uuid' ? randomUUID() : blank;
 }
 
 /**
@@ -216,6 +214,10 @@ export function registerEntityRoutes(
     const params = request.params as Record<string, string>;
     return params[descriptor.key] ?? '';
   };
+  /** The key record every canonical request that names a row carries. */
+  const keyRecord = (request: FastifyRequest): Record<string, string> => ({
+    [descriptor.keyField]: keyOf(request),
+  });
 
   server.get(base, async (request: FastifyRequest) => {
     const session = requireSession(request);
@@ -224,15 +226,23 @@ export function registerEntityRoutes(
       offset: query['offset'] === undefined ? 0 : Number(query['offset']),
       limit: query['limit'] === undefined ? 100 : Number(query['limit']),
     });
+    const asOf = query['asOf'];
     const response = await session.client.callAuthenticated(
       descriptor.subjects.list,
-      input,
+      {
+        ...input,
+        order: defaultOrder,
+        ...(descriptor.listHasAsOf
+          ? { as_of: asOf === undefined || asOf.length === 0 ? null : asOf }
+          : {}),
+        ...(descriptor.listHasFilter ? { filter: null } : {}),
+      },
       descriptor.listResponse ?? identity,
     );
 
     return {
       rows: rows(response, descriptor.rowsField),
-      totalCount: body(response)['total_available_count'] ?? 0,
+      totalCount: body(response)['total'] ?? 0,
     };
   });
 
@@ -242,48 +252,78 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         getSubject,
-        { [descriptor.keyField]: keyOf(request) },
+        { key: keyRecord(request) },
         descriptor.getResponse ?? identity,
       );
-      return { row: body(response)[descriptor.getRowField ?? 'data'] };
+      return { row: body(response)[descriptor.rowField] };
     });
   }
 
   server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
     const session = requireSession(request);
-    const incoming = body(request.body);
-    const data = incoming['data'];
+    const data = body(body(request.body)['data']);
+    /*
+     * A create states that the row is not there; an amend states the version
+     * it was made against. The web form carries the version it read, which is
+     * zero for a record that does not exist yet, so the two cases are the one
+     * member rather than a mode the caller has to state twice.
+     */
+    const version = Number(data['version'] ?? 0);
     const response = await session.client.callAuthenticated(
       descriptor.subjects.save,
       {
-        data: descriptor.timestampFields === undefined
-          ? data
-          : stampTimestamps(data, descriptor.timestampFields),
+        change: {
+          write: Object.fromEntries(
+            descriptor.writeFields.map((field) => [
+              field,
+              data[field] === undefined
+                ? blankWriteValue(descriptor.writeDefaults[field])
+                : data[field],
+            ]),
+          ),
+          precondition: version > 0
+            ? { kind: 'must_match_version', version }
+            : { kind: 'must_not_exist', version: null },
+        },
+        intent: {
+          reason_code: String(data[descriptor.intentFields.reason] ?? ''),
+          commentary: String(data[descriptor.intentFields.commentary] ?? ''),
+        },
       },
       descriptor.saveResponse ?? identity,
     );
 
-    if (body(response)['success'] === false) {
-      return reply.code(409).send({ message: body(response)['message'] ?? '' });
+    if (outcome(response) !== 'ok') {
+      return reply.code(409).send({ message: resultMessage(response) });
     }
-    return { ok: true, message: body(response)['message'] ?? '' };
+    return { ok: true, message: resultMessage(response) };
   });
 
   const removeSubject = descriptor.subjects.remove;
-  const deleteKeysField = descriptor.deleteKeysField;
-  if (removeSubject !== undefined && deleteKeysField !== undefined) {
+  if (removeSubject !== undefined) {
     server.delete(keyPath, async (request: FastifyRequest, reply: FastifyReply) => {
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         removeSubject,
-        { [deleteKeysField]: [keyOf(request)] },
+        {
+          /*
+           * A removal the path segment drives is unconditional: the route
+           * carries the key and no version, and a version the client never
+           * read would be a claim it cannot make.
+           */
+          removal: {
+            key: keyRecord(request),
+            precondition: { kind: 'any', version: null },
+          },
+          intent: { reason_code: '', commentary: '' },
+        },
         descriptor.removeResponse ?? identity,
       );
 
-      if (body(response)['success'] === false) {
-        return reply.code(409).send({ message: body(response)['message'] ?? '' });
+      if (outcome(response) !== 'ok') {
+        return reply.code(409).send({ message: resultMessage(response) });
       }
-      return { ok: true, message: body(response)['message'] ?? '' };
+      return { ok: true, message: resultMessage(response) };
     });
   }
 
@@ -294,18 +334,24 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         historySubject,
-        { [descriptor.keyField]: keyOf(request) },
+        {
+          key: keyRecord(request),
+          offset: 0,
+          limit: HISTORY_LIMIT,
+          /*
+           * Newest first, because that is how a person reads a history: what
+           * changed last is the question being asked. The service answers in
+           * the order it is asked for, so the request states it.
+           */
+          order: { field: '', descending: true },
+          ...(descriptor.versionsHasFilter ? { filter: null } : {}),
+        },
         descriptor.historyResponse ?? identity,
       );
 
-      /*
-       * The service returns the versions newest first, which is how a person
-       * reads a history: what changed last is the question being asked. The
-       * rows are passed through in that order.
-       */
       return {
         versions: rows(response, historyRowsField),
-        message: body(response)['message'] ?? '',
+        message: resultMessage(response),
       };
     });
   }

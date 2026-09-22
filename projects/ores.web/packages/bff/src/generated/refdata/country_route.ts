@@ -23,37 +23,37 @@
  * To modify, update the template and regenerate.
  */
 /**
- * How the BFF reaches the account_type service.
+ * How the BFF reaches the country service.
  *
  * The descriptor holds values and no functions: the collection, the natural
  * key, the members a write record carries and the subjects. The generic
  * factory builds the canonical envelopes from those, so the entity adds no
  * handler of its own and no envelope of its own.
  */
-import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_type_protocol';
+import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/country_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
-export const accountTypeRoute: EntityRouteDescriptor = {
-  collection: 'account_types',
+export const countryRoute: EntityRouteDescriptor = {
+  collection: 'countries',
   key: 'id',
-  keyField: 'type',
-  rowField: 'account_type',
-  writeFields: ['type', 'name', 'description', 'display_order'],
-  writeDefaults: { type: '', name: '', description: '', display_order: 0 },
+  keyField: 'alpha2_code',
+  rowField: 'country',
+  writeFields: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name', 'image_id', 'coding_scheme_code'],
+  writeDefaults: { alpha2_code: '', alpha3_code: '', numeric_code: '', name: '', official_name: '', image_id: null, coding_scheme_code: null },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',
   },
-  listHasAsOf: false,
+  listHasAsOf: true,
   listHasFilter: false,
   versionsHasFilter: true,
   subjects: {
-    list: subjects.list_account_types_request,
-    get: subjects.get_account_type_request,
-    save: subjects.put_account_type_request,
-    remove: subjects.delete_account_type_request,
-    history: subjects.list_account_type_versions_request,
+    list: subjects.list_countries_request,
+    get: subjects.get_country_request,
+    save: subjects.put_country_request,
+    remove: subjects.delete_country_request,
+    history: subjects.list_country_versions_request,
   },
-  rowsField: 'types',
+  rowsField: 'countries',
   historyRowsField: 'versions',
 };

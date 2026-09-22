@@ -157,6 +157,14 @@ export function EntityDetailContainer({
     for (const field of descriptor.meta.fields) {
       data[field.name] = values[field.name];
     }
+    /*
+     * The image is not one of the fields, so the loop above does not carry it:
+     * a person who chose a flag and saved would lose it.
+     */
+    if (descriptor.meta.image !== undefined) {
+      data[descriptor.meta.image.field] =
+        values[descriptor.meta.image.field] ?? null;
+    }
     if (mode === 'create') {
       data['version'] = 0;
     }
@@ -242,6 +250,25 @@ export function EntityDetailContainer({
                 navigate(`${entityRecordPath(descriptor, String(key ?? ''))}/history`),
             }
           : {})}
+        {...(descriptor.meta.image === undefined
+          ? {}
+          : {
+              image: {
+                imageId:
+                  String(values[descriptor.meta.image.field] ?? '').length === 0
+                    ? undefined
+                    : String(values[descriptor.meta.image.field]),
+                /*
+                 * A flag picker must not offer a staff photograph. Flags are
+                 * not tagged by kind, so the picker narrows by the convention
+                 * their descriptions and keys follow.
+                 */
+                ...(descriptor.meta.image.kind === 'flag' ? { filter: 'flag of' } : {}),
+                onPick: (chosen: string | null) => {
+                  change(descriptor.meta.image?.field ?? '', chosen ?? '');
+                },
+              },
+            })}
       />
 
       {stage === 'reason' && (

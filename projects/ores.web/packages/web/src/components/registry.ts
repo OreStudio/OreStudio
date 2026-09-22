@@ -45,6 +45,7 @@ import { accountContactInformationDescriptor } from '../generated/iam/web/accoun
 import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
 import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
+import { countryDescriptor } from '../generated/refdata/web/country_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -159,7 +160,7 @@ export const refdataComponent: ComponentDefinition = {
     entity('party', 'handshake', planned),
     entity('counterparty', 'buildingBank', planned),
     entity('currency', 'currencyDollarEuro', planned),
-    entity('country', 'flag'),
+    wired(countryDescriptor, 'country', 'flag'),
     entity('calendar', 'calendarClock', planned),
     entity('currencyPair', 'arrowSync', planned),
     entity('dayCountFractionType', 'clock', planned),

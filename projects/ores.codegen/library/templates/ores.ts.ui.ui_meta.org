@@ -76,6 +76,12 @@ export const {{ui_meta.entity_camel}}Columns: readonly ColumnMeta[] = {{{ui_meta
  *
  * Emitted so the sidebar and the lookup selects do not have to know it
  * separately.
+{{#ui_meta.has_image}}
+ *
+ * The image member is present because the model declares a flag, and the
+ * shared screen renders its picker from this member rather than from a
+ * field, because no form control edits an image.
+{{/ui_meta.has_image}}
  */
 export const {{ui_meta.entity_camel}}Meta = {
     entity: '{{ui_meta.entity}}',
@@ -84,7 +90,8 @@ export const {{ui_meta.entity_camel}}Meta = {
     keyField: '{{ui_meta.key_field}}',
     columns: {{ui_meta.entity_camel}}Columns,
     fields: {{ui_meta.entity_camel}}Fields,
-} as const;
+{{#ui_meta.has_image}}    image: {{{ui_meta.image_block}}},
+{{/ui_meta.has_image}}} as const;
 #+end_src
 
 * See also

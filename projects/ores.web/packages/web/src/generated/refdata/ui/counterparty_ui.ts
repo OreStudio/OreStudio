@@ -174,6 +174,10 @@ export const counterpartyColumns: readonly ColumnMeta[] = [
  *
  * Emitted so the sidebar and the lookup selects do not have to know it
  * separately.
+ *
+ * The image member is present because the model declares a flag, and the
+ * shared screen renders its picker from this member rather than from a
+ * field, because no form control edits an image.
  */
 export const counterpartyMeta = {
     entity: 'counterparty',
@@ -182,4 +186,5 @@ export const counterpartyMeta = {
     keyField: 'short_code',
     columns: counterpartyColumns,
     fields: counterpartyFields,
+    image: { field: 'image_id', kind: 'flag' },
 } as const;

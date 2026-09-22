@@ -21,25 +21,31 @@ from codegen.core import (  # noqa: E402
     generate_from_model,
     web_declaration_projection,
 )
+from codegen.org_loader import entity_protocol_messages  # noqa: E402
 
 MODEL = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book_status.org"
 COUNTRY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.country.org"
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
 
-def _project(columns, primary_key=None, **drawer):
+def _project(columns, primary_key=None, *, current_state=False, **drawer):
     """Project one hand-built entity, the way the enrichment leaves it.
 
     The primary key defaults to the natural key the drawer states, so remove
     and history are the routes the entity can drive unless a test overrides
-    the key.
+    the key. The messages are the ones ``entity_protocol_messages`` derives,
+    set the way the enrichment leaves them, so the capability derivation
+    reads a real protocol rather than a hand-built message list.
     """
     presentation = {"collection_name": "statuses", "columns": list(columns),
                     "key_field": "code", **drawer}
     entity = {"component": "refdata", "entity_singular": "book_status",
+              "current_state": current_state,
               "presentation": presentation}
     entity["primary_key"] = primary_key or {
         "column": "code", "columns": [{"column": "code"}]}
+    entity.setdefault("has_audit_columns", not current_state)
+    entity["messages"] = entity_protocol_messages(entity)
     return web_declaration_projection(entity, MODEL)
 
 
@@ -52,9 +58,7 @@ def test_a_model_with_no_column_table_projects_nothing():
 
 
 def test_a_writable_entity_with_history_gets_all_four_capabilities():
-    projection = _project(
-        [{"field": "code"}],
-        history_message_type="get_book_status_history_request")
+    projection = _project([{"field": "code"}])
     assert projection["can_create"] == "true"
     assert projection["can_edit"] == "true"
     assert projection["can_remove"] == "true"
@@ -69,13 +73,13 @@ def test_a_read_only_list_is_not_writable():
     assert projection["can_remove"] == "false"
 
 
-def test_history_is_read_from_the_history_message_not_from_a_version_column():
-    """A junction is versioned and still has no history.
+def test_history_is_read_from_the_derived_versions_pair():
+    """A current-state entity has no versions to serve.
 
     Deriving the capability from a version column gets exactly this case
-    wrong, which is why it is read off the history message type.
+    wrong, which is why it is read off the derived protocol messages.
     """
-    projection = _project([{"field": "code"}])
+    projection = _project([{"field": "code"}], current_state=True)
     assert projection["can_history"] == "false"
 
 
@@ -89,7 +93,6 @@ def test_a_surrogate_primary_key_withholds_remove_and_history():
     """
     projection = _project(
         [{"field": "code"}],
-        history_message_type="get_book_status_history_request",
         primary_key={"column": "id", "columns": [{"column": "id"}]})
     assert projection["can_create"] == "true"
     assert projection["can_edit"] == "true"
@@ -101,7 +104,6 @@ def test_a_natural_key_primary_key_keeps_remove_and_history():
     """The primary key and the natural key agree, so both routes are drivable."""
     projection = _project(
         [{"field": "code"}],
-        history_message_type="get_book_status_history_request",
         primary_key={"column": "code", "columns": [{"column": "code"}]})
     assert projection["can_remove"] == "true"
     assert projection["can_history"] == "true"

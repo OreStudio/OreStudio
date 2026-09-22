@@ -22,7 +22,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { Button, PageHeader, Tag, cx } from '../../../ui/Primitives.js';
 import { PrototypeSwitcher, usePrototypeVariant } from '../../../ui/PrototypeSwitcher.js';
-import { DetailsForm, FailToggle, Handoff, ProfileChoice, ProgressList } from './parts.js';
+import { DetailsForm, FailToggle, Handoff, JOURNEY_STEPS, JourneyIntro, ProfileChoice, ProgressList, StepLead } from './parts.js';
 import { EXISTING_TENANTS, PROFILES, emptyDetails, useSimulatedRun, type TenantDetails } from './stub.js';
 
 /**
@@ -64,7 +64,7 @@ type Journey = ReturnType<typeof useJourney>;
 
 /** A: a dedicated page with a flat step rail; one step at a time. */
 function VariantA({ j }: { readonly j: Journey }): ReactNode {
-  const steps = ['Choose profile', 'Details', 'Review', 'Provisioning', 'Hand off'];
+  const steps = JOURNEY_STEPS.map((s) => s.title);
   const [at, setAt] = useState(0);
   const current = j.started ? (j.run.status === 'done' ? 4 : 3) : at;
 
@@ -92,19 +92,23 @@ function VariantA({ j }: { readonly j: Journey }): ReactNode {
       <section className="card p-6">
         {current === 0 && (
           <>
-            <h2 className="mb-4 text-lg font-semibold">What kind of tenant?</h2>
+            <div className="mb-6"><JourneyIntro /></div>
+            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[0].title}</h2>
+            <StepLead index={0} />
             <ProfileChoice profiles={PROFILES} selected={j.profile?.code} onSelect={j.choose} />
           </>
         )}
         {current === 1 && j.profile && j.details && (
           <>
-            <h2 className="mb-4 text-lg font-semibold">Details</h2>
+            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[1].title}</h2>
+            <StepLead index={1} />
             <DetailsForm profile={j.profile} details={j.details} onChange={j.setDetails} />
           </>
         )}
         {current === 2 && j.profile && j.details && (
           <>
-            <h2 className="mb-4 text-lg font-semibold">Review</h2>
+            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[2].title}</h2>
+            <StepLead index={2} />
             <dl className="grid gap-2 text-sm sm:grid-cols-2">
               <dt className="text-ink-faint">Profile</dt><dd>{j.profile.name}</dd>
               <dt className="text-ink-faint">Tenant</dt><dd>{j.details.name || '-'} ({j.details.code || '-'})</dd>
@@ -119,13 +123,15 @@ function VariantA({ j }: { readonly j: Journey }): ReactNode {
         )}
         {current === 3 && (
           <>
-            <h2 className="mb-4 text-lg font-semibold">Provisioning {j.details?.name}</h2>
+            <h2 className="mb-1 text-lg font-semibold">Provisioning {j.details?.name}</h2>
+            <StepLead index={3} />
             <ProgressList run={j.run} onRetry={j.run.retry} onDiscard={j.restart} />
           </>
         )}
         {current === 4 && j.details && (
           <>
-            <h2 className="mb-4 text-lg font-semibold">Hand off</h2>
+            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[4].title}</h2>
+            <StepLead index={4} />
             <Handoff details={j.details} onRestart={() => { j.restart(); setAt(0); }} />
           </>
         )}
@@ -215,9 +221,12 @@ function VariantB({ j }: { readonly j: Journey }): ReactNode {
               <h2 className="text-lg font-semibold">New tenant</h2>
               <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>✕</Button>
             </div>
+            <div className="mb-6"><JourneyIntro compact /></div>
+            <StepLead index={0} />
             <ProfileChoice profiles={PROFILES} selected={j.profile?.code} onSelect={j.choose} layout="list" />
             {j.profile && j.details && (
               <div className="mt-6">
+                <StepLead index={1} />
                 <DetailsForm profile={j.profile} details={j.details} onChange={j.setDetails} />
                 <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
                   <FailToggle value={j.failOnce} onChange={j.setFailOnce} />
@@ -238,10 +247,12 @@ function VariantB({ j }: { readonly j: Journey }): ReactNode {
 function VariantC({ j }: { readonly j: Journey }): ReactNode {
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <PageHeader title="New tenant" description="Choose what the tenant starts with, describe it, and create it." />
+      <PageHeader title="New tenant" />
+      {!j.started && <JourneyIntro />}
 
       <section className={cx(j.started && 'opacity-60')}>
-        <h2 className="mb-3 text-sm font-semibold text-ink-muted">1 · Starts with</h2>
+        <h2 className="mb-1 text-sm font-semibold text-ink-muted">1 · Starts with</h2>
+          <StepLead index={0} />
         {j.started && j.profile ? (
           <p className="text-sm">{j.profile.name}: {j.profile.summary}</p>
         ) : (
@@ -251,7 +262,8 @@ function VariantC({ j }: { readonly j: Journey }): ReactNode {
 
       {j.profile && j.details && !j.started && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-ink-muted">2 · Describe it</h2>
+          <h2 className="mb-1 text-sm font-semibold text-ink-muted">2 · Describe it</h2>
+          <StepLead index={1} />
           <DetailsForm profile={j.profile} details={j.details} onChange={j.setDetails} />
         </section>
       )}
@@ -271,7 +283,8 @@ function VariantC({ j }: { readonly j: Journey }): ReactNode {
 
       {j.started && j.details && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-ink-muted">3 · Provisioning</h2>
+          <h2 className="mb-1 text-sm font-semibold text-ink-muted">3 · Provisioning</h2>
+          <StepLead index={3} />
           <div className="card p-5">
             <ProgressList run={j.run} onRetry={j.run.retry} onDiscard={j.restart} />
           </div>
@@ -280,7 +293,8 @@ function VariantC({ j }: { readonly j: Journey }): ReactNode {
 
       {j.run.status === 'done' && j.started && j.details && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-ink-muted">4 · Hand off</h2>
+          <h2 className="mb-1 text-sm font-semibold text-ink-muted">4 · Hand off</h2>
+          <StepLead index={4} />
           <Handoff details={j.details} onRestart={j.restart} />
         </section>
       )}

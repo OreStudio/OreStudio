@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 0388AB16-48B0-494B-8373-8ABF695C76E2
+:END:
+#+title: Task: Adopt the canonical protocol in the refdata web layer
+#+description: The refdata conversion's web half. The wire-protocol package carries a hand-written duplicate of the country protocol, and the BFF and the country screens name the retired save, delete and history subjects, so the schema and the subjects must come from the generated protocol or be generated themselves.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/adopt-the-protocol-in-the-refdata-web-layer
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The refdata screens speak the canonical protocol from generated schemas rather than hand-written ones.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- No hand-written schema duplicates a generated refdata protocol message.
+- Every subject the BFF and the screens use is the canonical verb for its operation.
+- The country screens list, read, write, remove and read versions through the canonical protocol.
+- The web typecheck and its suites pass, and the site build succeeds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

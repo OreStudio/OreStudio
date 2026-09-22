@@ -92,7 +92,6 @@ function VariantA({ j }: { readonly j: Journey }): ReactNode {
       <section className="card p-6">
         {current === 0 && (
           <>
-            <div className="mb-6"><JourneyIntro /></div>
             <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[0].title}</h2>
             <StepLead index={0} />
             <ProfileChoice profiles={PROFILES} selected={j.profile?.code} onSelect={j.choose} />
@@ -117,7 +116,7 @@ function VariantA({ j }: { readonly j: Journey }): ReactNode {
                 <Fragment key={p.name}><dt className="text-ink-faint">{p.label}</dt><dd>{j.details?.params[p.name] || '-'}</dd></Fragment>
               ))}
             </dl>
-            <p className="mt-4 text-sm text-ink-muted">This runs {j.profile.steps.length} steps on the server. You can leave this page; the journey resumes where it stopped.</p>
+            <p className="mt-4 text-sm text-ink-muted">Creating the tenant runs {j.profile.steps.length} steps.</p>
             <div className="mt-4"><FailToggle value={j.failOnce} onChange={j.setFailOnce} /></div>
           </>
         )}

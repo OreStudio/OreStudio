@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { Button, Field, Input, Select, cx } from '../../../ui/Primitives.js';
+import { NewPasswordField } from '../../../ui/PasswordField.js';
 import type { RunState, SeedProfile, StepState, TenantDetails } from './stub.js';
 
 /**
@@ -178,9 +179,14 @@ export function DetailsForm({
         <Field label="Email">
           <Input value={details.adminEmail} onChange={(e) => set('adminEmail', e.target.value)} />
         </Field>
-        <Field label="Initial password" hint="They must change it at first sign-in." className="sm:col-span-2">
-          <Input type="password" value={details.adminPassword} onChange={(e) => set('adminPassword', e.target.value)} />
-        </Field>
+        <div className="sm:col-span-2">
+          <NewPasswordField
+            label="Initial password"
+            hint="They must change it at first sign-in."
+            value={details.adminPassword}
+            onChange={(password) => set('adminPassword', password)}
+          />
+        </div>
       </fieldset>
     </div>
   );

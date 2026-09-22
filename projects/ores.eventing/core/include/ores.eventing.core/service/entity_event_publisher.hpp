@@ -52,7 +52,7 @@ publish_entity_event(ores::nats::service::client& nats,
  * The event is published as the event type states it, so the key travels as
  * the entity's own key record rather than as a list of opaque identifiers.
  * The subject is the event's collection prefix plus the action the event
- * reports, which is what 
+ * reports, which is what
 ef event_subject states.
  *
  * On failure it rethrows with the subject in the message, for the same reason
@@ -60,7 +60,7 @@ ef event_subject states.
  * callback, and the bus reports a failed handler rather than swallowing it.
  *
  * @param nats The client to publish with.
- * @param subject The event subject, from 
+ * @param subject The event subject, from
 ef event_subject.
  * @param event The typed event to publish.
  */

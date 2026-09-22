@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.iam.api/eventing/tenant_type_event.hpp"
 #include "ores.refdata.api/eventing/currency_changed_event.hpp"
@@ -45,14 +45,10 @@ TEST_CASE("entity_event_traits_state_the_events_subject_prefix", tags) {
     // A canonical event states the collection's prefix; the action completes
     // the subject, so one payload is addressed by three subjects.
     using event_type = ores::iam::messaging::tenant_type_event;
-    REQUIRE(entity_event_traits<event_type>::subject_prefix ==
-            "iam.v1.tenant_types_events");
-    REQUIRE(event_subject<event_type>("created") ==
-            "iam.v1.tenant_types_events.created");
-    REQUIRE(event_subject<event_type>("updated") ==
-            "iam.v1.tenant_types_events.updated");
-    REQUIRE(event_subject<event_type>("deleted") ==
-            "iam.v1.tenant_types_events.deleted");
+    REQUIRE(entity_event_traits<event_type>::subject_prefix == "iam.v1.tenant_types_events");
+    REQUIRE(event_subject<event_type>("created") == "iam.v1.tenant_types_events.created");
+    REQUIRE(event_subject<event_type>("updated") == "iam.v1.tenant_types_events.updated");
+    REQUIRE(event_subject<event_type>("deleted") == "iam.v1.tenant_types_events.deleted");
 }
 
 TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {

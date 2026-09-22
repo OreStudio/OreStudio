@@ -159,8 +159,7 @@ void tenants_commands::process_add_tenant(std::ostream& out,
         out << "✓ Tenant added successfully!" << std::endl;
         out << "  ID: " << new_id << std::endl;
     } else {
-        const auto& msg =
-            result->result.message.empty() ? "Unknown error" : result->result.message;
+        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
         fail(out) << "Failed to add tenant: " << msg << std::endl;
     }

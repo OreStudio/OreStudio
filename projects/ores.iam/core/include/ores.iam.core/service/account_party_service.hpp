@@ -100,8 +100,8 @@ public:
      * column at a time, so the pair is resolved here. Returns nothing when the
      * account is not associated with that party.
      */
-    std::optional<domain::account_party> find_account_party(
-        const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id);
+    std::optional<domain::account_party> find_account_party(const boost::uuids::uuid& account_id,
+                                                            const boost::uuids::uuid& party_id);
 
     /**
      * @brief Gets the total count of active account parties for a party.

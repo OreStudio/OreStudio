@@ -50,8 +50,7 @@ inline static std::string_view logger_name = "ores.iam.client.client.service_tok
 // sending to the old one.
 constexpr std::string_view service_login_subject =
     ores::iam::messaging::service_login_request::nats_subject;
-constexpr std::string_view refresh_subject =
-    ores::iam::messaging::refresh_request::nats_subject;
+constexpr std::string_view refresh_subject = ores::iam::messaging::refresh_request::nats_subject;
 
 struct token_state {
     ores::nats::service::client& nats;

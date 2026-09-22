@@ -416,8 +416,7 @@ void provision_commands::process_tenant(std::ostream& out,
             iam::messaging::put_many_account_parties_request assoc_req;
             assoc_req.intent.reason_code =
                 std::string(dq::domain::change_reason_constants::codes::new_record);
-            assoc_req.intent.commentary =
-                "Tenant provisioning: tenant admin associated with party";
+            assoc_req.intent.commentary = "Tenant provisioning: tenant admin associated with party";
             try {
                 const auto account_uuid =
                     boost::lexical_cast<boost::uuids::uuid>(session.auth().account_id);

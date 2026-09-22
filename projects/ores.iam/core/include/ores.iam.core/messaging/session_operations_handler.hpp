@@ -34,7 +34,8 @@ namespace ores::iam::messaging {
 namespace {
 
 inline auto& session_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.iam.messaging.session_operations_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.iam.messaging.session_operations_handler");
     return instance;
 }
 
@@ -48,8 +49,8 @@ using namespace ores::logging;
 class session_operations_handler {
 public:
     session_operations_handler(ores::nats::service::client& nats,
-                    ores::database::context ctx,
-                    ores::security::jwt::jwt_authenticator signer)
+                               ores::database::context ctx,
+                               ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer)) {}

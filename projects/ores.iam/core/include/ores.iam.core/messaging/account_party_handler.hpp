@@ -248,13 +248,12 @@ public:
             auto link = to_domain(req->change.write);
             // The association did not exist before, so a precondition that the
             // caller stated differently is refused rather than ignored.
-            if (req->change.precondition.kind == ores::utility::domain::precondition_kind::any
-                || req->change.precondition.kind
-                       == ores::utility::domain::precondition_kind::must_not_exist) {
+            if (req->change.precondition.kind == ores::utility::domain::precondition_kind::any ||
+                req->change.precondition.kind ==
+                    ores::utility::domain::precondition_kind::must_not_exist) {
                 auto current = svc.find_account_party(link.account_id, link.party_id);
-                if (current
-                    && req->change.precondition.kind
-                           == ores::utility::domain::precondition_kind::must_not_exist) {
+                if (current && req->change.precondition.kind ==
+                                   ores::utility::domain::precondition_kind::must_not_exist) {
                     response.result.outcome = ores::utility::domain::outcome::conflict;
                     response.result.code = "already_exists";
                 } else {
@@ -307,8 +306,7 @@ public:
             response.account_parties.reserve(batch.size());
             for (const auto& link : batch) {
                 auto written = svc.find_account_party(link.account_id, link.party_id);
-                response.account_parties.push_back(
-                    written ? std::move(*written) : link);
+                response.account_parties.push_back(written ? std::move(*written) : link);
             }
             complete(msg);
         } catch (const std::exception& e) {
@@ -520,18 +518,21 @@ private:
             }
             BOOST_LOG_SEV(account_party_handler_lg(), debug)
                 << "Workflow step completed: " << msg.subject;
-            publish_step_completion(
-                nats_,
-                step_id,
-                inst_id,
-                ores::workflow::messaging::step_outcome::completed,
-                rfl::json::write(put_many_account_parties_response{}),
-                "");
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::completed,
+                                    rfl::json::write(put_many_account_parties_response{}),
+                                    "");
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << "Workflow step failed: " << msg.subject << " - " << e.what();
-            publish_step_completion(
-                nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", e.what());
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    e.what());
         }
     }
 

@@ -89,8 +89,7 @@ private:
      * Takes the store's notification and publishes the typed event the
      * notification names.
      */
-    using entity_event_publisher_fn =
-        std::function<void(const domain::entity_event_notification&)>;
+    using entity_event_publisher_fn = std::function<void(const domain::entity_event_notification&)>;
 
     struct entity_event_mapping {
         std::string channel_name;
@@ -164,14 +163,14 @@ public:
     template <typename Event>
     void register_entity_event_mapping(const std::string& channel_name) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), info)
-            << "Registering canonical event mapping: channel='" << channel_name
-            << "', prefix='" << domain::entity_event_traits<Event>::subject_prefix << "'";
+        BOOST_LOG_SEV(lg(), info) << "Registering canonical event mapping: channel='"
+                                  << channel_name << "', prefix='"
+                                  << domain::entity_event_traits<Event>::subject_prefix << "'";
 
         entity_event_mappings_[channel_name] = entity_event_mapping{
             .channel_name = channel_name,
-            .publisher = [this, channel_name](
-                             const domain::entity_event_notification& notification) {
+            .publisher = [this,
+                          channel_name](const domain::entity_event_notification& notification) {
                 bus_.publish(domain::entity_event_traits<Event>::from_notification(notification));
             }};
 
@@ -220,8 +219,7 @@ private:
     /**
      * @brief Dispatches a canonical notification to its registered mapping.
      */
-    void on_entity_event(const std::string& channel,
-                         const domain::entity_event_notification& e);
+    void on_entity_event(const std::string& channel, const domain::entity_event_notification& e);
 
     event_bus& bus_;
     ores::database::service::postgres_listener_service listener_;

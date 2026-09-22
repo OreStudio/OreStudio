@@ -40,9 +40,8 @@ postgres_event_source::postgres_event_source(database::context ctx, event_bus& b
                     on_entity_event(channel, *result);
                 } else {
                     const auto n = ++parse_failure_count_;
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to deserialize event notification payload"
-                        << " (total failures: " << n << "): " << payload;
+                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize event notification payload"
+                                               << " (total failures: " << n << "): " << payload;
                 }
                 return;
             }
@@ -90,8 +89,8 @@ bool postgres_event_source::wait_until_ready(std::chrono::milliseconds timeout) 
     return listener_.wait_until_ready(timeout);
 }
 
-void postgres_event_source::on_entity_event(
-    const std::string& channel, const domain::entity_event_notification& e) {
+void postgres_event_source::on_entity_event(const std::string& channel,
+                                            const domain::entity_event_notification& e) {
     BOOST_LOG_SEV(lg(), info) << "Received event notification for entity: " << e.entity
                               << " action: " << e.action << " version: " << e.version;
 
@@ -106,8 +105,8 @@ void postgres_event_source::on_entity_event(
         it->second.publisher(e);
         BOOST_LOG_SEV(lg(), debug) << "Successfully published event for entity: " << e.entity;
     } catch (const std::exception& ex) {
-        BOOST_LOG_SEV(lg(), error) << "Exception while publishing event for entity '" << e.entity
-                                   << "': " << ex.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Exception while publishing event for entity '" << e.entity << "': " << ex.what();
     }
 }
 

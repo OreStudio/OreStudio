@@ -27,9 +27,8 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
-#include "ores.iam.core/messaging/session_registrar.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -39,18 +38,19 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/messaging/account_contact_information_registrar.hpp"
 #include "ores.iam.core/messaging/account_operations_handler.hpp"
-#include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
-#include "ores.iam.core/messaging/auth_handler.hpp"
-#include "ores.iam.core/messaging/bootstrap_handler.hpp"
-#include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.iam.core/messaging/reset_handler.hpp"
-#include "ores.iam.core/messaging/authorization_handler.hpp"
-#include "ores.iam.core/messaging/role_registrar.hpp"
+#include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_registrar.hpp"
+#include "ores.iam.core/messaging/auth_handler.hpp"
+#include "ores.iam.core/messaging/authorization_handler.hpp"
+#include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/login_info_registrar.hpp"
 #include "ores.iam.core/messaging/permission_registrar.hpp"
+#include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.iam.core/messaging/reset_handler.hpp"
+#include "ores.iam.core/messaging/role_registrar.hpp"
 #include "ores.iam.core/messaging/session_operations_handler.hpp"
+#include "ores.iam.core/messaging/session_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
@@ -211,12 +211,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         list_account_parties_request::nats_subject, qg, [aph](ores::nats::message msg) {
             aph->list_account_parties(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        list_by_account_id_account_parties_request::nats_subject,
-        qg,
-        [aph](ores::nats::message msg) {
-            aph->list_by_account_id_account_parties(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(list_by_account_id_account_parties_request::nats_subject,
+                                        qg,
+                                        [aph](ores::nats::message msg) {
+                                            aph->list_by_account_id_account_parties(std::move(msg));
+                                        }));
     subs.push_back(nats.queue_subscribe(
         get_account_party_request::nats_subject, qg, [aph](ores::nats::message msg) {
             aph->get_account_party(std::move(msg));

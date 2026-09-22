@@ -33,9 +33,6 @@ import { entityRoutes } from './entity-route-registry.js';
 import {
   NatsTransport,
   OresClient,
-  accountPageSchema,
-  deleteAccount,
-  listAccountsRequestSchema,
   SUBJECTS,
   changeReasonPageSchema,
   getImagesRequestSchema,
@@ -47,7 +44,6 @@ import {
   loginResultSchema,
   selectPartyRequestSchema,
   sessionViewSchema,
-  setAccountsLocked,
   NotAuthenticatedError,
   type LoginOutcome,
   type PartySummary,

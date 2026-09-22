@@ -69,6 +69,11 @@ operation for each stage.
 - *Onboard*: a person's first use of a tenant or party that exists
   already. Onboarding sets what the person needs to start work. It
   does not create the tenant.
+- *Account-party association*: an account /works in/ a party when it is
+  associated with it. The association controls which parties the account
+  can act for: at sign-in, an account that works in more than one party
+  chooses one, and it can switch between them later. Provisioning a
+  party associates the accounts chosen for it.
 - *Journey*: a guided path that takes a person through workflows and
   their own actions (sign-in, onboarding) in order. The journeys are
   /first run/, /new tenant/ and /new party/. The server keeps the

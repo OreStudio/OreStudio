@@ -92,6 +92,9 @@ build/nats/
 /tmp/*
 !/tmp/.gitkeep
 
+# Scratch the codegen tests render into (shell command and recipe coverage)
+/.runtime/
+
 .bash_profile
 .bashrc
 .claude/

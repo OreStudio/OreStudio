@@ -19,144 +19,163 @@
  *
  */
 
-import { Fragment, useState, type ReactNode } from 'react';
-import { Button, PageHeader, cx } from '../../../ui/Primitives.js';
-import { DetailsForm, FailToggle, Handoff, JOURNEY_STEPS, ProfileChoice, ProgressList, StepLead } from './parts.js';
-import { PROFILES, emptyDetails, useSimulatedRun, type TenantDetails } from './stub.js';
+import { useCallback, useState, type ReactNode } from 'react';
+import { Button, Field, Input, Notice, PageHeader, Select } from '../../../ui/Primitives.js';
+import { NewPasswordField } from '../../../ui/PasswordField.js';
+import {
+  JourneyPage,
+  newTenantSteps,
+  useAdvanceWhenProvisioned,
+  useNewTenant,
+  type JourneyStep,
+  type NewTenant,
+} from './journey.js';
 
 /**
- * PROTOTYPE ONLY -- throwaway. The new tenant journey, variant A (the chosen
- * stepper page). The rejected variants are on the prototype/new-tenant-journey
- * branch. All data is stubbed; nothing is sent to the server.
+ * PROTOTYPE ONLY -- throwaway. The two journeys built on the chosen stepper
+ * layout (variant A; the rejected variants are on the
+ * prototype/new-tenant-journey branch). All data is stubbed; nothing is sent
+ * to the server.
  */
 
-/** The state every variant needs: profile, details, and a simulated run. */
-function useJourney() {
-  const [profileCode, setProfileCode] = useState<string>();
-  const profile = PROFILES.find((p) => p.code === profileCode);
-  const [details, setDetails] = useState<TenantDetails>();
-  const [started, setStarted] = useState(false);
-  const [failOnce, setFailOnce] = useState(false);
-  const run = useSimulatedRun(profile, started, failOnce ? 2 : undefined);
+const PROVISIONING = 3;
+const HANDOFF = 4;
 
-  const choose = (code: string): void => {
-    setProfileCode(code);
-    const p = PROFILES.find((x) => x.code === code);
-    if (p !== undefined) setDetails(emptyDetails(p));
-  };
-  const restart = (): void => {
-    setStarted(false);
-    setProfileCode(undefined);
-    setDetails(undefined);
-  };
-  return { profile, details, setDetails, started, setStarted, failOnce, setFailOnce, run, choose, restart };
-}
-
-type Journey = ReturnType<typeof useJourney>;
-
-/** A dedicated page with a flat step rail; one step at a time. */
-function NewTenantSteps({ j }: { readonly j: Journey }): ReactNode {
-  const steps = JOURNEY_STEPS.map((s) => s.title);
-  const [at, setAt] = useState(0);
-  const current = j.started ? (j.run.status === 'done' ? 4 : 3) : at;
-
-  return (
-    <div className="grid gap-8 md:grid-cols-[14rem_1fr]">
-      <nav aria-label="Journey steps">
-        <ol className="space-y-1">
-          {steps.map((label, i) => (
-            <li
-              key={label}
-              className={cx(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
-                i === current ? 'bg-surface-hover font-medium text-ink' : i < current ? 'text-ink-muted' : 'text-ink-faint',
-              )}
-            >
-              <span className={cx('grid size-6 place-items-center rounded-full border text-xs', i < current ? 'border-up text-up' : i === current ? 'border-accent text-accent-bright' : 'border-line')}>
-                {i < current ? '✓' : i + 1}
-              </span>
-              {label}
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <section className="card p-6">
-        {current > 0 && j.profile && j.details && (
-          <div className="mb-5 flex items-center gap-3 border-b border-line pb-4">
-            {j.profile.logo !== undefined && <img src={j.profile.logo} alt="" className="h-9 w-auto rounded bg-white p-1" />}
-            <div className="text-sm">
-              <div className="font-medium">{j.details.name || 'New tenant'}</div>
-              <div className="text-xs text-ink-faint">{j.profile.name}</div>
-            </div>
-          </div>
-        )}
-        {current === 0 && (
-          <>
-            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[0].title}</h2>
-            <StepLead index={0} />
-            <ProfileChoice profiles={PROFILES} selected={j.profile?.code} onSelect={j.choose} />
-          </>
-        )}
-        {current === 1 && j.profile && j.details && (
-          <>
-            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[1].title}</h2>
-            <StepLead index={1} />
-            <DetailsForm profile={j.profile} details={j.details} onChange={j.setDetails} />
-          </>
-        )}
-        {current === 2 && j.profile && j.details && (
-          <>
-            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[2].title}</h2>
-            <StepLead index={2} />
-            <dl className="grid gap-2 text-sm sm:grid-cols-2">
-              <dt className="text-ink-faint">Profile</dt><dd>{j.profile.name}</dd>
-              <dt className="text-ink-faint">Tenant</dt><dd>{j.details.name || '-'} ({j.details.code || '-'})</dd>
-              <dt className="text-ink-faint">Administrator</dt><dd>{j.details.adminUsername}</dd>
-              {j.profile.params.map((p) => (
-                <Fragment key={p.name}><dt className="text-ink-faint">{p.label}</dt><dd>{j.details?.params[p.name] || '-'}</dd></Fragment>
-              ))}
-            </dl>
-            <p className="mt-4 text-sm text-ink-muted">Creating the tenant runs {j.profile.steps.length} steps.</p>
-            <div className="mt-4"><FailToggle value={j.failOnce} onChange={j.setFailOnce} /></div>
-          </>
-        )}
-        {current === 3 && (
-          <>
-            <h2 className="mb-1 text-lg font-semibold">Provisioning {j.details?.name}</h2>
-            <StepLead index={3} />
-            <ProgressList run={j.run} onRetry={j.run.retry} onDiscard={j.restart} />
-          </>
-        )}
-        {current === 4 && j.details && (
-          <>
-            <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[4].title}</h2>
-            <StepLead index={4} />
-            <Handoff details={j.details} onRestart={() => { j.restart(); setAt(0); }} />
-          </>
-        )}
-
-        {!j.started && (
-          <div className="mt-6 flex justify-between border-t border-line pt-4">
-            <Button variant="ghost" disabled={at === 0} onClick={() => setAt(at - 1)}>Back</Button>
-            {at < 2 ? (
-              <Button variant="primary" disabled={j.profile === undefined} onClick={() => setAt(at + 1)}>Continue</Button>
-            ) : (
-              <Button variant="primary" onClick={() => j.setStarted(true)}>Create tenant</Button>
-            )}
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
+/** New tenant: the shared tenant steps, then back to the Tenants page. */
 export function NewTenantJourneyPrototype(): ReactNode {
-  const j = useJourney();
+  const t = useNewTenant();
+  const [at, setAt] = useState(0);
+  useAdvanceWhenProvisioned(t, at === PROVISIONING, useCallback(() => setAt(HANDOFF), []));
+
+  const steps = newTenantSteps(t, {
+    onContinue: () => alert('PROTOTYPE: signs out, signs in as the tenant admin, opens their first sign-in.'),
+    onElsewhere: () => alert('PROTOTYPE: back to the Tenants page; the new tenant is listed as active.'),
+  });
   return (
     <>
       <PageHeader title="New tenant" />
-      <NewTenantSteps j={j} />
+      <JourneyPage steps={steps} at={at} onMove={setAt} />
     </>
   );
+}
+
+/**
+ * First run: the only page while the system is in bootstrap mode. Create the
+ * system administrator, then the new tenant steps inline, then the tenant
+ * administrator's first sign-in -- one flat list of steps.
+ */
+export function FirstRunJourneyPrototype(): ReactNode {
+  const t = useNewTenant();
+  const [at, setAt] = useState(0);
+  const [admin, setAdmin] = useState({ username: 'admin', email: '', password: '', ok: false });
+  const [handedOff, setHandedOff] = useState(false);
+  const [signIn, setSignIn] = useState({ password: '', ok: false, party: '' });
+  useAdvanceWhenProvisioned(t, at === PROVISIONING + 1, useCallback(() => setAt(HANDOFF + 1), []));
+
+  const tenantSteps = newTenantSteps(t, {
+    onContinue: () => setAt(HANDOFF + 2),
+    onElsewhere: () => {
+      setHandedOff(true);
+      setAt(HANDOFF + 3);
+    },
+  });
+
+  const steps: readonly JourneyStep[] = [
+    {
+      id: 'system-admin',
+      title: 'Create the administrator',
+      lead: 'ORE Studio is not set up yet. Create the administrator who sets it up and creates tenants.',
+      body: (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Username">
+            <Input value={admin.username} autoComplete="username" onChange={(e) => setAdmin({ ...admin, username: e.target.value })} />
+          </Field>
+          <Field label="Email">
+            <Input value={admin.email} type="email" onChange={(e) => setAdmin({ ...admin, email: e.target.value })} />
+          </Field>
+          <div className="sm:col-span-2">
+            <NewPasswordField value={admin.password} onChange={(password, ok) => setAdmin({ ...admin, password, ok })} />
+          </div>
+        </div>
+      ),
+      next: { label: 'Create administrator', enabled: admin.ok && admin.username.length >= 3 },
+      final: true,
+    },
+    ...tenantSteps,
+    firstSignIn(t, signIn, setSignIn),
+    ready(t, handedOff),
+  ];
+
+  return (
+    <>
+      <PageHeader title="Set up ORE Studio" />
+      {at > 0 && (
+        <p className="-mt-4 mb-6 text-xs text-ink-faint">
+          Signed in as <span className="font-mono">{at > HANDOFF + 1 && !handedOff ? tenantAdmin(t) : admin.username}</span>
+        </p>
+      )}
+      <JourneyPage steps={steps} at={at} onMove={setAt} />
+    </>
+  );
+}
+
+function tenantAdmin(t: NewTenant): string {
+  return `${t.details?.adminUsername ?? 'tenant_admin'}@${t.details?.code ?? 'tenant'}`;
+}
+
+function firstSignIn(
+  t: NewTenant,
+  signIn: { password: string; ok: boolean; party: string },
+  setSignIn: (value: { password: string; ok: boolean; party: string }) => void,
+): JourneyStep {
+  const parties = t.profile?.parties ?? [];
+  return {
+    id: 'first-sign-in',
+    title: 'First sign-in',
+    lead: 'Set a password only you know, then choose where you start.',
+    body: (
+      <div className="space-y-5">
+        <NewPasswordField
+          label="New password"
+          value={signIn.password}
+          onChange={(password, ok) => setSignIn({ ...signIn, password, ok })}
+        />
+        {parties.length > 1 && (
+          <Field label="Start in" hint="You work in more than one party. You can switch at any time.">
+            <Select value={signIn.party || parties[0]} onChange={(e) => setSignIn({ ...signIn, party: e.target.value })}>
+              {parties.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </Select>
+          </Field>
+        )}
+      </div>
+    ),
+    next: { label: 'Finish', enabled: signIn.ok },
+    final: true,
+  };
+}
+
+function ready(t: NewTenant, handedOff: boolean): JourneyStep {
+  return {
+    id: 'ready',
+    title: 'Ready',
+    lead: 'ORE Studio is set up.',
+    body: (
+      <div className="space-y-4">
+        {handedOff ? (
+          <Notice tone="success">
+            Give <span className="font-mono">{tenantAdmin(t)}</span> their username. They set their own password at
+            first sign-in.
+          </Notice>
+        ) : (
+          <Notice tone="success">You are signed in to {t.details?.name ?? 'the new tenant'}.</Notice>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary">Go to {handedOff ? 'Tenants' : 'home'}</Button>
+          <Button>Create another tenant</Button>
+        </div>
+      </div>
+    ),
+  };
 }

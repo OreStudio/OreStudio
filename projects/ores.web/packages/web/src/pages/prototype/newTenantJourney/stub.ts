@@ -49,6 +49,8 @@ export interface SeedProfile {
   /** Tenant details the profile fills in; the person can still change them. */
   readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
   readonly logo?: string;
+  /** The parties the tenant ends up with, for the first sign-in's default party. */
+  readonly parties: readonly string[];
 }
 
 export const PROFILES: readonly SeedProfile[] = [
@@ -58,6 +60,7 @@ export const PROFILES: readonly SeedProfile[] = [
     summary: 'Production-ready setup',
     bullets: ['Standard reference data and counterparties', 'Your legal entities, from their LEI', 'No test data'],
     audience: 'For real use',
+    parties: ['The legal entity of the root LEI'],
     params: [
       {
         name: 'root_lei',
@@ -93,6 +96,7 @@ export const PROFILES: readonly SeedProfile[] = [
     bullets: ['4 legal entities, books and desks', '45 staff to sign in as', 'Live synthetic market data'],
     audience: 'For demos and testing',
     logo: acmeLogo,
+    parties: ['Acme Corporation Plc', 'ACME Corporation UK plc', 'ACME Corporation US Inc', 'ACME Corporation HK Ltd'],
     defaults: {
       code: 'acme_corporation',
       name: 'Acme Corporation',

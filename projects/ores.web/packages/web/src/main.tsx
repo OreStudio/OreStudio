@@ -35,7 +35,7 @@ import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
 import { AccountsPage } from './pages/AccountsPage.js';
-import { NewTenantJourneyPrototype } from './pages/prototype/newTenantJourney/NewTenantJourneyPrototype.js';
+import { FirstRunJourneyPrototype, NewTenantJourneyPrototype } from './pages/prototype/newTenantJourney/NewTenantJourneyPrototype.js';
 import { CountryListPage } from './components/refdata/entities/country/CountryListPage.js';
 import { CountryDetailPage } from './components/refdata/entities/country/CountryDetailPage.js';
 import { CountryHistoryPage } from './components/refdata/entities/country/CountryHistoryPage.js';
@@ -176,6 +176,15 @@ function App(): ReactNode {
             }
           />
           <Route path="/login" element={<SignInRoute />} />
+          {/* PROTOTYPE ONLY: first run, the page a system in bootstrap mode shows. */}
+          <Route
+            path="/setup"
+            element={
+              <PublicShell>
+                <FirstRunJourneyPrototype />
+              </PublicShell>
+            }
+          />
           {/* PROTOTYPE ONLY: stubbed, so it needs no session. */}
           <Route
             path="/iam/tenant/onboard"

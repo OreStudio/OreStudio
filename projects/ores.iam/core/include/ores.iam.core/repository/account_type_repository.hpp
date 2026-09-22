@@ -123,6 +123,7 @@ public:
     std::optional<domain::account_type>
     read_at_version(context ctx, const std::string& type, std::uint32_t version);
 
+
     /**
      * @brief Reads latest account types with pagination support.
      * @param ctx Repository context with database connection

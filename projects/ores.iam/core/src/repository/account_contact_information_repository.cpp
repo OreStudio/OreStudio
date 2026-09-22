@@ -198,6 +198,7 @@ account_contact_information_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest_by_account_id(context ctx,
                                                                   const std::string& account_id,

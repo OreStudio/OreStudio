@@ -176,6 +176,7 @@ tenant_repository::read_at_version(context ctx, const std::string& id, std::uint
     return entities.front();
 }
 
+
 tenant_repository::remove_status tenant_repository::remove(context ctx,
                                                            const std::string& id,
                                                            std::optional<std::uint32_t> version) {

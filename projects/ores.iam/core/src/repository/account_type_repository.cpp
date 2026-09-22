@@ -181,6 +181,7 @@ std::optional<domain::account_type> account_type_repository::read_at_version(
     return entities.front();
 }
 
+
 account_type_repository::remove_status account_type_repository::remove(
     context ctx, const std::string& type, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;

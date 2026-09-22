@@ -60,21 +60,57 @@ Taken 2026-09-22. Both parts:
 
 ** 1. Derive the key from the declaration
 
-=key_record_fields= reads the presentation =key_field= when the model declares
-one, and falls back to the primary key when it does not -- an entity with no
-screen has declared no wire key, and its primary key is the only one there is.
-The primary key stays in the repository entity and the DDL, where it belongs.
+=key_record_fields= (=org_loader.py=, ~line 2662) reads the presentation
+=key_field= when the model declares one, and falls back to the primary key when
+it does not -- an entity with no screen has declared no wire key, and its
+primary key is the only one there is. The primary key stays in the repository
+entity and the DDL, where it belongs.
 
-=_keyed_by_natural_key= becomes a load-time validation rather than a gate.* A
-model whose two keys still disagree should fail to load, not silently lose
-routes.
+Three small helpers carry the rule, so the templates read one answer rather than
+each deriving it: =declared_key_field=, =declared_key_column= (which searches
+the primary key, the natural keys and the plain columns, because which list
+holds the declared key is not the caller's concern but its type is) and
+=key_is_primary=. Expose the last two on the enriched entity in
+=generate_from_model=, beside =domain_entity['messages']= (~core.py:4931).
+
+*Checked before starting:* of every entity model in the repo, exactly two
+declare a =key_field= that names none of their columns --
+=ores.compute.result= (=modified_by=) and =ores.workspace.workspace= (=name=).
+They are outside IAM, and a hard failure would surface them rather than let them
+fall back silently.
+
+=_keyed_by_natural_key= (=core.py=, ~line 2114) becomes a load-time validation
+rather than a gate. A model whose two keys still disagree should fail to load,
+not silently lose routes.
 
 ** 2. Read and write by the declared key
 
-The handler, service and repository must resolve the declared key to the row.
-The precedent is =service_find_by_code=, which already generates a finder for a
-named column; it needs to generalise from "a column called code" to "the
-declared key". This is the largest part of the work.
+Good news from the probe: the handler passes the whole request straight to the
+service (=svc.get_tenant(*req)= in =tenant_handler.hpp=), so the key resolution
+is concentrated in the service and the repository. The handler and the events
+need no change -- events carry the key record, which follows from step 1.
+
+The seams, all in =ores.cpp.service.service_impl.org=:
+
+- =read_one= (~line 71) loops =primary_key.key_columns= to convert a key record
+  into the repository's text arguments. It must loop the declared key.
+- =key_from= (~line 87) builds a key record back from a domain object, so a
+  written row can be read back. Same loop, same change.
+- The batch removal (~line 329) builds one text vector per key column from the
+  removal records. Same loop, same change.
+- =pk['key_columns']= is derived in =core.py= (~line 4119) and carries the
+  =is_uuid=/=is_timestamp= flags the conversions branch on. A sibling derivation
+  is needed for the declared key. Watch this: those flags are set by the SQL
+  shaping loop over =domain_entity['columns']= only (~core.py:2923), so a
+  declared key held in =natural_keys= may not carry them yet.
+
+The repository needs a read by the declared key. It has only =read_latest(ctx,
+id)= -- the storage key. The precedent is =service_find_by_code=
+(=ores.cpp.repository.repository_impl.org= ~lines 282--328, header ~122--139),
+which already generates =read_latest_by_code= parameterised by ={{column}}= and
+an optional ={{parent_column}}=. Generalise the method name to
+=read_latest_by_<declared_key>= and emit it whenever =key_is_primary= is false,
+rather than behind a per-model flag -- one declaration, as above.
 
 ** 3. Fix the BFF route envelopes
 

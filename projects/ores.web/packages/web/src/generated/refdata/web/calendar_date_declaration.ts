@@ -25,10 +25,9 @@
 /**
  * Where the calendar_date screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { calendarDateMeta } from '../ui/calendar_date_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,23 @@ export const calendarDateDescriptor: EntityDescriptor = {
     meta: calendarDateMeta,
     routeSegment: 'calendar-date',
     apiBase: '/api/calendar_dates',
-    keyParam: 'id',
-    icon: 'table',
+    keyFields: [
+        'calendar_code',
+        'date',
+    ],
     capabilities: {
         create: false,
         edit: false,
         remove: false,
         history: false,
-        asOf: false,
     },
     searchFields: [
+        'date',
+        'is_business_day',
+        'source',
+    ],
+    writeFields: [
+        'calendar_code',
         'date',
         'is_business_day',
         'source',

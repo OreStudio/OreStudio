@@ -146,33 +146,3 @@ export const roundingTypeMeta = {
     columns: roundingTypeColumns,
     fields: roundingTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const roundingTypeMessages = {
-        rounding_type: {
-            title: 'Rounding Types',
-            singular: 'rounding type',
-            newTitle: 'New rounding type',
-            description: 'Reference data table defining valid rounding method classifications. Values match xs:enumeration in ORE\'s currencyconfig.xsd. Rounding types are managed by the system tenant and are used to specify how currency amounts are rounded in financial calculations.',
-            fldCode: 'Code',
-            codePh: 'Enter rounding type code',
-            fldName: 'Name',
-            namePh: 'Enter display name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

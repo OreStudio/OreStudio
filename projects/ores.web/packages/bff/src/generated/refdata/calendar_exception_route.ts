@@ -31,22 +31,13 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_exception_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const calendarExceptionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'calendar_exception',
   collection: 'calendar_exceptions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'calendar_exception',
-  writeFields: ['id', 'calendar_code', 'exception_date', 'is_business_day', 'description'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, calendar_code: '', exception_date: '', is_business_day: false, description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_calendar_exceptions_request,
     get: subjects.get_calendar_exception_request,
@@ -55,5 +46,6 @@ export const calendarExceptionRoute: EntityRouteDescriptor = {
     history: subjects.list_calendar_exception_versions_request,
   },
   rowsField: 'calendar_exceptions',
+  getRowField: 'calendar_exception',
   historyRowsField: 'versions',
 };

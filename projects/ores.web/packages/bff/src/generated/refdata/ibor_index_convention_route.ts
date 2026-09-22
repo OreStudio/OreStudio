@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/ibor_in
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const iborIndexConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'ibor_index_convention',
   collection: 'ibor_index_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'ibor_index_convention',
-  writeFields: ['id', 'fixing_calendar', 'day_count_fraction', 'settlement_days', 'business_day_convention', 'end_of_month'],
-  writeDefaults: { id: '', fixing_calendar: '', day_count_fraction: '', settlement_days: 0, business_day_convention: '', end_of_month: false },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_ibor_index_conventions_request,
     get: subjects.get_ibor_index_convention_request,
@@ -55,5 +46,6 @@ export const iborIndexConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_ibor_index_convention_versions_request,
   },
   rowsField: 'ibor_index_conventions',
+  getRowField: 'ibor_index_convention',
   historyRowsField: 'versions',
 };

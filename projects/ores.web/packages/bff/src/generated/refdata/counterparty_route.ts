@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const counterpartyRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'counterparty',
   collection: 'counterparties',
-  key: 'id',
-  keyField: 'short_code',
-  rowField: 'counterparty',
-  writeFields: ['id', 'short_code', 'full_name', 'transliterated_name', 'party_type', 'parent_counterparty_id', 'business_center_code', 'status', 'image_id'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, short_code: '', full_name: '', transliterated_name: null, party_type: '', parent_counterparty_id: null, business_center_code: '', status: '', image_id: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['short_code'],
   subjects: {
     list: subjects.list_counterparties_request,
+    get: subjects.get_counterparty_request,
     save: subjects.put_counterparty_request,
+    remove: subjects.delete_counterparty_request,
+    history: subjects.list_counterparty_versions_request,
   },
   rowsField: 'counterparties',
+  getRowField: 'counterparty',
+  historyRowsField: 'versions',
 };

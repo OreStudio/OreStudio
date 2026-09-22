@@ -155,34 +155,3 @@ export const partyTypeMeta = {
     columns: partyTypeColumns,
     fields: partyTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const partyTypeMessages = {
-        party_type: {
-            title: 'Party Types',
-            singular: 'party type',
-            newTitle: 'New party type',
-            description: 'Reference data table defining valid party type classifications. Examples: \'Bank\', \'Corporate\', \'HedgeFund\', \'Government\'. Party types are managed by the system tenant and are used to categorise parties and counterparties.',
-            fldCode: 'Code',
-            codePh: 'Enter party type code',
-            fldName: 'Name',
-            namePh: 'Enter display name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldDisplayOrder: 'Display Order',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/asset_c
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const assetClassCodeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'asset_class_code',
   collection: 'classes',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'asset_class_code',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_asset_class_codes_request,
     get: subjects.get_asset_class_code_request,
@@ -55,5 +46,6 @@ export const assetClassCodeRoute: EntityRouteDescriptor = {
     history: subjects.list_asset_class_code_versions_request,
   },
   rowsField: 'asset_classes',
+  getRowField: 'asset_class_code',
   historyRowsField: 'versions',
 };

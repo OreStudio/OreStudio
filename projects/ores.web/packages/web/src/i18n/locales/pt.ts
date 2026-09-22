@@ -20,7 +20,6 @@
  */
 
 import { catalogueSchema, flatten, type SourceCatalogue } from '../translate.js';
-import { generatedMessageKeys } from '../../entity/generatedEntities.js';
 import { en as source } from './en.js';
 
 /**
@@ -179,8 +178,6 @@ const pt: SourceCatalogue = {
     last: 'Última',
     new: 'Novo',
     provenance: 'Proveniência',
-    asOf: 'A partir de',
-    asOfNow: 'Agora',
     general: 'Geral',
     related: 'Relacionado',
   },
@@ -410,7 +407,7 @@ const pt: SourceCatalogue = {
 // Checked at import time against the English key set: a missing or renamed key
 // fails here rather than silently falling back to English in front of a
 // Portuguese speaker.
-catalogueSchema(flatten(source), generatedMessageKeys).parse(flatten(pt));
+catalogueSchema(flatten(source)).parse(flatten(pt));
 export { pt };
 
 /** The catalogue, flattened to dot paths. */

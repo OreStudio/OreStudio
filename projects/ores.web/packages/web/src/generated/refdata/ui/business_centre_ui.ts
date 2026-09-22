@@ -184,38 +184,3 @@ export const businessCentreMeta = {
     columns: businessCentreColumns,
     fields: businessCentreFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const businessCentreMessages = {
-        business_centre: {
-            title: 'Business Centres',
-            singular: 'business centre',
-            newTitle: 'New business centre',
-            description: 'Business centres identify financial trading locations used for holiday calendar determination (e.g. "USNY" for New York, "GBLO" for London), using FpML-style codes. Each code is unique per tenant regardless of coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme\'s code-only primary key -- and optionally linked to a country for flag-icon display in the UI. Referenced by business_unit as a soft FK.',
-            fldCode: 'Code',
-            codePh: 'e.g. USNY',
-            fldSource: 'Source',
-            sourcePh: 'e.g. FpML',
-            fldDescription: 'Description',
-            descriptionPh: 'Short description',
-            fldCityName: 'City',
-            fldCodingSchemeCode: 'Coding Scheme',
-            fldCountryAlpha2Code: 'Country',
-            colCode: 'Code',
-            colSource: 'Source',
-            colDescription: 'Description',
-            colCityName: 'City',
-            colCodingSchemeCode: 'Coding Scheme',
-            colCountryAlpha2Code: 'Country',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

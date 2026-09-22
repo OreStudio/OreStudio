@@ -54,28 +54,28 @@ export function entityRoutes(
 
   return [
     <Route
-      key={`${descriptor.entity}-list`}
+      key="list"
       path={base}
       element={<EntityListContainer descriptor={descriptor} />}
     />,
     ...(descriptor.capabilities.create
       ? [
           <Route
-            key={`${descriptor.entity}-create`}
+            key="create"
             path={`${base}/new`}
             element={<EntityDetailContainer descriptor={descriptor} mode="create" />}
           />,
         ]
       : []),
     <Route
-      key={`${descriptor.entity}-detail`}
+      key="detail"
       path={record}
       element={<EntityDetailContainer descriptor={descriptor} mode="read" />}
     />,
     ...(descriptor.capabilities.edit
       ? [
           <Route
-            key={`${descriptor.entity}-edit`}
+            key="edit"
             path={`${record}/edit`}
             element={<EntityDetailContainer descriptor={descriptor} mode="edit" />}
           />,
@@ -84,7 +84,7 @@ export function entityRoutes(
     ...(descriptor.capabilities.history
       ? [
           <Route
-            key={`${descriptor.entity}-history`}
+            key="history"
             path={`${record}/history`}
             element={<EntityHistoryContainer descriptor={descriptor} />}
           />,

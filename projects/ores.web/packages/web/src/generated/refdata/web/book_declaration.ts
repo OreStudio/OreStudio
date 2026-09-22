@@ -25,10 +25,9 @@
 /**
  * Where the book screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { bookMeta } from '../ui/book_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,20 +38,34 @@ export const bookDescriptor: EntityDescriptor = {
     meta: bookMeta,
     routeSegment: 'book',
     apiBase: '/api/books',
-    keyParam: 'id',
-    icon: 'book',
+    keyFields: [
+        'name',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
-        asOf: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
         'name',
         'functional_currency',
         'book_status',
         'cost_center',
+        'regulatory_book_type',
+        'is_sweepable',
+        'rates_centre_code',
+    ],
+    writeFields: [
+        'id',
+        'name',
+        'description',
+        'parent_portfolio_id',
+        'owner_unit_id',
+        'functional_currency',
+        'gl_account_ref',
+        'cost_center',
+        'book_status',
         'regulatory_book_type',
         'is_sweepable',
         'rates_centre_code',

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/payment
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const paymentFrequencyRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'payment_frequency',
   collection: 'payment_frequencies',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'payment_frequency',
-  writeFields: ['code', 'name', 'description', 'period_unit', 'period_multiplier', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', period_unit: '', period_multiplier: null, display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_payment_frequencies_request,
     get: subjects.get_payment_frequency_request,
@@ -55,5 +46,6 @@ export const paymentFrequencyRoute: EntityRouteDescriptor = {
     history: subjects.list_payment_frequency_versions_request,
   },
   rowsField: 'payment_frequencies',
+  getRowField: 'payment_frequency',
   historyRowsField: 'versions',
 };

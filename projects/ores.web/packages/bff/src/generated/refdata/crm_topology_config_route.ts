@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/crm_topology_config_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const crmTopologyConfigRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'crm_topology_config',
   collection: 'crm_topology_configs',
-  key: 'id',
-  keyField: 'name',
-  rowField: 'crm_topology_config',
-  writeFields: ['id', 'name', 'pivot_currency_code', 'enabled'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, name: '', pivot_currency_code: '', enabled: false },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['name'],
   subjects: {
     list: subjects.list_crm_topology_configs_request,
+    get: subjects.get_crm_topology_config_request,
     save: subjects.put_crm_topology_config_request,
+    remove: subjects.delete_crm_topology_config_request,
+    history: subjects.list_crm_topology_config_versions_request,
   },
   rowsField: 'crm_topology_configs',
+  getRowField: 'crm_topology_config',
+  historyRowsField: 'versions',
 };

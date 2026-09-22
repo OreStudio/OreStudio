@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_r
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const curveRoleRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'curve_role',
   collection: 'roles',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'curve_role',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_curve_roles_request,
     get: subjects.get_curve_role_request,
@@ -55,5 +46,6 @@ export const curveRoleRoute: EntityRouteDescriptor = {
     history: subjects.list_curve_role_versions_request,
   },
   rowsField: 'roles',
+  getRowField: 'curve_role',
   historyRowsField: 'versions',
 };

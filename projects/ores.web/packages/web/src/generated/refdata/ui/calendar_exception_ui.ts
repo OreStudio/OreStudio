@@ -141,32 +141,3 @@ export const calendarExceptionMeta = {
     columns: calendarExceptionColumns,
     fields: calendarExceptionFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const calendarExceptionMessages = {
-        calendar_exception: {
-            title: 'Calendar Exceptions',
-            singular: 'calendar exception',
-            newTitle: 'New calendar exception',
-            description: 'One row per one-off override for a single [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors ores::analytics::quant::domain::calendar_exception plus the usual refdata plumbing. Applies uniformly to *any* calendar -- transcribed or user-authored, based or base-less: a based calendar\'s full override story is entirely calendar.base_calendar_code (which base) plus its own exception rows (what\'s different), no separate "adjustment" concept needed. QuantLib\'s own irregular, year-gated special dates (the UK\'s Jubilee bank holidays, the NYSE\'s special closings) are transcribed here, not folded into a [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_rule]] row, so a rule stays a timeless, indefinitely-repeating pattern and the genuinely irregular part of a calendar stays flat, no-logic-at-all data.',
-            fldCalendarCode: 'Calendar',
-            fldExceptionDate: 'Date',
-            exceptionDatePh: 'YYYY-MM-DD',
-            fldIsBusinessDay: 'Business Day',
-            fldDescription: 'Description',
-            descriptionPh: 'Optional note',
-            colCalendarCode: 'Calendar',
-            colExceptionDate: 'Date',
-            colIsBusinessDay: 'Business Day',
-            colDescription: 'Description',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

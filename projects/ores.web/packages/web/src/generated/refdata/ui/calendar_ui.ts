@@ -171,36 +171,3 @@ export const calendarMeta = {
     columns: calendarColumns,
     fields: calendarFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const calendarMessages = {
-        calendar: {
-            title: 'Calendars',
-            singular: 'calendar',
-            newTitle: 'New calendar',
-            description: 'Validated enumeration of named date collections consumed by ORE and QuantLib: business-day/holiday calendars (TARGET, UnitedStates, UnitedStates.GovernmentBond, ...), central-bank meeting calendars, and other calendar-shaped reference data. Each row is one concrete QuantLib/ORE calendar token — sub-market variants (e.g. UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate rows, not a joined variant field, so the code column always matches ORE\'s XML <Calendar> vocabulary verbatim. Classified by [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] whose calendar it is — supranational calendars (TARGET) use the ZZ sentinel (ISO 3166-1\'s own reserved user-assigned code) rather than a nullable country reference, since no single country owns them.',
-            fldCode: 'Code',
-            codePh: 'Enter QuantLib calendar code',
-            fldName: 'Name',
-            namePh: 'Enter calendar name',
-            fldCalendarType: 'Type',
-            fldCountryCode: 'Country',
-            fldSource: 'Source',
-            sourcePh: 'quantlib or user',
-            fldIsEditable: 'Editable',
-            fldBaseCalendarCode: 'Base Calendar',
-            colCode: 'Code',
-            colCalendarName: 'Name',
-            colCalendarType: 'Type',
-            colCountryCode: 'Country',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

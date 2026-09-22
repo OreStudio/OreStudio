@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/cds_con
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const cdsConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'cds_convention',
   collection: 'cds_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'cds_convention',
-  writeFields: ['id', 'settlement_days', 'calendar', 'frequency', 'payment_convention', 'rule', 'day_count_fraction', 'settles_accrual', 'pays_at_default_time', 'upfront_settlement_days', 'last_period_day_count_fraction'],
-  writeDefaults: { id: '', settlement_days: 0, calendar: '', frequency: '', payment_convention: '', rule: '', day_count_fraction: '', settles_accrual: false, pays_at_default_time: false, upfront_settlement_days: null, last_period_day_count_fraction: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_cds_conventions_request,
     get: subjects.get_cds_convention_request,
@@ -55,5 +46,6 @@ export const cdsConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_cds_convention_versions_request,
   },
   rowsField: 'cds_conventions',
+  getRowField: 'cds_convention',
   historyRowsField: 'versions',
 };

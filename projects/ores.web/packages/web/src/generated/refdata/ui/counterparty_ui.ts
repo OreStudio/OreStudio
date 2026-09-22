@@ -188,36 +188,3 @@ export const counterpartyMeta = {
     fields: counterpartyFields,
     image: { field: 'image_id', kind: 'flag' },
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const counterpartyMessages = {
-        counterparty: {
-            title: 'Counterparties',
-            singular: 'counterparty',
-            newTitle: 'New counterparty',
-            description: 'External trading partners and counterparties that participate in financial transactions with the organisation. Counterparties form a hierarchy through parent_counterparty_id for group structures.',
-            fldShortCode: 'Short Code',
-            shortCodePh: 'Enter short code',
-            fldFullName: 'Full Name',
-            fullNamePh: 'Enter full name',
-            fldPartyType: 'Party Type',
-            fldStatus: 'Status',
-            fldBusinessCenterCode: 'Business Center',
-            fldParentCounterpartyId: 'Parent Counterparty',
-            colShortCode: 'Code',
-            colFullName: 'Name',
-            colPartyType: 'Type',
-            colStatus: 'Status',
-            colBusinessCenterCode: 'Business Center',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

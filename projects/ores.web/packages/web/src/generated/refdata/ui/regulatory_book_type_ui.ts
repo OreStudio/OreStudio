@@ -140,33 +140,3 @@ export const regulatoryBookTypeMeta = {
     columns: regulatoryBookTypeColumns,
     fields: regulatoryBookTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const regulatoryBookTypeMessages = {
-        regulatory_book_type: {
-            title: 'Regulatory Book Types',
-            singular: 'regulatory book type',
-            newTitle: 'New regulatory book type',
-            description: 'Reference data table defining the Basel III/IV FRTB trading book / banking book classification a book carries. Examples: \'Trading\', \'Banking\'. Regulatory book types are managed by the system tenant and determine which capital regime (market risk vs credit risk) applies to a book.',
-            fldCode: 'Code',
-            codePh: 'Enter regulatory book type code',
-            fldName: 'Name',
-            namePh: 'Enter display name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Display Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

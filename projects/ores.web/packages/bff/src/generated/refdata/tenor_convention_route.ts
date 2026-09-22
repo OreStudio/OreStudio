@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_c
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor_convention',
   collection: 'conventions',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor_convention',
-  writeFields: ['code', 'description', 'measured_from', 'resolution_algorithm'],
-  writeDefaults: { code: '', description: null, measured_from: '', resolution_algorithm: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_tenor_conventions_request,
     get: subjects.get_tenor_convention_request,
@@ -55,5 +46,6 @@ export const tenorConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_convention_versions_request,
   },
   rowsField: 'conventions',
+  getRowField: 'tenor_convention',
   historyRowsField: 'versions',
 };

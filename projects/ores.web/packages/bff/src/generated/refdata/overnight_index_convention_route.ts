@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/overnig
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const overnightIndexConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'overnight_index_convention',
   collection: 'overnight_index_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'overnight_index_convention',
-  writeFields: ['id', 'fixing_calendar', 'day_count_fraction', 'settlement_days'],
-  writeDefaults: { id: '', fixing_calendar: '', day_count_fraction: '', settlement_days: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_overnight_index_conventions_request,
     get: subjects.get_overnight_index_convention_request,
@@ -55,5 +46,6 @@ export const overnightIndexConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_overnight_index_convention_versions_request,
   },
   rowsField: 'overnight_index_conventions',
+  getRowField: 'overnight_index_convention',
   historyRowsField: 'versions',
 };

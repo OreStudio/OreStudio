@@ -146,31 +146,3 @@ export const crmEnabledDerivedPairMeta = {
     columns: crmEnabledDerivedPairColumns,
     fields: crmEnabledDerivedPairFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const crmEnabledDerivedPairMessages = {
-        crm_enabled_derived_pair: {
-            title: 'CRM Enabled Derived Pairs',
-            singular: 'crm enabled derived pair',
-            newTitle: 'New crm enabled derived pair',
-            description: 'A currency pair that is *not* a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge (see crm_driver_pair) but is nonetheless curated as available for on-demand triangulation via marketdata.v1.crm.rate -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast the full reachable derived set, only serve a config-driven list on request. Owned by a crm_topology_config alongside its driver pairs. Scoped to a tenant and a party, matching its parent config.',
-            fldConfigId: 'Config',
-            fldBaseCurrencyCode: 'Base',
-            fldQuoteCurrencyCode: 'Quote',
-            fldEnabled: 'Enabled',
-            colConfigId: 'Config Id',
-            colBaseCurrencyCode: 'Base',
-            colQuoteCurrencyCode: 'Quote',
-            colEnabled: 'Enabled',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

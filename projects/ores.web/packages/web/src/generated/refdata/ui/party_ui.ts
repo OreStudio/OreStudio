@@ -188,36 +188,3 @@ export const partyMeta = {
     fields: partyFields,
     image: { field: 'image_id', kind: 'flag' },
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const partyMessages = {
-        party: {
-            title: 'Parties',
-            singular: 'party',
-            newTitle: 'New party',
-            description: 'Internal legal entities (the organisation and its subsidiaries) that participate in financial transactions. Parties form a hierarchy through parent_party_id, with exactly one root party per tenant representing the organisation itself.',
-            fldShortCode: 'Short Code',
-            shortCodePh: 'Enter short code',
-            fldFullName: 'Full Name',
-            fullNamePh: 'Enter full name',
-            fldPartyType: 'Party Type',
-            fldStatus: 'Status',
-            fldBusinessCenterCode: 'Business Center',
-            fldParentPartyId: 'Parent Party',
-            colShortCode: 'Code',
-            colFullName: 'Name',
-            colPartyType: 'Type',
-            colStatus: 'Status',
-            colBusinessCenterCode: 'Business Center',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

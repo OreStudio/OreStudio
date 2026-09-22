@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/busines
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const businessDayConventionTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'business_day_convention_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'business_day_convention_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_business_day_convention_types_request,
     get: subjects.get_business_day_convention_type_request,
@@ -55,5 +46,6 @@ export const businessDayConventionTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_business_day_convention_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'business_day_convention_type',
   historyRowsField: 'versions',
 };

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/currenc
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const currencyMarketTierRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'currency_market_tier',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'currency_market_tier',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_currency_market_tiers_request,
     get: subjects.get_currency_market_tier_request,
@@ -55,5 +46,6 @@ export const currencyMarketTierRoute: EntityRouteDescriptor = {
     history: subjects.list_currency_market_tier_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'currency_market_tier',
   historyRowsField: 'versions',
 };

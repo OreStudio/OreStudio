@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/day_cou
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const dayCountFractionTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'day_count_fraction_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'day_count_fraction_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_day_count_fraction_types_request,
     get: subjects.get_day_count_fraction_type_request,
@@ -55,5 +46,6 @@ export const dayCountFractionTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_day_count_fraction_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'day_count_fraction_type',
   historyRowsField: 'versions',
 };

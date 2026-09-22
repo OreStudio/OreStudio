@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/regulat
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const regulatoryBookTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'regulatory_book_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'regulatory_book_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: true,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_regulatory_book_types_request,
     get: subjects.get_regulatory_book_type_request,
@@ -55,5 +46,6 @@ export const regulatoryBookTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_regulatory_book_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'regulatory_book_type',
   historyRowsField: 'versions',
 };

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/ois_con
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const oisConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'ois_convention',
   collection: 'ois_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'ois_convention',
-  writeFields: ['id', 'spot_lag', 'index', 'fixed_day_count_fraction', 'fixed_calendar', 'payment_lag', 'end_of_month', 'fixed_frequency', 'fixed_convention', 'fixed_payment_convention', 'rule', 'payment_calendar', 'rate_cutoff'],
-  writeDefaults: { id: '', spot_lag: 0, index: '', fixed_day_count_fraction: '', fixed_calendar: null, payment_lag: null, end_of_month: null, fixed_frequency: null, fixed_convention: null, fixed_payment_convention: null, rule: null, payment_calendar: null, rate_cutoff: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_ois_conventions_request,
     get: subjects.get_ois_convention_request,
@@ -55,5 +46,6 @@ export const oisConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_ois_convention_versions_request,
   },
   rowsField: 'ois_conventions',
+  getRowField: 'ois_convention',
   historyRowsField: 'versions',
 };

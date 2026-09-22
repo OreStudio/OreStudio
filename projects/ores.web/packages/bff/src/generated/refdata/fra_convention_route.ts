@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/fra_con
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const fraConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'fra_convention',
   collection: 'fra_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'fra_convention',
-  writeFields: ['id', 'index'],
-  writeDefaults: { id: '', index: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_fra_conventions_request,
     get: subjects.get_fra_convention_request,
@@ -55,5 +46,6 @@ export const fraConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_fra_convention_versions_request,
   },
   rowsField: 'fra_conventions',
+  getRowField: 'fra_convention',
   historyRowsField: 'versions',
 };

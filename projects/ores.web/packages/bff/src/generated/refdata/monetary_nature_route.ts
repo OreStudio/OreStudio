@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/monetar
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const monetaryNatureRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'monetary_nature',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'monetary_nature',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_monetary_natures_request,
     get: subjects.get_monetary_nature_request,
@@ -55,5 +46,6 @@ export const monetaryNatureRoute: EntityRouteDescriptor = {
     history: subjects.list_monetary_nature_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'monetary_nature',
   historyRowsField: 'versions',
 };

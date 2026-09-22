@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/floatin
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const floatingIndexTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'floating_index_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'floating_index_type',
-  writeFields: ['code', 'description'],
-  writeDefaults: { code: '', description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_floating_index_types_request,
     get: subjects.get_floating_index_type_request,
@@ -55,5 +46,6 @@ export const floatingIndexTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_floating_index_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'floating_index_type',
   historyRowsField: 'versions',
 };

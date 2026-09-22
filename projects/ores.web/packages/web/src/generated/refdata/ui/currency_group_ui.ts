@@ -145,33 +145,3 @@ export const currencyGroupMeta = {
     columns: currencyGroupColumns,
     fields: currencyGroupFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const currencyGroupMessages = {
-        currency_group: {
-            title: 'Currency Groups',
-            singular: 'currency group',
-            newTitle: 'New currency group',
-            description: 'Reference data defining desk-style currency groupings. Unlike currency.market_tier (single-valued primary liquidity tier), a currency can belong to any number of groups simultaneously via [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] (e.g. NOK: G11 *and* SCANDIES *and* COMMODITY). Seeded with G11, SCANDIES, ANTIPODEANS, COMMODITY, ASIANS, LATAMS — extensible by inserting a row, no schema change needed for a new group.',
-            fldCode: 'Code',
-            codePh: 'Enter currency group code',
-            fldName: 'Name',
-            namePh: 'Enter display name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

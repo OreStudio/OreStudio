@@ -127,29 +127,3 @@ export const resultMeta = {
     columns: resultColumns,
     fields: resultFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const resultMessages = {
-        result: {
-            title: 'Results',
-            singular: 'result',
-            newTitle: 'New result',
-            description: 'Bridges the workunit definition and the actual execution on a grid node. Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done), and the location of output data. The BOINC equivalent of \'result\'. Change-reason exception (recorded in the codegen drift loop): result is a machine-written, list-only entity — the grid machinery writes results and there is no human edit flow — so has_change_reason_cache is explicitly false, overriding the profile default. Generator-signature exception (recorded in the codegen drift loop): the pre-drift handcrafted generator took a workunit_id parameter (generate_synthetic_result(workunit_id, ctx)). The template signature takes only the generation context, and the sole consumer (the result eventing integration test) now links the FK by member assignment after generation. No model knob or paste block is needed for the parameterized overload; the template shape is the sanctioned surface.',
-            colWorkunitId: 'Workunit ID',
-            colHostId: 'Host ID',
-            colServerState: 'State',
-            colOutcome: 'Outcome',
-            colErrorMessage: 'Error',
-            colOutputUri: 'Output URI',
-            colReceivedAt: 'Received At',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

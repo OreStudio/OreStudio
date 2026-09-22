@@ -31,22 +31,13 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/crm_enabled_derived_pair_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const crmEnabledDerivedPairRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'crm_enabled_derived_pair',
   collection: 'crm_enabled_derived_pairs',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'crm_enabled_derived_pair',
-  writeFields: ['id', 'config_id', 'base_currency_code', 'quote_currency_code', 'enabled'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, config_id: null, base_currency_code: '', quote_currency_code: '', enabled: false },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_crm_enabled_derived_pairs_request,
     get: subjects.get_crm_enabled_derived_pair_request,
@@ -55,5 +46,6 @@ export const crmEnabledDerivedPairRoute: EntityRouteDescriptor = {
     history: subjects.list_crm_enabled_derived_pair_versions_request,
   },
   rowsField: 'crm_enabled_derived_pairs',
+  getRowField: 'crm_enabled_derived_pair',
   historyRowsField: 'versions',
 };

@@ -25,10 +25,9 @@
 /**
  * Where the calendar_exception screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { calendarExceptionMeta } from '../ui/calendar_exception_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,23 @@ export const calendarExceptionDescriptor: EntityDescriptor = {
     meta: calendarExceptionMeta,
     routeSegment: 'calendar-exception',
     apiBase: '/api/calendar_exceptions',
-    keyParam: 'id',
-    icon: 'calendarClock',
+    keyFields: [
+        'id',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
+        'calendar_code',
+        'exception_date',
+        'is_business_day',
+        'description',
+    ],
+    writeFields: [
+        'id',
         'calendar_code',
         'exception_date',
         'is_business_day',

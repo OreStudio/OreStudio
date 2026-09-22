@@ -185,38 +185,3 @@ export const paymentFrequencyMeta = {
     columns: paymentFrequencyColumns,
     fields: paymentFrequencyFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const paymentFrequencyMessages = {
-        payment_frequency: {
-            title: 'Payment Frequencies',
-            singular: 'payment frequency',
-            newTitle: 'New payment frequency',
-            description: 'Reference data table for how often a leg\'s cashflows occur, sourced from ORE\'s authoritative frequencyType enumeration (external/ore/xsd/ore_types.xsd) -- Once, Annual, Semiannual, Quarterly, Bimonthly, Monthly, Lunarmonth, Weekly, Daily (the canonical long-form names; ORE also accepts single-letter aliases -- Z/A/S/Q/B/M/L/W/D -- not modelled here since this table\'s code is the long form other components store and display). Each row carries a period_unit/period_multiplier pair reusing [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit]]\'s own vocabulary (DAY/WEEK/MONTH/YEAR, plus the NONE sentinel for Once, which has no periodic step at all -- a single payment at termination), so a caller building a payment schedule (e.g. the IR Curve Template\'s swap fixed leg) can reuse the exact same period-stepping arithmetic ores::refdata::domain::resolve_end_date() already implements for tenors, rather than re-deriving month/day counts from the code string. Not scoped to any single consumer -- this table exists as reusable reference data, the same category as day_count_fraction_type or business_day_convention_type. Managed by the system tenant. This table replaces ores.trading\'s older payment_frequency_type entity outright -- there is no case for two types modelling the same ORE enumeration ("payment frequency conventions" vs "payment frequencies" is a flimsy distinction); every ores.trading column that stored a payment-frequency code (swap_leg, credit_instrument, commodity_instrument, equity_swap_instrument) now validates against this table instead. See the parent story\'s * Decisions for the full reasoning.',
-            fldCode: 'Code',
-            codePh: 'Enter payment frequency code',
-            fldName: 'Name',
-            namePh: 'Enter name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldPeriodUnit: 'Period Unit',
-            fldPeriodMultiplier: 'Period Multiplier',
-            fldDisplayOrder: 'Display Order',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colPeriodUnit: 'Period Unit',
-            colPeriodMultiplier: 'Period Multiplier',
-            colDisplayOrder: 'Display Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

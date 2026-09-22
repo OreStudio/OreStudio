@@ -84,23 +84,3 @@ export const calendarDateMeta = {
     columns: calendarDateColumns,
     fields: calendarDateFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const calendarDateMessages = {
-        calendar_date: {
-            title: 'Browse Holidays',
-            singular: 'calendar date',
-            newTitle: 'New calendar date',
-            description: 'One row per (calendar_code, date), produced by the calendar materialisation service instantiating a [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] template\'s [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_rule]] / [[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][calendar_exception]] rows over a rolling date range, never edited by hand. Read by every consumer that needs "is date D a business day for calendar C" -- the UI (calendar detail screens, the holiday-aware date picker) and ORE Studio\'s own tenor/schedule date-math -- so the answer is consistent and never requires a live rule evaluation.',
-            colDate: 'Date',
-            colIsBusinessDay: 'Business Day',
-            colSource: 'Source',
-        }
-};

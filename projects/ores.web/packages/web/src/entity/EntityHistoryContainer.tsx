@@ -95,8 +95,6 @@ export function EntityHistoryContainer({
           reason_code: result.reasonCode,
           commentary: result.commentary,
         },
-        // The row is there; a revert amends it rather than creating it.
-        mode: 'amend',
       },
       {
         onSuccess: () => {

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/series_
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const seriesSubclassCodeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'series_subclass_code',
   collection: 'subclasses',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'series_subclass_code',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_series_subclass_codes_request,
     get: subjects.get_series_subclass_code_request,
@@ -55,5 +46,6 @@ export const seriesSubclassCodeRoute: EntityRouteDescriptor = {
     history: subjects.list_series_subclass_code_versions_request,
   },
   rowsField: 'series_subclasses',
+  getRowField: 'series_subclass_code',
   historyRowsField: 'versions',
 };

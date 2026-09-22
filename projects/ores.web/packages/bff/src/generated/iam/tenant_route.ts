@@ -31,24 +31,13 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenantRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'tenant',
   collection: 'tenants',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenant',
-  writeFields: ['id', 'code', 'name', 'type', 'description', 'hostname', 'status'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, code: '', name: '', type: '', description: null, hostname: '', status: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_tenants_request,
     get: subjects.get_tenant_request,

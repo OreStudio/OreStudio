@@ -153,34 +153,3 @@ export const reportInstanceMeta = {
     columns: reportInstanceColumns,
     fields: reportInstanceFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const reportInstanceMessages = {
-        report_instance: {
-            title: 'Report Instances',
-            singular: 'report instance',
-            newTitle: 'New report instance',
-            description: 'A single execution of a report_definition. Created automatically when the scheduler fires a trigger for an active definition. Lifecycle is managed through the report_instance_lifecycle FSM machine. fsm_state_id points to the current state in ores_dq_fsm_states_tbl. started_at is NULL when the instance is cancelled or skipped before execution begins. completed_at is NULL while running or in a terminal-before-start state.',
-            fldName: 'Name',
-            namePh: 'Report instance name',
-            fldDescription: 'Description',
-            descriptionPh: 'Description',
-            fldOutputMessage: 'Output',
-            outputMessagePh: 'Execution log or error message',
-            colName: 'Name',
-            colDefinitionId: 'Definition',
-            colTriggerRunId: 'Trigger Run',
-            colOutputMessage: 'Output',
-            colStartedAt: 'Started At',
-            colCompletedAt: 'Completed',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

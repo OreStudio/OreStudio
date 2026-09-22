@@ -184,36 +184,3 @@ export const portfolioMeta = {
     columns: portfolioColumns,
     fields: portfolioFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const portfolioMessages = {
-        portfolio: {
-            title: 'Portfolios',
-            singular: 'portfolio',
-            newTitle: 'New portfolio',
-            description: 'Represents organizational, risk, or reporting groupings. Never holds trades directly. Supports hierarchical structure via self-referencing parent_portfolio_id.',
-            fldName: 'Name',
-            namePh: 'Enter portfolio name',
-            fldPurposeType: 'Purpose Type',
-            fldStatus: 'Status',
-            fldIsVirtual: 'Virtual',
-            fldAggregationCcy: 'Aggregation Currency',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter description (optional)',
-            colName: 'Name',
-            colPurposeType: 'Purpose',
-            colStatus: 'Status',
-            colAggregationCcy: 'Agg. Currency',
-            colIsVirtual: 'Virtual',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

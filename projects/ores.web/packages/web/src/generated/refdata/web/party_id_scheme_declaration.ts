@@ -25,10 +25,9 @@
 /**
  * Where the party_id_scheme screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { partyIdSchemeMeta } from '../ui/party_id_scheme_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,14 +38,14 @@ export const partyIdSchemeDescriptor: EntityDescriptor = {
     meta: partyIdSchemeMeta,
     routeSegment: 'party-id-scheme',
     apiBase: '/api/schemes',
-    keyParam: 'id',
-    icon: 'keyMultiple',
+    keyFields: [
+        'code',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
         'code',
@@ -54,5 +53,13 @@ export const partyIdSchemeDescriptor: EntityDescriptor = {
         'description',
         'coding_scheme_code',
         'display_order',
+    ],
+    writeFields: [
+        'code',
+        'name',
+        'description',
+        'coding_scheme_code',
+        'display_order',
+        'max_cardinality',
     ],
 };

@@ -150,34 +150,3 @@ export const yieldCurveProcessTypeMeta = {
     columns: yieldCurveProcessTypeColumns,
     fields: yieldCurveProcessTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const yieldCurveProcessTypeMessages = {
-        yield_curve_process_type: {
-            title: 'Yield Curve Process Types',
-            singular: 'yield curve process type',
-            newTitle: 'New yield curve process type',
-            description: 'Reference data table enumerating the IYieldCurveProcess engines ores.analytics.quant\'s process_factory::make_yield_curve_process() can construct: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE. Replaces an inline CHECK ("process_type" in (\'vasicek\', \'cox_ingersoll_ross\', \'hull_white\')) constraint on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable catalogue row per engine -- same reasoning as promoting instrument_code from a hardcoded list to a real reference-data table. Scoped to ores.synthetic (not ores.refdata) since IYieldCurveProcess engine selection is specific to synthetic IR curve generation, its only consumer today; not promoted to shared refdata until it is genuinely shared by something else, per this story\'s own payment_frequency precedent. Managed by the system tenant.',
-            fldCode: 'Code',
-            codePh: 'Enter process type code',
-            fldName: 'Name',
-            namePh: 'Enter name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldDisplayOrder: 'Display Order',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Display Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

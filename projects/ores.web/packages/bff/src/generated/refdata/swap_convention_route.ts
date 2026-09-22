@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/swap_co
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const swapConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'swap_convention',
   collection: 'swap_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'swap_convention',
-  writeFields: ['id', 'fixed_calendar', 'fixed_frequency', 'fixed_convention', 'fixed_day_count_fraction', 'index', 'float_frequency', 'sub_periods_coupon_type'],
-  writeDefaults: { id: '', fixed_calendar: null, fixed_frequency: '', fixed_convention: null, fixed_day_count_fraction: '', index: '', float_frequency: null, sub_periods_coupon_type: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_swap_conventions_request,
     get: subjects.get_swap_convention_request,
@@ -55,5 +46,6 @@ export const swapConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_swap_convention_versions_request,
   },
   rowsField: 'swap_conventions',
+  getRowField: 'swap_convention',
   historyRowsField: 'versions',
 };

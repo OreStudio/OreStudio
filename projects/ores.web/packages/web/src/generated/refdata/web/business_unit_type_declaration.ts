@@ -25,10 +25,9 @@
 /**
  * Where the business_unit_type screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { businessUnitTypeMeta } from '../ui/business_unit_type_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,19 +38,27 @@ export const businessUnitTypeDescriptor: EntityDescriptor = {
     meta: businessUnitTypeMeta,
     routeSegment: 'business-unit-type',
     apiBase: '/api/business_unit_types',
-    keyParam: 'id',
-    icon: 'peopleTeam',
+    keyFields: [
+        'code',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
-        asOf: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
         'code',
         'name',
         'coding_scheme_code',
+        'level',
+        'description',
+    ],
+    writeFields: [
+        'id',
+        'coding_scheme_code',
+        'code',
+        'name',
         'level',
         'description',
     ],

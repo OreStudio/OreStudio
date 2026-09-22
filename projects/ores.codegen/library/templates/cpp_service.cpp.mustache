@@ -114,16 +114,6 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
-{{#has_as_of_lookup}}
-    // A stated instant asks what the row meant then, which is the entity's own
-    // validity window rather than a page of its versions. The answer is the
-    // whole set at that instant, so the page bounds do not narrow it.
-    if (request.as_of) {
-        response.{{entity_plural_short}} = repo_.read_at_timepoint(ctx_, *request.as_of);
-        response.total = response.{{entity_plural_short}}.size();
-        return response;
-    }
-{{/has_as_of_lookup}}
     response.{{entity_plural_short}} = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_);
     return response;
@@ -157,21 +147,11 @@ messaging::{{response}}
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-{{#leading_is_optional}}
-    // A read scoped by a relation that the request leaves unstated has no
-    // scope, so it is refused rather than answered with every unset row.
-    if (!request.{{leading}}) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "relation_required";
-        response.result.message = "This read is scoped by {{leading}}, and the request states none.";
-        return response;
-    }
-{{/leading_is_optional}}
 {{#leading_is_uuid}}
-    const auto relation = boost::uuids::to_string({{#leading_is_optional}}*{{/leading_is_optional}}request.{{leading}});
+    const auto relation = boost::uuids::to_string(request.{{leading}});
 {{/leading_is_uuid}}
 {{^leading_is_uuid}}
-    const auto relation = {{#leading_is_optional}}*{{/leading_is_optional}}request.{{leading}};
+    const auto relation = request.{{leading}};
 {{/leading_is_uuid}}
     response.{{entity_plural_short}} = repo_.read_latest_by_{{leading}}(
         ctx_, relation, request.offset, request.limit);
@@ -920,7 +900,7 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
-    response.{{name}} = repo_.read_latest(request.offset, request.limit);
+    response.{{name_short}} = repo_.read_latest(request.offset, request.limit);
     response.total = repo_.get_total_{{name_singular_short}}_count();
     return response;
 }
@@ -951,7 +931,7 @@ messaging::list_by_{{left.column}}_{{name}}_response
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.{{name}} = repo_.read_latest_by_{{left.column_short}}(
+    response.{{name_short}} = repo_.read_latest_by_{{left.column_short}}(
         request.{{left.column}}, request.offset, request.limit);
     response.total =
         repo_.get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
@@ -984,7 +964,7 @@ messaging::list_by_{{right.column}}_{{name}}_response
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    response.{{name}} = repo_.read_latest_by_{{right.column_short}}(
+    response.{{name_short}} = repo_.read_latest_by_{{right.column_short}}(
         request.{{right.column}}, request.offset, request.limit);
     response.total =
         repo_.get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
@@ -1069,10 +1049,10 @@ messaging::{{response}}
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(batch, claims);
-    response.{{name}}.reserve(batch.size());
+    response.{{name_short}}.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, key_from(value));
-        response.{{name}}.push_back(
+        response.{{name_short}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -1201,11 +1181,6 @@ ores::utility::domain::result
     // two come to disagree.
 {{#party_id_is_target}}
     stamp_{{name_singular}}(out, ctx_);
-    if (!intent.reason_code.empty())
-        out.change_reason_code = intent.reason_code;
-{{#has_audit_columns}}
-    out.change_commentary = intent.commentary;
-{{/has_audit_columns}}
 {{/party_id_is_target}}
 {{^party_id_is_target}}
     stamp(out, ctx_,

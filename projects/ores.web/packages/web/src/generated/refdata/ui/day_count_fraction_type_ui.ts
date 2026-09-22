@@ -155,34 +155,3 @@ export const dayCountFractionTypeMeta = {
     columns: dayCountFractionTypeColumns,
     fields: dayCountFractionTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const dayCountFractionTypeMessages = {
-        day_count_fraction_type: {
-            title: 'Day Count Fraction Types',
-            singular: 'day count fraction type',
-            newTitle: 'New day count fraction type',
-            description: 'Reference data table defining valid day count fraction conventions used to compute accrual fractions between two dates (e.g. for coupon accrual on instrument legs and the *_convention entities). Values are sourced from ORE\'s ore_types.xsd. Follows the same aux-type pattern (code / name / description / display_order) as [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][business_day_convention_type]].',
-            fldCode: 'Code',
-            codePh: 'e.g. A360',
-            fldName: 'Name',
-            namePh: 'e.g. Actual/360',
-            fldDescription: 'Description',
-            descriptionPh: 'Short description',
-            fldDisplayOrder: 'Display Order',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Display Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

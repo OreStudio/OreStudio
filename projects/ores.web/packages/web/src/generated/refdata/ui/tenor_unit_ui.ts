@@ -150,34 +150,3 @@ export const tenorUnitMeta = {
     columns: tenorUnitColumns,
     fields: tenorUnitFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const tenorUnitMessages = {
-        tenor_unit: {
-            title: 'Tenor Units',
-            singular: 'tenor unit',
-            newTitle: 'New tenor unit',
-            description: 'Reference data table defining the valid [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] period unit values: DAY, WEEK, MONTH, YEAR for PERIOD tenors, and the sentinel NONE for SPECIAL tenors (which carry no fixed unit/multiplier of their own). NONE exists so tenor.unit can stay a required, FK-validated column rather than nullable free text. Managed by the system tenant, like other tenor code tables.',
-            fldCode: 'Code',
-            codePh: 'Enter tenor unit code',
-            fldName: 'Name',
-            namePh: 'Enter name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldDisplayOrder: 'Display Order',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Display Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

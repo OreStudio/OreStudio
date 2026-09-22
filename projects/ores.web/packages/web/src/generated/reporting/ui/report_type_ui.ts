@@ -145,33 +145,3 @@ export const reportTypeMeta = {
     columns: reportTypeColumns,
     fields: reportTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const reportTypeMessages = {
-        report_type: {
-            title: 'Report Types',
-            singular: 'report type',
-            newTitle: 'New report type',
-            description: 'Reference data table defining valid report type classifications. Examples: \'risk\', \'grid\'. Report types are managed by the system tenant and drive which configuration block is used when creating a report definition.',
-            fldCode: 'Code',
-            codePh: 'Enter report type code',
-            fldName: 'Name',
-            namePh: 'Enter display name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colCode: 'Code',
-            colName: 'Name',
-            colDescription: 'Description',
-            colDisplayOrder: 'Order',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_p
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor',
   collection: 'tenors',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor',
-  writeFields: ['code', 'display_name', 'description', 'sort_order', 'kind', 'unit', 'multiplier'],
-  writeDefaults: { code: '', display_name: '', description: null, sort_order: 0, kind: '', unit: '', multiplier: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_tenors_request,
     get: subjects.get_tenor_request,
@@ -55,5 +46,6 @@ export const tenorRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_versions_request,
   },
   rowsField: 'tenors',
+  getRowField: 'tenor',
   historyRowsField: 'versions',
 };

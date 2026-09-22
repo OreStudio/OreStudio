@@ -123,29 +123,3 @@ export const legTypeMeta = {
     columns: legTypeColumns,
     fields: legTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const legTypeMessages = {
-        leg_type: {
-            title: 'Leg Types',
-            singular: 'leg type',
-            newTitle: 'New leg type',
-            description: 'Reference data table defining valid leg types used in instrument leg definitions. Values are sourced from ORE ore_types.xsd LegType enumeration. /2026-07-18 moved from ores.trading to ores.refdata/: the desktop UI already lived in the removed client\'s RefdataPlugin, hand-wired outside codegen; the backend followed to match, same direction as Book/BusinessCentre\'s own moves to ores.refdata, and the same move floating_index_type made alongside this one.',
-            fldCode: 'Code',
-            codePh: 'e.g. Fixed',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colCode: 'Code',
-            colDescription: 'Description',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

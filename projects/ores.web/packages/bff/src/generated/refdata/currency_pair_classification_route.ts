@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/currenc
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const currencyPairClassificationRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'currency_pair_classification',
   collection: 'classifications',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'currency_pair_classification',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_currency_pair_classifications_request,
     get: subjects.get_currency_pair_classification_request,
@@ -55,5 +46,6 @@ export const currencyPairClassificationRoute: EntityRouteDescriptor = {
     history: subjects.list_currency_pair_classification_versions_request,
   },
   rowsField: 'classifications',
+  getRowField: 'currency_pair_classification',
   historyRowsField: 'versions',
 };

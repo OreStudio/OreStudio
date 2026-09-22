@@ -154,33 +154,3 @@ export const tenorConventionMeta = {
     columns: tenorConventionColumns,
     fields: tenorConventionFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const tenorConventionMessages = {
-        tenor_convention: {
-            title: 'Tenor Conventions',
-            singular: 'tenor convention',
-            newTitle: 'New tenor convention',
-            description: 'Persisted catalog of the resolution schemes described in [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]\'s "Tenor conventions by curve type" section — spot/forward curves, FX swap curves (near-leg quoting), and credit/CDS curves (IMM-anchored). Each row names the *default* [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] a convention\'s regular PERIOD tenors resolve from, and which *algorithm* governs resolution for the convention at all: ANCHOR_OFFSET (anchor date plus a fixed offset — spot/forward and FX swap conventions) or SCHEDULE_STEP (anchor plus a calendar offset, then n steps along a named [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis — credit/CDS and FOMC conventions, story Decision D2). Which [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] labels actually belong to a given convention, and any per-tenor anchor or offset override (needed for SPECIAL tenors such as O/N, which resolve differently under the spot/forward convention than under the swap convention, and for every SCHEDULE_STEP tenor, whose resolution row names the schedule axis and step count), is recorded in [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]], not here.',
-            fldCode: 'Code',
-            codePh: 'Enter convention code',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldMeasuredFrom: 'Measured From',
-            fldResolutionAlgorithm: 'Resolution Algorithm',
-            colCode: 'Code',
-            colDescription: 'Description',
-            colMeasuredFrom: 'Measured From',
-            colAlgorithm: 'Resolution Algorithm',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

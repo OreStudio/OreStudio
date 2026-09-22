@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_type_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const businessUnitTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'business_unit_type',
   collection: 'business_unit_types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'business_unit_type',
-  writeFields: ['id', 'coding_scheme_code', 'code', 'name', 'level', 'description'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, coding_scheme_code: '', code: '', name: '', level: 0, description: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_business_unit_types_request,
+    get: subjects.get_business_unit_type_request,
     save: subjects.put_business_unit_type_request,
+    remove: subjects.delete_business_unit_type_request,
+    history: subjects.list_business_unit_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'business_unit_type',
+  historyRowsField: 'versions',
 };

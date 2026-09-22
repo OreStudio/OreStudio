@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/book_st
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const bookStatusRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'book_status',
   collection: 'statuses',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'book_status',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: true,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_book_statuses_request,
     get: subjects.get_book_status_request,
@@ -55,5 +46,6 @@ export const bookStatusRoute: EntityRouteDescriptor = {
     history: subjects.list_book_status_versions_request,
   },
   rowsField: 'statuses',
+  getRowField: 'book_status',
   historyRowsField: 'versions',
 };

@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_identifier_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyIdentifierRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'party_identifier',
   collection: 'party_identifiers',
-  key: 'id',
-  keyField: 'id_value',
-  rowField: 'party_identifier',
-  writeFields: ['id', 'id_scheme', 'id_value', 'description'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, id_scheme: '', id_value: '', description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['id_value'],
   subjects: {
     list: subjects.list_party_identifiers_request,
+    get: subjects.get_party_identifier_request,
     save: subjects.put_party_identifier_request,
+    remove: subjects.delete_party_identifier_request,
+    history: subjects.list_party_identifier_versions_request,
   },
   rowsField: 'party_identifiers',
+  getRowField: 'party_identifier',
+  historyRowsField: 'versions',
 };

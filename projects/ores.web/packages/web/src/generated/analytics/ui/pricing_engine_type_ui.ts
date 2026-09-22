@@ -139,32 +139,3 @@ export const pricingEngineTypeMeta = {
     columns: pricingEngineTypeColumns,
     fields: pricingEngineTypeFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const pricingEngineTypeMessages = {
-        pricing_engine_type: {
-            title: 'Pricing Engine Types',
-            singular: 'pricing engine type',
-            newTitle: 'New pricing engine type',
-            description: 'Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).',
-            fldCode: 'Code',
-            codePh: 'Enter pricing engine type code (e.g. EuropeanSwaption)',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a human-readable description',
-            fldInstrumentTypeCode: 'Instrument Type',
-            instrumentTypeCodePh: 'Select an instrument type (or leave blank for none)',
-            colCode: 'Code',
-            colDescription: 'Description',
-            colInstrumentTypeCode: 'Instrument Type',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

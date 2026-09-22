@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/busines
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const businessCentreRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'business_centre',
   collection: 'business_centres',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'business_centre',
-  writeFields: ['code', 'source', 'description', 'city_name', 'country_alpha2_code', 'coding_scheme_code'],
-  writeDefaults: { code: '', source: null, description: null, city_name: null, country_alpha2_code: null, coding_scheme_code: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_business_centres_request,
     get: subjects.get_business_centre_request,
@@ -55,5 +46,6 @@ export const businessCentreRoute: EntityRouteDescriptor = {
     history: subjects.list_business_centre_versions_request,
   },
   rowsField: 'centres',
+  getRowField: 'business_centre',
   historyRowsField: 'versions',
 };

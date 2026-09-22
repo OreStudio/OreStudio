@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/leg_typ
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const legTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'leg_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'leg_type',
-  writeFields: ['code', 'description'],
-  writeDefaults: { code: '', description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_leg_types_request,
     get: subjects.get_leg_type_request,
@@ -55,5 +46,6 @@ export const legTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_leg_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'leg_type',
   historyRowsField: 'versions',
 };

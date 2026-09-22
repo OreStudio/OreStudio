@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const portfolioRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'portfolio',
   collection: 'portfolios',
-  key: 'id',
-  keyField: 'name',
-  rowField: 'portfolio',
-  writeFields: ['id', 'name', 'description', 'parent_portfolio_id', 'owner_unit_id', 'purpose_type', 'aggregation_ccy', 'is_virtual', 'status'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, name: '', description: null, parent_portfolio_id: null, owner_unit_id: null, purpose_type: '', aggregation_ccy: null, is_virtual: false, status: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['name'],
   subjects: {
     list: subjects.list_portfolios_request,
+    get: subjects.get_portfolio_request,
     save: subjects.put_portfolio_request,
+    remove: subjects.delete_portfolio_request,
+    history: subjects.list_portfolio_versions_request,
   },
   rowsField: 'portfolios',
+  getRowField: 'portfolio',
+  historyRowsField: 'versions',
 };

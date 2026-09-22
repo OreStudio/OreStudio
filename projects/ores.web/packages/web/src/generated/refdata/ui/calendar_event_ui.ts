@@ -174,38 +174,3 @@ export const calendarEventMeta = {
     columns: calendarEventColumns,
     fields: calendarEventFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const calendarEventMessages = {
-        calendar_event: {
-            title: 'Calendar Events',
-            singular: 'calendar event',
-            newTitle: 'New calendar event',
-            description: 'One row per dated diary entry on a [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]: a central-bank meeting, a scheduled data release, or an open-ended other event. One table for all event kinds -- never a table per calendar or per type (settled 2026-08-09, story Decision D1; see [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]). The diary_entry_type column classifies the entry via the open-ended [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][diary_entry_type]] vocabulary (holiday, central_bank_meeting, data_release, other). Holidays themselves keep their existing machinery (calendar_rules, calendar_exceptions, calendar_date) -- the holiday type stays in the vocabulary so the whole classification lives in one place, even though its physical home is elsewhere. Template/Instance: an event row is an *instance*; its template is the (calendar, diary_entry_type, name) triple. A worked case: the FOMC\'s eight regularly scheduled meetings per year are entered as a short run of central_bank_meeting instances on the US.FOMC calendar, transcribed from the Fed\'s published calendar with source=\'federalreserve.gov\'. Formulaic recurrence generation is deferred; calendar_rules\'s grammar can later feed a template link if a consumer needs it.',
-            fldCalendarCode: 'Calendar',
-            fldEventDate: 'Date',
-            eventDatePh: 'YYYY-MM-DD',
-            fldDiaryEntryType: 'Diary Entry',
-            fldName: 'Name',
-            namePh: 'Enter event name',
-            fldDescription: 'Description',
-            descriptionPh: 'Optional note',
-            fldSource: 'Source',
-            sourcePh: 'Provenance, e.g. federalreserve.gov',
-            colCalendarCode: 'Calendar',
-            colEventDate: 'Date',
-            colDiaryEntryType: 'Diary Entry',
-            colName: 'Name',
-            colDescription: 'Description',
-            colSource: 'Source',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/ledger_
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const ledgerFeedTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'ledger_feed_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'ledger_feed_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_ledger_feed_types_request,
     get: subjects.get_ledger_feed_type_request,
@@ -55,5 +46,6 @@ export const ledgerFeedTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_ledger_feed_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'ledger_feed_type',
   historyRowsField: 'versions',
 };

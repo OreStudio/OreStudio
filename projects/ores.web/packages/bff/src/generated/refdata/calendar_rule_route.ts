@@ -31,22 +31,13 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_rule_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const calendarRuleRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'calendar_rule',
   collection: 'calendar_rules',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'calendar_rule',
-  writeFields: ['id', 'calendar_code', 'kind', 'month', 'day', 'weekday', 'occurrence', 'day_offset', 'shift', 'effective_from', 'effective_to'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, calendar_code: '', kind: '', month: null, day: null, weekday: null, occurrence: null, day_offset: null, shift: '', effective_from: null, effective_to: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_calendar_rules_request,
     get: subjects.get_calendar_rule_request,
@@ -55,5 +46,6 @@ export const calendarRuleRoute: EntityRouteDescriptor = {
     history: subjects.list_calendar_rule_versions_request,
   },
   rowsField: 'calendar_rules',
+  getRowField: 'calendar_rule',
   historyRowsField: 'versions',
 };

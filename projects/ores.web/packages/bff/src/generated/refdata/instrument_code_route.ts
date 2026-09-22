@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/instrum
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const instrumentCodeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'instrument_code',
   collection: 'codes',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'instrument_code',
-  writeFields: ['code', 'name', 'description', 'asset_class', 'ore_trade_type', 'display_order', 'curve_role'],
-  writeDefaults: { code: '', name: '', description: '', asset_class: null, ore_trade_type: null, display_order: 0, curve_role: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_instrument_codes_request,
     get: subjects.get_instrument_code_request,
@@ -55,5 +46,6 @@ export const instrumentCodeRoute: EntityRouteDescriptor = {
     history: subjects.list_instrument_code_versions_request,
   },
   rowsField: 'instruments',
+  getRowField: 'instrument_code',
   historyRowsField: 'versions',
 };

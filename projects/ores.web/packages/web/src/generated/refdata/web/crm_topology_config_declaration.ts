@@ -25,10 +25,9 @@
 /**
  * Where the crm_topology_config screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { crmTopologyConfigMeta } from '../ui/crm_topology_config_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,22 @@ export const crmTopologyConfigDescriptor: EntityDescriptor = {
     meta: crmTopologyConfigMeta,
     routeSegment: 'crm-topology-config',
     apiBase: '/api/crm_topology_configs',
-    keyParam: 'id',
-    icon: 'chartMultiple',
+    keyFields: [
+        'name',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
-        asOf: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
+        'name',
+        'pivot_currency_code',
+        'enabled',
+    ],
+    writeFields: [
+        'id',
         'name',
         'pivot_currency_code',
         'enabled',

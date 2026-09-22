@@ -68,13 +68,6 @@ export interface EntityDefinition {
   readonly descriptor?: EntityDescriptor;
   /** True when there is no screen for it yet. */
   readonly planned?: boolean;
-  /**
-   * The declaration this entity's screens are built from, when it has them.
-   *
-   * Absent for an entity that is only declared, which is what `planned` means:
-   * the navigation says so and the router serves no route.
-   */
-  readonly descriptor?: EntityDescriptor;
 }
 
 export interface ComponentDefinition {

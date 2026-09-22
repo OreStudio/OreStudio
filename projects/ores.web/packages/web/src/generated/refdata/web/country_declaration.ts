@@ -25,10 +25,9 @@
 /**
  * Where the country screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { countryMeta } from '../ui/country_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,14 +38,14 @@ export const countryDescriptor: EntityDescriptor = {
     meta: countryMeta,
     routeSegment: 'country',
     apiBase: '/api/countries',
-    keyParam: 'id',
-    icon: 'globe',
+    keyFields: [
+        'alpha2_code',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: true,
     },
     searchFields: [
         'alpha2_code',
@@ -54,5 +53,14 @@ export const countryDescriptor: EntityDescriptor = {
         'numeric_code',
         'name',
         'official_name',
+    ],
+    writeFields: [
+        'alpha2_code',
+        'alpha3_code',
+        'numeric_code',
+        'name',
+        'official_name',
+        'image_id',
+        'coding_scheme_code',
     ],
 };

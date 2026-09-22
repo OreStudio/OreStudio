@@ -29,7 +29,18 @@ import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerEntityRoutes } from './entity-routes.js';
-import { entityRoutes } from './entity-route-registry.js';
+import { accountContactInformationRoute } from './generated/iam/account_contact_information_route.js';
+import { accountTypeRoute } from './generated/iam/account_type_route.js';
+import { tenantRoute } from './generated/iam/tenant_route.js';
+import { tenantStatusRoute } from './generated/iam/tenant_status_route.js';
+import { tenantTypeRoute } from './generated/iam/tenant_type_route.js';
+import { countryRoute } from './generated/refdata/country_route.js';
+import { permissionRoute } from './generated/iam/permission_route.js';
+import { roleRoute } from './generated/iam/role_route.js';
+import { loginInfoRoute } from './generated/iam/login_info_route.js';
+import { accountRoute } from './generated/iam/account_route.js';
+import { sessionRoute } from './generated/iam/session_route.js';
+import { accountPartyRoute } from './generated/iam/account_party_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -394,10 +405,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
    *
    * The descriptor states the collection, the key, the write record's members
    * and the subjects; the factory states the canonical envelopes. Neither
-   * states a function, and the list is codegen's, so an entity that opts in is
-   * served without a line here.
+   * states a function.
    */
-  for (const route of entityRoutes) {
+  for (const route of [
+    accountContactInformationRoute,
+    accountTypeRoute,
+    tenantRoute,
+    tenantStatusRoute,
+    tenantTypeRoute,
+    countryRoute,
+    permissionRoute,
+    roleRoute,
+    loginInfoRoute,
+    accountRoute,
+    sessionRoute,
+    accountPartyRoute,
+  ]) {
     registerEntityRoutes(server, requireSession, route);
   }
 

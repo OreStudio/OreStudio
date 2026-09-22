@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_t
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'party_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'party_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_party_types_request,
     get: subjects.get_party_type_request,
@@ -55,5 +46,6 @@ export const partyTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_party_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'party_type',
   historyRowsField: 'versions',
 };

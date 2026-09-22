@@ -34,15 +34,14 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/calenda
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const calendarDateRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'calendar_date',
   collection: 'calendar_dates',
-  key: 'id',
-  keyField: 'date',
-  rowField: 'calendar_date',
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: false,
+  keyFields: ['calendar_code', 'date'],
   subjects: {
     list: subjects.list_calendar_dates_request,
+    get: subjects.get_calendar_date_request,
   },
   rowsField: 'calendar_dates',
+  getRowField: 'calendar_date',
 };

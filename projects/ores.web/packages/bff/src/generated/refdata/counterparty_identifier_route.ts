@@ -31,25 +31,21 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_identifier_protocol';
-import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const counterpartyIdentifierRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'counterparty_identifier',
   collection: 'counterparty_identifiers',
-  key: 'id',
-  keyField: 'id_value',
-  rowField: 'counterparty_identifier',
-  writeFields: ['id', 'counterparty_id', 'id_scheme', 'id_value', 'description'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, counterparty_id: null, id_scheme: '', id_value: '', description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['id_value'],
   subjects: {
     list: subjects.list_counterparty_identifiers_request,
+    get: subjects.get_counterparty_identifier_request,
     save: subjects.put_counterparty_identifier_request,
+    remove: subjects.delete_counterparty_identifier_request,
+    history: subjects.list_counterparty_identifier_versions_request,
   },
   rowsField: 'counterparty_identifiers',
+  getRowField: 'counterparty_identifier',
+  historyRowsField: 'versions',
 };

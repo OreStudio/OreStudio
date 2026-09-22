@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/diary_e
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const diaryEntryTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'diary_entry_type',
   collection: 'entry_types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'diary_entry_type',
-  writeFields: ['code', 'name', 'description', 'display_order'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_diary_entry_types_request,
     get: subjects.get_diary_entry_type_request,
@@ -55,5 +46,6 @@ export const diaryEntryTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_diary_entry_type_versions_request,
   },
   rowsField: 'entry_types',
+  getRowField: 'diary_entry_type',
   historyRowsField: 'versions',
 };

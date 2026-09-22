@@ -25,10 +25,9 @@
 /**
  * Where the calendar_rule screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { calendarRuleMeta } from '../ui/calendar_rule_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,29 @@ export const calendarRuleDescriptor: EntityDescriptor = {
     meta: calendarRuleMeta,
     routeSegment: 'calendar-rule',
     apiBase: '/api/calendar_rules',
-    keyParam: 'id',
-    icon: 'calendarClock',
+    keyFields: [
+        'id',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
+        'calendar_code',
+        'kind',
+        'month',
+        'day',
+        'weekday',
+        'occurrence',
+        'day_offset',
+        'shift',
+        'effective_from',
+        'effective_to',
+    ],
+    writeFields: [
+        'id',
         'calendar_code',
         'kind',
         'month',

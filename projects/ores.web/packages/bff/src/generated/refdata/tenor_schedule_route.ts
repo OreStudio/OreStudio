@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_s
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorScheduleRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor_schedule',
   collection: 'schedules',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor_schedule',
-  writeFields: ['code', 'name', 'description', 'display_order', 'schedule_source', 'calendar_code', 'diary_entry_type'],
-  writeDefaults: { code: '', name: '', description: '', display_order: 0, schedule_source: '', calendar_code: null, diary_entry_type: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_tenor_schedules_request,
     get: subjects.get_tenor_schedule_request,
@@ -55,5 +46,6 @@ export const tenorScheduleRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_schedule_versions_request,
   },
   rowsField: 'schedules',
+  getRowField: 'tenor_schedule',
   historyRowsField: 'versions',
 };

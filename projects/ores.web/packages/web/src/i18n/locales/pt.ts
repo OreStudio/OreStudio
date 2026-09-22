@@ -44,7 +44,7 @@ const pt: SourceCatalogue = {
     menu: 'Menu',
     closeMenu: 'Fechar menu',
     language: 'Idioma',
-     iam: 'IAM',
+    iam: 'IAM',
     refdata: 'Dados de referência',
     trading: 'Negociação',
     marketdata: 'Dados de mercado',

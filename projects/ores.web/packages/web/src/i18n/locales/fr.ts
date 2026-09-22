@@ -39,7 +39,7 @@ const fr: SourceCatalogue = {
     menu: 'Menu',
     closeMenu: 'Fermer le menu',
     language: 'Langue',
-     iam: 'IAM',
+    iam: 'IAM',
     refdata: 'Données de référence',
     trading: 'Négociation',
     marketdata: 'Données de marché',

@@ -70,6 +70,8 @@ via its "Verifies task" field.
 | 2 | Minor: NewPasswordField has no production caller yet | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | Shared by request; the journey screens are its first callers. The policy has its own tests. |
 | 3 | Minor: the confirmation is local state, so a parent that resets the password leaves it stale | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | No caller resets it today; remount the field if one does. |
 | 4 | Misspell check on the changed files | all changed files | Accept | Clean (exit 0). |
+| 5 | PR review: SignInPage hard-codes English; the signIn keys are unused | projects/ores.web/packages/web/src/pages/SignInPage.tsx | Decline | Older than this PR and affects every page; captured as "ores.web pages hard-code English instead of using translations". |
+| 6 | PR review: nav.iam indented one space too far in fr and pt | projects/ores.web/packages/web/src/i18n/locales/{fr,pt}.ts | Accept | Fixed. |
 
 Verdict: ready to merge. No critical or important findings.
 

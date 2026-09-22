@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 6D8D1699-B629-41C6-8A14-A37F4D66FABB
+:END:
+#+title: ores.web pages hard-code English instead of using translations
+#+description: No page under projects/ores.web/packages/web/src/pages calls useTranslation. SignInPage hard-codes Username, Password, Sign in and Choose a party, although en, fr and pt already define a full signIn catalogue that nothing uses. Wire every page to its existing keys and add the missing ones.
+#+type: capture
+#+level: cross
+#+filetags: :web:i18n:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+No page under =projects/ores.web/packages/web/src/pages/= calls
+=useTranslation=. =SignInPage.tsx= hard-codes "Username", "Password",
+"Sign in", "Choose a party" and others, although =en.ts=, =fr.ts= and
+=pt.ts= already define a full =signIn= catalogue that nothing uses.
+Wire every page to its keys, and add the keys that are missing.
+
+* Why
+
+A person who picks French or Portuguese still sees the entry pages in
+English, and the unused =signIn= keys drift from the text on screen.
+Components under =src/components/= already translate, so the pages are
+the gap. Raised by the Claude review of PR #2125; older than that PR.
+
+* References
+
+- PR #2125 review comment: https://github.com/OreStudio/OreStudio/pull/2125
+
+* See also
+

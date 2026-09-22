@@ -119,21 +119,20 @@ def test_history_comes_from_the_derived_versions_request():
     assert projection["can_history"] == "false"
 
 
-def test_a_surrogate_primary_key_withholds_remove_and_history():
-    """The BFF derives delete and history from the primary key.
+def test_a_surrogate_storage_key_keeps_remove_and_history():
+    """The declaration promises the routes the BFF serves.
 
-    The route's path segment carries the natural key, so a declaration that
-    offered them would render actions the BFF does not serve. Create and edit
-    travel on the save route, which carries the whole record and is not keyed
-    by the path, so they stay.
+    The path segment carries the declared key and so does the request, because
+    the key record is built from the same declaration. Holding a surrogate
+    storage key changes neither, so the actions stay.
     """
     projection = _project(
         [{"field": "code"}],
         primary_key={"column": "id", "columns": [{"column": "id"}]})
     assert projection["can_create"] == "true"
     assert projection["can_edit"] == "true"
-    assert projection["can_remove"] == "false"
-    assert projection["can_history"] == "false"
+    assert projection["can_remove"] == "true"
+    assert projection["can_history"] == "true"
 
 
 def test_a_natural_key_primary_key_keeps_remove_and_history():

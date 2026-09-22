@@ -36,7 +36,7 @@
 namespace ores::iam::messaging {
 
 struct tenant_key {
-    boost::uuids::uuid id;
+    std::string code;
 };
 
 struct tenant_write {

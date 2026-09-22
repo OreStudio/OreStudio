@@ -47,22 +47,18 @@ import type { LiveSession } from './sessions.js';
  * words rather than a 500 carrying ours.
  */
 export interface EntityRouteDescriptor {
+  /**
+   * The owning component and the entity, which together are the dispatch key
+   * the generic history request carries (`ores.iam.tenant`).
+   */
+  readonly component: string;
+  readonly entity: string;
   /** The collection segment of the path, without `/api/`, e.g. `tenant_types`. */
   readonly collection: string;
   /** The name of the path parameter holding the natural key, e.g. `id`. */
   readonly key: string;
   /** The wire field the natural key lives in, e.g. `type`. */
   readonly keyField: string;
-  /**
-   * The array field a batch delete names its keys in, e.g. `types`.
-   *
-   * Present exactly when `subjects.remove` is, which is when the delete
-   * request is keyed by the natural key. Stated rather than pluralised here:
-   * `code` to `codes` and `id` to `ids` are mechanical, `status` to `statuses`
-   * is not, and a wrong guess produces a request the service refuses with no
-   * clue why. The model knows the plural, so the model states it.
-   */
-  readonly deleteKeysField?: string;
   readonly subjects: {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
@@ -180,7 +176,10 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         getSubject,
-        { [descriptor.keyField]: keyOf(request) },
+        // The request's addressing is the key record the model declares, and
+        // the path segment carries the same key, so the two agree by
+        // construction rather than by a translation here.
+        { key: { [descriptor.keyField]: keyOf(request) } },
         descriptor.getResponse ?? identity,
       );
       return { row: body(response)[descriptor.getRowField ?? 'data'] };
@@ -193,9 +192,27 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const incoming = body(request.body);
       const data = incoming['data'];
+      /*
+       * A write states what it believes about the row, and why it is being
+       * made. The version is the one the screen read; stating none means the
+       * write creates, which the store refuses over a live row rather than
+       * replacing it.
+       */
+      const version = incoming['version'];
       const response = await session.client.callAuthenticated(
         saveSubject,
-        { data },
+        {
+          change: {
+            write: data,
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'must_not_exist',
+              version: typeof version === 'number' ? version : null,
+            },
+          },
+          intent: body(incoming['intent']),
+        },
         descriptor.saveResponse ?? identity,
       );
 
@@ -207,13 +224,25 @@ export function registerEntityRoutes(
   }
 
   const removeSubject = descriptor.subjects.remove;
-  const deleteKeysField = descriptor.deleteKeysField;
-  if (removeSubject !== undefined && deleteKeysField !== undefined) {
+  if (removeSubject !== undefined) {
     server.delete(keyPath, async (request: FastifyRequest, reply: FastifyReply) => {
       const session = requireSession(request);
+      const incoming = body(request.body);
+      const version = incoming['version'];
       const response = await session.client.callAuthenticated(
         removeSubject,
-        { [deleteKeysField]: [keyOf(request)] },
+        {
+          removal: {
+            key: { [descriptor.keyField]: keyOf(request) },
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'any',
+              version: typeof version === 'number' ? version : null,
+            },
+          },
+          intent: body(incoming['intent']),
+        },
         descriptor.removeResponse ?? identity,
       );
 
@@ -231,7 +260,13 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         historySubject,
-        { [descriptor.keyField]: keyOf(request) },
+        // One generic request serves every entity: the type is the dispatch
+        // key and the id is the declared key's value, rendered as the string
+        // the request carries.
+        {
+          entity_type: `ores.${descriptor.component}.${descriptor.entity}`,
+          entity_id: String(keyOf(request)),
+        },
         descriptor.historyResponse ?? identity,
       );
 

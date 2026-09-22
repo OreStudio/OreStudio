@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-tenants get <id>
+tenants get <code>
 #+end_example
 
 It is addressed at =iam.v1.tenants.get=.
 
 #+name: tenants-get
 #+begin_src ores-shell :tangle tenants-get.ores :exports none
-tenants get 00000000-0000-0000-0000-000000000000
+tenants get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-tenants get-many <id>
+tenants get-many <code>
 #+end_example
 
 It is addressed at =iam.v1.tenants.get_many=.
 
 #+name: tenants-get-many
 #+begin_src ores-shell :tangle tenants-get-many.ores :exports none
-tenants get-many 00000000-0000-0000-0000-000000000000
+tenants get-many __none__
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-tenants delete <id> <reason> <commentary> [--version <n>]
+tenants delete <code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.tenants.delete=.
 
 #+name: tenants-delete
 #+begin_src ores-shell :tangle tenants-delete.ores :exports none
-tenants delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+tenants delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-tenants delete-many <id> <reason> <commentary>
+tenants delete-many <code> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenants.delete_many=.
 
 #+name: tenants-delete-many
 #+begin_src ores-shell :tangle tenants-delete-many.ores :exports none
-tenants delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+tenants delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-tenants versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+tenants versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =iam.v1.tenants_versions.list=.
 
 #+name: tenants-versions
 #+begin_src ores-shell :tangle tenants-versions.ores :exports none
-tenants versions 00000000-0000-0000-0000-000000000000 --limit 1
+tenants versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-tenants version <id> --version <n>
+tenants version <code> --version <n>
 #+end_example
 
 It is addressed at =iam.v1.tenants_versions.get=.
 
 #+name: tenants-version
 #+begin_src ores-shell :tangle tenants-version.ores :exports none
-tenants version 00000000-0000-0000-0000-000000000000 --version 1
+tenants version __none__ --version 1
 #+end_src
 

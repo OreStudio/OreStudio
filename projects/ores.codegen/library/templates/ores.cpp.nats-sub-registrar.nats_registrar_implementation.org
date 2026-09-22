@@ -26,13 +26,6 @@ Model flags consumed by this template:
   all, so the template gates the subscription on =current_state= too.
 - =list_only= (bool, Flags) — wire only the list subject.
   Set on read-only lookup entities.
-- =read_for_cache= (bool, Flags) — wire the generated
-  =read_<entity_plural>_for_cache= subject to the handler's
-  =read_for_cache= method. Requires =has_tenant_id=. This is the
-  standard archetype for the bulk cache-warming read. =party= motivated
-  this archetype but does not use it yet — it still wires its own
-  hand-written =read_parties_for_cache= via the custom-subscription
-  paste point below, pending a fix to its codegen drift.
 
 Custom-includes paste point: the marker
 =<<paste:068323E2-D722-46F1-8B86-46BD32426003>>= is emitted after the standard
@@ -109,45 +102,12 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<{{name_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
+{{! A read-only junction derives no write verb, so this one loop states none. }}
+{{#operations}}
     subs.push_back(nats.queue_subscribe(
-        get_{{name}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-{{#left.list_by}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list_by_{{left.column_short}}(std::move(msg)); }));
-{{/left.list_by}}
-{{#right.list_by}}
-    subs.push_back(nats.queue_subscribe(
-        get_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->list_by_{{right.column_short}}(std::move(msg)); }));
-{{/right.list_by}}
-{{#wire_write_enabled}}
-    subs.push_back(nats.queue_subscribe(
-        save_{{name_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_{{name_singular}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-{{/wire_write_enabled}}
-    subs.push_back(nats.queue_subscribe(
-        count_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->count_by_{{left.column_short}}(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        count_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->count_by_{{right.column_short}}(std::move(msg)); }));
-{{#wire_write_enabled}}
-{{#left.replace_by}}
-    subs.push_back(nats.queue_subscribe(
-        replace_{{name}}_by_{{left.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->replace_by_{{left.column_short}}(std::move(msg)); }));
-{{/left.replace_by}}
-{{#right.replace_by}}
-    subs.push_back(nats.queue_subscribe(
-        replace_{{name}}_by_{{right.column_short}}_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->replace_by_{{right.column_short}}(std::move(msg)); }));
-{{/right.replace_by}}
-{{/wire_write_enabled}}
+        {{request}}::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->{{method}}(std::move(msg)); }));
+{{/operations}}
     return subs;
 }
 

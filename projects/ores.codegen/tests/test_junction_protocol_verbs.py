@@ -5,17 +5,18 @@ Run::
     pytest projects/ores.codegen/tests/test_junction_protocol_verbs.py
 
 A junction model declares no messages. Its C++ header's ``{{#junction}}``
-block and the TypeScript twin's ``{{#junction}}`` branch render one generic
-relationship protocol: a paged unscoped read of the junction rows, a paged
-by-side read per ``:list_by:= side that returns the ``<junction>_view``
-payload, an opt-in whole-set replacement per ``:replace_by:= side, a batch
-additive ``save``, a batch ``delete`` by the pair, and a count per side. The
-loader derives the same set in
-``org_loader.junction_protocol_messages`` so the two twins cannot disagree on
-a field or a subject.
+block and the TypeScript twin's ``{{#junction}}`` branch render the same
+canonical protocol an entity renders: ``list``, ``get``, ``get_many``, a
+scoped ``list_by_<side>`` per ``:list_by:= side, ``put``, ``put_many``,
+``delete`` and ``delete_many``, each addressed by a ``<junction>_key`` that
+carries both halves of the link. The service, handler and registrar facets
+serve that same operation list, so the three cannot drift from the header.
+The loader derives the set in ``org_loader.junction_protocol_messages`` so
+the twins cannot disagree on a field or a subject.
 
-The by-side read returns the view; the repository still returns domain rows,
-which is why compute's repository tests are untouched by the wire change.
+The scoped read replies with link rows, as any scoped read replies; the
+repository still returns domain rows, which is why compute's repository
+tests are untouched by the wire change.
 """
 import sys
 from pathlib import Path
@@ -33,8 +34,8 @@ from codegen.org_loader import (  # noqa: E402
 
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
-# A junction with both sides declared, an opt-in replacement on the left, a
-# payload column and an enriched right side -- the widest set the generic
+# A junction with both sides declared, a side read on the left, a payload
+# column and an enriched right side -- the widest set the canonical junction
 # protocol emits.
 FIXTURE = """\
 :PROPERTIES:
@@ -264,50 +265,134 @@ def test_a_junction_without_name_singular_is_rejected(tmp_path):
         load_org_junction_model(model)
 
 
-def test_the_batch_delete_refuses_mismatched_key_vectors(tmp_path):
-    """The two key vectors address each row by index, so a pair of different
-    lengths would silently drop the tail of the longer one and report success
-    for a batch it did not fully apply."""
+def test_the_handler_hands_the_decoded_delete_many_to_one_service_call(tmp_path):
+    """The canonical delete-many request carries one removal per link, each
+    stating the whole key pair, so there are no per-column key vectors to
+    disagree. The handler decodes once and hands the vector to one call."""
     handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache", "handler.hpp")
 
-    assert "req->widget_ids.size() != req->owner_ids.size()" in handler
-    assert "i < req->widget_ids.size() && i < req->owner_ids.size()" not in handler
+    assert "decode<delete_many_widget_owners_request>(msg)" in handler
+    body = handler.index("decode<delete_many_widget_owners_request>")
+    end = handler.index("void ", body)
+    delete_many = handler[body:end]
+
+    assert delete_many.count("svc.delete_many_widget_owners(*req)") == 1
+    assert "for (" not in delete_many
+    # The retired per-column request carried vectors whose lengths had to
+    # agree; the canonical request carries none.
+    assert "widget_ids.size()" not in handler
+    assert "req->widget_ids" not in handler
 
 
-def test_the_batch_save_rejects_a_row_the_single_save_rejects(tmp_path):
-    """Both save paths write the same rows, and the batch opens one
-    transaction. A key the single-row save refuses must therefore fail the
-    batch before the write, not surface as a database error that rolls the
-    whole transaction back.
-
-    The fixture declares no repository short name, so the rendered method
-    names are empty and the slice keys off the batch's vector parameter.
-    """
+def test_the_put_many_checks_every_element_before_it_writes(tmp_path):
+    """The batch makes the same per-element decision the single write makes,
+    through ``prepare_change``, and only reaches the store once every element
+    passes. Writing per element would leave a partial batch behind when one
+    row is refused."""
     rendered = _render(tmp_path, "cpp_service.cpp.mustache",
                        "widget_owner_service.cpp")
-    start = rendered.index("const std::vector<domain::widget_owner>& ")
-    end = rendered.index("repo_.write(ts);", start)
+    start = rendered.index("put_many_widget_owners(")
+    end = rendered.index("repo_.write(batch, claims);", start)
     batch = rendered[start:end]
 
-    assert "for (const auto& e : " in batch
-    assert "if (e.widget_id.is_nil())" in batch
-    assert 'throw std::invalid_argument("Widget cannot be empty.");' in batch
-    assert "if (e.owner_id.is_nil())" in batch
-    assert 'throw std::invalid_argument("Owner cannot be empty.");' in batch
+    assert batch.count("prepare_change(change, request.intent, value)") == 1
+    assert "response.result = result;" in batch
+    assert "return response;" in batch
+    assert "repo_.write(" not in batch
 
 
-def test_the_handler_hands_the_decoded_batch_to_one_service_call(tmp_path):
+def test_the_handler_hands_the_decoded_put_many_to_one_service_call(tmp_path):
     """The atomicity comes from the handler passing the whole decoded vector
-    to the batch save, which writes it in one transaction. A per-row loop in
+    to the batch write, which lands it in one statement. A per-row loop in
     the handler would reopen the per-row transaction the batch exists to
     remove."""
     handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache", "handler.hpp")
-    body = handler.index("decode<save_widget_owner_request>")
+    body = handler.index("decode<put_many_widget_owners_request>")
     end = handler.index("void ", body)
-    save = handler[body:end]
+    put_many = handler[body:end]
 
-    assert save.count("svc.save_(") == 1
-    assert "for (" not in save
+    assert put_many.count("svc.put_many_widget_owners(*req)") == 1
+    assert "for (" not in put_many
+
+
+# The canonical surface the fixture's junction derives: one method per
+# operation, named after the operation and paired with its request type.
+CANONICAL_OPERATIONS = [
+    ("list_widget_owners", "list_widget_owners_request",
+     "list_widget_owners_response"),
+    ("get_widget_owner", "get_widget_owner_request",
+     "get_widget_owner_response"),
+    ("get_many_widget_owners", "get_many_widget_owners_request",
+     "get_many_widget_owners_response"),
+    ("put_widget_owner", "put_widget_owner_request",
+     "put_widget_owner_response"),
+    ("put_many_widget_owners", "put_many_widget_owners_request",
+     "put_many_widget_owners_response"),
+    ("delete_widget_owner", "delete_widget_owner_request",
+     "delete_widget_owner_response"),
+    ("delete_many_widget_owners", "delete_many_widget_owners_request",
+     "delete_many_widget_owners_response"),
+    ("list_by_widget_id_widget_owners",
+     "list_by_widget_id_widget_owners_request",
+     "list_by_widget_id_widget_owners_response"),
+]
+
+# The verbs a junction no longer speaks: a whole-set replacement, a batch
+# additive save, a count per side and a per-plural list.
+RETIRED_JUNCTION_TOKENS = ("save_", "count_by_", "replace_by_", "get_total_")
+
+
+def test_the_service_declares_the_canonical_operation_methods(tmp_path):
+    service = _render(tmp_path, "cpp_service.hpp.mustache",
+                      "widget_owner_service.hpp")
+
+    for method, request, response in CANONICAL_OPERATIONS:
+        assert (f"messaging::{response} {method}("
+                f"const messaging::{request}& request);") in service, method
+    for retired in RETIRED_JUNCTION_TOKENS:
+        assert retired not in service, retired
+    # A single write and a batch state the same claim, so the check they share
+    # is the service's decision and lives behind the operations.
+    assert "prepare_change(" in service
+
+
+def test_the_handler_renders_every_canonical_decode_type(tmp_path):
+    handler = _render(tmp_path, "cpp_nats_handler.hpp.mustache", "handler.hpp")
+
+    for method, request, _ in CANONICAL_OPERATIONS:
+        assert f"void {method}(ores::nats::message msg)" in handler, method
+        assert f"decode<{request}>(msg)" in handler, request
+        assert f"svc.{method}(*req)" in handler, method
+    # The write verbs prove a permission; the reads need authentication alone.
+    starts = [handler.index(f"void {method}(ores::nats::message msg)")
+              for method, _, _ in CANONICAL_OPERATIONS]
+    starts.append(len(handler))
+    for (method, _, _), start, end in zip(CANONICAL_OPERATIONS, starts,
+                                          starts[1:]):
+        block = handler[start:end]
+        wants_permission = method.startswith(("put_", "delete_"))
+        assert ("has_permission(" in block) is wants_permission, method
+    for retired in RETIRED_JUNCTION_TOKENS:
+        assert retired not in handler, retired
+    # A transport failure answers with the canonical result envelope rather
+    # than the retired success/message pair.
+    assert "ores::utility::domain::outcome::failed" in handler
+    assert "total_available_count" not in handler
+
+
+def test_the_registrar_subscribes_every_canonical_subject(tmp_path):
+    registrar = _render(tmp_path, "cpp_nats_registrar.cpp.mustache",
+                        "widget_owner_registrar.cpp")
+
+    for method, request, _ in CANONICAL_OPERATIONS:
+        assert f"{request}::nats_subject" in registrar, request
+        assert f"h->{method}(std::move(msg))" in registrar, method
+    assert registrar.count("queue_subscribe") == len(CANONICAL_OPERATIONS)
+    for retired in ("get_widget_owners_request", "save_widget_owner_request",
+                    "count_widget_owners_by_widget_request",
+                    "count_widget_owners_by_owner_request",
+                    "replace_widget_owners_by_widget_request"):
+        assert retired not in registrar, retired
 
 
 # A read-only junction's rows are provisioned outside the application, so
@@ -361,6 +446,29 @@ def test_a_read_only_junction_renders_no_write_verb_on_either_twin(tmp_path):
         assert "list_by_widget_id_widget_owners" in rendered, name
 
 
+def test_a_read_only_junction_renders_no_write_verb_on_the_wire_facets(
+        tmp_path):
+    """``:read_only:`` suppresses the wire writes on every facet that serves
+    them, not only on the protocol twin: the service exposes no write method,
+    the handler serves no write subject and the registrar subscribes none."""
+    for template, name in (
+        ("cpp_service.hpp.mustache", "widget_owner_service.hpp"),
+        ("cpp_service.cpp.mustache", "widget_owner_service.cpp"),
+        ("cpp_nats_handler.hpp.mustache", "widget_owner_handler.hpp"),
+        ("cpp_nats_registrar.cpp.mustache", "widget_owner_registrar.cpp"),
+    ):
+        rendered = _render(tmp_path, template, name, body=READ_ONLY_FIXTURE)
+        for verb in ("put_widget_owner", "put_many_widget_owners",
+                     "delete_widget_owner", "delete_many_widget_owners"):
+            assert verb not in rendered, f"{verb} leaked into {name}"
+        # The reads stay on every facet.
+        assert "list_by_widget_id_widget_owners" in rendered, name
+    # A service with no write verb has no claim to prepare either.
+    service = _render(tmp_path, "cpp_service.hpp.mustache",
+                      "widget_owner_service.hpp", body=READ_ONLY_FIXTURE)
+    assert "prepare_change(" not in service
+
+
 # A junction whose party_id names the association's target, not the caller's
 # own scope. The generic stamp() matches any field of that name and
 # overwrites it from the JWT context, which would replace the requested
@@ -375,15 +483,15 @@ def test_a_target_party_id_is_not_stamped_from_the_context(tmp_path):
     rendered = _render(tmp_path, "cpp_service.cpp.mustache",
                        "widget_owner_service.cpp", body=PARTY_TARGET_FIXTURE)
     assert "void stamp_widget_owner(" in rendered
-    assert "stamp_widget_owner(t, ctx_);" in rendered
+    assert "stamp_widget_owner(out, ctx_);" in rendered
     # The generic helper, which would clobber the target, is not called.
-    assert "stamp(t, ctx_);" not in rendered
+    assert "stamp(out, ctx_," not in rendered
 
 
 def test_an_ordinary_junction_keeps_the_generic_stamp(tmp_path):
     rendered = _render(tmp_path, "cpp_service.cpp.mustache",
                        "widget_owner_service.cpp")
-    assert "stamp(t, ctx_);" in rendered
+    assert "stamp(out, ctx_," in rendered
     assert "void stamp_widget_owner(" not in rendered
 
 
@@ -424,6 +532,18 @@ def test_client_read_only_hides_the_wire_writes_and_keeps_the_repository(tmp_pat
                          body=CLIENT_READ_ONLY_FIXTURE)
     assert "void write(" in repository
     assert "void remove(" in repository
+
+    # The wire surface is the same as :read_only:'s: no write verb served.
+    for template, name in (
+        ("cpp_service.hpp.mustache", "widget_owner_service.hpp"),
+        ("cpp_nats_handler.hpp.mustache", "widget_owner_handler.hpp"),
+        ("cpp_nats_registrar.cpp.mustache", "widget_owner_registrar.cpp"),
+    ):
+        rendered = _render(tmp_path, template, name,
+                           body=CLIENT_READ_ONLY_FIXTURE)
+        for verb in ("put_widget_owner", "put_many_widget_owners",
+                     "delete_widget_owner", "delete_many_widget_owners"):
+            assert verb not in rendered, f"{verb} leaked into {name}"
 
 
 def test_read_only_drops_the_repository_writes(tmp_path):

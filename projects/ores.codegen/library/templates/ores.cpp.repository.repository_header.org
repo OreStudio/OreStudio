@@ -329,6 +329,8 @@ private:
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
 #define ORES_{{component_core_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
@@ -338,6 +340,7 @@ private:
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
@@ -371,13 +374,63 @@ public:
     std::string sql();
 
 {{^read_only}}
-    void write(const domain::{{name_singular}}& {{name_singular_short}});
-    void write(const std::vector<domain::{{name_singular}}>& {{name_short}});
+    /**
+     * @brief Writes {{name_words}} to database.
+     *
+     * The plain form replaces the link the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a
+     * silent overwrite.
+     */
+    /**@{*/
+    void write(const domain::{{name_singular}}& v);
+    void write(const std::vector<domain::{{name_singular}}>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a {{name_singular_words}}, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const domain::{{name_singular}}& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of {{name_words}}, each honouring its own claim, as
+     * one statement.
+     */
+    void write(const std::vector<domain::{{name_singular}}>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
 {{/read_only}}
     std::vector<domain::{{name_singular}}> read_latest();
     std::vector<domain::{{name_singular}}>
     read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Reads the {{name_singular_words}} rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+    read_latest(const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    read_latest(const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+                const boost::uuids::uuid& {{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+                const std::string& {{right.column}});
+{{/right.is_uuid}}
 
     /**
      * @brief Gets the total count of active {{name_words}}.
@@ -450,36 +503,91 @@ public:
 {{/right.is_uuid}}
 
 {{^read_only}}
+    /**
+     * @brief Deletes a {{name_singular_words}} by its pair of keys.
+     */
+    void remove(
 {{#left.is_uuid}}
-{{#right.is_uuid}}
-    void remove(const boost::uuids::uuid& {{left.column}},
-                const boost::uuids::uuid& {{right.column}});
-    void remove_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    void remove(const boost::uuids::uuid& {{left.column}},
-                const std::string& {{right.column}});
-    void remove_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
-{{/right.is_uuid}}
+        const boost::uuids::uuid& {{left.column}},
 {{/left.is_uuid}}
 {{^left.is_uuid}}
+        const std::string& {{left.column}},
+{{/left.is_uuid}}
 {{#right.is_uuid}}
-    void remove(const std::string& {{left.column}},
-                const boost::uuids::uuid& {{right.column}});
-    void remove_by_{{left.column_short}}(const std::string& {{left.column}});
+        const boost::uuids::uuid& {{right.column}});
 {{/right.is_uuid}}
 {{^right.is_uuid}}
-    void remove(const std::string& {{left.column}},
-                const std::string& {{right.column}});
-    void remove_by_{{left.column_short}}(const std::string& {{left.column}});
+        const std::string& {{right.column}});
 {{/right.is_uuid}}
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a {{name_singular_words}}, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(
+{{#left.is_uuid}}
+        const boost::uuids::uuid& {{left.column}},
 {{/left.is_uuid}}
+{{^left.is_uuid}}
+        const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+        const boost::uuids::uuid& {{right.column}},
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        const std::string& {{right.column}},
+{{/right.is_uuid}}
+        std::optional<std::uint32_t> version);
 
+    /**
+     * @brief Deletes {{name_words}} by their pairs of keys.
+     */
+    void remove(const std::vector<{{left.cpp_type}}>& {{left.column}}s,
+                const std::vector<{{right.cpp_type}}>& {{right.column}}s);
 
+    void remove_by_{{left.column_short}}(
+{{#left.is_uuid}}
+        const boost::uuids::uuid& {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+        const std::string& {{left.column}});
+{{/left.is_uuid}}
 {{/read_only}}
 
 private:
     context ctx_;
+{{^read_only}}
+
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition
+    replace_claim(const domain::{{name_singular}}& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::{{name_singular}}
+    apply_claim(const domain::{{name_singular}}& v,
+                const ores::utility::domain::precondition& claim);
+{{/read_only}}
 };
 
 }

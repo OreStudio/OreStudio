@@ -402,6 +402,8 @@ private:
 #ifndef ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
 #define ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 {{#has_uuid_left_or_right}}
@@ -410,6 +412,9 @@ private:
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+{{#protocol_derived}}
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+{{/protocol_derived}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
 
 namespace ores::{{component}}::service {
@@ -417,8 +422,8 @@ namespace ores::{{component}}::service {
 /**
  * @brief Service for managing {{name_words}}.
  *
- * This service provides functionality for:
- * - Managing {{name_words}} (CRUD operations)
+ * Provides a higher-level interface for {{name_singular_words}} operations,
+ * wrapping the underlying repository.
  */
 class {{name_singular}}_service {
 private:
@@ -435,133 +440,54 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a {{name_singular}}_service with required repositories.
+     * @brief Constructs a {{name_singular}}_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit {{name_singular}}_service(context ctx);
 
+{{#protocol_derived}}
     /**
-     * @brief Lists all {{name_words}}.
-     */
-    std::vector<domain::{{name_singular}}> list_{{name_short}}();
-
-    /**
-     * @brief Lists {{name_words}} with pagination.
-     */
-    std::vector<domain::{{name_singular}}>
-    list_{{name_short}}(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active {{name_words}}.
-     */
-    std::uint32_t get_total_{{name_singular_short}}_count();
-
-    /**
-     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param {{left.column}} The {{left.column_title_lower}} to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::{{name_singular}}>
-{{#left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
-{{/left.is_uuid}}
-
-{{#left.list_by}}
-    /**
-     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}, with pagination.
-     */
-    std::vector<domain::{{name_singular}}>
-{{#left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}},
-                                                std::uint32_t offset, std::uint32_t limit);
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}},
-                                                std::uint32_t offset, std::uint32_t limit);
-{{/left.is_uuid}}
-
-{{/left.list_by}}
-    /**
-     * @brief Gets the total count of active {{name_words}} filtered by {{left.column}}.
-     */
-    std::uint32_t get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
-{{#left.is_uuid}}
-        const boost::uuids::uuid& {{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-        const std::string& {{left.column}});
-{{/left.is_uuid}}
-
-{{#right.list_by}}
-    /**
-     * @brief Lists {{name_words}} for a specific {{right.column_title_lower}}, with pagination.
-     */
-    std::vector<domain::{{name_singular}}>
-{{#right.is_uuid}}
-    list_{{name_short}}_by_{{right.column_short}}(const boost::uuids::uuid& {{right.column}},
-                                                 std::uint32_t offset, std::uint32_t limit);
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    list_{{name_short}}_by_{{right.column_short}}(const std::string& {{right.column}},
-                                                 std::uint32_t offset, std::uint32_t limit);
-{{/right.is_uuid}}
-
-{{/right.list_by}}
-    /**
-     * @brief Gets the total count of active {{name_words}} filtered by {{right.column}}.
-     */
-    std::uint32_t get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
-{{#right.is_uuid}}
-        const boost::uuids::uuid& {{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-        const std::string& {{right.column}});
-{{/right.is_uuid}}
-{{#wire_write_enabled}}
-    /**
-     * @brief Saves a {{name_singular_words}} (creates or updates).
-     *
-     * @param {{name_singular_short}} The {{name_singular_words}} to save
-     */
-    void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
-
-    /**
-     * @brief Saves a batch of {{name_words}} in one transaction.
-     *
-     * @param {{name_short}} The {{name_words}} to save
-     */
-    void save_{{name_short}}(const std::vector<domain::{{name_singular}}>& {{name_short}});
-
-    /**
-     * @brief Removes a {{name_singular_words}}.
-     *
-     * @param {{left.column}} The {{left.column_title_lower}}
-     * @param {{right.column}} The {{right.column_title_lower}}
-     */
-{{#left.is_uuid}}
-    void remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    void remove_{{name_singular_short}}(const std::string& {{left.column}},
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-        const boost::uuids::uuid& {{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-        const std::string& {{right.column}});
-{{/right.is_uuid}}
-
-
-
-{{/wire_write_enabled}}
+    /**@{*/
+{{#operations}}
+    messaging::{{response}} {{method}}(const messaging::{{request}}& request);
+{{/operations}}
+    /**@}*/
+{{/protocol_derived}}
 
 private:
     context ctx_;
     repository::{{name_singular}}_repository repo_;
+{{#protocol_derived}}
+{{#put_operations}}
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(
+        const messaging::{{name_singular}}_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::{{name_singular}}& out);
+{{/put_operations}}
+{{/protocol_derived}}
 };
 
 }

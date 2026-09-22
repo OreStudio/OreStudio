@@ -40,13 +40,12 @@
  */
 import type { ComponentDefinition, EntityDefinition, ResolvedEntity } from './types.js';
 import type { EntityDescriptor } from '../entity/descriptor.js';
-import { generatedDescriptors } from '../entity/generatedEntities.js';
 import { tenantTypeDescriptor } from '../generated/iam/web/tenant_type_declaration.js';
 import { accountContactInformationDescriptor } from '../generated/iam/web/account_contact_information_declaration.js';
 import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
 import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
-import { countryDescriptor } from '../generated/refdata/web/country_declaration.js';
+import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -85,36 +84,7 @@ function wired(
   id: string,
   icon: EntityDefinition['icon'],
 ): EntityDefinition {
-  return { id, icon, path: descriptor.routeSegment, descriptor };
-}
-
-/**
- * Adds every entity whose model declared a screen set.
- *
- * The hand-written list states the order and the marks of the entities somebody
- * curated; a model that opts into the web facet adds itself, so an entity with
- * screens is an entity the navigation shows. An entity the list already
- * declares keeps its place, and one the list declares as planned and the model
- * has since built is replaced rather than listed twice.
- */
-function withGenerated(component: ComponentDefinition): ComponentDefinition {
-  const byPath = new Map(component.entities.map((entity) => [entity.path, entity]));
-  for (const descriptor of generatedDescriptors) {
-    if (descriptor.component !== component.id) continue;
-    const declared = byPath.get(descriptor.routeSegment);
-    // An entity already wired keeps its place: the curated order and the mark
-    // somebody chose for it. One declared as planned has been built since, and
-    // takes the declaration while keeping the name and the mark it was
-    // declared with.
-    if (declared?.descriptor !== undefined) continue;
-    byPath.set(descriptor.routeSegment, {
-      id: declared?.id ?? descriptor.entity,
-      icon: declared?.icon ?? descriptor.icon,
-      path: descriptor.routeSegment,
-      descriptor,
-    });
-  }
-  return { ...component, entities: [...byPath.values()] };
+  return { id, icon, path: descriptor.routeSegment };
 }
 
 /**
@@ -151,6 +121,7 @@ export const iamComponent: ComponentDefinition = {
     wired(tenantDescriptor, 'tenant', 'buildingSkyscraper'),
     wired(tenantStatusDescriptor, 'tenantStatus', 'clock'),
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
+    wired(permissionDescriptor, 'permission', 'keyMultiple'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [
@@ -190,7 +161,7 @@ export const refdataComponent: ComponentDefinition = {
     entity('party', 'handshake', planned),
     entity('counterparty', 'buildingBank', planned),
     entity('currency', 'currencyDollarEuro', planned),
-    wired(countryDescriptor, 'country', 'flag'),
+    entity('country', 'flag'),
     entity('calendar', 'calendarClock', planned),
     entity('currencyPair', 'arrowSync', planned),
     entity('dayCountFractionType', 'clock', planned),
@@ -447,7 +418,7 @@ export const COMPONENTS: readonly ComponentDefinition[] = [
   dataQualityComponent,
   computeComponent,
   workflowComponent,
-].map(withGenerated);
+];
 
 /** Components reached from the sidebar footer rather than the list. */
 export const PLATFORM_COMPONENTS: readonly ComponentDefinition[] = [platformComponent];

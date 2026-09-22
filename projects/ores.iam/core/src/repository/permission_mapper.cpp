@@ -43,7 +43,6 @@ domain::permission permission_mapper::map(const permission_entity& v) {
     r.code = v.code;
 
     r.description = v.description;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

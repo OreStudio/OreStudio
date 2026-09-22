@@ -101,18 +101,18 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/render_is_enum}}
 {{/sql_only}}
 {{/columns}}
-    using ores::history::domain::provenance_fields;
 {{#has_audit_columns}}
+    using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.{{{audit_prefix}}}modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.{{{audit_prefix}}}performed_by});
     fields.push_back(
         {.name = provenance_fields::change_reason_code, .value = v.{{{audit_prefix}}}change_reason_code});
     fields.push_back(
         {.name = provenance_fields::change_commentary, .value = v.{{{audit_prefix}}}change_commentary});
-{{/has_audit_columns}}
     fields.push_back(
         {.name = provenance_fields::recorded_at,
          .value = ores::platform::time::datetime::to_iso8601_utc(v.{{{audit_prefix}}}recorded_at)});
+{{/has_audit_columns}}
 
     return fields;
 }

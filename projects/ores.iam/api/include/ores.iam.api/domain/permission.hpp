@@ -75,11 +75,6 @@ struct permission final {
      * @brief Human-readable description of what this permission allows.
      */
     std::string description;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
 };
 
 /**

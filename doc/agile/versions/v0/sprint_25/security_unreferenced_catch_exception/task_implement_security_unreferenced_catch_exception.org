@@ -9,7 +9,6 @@
 #+owner: marco
 #+branch: hotfix/security-unreferenced-catch-exception
 #+pr: 2121
-#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22

@@ -107,6 +107,12 @@ public:
     read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads latest account contact informations filtered by email.
+     */
+    std::vector<domain::account_contact_information> read_latest_by_email(context ctx,
+                                                                          const std::string& email);
+
 
     /**
      * @brief Reads all account contact informations, possibly filtered by primary key.

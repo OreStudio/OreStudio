@@ -155,6 +155,25 @@ account_contact_information_repository::read_latest(context ctx, const std::stri
         "Reading latest account contact information by id.");
 }
 
+std::vector<domain::account_contact_information>
+account_contact_information_repository::read_latest_by_email(context ctx,
+                                                             const std::string& email) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information by email: " << email;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_contact_information_entity>> |
+        where("tenant_id"_c == tid && "email"_c == email && "valid_to"_c == max.value());
+
+    return execute_read_query<account_contact_information_entity,
+                              domain::account_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest account contact information by email.");
+}
+
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_all(context ctx, const std::string& id) {

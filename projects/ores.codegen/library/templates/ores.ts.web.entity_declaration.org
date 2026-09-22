@@ -94,7 +94,8 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     meta: {{{web_declaration.entity_camel}}}Meta,
     routeSegment: '{{{web_declaration.route_segment}}}',
     apiBase: '{{{web_declaration.api_base}}}',
-    keyParam: '{{{web_declaration.key_param}}}',
+    keyFields: [
+{{{web_declaration.key_fields_block}}}    ],
     capabilities: {
         create: {{{web_declaration.can_create}}},
         edit: {{{web_declaration.can_edit}}},
@@ -117,7 +118,7 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
 | =entity_camel= | The same name in camel case, for the exported constant |
 | =route_segment= | The entity's route segment, e.g. =country= |
 | =api_base= | Where the BFF serves the entity, e.g. =/api/countries= |
-| =key_param= | The route parameter carrying the natural key |
+| =key_fields_block= | The route parameter carrying the natural key |
 | =can_create=, =can_edit=, =can_remove=, =can_history= | The four capabilities, as booleans |
 | =search_fields_block= | The searchable fields, pre-rendered with their commas |
 

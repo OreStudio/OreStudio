@@ -38,7 +38,9 @@ export const sessionDescriptor: EntityDescriptor = {
     meta: sessionMeta,
     routeSegment: 'session',
     apiBase: '/api/sessions',
-    keyParam: 'id',
+    keyFields: [
+        'id',
+    ],
     capabilities: {
         create: false,
         edit: false,

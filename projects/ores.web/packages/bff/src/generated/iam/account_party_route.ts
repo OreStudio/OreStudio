@@ -23,26 +23,26 @@
  * To modify, update the template and regenerate.
  */
 /**
- * How the BFF reaches the session service.
+ * How the BFF reaches the account_party service.
  *
  * The descriptor holds values and no functions: the collection, the natural
  * key, the array fields and the subjects. The generic factory builds the
  * routes from it, so the entity adds no handler of its own.
  */
-import { subjects } from '@ores/wire-protocol/generated/iam/protocol/session_protocol';
+import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_party_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
-export const sessionRoute: EntityRouteDescriptor = {
+export const accountPartyRoute: EntityRouteDescriptor = {
   component: 'iam',
-  entity: 'session',
-  collection: 'sessions',
-  keyFields: ['id'],
+  entity: 'account_party',
+  collection: 'account_parties',
+  keyFields: ['account_id', 'party_id'],
   subjects: {
-    list: subjects.list_sessions_request,
-    get: subjects.get_session_request,
-    save: subjects.put_session_request,
-    remove: subjects.delete_session_request,
+    list: subjects.list_account_parties_request,
+    get: subjects.get_account_party_request,
+    save: subjects.put_account_party_request,
+    remove: subjects.delete_account_party_request,
   },
-  rowsField: 'sessions',
-  getRowField: 'session',
+  rowsField: 'account_parties',
+  getRowField: 'account_party',
 };

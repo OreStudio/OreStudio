@@ -38,7 +38,9 @@ export const tenantDescriptor: EntityDescriptor = {
     meta: tenantMeta,
     routeSegment: 'tenant',
     apiBase: '/api/tenants',
-    keyParam: 'id',
+    keyFields: [
+        'code',
+    ],
     capabilities: {
         create: true,
         edit: true,

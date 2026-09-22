@@ -50,6 +50,7 @@ import { permissionDescriptor } from '../generated/iam/web/permission_declaratio
 import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
 import { accountDescriptor } from '../generated/iam/web/account_declaration.js';
 import { sessionDescriptor } from '../generated/iam/web/session_declaration.js';
+import { accountPartyDescriptor } from '../generated/iam/web/account_party_declaration.js';
 import { loginInfoDescriptor } from '../generated/iam/web/login_info_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
@@ -129,6 +130,7 @@ export const iamComponent: ComponentDefinition = {
     wired(permissionDescriptor, 'permission', 'keyMultiple'),
     wired(loginInfoDescriptor, 'loginInfo', 'lockClosed'),
     wired(sessionDescriptor, 'session', 'plugConnected'),
+    wired(accountPartyDescriptor, 'accountParty', 'handshake'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

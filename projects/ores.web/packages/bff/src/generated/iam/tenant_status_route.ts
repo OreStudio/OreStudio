@@ -37,8 +37,7 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'tenant_status',
   collection: 'tenant_statuses',
-  key: 'id',
-  keyField: 'status',
+  keyFields: ['status'],
   subjects: {
     list: subjects.list_tenant_statuses_request,
     get: subjects.get_tenant_status_request,

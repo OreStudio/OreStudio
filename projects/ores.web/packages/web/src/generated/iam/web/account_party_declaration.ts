@@ -23,48 +23,37 @@
  * To modify, update the template and regenerate.
  */
 /**
- * Where the account_contact_information screens live and what they can do.
+ * Where the account_party screens live and what they can do.
  *
  * The route, the API path and the key parameter are values the model carries, so
  * a screen never repeats them and two screens cannot disagree. The labels are
  * translation keys and live in the catalogue with the rest of the words.
  */
-import { accountContactInformationMeta } from '../ui/account_contact_information_ui.js';
+import { accountPartyMeta } from '../ui/account_party_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
 
-export const accountContactInformationDescriptor: EntityDescriptor = {
+export const accountPartyDescriptor: EntityDescriptor = {
     component: 'iam',
-    entity: 'account_contact_information',
-    meta: accountContactInformationMeta,
-    routeSegment: 'account-contact-information',
-    apiBase: '/api/account_contact_informations',
+    entity: 'account_party',
+    meta: accountPartyMeta,
+    routeSegment: 'account-party',
+    apiBase: '/api/account_parties',
     keyFields: [
-        'email',
+        'account_id',
+        'party_id',
     ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
-        history: true,
+        history: false,
     },
     searchFields: [
-        'street_line_1',
-        'city',
-        'country_code',
-        'phone',
-        'email',
+        'account_id',
+        'party_id',
     ],
     writeFields: [
-        'id',
         'account_id',
-        'street_line_1',
-        'street_line_2',
-        'city',
-        'state',
-        'country_code',
-        'postal_code',
-        'phone',
-        'email',
-        'web_page',
+        'party_id',
     ],
 };

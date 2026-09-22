@@ -355,6 +355,8 @@ party_country_service::prepare_change(const messaging::party_country_change& cha
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
     stamp_party_country(out, ctx_);
+    if (!intent.reason_code.empty())
+        out.change_reason_code = intent.reason_code;
     return result;
 }
 

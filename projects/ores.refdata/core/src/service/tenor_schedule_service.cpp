@@ -134,7 +134,16 @@ tenor_schedule_service::list_by_calendar_code_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    const auto relation = request.calendar_code;
+    // A read scoped by a relation that the request leaves unstated has no
+    // scope, so it is refused rather than answered with every unset row.
+    if (!request.calendar_code) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "relation_required";
+        response.result.message =
+            "This read is scoped by calendar_code, and the request states none.";
+        return response;
+    }
+    const auto relation = *request.calendar_code;
     response.schedules =
         repo_.read_latest_by_calendar_code(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_schedule_count_by_calendar_code(ctx_, relation);
@@ -164,7 +173,16 @@ tenor_schedule_service::list_by_diary_entry_type_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    const auto relation = request.diary_entry_type;
+    // A read scoped by a relation that the request leaves unstated has no
+    // scope, so it is refused rather than answered with every unset row.
+    if (!request.diary_entry_type) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "relation_required";
+        response.result.message =
+            "This read is scoped by diary_entry_type, and the request states none.";
+        return response;
+    }
+    const auto relation = *request.diary_entry_type;
     response.schedules =
         repo_.read_latest_by_diary_entry_type(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_schedule_count_by_diary_entry_type(ctx_, relation);

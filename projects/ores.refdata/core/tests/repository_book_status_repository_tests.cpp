@@ -29,17 +29,11 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
-#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
-
-std::string now_as_of() {
-    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
-}
 
 }
 
@@ -136,29 +130,26 @@ TEST_CASE("read_nonexistent_book_status_code", tags) {
     CHECK(read_book_statuses.size() == 0);
 }
 
-TEST_CASE("read_book_status_at_timepoint_before_creation_is_empty", tags) {
+TEST_CASE("read_book_status_versions_by_code", tags) {
     auto lg(make_logger(test_suite));
-
-    const auto as_of_before = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto bs = generate_synthetic_book_status(ctx);
     bs.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Book status: " << bs;
 
     book_status_repository repo;
     repo.write(h.context(), bs);
 
-    auto read_book_statuses = repo.read_at_timepoint(h.context(), as_of_before, bs.code);
-    BOOST_LOG_SEV(lg, debug) << "Read book statuses at timepoint before creation: "
-                             << read_book_statuses;
+    // A version that was never written has no row to answer with.
+    CHECK_FALSE(repo.read_at_version(h.context(), bs.code, 99).has_value());
 
-    CHECK(read_book_statuses.size() == 0);
+    const auto versions = repo.read_all(h.context(), bs.code);
+    REQUIRE(versions.size() == 1);
+    CHECK(versions[0].code == bs.code);
 }
 
-TEST_CASE("read_book_status_at_timepoint_resolves_prior_version", tags) {
+TEST_CASE("read_book_status_versions_resolve_each_version", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -171,47 +162,43 @@ TEST_CASE("read_book_status_at_timepoint_resolves_prior_version", tags) {
     book_status_repository repo;
     repo.write(h.context(), bs);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_mid = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
     bs.name = original_name + " v2";
     BOOST_LOG_SEV(lg, debug) << "Book status v2: " << bs;
     repo.write(h.context(), bs);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_after = now_as_of();
+    // The version axis is a read of its own: every version is addressable,
+    // and the newest is the one a latest read returns.
+    const auto versions = repo.read_all(h.context(), bs.code);
+    REQUIRE(versions.size() == 2);
+    CHECK(versions[0].name == original_name + " v2");
+    CHECK(versions[1].name == original_name);
 
-    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, bs.code);
-    BOOST_LOG_SEV(lg, debug) << "Read book status at mid timepoint: " << read_at_mid;
-    REQUIRE(read_at_mid.size() == 1);
-    CHECK(read_at_mid[0].name == original_name);
+    const auto at_v1 = repo.read_at_version(h.context(), bs.code, 1);
+    REQUIRE(at_v1.has_value());
+    CHECK(at_v1->name == original_name);
 
-    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, bs.code);
-    BOOST_LOG_SEV(lg, debug) << "Read book status at after timepoint: " << read_at_after;
-    REQUIRE(read_at_after.size() == 1);
-    CHECK(read_at_after[0].name == original_name + " v2");
+    const auto at_v2 = repo.read_at_version(h.context(), bs.code, 2);
+    REQUIRE(at_v2.has_value());
+    CHECK(at_v2->name == original_name + " v2");
+
+    const auto latest = repo.read_latest(h.context(), bs.code);
+    REQUIRE(latest.size() == 1);
+    CHECK(latest[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_book_status_at_timepoint_without_code_filter", tags) {
+TEST_CASE("read_latest_book_statuses_includes_the_written_row", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto bs = generate_synthetic_book_status(ctx);
     bs.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Book status: " << bs;
 
     book_status_repository repo;
     repo.write(h.context(), bs);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of = now_as_of();
-
-    auto read_book_statuses = repo.read_at_timepoint(h.context(), as_of);
-    BOOST_LOG_SEV(lg, debug) << "Read book statuses at timepoint: " << read_book_statuses;
-
+    const auto rows = repo.read_latest(h.context());
     const auto found =
-        std::ranges::any_of(read_book_statuses, [&](const auto& v) { return v.code == bs.code; });
+        std::ranges::any_of(rows, [&](const auto& v) { return v.code == bs.code; });
     CHECK(found);
 }

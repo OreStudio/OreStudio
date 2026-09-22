@@ -228,28 +228,39 @@ public:
                 return;
             }
 
-            auto req = decode<save_party_request>(msg);
+            auto req = decode<put_party_request>(msg);
             if (!req) {
                 publish_step_completion(nats_,
                                         step_id,
                                         inst_id,
                                         ores::workflow::messaging::step_outcome::failed,
                                         "",
-                                        "Failed to decode save_party_request");
+                                        "Failed to decode put_party_request");
                 return;
             }
             try {
                 using ores::database::service::tenant_context;
                 auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
                 service::party_service svc(wf_ctx);
-                svc.save_party(req->data);
+                // The service answers the canonical response, whose result
+                // states the outcome. A refusal is the step failing.
+                const auto resp = svc.put_party(*req);
+                if (resp.result.outcome != ores::utility::domain::outcome::ok) {
+                    publish_step_completion(nats_,
+                                            step_id,
+                                            inst_id,
+                                            ores::workflow::messaging::step_outcome::failed,
+                                            "",
+                                            resp.result.message);
+                    return;
+                }
                 BOOST_LOG_SEV(party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
                 publish_step_completion(nats_,
                                         step_id,
                                         inst_id,
                                         ores::workflow::messaging::step_outcome::completed,
-                                        rfl::json::write(save_party_response{.success = true}),
+                                        rfl::json::write(resp),
                                         "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_handler_lg(), error)

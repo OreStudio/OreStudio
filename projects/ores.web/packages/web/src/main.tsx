@@ -28,15 +28,13 @@ import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage, PlannedPage } from './components/pages/HomePage.js';
 import { ComponentPage } from './components/pages/ComponentPage.js';
-import { COMPONENTS, PLATFORM_COMPONENTS, iamComponent, refdataComponent } from './components/registry.js';
+import { COMPONENTS, PLATFORM_COMPONENTS } from './components/registry.js';
 import { humanise } from './components/labels.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
 import { entityRoutes } from './entity/entityRoutes.js';
-import { tenantTypeDescriptor } from './generated/iam/web/tenant_type_declaration.js';
-import { countryDescriptor } from './generated/refdata/web/country_declaration.js';
 import './styles.css';
 
 /**
@@ -127,13 +125,19 @@ function App(): ReactNode {
           {plannedRoutes()}
 
           {/*
-            An entity on the shared machinery is one declaration and one line
-            here. The factory reads the declaration: the paths, the screens and
-            which of the five routes exist are all derived, so adding an entity is
-            a model change rather than five more routes.
+            Every wired entity's screens, taken from the registry rather than
+            listed here. A declaration carries its descriptor, so declaring an
+            entity is what routes it: the sidebar, the breadcrumbs and these
+            routes read one list, and an entity that is declared cannot be one
+            the router does not know.
           */}
-          {entityRoutes(tenantTypeDescriptor, iamComponent.path)}
-          {entityRoutes(countryDescriptor, refdataComponent.path)}
+          {COMPONENTS.flatMap((component) =>
+            component.entities.flatMap((entity) =>
+              entity.descriptor === undefined
+                ? []
+                : entityRoutes(entity.descriptor, component.path),
+            ),
+          )}
         </Route>
       ) : (
         <>

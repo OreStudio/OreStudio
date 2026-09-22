@@ -58,6 +58,14 @@ export interface EntityDefinition {
   readonly icon: IconName;
   /** The route segment. */
   readonly path: string;
+  /**
+   * The declaration the entity's screens are built from.
+   *
+   * Present when the entity has screens. The router derives its routes from
+   * this, so declaring an entity here is what routes it, and no second list of
+   * routes has to be kept in step with this one.
+   */
+  readonly descriptor?: EntityDescriptor;
   /** True when there is no screen for it yet. */
   readonly planned?: boolean;
   /**

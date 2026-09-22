@@ -178,7 +178,14 @@ export function registerEntityRoutes(
     });
     const response = await session.client.callAuthenticated(
       descriptor.subjects.list,
-      input,
+      /*
+       * The order is part of the page, not an extra. The service's list
+       * request declares the field and the direction and refuses a payload
+       * that omits them, so a caller that names no order still states one:
+       * an empty field is the order by key, which is what keeps a page
+       * stable.
+       */
+      { ...input, order: { field: '', descending: false } },
       descriptor.listResponse ?? identity,
     );
 

@@ -207,9 +207,15 @@ describe('the canonical envelopes', () => {
   it('states a page for a list', async () => {
     const server = await withServer(singleKeyDescriptor());
     await server.inject({ method: 'GET', url: '/api/tenants?offset=0&limit=25' });
+    // The order travels with the page: the service's list request declares
+    // it, and a payload without it does not decode.
     expect(sent[0]).toEqual({
       subject: 'iam.v1.tenants.list',
-      body: { offset: 0, limit: 25 },
+      body: {
+        offset: 0,
+        limit: 25,
+        order: { field: '', descending: false },
+      },
     });
     await server.close();
   });

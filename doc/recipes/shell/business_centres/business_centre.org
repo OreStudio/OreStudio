@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 0B71D41D-A37C-5094-B7BF-670C74F060D1
+:END:
+#+title: How do I run the business_centres commands from the shell?
+#+description: Every command the business_centres submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:business_centres:
+
+This file documents the business_centres resource at the shell, one section per command. Every command is a subcommand of =business_centres=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4C58E834-3A71-57D2-8D76-60D84E8F79C8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.list=.
+
+#+name: business_centres-list
+#+begin_src ores-shell :tangle business_centres-list.ores :exports none
+business_centres list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 893BCE19-48BF-5500-827A-41683285AFA1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres get <code>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.get=.
+
+#+name: business_centres-get
+#+begin_src ores-shell :tangle business_centres-get.ores :exports none
+business_centres get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8013413D-5CFC-5CFF-861B-C8C3A6F5A47F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.get_many=.
+
+#+name: business_centres-get-many
+#+begin_src ores-shell :tangle business_centres-get-many.ores :exports none
+business_centres get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: BB1B96B7-B99A-521F-8E73-6305F1DAF317
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres add <code> <source> <description> <city_name> <country_alpha2_code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.put=.
+
+#+name: business_centres-add
+#+begin_src ores-shell :tangle business_centres-add.ores :exports none
+business_centres add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D272C926-7629-57C1-B81B-C75E7A1D3D8C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres set <code> <source> <description> <city_name> <country_alpha2_code> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.put=.
+
+#+name: business_centres-set
+#+begin_src ores-shell :tangle business_centres-set.ores :exports none
+business_centres set __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: FD733EFD-EA68-5433-A6C6-A26533B1C319
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres put-many --count <n> <code> <source> <description> <city_name> <country_alpha2_code> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.put_many=.
+
+#+name: business_centres-put-many
+#+begin_src ores-shell :tangle business_centres-put-many.ores :exports none
+business_centres put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F7241708-1D82-5367-AB27-7FF152BBE1D1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.delete=.
+
+#+name: business_centres-delete
+#+begin_src ores-shell :tangle business_centres-delete.ores :exports none
+business_centres delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8357C8BA-61EF-513E-903E-81044ACEF52E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres.delete_many=.
+
+#+name: business_centres-delete-many
+#+begin_src ores-shell :tangle business_centres-delete-many.ores :exports none
+business_centres delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 21141F4D-3BFF-5A77-9312-D85116A7C07D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_centres_versions.list=.
+
+#+name: business_centres-versions
+#+begin_src ores-shell :tangle business_centres-versions.ores :exports none
+business_centres versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 76311AF4-F025-54A5-8AC8-5625D44306DD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_centres version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.business_centres_versions.get=.
+
+#+name: business_centres-version
+#+begin_src ores-shell :tangle business_centres-version.ores :exports none
+business_centres version __none__ --version 1
+#+end_src
+

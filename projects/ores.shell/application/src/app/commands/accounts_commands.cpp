@@ -583,11 +583,11 @@ void accounts_commands::process_set_default_party(std::ostream& out,
         return;
     }
 
-    refdata::messaging::get_parties_request parties_req;
+    refdata::messaging::list_parties_request parties_req;
     parties_req.limit = 1000;
-    auto parties = do_auth_request<refdata::messaging::get_parties_response>(
-        out, session, refdata::messaging::get_parties_request::nats_subject, parties_req);
-    if (!parties)
+    auto parties = do_auth_request<refdata::messaging::list_parties_response>(
+        out, session, refdata::messaging::list_parties_request::nats_subject, parties_req);
+    if (!parties || parties->result.outcome != ores::utility::domain::outcome::ok)
         return;
 
     std::optional<boost::uuids::uuid> ref_uuid;

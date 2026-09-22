@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 56912B94-4CEA-594F-9A9C-2B504A66AF5F
+:END:
+#+title: How do I run the party_statuses commands from the shell?
+#+description: Every command the party_statuses submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_statuses:
+
+This file documents the party_statuses resource at the shell, one section per command. Every command is a subcommand of =party_statuses=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C9F571BA-F53E-5207-A416-D03147B907E2
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.list=.
+
+#+name: party_statuses-list
+#+begin_src ores-shell :tangle party_statuses-list.ores :exports none
+party_statuses list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2822FCD2-1D96-5C27-BAAB-86F0B6B35BC9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses get <code>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.get=.
+
+#+name: party_statuses-get
+#+begin_src ores-shell :tangle party_statuses-get.ores :exports none
+party_statuses get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 222B44A8-948F-593A-87BC-0C90A7133E67
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.get_many=.
+
+#+name: party_statuses-get-many
+#+begin_src ores-shell :tangle party_statuses-get-many.ores :exports none
+party_statuses get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: BF6F6C17-3D0C-5A2F-BCEB-3B9D1FFC6A24
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.put=.
+
+#+name: party_statuses-add
+#+begin_src ores-shell :tangle party_statuses-add.ores :exports none
+party_statuses add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 098BDFA1-1D97-5B01-BAE3-04E5A60654CA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.put=.
+
+#+name: party_statuses-set
+#+begin_src ores-shell :tangle party_statuses-set.ores :exports none
+party_statuses set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E1654AA4-A163-5E7A-81F0-38B4C68C3D2A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.put_many=.
+
+#+name: party_statuses-put-many
+#+begin_src ores-shell :tangle party_statuses-put-many.ores :exports none
+party_statuses put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B3A3EDF0-950B-5BD7-90F5-B3C035378CF0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.delete=.
+
+#+name: party_statuses-delete
+#+begin_src ores-shell :tangle party_statuses-delete.ores :exports none
+party_statuses delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8160DA98-EC71-5EF4-A337-8740F20A8320
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses.delete_many=.
+
+#+name: party_statuses-delete-many
+#+begin_src ores-shell :tangle party_statuses-delete-many.ores :exports none
+party_statuses delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 512EA354-178D-5F1F-898D-90EA09E26059
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses_versions.list=.
+
+#+name: party_statuses-versions
+#+begin_src ores-shell :tangle party_statuses-versions.ores :exports none
+party_statuses versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 23120A46-1EF0-52AC-97EC-B65907178DB1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_statuses version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_statuses_versions.get=.
+
+#+name: party_statuses-version
+#+begin_src ores-shell :tangle party_statuses-version.ores :exports none
+party_statuses version __none__ --version 1
+#+end_src
+

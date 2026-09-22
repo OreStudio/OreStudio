@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 189B6353-4A70-5FFF-A518-526FBCBCC4B5
+:END:
+#+title: How do I run the business_day_convention_types commands from the shell?
+#+description: Every command the business_day_convention_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:business_day_convention_types:
+
+This file documents the business_day_convention_types resource at the shell, one section per command. Every command is a subcommand of =business_day_convention_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E862179C-A811-59C0-8E04-9FD98941F03D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.list=.
+
+#+name: business_day_convention_types-list
+#+begin_src ores-shell :tangle business_day_convention_types-list.ores :exports none
+business_day_convention_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 88E2CCEB-EA79-5AAE-B069-EF420C3978AB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.get=.
+
+#+name: business_day_convention_types-get
+#+begin_src ores-shell :tangle business_day_convention_types-get.ores :exports none
+business_day_convention_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 02D7D60F-F807-5FC6-92FC-A12B3B1FA161
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.get_many=.
+
+#+name: business_day_convention_types-get-many
+#+begin_src ores-shell :tangle business_day_convention_types-get-many.ores :exports none
+business_day_convention_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1DCC4283-D155-522C-AE75-440B0BC7710A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.put=.
+
+#+name: business_day_convention_types-add
+#+begin_src ores-shell :tangle business_day_convention_types-add.ores :exports none
+business_day_convention_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: CB77B5AE-09CD-51EC-B194-75CFD7A34F2E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.put=.
+
+#+name: business_day_convention_types-set
+#+begin_src ores-shell :tangle business_day_convention_types-set.ores :exports none
+business_day_convention_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A94E1B9E-E7E8-51CF-8BCF-38BC5E404CB6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.put_many=.
+
+#+name: business_day_convention_types-put-many
+#+begin_src ores-shell :tangle business_day_convention_types-put-many.ores :exports none
+business_day_convention_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8EC8558A-3453-54CD-989F-27319A44C566
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.delete=.
+
+#+name: business_day_convention_types-delete
+#+begin_src ores-shell :tangle business_day_convention_types-delete.ores :exports none
+business_day_convention_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 037ABC7C-0F9C-5AC5-99CA-FB98492A6536
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types.delete_many=.
+
+#+name: business_day_convention_types-delete-many
+#+begin_src ores-shell :tangle business_day_convention_types-delete-many.ores :exports none
+business_day_convention_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A6E63666-F792-5F92-93BD-1795A6C32BD1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types_versions.list=.
+
+#+name: business_day_convention_types-versions
+#+begin_src ores-shell :tangle business_day_convention_types-versions.ores :exports none
+business_day_convention_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 2CC9B853-22CF-5F6F-8B94-4D84F3084AEE
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_day_convention_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.business_day_convention_types_versions.get=.
+
+#+name: business_day_convention_types-version
+#+begin_src ores-shell :tangle business_day_convention_types-version.ores :exports none
+business_day_convention_types version __none__ --version 1
+#+end_src
+

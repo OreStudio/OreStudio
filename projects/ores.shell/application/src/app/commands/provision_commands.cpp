@@ -409,7 +409,7 @@ void provision_commands::process_tenant(std::ostream& out,
                "Re-login and use account-parties add to associate manually."
             << std::endl;
     } else {
-        refdata::messaging::get_parties_request parties_req;
+        refdata::messaging::list_parties_request parties_req;
         parties_req.limit = 1000;
         auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
         if (parties) {
@@ -519,7 +519,7 @@ void provision_commands::process_party(std::ostream& out,
 
     // Resolve the party by UUID or exact full name.
     auto find_party = [&](std::ostream& o) -> std::optional<refdata::domain::party> {
-        refdata::messaging::get_parties_request req;
+        refdata::messaging::list_parties_request req;
         req.limit = 1000;
         auto parties = do_request(o, session, req, std::chrono::seconds(30), true);
         if (!parties)
@@ -643,13 +643,30 @@ void provision_commands::process_party(std::ostream& out,
     fresh->change_reason_code = std::string(dq::domain::change_reason_constants::codes::new_record);
     fresh->change_commentary = "Party provisioning completed via shell";
 
-    refdata::messaging::save_party_request save_req;
-    save_req.data = std::move(*fresh);
+    // The activation is a write of the row the read returned, so it states
+    // the version it read and lets the store refuse a row that moved on.
+    refdata::messaging::put_party_request save_req;
+    save_req.change.write = {.id = fresh->id,
+                             .short_code = fresh->short_code,
+                             .full_name = fresh->full_name,
+                             .codename = fresh->codename,
+                             .transliterated_name = fresh->transliterated_name,
+                             .party_category = fresh->party_category,
+                             .party_type = fresh->party_type,
+                             .parent_party_id = fresh->parent_party_id,
+                             .business_center_code = fresh->business_center_code,
+                             .status = fresh->status,
+                             .image_id = fresh->image_id};
+    save_req.change.precondition.kind =
+        ores::utility::domain::precondition_kind::must_match_version;
+    save_req.change.precondition.version = static_cast<std::uint32_t>(fresh->version);
+    save_req.intent.reason_code =
+        std::string(dq::domain::change_reason_constants::codes::new_record);
+    save_req.intent.commentary = "Party provisioning completed via shell";
     auto saved = do_request(out, session, save_req, std::chrono::seconds(30), true);
-    if (!saved)
-        return;
-    if (!saved->success) {
-        fail(out) << "Failed to activate party: " << saved->message << std::endl;
+    if (!saved || saved->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Failed to activate party: "
+                  << (saved ? saved->result.message : "no response") << std::endl;
         return;
     }
 

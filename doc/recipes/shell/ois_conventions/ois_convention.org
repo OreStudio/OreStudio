@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: CAA45F91-B05E-57F2-B3B0-9F1A02B2FF72
+:END:
+#+title: How do I run the ois_conventions commands from the shell?
+#+description: Every command the ois_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ois_conventions:
+
+This file documents the ois_conventions resource at the shell, one section per command. Every command is a subcommand of =ois_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9C4E7D4E-1DCA-58FB-BBD7-D7058DC91D1F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.list=.
+
+#+name: ois_conventions-list
+#+begin_src ores-shell :tangle ois_conventions-list.ores :exports none
+ois_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9A4A6441-65BB-5EFF-8C08-F34DB6AD10A6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.get=.
+
+#+name: ois_conventions-get
+#+begin_src ores-shell :tangle ois_conventions-get.ores :exports none
+ois_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 87804932-284C-5791-9159-B06C9A3E2875
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.get_many=.
+
+#+name: ois_conventions-get-many
+#+begin_src ores-shell :tangle ois_conventions-get-many.ores :exports none
+ois_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0424B730-FF81-5906-8983-B863BB38CC88
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions add <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.put=.
+
+#+name: ois_conventions-add
+#+begin_src ores-shell :tangle ois_conventions-add.ores :exports none
+ois_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FB35E7DF-A928-5750-B1C2-A8C3F91DB168
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions set <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.put=.
+
+#+name: ois_conventions-set
+#+begin_src ores-shell :tangle ois_conventions-set.ores :exports none
+ois_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E717B68C-01E9-5D14-8D4E-B13FCB3378B1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions put-many --count <n> <id> <spot_lag> <index> <fixed_day_count_fraction> <fixed_calendar> <payment_lag> <end_of_month> <fixed_frequency> <fixed_convention> <fixed_payment_convention> <rule> <payment_calendar> <rate_cutoff> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.put_many=.
+
+#+name: ois_conventions-put-many
+#+begin_src ores-shell :tangle ois_conventions-put-many.ores :exports none
+ois_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E3D9D189-017B-5055-B85B-22E57F4EE8AA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.delete=.
+
+#+name: ois_conventions-delete
+#+begin_src ores-shell :tangle ois_conventions-delete.ores :exports none
+ois_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E38007B9-B013-5B47-8EBB-55ABA3F9B525
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions.delete_many=.
+
+#+name: ois_conventions-delete-many
+#+begin_src ores-shell :tangle ois_conventions-delete-many.ores :exports none
+ois_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F2BF050A-DE5F-516C-AECE-2FCE2FF3A28F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions_versions.list=.
+
+#+name: ois_conventions-versions
+#+begin_src ores-shell :tangle ois_conventions-versions.ores :exports none
+ois_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4C5AB139-8DB8-5DE5-B5AF-7C59FCBBF708
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ois_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.ois_conventions_versions.get=.
+
+#+name: ois_conventions-version
+#+begin_src ores-shell :tangle ois_conventions-version.ores :exports none
+ois_conventions version __none__ --version 1
+#+end_src
+

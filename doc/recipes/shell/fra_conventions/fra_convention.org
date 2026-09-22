@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: DD0C34CB-9EDF-5BE7-A013-1CF42360E503
+:END:
+#+title: How do I run the fra_conventions commands from the shell?
+#+description: Every command the fra_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fra_conventions:
+
+This file documents the fra_conventions resource at the shell, one section per command. Every command is a subcommand of =fra_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 69F455FC-5B28-52B5-AD5D-F2EDD7766484
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.list=.
+
+#+name: fra_conventions-list
+#+begin_src ores-shell :tangle fra_conventions-list.ores :exports none
+fra_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0FD7B9D4-ABB4-5291-AC41-6F80D904BD52
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.get=.
+
+#+name: fra_conventions-get
+#+begin_src ores-shell :tangle fra_conventions-get.ores :exports none
+fra_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BF903A4B-5552-59AF-A0E7-C189DB8CD6F7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.get_many=.
+
+#+name: fra_conventions-get-many
+#+begin_src ores-shell :tangle fra_conventions-get-many.ores :exports none
+fra_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3AB21C6F-1CA4-5A80-9EE8-4324D674EBFF
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions add <id> <index> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.put=.
+
+#+name: fra_conventions-add
+#+begin_src ores-shell :tangle fra_conventions-add.ores :exports none
+fra_conventions add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4300FBB8-86CA-525D-8E34-4C672C27B6E4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions set <id> <index> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.put=.
+
+#+name: fra_conventions-set
+#+begin_src ores-shell :tangle fra_conventions-set.ores :exports none
+fra_conventions set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8211DD42-BE1B-5CB8-BE19-57453CF33818
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions put-many --count <n> <id> <index> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.put_many=.
+
+#+name: fra_conventions-put-many
+#+begin_src ores-shell :tangle fra_conventions-put-many.ores :exports none
+fra_conventions put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 798E8B7D-A10E-50F0-AC1B-72111D5C5352
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.delete=.
+
+#+name: fra_conventions-delete
+#+begin_src ores-shell :tangle fra_conventions-delete.ores :exports none
+fra_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 25A21875-5CEA-53E6-A643-49F544694417
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions.delete_many=.
+
+#+name: fra_conventions-delete-many
+#+begin_src ores-shell :tangle fra_conventions-delete-many.ores :exports none
+fra_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7A988A7B-6433-5D67-AC8E-BD6B539E6985
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions_versions.list=.
+
+#+name: fra_conventions-versions
+#+begin_src ores-shell :tangle fra_conventions-versions.ores :exports none
+fra_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C88E4992-7E2C-5D61-81B8-6CD59D8F768A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fra_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fra_conventions_versions.get=.
+
+#+name: fra_conventions-version
+#+begin_src ores-shell :tangle fra_conventions-version.ores :exports none
+fra_conventions version __none__ --version 1
+#+end_src
+

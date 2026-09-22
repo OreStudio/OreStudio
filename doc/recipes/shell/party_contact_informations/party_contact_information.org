@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: C1E4FA85-067C-54CE-ACDF-9FE9EA8492F8
+:END:
+#+title: How do I run the party_contact_informations commands from the shell?
+#+description: Every command the party_contact_informations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_contact_informations:
+
+This file documents the party_contact_informations resource at the shell, one section per command. Every command is a subcommand of =party_contact_informations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5F7D580E-4472-5F62-B30A-7BFBB68F5529
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.list=.
+
+#+name: party_contact_informations-list
+#+begin_src ores-shell :tangle party_contact_informations-list.ores :exports none
+party_contact_informations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 87F6B778-CA66-5EC2-B02F-AB3F47C63DE8
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.get=.
+
+#+name: party_contact_informations-get
+#+begin_src ores-shell :tangle party_contact_informations-get.ores :exports none
+party_contact_informations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9A6F3A64-9B02-5917-A492-03D261AD4486
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.get_many=.
+
+#+name: party_contact_informations-get-many
+#+begin_src ores-shell :tangle party_contact_informations-get-many.ores :exports none
+party_contact_informations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 39156A1F-1B7D-59D0-A812-7AF8FCBBABF2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations add <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.put=.
+
+#+name: party_contact_informations-add
+#+begin_src ores-shell :tangle party_contact_informations-add.ores :exports none
+party_contact_informations add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B27DFC4F-2A0F-5A03-8B08-9BC99E3B2C44
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations set <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.put=.
+
+#+name: party_contact_informations-set
+#+begin_src ores-shell :tangle party_contact_informations-set.ores :exports none
+party_contact_informations set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1977583A-2C5C-5D32-9D5A-9A5402248C75
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations put-many --count <n> <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.put_many=.
+
+#+name: party_contact_informations-put-many
+#+begin_src ores-shell :tangle party_contact_informations-put-many.ores :exports none
+party_contact_informations put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CF4555A6-4BBE-54AE-AEEB-61502952D5E9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.delete=.
+
+#+name: party_contact_informations-delete
+#+begin_src ores-shell :tangle party_contact_informations-delete.ores :exports none
+party_contact_informations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A0714F80-F3AE-57B1-9B8E-34F2A2B60BB2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.delete_many=.
+
+#+name: party_contact_informations-delete-many
+#+begin_src ores-shell :tangle party_contact_informations-delete-many.ores :exports none
+party_contact_informations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-party-id=
+:PROPERTIES:
+:ID: 13D2608D-61ED-5C2C-B080-1507491C45C1
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations.list_by_party_id=.
+
+#+name: party_contact_informations-by-party-id
+#+begin_src ores-shell :tangle party_contact_informations-by-party-id.ores :exports none
+party_contact_informations by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D27CF11C-A248-5217-8D66-B747FB9BE5B1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations_versions.list=.
+
+#+name: party_contact_informations-versions
+#+begin_src ores-shell :tangle party_contact_informations-versions.ores :exports none
+party_contact_informations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 20A1B595-A7A8-50D2-9211-179C651F28D6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_contact_informations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_contact_informations_versions.get=.
+
+#+name: party_contact_informations-version
+#+begin_src ores-shell :tangle party_contact_informations-version.ores :exports none
+party_contact_informations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

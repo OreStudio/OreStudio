@@ -54,6 +54,12 @@ table can be read directly by whatever eventually resolves
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
 | [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | true |
 
+* Physical space
+
+| Address | Enabled |
+|---------+---------|
+| =ores.cpp.shell-command= | true |
+
 * See also
 
 - [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] — the text-natural-key counterpart this profile mirrors, differing only in key shape.

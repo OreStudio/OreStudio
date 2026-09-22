@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 316E5305-BB65-52D7-A217-437A5D5A27AF
+:END:
+#+title: How do I run the zero_conventions commands from the shell?
+#+description: Every command the zero_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:zero_conventions:
+
+This file documents the zero_conventions resource at the shell, one section per command. Every command is a subcommand of =zero_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 040146FD-8664-5667-BB35-EB9C0E9E29F8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.list=.
+
+#+name: zero_conventions-list
+#+begin_src ores-shell :tangle zero_conventions-list.ores :exports none
+zero_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6EDD021D-DA4B-5B05-B0F4-343E54E73E55
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.get=.
+
+#+name: zero_conventions-get
+#+begin_src ores-shell :tangle zero_conventions-get.ores :exports none
+zero_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FF4A709C-63FF-57C9-AB0E-C8AD10CD8BF6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.get_many=.
+
+#+name: zero_conventions-get-many
+#+begin_src ores-shell :tangle zero_conventions-get-many.ores :exports none
+zero_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 26EBEF20-5A83-5510-A5B6-BF8B968F324C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions add <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.put=.
+
+#+name: zero_conventions-add
+#+begin_src ores-shell :tangle zero_conventions-add.ores :exports none
+zero_conventions add __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 85905ABC-79AB-539A-B4A0-B825AFA14CC0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions set <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.put=.
+
+#+name: zero_conventions-set
+#+begin_src ores-shell :tangle zero_conventions-set.ores :exports none
+zero_conventions set __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: FA58FACB-CEB9-5128-8364-A14D1AB9B371
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions put-many --count <n> <id> <tenor_based> <day_count_fraction> <compounding> <compounding_frequency> <tenor_calendar> <spot_lag> <spot_calendar> <roll_convention> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.put_many=.
+
+#+name: zero_conventions-put-many
+#+begin_src ores-shell :tangle zero_conventions-put-many.ores :exports none
+zero_conventions put-many --count 1 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 81DFFC52-6753-5EE3-9C5F-43FE447A8BD8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.delete=.
+
+#+name: zero_conventions-delete
+#+begin_src ores-shell :tangle zero_conventions-delete.ores :exports none
+zero_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 3F9717C9-0B0E-5B91-A5E7-1C5F74EC28BA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions.delete_many=.
+
+#+name: zero_conventions-delete-many
+#+begin_src ores-shell :tangle zero_conventions-delete-many.ores :exports none
+zero_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B821C00E-6147-5E78-8679-E6AA4B00AFA1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions_versions.list=.
+
+#+name: zero_conventions-versions
+#+begin_src ores-shell :tangle zero_conventions-versions.ores :exports none
+zero_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F45BAAC0-EB49-564A-BF7D-1E794E1AC5AB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+zero_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.zero_conventions_versions.get=.
+
+#+name: zero_conventions-version
+#+begin_src ores-shell :tangle zero_conventions-version.ores :exports none
+zero_conventions version __none__ --version 1
+#+end_src
+

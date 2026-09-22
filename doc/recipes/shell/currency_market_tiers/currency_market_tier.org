@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 37B72D1C-8875-54AF-A0A1-814B36AEBD62
+:END:
+#+title: How do I run the currency_market_tiers commands from the shell?
+#+description: Every command the currency_market_tiers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:currency_market_tiers:
+
+This file documents the currency_market_tiers resource at the shell, one section per command. Every command is a subcommand of =currency_market_tiers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8073A2FB-7643-5058-8918-9A076040521C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.list=.
+
+#+name: currency_market_tiers-list
+#+begin_src ores-shell :tangle currency_market_tiers-list.ores :exports none
+currency_market_tiers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2BCB242B-042D-50C8-A1CD-5036D7C630EA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers get <code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.get=.
+
+#+name: currency_market_tiers-get
+#+begin_src ores-shell :tangle currency_market_tiers-get.ores :exports none
+currency_market_tiers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A0B08461-A73E-5B53-9C9F-43D391CF6C6B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.get_many=.
+
+#+name: currency_market_tiers-get-many
+#+begin_src ores-shell :tangle currency_market_tiers-get-many.ores :exports none
+currency_market_tiers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1E538B73-B3B6-5533-AE2E-AEF3F83EBBA2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.put=.
+
+#+name: currency_market_tiers-add
+#+begin_src ores-shell :tangle currency_market_tiers-add.ores :exports none
+currency_market_tiers add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F4328B0C-C6D0-512F-AD20-CAAA971CD7D3
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.put=.
+
+#+name: currency_market_tiers-set
+#+begin_src ores-shell :tangle currency_market_tiers-set.ores :exports none
+currency_market_tiers set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 45DD6E43-2C4F-5E06-AFC9-3B347BDBF711
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.put_many=.
+
+#+name: currency_market_tiers-put-many
+#+begin_src ores-shell :tangle currency_market_tiers-put-many.ores :exports none
+currency_market_tiers put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B1C178C5-1825-5B56-934A-E2DD5B878170
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.delete=.
+
+#+name: currency_market_tiers-delete
+#+begin_src ores-shell :tangle currency_market_tiers-delete.ores :exports none
+currency_market_tiers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8CB09B3A-8ECA-5499-811A-DA5171469A69
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers.delete_many=.
+
+#+name: currency_market_tiers-delete-many
+#+begin_src ores-shell :tangle currency_market_tiers-delete-many.ores :exports none
+currency_market_tiers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 46B49688-CD32-5AF4-8B41-85922CBC34C2
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers_versions.list=.
+
+#+name: currency_market_tiers-versions
+#+begin_src ores-shell :tangle currency_market_tiers-versions.ores :exports none
+currency_market_tiers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A4875553-8A60-5FE3-B286-3061A88DA165
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_market_tiers version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.currency_market_tiers_versions.get=.
+
+#+name: currency_market_tiers-version
+#+begin_src ores-shell :tangle currency_market_tiers-version.ores :exports none
+currency_market_tiers version __none__ --version 1
+#+end_src
+

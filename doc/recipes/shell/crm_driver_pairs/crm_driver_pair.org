@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: F78E4F94-8167-534C-B580-B9B8F641794D
+:END:
+#+title: How do I run the crm_driver_pairs commands from the shell?
+#+description: Every command the crm_driver_pairs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:crm_driver_pairs:
+
+This file documents the crm_driver_pairs resource at the shell, one section per command. Every command is a subcommand of =crm_driver_pairs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2EE0F956-4491-5E00-A12C-C3B4D404DAC0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.list=.
+
+#+name: crm_driver_pairs-list
+#+begin_src ores-shell :tangle crm_driver_pairs-list.ores :exports none
+crm_driver_pairs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 01660170-D3A3-5306-AA9F-2E36855AE8E8
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.get=.
+
+#+name: crm_driver_pairs-get
+#+begin_src ores-shell :tangle crm_driver_pairs-get.ores :exports none
+crm_driver_pairs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4425182B-7FE8-56EC-9B48-DBB2D4BEBF04
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.get_many=.
+
+#+name: crm_driver_pairs-get-many
+#+begin_src ores-shell :tangle crm_driver_pairs-get-many.ores :exports none
+crm_driver_pairs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1BC8D537-008B-554D-985D-3B184073DF49
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs add <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.put=.
+
+#+name: crm_driver_pairs-add
+#+begin_src ores-shell :tangle crm_driver_pairs-add.ores :exports none
+crm_driver_pairs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4807C47D-A9D7-5FF0-A31A-AF9F687480EF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs set <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.put=.
+
+#+name: crm_driver_pairs-set
+#+begin_src ores-shell :tangle crm_driver_pairs-set.ores :exports none
+crm_driver_pairs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 93BD40B0-BDA1-5063-A94B-70C4BBE039F7
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.put_many=.
+
+#+name: crm_driver_pairs-put-many
+#+begin_src ores-shell :tangle crm_driver_pairs-put-many.ores :exports none
+crm_driver_pairs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 33BC23A3-9CDD-5125-8969-6ED6D6378B27
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.delete=.
+
+#+name: crm_driver_pairs-delete
+#+begin_src ores-shell :tangle crm_driver_pairs-delete.ores :exports none
+crm_driver_pairs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D7AC7049-65F7-5DCB-AD2D-5861495CCD3F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs.delete_many=.
+
+#+name: crm_driver_pairs-delete-many
+#+begin_src ores-shell :tangle crm_driver_pairs-delete-many.ores :exports none
+crm_driver_pairs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EC2C6DBF-9EB8-58D1-8B63-CB2CB1033656
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs_versions.list=.
+
+#+name: crm_driver_pairs-versions
+#+begin_src ores-shell :tangle crm_driver_pairs-versions.ores :exports none
+crm_driver_pairs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E6A24946-882C-5004-996C-658D44A2CF52
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+crm_driver_pairs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.crm_driver_pairs_versions.get=.
+
+#+name: crm_driver_pairs-version
+#+begin_src ores-shell :tangle crm_driver_pairs-version.ores :exports none
+crm_driver_pairs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

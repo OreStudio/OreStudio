@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 6BE10342-5BE6-5AAD-8F11-855C574ED473
+:END:
+#+title: How do I run the currency_pair_convention_calendars commands from the shell?
+#+description: Every command the currency_pair_convention_calendars submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:currency_pair_convention_calendars:
+
+This file documents the currency_pair_convention_calendars resource at the shell, one section per command. Every command is a subcommand of =currency_pair_convention_calendars=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F4472163-2815-5F65-A703-03EDEC90310E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.list=.
+
+#+name: currency_pair_convention_calendars-list
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-list.ores :exports none
+currency_pair_convention_calendars list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A954495B-6ED1-5896-B03C-5A9C4E3C803D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars get <pair_code> <calendar_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.get=.
+
+#+name: currency_pair_convention_calendars-get
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-get.ores :exports none
+currency_pair_convention_calendars get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7C1B8A41-A7CD-56AB-AAD8-B23A807E0900
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars get-many <pair_code> <calendar_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.get_many=.
+
+#+name: currency_pair_convention_calendars-get-many
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-get-many.ores :exports none
+currency_pair_convention_calendars get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 733AC46B-2963-5E69-A8E4-281BDD21D58E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars add <pair_code> <calendar_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.put=.
+
+#+name: currency_pair_convention_calendars-add
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-add.ores :exports none
+currency_pair_convention_calendars add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8609B8F6-8F78-5DB4-8B09-336B30CDB0B4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars set <pair_code> <calendar_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.put=.
+
+#+name: currency_pair_convention_calendars-set
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-set.ores :exports none
+currency_pair_convention_calendars set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9F9BD2F9-81C6-54BC-99D5-B5571854BA11
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars put-many --count <n> <pair_code> <calendar_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.put_many=.
+
+#+name: currency_pair_convention_calendars-put-many
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-put-many.ores :exports none
+currency_pair_convention_calendars put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 01074AF6-B3D9-59FA-BC3D-26C7D2550F97
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars delete <pair_code> <calendar_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.delete=.
+
+#+name: currency_pair_convention_calendars-delete
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-delete.ores :exports none
+currency_pair_convention_calendars delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1DF736B8-D4F5-526A-B479-4E55FB8A28BE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars delete-many <pair_code> <calendar_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.delete_many=.
+
+#+name: currency_pair_convention_calendars-delete-many
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-delete-many.ores :exports none
+currency_pair_convention_calendars delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =by-pair-code=
+:PROPERTIES:
+:ID: 252A23C2-705E-5871-BF2D-FC498C696B1B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_convention_calendars by-pair-code <pair_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_convention_calendars.list_by_pair_code=.
+
+#+name: currency_pair_convention_calendars-by-pair-code
+#+begin_src ores-shell :tangle currency_pair_convention_calendars-by-pair-code.ores :exports none
+currency_pair_convention_calendars by-pair-code __none__ --limit 1
+#+end_src
+

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 828F5A32-74CA-5162-BCC6-C3A8665B9CEC
+:END:
+#+title: How do I run the monetary_natures commands from the shell?
+#+description: Every command the monetary_natures submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:monetary_natures:
+
+This file documents the monetary_natures resource at the shell, one section per command. Every command is a subcommand of =monetary_natures=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 52B52DD4-B6C4-507C-AE4A-A3EF0A678FAF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.list=.
+
+#+name: monetary_natures-list
+#+begin_src ores-shell :tangle monetary_natures-list.ores :exports none
+monetary_natures list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 94B9B7B6-04DB-5299-97C0-E8DB31209A2D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures get <code>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.get=.
+
+#+name: monetary_natures-get
+#+begin_src ores-shell :tangle monetary_natures-get.ores :exports none
+monetary_natures get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 27061CDF-BCB2-567B-A272-2E31EE71513E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.get_many=.
+
+#+name: monetary_natures-get-many
+#+begin_src ores-shell :tangle monetary_natures-get-many.ores :exports none
+monetary_natures get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A403C3F3-75F6-50A9-ADAE-18389D4023D4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.put=.
+
+#+name: monetary_natures-add
+#+begin_src ores-shell :tangle monetary_natures-add.ores :exports none
+monetary_natures add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AEB658E6-7824-5EFC-AF9B-D0DFEC067EB1
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.put=.
+
+#+name: monetary_natures-set
+#+begin_src ores-shell :tangle monetary_natures-set.ores :exports none
+monetary_natures set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 510A573E-FD56-5C60-A01A-F5A3D56737C3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.put_many=.
+
+#+name: monetary_natures-put-many
+#+begin_src ores-shell :tangle monetary_natures-put-many.ores :exports none
+monetary_natures put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: EB2FC378-4736-5DF3-944B-A555057AE469
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.delete=.
+
+#+name: monetary_natures-delete
+#+begin_src ores-shell :tangle monetary_natures-delete.ores :exports none
+monetary_natures delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 45E3A477-F986-55E5-8FA7-3AAD0EC0FBCF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures.delete_many=.
+
+#+name: monetary_natures-delete-many
+#+begin_src ores-shell :tangle monetary_natures-delete-many.ores :exports none
+monetary_natures delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 444FC162-9D18-5965-B903-D84E1722E17B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures_versions.list=.
+
+#+name: monetary_natures-versions
+#+begin_src ores-shell :tangle monetary_natures-versions.ores :exports none
+monetary_natures versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0787CDEB-B690-5035-921F-063EA16896C1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+monetary_natures version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.monetary_natures_versions.get=.
+
+#+name: monetary_natures-version
+#+begin_src ores-shell :tangle monetary_natures-version.ores :exports none
+monetary_natures version __none__ --version 1
+#+end_src
+

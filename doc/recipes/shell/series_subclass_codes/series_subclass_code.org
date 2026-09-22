@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: C95D3A97-C1FD-5FB4-A12C-3A70B3B50F0C
+:END:
+#+title: How do I run the series_subclass_codes commands from the shell?
+#+description: Every command the series_subclass_codes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:series_subclass_codes:
+
+This file documents the series_subclass_codes resource at the shell, one section per command. Every command is a subcommand of =series_subclass_codes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 73E79027-DA12-5843-9955-4C4E9E0B3714
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.list=.
+
+#+name: series_subclass_codes-list
+#+begin_src ores-shell :tangle series_subclass_codes-list.ores :exports none
+series_subclass_codes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7C8B8553-6D35-5640-AAA3-907163312C96
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes get <code>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.get=.
+
+#+name: series_subclass_codes-get
+#+begin_src ores-shell :tangle series_subclass_codes-get.ores :exports none
+series_subclass_codes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FF15F2E4-BA3A-543E-A26D-12FF03177E87
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.get_many=.
+
+#+name: series_subclass_codes-get-many
+#+begin_src ores-shell :tangle series_subclass_codes-get-many.ores :exports none
+series_subclass_codes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9870728A-8AA2-5730-A1D1-120FE2874FDB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.put=.
+
+#+name: series_subclass_codes-add
+#+begin_src ores-shell :tangle series_subclass_codes-add.ores :exports none
+series_subclass_codes add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 693FE4C1-EFD0-5208-9590-7136231AECFA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.put=.
+
+#+name: series_subclass_codes-set
+#+begin_src ores-shell :tangle series_subclass_codes-set.ores :exports none
+series_subclass_codes set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5A85BE41-D050-543D-B11A-C5AB3BA89CA9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.put_many=.
+
+#+name: series_subclass_codes-put-many
+#+begin_src ores-shell :tangle series_subclass_codes-put-many.ores :exports none
+series_subclass_codes put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7DCD0C5F-058B-51D0-B8C6-6615591D11A2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.delete=.
+
+#+name: series_subclass_codes-delete
+#+begin_src ores-shell :tangle series_subclass_codes-delete.ores :exports none
+series_subclass_codes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6394ABD8-888F-51D1-B55C-5BE727E03D2A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes.delete_many=.
+
+#+name: series_subclass_codes-delete-many
+#+begin_src ores-shell :tangle series_subclass_codes-delete-many.ores :exports none
+series_subclass_codes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 69C09D2F-BFC4-5BD8-AF8E-6873E65C64AB
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes_versions.list=.
+
+#+name: series_subclass_codes-versions
+#+begin_src ores-shell :tangle series_subclass_codes-versions.ores :exports none
+series_subclass_codes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 982870DF-7C4A-52FD-B092-DB05CAA3B7A1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+series_subclass_codes version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.series_subclass_codes_versions.get=.
+
+#+name: series_subclass_codes-version
+#+begin_src ores-shell :tangle series_subclass_codes-version.ores :exports none
+series_subclass_codes version __none__ --version 1
+#+end_src
+

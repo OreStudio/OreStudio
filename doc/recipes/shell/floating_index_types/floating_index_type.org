@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 17A9739E-C482-5334-82F1-5E3E41A7E4EC
+:END:
+#+title: How do I run the floating_index_types commands from the shell?
+#+description: Every command the floating_index_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:floating_index_types:
+
+This file documents the floating_index_types resource at the shell, one section per command. Every command is a subcommand of =floating_index_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 05210E8D-FA0E-5896-8B72-68A26FF47460
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.list=.
+
+#+name: floating_index_types-list
+#+begin_src ores-shell :tangle floating_index_types-list.ores :exports none
+floating_index_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C22DF7DF-053B-5277-829E-C348115E725E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.get=.
+
+#+name: floating_index_types-get
+#+begin_src ores-shell :tangle floating_index_types-get.ores :exports none
+floating_index_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A3168C8A-A2AD-55BE-96A5-78D1175C9220
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.get_many=.
+
+#+name: floating_index_types-get-many
+#+begin_src ores-shell :tangle floating_index_types-get-many.ores :exports none
+floating_index_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5D384935-909F-584C-9D69-685ACB502C2F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types add <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.put=.
+
+#+name: floating_index_types-add
+#+begin_src ores-shell :tangle floating_index_types-add.ores :exports none
+floating_index_types add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2108B144-8840-5F26-A627-8B6E3A2DB05E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types set <code> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.put=.
+
+#+name: floating_index_types-set
+#+begin_src ores-shell :tangle floating_index_types-set.ores :exports none
+floating_index_types set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 992405FA-4402-58D7-9543-813A8D892147
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types put-many --count <n> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.put_many=.
+
+#+name: floating_index_types-put-many
+#+begin_src ores-shell :tangle floating_index_types-put-many.ores :exports none
+floating_index_types put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 18520249-EE4E-5A8F-9FE9-A6044851CCE8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.delete=.
+
+#+name: floating_index_types-delete
+#+begin_src ores-shell :tangle floating_index_types-delete.ores :exports none
+floating_index_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 69DA153F-2C80-553B-996A-6A928FCE43F9
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types.delete_many=.
+
+#+name: floating_index_types-delete-many
+#+begin_src ores-shell :tangle floating_index_types-delete-many.ores :exports none
+floating_index_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 286AB07B-B9DA-5125-ACA8-E30006A67F6D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types_versions.list=.
+
+#+name: floating_index_types-versions
+#+begin_src ores-shell :tangle floating_index_types-versions.ores :exports none
+floating_index_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 18F04227-4826-5A9C-962E-E9A66A54A33C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+floating_index_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.floating_index_types_versions.get=.
+
+#+name: floating_index_types-version
+#+begin_src ores-shell :tangle floating_index_types-version.ores :exports none
+floating_index_types version __none__ --version 1
+#+end_src
+

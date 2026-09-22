@@ -50,8 +50,8 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
-{{/bff_route.subjects_get}}    save: subjects.{{{bff_route.subjects_save}}},
-{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
+{{/bff_route.subjects_get}}{{#bff_route.subjects_save}}    save: subjects.{{{bff_route.subjects_save}}},
+{{/bff_route.subjects_save}}{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
 {{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',

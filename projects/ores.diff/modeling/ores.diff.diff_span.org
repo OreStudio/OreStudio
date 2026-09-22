@@ -15,13 +15,12 @@
 A byte range within a rendered value. It is never stored: it is a member of a
 diff entry and reaches a client inside a history response.
 
-This model does not yet replace the hand-written
-=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=, and generating it
-overwrites that file. Two things stand in the way, both recorded on the
-[[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] profile: an audit
-=recorded_at= member that no profile feature suppresses, and a profile that
-cannot reach =:no_audit_columns:= at all. Fix those before adopting this model as
-the real declaration of the type.
+Generating this model overwrites the hand-written
+=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=, so it is still a
+probe rather than the real declaration of the type: the three sibling payloads
+(=field_value=, =diff_entry=, =diff_result=) have no model yet, and the
+hand-written TypeScript in =wire-protocol/src/diff/protocol.ts= is still what the
+protocol imports. The shape itself is right, and that is what it proves.
 
 * Flags
 :PROPERTIES:
@@ -35,12 +34,10 @@ the real declaration of the type.
 =No primary key=: a byte range identifies nothing. Saying so is what tells the
 loader this is a record that is carried rather than stored.
 
-* SQL
-
-** Flags
-:PROPERTIES:
-:no_audit_columns: true
-:END:
+The profile supplies =:no_audit_columns:=, which is what keeps the version
+column, the audit tail and the transaction timestamp off the struct. This model
+deliberately does not restate it: the profile exists so that four records cannot
+each pick their own answer.
 
 * C++
 

@@ -186,6 +186,13 @@ def test_a_read_only_entity_gets_a_screen_without_the_write_routes():
     declaration = web_declaration_projection(entity, MODEL)
     assert declaration["can_create"] == "false"
     assert declaration["can_edit"] == "false"
+    # The natural key is one column, so the key could drive a removal route --
+    # but the model derives no delete request, so neither the route nor the
+    # affordance exists.
+    assert declaration["can_remove"] == "false"
+    # History is a read, so it survives a model that derives no writes; the
+    # route and the affordance must agree about whether it is served.
+    assert declaration["can_history"] == projection["has_history"]
 
 
 def test_the_save_states_the_write_record_the_intent_and_the_list_shape():

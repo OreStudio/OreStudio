@@ -2193,6 +2193,12 @@ def web_declaration_projection(entity, model_path):
     # A write the model does not derive is a form that would send a request the
     # service has no handler for, so the write affordances follow the verbs.
     has_save = bool(_protocol_subject_key(messages, f'put_{entity_singular}_request'))
+    # A removal follows the verbs as well: an entity whose protocol derives no
+    # delete has no route for one, and an affordance to match would be the same
+    # promise the route projection refuses to make.
+    has_remove = bool(
+        _protocol_subject_key(messages, f'delete_{entity_singular}_request')
+    ) and keyed_by_natural_key
     has_history = bool(_protocol_message(
         messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
     # Whether the list read can be asked for a point in time, which is what
@@ -2216,7 +2222,7 @@ def web_declaration_projection(entity, model_path):
         'icon': _web_icon(presentation),
         'can_create': _ui_bool(not read_only and has_save),
         'can_edit': _ui_bool(not read_only and has_save),
-        'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
+        'can_remove': _ui_bool(not read_only and has_remove),
         'can_history': _ui_bool(has_history),
         'can_as_of': _ui_bool(has_as_of),
         'key_field': key_field,
@@ -2430,7 +2436,6 @@ def bff_route_projection(entity, model_path):
     versions_members = {field['name']
                         for field in (versions_request or {}).get('fields') or []}
     has_audit_columns = bool(entity.get('has_audit_columns'))
-    write_defaults_block, has_minted_default = _write_defaults(entity)
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
@@ -2461,7 +2466,13 @@ def bff_route_projection(entity, model_path):
         projection['subjects_save'] = subjects_save
         projection['write_fields_block'] = ', '.join(
             f"'{field}'" for field in write_fields)
+        write_defaults_block, has_minted_default = _write_defaults(entity)
         projection['write_defaults_block'] = write_defaults_block
+        if has_minted_default:
+            # A section member, present only when a write member takes it:
+            # pystache reads the string 'false' as truthy, so a boolean spelled
+            # as a string cannot gate a section.
+            projection['minted_write_default'] = 'true'
     if has_get:
         projection['subjects_get'] = subjects_get
     if has_remove:
@@ -2469,11 +2480,6 @@ def bff_route_projection(entity, model_path):
     if has_history:
         projection['subjects_history'] = subjects_history
         projection['history_rows_field'] = history_rows_field
-    if has_minted_default:
-        # A section member, present only when a write member takes it: pystache
-        # reads the string 'false' as truthy, so a boolean spelled as a string
-        # cannot gate a section.
-        projection['minted_write_default'] = 'true'
     return projection
 
 

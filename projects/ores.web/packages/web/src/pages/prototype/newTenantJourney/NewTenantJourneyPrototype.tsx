@@ -138,10 +138,9 @@ function Welcome({ onStart }: { readonly onStart: () => void }): ReactNode {
         This installation is new. Set it up in three stages; it takes a few minutes.
       </p>
       <ol className="mx-auto mt-10 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
-        {stages.map((s, i) => (
+        {stages.map((s) => (
           <li key={s.title} className="card p-4">
-            <span className="text-xs text-ink-faint">{i + 1}</span>
-            <div className="mt-1 font-medium">{s.title}</div>
+            <div className="font-medium">{s.title}</div>
             <p className="mt-1 text-sm text-ink-muted">{s.text}</p>
           </li>
         ))}

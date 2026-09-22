@@ -36,8 +36,7 @@ export const accountRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'account',
   collection: 'accounts',
-  key: 'id',
-  keyField: 'username',
+  keyFields: ['username'],
   subjects: {
     list: subjects.list_accounts_request,
     get: subjects.get_account_request,

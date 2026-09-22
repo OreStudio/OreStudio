@@ -36,8 +36,7 @@ export const permissionRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'permission',
   collection: 'permissions',
-  key: 'id',
-  keyField: 'code',
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_permissions_request,
     get: subjects.get_permission_request,

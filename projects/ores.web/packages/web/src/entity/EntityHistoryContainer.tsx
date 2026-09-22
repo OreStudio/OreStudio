@@ -23,7 +23,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChangeReasonDialog, type ChangeReasonResult } from './ChangeReasonDialog.js';
 import { EntityHistoryPage, type HistoryVersion } from './EntityHistoryPage.js';
-import { entityRecordPath } from './entityPaths.js';
+import { entityRecordPath, keyFromParams } from './entityPaths.js';
 import { useEntityHistory, useSaveEntity, type EntityRow } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -45,7 +45,7 @@ export function EntityHistoryContainer({
   readonly descriptor: EntityDescriptor;
 }): ReactNode {
   const params = useParams();
-  const key = params[descriptor.keyParam];
+  const key = keyFromParams(descriptor, params);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -148,7 +148,7 @@ export function EntityHistoryContainer({
         onRetry={() => void query.refetch()}
         // Opening a version is reading it, which is a route rather than a mode, so
         // the back button means something.
-        onOpenVersion={() => navigate(entityRecordPath(descriptor, String(key ?? '')))}
+        onOpenVersion={() => navigate(entityRecordPath(descriptor, key))}
         recordName={name}
         {...(descriptor.capabilities.edit
           ? {

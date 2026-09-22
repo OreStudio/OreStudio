@@ -20,7 +20,6 @@
  */
 
 import type { EntityMeta, FieldGroup } from '../ui-contract.js';
-import type { IconName } from '../ui/icons/index.js';
 
 /**
  * Everything one entity's screens need, and nothing about how they render.
@@ -55,20 +54,14 @@ export interface EntityDescriptor {
   /** Where the BFF serves it, e.g. `/api/countries`. */
   readonly apiBase: string;
   /**
-   * The mark the navigation and the breadcrumbs draw for it.
+   * The members of the key the model declares, in the order it declares them.
    *
-   * Stated by the model, so an entity's mark is one value rather than a choice
-   * each screen makes, and validated against the icon vocabulary at codegen
-   * time rather than rendering as nothing.
+   * The route carries one path segment per member, named for the member, and
+   * the record the form reads and writes is built from the same list. Most
+   * entities declare one; a junction declares none of its own and is
+   * identified by the pair it links, so it has two.
    */
-  readonly icon: IconName;
-  /**
-   * The route parameter that carries the natural key, e.g. `id`.
-   *
-   * The parameter's name in the URL, which is not always the field's name: a
-   * route reads `/refdata/country/:id` and the key it carries is `alpha2_code`.
-   */
-  readonly keyParam: string;
+  readonly keyFields: readonly string[];
   /** What the entity lets a person do. An absent capability is not rendered. */
   readonly capabilities: EntityCapabilities;
   /** The fields the list's search reaches across. */
@@ -99,12 +92,4 @@ export interface EntityCapabilities {
   readonly remove: boolean;
   /** True when the entity is temporal and the service serves its history. */
   readonly history: boolean;
-  /**
-   * True when the list read can be asked for a point in time.
-   *
-   * The protocol carries the window on the entity's own list request, so an
-   * entity whose request has none gets no control rather than a control that
-   * sends a field the service does not decode.
-   */
-  readonly asOf: boolean;
 }

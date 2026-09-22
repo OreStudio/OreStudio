@@ -81,10 +81,9 @@ The full template source. Edit here and re-tangle with
 /**
  * Where the {{{web_declaration.entity}}} screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { {{{web_declaration.entity_camel}}}Meta } from '../ui/{{{web_declaration.entity}}}_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -95,14 +94,13 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     meta: {{{web_declaration.entity_camel}}}Meta,
     routeSegment: '{{{web_declaration.route_segment}}}',
     apiBase: '{{{web_declaration.api_base}}}',
-    keyParam: '{{{web_declaration.key_param}}}',
-    icon: '{{{web_declaration.icon}}}',
+    keyFields: [
+{{{web_declaration.key_fields_block}}}    ],
     capabilities: {
         create: {{{web_declaration.can_create}}},
         edit: {{{web_declaration.can_edit}}},
         remove: {{{web_declaration.can_remove}}},
         history: {{{web_declaration.can_history}}},
-        asOf: {{{web_declaration.can_as_of}}},
     },
     searchFields: [
 {{{web_declaration.search_fields_block}}}    ],
@@ -120,7 +118,7 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
 | =entity_camel= | The same name in camel case, for the exported constant |
 | =route_segment= | The entity's route segment, e.g. =country= |
 | =api_base= | Where the BFF serves the entity, e.g. =/api/countries= |
-| =key_param= | The route parameter carrying the natural key |
+| =key_fields_block= | The route parameter carrying the natural key |
 | =can_create=, =can_edit=, =can_remove=, =can_history= | The four capabilities, as booleans |
 | =search_fields_block= | The searchable fields, pre-rendered with their commas |
 

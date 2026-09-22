@@ -23,48 +23,37 @@
  * To modify, update the template and regenerate.
  */
 /**
- * Where the login_info screens live and what they can do.
+ * Where the account_party screens live and what they can do.
  *
  * The route, the API path and the key parameter are values the model carries, so
  * a screen never repeats them and two screens cannot disagree. The labels are
  * translation keys and live in the catalogue with the rest of the words.
  */
-import { loginInfoMeta } from '../ui/login_info_ui.js';
+import { accountPartyMeta } from '../ui/account_party_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
 
-export const loginInfoDescriptor: EntityDescriptor = {
+export const accountPartyDescriptor: EntityDescriptor = {
     component: 'iam',
-    entity: 'login_info',
-    meta: loginInfoMeta,
-    routeSegment: 'login-info',
-    apiBase: '/api/login_info',
+    entity: 'account_party',
+    meta: accountPartyMeta,
+    routeSegment: 'account-party',
+    apiBase: '/api/account_parties',
     keyFields: [
         'account_id',
+        'party_id',
     ],
     capabilities: {
-        create: false,
-        edit: false,
-        remove: false,
+        create: true,
+        edit: true,
+        remove: true,
         history: false,
     },
     searchFields: [
         'account_id',
-        'last_login',
-        'failed_logins',
-        'locked',
-        'online',
-        'password_reset_required',
-        'last_ip',
-        'last_attempt_ip',
+        'party_id',
     ],
     writeFields: [
         'account_id',
-        'last_ip',
-        'last_attempt_ip',
-        'failed_logins',
-        'locked',
-        'last_login',
-        'online',
-        'password_reset_required',
+        'party_id',
     ],
 };

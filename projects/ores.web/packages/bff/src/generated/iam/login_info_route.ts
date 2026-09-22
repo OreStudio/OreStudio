@@ -36,8 +36,7 @@ export const loginInfoRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'login_info',
   collection: 'login_info',
-  key: 'id',
-  keyField: 'account_id',
+  keyFields: ['account_id'],
   subjects: {
     list: subjects.list_login_info_request,
     get: subjects.get_login_info_request,

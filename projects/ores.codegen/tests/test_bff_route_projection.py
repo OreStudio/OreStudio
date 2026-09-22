@@ -85,8 +85,7 @@ def test_a_lookup_entity_names_the_derived_crud_subjects():
     assert projection["entity"] == "tenant_type"
     assert projection["entity_camel"] == "tenantType"
     assert projection["collection"] == "tenant_types"
-    assert projection["key"] == "id"
-    assert projection["key_field"] == "type"
+    assert projection["key_fields_block"] == "'type'"
     assert projection["rows_field"] == "types"
     assert projection["subjects_list"] == "list_tenant_types_request"
     assert projection["subjects_save"] == "put_tenant_type_request"
@@ -220,8 +219,7 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "component: 'iam'," in rendered
     assert "entity: 'tenant_type'," in rendered
     assert "collection: 'tenant_types'," in rendered
-    assert "key: 'id'," in rendered
-    assert "keyField: 'type'," in rendered
+    assert "keyFields: ['type']," in rendered
     assert "list: subjects.list_tenant_types_request," in rendered
     assert "get: subjects.get_tenant_type_request," in rendered
     assert "save: subjects.put_tenant_type_request," in rendered
@@ -254,7 +252,7 @@ def test_the_template_drives_every_route_a_declared_key_can(tmp_path):
     assert "export const tenantRoute: EntityRouteDescriptor = {" in rendered
     assert "component: 'iam'," in rendered
     assert "entity: 'tenant'," in rendered
-    assert "keyField: 'code'," in rendered
+    assert "keyFields: ['code']," in rendered
     assert "list: subjects.list_tenants_request," in rendered
     assert "get: subjects.get_tenant_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
@@ -266,3 +264,41 @@ def test_the_template_drives_every_route_a_declared_key_can(tmp_path):
     assert "timestampFields" not in rendered
     assert "deleteKeysField" not in rendered
     assert ",\n\n" not in rendered
+
+
+def test_a_two_member_key_states_both_members():
+    """A junction is identified by the pair it links, and a path carries one
+    value per segment, so the descriptor names both members."""
+    entity = _entity(
+        entity_singular="account_party", entity_plural="account_parties",
+        entity_plural_short="account_parties",
+        primary_key={"column": "account_id",
+                     "columns": [{"column": "account_id", "is_uuid": True},
+                                 {"column": "party_id", "is_uuid": True}]},
+        presentation={"collection_name": "account_parties",
+                      "columns": [{"field": "account_id"}]},
+        current_state=True)
+    projection = bff_route_projection(entity, MODEL)
+    assert projection["key_fields_block"] == "'account_id', 'party_id'"
+    assert projection["has_remove"] == "true"
+    assert projection["has_get"] == "true"
+
+
+def test_a_two_member_key_has_no_history():
+    """The generic history request names one id.
+
+    It cannot state a pair, the specification forbids sending half a key, and a
+    pair joined into a string addresses no row -- so the route is withheld
+    rather than one that reaches nothing.
+    """
+    entity = _entity(
+        entity_singular="account_party", entity_plural="account_parties",
+        entity_plural_short="account_parties",
+        primary_key={"column": "account_id",
+                     "columns": [{"column": "account_id", "is_uuid": True},
+                                 {"column": "party_id", "is_uuid": True}]},
+        presentation={"collection_name": "account_parties",
+                      "columns": [{"field": "account_id"}]})
+    projection = bff_route_projection(entity, MODEL)
+    assert projection["has_history"] == "false"
+    assert "subjects_history" not in projection

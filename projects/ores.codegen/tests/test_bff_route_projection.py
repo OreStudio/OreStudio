@@ -161,30 +161,22 @@ def test_a_compound_primary_key_withholds_delete_and_history():
     assert "subjects_history" not in projection
 
 
-def test_the_save_states_the_write_record_the_intent_and_the_list_shape():
-    """What the factory cannot derive from the entity's shape is stated."""
+def test_the_save_states_no_system_field():
+    """The write record carries the entity's own fields and nothing else.
+
+    `recorded_at` is the transaction-time window the store fills from its own
+    clock, and the derived write record has never carried it. The save route
+    used to state it anyway and stamp a value into a member the wire shape does
+    not have, which is a system field computed on the client.
+    """
     projection = bff_route_projection(_entity(), MODEL)
-    assert projection["write_fields_block"] == "'type'"
-    assert projection["intent_reason_field"] == "change_reason_code"
-    assert projection["intent_commentary_field"] == "change_commentary"
-    assert projection["list_has_as_of"] == "false"
-    assert projection["list_has_filter"] == "false"
-    assert projection["versions_has_filter"] == "true"
+    assert "timestamp_fields_block" not in projection
 
 
-def test_a_current_state_entity_states_no_intent_field():
-    """A table with no audit columns has no reason for the row to carry."""
-    projection = bff_route_projection(_entity(current_state=True), MODEL)
-    assert projection["intent_reason_field"] == ""
-    assert projection["intent_commentary_field"] == ""
-    assert projection["versions_has_filter"] == "false"
-
-
-def test_a_grouped_audit_entity_still_states_the_write_record():
+def test_a_composed_entity_states_no_system_field_either():
     projection = bff_route_projection(
         _entity(has_audit_group=True, audit_prefix="audit."), MODEL)
-    assert projection["intent_reason_field"] == "change_reason_code"
-    assert projection["write_fields_block"] == "'type'"
+    assert "timestamp_fields_block" not in projection
 
 
 def test_a_singular_plural_collision_still_addresses_one_record():
@@ -241,6 +233,7 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "history: subjects.list_tenant_type_versions_request," in rendered
     assert "rowsField: 'types'," in rendered
     assert "historyRowsField: 'versions'," in rendered
+    assert "timestampFields" not in rendered
     # The descriptor holds values and no behaviour.
     assert "=>" not in rendered
     # No blank line left behind by an optional member, which pystache would emit
@@ -276,13 +269,10 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
     assert "list: subjects.list_tenants_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
-    # A surrogate key the form does not show is minted by the caller, and a
-    # nullable member the form does not show goes out as no value.
-    assert "writeDefaults: { id: 'uuid', code: '', name: '', type: '', " \
-           "description: null, hostname: '', status: '' }," in rendered
-    # The key record names the UUID primary key, so no route the path segment
-    # drives is stated, and neither field is left behind.
-    assert "get: subjects." not in rendered
+    assert "timestampFields" not in rendered
+    # The key record names the UUID primary key, so neither route is stated and
+    # neither field is left behind.
+    assert "deleteKeysField" not in rendered
     assert "remove: subjects." not in rendered
     assert "history: subjects." not in rendered
     assert "historyRowsField" not in rendered

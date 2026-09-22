@@ -22,12 +22,28 @@ Two changes are needed:
   then add the row to the profile's * Assignments table. Without the map entry
   the profile's row is silently skipped (the loader will not guess a namespace),
   so the profile cannot guarantee the shape it documents.
-- Decide how =recorded_at= is suppressed. It is the one audit member
-  =:no_audit_columns:= does not remove:
-  =ores.cpp.domain.class_header.org= gates =version=, =modified_by=,
-  =performed_by=, =change_reason_code= and =change_commentary= behind
-  ={{#has_audit_columns}}=, but gates =recorded_at= behind ={{^current_state}}=
-  alone.
+- Gate =recorded_at= on the entity having a transaction-time window, rather than
+  on ={{^current_state}}= alone. =ores.cpp.domain.class_header.org= gates
+  =version=, =modified_by=, =performed_by=, =change_reason_code= and
+  =change_commentary= behind ={{#has_audit_columns}}=, but gates =recorded_at=
+  behind ={{^current_state}}=.
+
+  =recorded_at= is *not* an audit member, and it is not legacy. It is the
+  transaction-time window surfaced on the domain type: the column is
+  =valid_from=, which the store sets from its own clock
+  (=NEW.valid_from = clock_timestamp()=), the mapper projects it
+  (=r.recorded_at = timestamp_to_timepoint(v.valid_from)=), and the generic
+  history builder *requires* it -- =flat_history_version_source= will not accept
+  a version type without a =recorded_at=. So the four entities that state
+  =:no_audit_columns:= keep it deliberately; their own DDL says the flag "drops
+  the version column and the four audit columns while keeping the
+  transaction-time window".
+
+  What is wrong is only the predicate. ={{^current_state}}= asks "is this
+  entity temporal", which is true of every stored entity, and a table-less
+  record is not a stored entity at all: it has no table, so it has no
+  =valid_from= to project. The gate needs to distinguish "stored without a
+  history axis" from "not stored", and only the model can say which.
 
 * Why
 
@@ -47,11 +63,13 @@ Both gaps block the four =ores.diff= payloads (=field_value=, =diff_span=,
 point of the profile: today their C++ and TypeScript twins are hand-written and
 nothing checks them against each other.
 
-Fixing the =recorded_at= gate is not a one-line change to
-=:no_audit_columns:=. Four entities already state it -- =iam.login_info=,
-=iam.permission=, =marketdata.market_fixing=, =marketdata.market_observation= --
-and =market_observation.hpp= carries =recorded_at= today. Whatever knobs the fix
-adds must leave those four rendering as they do now.
+The =recorded_at= fix must leave the four entities that state
+=:no_audit_columns:= -- =iam.login_info=, =iam.permission=,
+=marketdata.market_fixing=, =marketdata.market_observation= -- rendering exactly
+as they do now, =recorded_at= included. =iam.login_info= is the easy one to get
+wrong: it is =current_state= *and* =no_audit_columns=, so it carries no
+=recorded_at=, and a fix that reasoned from it alone would remove the member
+from the three that do carry it.
 
 * References
 

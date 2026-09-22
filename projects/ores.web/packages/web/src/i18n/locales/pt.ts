@@ -72,12 +72,28 @@ const pt: SourceCatalogue = {
     signIn: 'Iniciar sessão',
   },
 
+  password: {
+    show: 'Mostrar',
+    hide: 'Ocultar',
+    new: 'Palavra-passe',
+    confirm: 'Confirmar palavra-passe',
+    mismatch: 'As palavras-passe não coincidem.',
+    ruleMet: 'cumprida',
+    ruleNotMet: 'não cumprida',
+    strength: { 0: '', 1: 'Fraca', 2: 'Razoável', 3: 'Boa', 4: 'Forte' },
+    rule: {
+      length: 'Pelo menos {min} caracteres',
+      upper: 'Uma letra maiúscula (A-Z)',
+      lower: 'Uma letra minúscula (a-z)',
+      digit: 'Um algarismo (0-9)',
+      special: 'Um carácter especial ({chars})',
+    },
+  },
+
   signIn: {
     title: 'Iniciar sessão',
     username: 'Nome de utilizador',
     password: 'Palavra-passe',
-    show: 'Mostrar',
-    hide: 'Ocultar',
     submit: 'Iniciar sessão',
     submitting: 'A iniciar sessão...',
     noAccount: 'Não tem conta?',

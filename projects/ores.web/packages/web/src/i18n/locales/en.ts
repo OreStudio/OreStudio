@@ -75,12 +75,28 @@ export const en: SourceCatalogue = {
     signIn: 'Sign in',
   },
 
+  password: {
+    show: 'Show',
+    hide: 'Hide',
+    new: 'Password',
+    confirm: 'Confirm password',
+    mismatch: 'The passwords do not match.',
+    ruleMet: 'met',
+    ruleNotMet: 'not met',
+    strength: { 0: '', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' },
+    rule: {
+      length: 'At least {min} characters',
+      upper: 'An uppercase letter (A-Z)',
+      lower: 'A lowercase letter (a-z)',
+      digit: 'A digit (0-9)',
+      special: 'A special character ({chars})',
+    },
+  },
+
   signIn: {
     title: 'Sign in',
     username: 'Username',
     password: 'Password',
-    show: 'Show',
-    hide: 'Hide',
     submit: 'Sign in',
     submitting: 'Signing in...',
     noAccount: 'No account?',

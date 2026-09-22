@@ -67,12 +67,28 @@ const fr: SourceCatalogue = {
     signIn: 'Se connecter',
   },
 
+  password: {
+    show: 'Afficher',
+    hide: 'Masquer',
+    new: 'Mot de passe',
+    confirm: 'Confirmer le mot de passe',
+    mismatch: 'Les mots de passe ne correspondent pas.',
+    ruleMet: 'respectée',
+    ruleNotMet: 'non respectée',
+    strength: { 0: '', 1: 'Faible', 2: 'Moyen', 3: 'Bon', 4: 'Fort' },
+    rule: {
+      length: 'Au moins {min} caractères',
+      upper: 'Une majuscule (A-Z)',
+      lower: 'Une minuscule (a-z)',
+      digit: 'Un chiffre (0-9)',
+      special: 'Un caractère spécial ({chars})',
+    },
+  },
+
   signIn: {
     title: 'Se connecter',
     username: "Nom d'utilisateur",
     password: 'Mot de passe',
-    show: 'Afficher',
-    hide: 'Masquer',
     submit: 'Se connecter',
     submitting: 'Connexion...',
     noAccount: 'Pas de compte ?',

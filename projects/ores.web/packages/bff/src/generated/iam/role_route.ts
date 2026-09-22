@@ -42,5 +42,4 @@ export const roleRoute: EntityRouteDescriptor = {
     save: subjects.put_role_request,
   },
   rowsField: 'roles',
-  timestampFields: ['recorded_at'],
 };

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-22
 #+updated: 2026-09-22
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Task: add a Tenant lifecycle section to doc/knowledge/security/identity_and_acce
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -69,3 +69,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added a =Tenant lifecycle= section to
+[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]. It defines System bootstrap, Provision,
+Onboard and Seed profile (Empty operational, Synthetic, ACME demo),
+and it separates System bootstrap from service startup.

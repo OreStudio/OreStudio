@@ -133,8 +133,7 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
 
 // The canonical write record carries what the caller owns. The imported
 // domain objects carry the server's fields too, so each projects by name.
-ores::refdata::messaging::currency_write
-to_write(const ores::refdata::domain::currency& c) {
+ores::refdata::messaging::currency_write to_write(const ores::refdata::domain::currency& c) {
     return {.iso_code = c.iso_code,
             .name = c.name,
             .numeric_code = c.numeric_code,
@@ -152,8 +151,7 @@ to_write(const ores::refdata::domain::currency& c) {
             .base_precedence = c.base_precedence};
 }
 
-ores::refdata::messaging::portfolio_write
-to_write(const ores::refdata::domain::portfolio& p) {
+ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::portfolio& p) {
     return {.id = p.id,
             .name = p.name,
             .description = p.description,
@@ -1162,8 +1160,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto iso = currency.iso_code;
         ores::refdata::messaging::put_currency_request save_req{
             .change = {.write = to_write(currency)},
-            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
-                                                  .commentary = "Imported from an ORE directory"}};
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1197,8 +1195,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto name = portfolio.name;
         ores::refdata::messaging::put_portfolio_request save_req{
             .change = {.write = to_write(portfolio)},
-            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
-                                                  .commentary = "Imported from an ORE directory"}};
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1232,8 +1230,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto bid = boost::uuids::to_string(book.id);
         const auto name = book.name;
         ores::refdata::messaging::put_book_request save_req{
-            .change = {.write = to_write(book)}, .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
-                                                  .commentary = "Imported from an ORE directory"}};
+            .change = {.write = to_write(book)},
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1661,9 +1660,9 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
                                   << req.correlation_id << " count=" << req.saved_book_ids.size();
         ores::refdata::messaging::delete_many_books_request del_req{
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import_rollback",
-                .commentary = "Rolling back a failed ORE import"}};
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
+                                                           .commentary =
+                                                               "Rolling back a failed ORE import"}};
         for (const auto& id : req.saved_book_ids)
             del_req.removals.push_back(
                 {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(id)}});
@@ -1683,12 +1682,10 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
                                   << req.correlation_id
                                   << " count=" << req.saved_portfolio_ids.size();
         ores::refdata::messaging::delete_many_portfolios_request del_req{
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import_rollback",
-                .commentary = "Rolling back a failed ORE import"}};
-        for (auto it = req.saved_portfolio_ids.rbegin();
-             it != req.saved_portfolio_ids.rend();
-             ++it)
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
+                                                           .commentary =
+                                                               "Rolling back a failed ORE import"}};
+        for (auto it = req.saved_portfolio_ids.rbegin(); it != req.saved_portfolio_ids.rend(); ++it)
             del_req.removals.push_back(
                 {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(*it)}});
         std::string err;
@@ -1707,9 +1704,9 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
                                   << req.correlation_id
                                   << " count=" << req.saved_currency_iso_codes.size();
         ores::refdata::messaging::delete_many_currencies_request del_req{
-            .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import_rollback",
-                .commentary = "Rolling back a failed ORE import"}};
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
+                                                           .commentary =
+                                                               "Rolling back a failed ORE import"}};
         for (const auto& iso : req.saved_currency_iso_codes)
             del_req.removals.push_back({.key = {.iso_code = iso}});
         std::string err;

@@ -198,7 +198,6 @@ TEST_CASE("read_latest_book_statuses_includes_the_written_row", tags) {
     repo.write(h.context(), bs);
 
     const auto rows = repo.read_latest(h.context());
-    const auto found =
-        std::ranges::any_of(rows, [&](const auto& v) { return v.code == bs.code; });
+    const auto found = std::ranges::any_of(rows, [&](const auto& v) { return v.code == bs.code; });
     CHECK(found);
 }

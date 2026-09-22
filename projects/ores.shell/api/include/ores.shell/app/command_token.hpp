@@ -20,6 +20,7 @@
 #ifndef ORES_SHELL_APP_COMMAND_TOKEN_HPP
 #define ORES_SHELL_APP_COMMAND_TOKEN_HPP
 
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -30,8 +31,6 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::shell::app {
 

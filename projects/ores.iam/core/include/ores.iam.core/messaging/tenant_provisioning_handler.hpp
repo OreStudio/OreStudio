@@ -1200,8 +1200,7 @@ private:
                 ores::utility::domain::precondition_kind::must_match_version;
             save_req.change.precondition.version = static_cast<std::uint32_t>(party.version);
             save_req.intent.reason_code = "system.external_data_import";
-            save_req.intent.commentary =
-                "Activated (and logo attached) during Acme provisioning";
+            save_req.intent.commentary = "Activated (and logo attached) during Acme provisioning";
             client.request(save_req);
         }
 

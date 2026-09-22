@@ -379,8 +379,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
     // One subscription per event action, so the cache follows the canonical
     // events rather than a single changed-event subject.
-    auto party_cache_subs =
-        service::cache::warm_and_subscribe_party_cache(nats, pc, tenant_ids);
+    auto party_cache_subs = service::cache::warm_and_subscribe_party_cache(nats, pc, tenant_ids);
     subs.insert(subs.end(),
                 std::make_move_iterator(party_cache_subs.begin()),
                 std::make_move_iterator(party_cache_subs.end()));

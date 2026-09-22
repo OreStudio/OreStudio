@@ -1,5 +1,4 @@
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
-
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"

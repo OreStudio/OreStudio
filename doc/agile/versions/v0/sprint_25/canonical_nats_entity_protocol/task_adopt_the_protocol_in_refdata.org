@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/adopt-the-protocol-in-refdata
-#+pr:
+#+pr: 2124
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -220,7 +220,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2124][#2124]] | [refdata,codegen,shell] Adopt the canonical NATS entity protocol in refdata |
 
 * Review
 

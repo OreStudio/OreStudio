@@ -48,6 +48,7 @@ import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_decla
 import { countryDescriptor } from '../generated/refdata/web/country_declaration.js';
 import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
 import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
+import { loginInfoDescriptor } from '../generated/iam/web/login_info_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -124,6 +125,7 @@ export const iamComponent: ComponentDefinition = {
     wired(tenantStatusDescriptor, 'tenantStatus', 'clock'),
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
     wired(permissionDescriptor, 'permission', 'keyMultiple'),
+    wired(loginInfoDescriptor, 'loginInfo', 'lockClosed'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

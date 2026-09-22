@@ -82,11 +82,13 @@ export function DetailsForm({
   details,
   onChange,
   onPasswordAcceptable,
+  passwordPrefilled = false,
 }: {
   readonly profile: SeedProfile;
   readonly details: TenantDetails;
   readonly onChange: (details: TenantDetails) => void;
   readonly onPasswordAcceptable: (acceptable: boolean) => void;
+  readonly passwordPrefilled?: boolean;
 }): ReactNode {
   const set = (key: keyof Omit<TenantDetails, 'params'>, value: string): void =>
     onChange({ ...details, [key]: value });
@@ -141,8 +143,13 @@ export function DetailsForm({
         <div className="sm:col-span-2">
           <NewPasswordField
             label="Initial password"
-            hint="They must change it at first sign-in."
+            hint={
+              passwordPrefilled
+                ? "Set to the super admin's password. They must change it at first sign-in."
+                : 'They must change it at first sign-in.'
+            }
             value={details.adminPassword}
+            prefilled={passwordPrefilled}
             onChange={(password, acceptable) => {
               set('adminPassword', password);
               onPasswordAcceptable(acceptable);

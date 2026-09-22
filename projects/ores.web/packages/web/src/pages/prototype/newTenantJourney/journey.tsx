@@ -22,6 +22,7 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { Button, cx } from '../../../ui/Primitives.js';
 import { DetailsForm, FailToggle, Handoff, ProfileChoice, ProgressList } from './parts.js';
+import { assessPassword } from '../../../ui/passwordPolicy.js';
 import { PROFILES, emptyDetails, useSimulatedRun, type TenantDetails } from './stub.js';
 
 /**
@@ -111,11 +112,12 @@ export function JourneyPage({
 }
 
 /** The new tenant steps' state: profile, details, and a simulated run. */
-export function useNewTenant() {
+export function useNewTenant(superAdminPassword?: string) {
   const [profileCode, setProfileCode] = useState<string>();
   const profile = PROFILES.find((p) => p.code === profileCode);
   const [details, setDetails] = useState<TenantDetails>();
   const [passwordOk, setPasswordOk] = useState(false);
+  const [passwordPrefilled, setPasswordPrefilled] = useState(false);
   const [started, setStarted] = useState(false);
   const [failOnce, setFailOnce] = useState(false);
   const run = useSimulatedRun(profile, started, failOnce ? 2 : undefined);
@@ -123,7 +125,15 @@ export function useNewTenant() {
   const choose = (code: string): void => {
     setProfileCode(code);
     const p = PROFILES.find((x) => x.code === code);
-    if (p !== undefined) setDetails(emptyDetails(p));
+    if (p === undefined) return;
+    const inherited = p.inheritsAdminPassword === true && superAdminPassword !== undefined && superAdminPassword !== '';
+    setDetails({ ...emptyDetails(p), adminPassword: inherited ? superAdminPassword : '' });
+    setPasswordPrefilled(inherited);
+    setPasswordOk(inherited && assessPassword(superAdminPassword).valid);
+  };
+  const updateDetails = (next: TenantDetails): void => {
+    setDetails(next);
+    if (next.adminPassword !== superAdminPassword) setPasswordPrefilled(false);
   };
   const restart = (): void => {
     setStarted(false);
@@ -131,7 +141,7 @@ export function useNewTenant() {
     setDetails(undefined);
     setPasswordOk(false);
   };
-  return { profile, details, setDetails, passwordOk, setPasswordOk, started, setStarted, failOnce, setFailOnce, run, choose, restart };
+  return { profile, details, setDetails: updateDetails, passwordOk, passwordPrefilled, setPasswordOk, started, setStarted, failOnce, setFailOnce, run, choose, restart };
 }
 
 export type NewTenant = ReturnType<typeof useNewTenant>;
@@ -185,6 +195,7 @@ export function newTenantSteps(
             details={t.details}
             onChange={t.setDetails}
             onPasswordAcceptable={t.setPasswordOk}
+            passwordPrefilled={t.passwordPrefilled}
           />
         ) : null,
       next: { label: 'Continue', enabled: t.passwordOk },

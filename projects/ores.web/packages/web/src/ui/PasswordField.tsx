@@ -61,14 +61,17 @@ export function NewPasswordField({
   hint,
   value,
   onChange,
+  prefilled = false,
 }: {
   readonly label?: string;
   readonly hint?: string;
   readonly value: string;
   readonly onChange: (password: string, acceptable: boolean) => void;
+  /** The value arrived already chosen, so it starts out confirmed. */
+  readonly prefilled?: boolean;
 }): ReactNode {
   const { t } = useTranslation();
-  const [confirm, setConfirm] = useState('');
+  const [confirm, setConfirm] = useState(prefilled ? value : '');
   const rulesId = useId();
   const assessment = assessPassword(value);
   const mismatch = confirm.length > 0 && confirm !== value;

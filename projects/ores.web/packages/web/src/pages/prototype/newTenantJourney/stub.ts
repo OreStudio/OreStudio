@@ -49,6 +49,8 @@ export interface SeedProfile {
   /** Tenant details the profile fills in; the person can still change them. */
   readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
   readonly logo?: string;
+  /** In first run, the tenant admin's password starts as the super admin's. */
+  readonly inheritsAdminPassword?: boolean;
   /** The parties the tenant ends up with, for the first sign-in's default party. */
   readonly parties: readonly string[];
 }
@@ -96,6 +98,7 @@ export const PROFILES: readonly SeedProfile[] = [
     bullets: ['4 legal entities, books and desks', '45 staff to sign in as', 'Live synthetic market data'],
     audience: 'For demos and testing',
     logo: acmeLogo,
+    inheritsAdminPassword: true,
     parties: ['Acme Corporation Plc', 'ACME Corporation UK plc', 'ACME Corporation US Inc', 'ACME Corporation HK Ltd'],
     defaults: {
       code: 'acme_corporation',

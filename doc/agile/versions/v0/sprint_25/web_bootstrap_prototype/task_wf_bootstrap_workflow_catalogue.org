@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Question: for system bootstrap, tenant provisioning, demo tenant, tenant onboarding and party provisioning, what triggers each, in what order, and who may run each? Blocked by: Decide the seed profile contract.
+Question: for system bootstrap, provision tenant (Empty operational or ACME demo), onboarding and provision party, what triggers each, in what order, and which screens carry them? Who may run each workflow is already decided in the seed profile contract. What does onboarding hold now that provisioning does the party setup? Blocked by: Decide the seed profile contract.
 
 * Status
 

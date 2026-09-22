@@ -190,10 +190,8 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{audit_prefix}}}performed_by = modified_by;
     r.{{{audit_prefix}}}change_reason_code = "system.test";
     r.{{{audit_prefix}}}change_commentary = "Synthetic test data";
-{{/has_audit_columns}}
-{{^current_state}}
     r.{{{audit_prefix}}}recorded_at = ctx.past_timepoint();
-{{/current_state}}
+{{/has_audit_columns}}
     return r;
 }
 

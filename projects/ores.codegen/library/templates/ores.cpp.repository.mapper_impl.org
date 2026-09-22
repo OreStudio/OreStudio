@@ -176,10 +176,8 @@ domain::{{entity_singular}}
     r.{{{audit_prefix}}}performed_by = v.performed_by;
     r.{{{audit_prefix}}}change_reason_code = v.change_reason_code;
     r.{{{audit_prefix}}}change_commentary = v.change_commentary;
-{{/has_audit_columns}}
-{{^current_state}}
     r.{{{audit_prefix}}}recorded_at = timestamp_to_timepoint(v.valid_from);
-{{/current_state}}
+{{/has_audit_columns}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

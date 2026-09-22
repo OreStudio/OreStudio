@@ -54,11 +54,18 @@ still exist, and a descriptor that named a save subject the protocol
 module does not export would not compile. Only =list= is required, because
 a descriptor with no way to read the collection reaches nothing.
 
-A junction is deliberately not served: its delete request names one array
-per side, and the generic factory sends a single key, so a junction route
-would silently drop half its key. The archetype admits =domain_entity=
-only, and junction routes stay hand-written until the factory states the
-pair.
+A junction is not served, and the reason is not the one this paragraph
+used to give. It said the junction's delete request names one array per
+side while the factory sends a single key -- that was true of the shape
+the canonical protocol replaced. The generated removal now carries one key
+record with both members, so nothing would be half dropped.
+
+What actually stands in the way is that the route's address is a path, and
+a path segment carries one value. A junction's key has two members, so it
+needs one segment each, and neither the descriptor nor the factory states
+more than one key field today. The archetype admits =domain_entity= until
+that is stated, so a junction is given no route rather than a route that
+addresses half of it.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

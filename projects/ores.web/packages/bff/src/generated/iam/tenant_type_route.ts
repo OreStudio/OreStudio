@@ -39,6 +39,7 @@ export const tenantTypeRoute: EntityRouteDescriptor = {
   keyField: 'type',
   rowField: 'tenant_type',
   writeFields: ['type', 'name', 'description', 'display_order'],
+  writeDefaults: { type: '', name: '', description: '', display_order: 0 },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

@@ -104,6 +104,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   keyField: '{{{bff_route.key_field}}}',
   rowField: '{{{bff_route.row_field}}}',
   writeFields: [{{{bff_route.write_fields_block}}}],
+  writeDefaults: {{{bff_route.write_defaults_block}}},
   intentFields: {
     reason: '{{{bff_route.intent_reason_field}}}',
     commentary: '{{{bff_route.intent_commentary_field}}}',
@@ -135,6 +136,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 | =key_field= | The wire field the natural key lives in, e.g. =type= |
 | =row_field= | The wire field a single-record read answers in, e.g. =tenant= |
 | =write_fields_block= | The write record's members, pre-rendered as a TypeScript array |
+| =write_defaults_block= | The value each write member takes when the form does not carry it, pre-rendered as a TypeScript object |
 | =intent_reason_field=, =intent_commentary_field= | The row fields carrying the change intent, empty for an entity with no audit columns |
 | =list_has_as_of=, =list_has_filter=, =versions_has_filter= | Whether those requests carry the optional member, as TypeScript literals |
 | =rows_field= | The array field the list response holds its rows in |

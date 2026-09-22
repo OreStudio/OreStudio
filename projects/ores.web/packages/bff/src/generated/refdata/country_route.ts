@@ -39,6 +39,7 @@ export const countryRoute: EntityRouteDescriptor = {
   keyField: 'alpha2_code',
   rowField: 'country',
   writeFields: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name', 'image_id', 'coding_scheme_code'],
+  writeDefaults: { alpha2_code: '', alpha3_code: '', numeric_code: '', name: '', official_name: '', image_id: null, coding_scheme_code: null },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

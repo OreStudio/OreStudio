@@ -39,6 +39,7 @@ export const tenantRoute: EntityRouteDescriptor = {
   keyField: 'code',
   rowField: 'tenant',
   writeFields: ['id', 'code', 'name', 'type', 'description', 'hostname', 'status'],
+  writeDefaults: { id: 'uuid', code: '', name: '', type: '', description: null, hostname: '', status: '' },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',
@@ -48,7 +49,6 @@ export const tenantRoute: EntityRouteDescriptor = {
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_tenants_request,
-    get: subjects.get_tenant_request,
     save: subjects.put_tenant_request,
   },
   rowsField: 'tenants',

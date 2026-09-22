@@ -20,6 +20,7 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { LiveSession } from './sessions.js';
 
@@ -71,6 +72,16 @@ export interface EntityRouteDescriptor {
    * and the intent, while the rest are the server's to own.
    */
   readonly writeFields: readonly string[];
+  /**
+   * What each write member takes when the form does not carry it.
+   *
+   * A create sends the whole record, and a member the form does not show -- a
+   * surrogate key, a field the entity hides -- has no value on the row yet.
+   * The blank is the empty of that member's own type, and `'uuid'` means the
+   * caller mints the identifier, because the model says that member names a
+   * row the store has never seen.
+   */
+  readonly writeDefaults: Readonly<Record<string, unknown>>;
   /**
    * The row fields carrying the change intent, e.g. `change_reason_code`.
    *
@@ -176,6 +187,16 @@ function resultMessage(value: unknown): string {
 }
 
 /**
+ * The value a write member takes when the form carried none.
+ *
+ * A member whose default is `'uuid'` names a row the store has never seen, so
+ * the caller mints it; every other default is already the value to send.
+ */
+function blankWriteValue(blank: unknown): unknown {
+  return blank === 'uuid' ? randomUUID() : blank;
+}
+
+/**
  * Registers an entity's routes.
  *
  * The list answers `{ rows, totalCount }` for every entity, and the history
@@ -253,7 +274,12 @@ export function registerEntityRoutes(
       {
         change: {
           write: Object.fromEntries(
-            descriptor.writeFields.map((field) => [field, data[field]]),
+            descriptor.writeFields.map((field) => [
+              field,
+              data[field] === undefined
+                ? blankWriteValue(descriptor.writeDefaults[field])
+                : data[field],
+            ]),
           ),
           precondition: version > 0
             ? { kind: 'must_match_version', version }

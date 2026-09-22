@@ -39,6 +39,7 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
   keyField: 'status',
   rowField: 'tenant_status',
   writeFields: ['status', 'name', 'description', 'display_order'],
+  writeDefaults: { status: '', name: '', description: '', display_order: 0 },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

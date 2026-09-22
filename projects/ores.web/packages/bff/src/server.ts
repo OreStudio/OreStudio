@@ -39,6 +39,7 @@ import { roleRoute } from './generated/iam/role_route.js';
 import { loginInfoRoute } from './generated/iam/login_info_route.js';
 import { accountRoute } from './generated/iam/account_route.js';
 import { sessionRoute } from './generated/iam/session_route.js';
+import { accountPartyRoute } from './generated/iam/account_party_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -596,6 +597,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     loginInfoRoute,
     accountRoute,
     sessionRoute,
+    accountPartyRoute,
   ]) {
     registerEntityRoutes(server, requireSession, route);
   }

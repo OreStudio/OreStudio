@@ -85,6 +85,7 @@ export function CountryListPage(): ReactNode {
     <>
       <EntityListPage
         meta={countryMeta}
+        keyFields={['alpha2_code']}
         title={t('country.title')}
         description={t('country.description')}
         rows={query.data?.rows ?? []}

@@ -24,7 +24,12 @@ import { useNavigate, useParams } from 'react-router';
 import { ChangeReasonDialog, type ChangeReasonResult } from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityDetailPage, type DetailMode } from './EntityDetailPage.js';
-import { entityBasePath, entityRecordPath } from './entityPaths.js';
+import {
+  entityBasePath,
+  entityRecordPath,
+  keyFromParams,
+  recordKeyFromValues,
+} from './entityPaths.js';
 import { useDeleteEntity, useEntity, useSaveEntity } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -50,7 +55,7 @@ export function EntityDetailContainer({
   readonly mode: DetailMode;
 }): ReactNode {
   const params = useParams();
-  const key = params[descriptor.keyParam];
+  const key = keyFromParams(descriptor, params);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const base = entityBasePath(descriptor);
@@ -186,7 +191,7 @@ export function EntityDetailContainer({
         onSuccess: () => {
           setStage(undefined);
           setTouched(false);
-          navigate(entityRecordPath(descriptor, String(data[descriptor.meta.keyField] ?? '')));
+          navigate(entityRecordPath(descriptor, data));
         },
         onError: (error: unknown) => {
           setFailure(error instanceof Error ? error.message : t('feedback.saveFailed'));
@@ -200,7 +205,7 @@ export function EntityDetailContainer({
     setFailure(undefined);
     remove.mutate(
       {
-        key: String(values[descriptor.meta.keyField] ?? ''),
+        key: recordKeyFromValues(descriptor, values),
         intent: {
           reason_code: result.reasonCode,
           commentary: result.commentary,
@@ -253,17 +258,17 @@ export function EntityDetailContainer({
           if (validate()) setStage('reason');
         }}
         {...(descriptor.capabilities.edit
-          ? { onEdit: () => navigate(`${entityRecordPath(descriptor, String(key ?? ''))}/edit`) }
+          ? { onEdit: () => navigate(`${entityRecordPath(descriptor, key)}/edit`) }
           : {})}
         onCancel={() => {
           setTouched(false);
-          navigate(mode === 'create' ? base : entityRecordPath(descriptor, String(key ?? '')));
+          navigate(mode === 'create' ? base : entityRecordPath(descriptor, key));
         }}
         {...(descriptor.capabilities.remove ? { onDelete: () => setStage('delete') } : {})}
         {...(descriptor.capabilities.history
           ? {
               onHistory: () =>
-                navigate(`${entityRecordPath(descriptor, String(key ?? ''))}/history`),
+                navigate(`${entityRecordPath(descriptor, key)}/history`),
             }
           : {})}
       />

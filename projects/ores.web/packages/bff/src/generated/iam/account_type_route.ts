@@ -36,8 +36,7 @@ export const accountTypeRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'account_type',
   collection: 'account_types',
-  key: 'id',
-  keyField: 'type',
+  keyFields: ['type'],
   subjects: {
     list: subjects.list_account_types_request,
     get: subjects.get_account_type_request,

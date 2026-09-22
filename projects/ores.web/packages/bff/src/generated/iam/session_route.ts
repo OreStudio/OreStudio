@@ -36,8 +36,7 @@ export const sessionRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'session',
   collection: 'sessions',
-  key: 'id',
-  keyField: 'id',
+  keyFields: ['id'],
   subjects: {
     list: subjects.list_sessions_request,
     get: subjects.get_session_request,

@@ -23,28 +23,26 @@
  * To modify, update the template and regenerate.
  */
 /**
- * How the BFF reaches the tenant_status service.
+ * How the BFF reaches the account_party service.
  *
  * The descriptor holds values and no functions: the collection, the natural
  * key, the array fields and the subjects. The generic factory builds the
  * routes from it, so the entity adds no handler of its own.
  */
-import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_status_protocol';
+import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_party_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
-export const tenantStatusRoute: EntityRouteDescriptor = {
+export const accountPartyRoute: EntityRouteDescriptor = {
   component: 'iam',
-  entity: 'tenant_status',
-  collection: 'tenant_statuses',
-  keyFields: ['status'],
+  entity: 'account_party',
+  collection: 'account_parties',
+  keyFields: ['account_id', 'party_id'],
   subjects: {
-    list: subjects.list_tenant_statuses_request,
-    get: subjects.get_tenant_status_request,
-    save: subjects.put_tenant_status_request,
-    remove: subjects.delete_tenant_status_request,
-    history: subjects.list_tenant_status_versions_request,
+    list: subjects.list_account_parties_request,
+    get: subjects.get_account_party_request,
+    save: subjects.put_account_party_request,
+    remove: subjects.delete_account_party_request,
   },
-  rowsField: 'statuses',
-  getRowField: 'tenant_status',
-  historyRowsField: 'versions',
+  rowsField: 'account_parties',
+  getRowField: 'account_party',
 };

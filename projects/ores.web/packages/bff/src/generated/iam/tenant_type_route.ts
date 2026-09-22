@@ -36,8 +36,7 @@ export const tenantTypeRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'tenant_type',
   collection: 'tenant_types',
-  key: 'id',
-  keyField: 'type',
+  keyFields: ['type'],
   subjects: {
     list: subjects.list_tenant_types_request,
     get: subjects.get_tenant_type_request,

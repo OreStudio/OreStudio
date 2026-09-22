@@ -38,7 +38,9 @@ export const tenantStatusDescriptor: EntityDescriptor = {
     meta: tenantStatusMeta,
     routeSegment: 'tenant-status',
     apiBase: '/api/tenant_statuses',
-    keyParam: 'id',
+    keyFields: [
+        'status',
+    ],
     capabilities: {
         create: true,
         edit: true,

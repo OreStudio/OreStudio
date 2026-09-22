@@ -96,7 +96,9 @@ The full template source. Edit here and re-tangle with
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{#bff_route.minted_write_default}}import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}{{^bff_route.minted_write_default}}import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}
 
 export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   collection: '{{{bff_route.collection}}}',
@@ -137,6 +139,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 | =row_field= | The wire field a single-record read answers in, e.g. =tenant= |
 | =write_fields_block= | The write record's members, pre-rendered as a TypeScript array |
 | =write_defaults_block= | The value each write member takes when the form does not carry it, pre-rendered as a TypeScript object |
+| =minted_write_default= | Whether any member takes the minted-identifier symbol, which the template imports |
 | =intent_reason_field=, =intent_commentary_field= | The row fields carrying the change intent, empty for an entity with no audit columns |
 | =list_has_as_of=, =list_has_filter=, =versions_has_filter= | Whether those requests carry the optional member, as TypeScript literals |
 | =rows_field= | The array field the list response holds its rows in |

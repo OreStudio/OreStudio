@@ -1,0 +1,20 @@
+
+> ores.web@0.0.1 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @ores/bff@0.0.1 typecheck
+> tsc --build --force
+
+
+> @ores/contracts@0.0.1 typecheck
+> tsc --build --force
+
+
+> @ores/web@0.0.1 typecheck
+> tsc --build --force
+
+
+> @ores/wire-protocol@0.0.1 typecheck
+> tsc --build --force
+

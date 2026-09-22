@@ -1,0 +1,68 @@
+
+> ores.web@0.0.1 test
+> npm run test --workspaces --if-present
+
+
+> @ores/bff@0.0.1 test
+> vitest run
+
+
+ RUN  v5.0.1 /mnt/development/OreStudio/ores_dev_swift_curie/projects/ores.web/packages/bff
+
+ ✓ src/sessions.test.ts (9 tests) 7ms
+ ✓ src/rate-limit.test.ts (6 tests) 6ms
+ ✓ src/site-config.test.ts (5 tests) 9ms
+ ✓ src/broker.test.ts (4 tests) 4ms
+ ✓ src/entity-routes.test.ts (15 tests) 92ms
+ ✓ src/errors.test.ts (8 tests) 4ms
+
+ Test Files  6 passed (6)
+      Tests  47 passed (47)
+   Start at  14:52:17
+   Duration  437ms (transform 62%, import 26%, tests 10%, worker 2%)
+
+
+> @ores/contracts@0.0.1 test
+> vitest run --passWithNoTests
+
+
+ RUN  v5.0.1 /mnt/development/OreStudio/ores_dev_swift_curie/projects/ores.web/packages/contracts
+
+No test files found, exiting with code 0
+
+include: src/**/*.test.ts
+exclude:  **/node_modules/**, **/.git/**
+
+
+> @ores/web@0.0.1 test
+> vitest run
+
+
+ RUN  v5.0.1 /mnt/development/OreStudio/ores_dev_swift_curie/projects/ores.web/packages/web
+
+ ✓ src/ui/passwordPolicy.test.ts (5 tests) 4ms
+ ✓ src/entity/diff.test.ts (9 tests) 6ms
+ ✓ src/components/registry.test.ts (2 tests) 3ms
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  14:52:18
+   Duration  176ms (transform 72%, import 16%, tests 7%, worker 5%)
+
+
+> @ores/wire-protocol@0.0.1 test
+> vitest run
+
+
+ RUN  v5.0.1 /mnt/development/OreStudio/ores_dev_swift_curie/projects/ores.web/packages/wire-protocol
+
+ ✓ src/primitives.test.ts (10 tests) 8ms
+ ✓ src/codec.test.ts (7 tests) 9ms
+ ✓ src/account-operations.test.ts (7 tests) 7ms
+ ✓ src/client.test.ts (12 tests) 17ms
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  14:52:19
+   Duration  310ms (transform 67%, import 26%, tests 6%, worker 2%)
+

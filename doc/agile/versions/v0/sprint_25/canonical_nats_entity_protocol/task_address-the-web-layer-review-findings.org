@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: DF8A46BF-1A4C-4424-B3D0-06080E28170C
+:END:
+#+title: Task: Address the web-layer review findings
+#+description: The review of PR #2127 left three observations and the PR itself left two limitations. They belong to the shared web layer, so they land in the next PR that touches it rather than a reopened #2127: the save route's implicit create/amend contract, the write-default sentinel Python and TypeScript share, the image picker's hardcoded narrowing, a route-level test for the factory, and the as-of control the BFF forwards but the shared list screen does not offer.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/address-the-web-layer-review-findings
+#+pr: 2128
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shared web layer answers every point the review of PR #2127 raised, and the two limitations that PR named are closed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- The save route decides create from amend explicitly, and a version it cannot read is refused rather than treated as a create.
+- The write-default sentinel cannot drift between the projection that emits it and the factory that reads it.
+- The image picker's narrowing follows the generated image kind rather than one hardcoded phrase.
+- The route factory has a test that pins the canonical request each verb builds and the outcome it answers from.
+- The shared list screen offers the as-of control the BFF already forwards.
+
+* Plan
+
+Each finding is one question the shared layer was answering by guessing.
+
+1. *The save's question.* The route inferred create from =version > 0=, so a
+   version that did not read as a number became a create. The browser now
+   states =create= or =amend= in the body -- the detail form from its mode, the
+   history screen from the fact that a revert amends -- and the route builds
+   the precondition from that statement. A version that is not a whole number,
+   or a create that carries a version other than zero, is refused with a 400
+   before any request is sent.
+2. *The minted default.* The projection emitted the string ='uuid'= and the
+   factory matched it. It now emits =MINTED_WRITE_DEFAULT=, a symbol
+   =entity-routes.ts= exports and the generated descriptor imports, so the two
+   sides cannot spell the meaning differently. The template imports it only
+   when a member takes it.
+3. *The picker's phrase.* The container decided whether the image was a flag
+   and then hardcoded one phrase. It now looks the narrowing up by the kind
+   the model states, so a second kind is a row in that table rather than
+   another branch beside the first.
+4. *The as-of window.* The BFF already forwarded =?asOf=, but the shared list
+   screen had no control and the declaration did not say whether the request
+   carries the instant. The projection now reads it off the derived list
+   request, the declaration states it as a capability, and the list screen
+   renders a date control with a return to now. Country's as-of query
+   therefore survives the move to the generated path.
+5. *The factory test.* The route factory had no test, which is how the
+   transitional envelopes survived as long as they did. =entity-routes.test.ts=
+   registers the real generated descriptors against a stub session and pins
+   every verb's request and reply, including the routes a surrogate key cannot
+   drive and the four refusals a save can meet.
+
+* Notes
+
+- The findings were reviewed against #2127 before that PR merged, and are
+  addressed in the next PR that touches the shared web layer rather than in a
+  reopened #2127, which is the record the review table on
+  [[id:0388AB16-48B0-494B-8373-8ABF695C76E2][Adopt the canonical protocol in the refdata web layer]]
+  points to.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2128][#2128]] | [codegen,web] Answer the web-layer review findings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The five findings are answered, and the shared layer no longer guesses at any
+of them.
+
+- The save route takes the create-or-amend question from the body and builds
+  the precondition from it: a create states =must_not_exist=, an amend states
+  =must_match_version= with the version the form read, and a version that is
+  not a whole number is refused with a 400 before the service is reached.
+- The minted write default is a symbol the generated descriptor imports from
+  the factory, so the projection and the factory cannot spell it differently.
+- The image picker narrows by the image kind the model states, so a second
+  kind is one table row rather than another branch.
+- The web declaration states whether the list read takes an instant, and the
+  shared list screen offers the window with a return to now. Country's as-of
+  query survives the move to the generated path.
+- =entity-routes.test.ts= pins every canonical envelope against the real
+  generated descriptors: the list window and order, the key record a read and
+  a removal name, the write record with its defaults, the intent, the versions
+  window, the four refusals, and the routes a surrogate key cannot drive.
+
+Verified locally: codegen 574 passed; the drift gate clean for iam and
+refdata; protocol twins 98/98; the web typecheck and build clean; BFF 47,
+browser 16 and wire-protocol 36 tests pass.

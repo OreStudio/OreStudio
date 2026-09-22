@@ -31,7 +31,9 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{#bff_route.minted_write_default}}import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}{{^bff_route.minted_write_default}}import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}
 
 export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   collection: '{{{bff_route.collection}}}',

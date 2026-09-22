@@ -80,4 +80,12 @@ export interface EntityCapabilities {
   readonly remove: boolean;
   /** True when the entity is temporal and the service serves its history. */
   readonly history: boolean;
+  /**
+   * True when the list read can be asked for a point in time.
+   *
+   * The protocol carries the window on the entity's own list request, so an
+   * entity whose request has none gets no control rather than a control that
+   * sends a field the service does not decode.
+   */
+  readonly asOf: boolean;
 }

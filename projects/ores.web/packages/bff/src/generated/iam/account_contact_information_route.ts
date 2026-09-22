@@ -31,7 +31,7 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_contact_information_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const accountContactInformationRoute: EntityRouteDescriptor = {
   collection: 'account_contact_informations',
@@ -39,7 +39,7 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   keyField: 'email',
   rowField: 'account_contact_information',
   writeFields: ['id', 'account_id', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
-  writeDefaults: { id: 'uuid', account_id: null, street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, account_id: null, street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

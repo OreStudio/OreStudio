@@ -183,6 +183,8 @@ export const en: SourceCatalogue = {
     last: 'Last',
     new: 'New',
     provenance: 'Provenance',
+    asOf: 'As of',
+    asOfNow: 'Now',
     general: 'General',
     related: 'Related',
   },

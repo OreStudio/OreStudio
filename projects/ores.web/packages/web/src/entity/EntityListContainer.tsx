@@ -53,8 +53,15 @@ export function EntityListContainer({
   // without scrolling through a hundred of them.
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  /*
+   * The point in time the page is read as of, empty for the present. It is
+   * state of the screen rather than a query parameter of the route, because
+   * looking at an earlier page and looking at last quarter are two questions
+   * and only one of them is worth a link.
+   */
+  const [asOf, setAsOf] = useState('');
 
-  const query = useEntityList(descriptor, { page, pageSize });
+  const query = useEntityList(descriptor, { page, pageSize, asOf });
   const reasons = useChangeReasons();
   const remove = useDeleteEntity(descriptor);
 
@@ -139,6 +146,17 @@ export function EntityListContainer({
           : {})}
         searchFields={descriptor.searchFields}
         searchPlaceholderKey={`${descriptor.entity}.searchPlaceholder`}
+        {...(descriptor.capabilities.asOf
+          ? {
+              asOf,
+              // A different instant is a different page: the one the person
+              // was on may not exist as of the window they just chose.
+              onAsOfChange: (value: string) => {
+                setAsOf(value);
+                setPage(1);
+              },
+            }
+          : {})}
         collectionName={t(`${descriptor.entity}.title`)}
         watchedAs={{ component: descriptor.component, entity: descriptor.entity }}
         {...(failure === undefined ? {} : { failureMessage: failure })}

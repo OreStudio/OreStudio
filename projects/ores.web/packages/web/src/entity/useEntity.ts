@@ -78,6 +78,13 @@ export interface EntityListQuery {
   /** One-based, because that is what the paging control shows. */
   readonly page: number;
   readonly pageSize: number;
+  /**
+   * The instant to read the page as of, or nothing for the present.
+   *
+   * The protocol takes it on the list request, so the window travels with the
+   * page rather than being a second read of its own.
+   */
+  readonly asOf?: string;
 }
 
 export interface EntityPage {
@@ -87,6 +94,14 @@ export interface EntityPage {
 
 export interface EntityWrite {
   readonly data: Readonly<Record<string, unknown>>;
+  /**
+   * Which question the save answers.
+   *
+   * Stated rather than derived from the version: a create and an amend are
+   * different operations, and inferring one from a number is how a malformed
+   * version becomes a create.
+   */
+  readonly mode: 'create' | 'amend';
 }
 
 /**
@@ -100,7 +115,14 @@ export function entityListKey(
   descriptor: EntityDescriptor,
   query: EntityListQuery,
 ): readonly unknown[] {
-  return [descriptor.component, descriptor.entity, 'list', query.page, query.pageSize];
+  return [
+    descriptor.component,
+    descriptor.entity,
+    'list',
+    query.page,
+    query.pageSize,
+    query.asOf ?? '',
+  ];
 }
 
 export function entityKey(
@@ -118,8 +140,16 @@ export function useEntityList(
     queryKey: entityListKey(descriptor, query),
     queryFn: async () => {
       const offset = (query.page - 1) * query.pageSize;
+      /*
+       * The window is stated only when a person chose one: an empty value
+       * means the present, and the BFF sends the protocol's absent value for
+       * it rather than an instant the service would read literally.
+       */
+      const window = query.asOf === undefined || query.asOf.length === 0
+        ? ''
+        : `&asOf=${encodeURIComponent(query.asOf)}`;
       const body = await request(
-        `${descriptor.apiBase}?offset=${String(offset)}&limit=${String(query.pageSize)}`,
+        `${descriptor.apiBase}?offset=${String(offset)}&limit=${String(query.pageSize)}${window}`,
         { method: 'GET' },
       );
       return pageSchema.parse(body);
@@ -203,6 +233,7 @@ export function useSaveEntity(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             data: write.data,
+            mode: write.mode,
           }),
         }),
       ),

@@ -44,6 +44,7 @@ export const tenantStatusDescriptor: EntityDescriptor = {
         edit: true,
         remove: true,
         history: true,
+        asOf: false,
     },
     searchFields: [
         'status',

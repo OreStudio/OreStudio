@@ -1,0 +1,19 @@
+
+> @ores/bff@0.0.1 test
+> vitest run
+
+
+ RUN  v5.0.1 /mnt/development/OreStudio/ores_dev_swift_curie/projects/ores.web/packages/bff
+
+ ✓ src/rate-limit.test.ts (6 tests) 5ms
+ ✓ src/sessions.test.ts (9 tests) 9ms
+ ✓ src/site-config.test.ts (5 tests) 9ms
+ ✓ src/broker.test.ts (4 tests) 4ms
+ ✓ src/errors.test.ts (8 tests) 4ms
+ ✓ src/entity-routes.test.ts (15 tests) 118ms
+
+ Test Files  6 passed (6)
+      Tests  47 passed (47)
+   Start at  14:51:02
+   Duration  694ms (transform 78%, import 15%, tests 6%, worker 1%)
+

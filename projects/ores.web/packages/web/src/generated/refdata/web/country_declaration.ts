@@ -44,6 +44,7 @@ export const countryDescriptor: EntityDescriptor = {
         edit: true,
         remove: true,
         history: true,
+        asOf: true,
     },
     searchFields: [
         'alpha2_code',

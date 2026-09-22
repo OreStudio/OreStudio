@@ -54,6 +54,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "has_parent_id": "",
     "system_scope": "sql",
     "nullable_tenant_id": "sql",
+    "no_audit_columns": "sql",
     "extra_checks": "sql",
     "extra_delete_sets": "sql",
     "fk_copy_validations": "sql",

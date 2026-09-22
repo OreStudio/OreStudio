@@ -46,7 +46,6 @@ domain::permission generate_synthetic_permission(utility::generation::generation
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string("test::") + ctx.alphanumeric(6) + ":read" + "-" + std::to_string(idx);
     r.description = std::string("Synthetic test permission");
-    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

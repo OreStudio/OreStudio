@@ -27,11 +27,11 @@ hand -- which is how a =std::size_t= came to project as a TypeScript type named
 Four records need the same combination, which is what makes it a profile rather
 than a local choice.
 
-The profile does not yet deliver the whole shape. An audit =recorded_at= member
-survives every feature it sets, and it cannot reach =:no_audit_columns:= at all.
-Until both are closed, a model bound to it generates a struct with a timestamp
-the record has no use for. See
-[[id:E4174872-13EA-4ECD-AD46-1E52C176701F][Give a table-less record a way to suppress the audit envelope]].
+Binding it is enough. The profile reaches =:no_audit_columns:= through the
+Assignments table, and that flag drops the version column and the audit tail --
+=recorded_at= included, because a record with no actor has no use for a
+transaction timestamp. A model bound to it carries its own members and nothing
+else.
 
 * Reference entity
 
@@ -54,6 +54,7 @@ members.
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | false |
 | [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | false |
+| =no_audit_columns= | true |
 
 * Physical space
 

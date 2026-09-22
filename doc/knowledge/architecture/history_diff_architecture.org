@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:history:diff:ores.diff:qt:shell:codegen:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-09-22
 
 * Summary
 
@@ -36,21 +36,18 @@ other field.
 
 ** One generic history request, dispatched server side
 
-A single NATS subject (e.g. =history.v1.get=) replaces the per-entity
-=get_<entity>_history= subjects. Its request carries an entity
-identifier — an org-model-derived string such as
-=ores.refdata.currency= — plus the entity's own primary key (also a
-string, since keys vary in shape across entities); its response is
+A single request shape replaces the per-entity =get_<entity>_history=
+subjects. Its request carries an entity identifier — an org-model-derived
+string such as =ores.refdata.currency= — plus the entity's own primary key
+(also a string, since keys vary in shape across entities); its response is
 generic and carries no domain type:
 
 #+begin_src cpp
 struct get_entity_history_request {
     using response_type = struct get_entity_history_response;
-    static constexpr std::string_view nats_subject = "history.v1.get";
+    static constexpr bool requires_session = true;
     std::string entity_type;   // e.g. "ores.refdata.currency"
     std::string entity_id;
-    bool success = false;
-    std::string message;
 };
 
 struct entity_history_version {
@@ -68,7 +65,7 @@ struct get_entity_history_response {
 };
 #+end_src
 
-The handler for this one subject holds no entity knowledge itself. It
+The handler for this one request holds no entity knowledge itself. It
 looks =entity_type= up in a *server-side dispatch table* and delegates
 to whatever is registered there — the same shape as
 [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]' top-level registrar delegating to
@@ -77,12 +74,13 @@ one handler instead of as N separate subject subscriptions:
 
 #+begin_src cpp
 using history_provider =
-    std::function<std::vector<entity_history_version>(const std::string& entity_id)>;
+    std::function<std::vector<entity_history_version>(const context& ctx,
+                                                     const std::string& entity_id)>;
 
 // registered once per entity, generated alongside that entity's other
 // registrar wiring:
 registry.register_history_provider(entity_type_of(currency{}),
-    [&currency_service](const std::string& id) {
+    [&currency_service](const context& ctx, const std::string& id) {
         return currency_history_mapper::render(currency_service.get_currency_history(id));
     });
 #+end_src
@@ -92,7 +90,18 @@ entity's own repository/service for its history, then run it through
 that entity's *field mapper* (below) to produce rendered field lists.
 Failure isolation matches the existing registrar pattern — one
 entity's broken provider fails to register only that entry, not the
-shared subject.
+shared request.
+
+The subject is *component-scoped*, not global: one component's service
+subscribes =<component>.v1.history.get= and answers for the entities it
+owns. A single global subject would be delivered to every service's queue
+group at once, so a request for an IAM entity would race the refdata
+service — which has no provider for it — against the IAM service, which
+does. The subject is therefore not a constant. Two derivations state the
+one rule, in =ores.history=: =history_subject_by_component(component)=
+for the service that knows which component it is, and
+=history_subject_for(entity_type)= for a client that holds only the
+dispatch key, reading the component segment out of it.
 
 ** Entity identifier: generated, single source of truth
 

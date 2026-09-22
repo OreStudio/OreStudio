@@ -2124,31 +2124,6 @@ def _keyed_by_natural_key(entity):
     return bool(natural_key) and _primary_key_columns(entity) == [natural_key]
 
 
-# The audit member every temporal domain type carries. The domain-type
-# templates name it directly; the BFF projection reads the name from here so
-# the descriptor and the wire shape are spelled in one place.
-_AUDIT_TIMESTAMP_FIELD = 'recorded_at'
-
-
-def _audit_timestamp_fields(entity):
-    """The audit timestamp members the entity's own domain type carries.
-
-    The web container seeds every member, so an audit timestamp arrives at
-    the save route as an empty string, which the service's decoder refuses.
-    The service stamps the real value; the save route only has to send a
-    value the decoder accepts. A current-state entity carries no such member,
-    and a composed entity carries it under its group member's name.
-    """
-    if entity.get('current_state'):
-        return []
-    prefix = entity.get('audit_prefix') or ''
-    if prefix:
-        return [prefix + _AUDIT_TIMESTAMP_FIELD]
-    if entity.get('has_audit_group') or entity.get('has_domain_groups'):
-        return []
-    return [_AUDIT_TIMESTAMP_FIELD]
-
-
 def _protocol_owned_by_operation(model_path, entity) -> bool:
     """Whether an operation model beside this one owns the entity's protocol.
 
@@ -2264,10 +2239,6 @@ def bff_route_projection(entity, model_path):
     if has_history:
         projection['subjects_history'] = subjects_history
         projection['history_rows_field'] = history_rows_field
-    timestamp_fields = _audit_timestamp_fields(entity)
-    if timestamp_fields:
-        projection['timestamp_fields_block'] = ', '.join(
-            f"'{field}'" for field in timestamp_fields)
     return projection
 
 

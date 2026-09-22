@@ -87,10 +87,7 @@ def test_a_lookup_entity_names_the_derived_crud_subjects():
     assert projection["collection"] == "tenant_types"
     assert projection["key"] == "id"
     assert projection["key_field"] == "type"
-    assert projection["row_field"] == "tenant_type"
-    assert projection["write_fields_block"] == "'type'"
-    assert projection["intent_reason_field"] == "change_reason_code"
-    assert projection["intent_commentary_field"] == "change_commentary"
+    assert projection["delete_keys_field"] == "type"
     assert projection["rows_field"] == "types"
     assert projection["subjects_list"] == "list_tenant_types_request"
     assert projection["subjects_save"] == "put_tenant_type_request"
@@ -122,11 +119,12 @@ def test_a_natural_key_primary_key_drives_delete_and_history():
     assert projection["has_remove"] == "true"
     assert projection["has_history"] == "true"
     assert "subjects_remove" in projection
+    assert "delete_keys_field" in projection
     assert "subjects_history" in projection
     assert projection["history_rows_field"] == "versions"
 
 
-def test_a_surrogate_primary_key_withholds_remove_and_history():
+def test_a_surrogate_primary_key_withholds_delete_and_history():
     """The key record names the surrogate primary key, not the natural key.
 
     The path segment the web builds is the natural key, so a route that filled
@@ -138,11 +136,10 @@ def test_a_surrogate_primary_key_withholds_remove_and_history():
         "columns": [{"column": "id", "is_uuid": True}],
     })
     projection = bff_route_projection(entity, MODEL)
-    assert projection["has_get"] == "false"
     assert projection["has_remove"] == "false"
     assert projection["has_history"] == "false"
-    assert "subjects_get" not in projection
     assert "subjects_remove" not in projection
+    assert "delete_keys_field" not in projection
     assert "subjects_history" not in projection
     assert "history_rows_field" not in projection
     assert projection["subjects_list"] == "list_tenant_types_request"
@@ -161,64 +158,22 @@ def test_a_compound_primary_key_withholds_delete_and_history():
     assert "subjects_history" not in projection
 
 
-def test_a_read_only_entity_gets_a_screen_without_the_write_routes():
-    """A materialised junction derives reads and no writes.
+def test_the_save_states_no_system_field():
+    """The write record carries the entity's own fields and nothing else.
 
-    The screen set exists because the list does; the write affordances follow
-    the verbs the model derives, so an entity with no write request states no
-    write record, no save subject and no create affordance -- which is the
-    difference between a screen that reads and a screen that offers a form the
-    service has no handler for.
+    `recorded_at` is the transaction-time window the store fills from its own
+    clock, and the derived write record has never carried it. The save route
+    used to state it anyway and stamp a value into a member the wire shape does
+    not have, which is a system field computed on the client.
     """
-    entity = _entity()
-    entity["messages"] = [
-        message for message in entity["messages"]
-        if not str(message.get("name", "")).startswith(("put_", "delete_"))
-    ]
-    projection = bff_route_projection(entity, MODEL)
-    assert projection is not None
-    assert projection["subjects_list"] == "list_tenant_types_request"
-    assert "subjects_save" not in projection
-    assert "write_fields_block" not in projection
-    assert "write_defaults_block" not in projection
-    assert "has_save" not in projection
-    assert projection["has_remove"] == "false"
-    declaration = web_declaration_projection(entity, MODEL)
-    assert declaration["can_create"] == "false"
-    assert declaration["can_edit"] == "false"
-    # The natural key is one column, so the key could drive a removal route --
-    # but the model derives no delete request, so neither the route nor the
-    # affordance exists.
-    assert declaration["can_remove"] == "false"
-    # History is a read, so it survives a model that derives no writes; the
-    # route and the affordance must agree about whether it is served.
-    assert declaration["can_history"] == projection["has_history"]
-
-
-def test_the_save_states_the_write_record_the_intent_and_the_list_shape():
-    """What the factory cannot derive from the entity's shape is stated."""
     projection = bff_route_projection(_entity(), MODEL)
-    assert projection["write_fields_block"] == "'type'"
-    assert projection["intent_reason_field"] == "change_reason_code"
-    assert projection["intent_commentary_field"] == "change_commentary"
-    assert projection["list_has_as_of"] == "false"
-    assert projection["list_has_filter"] == "false"
-    assert projection["versions_has_filter"] == "true"
+    assert "timestamp_fields_block" not in projection
 
 
-def test_a_current_state_entity_states_no_intent_field():
-    """A table with no audit columns has no reason for the row to carry."""
-    projection = bff_route_projection(_entity(current_state=True), MODEL)
-    assert projection["intent_reason_field"] == ""
-    assert projection["intent_commentary_field"] == ""
-    assert projection["versions_has_filter"] == "false"
-
-
-def test_a_grouped_audit_entity_still_states_the_write_record():
+def test_a_composed_entity_states_no_system_field_either():
     projection = bff_route_projection(
         _entity(has_audit_group=True, audit_prefix="audit."), MODEL)
-    assert projection["intent_reason_field"] == "change_reason_code"
-    assert projection["write_fields_block"] == "'type'"
+    assert "timestamp_fields_block" not in projection
 
 
 def test_a_singular_plural_collision_still_addresses_one_record():
@@ -264,10 +219,7 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "collection: 'tenant_types'," in rendered
     assert "key: 'id'," in rendered
     assert "keyField: 'type'," in rendered
-    assert "rowField: 'tenant_type'," in rendered
-    assert "writeFields: ['type', 'name', 'description', 'display_order']," in rendered
-    assert ("writeDefaults: { type: '', name: '', description: '', "
-            "display_order: 0 }," in rendered)
+    assert "deleteKeysField: 'type'," in rendered
     assert "list: subjects.list_tenant_types_request," in rendered
     assert "get: subjects.get_tenant_type_request," in rendered
     assert "save: subjects.put_tenant_type_request," in rendered
@@ -275,6 +227,7 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "history: subjects.list_tenant_type_versions_request," in rendered
     assert "rowsField: 'types'," in rendered
     assert "historyRowsField: 'versions'," in rendered
+    assert "timestampFields" not in rendered
     # The descriptor holds values and no behaviour.
     assert "=>" not in rendered
     # No blank line left behind by an optional member, which pystache would emit
@@ -282,22 +235,8 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert ",\n\n" not in rendered
 
 
-def test_the_template_states_whether_the_list_takes_an_as_of(tmp_path):
-    """A model whose canonical list read carries the as-of instant."""
-    generate_from_model(
-        str(MODEL), CODEGEN / "library" / "data",
-        CODEGEN / "library" / "templates", tmp_path,
-        target_template="ts_bff_route.ts.mustache",
-        target_output="book_status_route.ts")
-    rendered = (tmp_path / "book_status_route.ts").read_text(encoding="utf-8")
-
-    assert "listHasAsOf: true," in rendered
-    assert "listHasFilter: false," in rendered
-    assert "versionsHasFilter: true," in rendered
-
-
 def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
-    """A real model whose key record is its UUID, not its natural key."""
+    """A real model whose delete and history requests are keyed by its UUID."""
     generate_from_model(
         str(TENANT), CODEGEN / "library" / "data",
         CODEGEN / "library" / "templates", tmp_path,
@@ -308,18 +247,13 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
     assert "export const tenantRoute: EntityRouteDescriptor = {" in rendered
     assert "keyField: 'code'," in rendered
     assert "list: subjects.list_tenants_request," in rendered
+    assert "get: subjects.get_tenant_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
-    # A surrogate key the form does not show is minted by the caller, through
-    # the symbol the factory exports, and a nullable member the form does not
-    # show goes out as no value.
-    assert ("import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from "
-            "'../../entity-routes.js';" in rendered)
-    assert "writeDefaults: { id: MINTED_WRITE_DEFAULT, code: '', name: '', " \
-           "type: '', description: null, hostname: '', status: '' }," in rendered
-    # The key record names the UUID primary key, so no route the path segment
-    # drives is stated, and neither field is left behind.
-    assert "get: subjects." not in rendered
+    assert "timestampFields" not in rendered
+    # The key record names the UUID primary key, so neither route is stated and
+    # neither field is left behind.
+    assert "deleteKeysField" not in rendered
     assert "remove: subjects." not in rendered
     assert "history: subjects." not in rendered
     assert "historyRowsField" not in rendered

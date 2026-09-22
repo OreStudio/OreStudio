@@ -27,7 +27,7 @@
 #include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -210,17 +210,6 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
             .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
-
-    auto account_history =
-        router->get("/api/v1/accounts/{username}/history")
-            .summary("Get account history")
-            .description("Retrieve version history for an account")
-            .tags({"accounts"})
-            .auth_required()
-            .response<iam::messaging::get_account_history_response>()
-            .handler([this](const http_request& req) { return handle_get_account_history(req); });
-    router->add_route(account_history.build());
-    registry->register_route(account_history.build());
 
     auto lock_accounts =
         router->post("/api/v1/accounts/lock")
@@ -921,52 +910,6 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
     }
 }
 
-asio::awaitable<http_response> iam_routes::handle_get_account_history(const http_request& req) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling get account history request";
-
-    try {
-        auto username = req.get_path_param("username");
-        if (username.empty()) {
-            co_return http_response::bad_request("Username required");
-        }
-
-        auto accounts = account_service_.get_account_history(username);
-
-        iam::messaging::get_account_history_response resp;
-
-        if (accounts.empty()) {
-            resp.success = false;
-            resp.message = "Account not found: " + username;
-            co_return http_response::json(rfl::json::write(resp));
-        }
-
-        // Sort by version descending (newest first) - use database version field
-        std::sort(accounts.begin(), accounts.end(), [](const auto& a, const auto& b) {
-            return a.version > b.version;
-        });
-
-        resp.success = true;
-        resp.message = "History retrieved successfully";
-
-        for (const auto& account : accounts) {
-            iam::messaging::account_version ver;
-            ver.data = account;
-            ver.version_number = account.version; // Use database version field
-            ver.modified_by = account.modified_by;
-            ver.recorded_at = account.recorded_at;
-            ver.change_summary = "Version " + std::to_string(ver.version_number);
-            resp.history.versions.push_back(std::move(ver));
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Retrieved " << resp.history.versions.size()
-                                  << " versions for account: " << username;
-
-        co_return http_response::json(rfl::json::write(resp));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get account history error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
-}
 
 asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling lock accounts request";

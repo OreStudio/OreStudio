@@ -66,8 +66,6 @@ set(files
     "generators/tenant_generator.cpp"
     "generators/tenant_status_generator.cpp"
     "generators/tenant_type_generator.cpp"
-    "messaging/account_version_table.cpp"
-    "messaging/account_version_table_io.cpp"
     "service/auth_session_service.cpp"
 )
 
@@ -155,13 +153,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/generators/tenant_status_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/generators/tenant_type_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_contact_information_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_history_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_party_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_type_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_version_table.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/account_version_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/authorization_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/bootstrap_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/login_info_protocol.hpp"

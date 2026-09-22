@@ -441,28 +441,6 @@ account_operations_service::find_account_by_id(const boost::uuids::uuid& account
     return accounts.front();
 }
 
-std::vector<domain::account>
-account_operations_service::get_account_history(const std::string& username) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: " << username;
-
-    // First look up the account by username to get the ID
-    auto accounts = account_repo_.read_latest_by_username(ctx_, username);
-    if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Account not found for username: " << username;
-        return {};
-    }
-
-    const auto& account_id = accounts[0].id;
-    BOOST_LOG_SEV(lg(), debug) << "Found account ID: " << boost::uuids::to_string(account_id);
-
-    // Get all versions of the account by ID
-    auto all_versions = account_repo_.read_all(ctx_, boost::uuids::to_string(account_id));
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << all_versions.size()
-                              << " historical versions for account: " << username;
-
-    return all_versions;
-}
-
 bool account_operations_service::set_password_reset_required(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
                                << boost::uuids::to_string(account_id);

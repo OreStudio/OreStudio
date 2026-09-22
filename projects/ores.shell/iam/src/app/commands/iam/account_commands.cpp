@@ -126,28 +126,28 @@ void account_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <username>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <username>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <username> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <username> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -229,6 +229,7 @@ void account_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.username, parsed->positionals[next++], "username");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -273,7 +274,7 @@ void account_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::account_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.username, parsed->positionals[i + 0], "username");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -323,6 +324,7 @@ void account_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.username, parsed->positionals[next++], "username");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -368,6 +370,7 @@ void account_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.account.username, parsed->positionals[next++], "username");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

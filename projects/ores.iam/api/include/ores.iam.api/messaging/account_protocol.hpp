@@ -36,7 +36,7 @@
 namespace ores::iam::messaging {
 
 struct account_key {
-    boost::uuids::uuid id;
+    std::string username;
 };
 
 struct account_lookup {

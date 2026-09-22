@@ -254,17 +254,6 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 :collection_name:        schedules
 :item_var:               schedule
 :key_field:              code
-:get_request_class:      refdata::messaging::get_tenor_schedules_request
-:get_response_class:     refdata::messaging::get_tenor_schedules_response
-:get_message_type:       get_tenor_schedules_request
-:save_request_class:     refdata::messaging::save_tenor_schedule_request
-:save_response_class:    refdata::messaging::save_tenor_schedule_response
-:save_message_type:      save_tenor_schedule_request
-:delete_request_class:   refdata::messaging::delete_tenor_schedule_request
-:delete_response_class:  refdata::messaging::delete_tenor_schedule_response
-:delete_message_type:    delete_tenor_schedule_request
-:history_request_class:  refdata::messaging::get_tenor_schedule_history_request
-:history_response_class: refdata::messaging::get_tenor_schedule_history_response
 :history_message_type:   get_tenor_schedule_history_request
 :settings_group:         TenorScheduleListWindow
 :window_title:           Tenor Schedules

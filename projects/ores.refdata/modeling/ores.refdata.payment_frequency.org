@@ -226,17 +226,6 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 :collection_name:        payment_frequencies
 :item_var:               payment_frequency_
 :key_field:              code
-:get_request_class:      refdata::messaging::get_payment_frequencies_request
-:get_response_class:     refdata::messaging::get_payment_frequencies_response
-:get_message_type:       get_payment_frequencies_request
-:save_request_class:     refdata::messaging::save_payment_frequency_request
-:save_response_class:    refdata::messaging::save_payment_frequency_response
-:save_message_type:      save_payment_frequency_request
-:delete_request_class:   refdata::messaging::delete_payment_frequency_request
-:delete_response_class:  refdata::messaging::delete_payment_frequency_response
-:delete_message_type:    delete_payment_frequency_request
-:history_request_class:  refdata::messaging::get_payment_frequency_history_request
-:history_response_class: refdata::messaging::get_payment_frequency_history_response
 :history_message_type:   get_payment_frequency_history_request
 :settings_group:         PaymentFrequencyListWindow
 :window_title:           Payment Frequencies

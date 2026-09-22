@@ -290,18 +290,7 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 :key_field:               unit_code
 :has_explorer_api:        true
 :explorer_interface:      IBusinessUnitBrowser
-:get_request_class:       refdata::messaging::get_business_units_request
-:get_response_class:      refdata::messaging::get_business_units_response
-:get_message_type:        get_business_units_request
-:save_request_class:      refdata::messaging::save_business_unit_request
-:save_response_class:     refdata::messaging::save_business_unit_response
-:save_message_type:       save_business_unit_request
 :save_request_item_field: business_unit
-:delete_request_class:    refdata::messaging::delete_business_unit_request
-:delete_response_class:   refdata::messaging::delete_business_unit_response
-:delete_message_type:     delete_business_unit_request
-:history_request_class:   refdata::messaging::get_business_unit_history_request
-:history_response_class:  refdata::messaging::get_business_unit_history_response
 :history_message_type:    get_business_unit_history_request
 :settings_group:          BusinessUnitListWindow
 :window_title:            Business Units

@@ -350,18 +350,7 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 :has_uuid_primary_key:    true
 :has_pagination:          true
 :has_export_macro:        true
-:get_request_class:       refdata::messaging::get_ir_curve_bootstrap_configs_request
-:get_response_class:      refdata::messaging::get_ir_curve_bootstrap_configs_response
-:get_message_type:        get_ir_curve_bootstrap_configs_request
-:save_request_class:      refdata::messaging::save_ir_curve_bootstrap_config_request
-:save_response_class:     refdata::messaging::save_ir_curve_bootstrap_config_response
-:save_message_type:       save_ir_curve_bootstrap_config_request
 :save_request_item_field: data
-:delete_request_class:    refdata::messaging::delete_ir_curve_bootstrap_config_request
-:delete_response_class:   refdata::messaging::delete_ir_curve_bootstrap_config_response
-:delete_message_type:     delete_ir_curve_bootstrap_config_request
-:history_request_class:   refdata::messaging::get_ir_curve_bootstrap_config_history_request
-:history_response_class:  refdata::messaging::get_ir_curve_bootstrap_config_history_response
 :history_message_type:    get_ir_curve_bootstrap_config_history_request
 :settings_group:          IrCurveBootstrapConfigListWindow
 :window_title:            IR Curve Bootstrap Configs

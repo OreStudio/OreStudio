@@ -211,18 +211,7 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :item_var:                pair
 :key_field:                id
 :has_export_macro:        true
-:get_request_class:       refdata::messaging::get_crm_driver_pairs_request
-:get_response_class:      refdata::messaging::get_crm_driver_pairs_response
-:get_message_type:        get_crm_driver_pairs_request
-:save_request_class:      refdata::messaging::save_crm_driver_pair_request
-:save_response_class:     refdata::messaging::save_crm_driver_pair_response
-:save_message_type:       save_crm_driver_pair_request
 :save_request_item_field: data
-:delete_request_class:    refdata::messaging::delete_crm_driver_pair_request
-:delete_response_class:   refdata::messaging::delete_crm_driver_pair_response
-:delete_message_type:     delete_crm_driver_pair_request
-:history_request_class:   refdata::messaging::get_crm_driver_pair_history_request
-:history_response_class:  refdata::messaging::get_crm_driver_pair_history_response
 :history_message_type:    get_crm_driver_pair_history_request
 :settings_group:          CrmDriverPairListWindow
 :window_title:            CRM Driver Pairs

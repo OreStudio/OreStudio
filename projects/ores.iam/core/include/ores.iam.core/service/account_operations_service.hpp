@@ -275,7 +275,6 @@ public:
      * @param username The username of the account
      * @return Vector of all historical versions of the account
      */
-    std::vector<domain::account> get_account_history(const std::string& username);
 
     /**
      * @brief Sets the password_reset_required flag on an account.

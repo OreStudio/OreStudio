@@ -19,7 +19,6 @@
  */
 #include "ores.iam.core/messaging/registrar.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -217,10 +216,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         set_my_default_party_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->set_default_party(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_account_history_request::nats_subject, qg, [acth](ores::nats::message msg) {
-            acth->history(std::move(msg));
         }));
 
     // --- Account parties ---

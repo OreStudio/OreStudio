@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -1063,43 +1063,6 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
-        auto req = decode<get_account_history_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            service::account_operations_service svc(ctx);
-            auto accounts = svc.get_account_history(req->username);
-            account_version_history avh;
-            int vnum = static_cast<int>(accounts.size());
-            for (const auto& a : accounts) {
-                ores::iam::messaging::account_version av;
-                av.data = a;
-                av.version_number = vnum--;
-                av.modified_by = a.modified_by;
-                av.recorded_at = a.recorded_at;
-                avh.versions.push_back(std::move(av));
-            }
-            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_account_history_response{.success = true, .history = std::move(avh)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_history_response{.success = false, .message = e.what()});
         }
     }
 

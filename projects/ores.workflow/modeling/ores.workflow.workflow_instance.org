@@ -38,15 +38,6 @@ Instances are append-mostly; status transitions are the primary mutation.
 
 UUID primary key for the workflow instance.
 
-** tenant_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-Tenant that owns this workflow instance.
-
 ** type
 :PROPERTIES:
 :type:     text

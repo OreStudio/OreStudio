@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: 6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30
 :END:
 #+title: ores.iam.role
@@ -175,6 +176,30 @@ role_repository::read_latest_by_name(context ctx, const std::string& name) {
 | description | Description |
 | modified_by | Modified By |
 | version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: roles
+:key_field:       name
+:END:
+
+The screen's declaration. A role is addressed by its =name=, the natural key,
+which is what the route's path segment carries and what the BFF asks the entity
+by; the surrogate =id= is generated and the form does not offer it.
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| name        | Name        | nameEdit        | line_edit | true   | true        | Enter a role name   |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name   | field       | header      | type   | width |
+|-------------+-------------+-------------+--------+-------|
+| Name        | name        | Name        | string | 200   |
+| Description | description | Description | string | 480   |
 
 ** Paste blocks
 

@@ -665,8 +665,8 @@ void provision_commands::process_party(std::ostream& out,
     save_req.intent.commentary = "Party provisioning completed via shell";
     auto saved = do_request(out, session, save_req, std::chrono::seconds(30), true);
     if (!saved || saved->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << "Failed to activate party: "
-                  << (saved ? saved->result.message : "no response") << std::endl;
+        fail(out) << "Failed to activate party: " << (saved ? saved->result.message : "no response")
+                  << std::endl;
         return;
     }
 

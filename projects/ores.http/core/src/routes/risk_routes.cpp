@@ -50,7 +50,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
             .auth_required()
             .query_param("offset", "integer", "", false, "Pagination offset", "0")
             .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-            .response<refdata::messaging::get_currencies_response>()
+            .response<refdata::messaging::list_currencies_response>()
             .handler([this](const http_request& req) { return handle_get_currencies(req); });
     router->add_route(get_currencies.build());
     registry->register_route(get_currencies.build());
@@ -62,8 +62,8 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
             .tags({"currencies"})
             .auth_required()
             .roles({"TenantAdmin", "SuperAdmin"})
-            .body<refdata::messaging::save_currency_request>()
-            .response<refdata::messaging::save_currency_response>()
+            .body<refdata::messaging::put_currency_request>()
+            .response<refdata::messaging::put_currency_response>()
             .handler([this](const http_request& req) { return handle_save_currency(req); });
     router->add_route(save_currency.build());
     registry->register_route(save_currency.build());
@@ -75,8 +75,8 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
             .tags({"currencies"})
             .auth_required()
             .roles({"TenantAdmin", "SuperAdmin"})
-            .body<refdata::messaging::delete_currency_request>()
-            .response<refdata::messaging::delete_currency_response>()
+            .body<refdata::messaging::delete_many_currencies_request>()
+            .response<refdata::messaging::delete_many_currencies_response>()
             .handler([this](const http_request& req) { return handle_delete_currencies(req); });
     router->add_route(delete_currencies.build());
     registry->register_route(delete_currencies.build());
@@ -87,7 +87,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
             .description("Retrieve version history for a currency")
             .tags({"currencies"})
             .auth_required()
-            .response<refdata::messaging::get_currency_history_response>()
+            .response<refdata::messaging::list_currency_versions_response>()
             .handler([this](const http_request& req) { return handle_get_currency_history(req); });
     router->add_route(currency_history.build());
     registry->register_route(currency_history.build());
@@ -111,14 +111,11 @@ asio::awaitable<http_response> risk_routes::handle_get_currencies(const http_req
             limit = std::stoul(limit_str);
 
         refdata::service::currency_service service(ctx_);
-        auto currencies = service.list_currencies(offset, limit);
-        auto total = service.count_currencies();
+        refdata::messaging::list_currencies_request list_req;
+        list_req.offset = offset;
+        list_req.limit = limit;
 
-        refdata::messaging::get_currencies_response resp;
-        resp.currencies = currencies;
-        resp.total_available_count = total;
-
-        co_return http_response::json(rfl::json::write(resp));
+        co_return http_response::json(rfl::json::write(service.list_currencies(list_req)));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Get currencies error: " << e.what();
         co_return http_response::internal_error(e.what());
@@ -129,19 +126,13 @@ asio::awaitable<http_response> risk_routes::handle_save_currency(const http_requ
     BOOST_LOG_SEV(lg(), debug) << "Handling save currency request";
 
     try {
-        auto save_req = rfl::json::read<refdata::messaging::save_currency_request>(req.body);
+        auto save_req = rfl::json::read<refdata::messaging::put_currency_request>(req.body);
         if (!save_req) {
             co_return http_response::bad_request("Invalid request body");
         }
 
         refdata::service::currency_service service(ctx_);
-        service.save_currency(save_req->data);
-
-        refdata::messaging::save_currency_response resp;
-        resp.success = true;
-        resp.message = "Saved successfully";
-
-        co_return http_response::json(rfl::json::write(resp));
+        co_return http_response::json(rfl::json::write(service.put_currency(*save_req)));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Save currency error: " << e.what();
         co_return http_response::internal_error(e.what());
@@ -152,26 +143,15 @@ asio::awaitable<http_response> risk_routes::handle_delete_currencies(const http_
     BOOST_LOG_SEV(lg(), debug) << "Handling delete currencies request";
 
     try {
-        auto delete_req = rfl::json::read<refdata::messaging::delete_currency_request>(req.body);
+        auto delete_req =
+            rfl::json::read<refdata::messaging::delete_many_currencies_request>(req.body);
         if (!delete_req) {
             co_return http_response::bad_request("Invalid request body");
         }
 
         refdata::service::currency_service service(ctx_);
-        refdata::messaging::delete_currency_response resp;
-
-        try {
-            for (const auto& code : delete_req->iso_codes) {
-                service.delete_currency(code);
-            }
-            resp.success = true;
-            resp.message = "Deleted successfully";
-        } catch (const std::exception& e) {
-            resp.success = false;
-            resp.message = std::string("Failed to delete currency: ") + e.what();
-        }
-
-        co_return http_response::json(rfl::json::write(resp));
+        co_return http_response::json(
+            rfl::json::write(service.delete_many_currencies(*delete_req)));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Delete currencies error: " << e.what();
         co_return http_response::internal_error(e.what());

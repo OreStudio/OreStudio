@@ -222,6 +222,11 @@ business_unit_repository::remove_status business_unit_repository::remove(
                              "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing business unit from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

@@ -246,6 +246,11 @@ regulatory_book_type_repository::remove_status regulatory_book_type_repository::
                              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing regulatory book type from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, code).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

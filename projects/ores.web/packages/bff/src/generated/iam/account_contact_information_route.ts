@@ -40,6 +40,7 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   keyFields: ['email'],
   subjects: {
     list: subjects.list_account_contact_informations_request,
+    get: subjects.get_account_contact_information_request,
     save: subjects.put_account_contact_information_request,
     remove: subjects.delete_account_contact_information_request,
     history: subjects.list_account_contact_information_versions_request,

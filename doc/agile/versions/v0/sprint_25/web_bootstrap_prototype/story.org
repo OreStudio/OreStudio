@@ -36,8 +36,7 @@ knowledge doc.
 - Every workflow runs server-side. Web, shell and Qt are thin callers
   of the same request. Build on [[file:../../../../../knowledge/architecture/internal_actor_impersonation.org][internal actor impersonation]], as
   the Acme provisioning does. No SQL shortcuts.
-- Seed profile, not source: GLEIF, synthetic and Acme are profiles
-  (data), not code branches.
+- Seed profile, not source: profiles are data, not code branches.
 - Grilling tasks: use the grilling and domain-modeling skills.
   Research tasks: use the research skill.
 - Legacy reference: ores.qt SystemProvisionerWizard,
@@ -46,12 +45,11 @@ knowledge doc.
 
 ** Not yet specified
 
-- Progress and failure UX: retry, partial failure, rollback.
+- Progress and failure screens: retry from a failed step, discard tenant.
 - Re-provisioning or extending an existing tenant.
 - How ores.web receives streamed progress events (the Acme response
   returns all steps at the end today).
-- A non-test per-party bundle for an operational tenant (report
-  definitions, CRM topology?).
+
 
 * Status
 
@@ -79,7 +77,7 @@ knowledge doc.
 | [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
 | [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
 | [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
-| [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | BACKLOG | | | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
+| [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | STARTED | 2026-09-22 | | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
 | [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | BACKLOG | | | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
 | [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the system bootstrap screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first-run screens. |
 | [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the tenant provisioning screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic tenant provisioning with seed profile choice. |
@@ -87,6 +85,11 @@ knowledge doc.
 
 * Decisions
 
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]]: every workflow is an =ores.workflow=
+  instance; system bootstrap makes the admin only; profiles are data
+  over a fixed step-kind catalogue; two profiles (Empty operational,
+  ACME demo); new =party_essentials= bundle; resume on failure; who
+  runs what is fixed.
 - [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
   Onboard and Seed profile are defined in the IAM knowledge doc's
   Tenant lifecycle section.
@@ -106,5 +109,6 @@ knowledge doc.
 - ORE data import: day-to-day data loading, not bootstrap. Bundle
   publish of essential data (e.g. counterparties) stays in scope.
 - Building the server-side provisioning rework: a later story.
+- The Synthetic seed profile: dropped; ACME holds all test data.
 - Localhost-only access until system bootstrap completes: a future
   hardening.

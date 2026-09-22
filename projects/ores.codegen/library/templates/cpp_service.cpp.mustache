@@ -577,21 +577,39 @@ std::vector<domain::{{entity_singular}}>
 {{/foreign_keys}}
 {{#has_audit_columns}}
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}_at_version({{{primary_key.params}}},
+{{entity_singular}}_service::get_{{entity_singular_short}}_at_version({{{primary_key.typed_params}}},
                                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, {{{primary_key.args}}}, version);
+    return repo_.read_at_version(ctx_, {{{primary_key.typed_args}}}, version);
 }
 {{/has_audit_columns}}
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.params}}}) {
+{{entity_singular}}_service::{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.typed_params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "{{#service_find_prefix}}Finding{{/service_find_prefix}}{{^service_find_prefix}}Getting{{/service_find_prefix}} {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
-    auto results = repo_.read_latest(ctx_, {{{primary_key.args}}});
+    auto results = repo_.read_latest(ctx_, {{{primary_key.typed_args}}});
     if (results.empty()) return std::nullopt;
     return results.front();
 }
+{{^key_is_primary}}
+
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}_by_{{declared_key}}(const std::string& {{declared_key}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} by {{declared_key}}: " << {{declared_key}};
+    messaging::{{entity_singular}}_key k;
+{{#declared_key_is_uuid}}
+    k.{{declared_key}} = boost::lexical_cast<boost::uuids::uuid>({{declared_key}});
+{{/declared_key_is_uuid}}
+{{^declared_key_is_uuid}}
+    k.{{declared_key}} = {{declared_key}};
+{{/declared_key_is_uuid}}
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
+}
+{{/key_is_primary}}
 {{#service_find_by_uuid}}
 
 std::optional<domain::{{entity_singular}}>
@@ -687,9 +705,9 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     repo_.write(ctx_, ts);
 }
 
-void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_key.params}}}) {
+void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_key.typed_params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
-    repo_.remove(ctx_, {{{primary_key.args}}});
+    repo_.remove(ctx_, {{{primary_key.typed_args}}});
     BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 }
 {{#service_find_by_uuid}}
@@ -729,7 +747,25 @@ std::vector<domain::{{entity_singular}}>
 {{^declared_key_is_uuid}}
     k.{{declared_key}} = key;
 {{/declared_key_is_uuid}}
+{{#current_state}}
+    // A current-state table deletes for real, so a row that is gone has no
+    // history to read and resolving through the latest row is correct.
     const auto found = read_one(repo_, ctx_, k);
+{{/current_state}}
+{{^current_state}}
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+{{#declared_key_is_uuid}}
+    const auto found =
+        repo_.read_any_by_{{declared_key}}(ctx_, boost::uuids::to_string(k.{{declared_key}}));
+{{/declared_key_is_uuid}}
+{{^declared_key_is_uuid}}
+    const auto found = repo_.read_any_by_{{declared_key}}(ctx_, k.{{declared_key}});
+{{/declared_key_is_uuid}}
+{{/current_state}}
     if (found.empty())
         return {};
     const auto& row = found.front();

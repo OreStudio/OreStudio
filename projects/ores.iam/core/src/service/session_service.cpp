@@ -347,6 +347,16 @@ std::optional<domain::session> session_service::get_session(const std::string& i
     return results.front();
 }
 
+std::optional<domain::session> session_service::get_session_by_id(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting session by id: " << id;
+    messaging::session_key k;
+    k.id = boost::lexical_cast<boost::uuids::uuid>(id);
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
+}
+
 std::vector<domain::session>
 session_service::get_sessions(const std::vector<std::string>& ids,
                               const std::vector<std::string>& start_times) {

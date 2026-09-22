@@ -207,16 +207,38 @@ public:
      * @return The {{entity_singular_words}} at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}_at_version({{{primary_key.params}}}, std::uint32_t version);
+    get_{{entity_singular_short}}_at_version({{{primary_key.typed_params}}}, std::uint32_t version);
 {{/has_audit_columns}}
 
     /**
      * @brief Retrieves a single {{entity_singular_words}} by its primary key.
+{{#primary_key.is_single_uuid}}
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+{{/primary_key.is_single_uuid}}
      *
      * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    {{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.params}}});
+    {{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.typed_params}}});
+{{^key_is_primary}}
+
+    /**
+     * @brief Retrieves a single {{entity_singular_words}} by the key the model
+     * declares -- the human-readable key a caller holds.
+{{#primary_key.is_single_uuid}}
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+{{/primary_key.is_single_uuid}}
+     *
+     * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
+     */
+    std::optional<domain::{{entity_singular}}>
+    get_{{entity_singular_short}}_by_{{declared_key}}(const std::string& {{declared_key}});
+{{/key_is_primary}}
 {{#service_find_by_uuid}}
 
     /**
@@ -281,7 +303,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_{{entity_singular_short}}({{{primary_key.params}}});
+    void delete_{{entity_singular_short}}({{{primary_key.typed_params}}});
 {{#service_find_by_uuid}}
 
     /**

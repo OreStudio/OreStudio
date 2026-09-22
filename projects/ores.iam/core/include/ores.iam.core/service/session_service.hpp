@@ -115,6 +115,14 @@ public:
                                                const std::string& start_time);
 
     /**
+     * @brief Retrieves a single session by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * @return The session if found, std::nullopt otherwise.
+     */
+    std::optional<domain::session> get_session_by_id(const std::string& id);
+
+    /**
      * @brief Retrieves a batch of sessions by primary key.
      */
     std::vector<domain::session> get_sessions(const std::vector<std::string>& ids,

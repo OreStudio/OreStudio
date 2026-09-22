@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 2E6B41C8-7D05-4A93-B81F-5C2A9E6D3F17
+:END:
+#+title: ores.diff.diff_entry
+#+description: Codegen entity model for the diff engine's per-field change: a table-less record that crosses the wire.
+#+type: ores.codegen.entity
+#+component: diff
+#+filetags: :model:entity:diff:
+#+brief: One changed field, with the spans that changed inside it.
+#+entity_singular: diff_entry
+#+entity_plural: diff_entries
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+One field that changed between two versions, with the byte ranges that changed
+inside each value. It is never stored: it is a member of a diff result and
+reaches a client inside a history response.
+
+The two span lists are members of this record rather than types of their own
+because a span means nothing apart from the value it points into: an offset
+into one string is not an offset into another.
+
+* Flags
+:PROPERTIES:
+:schema:          public
+:product:         ores
+:component:       diff
+:no_primary_key:  true
+:profile:         table-less-record
+:END:
+
+=No primary key=: a changed field is a member of a result and is never fetched
+by identity. Saying so is what tells the loader this is a record that is carried
+rather than stored.
+
+The profile supplies =:no_audit_columns:=, which keeps the version column, the
+audit tail and the transaction timestamp off the struct.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:no_subcomponent: true
+:END:
+
+=No sub-component=: =ores.diff= keeps its headers at its own include root, so
+there is no directory between the component and =domain/= for this model to
+name.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include "ores.diff/domain/diff_span.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Columns
+
+** field_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Display name of the field, e.g. "ISO Code".
+
+** old_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The previous version's rendered value; empty when the field was added.
+
+** new_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The current version's rendered value; empty when the field was removed.
+
+** old_spans
+:PROPERTIES:
+:type:     text
+:cpp_type: std::vector<ores::diff::domain::diff_span>
+:END:
+
+Byte ranges into old_value that changed relative to new_value. Empty only when
+the field was added, because old_value is already empty. A value that changed
+entirely still gets one span covering the whole string, not an empty list.
+
+** new_spans
+:PROPERTIES:
+:type:     text
+:cpp_type: std::vector<ores::diff::domain::diff_span>
+:END:
+
+Byte ranges into new_value that changed relative to old_value. Empty only when
+the field was removed, because new_value is already empty. A value that changed
+entirely still gets one span covering the whole string, not an empty list.

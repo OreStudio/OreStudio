@@ -181,19 +181,30 @@ std::uint32_t account_service::count_accounts() {
 }
 
 
-std::optional<domain::account> account_service::get_account_at_version(const std::string& id,
+std::optional<domain::account> account_service::get_account_at_version(const boost::uuids::uuid& id,
                                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
-std::optional<domain::account> account_service::get_account(const std::string& id) {
+std::optional<domain::account> account_service::get_account(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
+}
+
+std::optional<domain::account>
+account_service::get_account_by_username(const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting account by username: " << username;
+    messaging::account_key k;
+    k.username = username;
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 std::vector<domain::account> account_service::get_accounts(const std::vector<std::string>& ids) {
@@ -223,9 +234,9 @@ void account_service::save_accounts(const std::vector<domain::account>& accounts
     repo_.write(ctx_, ts);
 }
 
-void account_service::delete_account(const std::string& id) {
+void account_service::delete_account(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed account. " << "id: " << id;
 }
 
@@ -242,7 +253,12 @@ std::vector<domain::account> account_service::get_account_history(const std::str
     // history as having none.
     messaging::account_key k;
     k.username = key;
-    const auto found = read_one(repo_, ctx_, k);
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+    const auto found = repo_.read_any_by_username(ctx_, k.username);
     if (found.empty())
         return {};
     const auto& row = found.front();

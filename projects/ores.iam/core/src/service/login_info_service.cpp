@@ -123,9 +123,9 @@ std::uint32_t login_info_service::count_login_info() {
 
 
 std::optional<domain::login_info>
-login_info_service::get_login_info(const std::string& account_id) {
+login_info_service::get_login_info(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting login info. " << "account_id: " << account_id;
-    auto results = repo_.read_latest(ctx_, account_id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -159,9 +159,9 @@ void login_info_service::save_login_info(const std::vector<domain::login_info>& 
     repo_.write(ctx_, ts);
 }
 
-void login_info_service::delete_login_info(const std::string& account_id) {
+void login_info_service::delete_login_info(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing login info. " << "account_id: " << account_id;
-    repo_.remove(ctx_, account_id);
+    repo_.remove(ctx_, boost::uuids::to_string(account_id));
     BOOST_LOG_SEV(lg(), info) << "Removed login info. " << "account_id: " << account_id;
 }
 

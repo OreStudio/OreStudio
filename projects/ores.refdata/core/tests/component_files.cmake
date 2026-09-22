@@ -69,7 +69,6 @@ set(files
     "party_type_eventing_integration_tests.cpp"
     "payment_frequency_eventing_integration_tests.cpp"
     "portfolio_eventing_integration_tests.cpp"
-    "presentation_currency_history_field_mapper_tests.cpp"
     "purpose_type_eventing_integration_tests.cpp"
     "regulatory_book_type_eventing_integration_tests.cpp"
     "repository_book_status_repository_tests.cpp"

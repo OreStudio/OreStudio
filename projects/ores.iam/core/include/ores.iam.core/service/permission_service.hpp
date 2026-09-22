@@ -111,9 +111,24 @@ public:
     /**
      * @brief Retrieves a single permission by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The permission if found, std::nullopt otherwise.
      */
-    std::optional<domain::permission> get_permission(const std::string& id);
+    std::optional<domain::permission> get_permission(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single permission by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The permission if found, std::nullopt otherwise.
+     */
+    std::optional<domain::permission> get_permission_by_code(const std::string& code);
 
     /**
      * @brief Retrieves a single permission by its code.
@@ -148,7 +163,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_permission(const std::string& id);
+    void delete_permission(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes permissions by their primary keys.

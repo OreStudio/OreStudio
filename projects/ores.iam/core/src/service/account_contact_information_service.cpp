@@ -477,19 +477,31 @@ account_contact_information_service::list_account_contact_informations_by_accoun
 
 std::optional<domain::account_contact_information>
 account_contact_information_service::get_account_contact_information_at_version(
-    const std::string& id, std::uint32_t version) {
+    const boost::uuids::uuid& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account contact information at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::account_contact_information>
-account_contact_information_service::get_account_contact_information(const std::string& id) {
+account_contact_information_service::get_account_contact_information(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account contact information. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
+}
+
+std::optional<domain::account_contact_information>
+account_contact_information_service::get_account_contact_information_by_email(
+    const std::string& email) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting account contact information by email: " << email;
+    messaging::account_contact_information_key k;
+    k.email = email;
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 std::vector<domain::account_contact_information>
@@ -525,9 +537,9 @@ void account_contact_information_service::save_account_contact_informations(
 }
 
 void account_contact_information_service::delete_account_contact_information(
-    const std::string& id) {
+    const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed account contact information. " << "id: " << id;
 }
 
@@ -547,7 +559,12 @@ account_contact_information_service::get_account_contact_information_history(
     // history as having none.
     messaging::account_contact_information_key k;
     k.email = key;
-    const auto found = read_one(repo_, ctx_, k);
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+    const auto found = repo_.read_any_by_email(ctx_, k.email);
     if (found.empty())
         return {};
     const auto& row = found.front();

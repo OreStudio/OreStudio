@@ -166,15 +166,31 @@ public:
      * @return The account contact information at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::account_contact_information>
-    get_account_contact_information_at_version(const std::string& id, std::uint32_t version);
+    get_account_contact_information_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single account contact information by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The account contact information if found, std::nullopt otherwise.
      */
     std::optional<domain::account_contact_information>
-    get_account_contact_information(const std::string& id);
+    get_account_contact_information(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single account contact information by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The account contact information if found, std::nullopt otherwise.
+     */
+    std::optional<domain::account_contact_information>
+    get_account_contact_information_by_email(const std::string& email);
 
     /**
      * @brief Retrieves a batch of account contact informations by primary key.
@@ -205,7 +221,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_account_contact_information(const std::string& id);
+    void delete_account_contact_information(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes account contact informations by their primary keys.

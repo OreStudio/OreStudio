@@ -140,6 +140,22 @@ std::vector<domain::role> role_repository::read_latest(context ctx, const std::s
 }
 
 
+std::vector<domain::role> role_repository::read_any_by_name(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any role by name: " << name;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<role_entity>> |
+                       where("tenant_id"_c == tid && "name"_c == name) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<role_entity, domain::role>(
+        ctx,
+        query,
+        [](const auto& entities) { return role_mapper::map(entities); },
+        lg(),
+        "Reading any role by name.");
+}
+
+
 std::vector<domain::role> role_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all role versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();

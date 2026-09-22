@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 8C41D7A2-5E39-4B06-9F72-3A1E6D5C8B04
+:END:
+#+title: ores.diff.field_value
+#+description: Codegen entity model for the diff engine's rendered field: a table-less record that crosses the wire.
+#+type: ores.codegen.entity
+#+component: diff
+#+filetags: :model:entity:diff:
+#+brief: One field of a version, rendered as display text.
+#+entity_singular: field_value
+#+entity_plural: field_values
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+One field of an entity version, rendered as the text a person reads. It is
+never stored: it is a member of a history version and reaches a client inside a
+history response.
+
+Generating this model overwrites the hand-written
+=projects/ores.diff/include/ores.diff/domain/field_value.hpp=, which is what it
+is for. The hand-written header and this model state the same two members, and
+the point of moving the declaration here is that the C++ and the TypeScript
+twins are then generated from one source rather than written twice.
+
+* Flags
+:PROPERTIES:
+:schema:          public
+:product:         ores
+:component:       diff
+:no_primary_key:  true
+:profile:         table-less-record
+:END:
+
+=No primary key=: a rendered field identifies nothing. Saying so is what tells
+the loader this is a record that is carried rather than stored.
+
+The profile supplies =:no_audit_columns:=, which keeps the version column, the
+audit tail and the transaction timestamp off the struct.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:no_subcomponent: true
+:END:
+
+=No sub-component=: =ores.diff= keeps its headers at its own include root, so
+there is no directory between the component and =domain/= for this model to
+name.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Display name of the field, e.g. "ISO Code".
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The field's value rendered as a display string.

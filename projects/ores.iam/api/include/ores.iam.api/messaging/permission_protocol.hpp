@@ -36,7 +36,7 @@
 namespace ores::iam::messaging {
 
 struct permission_key {
-    boost::uuids::uuid id;
+    std::string code;
 };
 
 struct permission_write {

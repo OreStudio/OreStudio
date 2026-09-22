@@ -105,11 +105,12 @@ import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
+  component: '{{{bff_route.component}}}',
+  entity: '{{{bff_route.entity}}}',
   collection: '{{{bff_route.collection}}}',
   key: '{{{bff_route.key}}}',
   keyField: '{{{bff_route.key_field}}}',
-{{#bff_route.delete_keys_field}}  deleteKeysField: '{{{bff_route.delete_keys_field}}}',
-{{/bff_route.delete_keys_field}}  subjects: {
+  subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
 {{/bff_route.subjects_get}}{{#bff_route.subjects_save}}    save: subjects.{{{bff_route.subjects_save}}},
@@ -117,6 +118,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 {{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',
+  getRowField: '{{{bff_route.entity}}}',
 {{#bff_route.history_rows_field}}  historyRowsField: '{{{bff_route.history_rows_field}}}',
 {{/bff_route.history_rows_field}}};
 #+end_src

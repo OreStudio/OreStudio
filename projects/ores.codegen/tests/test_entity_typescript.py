@@ -29,6 +29,7 @@ from codegen.org_loader import (  # noqa: E402
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
 TENANT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant.org"
+ACCOUNT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account.org"
 ACCOUNT_PARTY = (
     REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_junction.org")
 
@@ -488,9 +489,22 @@ def test_a_real_model_derives_named_and_typed_members():
         assert all(f["name"] for f in message["fields"]), message["name"]
 
     # A key column's type is its own ``cpp_type``, not an ``is_uuid`` flag.
+    #
+    # `tenant` declares `code`, so its key is text; the type being the column's
+    # own is shown by a model whose declared key is a uuid, which is the
+    # storage key of a model that declares no key at all.
     key = {f["name"]: f for f in messages["tenant_key"]["fields"]}
-    assert key["id"]["cpp_type"] == "boost::uuids::uuid"
-    assert key["id"]["ts_type"] == "string"
+    assert key["code"]["cpp_type"] == "std::string"
+    assert key["code"]["ts_type"] == "string"
+
+    account = load_model(ACCOUNT)["domain_entity"]
+    account_key = {
+        f["name"]: f
+        for f in _by_name(
+            entity_protocol_messages(account))["account_key"]["fields"]
+    }
+    assert account_key["id"]["cpp_type"] == "boost::uuids::uuid"
+    assert account_key["id"]["ts_type"] == "string"
 
 
 def test_a_real_model_states_its_key_in_the_write_record():

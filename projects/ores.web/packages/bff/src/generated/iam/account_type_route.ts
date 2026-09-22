@@ -33,10 +33,11 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_typ
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const accountTypeRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'account_type',
   collection: 'account_types',
   key: 'id',
   keyField: 'type',
-  deleteKeysField: 'type',
   subjects: {
     list: subjects.list_account_types_request,
     get: subjects.get_account_type_request,
@@ -45,5 +46,6 @@ export const accountTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_account_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'account_type',
   historyRowsField: 'versions',
 };

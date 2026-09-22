@@ -127,14 +127,14 @@ void account_contact_information_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <email>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <email>");
 
     menu->Insert(
         "add",
@@ -165,14 +165,14 @@ void account_contact_information_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <email> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <email> <reason> <commentary>");
 
     menu->Insert(
         "by-account-id",
@@ -186,14 +186,14 @@ void account_contact_information_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <email> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <email> --version <n>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -275,6 +275,7 @@ void account_contact_information_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.email, parsed->positionals[next++], "email");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -319,7 +320,7 @@ void account_contact_information_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::account_contact_information_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.email, parsed->positionals[i + 0], "email");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -554,6 +555,7 @@ void account_contact_information_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.email, parsed->positionals[next++], "email");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -606,7 +608,7 @@ void account_contact_information_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::account_contact_information_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.email, parsed->positionals[i * 1 + 0], "email");
             req.removals.push_back(
                 messaging::account_contact_information_removal{.key = std::move(key)});
         }
@@ -714,6 +716,7 @@ void account_contact_information_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.email, parsed->positionals[next++], "email");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -759,6 +762,7 @@ void account_contact_information_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.account_contact_information.email, parsed->positionals[next++], "email");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

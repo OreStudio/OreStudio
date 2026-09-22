@@ -33,6 +33,8 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_prot
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenantRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'tenant',
   collection: 'tenants',
   key: 'id',
   keyField: 'code',
@@ -40,6 +42,10 @@ export const tenantRoute: EntityRouteDescriptor = {
     list: subjects.list_tenants_request,
     get: subjects.get_tenant_request,
     save: subjects.put_tenant_request,
+    remove: subjects.delete_tenant_request,
+    history: subjects.list_tenant_versions_request,
   },
   rowsField: 'tenants',
+  getRowField: 'tenant',
+  historyRowsField: 'versions',
 };

@@ -2750,15 +2750,26 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
-    """The typed key that addresses one entity -- every identifying column.
+    """The typed key that addresses one entity -- the key the model declares.
 
     The specification is explicit that a key carries each column with the
     column's own type, and that a composite key is never flattened to one
     string and never partially sent, because a partial key addresses a row
-    that need not exist. The derived delete request does both today: it sends
-    ``std::vector<std::string>`` per key column, so a uuid key and a text key
-    are indistinguishable to a caller.
+    that need not exist.
+
+    It is equally explicit that which key identifies an entity on the wire is a
+    declaration of the model, made once, and that the same key appears in the
+    resource's operations and in the HTTP path. That declaration is the
+    presentation drawer's ``key_field``, which is the field the path segment
+    already carries. Building the key record from the storage key instead is
+    what gave ``role``, ``tenant`` and ``permission`` two identities -- one the
+    path used and one the request did.
+
+    A model that declares no key has no other, so its storage key is the key.
     """
+    declared = declared_key_column(entity)
+    if declared is not None:
+        return [_ts_field(declared_key_field(entity), _key_cpp_type(declared))]
     primary_key = entity.get("primary_key") or {}
     return [_ts_field(_column_name(column), _key_cpp_type(column))
             for column in primary_key.get("columns") or []]
@@ -3951,10 +3962,17 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "fillable": cpp == _SHELL_LIST_TYPE or cpp in _SHELL_TOKEN_TYPES,
         }
 
-    keys = [
-        _input(column.get("column", ""), column.get("cpp_type", ""))
-        for column in (entity.get("primary_key") or {}).get("columns") or []
-    ]
+    # The key a command types is the one the model declares, because that is
+    # the key the request it fills carries. Reading the storage key here would
+    # have a command build a member the request does not have.
+    declared = declared_key_column(entity)
+    if declared is not None:
+        keys = [_input(_column_name(declared), _key_cpp_type(declared))]
+    else:
+        keys = [
+            _input(column.get("column", ""), column.get("cpp_type", ""))
+            for column in (entity.get("primary_key") or {}).get("columns") or []
+        ]
     writes = [
         _input(field.get("name", ""), field.get("cpp_type", ""))
         for field in entity.get("write_fields") or []

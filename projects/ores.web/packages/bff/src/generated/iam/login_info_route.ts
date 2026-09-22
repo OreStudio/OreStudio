@@ -33,6 +33,8 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/login_info_
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const loginInfoRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'login_info',
   collection: 'login_info',
   key: 'id',
   keyField: 'account_id',
@@ -41,4 +43,5 @@ export const loginInfoRoute: EntityRouteDescriptor = {
     get: subjects.get_login_info_request,
   },
   rowsField: 'login_info',
+  getRowField: 'login_info',
 };

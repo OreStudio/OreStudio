@@ -33,10 +33,11 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_stat
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenantStatusRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'tenant_status',
   collection: 'tenant_statuses',
   key: 'id',
   keyField: 'status',
-  deleteKeysField: 'status',
   subjects: {
     list: subjects.list_tenant_statuses_request,
     get: subjects.get_tenant_status_request,
@@ -45,5 +46,6 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
     history: subjects.list_tenant_status_versions_request,
   },
   rowsField: 'statuses',
+  getRowField: 'tenant_status',
   historyRowsField: 'versions',
 };

@@ -27,6 +27,12 @@ hand -- which is how a =std::size_t= came to project as a TypeScript type named
 Four records need the same combination, which is what makes it a profile rather
 than a local choice.
 
+The profile does not yet deliver the whole shape. An audit =recorded_at= member
+survives every feature it sets, and it cannot reach =:no_audit_columns:= at all.
+Until both are closed, a model bound to it generates a struct with a timestamp
+the record has no use for. See
+[[id:E4174872-13EA-4ECD-AD46-1E52C176701F][Give a table-less record a way to suppress the audit envelope]].
+
 * Reference entity
 
 =diff_span= -- the smallest of the four, and the shape the others compose: two

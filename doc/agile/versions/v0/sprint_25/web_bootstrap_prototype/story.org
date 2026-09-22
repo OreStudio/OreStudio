@@ -48,6 +48,9 @@ knowledge doc.
 
 - Progress and failure screens: retry from a failed step, discard tenant.
 - Re-provisioning or extending an existing tenant.
+- Single-tenant vs multi-tenant deployments: the Qt system wizard
+  asked; the map has not decided.
+- Demo profile admin password: a known password with a forced change?
 - How ores.web receives streamed progress events (the Acme response
   returns all steps at the end today).
 
@@ -95,6 +98,9 @@ knowledge doc.
   journeys (first run, new tenant, new party) built from shared steps,
   journey state in =ores.workflow=, journeys in web and shell,
   onboarding is first sign-in only, automatic handoff sign-in.
+- [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]]: variant A, a stepper page with a
+  flat step rail; profiles may prefill tenant details (ACME does); a
+  shared password field for the whole app.
 - [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
   Onboard and Seed profile are defined in the IAM knowledge doc's
   Tenant lifecycle section.

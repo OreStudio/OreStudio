@@ -191,17 +191,3 @@ export function useSimulatedRun(
     retry: () => setFailed(false),
   };
 }
-
-export interface TenantRow {
-  readonly code: string;
-  readonly name: string;
-  readonly profile: string;
-  readonly state: 'active' | 'provisioning' | 'failed';
-  readonly detail: string;
-}
-
-export const EXISTING_TENANTS: readonly TenantRow[] = [
-  { code: 'system', name: 'System', profile: '-', state: 'active', detail: 'Created by system bootstrap' },
-  { code: 'acme', name: 'Acme Corporation', profile: 'ACME demo', state: 'active', detail: '4 parties, 45 accounts' },
-  { code: 'northwind', name: 'Northwind Capital', profile: 'Operational', state: 'failed', detail: 'Failed at: Import counterparties (timeout)' },
-];

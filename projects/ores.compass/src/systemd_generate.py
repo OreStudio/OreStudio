@@ -60,6 +60,21 @@ DEFAULT_ARGS_TEMPLATE = (
     "--log-replica-index {replica_index} {nats_tls_args}"
 )
 
+# The compiled fleet's log level, read from this checkout's .env. One setting
+# for every compiled service: how much a deployment logs is a property of the
+# deployment, not of one service, and a single knob is what makes "turn logging
+# up everywhere, restart, look" one edit instead of twenty. Only the compiled
+# services take it -- ores.web reads ORES_WEB_LOG_LEVEL itself, and nats-server
+# has its own config -- so it lives here, in the renderer that bakes the
+# literal into each unit's ExecStart.
+SERVICE_LOG_LEVEL_VARIABLE = "ORES_SERVICE_LOG_LEVEL"
+DEFAULT_SERVICE_LOG_LEVEL = "info"
+
+
+def service_log_level(env: dict) -> str:
+    """This checkout's compiled-service log level (trace..error)."""
+    return env.get(SERVICE_LOG_LEVEL_VARIABLE) or DEFAULT_SERVICE_LOG_LEVEL
+
 # Static, hand-authored drop-ins that are NOT per-environment or DB-driven --
 # unlike everything else this module generates, these are host-wide and
 # checked in verbatim. `compass systemd deploy` syncs them alongside the
@@ -129,16 +144,19 @@ def _unit_basename(service_name, env_name):
     return f"{service_name}-{env_name}"
 
 
-def _substitute_args(args_template, def_row, keys_dir, replica_index=0,
-                      host_id=None, work_dir=None):
+def _substitute_args(args_template, def_row, keys_dir, log_level="info",
+                      replica_index=0, host_id=None, work_dir=None):
     """Render an args_template into a systemd ExecStart argument string.
     $FOO placeholders are systemd/EnvironmentFile= variable references,
     resolved by systemd itself from EnvironmentFile= before exec -- not
     literals baked in here, since values like the NATS URL are already
-    per-environment via that environment's own .env."""
+    per-environment via that environment's own .env.
+
+    The log level is the exception: --log-level takes a literal, so the
+    value is resolved here, from this checkout's ORES_SERVICE_LOG_LEVEL."""
     tmpl = args_template
     tmpl = tmpl.replace("{tenant_id}", SYSTEM_TENANT_UUID)
-    tmpl = tmpl.replace("{log_level}", "info")
+    tmpl = tmpl.replace("{log_level}", log_level)
     tmpl = tmpl.replace("{log_dir}", "../log")
     tmpl = tmpl.replace("{replica_index}", str(replica_index))
     tmpl = tmpl.replace("{http_port}", "${ORES_HTTP_PORT}")
@@ -154,7 +172,8 @@ def _substitute_args(args_template, def_row, keys_dir, replica_index=0,
     return tmpl
 
 
-def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name):
+def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name,
+                          log_level="info"):
     """A plain (non-replicated) service, one concrete unit per
     environment. ExecStart still needs a shell wrapper: $ORES_PRESET
     (an EnvironmentFile= variable) must resolve inside the executable
@@ -175,7 +194,8 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
     env_file = f"{checkout_root}/.env"
     keys_dir = f"{checkout_root}/build/keys/nats"
 
-    args = _substitute_args(def_row["args_template"], def_row, keys_dir)
+    args = _substitute_args(def_row["args_template"], def_row, keys_dir,
+                            log_level=log_level)
 
     after = [_unit_basename("nats-server", env_name) + ".service"] + \
         [_unit_basename(d, env_name) + ".service" for d in deps_on]
@@ -276,7 +296,8 @@ WantedBy={target_name}
     return unit
 
 
-def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name):
+def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name,
+                         log_level="info"):
     """ores.compute.wrapper's N hot replicas: N concrete units (not one
     template instantiated N ways), each with a literal replica index,
     host_id and work_dir baked in at generation time -- this checkout's
@@ -300,6 +321,7 @@ def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name)
         host_id = uuid.uuid5(HOST_ID_NAMESPACE, f"{hostname}:{replica}")
         work_dir = f"../run/wrappers/node_{replica}"
         args = _substitute_args(def_row["args_template"], def_row, keys_dir,
+                                 log_level=log_level,
                                  replica_index=replica, host_id=host_id,
                                  work_dir=work_dir)
         shell_cmd = (f'cd "{bin_dir}" && '
@@ -465,6 +487,7 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
         written.append(name)
 
     nats_port = env.get("ORES_NATS_PORT", "4222")
+    log_level = service_log_level(env)
     write(_unit_basename("nats-server", env_name) + ".service",
           render_nats_unit(checkout_root, env_name, target_name, nats_port))
 
@@ -476,16 +499,19 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
                                    target_name, env.get("ORES_PRESET", "")))
         elif d["desired_replicas"] > 1:
             for name, content in render_wrapper_units(
-                    d, deps_on, checkout_root, env_name, target_name):
+                    d, deps_on, checkout_root, env_name, target_name,
+                    log_level=log_level):
                 write(name, content)
         else:
             write(_unit_basename(d["service_name"], env_name) + ".service",
                   render_singleton_unit(d, deps_on, checkout_root, env_name,
-                                         target_name))
+                                         target_name, log_level=log_level))
 
     write(target_name, render_target(defs, env_name))
 
     print(f"Wrote {len(written)} unit files to {out_dir}")
+    print(f"Compiled services log at '{log_level}' "
+          f"(ORES_SERVICE_LOG_LEVEL in .env)")
     print()
     print("To install for this user:")
     print(f"  compass systemd deploy")
@@ -612,7 +638,7 @@ def _quadlet_host_dir(checkout_root, kind, service_name, env_name, replica=None)
 
 
 def render_quadlet_singleton_unit(def_row, deps_on, checkout_root, env_name,
-                                   target_name):
+                                   target_name, log_level="info"):
     """Quadlet .container counterpart to render_singleton_unit: same
     dependency-graph-derived After=/Requires=, same host networking
     (Network=host) and rootless-uid-remap fix (UserNS=keep-id) as
@@ -638,7 +664,8 @@ def render_quadlet_singleton_unit(def_row, deps_on, checkout_root, env_name,
     env_file = f"{checkout_root}/docker/.env"
     keys_dir = f"{checkout_root}/build/keys/nats"
 
-    args = _substitute_args(def_row["args_template"], def_row, keys_dir)
+    args = _substitute_args(def_row["args_template"], def_row, keys_dir,
+                            log_level=log_level)
 
     after = [_quadlet_unit_basename("nats-server", env_name) + ".service"] + \
         [_quadlet_unit_basename(d, env_name) + ".service" for d in deps_on]
@@ -687,7 +714,7 @@ WantedBy={target_name}
 
 
 def render_quadlet_wrapper_units(def_row, deps_on, checkout_root, env_name,
-                                  target_name):
+                                  target_name, log_level="info"):
     """Quadlet counterpart to render_wrapper_units: one .container unit per
     ores.compute.wrapper hot replica, same replica-index/host_id/work_dir
     baking as the plain-systemd path."""
@@ -704,6 +731,7 @@ def render_quadlet_wrapper_units(def_row, deps_on, checkout_root, env_name,
         host_id = uuid.uuid5(HOST_ID_NAMESPACE, f"{hostname}:{replica}")
         work_dir = f"../run/wrappers/node_{replica}"
         args = _substitute_args(def_row["args_template"], def_row, keys_dir,
+                                 log_level=log_level,
                                  replica_index=replica, host_id=host_id,
                                  work_dir=work_dir)
 
@@ -836,6 +864,7 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
     write(_quadlet_unit_basename("nats-server", env_name) + ".container",
           render_quadlet_nats_unit(checkout_root, env_name, target_name))
 
+    log_level = service_log_level(env)
     for d in defs:
         deps_on = deps.get(d["service_name"], [])
         if d["desired_replicas"] > 1:
@@ -844,7 +873,8 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
                     Path(_quadlet_host_dir(checkout_root, kind, d["service_name"],
                                             env_name, r)).mkdir(parents=True, exist_ok=True)
             for name, content in render_quadlet_wrapper_units(
-                    d, deps_on, checkout_root, env_name, target_name):
+                    d, deps_on, checkout_root, env_name, target_name,
+                    log_level=log_level):
                 write(name, content)
         else:
             for kind in ("log", "run"):
@@ -852,11 +882,14 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
                                         env_name)).mkdir(parents=True, exist_ok=True)
             write(_quadlet_unit_basename(d["service_name"], env_name) + ".container",
                   render_quadlet_singleton_unit(d, deps_on, checkout_root,
-                                                 env_name, target_name))
+                                                 env_name, target_name,
+                                                 log_level=log_level))
 
     write(target_name, render_quadlet_target(defs, env_name))
 
     print(f"Wrote {len(written)} Quadlet unit files to {out_dir}")
+    print(f"Compiled services log at '{log_level}' "
+          f"(ORES_SERVICE_LOG_LEVEL in .env)")
     print()
     print("Each referenced image (localhost/<service_name>:local) must "
           "already be built and present wherever these units run -- see "

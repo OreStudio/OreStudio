@@ -523,6 +523,17 @@ def cmd_restart(ctx, args):
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
 
+    # Regenerate first: a unit's ExecStart is built from .env (the log level
+    # above all), so restarting units this deployment has stopped generating
+    # would silently run the old settings. Deploy syncs and reloads only when
+    # something actually changed.
+    print("[Generate + deploy systemd units]")
+    if systemd_generate.cmd_generate(ctx.root, ctx.env, None) != 0:
+        return 1
+    if systemd_generate.cmd_deploy(ctx.root, ctx.env, None) != 0:
+        return 1
+    print()
+
     if args.service:
         name, units = _resolve_service_or_report(ctx, args.service)
         if name is None:
@@ -707,10 +718,11 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     sub = ap.add_subparsers(dest="subcmd", required=True)
 
     st = sub.add_parser("start", help="Generate+deploy systemd units, then "
-                                      "systemctl --user start the fleet")
+                                      "systemctl --user start the fleet. The "
+                                      "compiled services' log level comes from "
+                                      "ORES_SERVICE_LOG_LEVEL in .env.")
     _common(st)
     _service_argument(st)
-    st.add_argument("--log-level", default="trace")
 
     sp = sub.add_parser("stop", help="systemctl --user stop the fleet "
                                      "(cascades via PartOf=)")
@@ -718,7 +730,9 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     _service_argument(sp)
 
     sr = sub.add_parser("restart", help="systemctl --user restart the fleet, "
-                                        "or just one service")
+                                        "or just one service. Regenerates the "
+                                        "units first, so it also applies "
+                                        "ORES_SERVICE_LOG_LEVEL from .env.")
     _common(sr)
     _service_argument(sr)
 

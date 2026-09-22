@@ -27,7 +27,12 @@ import {
 } from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityListPage } from './EntityListPage.js';
-import { entityBasePath, entityRecordPath } from './entityPaths.js';
+import {
+  entityBasePath,
+  entityRecordPath,
+  recordKeyFromValues,
+  recordLabel,
+} from './entityPaths.js';
 import { useDeleteEntity, useEntityList, type EntityRow } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -73,8 +78,7 @@ export function EntityListContainer({
   const [failure, setFailure] = useState<string | undefined>(undefined);
 
   const base = entityBasePath(descriptor);
-  /** The record's identity, which is the field the declaration freezes. */
-  const keyOf = (row: EntityRow): string => String(row[descriptor.meta.keyField] ?? '');
+
 
   function confirmDelete(result: ChangeReasonResult): void {
     const row = target;
@@ -83,7 +87,7 @@ export function EntityListContainer({
     const version = Number(row['version']);
     remove.mutate(
       {
-        key: keyOf(row),
+        key: recordKeyFromValues(descriptor, row),
         intent: {
           reason_code: result.reasonCode,
           commentary: result.commentary,
@@ -108,6 +112,7 @@ export function EntityListContainer({
     <>
       <EntityListPage
         meta={descriptor.meta}
+        keyFields={descriptor.keyFields}
         title={t(`${descriptor.entity}.title`)}
         description={t(`${descriptor.entity}.description`)}
         rows={query.data?.rows ?? []}
@@ -123,20 +128,20 @@ export function EntityListContainer({
           setPage(1);
         }}
         onReload={() => void query.refetch()}
-        onOpen={(row) => navigate(entityRecordPath(descriptor, keyOf(row)))}
+        onOpen={(row) => navigate(entityRecordPath(descriptor, row))}
         {...(descriptor.capabilities.create
           ? { onCreate: () => navigate(`${base}/new`) }
           : {})}
         {...(descriptor.capabilities.edit
           ? {
               onEdit: (row: EntityRow) =>
-                navigate(`${entityRecordPath(descriptor, keyOf(row))}/edit`),
+                navigate(`${entityRecordPath(descriptor, row)}/edit`),
             }
           : {})}
         {...(descriptor.capabilities.history
           ? {
               onHistory: (row: EntityRow) =>
-                navigate(`${entityRecordPath(descriptor, keyOf(row))}/history`),
+                navigate(`${entityRecordPath(descriptor, row)}/history`),
             }
           : {})}
         {...(descriptor.capabilities.remove
@@ -160,7 +165,7 @@ export function EntityListContainer({
           title={t('confirmation.deleteTitle', { singular: t(`${descriptor.entity}.singular`) })}
           body={t('confirmation.deleteBody', {
             singular: t(`${descriptor.entity}.singular`),
-            name: keyOf(target),
+            name: recordLabel(descriptor, target),
           })}
           confirmLabel={t('entity.delete')}
           pending={false}

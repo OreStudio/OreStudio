@@ -1760,13 +1760,27 @@ def validate_model(model: dict[str, Any]) -> list[str]:
     de = model["domain_entity"]
 
     for k in REQUIRED_FLAGS:
+        # A model lives under its component's include root when the component
+        # has no sub-components, and says so rather than naming a directory
+        # that does not exist.
+        if k == "subcomponent" and de.get("no_subcomponent"):
+            continue
         if k not in de:
             errors.append(f"Missing required flag: {k}")
 
-    if "primary_key" not in de:
+    # A key is required of a record that is stored, not of one that is only
+    # carried. The two are told apart by the model saying which it is, so an
+    # entity that forgets a key still fails, and an entity that has none is not
+    # asked to invent one.
+    if de.get("no_primary_key"):
+        if "primary_key" in de:
+            errors.append(
+                "States :no_primary_key: true and also flags a primary key")
+    elif "primary_key" not in de:
         errors.append(
             "Missing primary key: no field in 'Columns' is flagged "
-            ":primary_key: true"
+            ":primary_key: true -- or state :no_primary_key: true if the "
+            "record carries no key"
         )
     elif "column" not in de["primary_key"]:
         errors.append("Primary key missing required property: column")

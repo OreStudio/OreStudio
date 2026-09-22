@@ -29,6 +29,15 @@ REQUIRED_FLAGS = """\
 """
 
 
+def _flags(*extra: str) -> str:
+    """Build a Flags drawer, with any extra properties before the :END:."""
+    lines = ["* Flags", ":PROPERTIES:", ":schema: public", ":product: ores",
+             ":component: dq"]
+    lines += list(extra)
+    lines.append(":END:")
+    return "\n".join(lines) + "\n"
+
+
 def _model(columns_body: str) -> dict:
     text = REQUIRED_FLAGS + columns_body
     doc = parse_org(text)
@@ -186,6 +195,101 @@ No field flagged primary_key.
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Missing primary key"):
+        load_org_model(doc_path)
+
+
+COLUMNS_NO_KEY = """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:END:
+
+No field flagged primary_key.
+"""
+
+
+def test_a_keyless_record_is_admitted_when_it_says_so(tmp_path):
+    # A record that is only carried has no key to state. The flag is what tells
+    # the loader which of the two it is looking at, so the requirement above
+    # still holds for everything that does not declare it.
+    doc_path = tmp_path / "keyless.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true", ":no_primary_key: true")
+        + COLUMNS_NO_KEY,
+        encoding="utf-8",
+    )
+    de = load_org_model(doc_path)["domain_entity"]
+    assert "primary_key" not in de
+
+
+def test_stating_no_primary_key_and_flagging_one_is_refused(tmp_path):
+    doc_path = tmp_path / "contradiction.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true", ":no_primary_key: true")
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+Both at once.
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="also flags a primary key"):
+        load_org_model(doc_path)
+
+
+def test_no_subcomponent_flag_admits_a_model_without_one(tmp_path):
+    # A component that keeps its headers at its own include root has no
+    # sub-component for a model to name.
+    doc_path = tmp_path / "no_subcomponent.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true")
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+Only the sub-component is absent.
+""",
+        encoding="utf-8",
+    )
+    de = load_org_model(doc_path)["domain_entity"]
+    assert de["primary_key"]["column"] == "name"
+
+
+def test_a_missing_subcomponent_without_the_flag_is_refused(tmp_path):
+    doc_path = tmp_path / "missing_subcomponent.org"
+    doc_path.write_text(
+        REQUIRED_FLAGS
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+The key is stated, only the sub-component is absent.
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Missing required flag: subcomponent"):
         load_org_model(doc_path)
 
 

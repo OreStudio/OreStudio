@@ -57,8 +57,9 @@ std::vector<domain::account_party> account_party_service::list_account_parties_b
     return repo_.read_latest_by_account(account_id, offset, limit);
 }
 
-std::optional<domain::account_party> account_party_service::find_account_party(
-    const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id) {
+std::optional<domain::account_party>
+account_party_service::find_account_party(const boost::uuids::uuid& account_id,
+                                          const boost::uuids::uuid& party_id) {
     for (auto& row : list_account_parties_by_account(account_id)) {
         if (row.party_id == party_id)
             return row;

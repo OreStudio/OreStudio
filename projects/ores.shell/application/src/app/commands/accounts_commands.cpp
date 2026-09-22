@@ -25,10 +25,10 @@
 #include "ores.iam.api/messaging/account_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/login_info_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/session_operations_protocol.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -463,7 +463,8 @@ void accounts_commands::process_list_sessions(std::ostream& out,
     // rather than quietly returning every session instead.
     if (!account_id.empty()) {
         fail(out) << "Listing sessions by account is not served. "
-                     "Use 'sessions' for the page." << std::endl;
+                     "Use 'sessions' for the page."
+                  << std::endl;
         return;
     }
 
@@ -488,8 +489,7 @@ void accounts_commands::process_list_sessions(std::ostream& out,
         return;
     }
 
-    out << "Sessions (showing " << sessions.size() << " of " << result->total
-        << "):" << std::endl;
+    out << "Sessions (showing " << sessions.size() << " of " << result->total << "):" << std::endl;
     out << std::string(80, '-') << std::endl;
 
     for (const auto& s : sessions) {

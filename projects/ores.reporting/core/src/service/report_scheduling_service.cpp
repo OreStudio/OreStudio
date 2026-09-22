@@ -274,8 +274,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             tenant_req.limit = page_size;
 
             const auto reply_msg = svc_nats_.authenticated_request(
-                ores::iam::messaging::list_tenants_request::nats_subject,
-                codec.encode(tenant_req));
+                ores::iam::messaging::list_tenants_request::nats_subject, codec.encode(tenant_req));
 
             auto resp = codec.decode<ores::iam::messaging::list_tenants_response>(reply_msg.data);
             if (!resp) {

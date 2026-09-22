@@ -57,14 +57,15 @@ using ores::service::messaging::error_reply;
 class authorization_handler {
 public:
     authorization_handler(ores::nats::service::client& nats,
-                 ores::database::context ctx,
-                 ores::security::jwt::jwt_authenticator signer)
+                          ores::database::context ctx,
+                          ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer)) {}
 
     void assign(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<assign_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -84,13 +85,15 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, assign_role_response{.success = false, .error_message = e.what()});
         }
     }
 
     void revoke(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<revoke_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,13 +124,15 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, revoke_role_response{.success = false, .error_message = e.what()});
         }
     }
 
     void by_account(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<get_account_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -147,13 +152,15 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, get_account_roles_response{.roles = std::move(roles)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_roles_response{});
         }
     }
 
     void account_permissions(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<get_account_permissions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -171,17 +178,18 @@ public:
             boost::uuids::string_generator sg;
             auto codes = svc.get_effective_permissions(sg(req->account_id));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_account_permissions_response{.permission_codes = std::move(codes)});
+            reply(
+                nats_, msg, get_account_permissions_response{.permission_codes = std::move(codes)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_permissions_response{});
         }
     }
 
     void permissions(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<get_role_permissions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -201,13 +209,15 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, get_role_permissions_response{.permission_codes = std::move(codes)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_role_permissions_response{});
         }
     }
 
     void assign_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<assign_role_by_name_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -276,7 +286,8 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   assign_role_by_name_response{.success = false, .error_message = e.what()});
@@ -284,7 +295,8 @@ public:
     }
 
     void revoke_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<revoke_role_by_name_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -367,7 +379,8 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   revoke_role_by_name_response{.success = false, .error_message = e.what()});
@@ -375,7 +388,8 @@ public:
     }
 
     void suggest_commands(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(authorization_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
         auto req = decode<suggest_role_commands_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -407,7 +421,8 @@ public:
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, suggest_role_commands_response{.commands = std::move(results)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(authorization_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_, msg, suggest_role_commands_response{});
         }
     }

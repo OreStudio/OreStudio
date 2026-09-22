@@ -24,8 +24,8 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
@@ -57,7 +57,8 @@ namespace ores::iam::messaging {
 namespace {
 
 inline auto& account_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_operations_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.iam.messaging.account_operations_handler");
     return instance;
 }
 
@@ -133,9 +134,9 @@ using namespace ores::logging;
 class account_operations_handler {
 public:
     account_operations_handler(ores::nats::service::client& nats,
-                    ores::database::context ctx,
-                    ores::security::jwt::jwt_authenticator signer,
-                    std::shared_ptr<service::cache::party_cache> party_cache)
+                               ores::database::context ctx,
+                               ores::security::jwt::jwt_authenticator signer,
+                               std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer))

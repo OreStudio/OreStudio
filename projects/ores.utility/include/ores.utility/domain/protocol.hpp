@@ -36,15 +36,7 @@ namespace ores::utility::domain {
  * connection, an unparseable request -- is reported by the envelope instead,
  * because there is no body to carry it.
  */
-enum class outcome {
-    ok,
-    invalid,
-    denied,
-    missing,
-    conflict,
-    unavailable,
-    failed
-};
+enum class outcome { ok, invalid, denied, missing, conflict, unavailable, failed };
 
 /**
  * @brief One field a request got wrong, named so a caller can act on it.
@@ -77,11 +69,7 @@ struct result {
  * create detectable, and @c must_match_version makes a concurrent edit
  * detectable. A write that states none is invalid.
  */
-enum class precondition_kind {
-    any,
-    must_not_exist,
-    must_match_version
-};
+enum class precondition_kind { any, must_not_exist, must_match_version };
 
 struct precondition {
     precondition_kind kind = precondition_kind::must_not_exist;
@@ -96,8 +84,7 @@ struct precondition {
  * current. A caller that wants the version checked says so, and states the
  * version.
  */
-inline constexpr precondition removal_precondition{
-    precondition_kind::any, std::nullopt};
+inline constexpr precondition removal_precondition{precondition_kind::any, std::nullopt};
 
 /**
  * @brief Why a write is being made. User-owned, unlike the audit provenance,
@@ -130,10 +117,7 @@ struct order {
  * implementation that cannot answer @c subtree says so, rather than
  * silently answering with the children.
  */
-enum class scope {
-    direct,
-    subtree
-};
+enum class scope { direct, subtree };
 
 }
 

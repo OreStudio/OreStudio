@@ -30,6 +30,7 @@
 #include "ores.shell/app/commands/countries_commands.hpp"
 #include "ores.shell/app/commands/crm_commands.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
+#include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
@@ -44,7 +45,6 @@
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
-#include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.

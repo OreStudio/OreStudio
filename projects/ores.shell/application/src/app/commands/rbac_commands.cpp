@@ -192,9 +192,8 @@ void rbac_commands::process_get_role(std::ostream& out,
     iam::messaging::get_role_request req;
     req.key.id = *parsed_role_id;
 
-    auto result =
-        do_auth_request<iam::messaging::get_role_response>(out, session, 
-                                                           std::string(req.nats_subject), req);
+    auto result = do_auth_request<iam::messaging::get_role_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

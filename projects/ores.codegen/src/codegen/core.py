@@ -2023,11 +2023,11 @@ def web_declaration_projection(entity, model_path):
     The capabilities are the route projection's own facts, not a second
     derivation from the protocol underneath it. The browser talks to the BFF,
     so what a screen may offer is what the route serves. Deriving it a layer
-    down -- from the messaging protocol -- lets the declaration promise an
-    action the route withheld, which the screen then renders and the request
-    answers with 404. Asking the route makes "no affordance without a route"
-    true by construction, rather than by two derivations agreeing today and
-    drifting apart at the next entity shape.
+    down lets the declaration promise an action the route withheld -- it did,
+    on a composite key, where the generic history request names one id and the
+    route is therefore absent while the declaration still offered History.
+    Asking the route makes "no affordance without a route" true by
+    construction rather than by two derivations agreeing today.
 
     ``has_readonly_paginated_list`` is the one interface-level statement, and
     it outranks the served routes: an entity whose route can write it is still
@@ -2043,10 +2043,6 @@ def web_declaration_projection(entity, model_path):
     entity_singular = entity.get('entity_singular', 'unknown')
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
-    messages = entity.get('messages') or []
-    key_record = _protocol_message(messages, f'{entity_singular}_key')
-    key_field_names = [field['name']
-                       for field in (key_record or {}).get('fields') or []]
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2063,23 +2059,8 @@ def web_declaration_projection(entity, model_path):
         'can_remove': _ui_bool(routes['serves_remove'] and not read_only),
         'can_history': _ui_bool(routes['serves_history']),
         'key_field': key_field,
-        # The key's members, in the order the model declares them. The screens
-        # address a record by all of them: a path carries one value per member,
-        # and a junction's key is the pair it links, so naming one field would
-        # address half a row.
-        'key_fields_block': '\n'.join(
-            f"        '{name}'," for name in key_field_names) + ('\n' if key_field_names else ''),
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
-        # The members a write record states. The form builds the record it
-        # sends from these and nothing else: the row it read carries the audit
-        # tail and the version, which the write record does not state, and a
-        # member the form does not show would otherwise be sent as whatever the
-        # row happened to hold.
-        'write_fields_block': '\n'.join(
-            f"        '{field['name']}',"
-            for field in entity.get('write_fields') or []
-            if field.get('name')) + ('\n' if entity.get('write_fields') else ''),
     }
 
 
@@ -2117,6 +2098,55 @@ def _string_vector_field_name(message):
         if field.get('cpp_type') == 'std::vector<std::string>':
             return field.get('name')
     return None
+
+
+def _primary_key_columns(entity):
+    """The column names the entity's primary key is stated with, in order."""
+    primary_key = entity.get('primary_key') or {}
+    columns = [column.get('column')
+               for column in primary_key.get('columns') or []
+               if column.get('column')]
+    if not columns and primary_key.get('column'):
+        columns = [primary_key.get('column')]
+    return columns
+
+
+def _keyed_by_natural_key(entity):
+    """Whether the entity's primary key is exactly its presentation natural key.
+
+    The derived delete and history requests are keyed by the primary key,
+    while the route's path segment carries the natural key, so the two agree
+    only when the primary key is the natural key alone. The web declaration
+    and the BFF route descriptor read the condition here so neither can
+    promise a capability the other withholds.
+    """
+    natural_key = (entity.get('presentation') or {}).get('key_field', '')
+    return bool(natural_key) and _primary_key_columns(entity) == [natural_key]
+
+
+# The audit member every temporal domain type carries. The domain-type
+# templates name it directly; the BFF projection reads the name from here so
+# the descriptor and the wire shape are spelled in one place.
+_AUDIT_TIMESTAMP_FIELD = 'recorded_at'
+
+
+def _audit_timestamp_fields(entity):
+    """The audit timestamp members the entity's own domain type carries.
+
+    The web container seeds every member, so an audit timestamp arrives at
+    the save route as an empty string, which the service's decoder refuses.
+    The service stamps the real value; the save route only has to send a
+    value the decoder accepts. A current-state entity carries no such member,
+    and a composed entity carries it under its group member's name.
+    """
+    if entity.get('current_state'):
+        return []
+    prefix = entity.get('audit_prefix') or ''
+    if prefix:
+        return [prefix + _AUDIT_TIMESTAMP_FIELD]
+    if entity.get('has_audit_group') or entity.get('has_domain_groups'):
+        return []
+    return [_AUDIT_TIMESTAMP_FIELD]
 
 
 def _protocol_owned_by_operation(model_path, entity) -> bool:
@@ -2157,9 +2187,9 @@ def bff_route_projection(entity, model_path):
     Every ``subjects_*`` value is the protocol module's own member name,
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
-    read-only entity derives no put, so it has no ``save``; a current-state
-    entity derives no versions pair -- and ``has_get``/``has_remove``/
-    ``has_history`` state the same fact as TypeScript literals.
+    current-state entity derives no versions pair -- and ``has_get``/
+    ``has_remove``/``has_history`` state the same fact as TypeScript
+    literals.
 
     What the factory cannot derive from the entity's shape is stated too:
     the write record's members, so a save sends the record the protocol
@@ -2175,9 +2205,8 @@ def bff_route_projection(entity, model_path):
     record it does not fill would match no row on a read or a delete, or
     fail to decode on a versions read.
 
-    None only when the entity derives no list request. That is the one role
-    a descriptor cannot do without: a route that cannot read the collection
-    reaches nothing, whereas a route that cannot write is still a screen.
+    None when the derived set carries none of the required request roles --
+    a defensive guard, since an enriched domain entity always derives them.
     The operation-owned case is withheld before rendering, in
     ``resolve_targets``, because the replacement protocol module there need
     not export the derived names.
@@ -2195,31 +2224,37 @@ def bff_route_projection(entity, model_path):
     subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
+    # A route that cannot read the collection reaches nothing, whereas a route
+    # that cannot write is still a screen. Requiring every write subject
+    # withholds the screen entirely from an entity whose writes are workflows
+    # -- account's are -- and from a read-only one; the template then renders
+    # the descriptor's fields from a projection that is not there, which is a
+    # file that does not parse. The list is the gate, and each route below
+    # answers for itself.
     if not subjects_list:
         return None
     subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
         messages, f'list_{singular}_versions_request')
 
+    natural_key = presentation.get('key_field', '')
+    keyed_by_natural_key = _keyed_by_natural_key(entity)
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # A route's address is its path, and a path segment carries one value. A
-    # key with more than one member is therefore addressed by that many
-    # segments, and the descriptor states every member so the factory can build
-    # the record from them. A junction's key is the pair it links, which is the
-    # case that needs this: stating one member would address half a row.
+    # Every canonical request names the entity by its key record, never by a
+    # flattened string, so the path segment fills one member of that record.
+    # Only a single-column key can be driven from one path segment, and that
+    # is the same condition that lets the delete and the versions read be
+    # stated at all.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    has_key = bool(key_members)
-    has_get = bool(subjects_get) and has_key
-    has_remove = has_key and bool(subjects_remove)
-    # The generic history request names one id, so it addresses a key with one
-    # member and cannot state one with more: the specification forbids sending
-    # half a key, and a pair joined into a string addresses no row.
-    has_history = (len(key_members) == 1 and bool(history_response)
-                   and bool(subjects_history))
+    key_drivable = len(key_members) == 1 and keyed_by_natural_key
+    has_get = bool(subjects_get) and key_drivable
+    has_remove = bool(subjects_remove) and key_drivable
+    has_history = (bool(subjects_history) and bool(history_response)
+                   and key_drivable)
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members
@@ -2242,22 +2277,31 @@ def bff_route_projection(entity, model_path):
         'entity': singular,
         'entity_camel': _ui_camel(singular),
         'collection': presentation.get('collection_name', ''),
-        'key_fields_block': ', '.join(f"'{name}'" for name in key_members),
+        'key': 'id',
+        'key_field': natural_key,
+        'row_field': singular,
+        'write_fields_block': ', '.join(
+            f"'{field}'" for field in write_fields),
+        'write_defaults_block': _write_defaults_block(entity),
+        'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
+        'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
+        'list_has_as_of': _ui_bool('as_of' in list_members),
+        'list_has_filter': _ui_bool('filter' in list_members),
+        'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
-        'subjects_save': subjects_save,
         'has_get': _ui_bool(has_get),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
-        # The same facts again as booleans, because the declaration consumes
-        # them rather than re-deriving them from the protocol. The declaration
-        # states what the route serves, so a screen cannot promise an action
-        # this projection withheld -- which is the whole class of 404 the two
-        # used to reach independently, and disagree about.
+        # The same facts as booleans, for the declaration to read instead of
+        # re-deriving them from the protocol a layer below the route. There
+        # they can disagree with the route -- and did, on a composite key.
         'serves_save': bool(subjects_save),
         'serves_remove': has_remove,
         'serves_history': has_history,
     }
+    if subjects_save:
+        projection['subjects_save'] = subjects_save
     if has_get:
         projection['subjects_get'] = subjects_get
     if has_remove:

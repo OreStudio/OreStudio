@@ -38,14 +38,6 @@ import type { EntityMeta } from '../ui-contract.js';
  */
 export interface EntityListPageProps<Row> {
   readonly meta: EntityMeta;
-  /**
-   * The key's members, which identify a row in the list.
-   *
-   * The metadata carries the natural key, which a junction does not have: its
-   * identity is the pair it links, so a row is named by both members. The
-   * declaration is where that list lives, and the container passes it down.
-   */
-  readonly keyFields: readonly string[];
   readonly title: string;
   readonly description?: string;
   readonly rows: readonly Row[];
@@ -92,19 +84,8 @@ export interface EntityListPageProps<Row> {
 const PAGE_SIZES = [25, 50, 100, 200, 500] as const;
 const LOAD_ALL_CEILING = 1000;
 
-/**
- * A row's identity in the list: the values of every key member, joined.
- *
- * Joined with a separator no generated value holds, so two different rows
- * cannot fold to one key and collide in the table.
- */
-function recordKeyOf(keyFields: readonly string[], row: Record<string, unknown>): string {
-  return keyFields.map((field) => String(row[field] ?? '')).join('\u0000');
-}
-
 export function EntityListPage<Row extends Record<string, unknown>>({
   meta,
-  keyFields,
   title,
   description,
   rows,
@@ -228,10 +209,10 @@ export function EntityListPage<Row extends Record<string, unknown>>({
     const fromData = new Set(
       rows
         .filter((row) => String(row['recorded_at'] ?? '') > since)
-        .map((row) => recordKeyOf(keyFields, row)),
+        .map((row) => String(row[meta.keyField] ?? '')),
     );
     return fromData;
-  }, [rows, keyFields]);
+  }, [rows, meta.keyField]);
 
   /*
    * The badge fades on its own, as a mail client's does.
@@ -372,7 +353,7 @@ export function EntityListPage<Row extends Record<string, unknown>>({
         <DataTable
           columns={meta.columns}
           rows={visible}
-          rowKey={(row) => recordKeyOf(keyFields, row)}
+          rowKey={(row) => String(row[meta.keyField] ?? '')}
           {...(onOpen === undefined ? {} : { onOpen })}
           {...(rowActions.length === 0 ? {} : { rowActions })}
           changed={badgesVisible ? marked : new Set()}

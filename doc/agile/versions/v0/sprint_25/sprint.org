@@ -146,7 +146,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:DE9D2DD4-9DB6-48E1-946C-6CAB97D931C1][Hotfix: database_info mapper and repository use their own namespace]] | DONE | 2026-09-21 | 2026-09-21 | The Windows MSVC build fails in ores.database because database_info_mapper.cpp and database_info_repository.cpp re-enter ores::database::repository with a using-directive from inside that same namespace; MSVC emits C4515 and /WX turns it into an error. |
 | [[id:94A90F28-A88D-46BC-B868-C01263EE2826][Hotfix: password_hasher catch block leaves its exception unreferenced]] | DONE | 2026-09-22 | 2026-09-22 | The Windows MSVC build fails in ores.security because password_hasher.cpp catches const std::exception& e but never uses e; MSVC emits C4101 and /WX turns it into an error. |
 | [[id:54897BD4-A38C-4271-AA3B-CE79C43663E3][Hotfix: IAM current-state notify triggers are not wired into the aggregators]] | DONE | 2026-09-22 | 2026-09-22 | SQL schema validation fails on main with four WIRE_001 warnings because the login_info and session notify trigger scripts are not reachable from the create and drop aggregators; Continuous Linux and Nightly Build have been red since 2026-09-21. |
-| [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] | BACKLOG | | | Revisit the ores.qt bootstrap wizards from first principles for ores.web, taking the ACME work into account. |
+| [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] | DONE | | 2026-09-22 | Revisit the ores.qt bootstrap wizards from first principles for ores.web, taking the ACME work into account. |
 
 * Achievements
 

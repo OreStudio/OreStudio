@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -66,6 +66,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Minor: file mode changes 644 to 755 | projects/ores.web/scripts/dev-stack.sh | Accept | The README runs it as scripts/dev-stack.sh, so it should be executable. |
+| 2 | Minor: NewPasswordField has no production caller yet | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | Shared by request; the journey screens are its first callers. The policy has its own tests. |
+| 3 | Minor: the confirmation is local state, so a parent that resets the password leaves it stale | projects/ores.web/packages/web/src/ui/PasswordField.tsx | Decline | No caller resets it today; remount the field if one does. |
+| 4 | Misspell check on the changed files | all changed files | Accept | Clean (exit 0). |
+
+Verdict: ready to merge. No critical or important findings.
 
 * Result
+
+Story scaffolded; the wayfinder map charted and worked to the end: two
+research tickets, the glossary, the seed profile contract, the workflow
+catalogue, and three journey prototypes, all DONE. The accepted
+prototypes are on the prototype/* branches; the branch keeps the shared
+password field and the dev-server host option.

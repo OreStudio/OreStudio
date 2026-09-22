@@ -53,11 +53,11 @@ knowledge doc.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | An implementation story for the server-side provisioning rework and the journey screens. |
 | Last touched  | 2026-09-22                               |
 
 * Acceptance
@@ -71,7 +71,7 @@ knowledge doc.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | STARTED | 2026-09-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | DONE | 2026-09-22 | 2026-09-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
 | [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
 | [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
@@ -132,3 +132,13 @@ knowledge doc.
   detail of the rework story, not a screen decision.
 - Localhost-only access until system bootstrap completes: a future
   hardening.
+
+* Result
+
+The map reached its destination. The screen spec lives in the three
+prototype tasks' Results; the contract in the seed profile and workflow
+catalogue tasks. The accepted prototypes are on the branches
+=prototype/new-tenant-journey=, =prototype/first-run-journey= and
+=prototype/new-party-journey=. Merged from this story: the tenant
+lifecycle glossary, the shared password field, and the dev server host
+option. Re-provisioning an existing tenant is still unspecified.

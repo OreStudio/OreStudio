@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: E148332B-4006-4FB1-A0ED-EA47688040CF
+:ID: D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A
 :END:
-#+title: Task: Prototype the ores.web bootstrap flow
-#+description: Initial task for: Prototype ORE Studio bootstrap in ores.web
+#+title: Task: Prototype the onboarding and party provisioning screens
+#+description: [wayfinder:prototype] Web-idiomatic tenant onboarding and party provisioning.
 #+type: task
 #+level: s1
 #+filetags: :web_bootstrap_prototype:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/web-bootstrap-prototype
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Question: how should first-login tenant onboarding and adding parties look and behave on ores.web? Blocked by: Decide the bootstrap workflow catalogue.
 
 * Status
 

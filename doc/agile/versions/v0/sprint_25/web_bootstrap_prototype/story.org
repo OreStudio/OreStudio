@@ -15,7 +15,40 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+This story is a wayfinder map: an index of decisions. Each decision
+lives in its task. Tasks carry a =[wayfinder:<type>]= tag. Each task
+names its blockers in its goal. The frontier is every BACKLOG task
+whose blockers are all DONE.
+
+** Destination
+
+A web-idiomatic screen spec plus a clickable ores.web prototype for
+the five bootstrap workflows: system bootstrap, operational tenant,
+demo (ACME) tenant, tenant onboarding and party provisioning. The
+screens use one server-side provisioning contract that ores.shell
+also uses. The tenant lifecycle terms are formalised in the IAM
+knowledge doc.
+
+** Notes
+
+- Screens are designed for the web, not cloned from ores.qt. Follow
+  [[file:../../../../../knowledge/ui/ui_design_principles.org][UI design principles]] and [[file:../../../../../knowledge/ui/ux_language.org][UX language]].
+- Every workflow runs server-side. Web, shell and Qt are thin callers
+  of the same request. Build on [[file:../../../../../knowledge/architecture/internal_actor_impersonation.org][internal actor impersonation]], as
+  the Acme provisioning does. No SQL shortcuts.
+- Seed profile, not source: GLEIF, synthetic and Acme are profiles
+  (data), not code branches.
+- Grilling tasks: use the grilling and domain-modeling skills.
+  Research tasks: use the research skill.
+- Legacy reference: ores.qt SystemProvisionerWizard,
+  TenantProvisioningWizard, PartyProvisioningWizard and
+  TenantOnboardingWizard; ores.shell =provision tenant=.
+
+** Not yet specified
+
+- Progress and failure UX: retry, partial failure, rollback.
+- Re-provisioning or extending an existing tenant.
+- How ores.web receives streamed progress events.
 
 * Status
 
@@ -30,17 +63,37 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Acceptance
 
--
+- Every wayfinder task is DONE or ruled out of scope.
+- The screen spec and prototype cover all five workflows.
+- The server-side provisioning contract is decided and shared by web
+  and shell.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | STARTED | 2026-09-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E148332B-4006-4FB1-A0ED-EA47688040CF][Prototype the ores.web bootstrap flow]] | BACKLOG | | | Initial task for: Prototype ORE Studio bootstrap in ores.web |
+| [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | BACKLOG | | | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
+| [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | BACKLOG | | | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
+| [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | BACKLOG | | | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
+| [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | BACKLOG | | | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | BACKLOG | | | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
+| [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the system bootstrap screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first-run screens. |
+| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the tenant provisioning screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic tenant provisioning with seed profile choice. |
+| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the onboarding and party provisioning screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic tenant onboarding and party provisioning. |
 
 * Decisions
 
+- Terms: System bootstrap, Provision, Onboard, Seed profile. "System
+  bootstrap" never means service startup.
+- Contract only: this map decides the server-side contract. Building
+  the rework is a later story.
+- System bootstrap is open to any caller for now.
+
 * Out of scope
 
--
+- ORE data import: day-to-day data loading, not bootstrap. Bundle
+  publish of essential data (e.g. counterparties) stays in scope.
+- Building the server-side provisioning rework: a later story.
+- Localhost-only access until system bootstrap completes: a future
+  hardening.

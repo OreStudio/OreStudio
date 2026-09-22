@@ -81,7 +81,7 @@ knowledge doc.
 | [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
 | [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
 | [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding. |
-| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff. |
+| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]] | STARTED | 2026-09-22 | | [wayfinder:prototype] Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff. |
 | [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic Parties page and new party journey. |
 
 * Decisions

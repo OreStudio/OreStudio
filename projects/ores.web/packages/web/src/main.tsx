@@ -35,6 +35,7 @@ import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
 import { AccountsPage } from './pages/AccountsPage.js';
+import { NewTenantJourneyPrototype } from './pages/prototype/newTenantJourney/NewTenantJourneyPrototype.js';
 import { CountryListPage } from './components/refdata/entities/country/CountryListPage.js';
 import { CountryDetailPage } from './components/refdata/entities/country/CountryDetailPage.js';
 import { CountryHistoryPage } from './components/refdata/entities/country/CountryHistoryPage.js';
@@ -111,6 +112,8 @@ function App(): ReactNode {
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/iam/account" element={<AccountsPage />} />
+          {/* PROTOTYPE ONLY: the new tenant journey variants. */}
+          <Route path="/iam/tenant/onboard" element={<NewTenantJourneyPrototype />} />
 
           {/* The first entity on the shared machinery. Every other entity will
               look exactly like this: a list page and a detail page, both thin.

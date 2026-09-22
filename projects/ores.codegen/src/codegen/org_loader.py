@@ -2239,6 +2239,10 @@ _TS_SCALARS = {
     "std::uint16_t": "number",
     "std::uint32_t": "number",
     "std::uint64_t": "number",
+    # A byte offset within a rendered value. It is a count, so it crosses as
+    # the same JavaScript number every other integer does; only the width
+    # differs, and JSON carries no width.
+    "std::size_t": "number",
     # Both cross the wire as a string, per their rfl reflectors in
     # ores.utility/rfl/reflectors.hpp.
     "boost::uuids::uuid": "string",

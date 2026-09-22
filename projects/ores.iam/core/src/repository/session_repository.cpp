@@ -150,6 +150,21 @@ session_repository::read_latest(context ctx, const std::string& id, const std::s
         "Reading latest session by id.");
 }
 
+std::vector<domain::session> session_repository::read_latest_by_id(context ctx,
+                                                                   const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest session by id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<session_entity>> | where("tenant_id"_c == tid && "id"_c == id);
+
+    return execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading latest session by id.");
+}
+
 
 std::vector<domain::session>
 session_repository::read_all(context ctx, const std::string& id, const std::string& start_time) {

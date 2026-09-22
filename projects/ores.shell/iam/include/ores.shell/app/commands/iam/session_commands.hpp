@@ -72,14 +72,14 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <id> <start_time>
+     * @brief get <id>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <id> <start_time>
+     * @brief get-many <id>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -113,14 +113,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <id> <start_time> <reason> <commentary> [--version <n>]
+     * @brief delete <id> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <id> <start_time> <reason> <commentary>
+     * @brief delete-many <id> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,

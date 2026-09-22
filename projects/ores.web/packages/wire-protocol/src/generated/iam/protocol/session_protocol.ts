@@ -30,7 +30,6 @@ import type { Result } from '../../../utility/protocol.js';
 
 export interface SessionKey {
     id: string;
-    start_time: string;
 }
 
 export interface SessionWrite {

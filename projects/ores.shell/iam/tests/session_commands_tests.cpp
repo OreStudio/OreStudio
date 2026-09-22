@@ -94,7 +94,7 @@ TEST_CASE("session_commands_process_get_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    session_commands::process_get(out, session, tokens(2));
+    session_commands::process_get(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -122,7 +122,7 @@ TEST_CASE("session_commands_process_get_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    session_commands::process_get_many(out, session, tokens(2));
+    session_commands::process_get_many(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -206,7 +206,7 @@ TEST_CASE("session_commands_process_delete_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    session_commands::process_delete(out, session, tokens(2));
+    session_commands::process_delete(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -234,7 +234,7 @@ TEST_CASE("session_commands_process_delete_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    session_commands::process_delete_many(out, session, tokens(2));
+    session_commands::process_delete_many(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

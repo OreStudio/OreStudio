@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-sessions get <id> <start_time>
+sessions get <id>
 #+end_example
 
 It is addressed at =iam.v1.sessions.get=.
 
 #+name: sessions-get
 #+begin_src ores-shell :tangle sessions-get.ores :exports none
-sessions get 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z
+sessions get 00000000-0000-0000-0000-000000000000
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-sessions get-many <id> <start_time>
+sessions get-many <id>
 #+end_example
 
 It is addressed at =iam.v1.sessions.get_many=.
 
 #+name: sessions-get-many
 #+begin_src ores-shell :tangle sessions-get-many.ores :exports none
-sessions get-many 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z
+sessions get-many 00000000-0000-0000-0000-000000000000
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-sessions delete <id> <start_time> <reason> <commentary> [--version <n>]
+sessions delete <id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.sessions.delete=.
 
 #+name: sessions-delete
 #+begin_src ores-shell :tangle sessions-delete.ores :exports none
-sessions delete 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z system.new_record generated_script
+sessions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,13 +169,13 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-sessions delete-many <id> <start_time> <reason> <commentary>
+sessions delete-many <id> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.sessions.delete_many=.
 
 #+name: sessions-delete-many
 #+begin_src ores-shell :tangle sessions-delete-many.ores :exports none
-sessions delete-many 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z system.new_record generated_script
+sessions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 

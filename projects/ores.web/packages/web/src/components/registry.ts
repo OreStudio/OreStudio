@@ -48,6 +48,7 @@ import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_decla
 import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
 import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
 import { accountDescriptor } from '../generated/iam/web/account_declaration.js';
+import { sessionDescriptor } from '../generated/iam/web/session_declaration.js';
 import { loginInfoDescriptor } from '../generated/iam/web/login_info_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
@@ -126,6 +127,7 @@ export const iamComponent: ComponentDefinition = {
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
     wired(permissionDescriptor, 'permission', 'keyMultiple'),
     wired(loginInfoDescriptor, 'loginInfo', 'lockClosed'),
+    wired(sessionDescriptor, 'session', 'plugConnected'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

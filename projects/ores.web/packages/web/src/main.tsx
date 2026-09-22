@@ -176,6 +176,15 @@ function App(): ReactNode {
             }
           />
           <Route path="/login" element={<SignInRoute />} />
+          {/* PROTOTYPE ONLY: stubbed, so it needs no session. */}
+          <Route
+            path="/iam/tenant/onboard"
+            element={
+              <PublicShell>
+                <NewTenantJourneyPrototype />
+              </PublicShell>
+            }
+          />
         </>
       )}
 

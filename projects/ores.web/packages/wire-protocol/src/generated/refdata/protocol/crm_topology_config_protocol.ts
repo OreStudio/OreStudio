@@ -29,7 +29,7 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface CrmTopologyConfigKey {
-    id: string;
+    name: string;
 }
 
 export interface CrmTopologyConfigWrite {

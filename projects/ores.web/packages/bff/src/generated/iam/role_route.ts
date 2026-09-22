@@ -34,22 +34,18 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/role_protoc
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const roleRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'role',
   collection: 'roles',
-  key: 'id',
-  keyField: 'name',
-  rowField: 'role',
-  writeFields: ['id', 'name', 'description'],
-  writeDefaults: { id: 'uuid', name: '', description: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['name'],
   subjects: {
     list: subjects.list_roles_request,
+    get: subjects.get_role_request,
     save: subjects.put_role_request,
+    remove: subjects.delete_role_request,
+    history: subjects.list_role_versions_request,
   },
   rowsField: 'roles',
+  getRowField: 'role',
+  historyRowsField: 'versions',
 };

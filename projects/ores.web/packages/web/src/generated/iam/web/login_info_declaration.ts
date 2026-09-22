@@ -38,7 +38,9 @@ export const loginInfoDescriptor: EntityDescriptor = {
     meta: loginInfoMeta,
     routeSegment: 'login-info',
     apiBase: '/api/login_info',
-    keyParam: 'id',
+    keyFields: [
+        'account_id',
+    ],
     capabilities: {
         create: false,
         edit: false,
@@ -54,5 +56,15 @@ export const loginInfoDescriptor: EntityDescriptor = {
         'password_reset_required',
         'last_ip',
         'last_attempt_ip',
+    ],
+    writeFields: [
+        'account_id',
+        'last_ip',
+        'last_attempt_ip',
+        'failed_logins',
+        'locked',
+        'last_login',
+        'online',
+        'password_reset_required',
     ],
 };

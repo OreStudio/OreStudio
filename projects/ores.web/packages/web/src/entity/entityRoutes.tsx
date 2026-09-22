@@ -50,7 +50,7 @@ export function entityRoutes(
 ): readonly ReactNode[] {
   assertWiredPath(descriptor);
   const base = `/${componentPath}/${descriptor.routeSegment}`;
-  const record = `${base}/:${descriptor.keyParam}`;
+  const record = `${base}${descriptor.keyFields.map((field) => `/:${field}`).join('')}`;
 
   return [
     <Route

@@ -30,7 +30,7 @@ import type { Result } from '../../../utility/protocol.js';
 import type { Scope } from '../../../utility/protocol.js';
 
 export interface BookKey {
-    id: string;
+    name: string;
 }
 
 export interface BookWrite {

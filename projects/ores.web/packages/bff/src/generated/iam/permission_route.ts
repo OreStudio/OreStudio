@@ -34,22 +34,16 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/permission_
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const permissionRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'permission',
   collection: 'permissions',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'permission',
-  writeFields: ['id', 'code', 'description'],
-  writeDefaults: { id: 'uuid', code: '', description: '' },
-  intentFields: {
-    reason: '',
-    commentary: '',
-  },
-  listHasAsOf: false,
-  listHasFilter: false,
-  versionsHasFilter: false,
+  keyFields: ['code'],
   subjects: {
     list: subjects.list_permissions_request,
+    get: subjects.get_permission_request,
     save: subjects.put_permission_request,
+    remove: subjects.delete_permission_request,
   },
   rowsField: 'permissions',
+  getRowField: 'permission',
 };

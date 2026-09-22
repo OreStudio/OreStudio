@@ -19,41 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: ts_web_declaration.ts.mustache
+ * Template: ts_bff_route.ts.mustache
  * To modify, update the template and regenerate.
  */
 /**
- * Where the permission screens live and what they can do.
+ * How the BFF reaches the account_party service.
  *
- * The route, the API path and the key parameter are values the model carries, so
- * a screen never repeats them and two screens cannot disagree. The labels are
- * translation keys and live in the catalogue with the rest of the words.
+ * The descriptor holds values and no functions: the collection, the natural
+ * key, the members a write record carries and the subjects. The generic
+ * factory builds the canonical envelopes from those, so the entity adds no
+ * handler of its own and no envelope of its own.
  */
-import { permissionMeta } from '../ui/permission_ui.js';
-import type { EntityDescriptor } from '../../../entity/descriptor.js';
+import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_party_protocol';
+import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
-export const permissionDescriptor: EntityDescriptor = {
-    component: 'iam',
-    entity: 'permission',
-    meta: permissionMeta,
-    routeSegment: 'permission',
-    apiBase: '/api/permissions',
-    keyFields: [
-        'code',
-    ],
-    capabilities: {
-        create: true,
-        edit: true,
-        remove: true,
-        history: false,
-    },
-    searchFields: [
-        'code',
-        'description',
-    ],
-    writeFields: [
-        'id',
-        'code',
-        'description',
-    ],
+export const accountPartyRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'account_party',
+  collection: 'account_parties',
+  keyFields: ['account_id', 'party_id'],
+  subjects: {
+    list: subjects.list_account_parties_request,
+    get: subjects.get_account_party_request,
+    save: subjects.put_account_party_request,
+    remove: subjects.delete_account_party_request,
+  },
+  rowsField: 'account_parties',
+  getRowField: 'account_party',
 };

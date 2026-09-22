@@ -23,50 +23,186 @@
  * To modify, update the template and regenerate.
  */
 import type { ReportDefinition } from '../domain/report_definition.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetReportDefinitionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetReportDefinitionsResponse {
-    definitions: ReportDefinition[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveReportDefinitionRequest {
-    data: ReportDefinition;
-}
-
-export interface SaveReportDefinitionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteReportDefinitionRequest {
-    ids: string[];
-}
-
-export interface DeleteReportDefinitionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetReportDefinitionHistoryRequest {
+export interface ReportDefinitionKey {
     id: string;
 }
 
-export interface GetReportDefinitionHistoryResponse {
-    history: ReportDefinition[];
-    success: boolean;
-    message: string;
+export interface ReportDefinitionWrite {
+    id: string;
+    name: string;
+    description: string | null;
+    report_type: string;
+    schedule_expression: string;
+    concurrency_policy: string;
+    display_order: number;
+}
+
+export interface ReportDefinitionChange {
+    write: ReportDefinitionWrite;
+    precondition: Precondition;
+}
+
+export interface ReportDefinitionRemoval {
+    key: ReportDefinitionKey;
+    precondition: Precondition;
+}
+
+export interface ReportDefinitionLookup {
+    key: ReportDefinitionKey;
+    report_definition: ReportDefinition | null;
+}
+
+export interface ReportDefinitionEvent {
+    event_id: string;
+    key: ReportDefinitionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ReportDefinitionVersionKey {
+    report_definition: ReportDefinitionKey;
+    version: number;
+}
+
+export interface ReportDefinitionVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListReportDefinitionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListReportDefinitionsResponse {
+    result: Result;
+    definitions: ReportDefinition[];
+    total: number;
+}
+
+export interface GetReportDefinitionRequest {
+    key: ReportDefinitionKey;
+}
+
+export interface GetReportDefinitionResponse {
+    result: Result;
+    report_definition: ReportDefinition | null;
+}
+
+export interface GetManyReportDefinitionsRequest {
+    keys: ReportDefinitionKey[];
+}
+
+export interface GetManyReportDefinitionsResponse {
+    result: Result;
+    entries: ReportDefinitionLookup[];
+}
+
+export interface PutReportDefinitionRequest {
+    change: ReportDefinitionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutReportDefinitionResponse {
+    result: Result;
+    report_definition: ReportDefinition;
+}
+
+export interface PutManyReportDefinitionsRequest {
+    changes: ReportDefinitionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyReportDefinitionsResponse {
+    result: Result;
+    definitions: ReportDefinition[];
+}
+
+export interface DeleteReportDefinitionRequest {
+    removal: ReportDefinitionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteReportDefinitionResponse {
+    result: Result;
+}
+
+export interface DeleteManyReportDefinitionsRequest {
+    removals: ReportDefinitionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyReportDefinitionsResponse {
+    result: Result;
+}
+
+export interface ListReportDefinitionVersionsRequest {
+    key: ReportDefinitionKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: ReportDefinitionVersionsFilter | null;
+}
+
+export interface ListReportDefinitionVersionsResponse {
+    result: Result;
+    versions: ReportDefinition[];
+    total: number;
+}
+
+export interface GetReportDefinitionVersionRequest {
+    key: ReportDefinitionVersionKey;
+}
+
+export interface GetReportDefinitionVersionResponse {
+    result: Result;
+    version: ReportDefinition;
 }
 
 export const subjects = {
-    get_report_definitions_request: "dq.v1.report_definitions.list",
-    save_report_definition_request: "dq.v1.report_definitions.save",
+    list_report_definitions_request: "dq.v1.report_definitions.list",
+    get_report_definition_request: "dq.v1.report_definitions.get",
+    get_many_report_definitions_request: "dq.v1.report_definitions.get_many",
+    put_report_definition_request: "dq.v1.report_definitions.put",
+    put_many_report_definitions_request: "dq.v1.report_definitions.put_many",
     delete_report_definition_request: "dq.v1.report_definitions.delete",
-    get_report_definition_history_request: "dq.v1.report_definitions.history",
+    delete_many_report_definitions_request: "dq.v1.report_definitions.delete_many",
+    list_report_definition_versions_request: "dq.v1.report_definitions_versions.list",
+    get_report_definition_version_request: "dq.v1.report_definitions_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_report_definitions_request: true,
+    get_report_definition_request: true,
+    get_many_report_definitions_request: true,
+    put_report_definition_request: true,
+    put_many_report_definitions_request: true,
+    delete_report_definition_request: true,
+    delete_many_report_definitions_request: true,
+    list_report_definition_versions_request: true,
+    get_report_definition_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "dq.v1.report_definitions_events.created",
+    updated: "dq.v1.report_definitions_events.updated",
+    deleted: "dq.v1.report_definitions_events.deleted",
 } as const;

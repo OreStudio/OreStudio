@@ -90,6 +90,15 @@ function VariantA({ j }: { readonly j: Journey }): ReactNode {
       </nav>
 
       <section className="card p-6">
+        {current > 0 && j.profile && j.details && (
+          <div className="mb-5 flex items-center gap-3 border-b border-line pb-4">
+            {j.profile.logo !== undefined && <img src={j.profile.logo} alt="" className="h-9 w-auto rounded bg-white p-1" />}
+            <div className="text-sm">
+              <div className="font-medium">{j.details.name || 'New tenant'}</div>
+              <div className="text-xs text-ink-faint">{j.profile.name}</div>
+            </div>
+          </div>
+        )}
         {current === 0 && (
           <>
             <h2 className="mb-1 text-lg font-semibold">{JOURNEY_STEPS[0].title}</h2>

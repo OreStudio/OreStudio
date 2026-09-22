@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import acmeLogo from './acme-logo.png';
 
 /**
  * PROTOTYPE ONLY. In-memory stand-ins for the seed profile contract: the
@@ -45,6 +46,9 @@ export interface SeedProfile {
   readonly audience: string;
   readonly params: readonly ProfileParam[];
   readonly steps: readonly string[];
+  /** Tenant details the profile fills in; the person can still change them. */
+  readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
+  readonly logo?: string;
 }
 
 export const PROFILES: readonly SeedProfile[] = [
@@ -88,6 +92,14 @@ export const PROFILES: readonly SeedProfile[] = [
     summary: 'Pre-configured sandbox',
     bullets: ['4 legal entities, books and desks', '45 staff to sign in as', 'Live synthetic market data'],
     audience: 'For demos and testing',
+    logo: acmeLogo,
+    defaults: {
+      code: 'acme_corporation',
+      name: 'Acme Corporation',
+      hostname: 'acme_corporation.localhost',
+      adminUsername: 'tenant_admin',
+      adminEmail: 'tenant_admin@acme.example.com',
+    },
     params: [],
     steps: [
       'Create tenant and admin',
@@ -121,6 +133,7 @@ export function emptyDetails(profile: SeedProfile): TenantDetails {
     adminUsername: 'tenant_admin',
     adminEmail: '',
     adminPassword: '',
+    ...profile.defaults,
     params: Object.fromEntries(profile.params.map((p) => [p.name, p.default])),
   };
 }

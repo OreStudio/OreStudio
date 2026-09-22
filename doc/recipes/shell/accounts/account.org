@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-accounts get <id>
+accounts get <username>
 #+end_example
 
 It is addressed at =iam.v1.accounts.get=.
 
 #+name: accounts-get
 #+begin_src ores-shell :tangle accounts-get.ores :exports none
-accounts get 00000000-0000-0000-0000-000000000000
+accounts get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-accounts get-many <id>
+accounts get-many <username>
 #+end_example
 
 It is addressed at =iam.v1.accounts.get_many=.
 
 #+name: accounts-get-many
 #+begin_src ores-shell :tangle accounts-get-many.ores :exports none
-accounts get-many 00000000-0000-0000-0000-000000000000
+accounts get-many __none__
 #+end_src
 
 ** =versions=
@@ -85,14 +85,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-accounts versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+accounts versions <username> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =iam.v1.accounts_versions.list=.
 
 #+name: accounts-versions
 #+begin_src ores-shell :tangle accounts-versions.ores :exports none
-accounts versions 00000000-0000-0000-0000-000000000000 --limit 1
+accounts versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -106,13 +106,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-accounts version <id> --version <n>
+accounts version <username> --version <n>
 #+end_example
 
 It is addressed at =iam.v1.accounts_versions.get=.
 
 #+name: accounts-version
 #+begin_src ores-shell :tangle accounts-version.ores :exports none
-accounts version 00000000-0000-0000-0000-000000000000 --version 1
+accounts version __none__ --version 1
 #+end_src
 

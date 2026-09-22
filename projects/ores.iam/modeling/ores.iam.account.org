@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
 :END:
 #+title: ores.iam.account
@@ -332,6 +333,41 @@ Reporting line, validated against this same table when set.
 | modified_by       | Modified By   |
 | recorded_at       | Recorded At   |
 | version           | Version       |
+
+** Presentation
+:PROPERTIES:
+:collection_name: accounts
+:key_field:       username
+:END:
+
+The screen's declaration. An account is addressed by its =username=, the
+natural key, which is what every caller already holds: an operator knows the
+name an account signs in with, not its surrogate =id=. The id stays for
+foreign-key stability, which is what it is for, and no caller states it.
+
+=username= is the key the module's own shell commands already take, so the
+declaration states what its callers already assume rather than asking them to
+translate.
+
+*** Detail fields
+
+| field        | label        | widget            | type      | is_key | is_required | placeholder              |
+|--------------+--------------+-------------------+-----------+--------+-------------+--------------------------|
+| username     | Username     | usernameEdit      | line_edit | true   | true        | Enter the account name   |
+| full_name    | Full Name    | fullNameEdit      | line_edit |        |             | Enter the full name      |
+| email        | Email        | emailEdit         | line_edit |        |             | Enter the email address  |
+| job_title    | Job Title    | jobTitleEdit      | line_edit |        |             | Enter the job title      |
+| account_type | Type         | accountTypeEdit   | line_edit |        |             | Enter the account type   |
+
+*** Columns
+
+| enum_name    | field        | header      | type   | width |
+|--------------+--------------+-------------+--------+-------|
+| Username     | username     | Username    | string | 200   |
+| FullName     | full_name    | Full Name   | string | 240   |
+| Email        | email        | Email       | string | 260   |
+| JobTitle     | job_title    | Job Title   | string | 200   |
+| AccountType  | account_type | Type        | string | 140   |
 
 ** Paste blocks
 

@@ -64,7 +64,6 @@ struct ORES_HTTP_CORE_EXPORT auth_result {
  * - POST /api/v1/accounts - save_account_request
  * - DELETE /api/v1/accounts/{id} - delete_account_request
  * - PUT /api/v1/accounts/{id} - save_account_request
- * - GET /api/v1/accounts/{username}/history - get_account_history_request
  * - POST /api/v1/accounts/lock - lock_account_request
  * - POST /api/v1/accounts/unlock - unlock_account_request
  * - GET /api/v1/accounts/login-info - list_login_info_request
@@ -140,9 +139,6 @@ private:
 
     boost::asio::awaitable<http::domain::http_response>
     handle_update_account(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_account_history(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_lock_accounts(const http::domain::http_request& req);

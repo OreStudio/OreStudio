@@ -47,6 +47,7 @@ import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
 import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
 import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
+import { accountDescriptor } from '../generated/iam/web/account_declaration.js';
 import { loginInfoDescriptor } from '../generated/iam/web/login_info_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
@@ -116,7 +117,7 @@ export const iamComponent: ComponentDefinition = {
   icon: 'peopleTeam',
   path: 'iam',
   entities: [
-    entity('account', 'personAccounts'),
+    wired(accountDescriptor, 'account', 'personAccounts'),
     wired(roleDescriptor, 'role', 'keyMultiple'),
     wired(accountContactInformationDescriptor, 'accountContactInformation', 'peopleTeam'),
     wired(accountTypeDescriptor, 'accountType', 'settings'),

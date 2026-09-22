@@ -38,21 +38,14 @@ export const permissionDescriptor: EntityDescriptor = {
     meta: permissionMeta,
     routeSegment: 'permission',
     apiBase: '/api/permissions',
-    keyFields: [
-        'code',
-    ],
+    keyParam: 'id',
     capabilities: {
         create: true,
         edit: true,
-        remove: true,
+        remove: false,
         history: false,
     },
     searchFields: [
-        'code',
-        'description',
-    ],
-    writeFields: [
-        'id',
         'code',
         'description',
     ],

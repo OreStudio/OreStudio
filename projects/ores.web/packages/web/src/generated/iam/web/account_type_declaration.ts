@@ -38,9 +38,7 @@ export const accountTypeDescriptor: EntityDescriptor = {
     meta: accountTypeMeta,
     routeSegment: 'account-type',
     apiBase: '/api/account_types',
-    keyFields: [
-        'type',
-    ],
+    keyParam: 'id',
     capabilities: {
         create: true,
         edit: true,
@@ -48,12 +46,6 @@ export const accountTypeDescriptor: EntityDescriptor = {
         history: true,
     },
     searchFields: [
-        'type',
-        'name',
-        'description',
-        'display_order',
-    ],
-    writeFields: [
         'type',
         'name',
         'description',

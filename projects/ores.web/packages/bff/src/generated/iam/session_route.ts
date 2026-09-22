@@ -34,16 +34,22 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/session_pro
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const sessionRoute: EntityRouteDescriptor = {
-  component: 'iam',
-  entity: 'session',
   collection: 'sessions',
-  keyFields: ['id'],
+  key: 'id',
+  keyField: 'id',
+  rowField: 'session',
+  writeFields: ['id', 'start_time', 'account_id', 'end_time', 'client_ip', 'client_identifier', 'client_version_major', 'client_version_minor', 'bytes_sent', 'bytes_received', 'country_code', 'protocol'],
+  writeDefaults: { id: 'uuid', start_time: '', account_id: null, end_time: '', client_ip: '', client_identifier: '', client_version_major: '', client_version_minor: '', bytes_sent: 0, bytes_received: 0, country_code: '', protocol: '' },
+  intentFields: {
+    reason: '',
+    commentary: '',
+  },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: false,
   subjects: {
     list: subjects.list_sessions_request,
-    get: subjects.get_session_request,
     save: subjects.put_session_request,
-    remove: subjects.delete_session_request,
   },
   rowsField: 'sessions',
-  getRowField: 'session',
 };

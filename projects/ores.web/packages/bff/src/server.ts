@@ -29,18 +29,17 @@ import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerEntityRoutes } from './entity-routes.js';
+import { accountRoute } from './generated/iam/account_route.js';
 import { accountContactInformationRoute } from './generated/iam/account_contact_information_route.js';
 import { accountTypeRoute } from './generated/iam/account_type_route.js';
+import { loginInfoRoute } from './generated/iam/login_info_route.js';
+import { permissionRoute } from './generated/iam/permission_route.js';
+import { roleRoute } from './generated/iam/role_route.js';
+import { sessionRoute } from './generated/iam/session_route.js';
 import { tenantRoute } from './generated/iam/tenant_route.js';
 import { tenantStatusRoute } from './generated/iam/tenant_status_route.js';
 import { tenantTypeRoute } from './generated/iam/tenant_type_route.js';
 import { countryRoute } from './generated/refdata/country_route.js';
-import { permissionRoute } from './generated/iam/permission_route.js';
-import { roleRoute } from './generated/iam/role_route.js';
-import { loginInfoRoute } from './generated/iam/login_info_route.js';
-import { accountRoute } from './generated/iam/account_route.js';
-import { sessionRoute } from './generated/iam/session_route.js';
-import { accountPartyRoute } from './generated/iam/account_party_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -424,18 +423,17 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
    * states a function.
    */
   for (const route of [
+    accountRoute,
     accountContactInformationRoute,
     accountTypeRoute,
+    loginInfoRoute,
+    permissionRoute,
+    roleRoute,
+    sessionRoute,
     tenantRoute,
     tenantStatusRoute,
     tenantTypeRoute,
     countryRoute,
-    permissionRoute,
-    roleRoute,
-    loginInfoRoute,
-    accountRoute,
-    sessionRoute,
-    accountPartyRoute,
   ]) {
     registerEntityRoutes(server, requireSession, route);
   }

@@ -24,12 +24,7 @@ import { useNavigate, useParams } from 'react-router';
 import { ChangeReasonDialog, type ChangeReasonResult } from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityDetailPage, type DetailMode } from './EntityDetailPage.js';
-import {
-  entityBasePath,
-  entityRecordPath,
-  keyFromParams,
-  recordKeyFromValues,
-} from './entityPaths.js';
+import { entityBasePath, entityRecordPath } from './entityPaths.js';
 import { useDeleteEntity, useEntity, useSaveEntity } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -55,7 +50,7 @@ export function EntityDetailContainer({
   readonly mode: DetailMode;
 }): ReactNode {
   const params = useParams();
-  const key = keyFromParams(descriptor, params);
+  const key = params[descriptor.keyParam];
   const { t } = useTranslation();
   const navigate = useNavigate();
   const base = entityBasePath(descriptor);
@@ -105,18 +100,6 @@ export function EntityDetailContainer({
    */
   const seedKey =
     record === undefined ? undefined : `${String(key)}:${String(record['version'] ?? 0)}`;
-  /**
-   * The version the screen read, which a change states back.
-   *
-   * Absent when there is no record to have read, which is a create: the
-   * request then states the absence of a row rather than a version, and the
-   * store refuses it over a live row instead of replacing it.
-   */
-  const recordVersion = useMemo(() => {
-    const raw = record?.['version'];
-    const value = typeof raw === 'number' ? raw : Number(raw);
-    return Number.isFinite(value) ? value : undefined;
-  }, [record]);
   const [seeded, setSeeded] = useState<string | undefined>(undefined);
   if (!touched && seedKey !== undefined && seeded !== seedKey) {
     setSeeded(seedKey);
@@ -163,35 +146,36 @@ export function EntityDetailContainer({
   function submit(result: ChangeReasonResult): void {
     setFailure(undefined);
     /*
-     * The record carries the entity's own members and nothing else. The reason
-     * and the commentary are the intent, and the version the screen read is the
-     * precondition: the request states those separately, and the record states
-     * neither, because the service derives the audit tail and the store decides
-     * the version.
-     *
-     * The members come from the descriptor's write record rather than from the
-     * row, so a field the form does not show is not sent back as whatever the
-     * row happened to hold.
+     * The reason and the commentary are carried in the record, because the
+     * service stamps the audit from the record it decodes.
      */
-    const data: Record<string, unknown> = {};
-    for (const name of descriptor.writeFields) {
-      data[name] = values[name];
-    }
+    const data: Record<string, unknown> = {
+      ...(mode === 'create' || record === undefined ? blankValues(descriptor) : record),
+      change_reason_code: result.reasonCode,
+      change_commentary: result.commentary,
+    };
     for (const field of descriptor.meta.fields) {
       data[field.name] = values[field.name];
     }
+    /*
+     * The image is not one of the fields, so the loop above does not carry it:
+     * a person who chose a flag and saved would lose it.
+     */
+    if (descriptor.meta.image !== undefined) {
+      data[descriptor.meta.image.field] =
+        values[descriptor.meta.image.field] ?? null;
+    }
+    if (mode === 'create') {
+      data['version'] = 0;
+    }
 
     save.mutate(
-      {
-        data,
-        intent: { reason_code: result.reasonCode, commentary: result.commentary },
-        version: mode === 'create' ? undefined : recordVersion,
-      },
+      { data },
       {
         onSuccess: () => {
           setStage(undefined);
           setTouched(false);
-          navigate(entityRecordPath(descriptor, data));
+          navigate(entityRecordPath(descriptor, String(data[descriptor.meta.keyField] ?? '')));
         },
         onError: (error: unknown) => {
           setFailure(error instanceof Error ? error.message : t('feedback.saveFailed'));
@@ -201,16 +185,11 @@ export function EntityDetailContainer({
     );
   }
 
-  function confirmDelete(result: ChangeReasonResult): void {
+  function confirmDelete(): void {
     setFailure(undefined);
     remove.mutate(
       {
-        key: recordKeyFromValues(descriptor, values),
-        intent: {
-          reason_code: result.reasonCode,
-          commentary: result.commentary,
-        },
-        version: recordVersion,
+        key: String(values[descriptor.meta.keyField] ?? ''),
       },
       {
         onSuccess: () => {
@@ -258,17 +237,17 @@ export function EntityDetailContainer({
           if (validate()) setStage('reason');
         }}
         {...(descriptor.capabilities.edit
-          ? { onEdit: () => navigate(`${entityRecordPath(descriptor, key)}/edit`) }
+          ? { onEdit: () => navigate(`${entityRecordPath(descriptor, String(key ?? ''))}/edit`) }
           : {})}
         onCancel={() => {
           setTouched(false);
-          navigate(mode === 'create' ? base : entityRecordPath(descriptor, key));
+          navigate(mode === 'create' ? base : entityRecordPath(descriptor, String(key ?? '')));
         }}
         {...(descriptor.capabilities.remove ? { onDelete: () => setStage('delete') } : {})}
         {...(descriptor.capabilities.history
           ? {
               onHistory: () =>
-                navigate(`${entityRecordPath(descriptor, key)}/history`),
+                navigate(`${entityRecordPath(descriptor, String(key ?? ''))}/history`),
             }
           : {})}
         {...(descriptor.meta.image === undefined

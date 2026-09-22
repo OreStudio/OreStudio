@@ -447,9 +447,20 @@ void tenant_service::delete_tenants(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
 
-std::vector<domain::tenant> tenant_service::get_tenant_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant. " << "id: " << id;
-    return repo_.read_all(ctx_, id);
+std::vector<domain::tenant> tenant_service::get_tenant_history(const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant. key: " << key;
+    // The caller holds the key the model declares and this reads by the
+    // storage key, so the two are joined here exactly as they are for any
+    // other read. Without this step a provider looks the versions up under a
+    // value the storage key never holds, and reports an entity that has a
+    // history as having none.
+    messaging::tenant_key k;
+    k.code = key;
+    const auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return {};
+    const auto& row = found.front();
+    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
 }
 
 }

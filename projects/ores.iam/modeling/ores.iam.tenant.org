@@ -27,11 +27,22 @@ Tenants are identified by:
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     iam
-:profile:       uuid-identified-lookup
+:schema:                 public
+:product:                ores
+:component:              iam
+:profile:                uuid-identified-lookup
+:system_tenant_visible:  true
 :END:
+
+=:system_tenant_visible:= is stated because a tenant row is stored under the
+*system* tenant, not under itself: every row of this table carries
+=tenant_id = ffffffff-ffff-ffff-ffff-ffffffffffff=. Without the flag every read
+is filtered to =tenant_id = <the caller's tenant>=, which no row of this table
+satisfies, so a tenant can be listed but never read by key -- and a read by key
+is what a history request, a delete and a single-record read all do.
+
+It is not a widening of what a caller may see. The row that filter excluded is
+the caller's own tenant, and a tenant admin is the one person who should see it.
 
 * Columns
 

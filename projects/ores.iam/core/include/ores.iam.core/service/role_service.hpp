@@ -159,8 +159,12 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a role.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::role> get_role_history(const std::string& id);
+    std::vector<domain::role> get_role_history(const std::string& key);
 
 private:
     context ctx_;

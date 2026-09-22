@@ -538,10 +538,20 @@ void account_contact_information_service::delete_account_contact_informations(
 
 std::vector<domain::account_contact_information>
 account_contact_information_service::get_account_contact_information_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for account contact information. "
-                               << "id: " << id;
-    return repo_.read_all(ctx_, id);
+    const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for account contact information. key: " << key;
+    // The caller holds the key the model declares and this reads by the
+    // storage key, so the two are joined here exactly as they are for any
+    // other read. Without this step a provider looks the versions up under a
+    // value the storage key never holds, and reports an entity that has a
+    // history as having none.
+    messaging::account_contact_information_key k;
+    k.email = key;
+    const auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return {};
+    const auto& row = found.front();
+    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
 }
 
 }

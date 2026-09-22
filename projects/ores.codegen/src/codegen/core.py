@@ -1334,26 +1334,43 @@ def _format_columns_for_doxygen(columns):
             col['detail'] = _format_detail_for_doxygen(col['detail'])
 
 
+def validate_read_for_cache(domain_entity):
+    """
+    Validate and default the read_for_cache messaging flag: a bulk
+    unpaginated read of a tenant's active entities, used to warm
+    client-side caches. Requires tenant scoping.
+
+    Args:
+        domain_entity (dict): mutated in place; defaults read_for_cache
+            to False if unset.
+
+    Raises:
+        ValueError: if read_for_cache is set without has_tenant_id.
+    """
+    if domain_entity.get('read_for_cache') and not domain_entity.get('has_tenant_id'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: read_for_cache requires has_tenant_id")
+    domain_entity.setdefault('read_for_cache', False)
+
+
 def validate_cached_by(domain_entity):
     """
     Validate the cached_by messaging flag: the consumer component a
     generated nats-event-cache lives in (e.g. party is defined in refdata
-    but cached_by: iam moves its generated cache into ores.iam). The cache
-    keeps one partition per tenant, so the entity must be tenant-scoped.
-    The flag stands alone: it names the cache's consumer, and the cache's
-    warm-up and refresh are the canonical list read and the canonical
-    entity events, not a verb the model declares.
+    but cached_by: iam moves its generated cache into ores.iam). Requires
+    read_for_cache, since the generated cache warms/reloads itself via
+    that RPC.
 
     Args:
         domain_entity (dict): not mutated; cached_by has no default (its
             absence simply means no nats-event-cache archetype applies).
 
     Raises:
-        ValueError: if cached_by is set without has_tenant_id.
+        ValueError: if cached_by is set without read_for_cache.
     """
-    if domain_entity.get('cached_by') and not domain_entity.get('has_tenant_id'):
+    if domain_entity.get('cached_by') and not domain_entity.get('read_for_cache'):
         raise ValueError(
-            f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
+            f"{domain_entity.get('entity_singular', '?')}: cached_by requires read_for_cache")
 
 
 def validate_cache_aux_type(domain_entity):
@@ -1750,83 +1767,11 @@ _UI_CONTROLS = frozenset({
     'flagged_combo', 'check_box', 'spin_box', 'colour', 'date',
 })
 
-# The icon vocabulary the web application holds, spelled as
-# packages/web/src/ui/icons/index.ts declares it. A model states the icon it
-# wants by the name that file uses, so an icon no screen can render is refused
-# here rather than rendered as nothing.
-_WEB_ICONS = frozenset({
-    'add', 'apps', 'arrowDownload', 'arrowLeft',
-    'arrowRotateCounterclockwise', 'arrowSync', 'arrowTrending', 'arrowUpload',
-    'book', 'briefcase', 'building', 'buildingBank', 'buildingSkyscraper',
-    'calendarClock', 'chartMultiple', 'checkmark', 'checkmarkCircle',
-    'classification', 'clock', 'code', 'columnTriple', 'contactCard', 'copy',
-    'currencyDollarEuro', 'database', 'delete', 'deleteDismiss', 'desktop',
-    'dismiss', 'documentTable', 'edit', 'errorCircle', 'filter', 'flag',
-    'flashFlow', 'folder', 'globe', 'handshake', 'history', 'info',
-    'keyMultiple', 'library', 'lockClosed', 'lockOpen', 'notepad',
-    'organization', 'passwordReset', 'peopleTeam', 'person', 'personAccounts',
-    'personAdd', 'play', 'plugConnected', 'plugConnectedCheckmark',
-    'plugDisconnected', 'question', 'record', 'save', 'search', 'serverLink',
-    'settings', 'star', 'table', 'tag', 'tasksApp', 'wand', 'warning',
-    'windowConsole',
-})
-
-# Model icons whose web name is not the model's name in camel case. The model
-# vocabulary is the Qt one; where it states a concept the web draws under
-# another name, the pair is stated here rather than guessed at each use.
-_WEB_ICON_ALIASES = {
-    'Chart': 'chartMultiple',
-    'FileBarChart': 'chartMultiple',
-    'Key': 'keyMultiple',
-    'Currency': 'currencyDollarEuro',
-    'Database': 'serverLink',
-    'LayoutList': 'columnTriple',
-    'TextBulletListSquare': 'notepad',
-    'FileText': 'notepad',
-    'Code': 'code',
-    'Desktop': 'desktop',
-    'Record': 'record',
-    'Settings': 'settings',
-    'Star': 'star',
-    'Table': 'table',
-    'Tag': 'tag',
-    'Folder': 'folder',
-    'Apps': 'apps',
-    'CheckmarkCircle': 'checkmarkCircle',
-    'ServerLink': 'serverLink',
-    'FlashFlow': 'flashFlow',
-    # No anchor is drawn; a tenor anchor holds a tenor in place.
-    'Anchor': 'lockClosed',
-}
-# The icon an entity that states none gets, so a screen keeps its mark in the
-# navigation rather than losing it.
-_WEB_ICON_FALLBACK = 'tag'
-
 
 def _ui_camel(name):
     """``alpha2_code`` -> ``alpha2Code``; the entity prefix of a label key."""
     pascal = snake_to_pascal(name)
     return pascal[:1].lower() + pascal[1:]
-
-
-def _web_icon(presentation):
-    """The icon name the web application draws for this entity.
-
-    The model states a concept, and the web holds the vocabulary; a concept it
-    does not draw under that name is translated here, and one it does not draw
-    at all is refused, so a screen never renders an icon that is not there.
-    """
-    stated = (presentation.get('icon') or '').strip()
-    if not stated:
-        return _WEB_ICON_FALLBACK
-    name = _WEB_ICON_ALIASES.get(stated, stated[:1].lower() + stated[1:])
-    if name not in _WEB_ICONS:
-        raise ValueError(
-            f"ui declaration: icon '{stated}' resolves to '{name}', which the "
-            f"web icon vocabulary does not hold; add it to "
-            f"projects/ores.web/packages/web/src/ui/icons/index.ts and to "
-            f"_WEB_ICONS, or map it in _WEB_ICON_ALIASES")
-    return name
 
 
 def _ui_kebab(name):
@@ -2029,119 +1974,20 @@ def ui_meta_projection(entity, model_path):
     ]
     fields = _ui_fields(visible_fields, entity_singular, nullable_by_field,
                         projects_dir)
-    image_block = _ui_image(presentation, entity)
-    messages_block = _ui_messages(entity, presentation, visible_fields, columns,
-                                  entity_singular, key_field)
     return {
         'entity': entity_singular,
         'entity_camel': _ui_camel(entity_singular),
         'collection': presentation.get('collection_name', ''),
         'display_field': _ui_display_field(columns, entity_singular, key_field) or '',
         'key_field': key_field,
-        'has_messages': bool(messages_block),
-        'messages_block': messages_block or '',
         # The template states the key is read-only after creation, which
         # only holds when the key is one of the emitted fields.
         'key_in_fields': any(
             row.get('field') == key_field for row in visible_fields),
-        'has_image': bool(image_block),
-        'image_block': image_block or '',
         'fields_block': _ui_render_array(fields, 0),
         'columns_block': _ui_render_array(
             _ui_columns(columns, entity_singular, presentation, icon_columns), 0),
     }
-
-
-def _ui_messages(entity, presentation, visible_fields, columns,
-                 entity_singular, key_field):
-    """The entity's own words, as the catalogue nested under its name.
-
-    The generated metadata refers to keys, and the words those keys resolve to
-    are the model's own: the detail field's label, the column's header, the
-    placeholder, the entity title and its brief. Emitting them beside the keys
-    is what stops sixty entities' worth of labels being hand-copied into a
-    catalogue, and what keeps a label the model changes from being changed in
-    one place only.
-
-    The words are English, because English is what the model states. A
-    translation for another language is a separate artefact, and until it
-    exists the translator falls back to these.
-    """
-    entity_singular = entity_singular or 'unknown'
-    singular = entity_singular.replace('_', ' ')
-    plural = (entity.get('entity_plural') or '').replace('_', ' ')
-    window_title = _ui_words(presentation.get('window_title'))
-    members = [
-        ('title', window_title or _ui_humanise(plural or entity_singular)),
-        ('singular', singular),
-        ('newTitle', f'New {singular}'),
-        ('description', _ui_words(entity.get('description') or entity.get('brief'))),
-    ]
-    for row in visible_fields:
-        field = row.get('field', '')
-        if not field:
-            continue
-        label = _ui_words(row.get('label')) or _ui_humanise(field)
-        members.append((f'fld{snake_to_pascal(field)}', label))
-        placeholder = _ui_words(row.get('placeholder'))
-        if placeholder:
-            members.append((f'{_ui_camel(field)}Ph', placeholder))
-    for column in columns:
-        field = column.get('field', '')
-        enum_name = column.get('enum_name', '')
-        if not enum_name:
-            continue
-        header = _ui_words(column.get('header')) or _ui_humanise(field)
-        members.append((f'col{enum_name}', header))
-    if not members:
-        return None
-    body = ',\n'.join(
-        ' ' * (_UI_MEMBER_INDENT + 4) + f'{name}: {_ui_str(value)}'
-        for name, value in members)
-    return ('{\n'
-            + ' ' * _UI_MEMBER_INDENT + f"{entity_singular}: {{\n"
-            + body + ',\n'
-            + ' ' * _UI_MEMBER_INDENT + '}\n'
-            + '}')
-
-
-def _ui_words(text):
-    """A model's prose on one line, because a literal spans one line.
-
-    A brief is written as a paragraph and a header may carry a line break, and
-    either would close the string it is written into.
-    """
-    return ' '.join(str(text or '').split())
-
-
-def _ui_humanise(name):
-    """A member's name as words, for a model that states none.
-
-    The words a person reads are the model's to state; this is the fallback for
-    a member the model left unlabelled, and it says the name rather than
-    nothing at all.
-    """
-    return name.replace('_', ' ').strip().title()
-
-
-def _ui_image(presentation, entity):
-    """The image member the screen renders, or None when it renders none.
-    The model declares a flag by naming the column that shows it, which is
-    also the claim that the entity owns an uploadable image: a country's flag,
-    a party's logo. An entity that declares no such column offers no image for
-    editing, so the member is absent rather than empty.
-
-    The image itself is the entity's own ``image_id`` column. The model states
-    it as a column rather than as a detail field because no form control edits
-    it -- the shared screen renders the picker from this member -- so the two
-    have to be stated in one place and read in one place.
-    """
-    if not presentation.get('flag_icon_column'):
-        return None
-    column_names = {column.get('name') for column in entity.get('columns') or []}
-    if 'image_id' not in column_names:
-        return None
-    return "{ field: 'image_id', kind: 'flag' }"
 
 
 def _ui_projection_entity(entity):
@@ -2167,18 +2013,18 @@ def web_declaration_projection(entity, model_path):
     first. None when the entity has no column table, the condition
     ``_ui_projection_entity`` states and the BFF route projection shares.
 
-    The capabilities are read off the derived protocol messages rather than
-    guessed: a versions pair exists exactly when the entity has those versions
-    to serve, and a read-only paginated list is the model saying the entity is
-    not written from the interface. Deriving them from anything else -- a
-    version column, say -- gets junctions and current-state entities wrong.
+    The capabilities are read off the protocol the entity derives, not off a
+    property that names a message: a write exists exactly when the entity
+    derives a put request, a history exactly when it derives the versions
+    pair, and a delete exactly when it derives a delete request keyed by the
+    natural key. Deriving them from anything else -- a version column, or a
+    hand-written name for the message the client would send -- gets
+    junctions, current-state entities and read-only entities wrong, and lets
+    the declaration promise an action the BFF answers with 404.
 
-    Remove and history are the routes the BFF derives from the entity's
-    primary key, while the path segment carries the natural key, so the
-    declaration states them only when the primary key is the natural key --
-    the condition ``bff_route_projection`` withholds those routes on. A
-    declaration that promised them otherwise would render actions the BFF
-    answers with 404.
+    ``has_readonly_paginated_list`` is the one interface-level statement, and
+    it outranks the derived writes: an entity whose service can write it is
+    still not written from this screen when the model says so.
     """
     if _ui_projection_entity(entity) is None:
         return None
@@ -2190,24 +2036,12 @@ def web_declaration_projection(entity, model_path):
     key_field = presentation.get('key_field', '')
     keyed_by_natural_key = _keyed_by_natural_key(entity)
     messages = entity.get('messages') or []
-    # A write the model does not derive is a form that would send a request the
-    # service has no handler for, so the write affordances follow the verbs.
-    has_save = bool(_protocol_subject_key(messages, f'put_{entity_singular}_request'))
-    # A removal follows the verbs as well: an entity whose protocol derives no
-    # delete has no route for one, and an affordance to match would be the same
-    # promise the route projection refuses to make.
-    has_remove = bool(
-        _protocol_subject_key(messages, f'delete_{entity_singular}_request')
-    ) and keyed_by_natural_key
-    has_history = bool(_protocol_message(
-        messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
-    # Whether the list read can be asked for a point in time, which is what
-    # lets the shared screen offer the window rather than the entity's own
-    # screen doing it by hand.
-    list_request = _protocol_message(
-        messages, f'list_{entity.get("entity_plural", entity_singular + "s")}_request')
-    has_as_of = any(field.get('name') == 'as_of'
-                    for field in (list_request or {}).get('fields') or [])
+    can_write = bool(_protocol_subject_key(
+        messages, f'put_{entity_singular}_request'))
+    can_delete = bool(_protocol_subject_key(
+        messages, f'delete_{entity_singular}_request'))
+    can_read_history = bool(_protocol_subject_key(
+        messages, f'list_{entity_singular}_versions_request'))
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2219,12 +2053,11 @@ def web_declaration_projection(entity, model_path):
         'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
-        'icon': _web_icon(presentation),
-        'can_create': _ui_bool(not read_only and has_save),
-        'can_edit': _ui_bool(not read_only and has_save),
-        'can_remove': _ui_bool(not read_only and has_remove),
-        'can_history': _ui_bool(has_history),
-        'can_as_of': _ui_bool(has_as_of),
+        'can_create': _ui_bool(can_write and not read_only),
+        'can_edit': _ui_bool(can_write and not read_only),
+        'can_remove': _ui_bool(
+            can_delete and not read_only and keyed_by_natural_key),
+        'can_history': _ui_bool(can_read_history and keyed_by_natural_key),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2354,26 +2187,20 @@ def bff_route_projection(entity, model_path):
     Every ``subjects_*`` value is the protocol module's own member name,
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
-    current-state entity derives no versions pair -- and ``has_get``/
-    ``has_remove``/``has_history`` state the same fact as TypeScript
-    literals.
+    read-only entity derives no put, so it has no ``save``; a current-state
+    entity derives no versions pair -- and ``has_get``/``has_remove``/
+    ``has_history`` state the same fact as TypeScript literals.
 
-    What the factory cannot derive from the entity's shape is stated too:
-    the write record's members, so a save sends the record the protocol
-    declares and nothing else, and whether the list and versions requests
-    carry the optional as-of and filter members, so the factory sends the
-    envelope each request decodes.
+    The delete and versions reads address the entity's whole key record,
+    while the route's path segment carries the natural key the web builds it
+    from. The two agree only when the key is the natural key alone, so the
+    projection states those routes only then. A descriptor that sent a path
+    segment into a key record it does not fill would match no row on delete,
+    or fail to decode on a versions read.
 
-    The single-record read, the delete and the versions read address the
-    entity's whole key record, while the route's path segment carries the
-    natural key the web builds it from. The three agree only when the key
-    record holds the natural key alone, so the projection states those
-    routes only then. A descriptor that sent a path segment into a key
-    record it does not fill would match no row on a read or a delete, or
-    fail to decode on a versions read.
-
-    None when the derived set carries none of the required request roles --
-    a defensive guard, since an enriched domain entity always derives them.
+    None only when the entity derives no list request. That is the one role
+    a descriptor cannot do without: a route that cannot read the collection
+    reaches nothing, whereas a route that cannot write is still a screen.
     The operation-owned case is withheld before rendering, in
     ``resolve_targets``, because the replacement protocol module there need
     not export the derived names.
@@ -2387,16 +2214,12 @@ def bff_route_projection(entity, model_path):
     plural = entity.get('entity_plural', singular + 's')
     messages = entity.get('messages') or []
 
-    # A screen needs a list and nothing else: an entity the model declares as
-    # read-only has no write request, and withholding the whole screen set for
-    # it would hide the read that exists. Every other role is stated when the
-    # model derives it.
     subjects_list = _protocol_subject_key(messages, f'list_{plural}_request')
-    if not subjects_list:
-        return None
     subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
+    if not subjects_list:
+        return None
     subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
         messages, f'list_{singular}_versions_request')
@@ -2406,36 +2229,19 @@ def bff_route_projection(entity, model_path):
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # Every canonical request names the entity by its key record, never by a
-    # flattened string, so the path segment fills one member of that record.
-    # Only a single-column key can be driven from one path segment, and that
-    # is the same condition that lets the delete and the versions read be
-    # stated at all.
+    # A removal carries the entity's whole key as a record, never a flattened
+    # string, so the descriptor states the one member the route's path segment
+    # fills. Only a single-column key can be driven from one path segment, and
+    # that is the same condition that lets the delete be stated at all.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    key_drivable = len(key_members) == 1 and keyed_by_natural_key
-    has_save = bool(subjects_save)
-    has_get = bool(subjects_get) and key_drivable
-    has_remove = bool(subjects_remove) and key_drivable
-    has_history = bool(history_response) and key_drivable
+    delete_keys_field = key_members[0] if len(key_members) == 1 else ''
+    has_remove = (bool(delete_keys_field) and keyed_by_natural_key
+                  and bool(subjects_remove))
+    has_history = (bool(history_response) and keyed_by_natural_key
+                   and bool(subjects_history))
     history_rows_field = _vector_field_name(history_response) or ''
-    # The write record is what a save carries, so the descriptor states its
-    # members and the factory sends those and nothing else. The audit members
-    # a form happens to hold -- the version the edit was made against, the
-    # reason it was made -- travel in the precondition and the intent instead,
-    # and the server owns the rest.
-    write_record = _protocol_message(messages, f'{singular}_write')
-    write_fields = [field['name']
-                    for field in (write_record or {}).get('fields') or []]
-    list_request = _protocol_message(messages, f'list_{plural}_request')
-    list_members = {field['name']
-                    for field in (list_request or {}).get('fields') or []}
-    versions_request = _protocol_message(
-        messages, f'list_{singular}_versions_request')
-    versions_members = {field['name']
-                        for field in (versions_request or {}).get('fields') or []}
-    has_audit_columns = bool(entity.get('has_audit_columns'))
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
@@ -2443,97 +2249,31 @@ def bff_route_projection(entity, model_path):
         'collection': presentation.get('collection_name', ''),
         'key': 'id',
         'key_field': natural_key,
-        'row_field': singular,
-        'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
-        'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
-        'list_has_as_of': _ui_bool('as_of' in list_members),
-        'list_has_filter': _ui_bool('filter' in list_members),
-        'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
-        'has_get': _ui_bool(has_get),
+        'subjects_save': subjects_save,
+        'has_get': _ui_bool(bool(subjects_get)),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
     }
-    if has_save:
-        # A section member, present only when the model derives a write: a
-        # boolean spelled as the string 'false' reads as truthy to the
-        # renderer, so the section is gated on the member being there at all.
-        projection['has_save'] = 'true'
-        # The write record is what a save carries, so the descriptor states its
-        # members and the factory sends those and nothing else. An entity with
-        # no write request states none of this.
-        projection['subjects_save'] = subjects_save
-        projection['write_fields_block'] = ', '.join(
-            f"'{field}'" for field in write_fields)
-        write_defaults_block, has_minted_default = _write_defaults(entity)
-        projection['write_defaults_block'] = write_defaults_block
-        if has_minted_default:
-            # A section member, present only when a write member takes it:
-            # pystache reads the string 'false' as truthy, so a boolean spelled
-            # as a string cannot gate a section.
-            projection['minted_write_default'] = 'true'
-    if has_get:
+    if subjects_get:
         projection['subjects_get'] = subjects_get
     if has_remove:
+        projection['delete_keys_field'] = delete_keys_field
         projection['subjects_remove'] = subjects_remove
     if has_history:
         projection['subjects_history'] = subjects_history
         projection['history_rows_field'] = history_rows_field
+    timestamp_fields = _audit_timestamp_fields(entity)
+    if timestamp_fields:
+        projection['timestamp_fields_block'] = ', '.join(
+            f"'{field}'" for field in timestamp_fields)
     return projection
 
 
 def _ui_bool(value):
     """A Mustache boolean, spelled as TypeScript rather than as a Python repr."""
     return 'true' if value else 'false'
-
-
-def _write_defaults(entity):
-    """(block, has_minted) for the value each write member falls back to.
-
-    A create sends the whole write record, and a member the form does not show
-    -- a surrogate key, a field the entity hides -- would otherwise go out
-    with no value at all, which is not a record the service can decode. Each
-    member takes the empty of its own type, and a surrogate primary key takes
-    the symbol the factory mints an identifier for, because naming a row the
-    store has never seen is the caller's to do.
-
-    Stated per member rather than inferred by the factory: only the model
-    knows which members are optional and which are identifiers. The minted
-    case is a symbol the generated module imports rather than a string it
-    spells, so the projection and the factory cannot disagree about it.
-    """
-    from .org_loader import (  # noqa: PLC0415
-        _column_name,
-        write_record_columns,
-        write_record_for,
-    )
-    by_name = {_column_name(column): column
-               for column in write_record_columns(entity)}
-    key_columns = set(_primary_key_columns(entity))
-    members = []
-    has_minted = False
-    for field in write_record_for(entity):
-        name = field['name']
-        column = by_name.get(name) or {}
-        cpp_type = str(column.get('cpp_type') or field.get('cpp_type') or '')
-        if column.get('nullable'):
-            literal = 'null'
-        elif cpp_type == 'boost::uuids::uuid':
-            if name in key_columns:
-                literal = 'MINTED_WRITE_DEFAULT'
-                has_minted = True
-            else:
-                literal = 'null'
-        elif cpp_type in ('std::int32_t', 'std::uint32_t',
-                          'std::int64_t', 'std::uint64_t', 'int'):
-            literal = '0'
-        elif cpp_type == 'bool':
-            literal = 'false'
-        else:
-            literal = "''"
-        members.append(f'{name}: {literal}')
-    return '{ ' + ', '.join(members) + ' }', has_minted
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
@@ -3928,6 +3668,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             'delete_request_extra_args',
             [{'name': c['column'] + 's'} for c in pk_extra_cols])
         domain_entity.setdefault('single_delete', False)
+        validate_read_for_cache(domain_entity)
         validate_cached_by(domain_entity)
         validate_cache_aux_type(domain_entity)
         # Derive paged list-by-foreign-key NATS operations (protocol/handler/

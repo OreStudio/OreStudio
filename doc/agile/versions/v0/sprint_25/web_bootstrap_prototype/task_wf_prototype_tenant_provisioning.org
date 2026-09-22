@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-22
 #+updated: 2026-09-22
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Question: how should the Tenants page (state, retry, discard) and the new tenant
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

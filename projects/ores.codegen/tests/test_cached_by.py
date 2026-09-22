@@ -1,5 +1,11 @@
 """Tests for the cached_by messaging-flag gate.
 
+cached_by names the consumer component a generated nats-event-cache lands
+in. It stands alone: the cache warms from the canonical list read and
+refreshes from the canonical entity events, so it requires no verb the
+model declares. It does require tenant scoping, because the cache keeps one
+partition per tenant.
+
 Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_cached_by.py
@@ -21,13 +27,14 @@ def test_cached_by_unset_is_a_noop():
     assert 'cached_by' not in domain_entity
 
 
-def test_cached_by_allowed_with_read_for_cache():
-    domain_entity = {'cached_by': 'iam', 'read_for_cache': True}
+def test_cached_by_stands_alone_without_read_for_cache():
+    domain_entity = {'cached_by': 'iam', 'has_tenant_id': True}
     validate_cached_by(domain_entity)
     assert domain_entity['cached_by'] == 'iam'
+    assert 'read_for_cache' not in domain_entity
 
 
-def test_cached_by_rejected_without_read_for_cache():
+def test_cached_by_rejected_without_tenant_id():
     domain_entity = {'cached_by': 'iam', 'entity_singular': 'widget'}
-    with pytest.raises(ValueError, match="widget: cached_by requires read_for_cache"):
+    with pytest.raises(ValueError, match="widget: cached_by requires has_tenant_id"):
         validate_cached_by(domain_entity)

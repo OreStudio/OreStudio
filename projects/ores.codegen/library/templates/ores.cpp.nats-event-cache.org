@@ -21,17 +21,17 @@ table to them.
 * Summary
 
 Two templates generating a consumer-side entity-mirror cache: the cache
-class itself (a =partitioned_cache= instantiation warmed and reloaded via
-the entity's =read_for_cache= RPC), and a registrar-wiring snippet doing
-the startup warm-up and change-event subscription. Unlike every other
+class itself (a =partitioned_cache= instantiation whose warm-up pages the
+entity's canonical =list= read to its end and whose refresh follows the
+canonical entity events), and a registrar-wiring snippet doing the startup
+warm-up and event subscription. Unlike every other
 facet, output lands in the *consumer's* component tree, not the entity's
 own — see =cached_by= below.
 
 * The ores.cpp.nats-event-cache facet
 
 Disabled by default (=#+default: disabled=): an entity opts in by
-setting both =read_for_cache: true= (the RPC the cache warms/reloads
-from) and =cached_by: <component>= (the component that consumes the
+setting =cached_by: <component>= (the component that consumes the
 cache — e.g. party is defined in =ores.refdata= but sets
 =cached_by: iam= because IAM is the one that needs an in-process mirror
 of party data), then enabling the facet itself via
@@ -55,7 +55,8 @@ Model flags consumed by these templates:
   =cache_subcomponent_upper=. There is no separate
   =cache_subcomponent= model flag -- both are purely derived from
   splitting =cached_by= on its (optional) dot. Requires
-  =read_for_cache=; validated by =validate_cached_by= in =core.py=.
+  =has_tenant_id=, because the cache keeps one partition per tenant;
+  validated by =validate_cached_by= in =core.py=.
 
 The cache class picks a =boost::hash<...>= specialisation for its key
 type when the entity's primary key is a UUID
@@ -67,10 +68,10 @@ default (=std::hash<Key>=).
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] | Consumer-side entity-mirror cache class: a partitioned_cache instantiation warmed/reloaded via the entity's read_for_cache RPC. =nats-event-cache= facet. |
-| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][ores.cpp.nats-event-cache.registrar_wiring]] | Startup warm-up + change-event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet. |
+| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] | Consumer-side entity-mirror cache class: a partitioned_cache instantiation warmed by the entity's paged list read and reloaded by canonical events. =nats-event-cache= facet. |
+| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][ores.cpp.nats-event-cache.registrar_wiring]] | Startup warm-up + canonical event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet. |
 
 * See also
 
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] — generates the =read_for_cache= RPC this facet's cache warms/reloads from.
+- [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] — generates the canonical =list= read and =*_event= payload this facet's cache consumes.

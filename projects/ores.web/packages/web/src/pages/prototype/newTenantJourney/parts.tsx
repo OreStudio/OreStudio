@@ -24,6 +24,61 @@ import { Button, Field, Input, Select, cx } from '../../../ui/Primitives.js';
 import type { RunState, SeedProfile, StepState, TenantDetails } from './stub.js';
 
 /**
+ * PROTOTYPE ONLY. The words that tell a person where they are. Adapted from
+ * the ores.qt wizards' welcome pages and subtitles: say why, list the steps
+ * up front, say what happens after.
+ */
+export const JOURNEY_STEPS = [
+  {
+    title: 'Choose a starting point',
+    lead: 'A tenant is a separate organisation in ORE Studio, with its own users, parties and data. Choose what it starts with.',
+  },
+  {
+    title: 'Describe the tenant',
+    lead: 'Name the tenant and create its administrator. The administrator manages the tenant\'s users and parties.',
+  },
+  {
+    title: 'Review',
+    lead: 'Check the details. Nothing is created until you confirm.',
+  },
+  {
+    title: 'Provisioning',
+    lead: 'ORE Studio publishes the reference data, creates the parties and prepares them for use. This runs on the server: you can leave and come back.',
+  },
+  {
+    title: 'Hand off',
+    lead: 'The tenant is ready. Its administrator signs in next and sets their own password.',
+  },
+] as const;
+
+export function JourneyIntro({ compact = false }: { readonly compact?: boolean }): ReactNode {
+  return (
+    <div className={cx('rounded-md border border-line bg-surface-overlay text-sm', compact ? 'p-3' : 'p-5')}>
+      <p className="text-ink">
+        You are creating a new tenant. When you finish, the tenant has its reference data, its parties and an
+        administrator who can sign in.
+      </p>
+      {!compact && (
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-ink-muted">
+          {JOURNEY_STEPS.map((s) => (
+            <li key={s.title}>
+              <span className="font-medium text-ink">{s.title}</span>: {s.lead}
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="mt-3 text-xs text-ink-faint">
+        Every tenant, and its progress, stays listed on the Tenants page. You can resume or retry from there.
+      </p>
+    </div>
+  );
+}
+
+export function StepLead({ index }: { readonly index: number }): ReactNode {
+  return <p className="mb-5 text-sm text-ink-muted">{JOURNEY_STEPS[index]?.lead}</p>;
+}
+
+/**
  * PROTOTYPE ONLY. The journey's steps, written once and placed differently by
  * each variant -- the "library of steps" the catalogue decided on.
  */

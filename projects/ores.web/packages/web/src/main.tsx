@@ -34,7 +34,6 @@ import { LandingPage } from './pages/LandingPage.js';
 import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
-import { AccountsPage } from './pages/AccountsPage.js';
 import { entityRoutes } from './entity/entityRoutes.js';
 import './styles.css';
 
@@ -106,7 +105,6 @@ function App(): ReactNode {
       {authenticated ? (
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/iam/account" element={<AccountsPage />} />
 
           {/* A landing page per component, with its tasks and its entities. */}
           {COMPONENTS.map((component) => (
@@ -127,10 +125,11 @@ function App(): ReactNode {
           {plannedRoutes()}
 
           {/*
-            Every entity whose model declared a screen set, at once. The factory
-            reads each declaration: the paths, the screens and which of the five
-            routes exist are all derived, so adding an entity is a model change
-            rather than five more routes here.
+            Every wired entity's screens, taken from the registry rather than
+            listed here. A declaration carries its descriptor, so declaring an
+            entity is what routes it: the sidebar, the breadcrumbs and these
+            routes read one list, and an entity that is declared cannot be one
+            the router does not know.
           */}
           {COMPONENTS.flatMap((component) =>
             component.entities.flatMap((entity) =>

@@ -25,10 +25,9 @@
 /**
  * Where the counterparty_identifier screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { counterpartyIdentifierMeta } from '../ui/counterparty_identifier_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,23 @@ export const counterpartyIdentifierDescriptor: EntityDescriptor = {
     meta: counterpartyIdentifierMeta,
     routeSegment: 'counterparty-identifier',
     apiBase: '/api/counterparty_identifiers',
-    keyParam: 'id',
-    icon: 'keyMultiple',
+    keyFields: [
+        'id_value',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
-        asOf: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
+        'id_scheme',
+        'id_value',
+        'description',
+    ],
+    writeFields: [
+        'id',
+        'counterparty_id',
         'id_scheme',
         'id_value',
         'description',

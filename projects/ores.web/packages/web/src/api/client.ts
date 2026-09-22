@@ -20,10 +20,8 @@
  */
 
 import {
-  accountListSchema,
   loginResultSchema,
   sessionViewSchema,
-  type AccountList,
   type LoginResult,
   type SessionView,
 } from '@ores/wire-protocol/browser';
@@ -79,27 +77,6 @@ export const api = {
     await request('/api/session', { method: 'DELETE' });
   },
 
-  async accounts(
-    input: { readonly offset?: number; readonly limit?: number } = {},
-  ): Promise<AccountList> {
-    const query = new URLSearchParams();
-    if (input.offset !== undefined) {
-      query.set('offset', String(input.offset));
-    }
-    if (input.limit !== undefined) {
-      query.set('limit', String(input.limit));
-    }
-    const suffix = query.size === 0 ? '' : `?${query.toString()}`;
-    return accountListSchema.parse(await request(`/api/accounts${suffix}`, { method: 'GET' }));
-  },
-
-  async setAccountLocked(accountId: string, locked: boolean): Promise<void> {
-    await request(`/api/accounts/${accountId}/${locked ? 'lock' : 'unlock'}`, { method: 'POST' });
-  },
-
-  async deleteAccount(accountId: string): Promise<void> {
-    await request(`/api/accounts/${accountId}`, { method: 'DELETE' });
-  },
 };
 
 export { ApiFailure };

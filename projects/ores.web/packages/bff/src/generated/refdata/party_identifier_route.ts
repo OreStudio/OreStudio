@@ -25,31 +25,32 @@
 /**
  * How the BFF reaches the party_identifier service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_identifier_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyIdentifierRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'party_identifier',
   collection: 'party_identifiers',
-  key: 'id',
-  keyField: 'id_value',
-  rowField: 'party_identifier',
+  keyFields: ['id_value'],
   writeFields: ['id', 'id_scheme', 'id_value', 'description'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, id_scheme: '', id_value: '', description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, id_scheme: '', id_value: '', description: '' },
   listHasAsOf: false,
   listHasFilter: true,
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_party_identifiers_request,
+    get: subjects.get_party_identifier_request,
     save: subjects.put_party_identifier_request,
+    remove: subjects.delete_party_identifier_request,
+    history: subjects.list_party_identifier_versions_request,
   },
   rowsField: 'party_identifiers',
+  getRowField: 'party_identifier',
+  historyRowsField: 'versions',
 };

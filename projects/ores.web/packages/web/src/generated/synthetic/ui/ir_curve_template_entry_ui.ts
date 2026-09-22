@@ -152,35 +152,3 @@ export const irCurveTemplateEntryMeta = {
     columns: irCurveTemplateEntryColumns,
     fields: irCurveTemplateEntryFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const irCurveTemplateEntryMessages = {
-        ir_curve_template_entry: {
-            title: 'IR Curve Template Entries',
-            singular: 'ir curve template entry',
-            newTitle: 'New ir curve template entry',
-            description: 'One row of the raw instrument grid (the "Curve Template") an ir_curve_generation_config publishes: which tenor period, priced as which instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent -- see ores.refdata.instrument_code), in what order. Every entry is modelled as a genuine [start, end) period rather than a single maturity label: start_tenor_code/end_tenor_code are both ordinary tenor references resolved through the same ores::refdata::domain::resolve_window/resolve_end_date machinery (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments (deposits, swaps) set start_tenor_code to \'SPOT\' (a genuine zero-duration PERIOD/DAY tenor already in the catalog, resolving directly to the horizon\'s spot date -- not a null/sentinel hack); interval instruments (FRAs) set it to the period\'s own front tenor (e.g. \'3M\' for a 3x6 FRA whose end_tenor_code is \'6M\'). This symmetric shape is what lets the tenor-collision validator (validate_curve_template in ores.synthetic.api) detect genuine period overlaps via plain windows_overlap(), without a special case for point vs. interval instruments. Entries belong to a parent config via ir_curve_config_id, the same one-config-many-children shape fx_spot_generation_config\'s gmm_component rows use. Every entry\'s published rate is derived from the parent config\'s short-rate process\'s discount_factor() at the tenor\'s maturity -- never an independently-noised value -- so the published tick batch is, by construction, a slice of one internally consistent curve. Party- and tenant-scoped.',
-            fldSequenceIndex: 'Sequence Index',
-            sequenceIndexPh: 'Enter sequence index',
-            fldStartTenorCode: 'Start Tenor',
-            startTenorCodePh: 'Enter start tenor code (e.g. SPOT)',
-            fldEndTenorCode: 'End Tenor',
-            endTenorCodePh: 'Enter end tenor code (e.g. 1Y)',
-            fldInstrumentCode: 'Instrument',
-            instrumentCodePh: 'Enter instrument code (e.g. Swap)',
-            colSequenceIndex: 'Sequence Index',
-            colStartTenorCode: 'Start Tenor',
-            colEndTenorCode: 'End Tenor',
-            colInstrumentCode: 'Instrument',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-            colRecordedAt: 'Recorded At',
-        }
-};

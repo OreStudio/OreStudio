@@ -25,18 +25,18 @@ their parent workflow instance via workflow_id.
 :has_tenant_id: false
 :END:
 
-* Primary key
-:PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:END:
-
-UUID primary key for the workflow step.
-
 * Natural keys
 
 * Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID primary key for the workflow step.
 
 ** workflow_id
 :PROPERTIES:

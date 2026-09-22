@@ -3,6 +3,7 @@
 :ores.cpp.nats-sub-registrar.enabled: nil
 :ores.cpp.service.enabled: nil
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: D96E6889-A53B-41AF-A7F5-A3497A188BA0
 :END:
 #+title: ores.iam.account_party
@@ -140,6 +141,32 @@ ores_refdata_parties_tbl.
 | party_id    | Party       |
 | modified_by | Modified By |
 | version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: account_parties
+:END:
+
+The screen's declaration. An association has no key field to name: the model
+declares none, because an association is identified by the pair it links and a
+single field cannot state half of a pair. The view addresses it by the pair,
+one path segment each, and the key record the descriptor states carries both.
+That is why =:key_field:= is absent here and present on every entity that has
+one.
+
+*** Detail fields
+
+| field      | label   | widget      | type      | is_key | is_required | placeholder |
+|------------+---------+-------------+-----------+--------+-------------+-------------|
+| account_id | Account | accountEdit | line_edit | true   | true        |             |
+| party_id   | Party   | partyEdit   | line_edit | true   | true        |             |
+
+*** Columns
+
+| enum_name | field      | header  | type   | width |
+|-----------+------------+---------+--------+-------|
+| AccountId | account_id | Account | string | 320   |
+| PartyId   | party_id   | Party   | string | 320   |
 
 * See also
 

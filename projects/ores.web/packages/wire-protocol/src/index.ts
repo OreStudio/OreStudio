@@ -155,7 +155,6 @@ export type { AuthenticatedCaller } from './account-operations.js';
 // The HTTP contract shared by the BFF and the browser. Both sides parse with
 // these definitions, so the network boundary is checked at runtime.
 export {
-  accountListSchema,
   apiErrorSchema,
   loginRequestSchema as httpLoginRequestSchema,
   loginResultSchema,
@@ -166,7 +165,6 @@ export {
   sseEnvelopeSchema,
 } from './contracts.js';
 export type {
-  AccountList,
   ApiError,
   LoginResult,
   LoginSuccess,

@@ -128,8 +128,12 @@ TEST_CASE("read_latest_tenant_status_by_status", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
 
     REQUIRE(read_statuses.size() == 1);
-    CHECK(read_statuses[0].status == target_status);
-    CHECK(read_statuses[0].name == ts.name);
+    // version and recorded_at are stamped by the database, so they are taken
+    // from the read row; everything else must survive the round trip.
+    auto expected = ts;
+    expected.version = read_statuses[0].version;
+    expected.recorded_at = read_statuses[0].recorded_at;
+    CHECK(read_statuses[0] == expected);
 }
 
 TEST_CASE("read_nonexistent_tenant_status", tags) {

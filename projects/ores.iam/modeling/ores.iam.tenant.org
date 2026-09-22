@@ -27,11 +27,22 @@ Tenants are identified by:
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     iam
-:profile:       uuid-identified-lookup
+:schema:                 public
+:product:                ores
+:component:              iam
+:profile:                uuid-identified-lookup
+:system_tenant_visible:  true
 :END:
+
+=:system_tenant_visible:= is stated because a tenant row is stored under the
+*system* tenant, not under itself: every row of this table carries
+=tenant_id = ffffffff-ffff-ffff-ffff-ffffffffffff=. Without the flag every read
+is filtered to =tenant_id = <the caller's tenant>=, which no row of this table
+satisfies, so a tenant can be listed but never read by key -- and a read by key
+is what a history request, a delete and a single-record read all do.
+
+It is not a widening of what a caller may see. The row that filter excluded is
+the caller's own tenant, and a tenant admin is the one person who should see it.
 
 * Columns
 
@@ -215,27 +226,8 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant.hpp
-:domain_class:           iam::domain::tenant
-:protocol_include:       ores.iam.api/messaging/tenant_protocol.hpp
 :collection_name:        tenants
-:item_var:               tenant
 :key_field:              code
-:get_request_class:      iam::messaging::list_tenants_request
-:get_response_class:     iam::messaging::list_tenants_response
-:get_message_type:       list_tenants_request
-:save_request_class:     iam::messaging::put_tenant_request
-:save_response_class:    iam::messaging::put_tenant_response
-:save_message_type:      put_tenant_request
-:delete_request_class:   iam::messaging::delete_tenant_request
-:delete_response_class:  iam::messaging::delete_tenant_response
-:delete_message_type:    delete_tenant_request
-:history_request_class:  iam::messaging::list_tenant_versions_request
-:history_response_class: iam::messaging::list_tenant_versions_response
-:history_message_type:   list_tenant_versions_request
-:settings_group:         TenantListWindow
-:window_title:           Tenants
-:icon:                   Building
 :END:
 
 *** Detail fields

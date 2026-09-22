@@ -58,15 +58,16 @@ export interface EntityDefinition {
   readonly icon: IconName;
   /** The route segment. */
   readonly path: string;
-  /** True when there is no screen for it yet. */
-  readonly planned?: boolean;
   /**
-   * The declaration this entity's screens are built from, when it has them.
+   * The declaration the entity's screens are built from.
    *
-   * Absent for an entity that is only declared, which is what `planned` means:
-   * the navigation says so and the router serves no route.
+   * Present when the entity has screens. The router derives its routes from
+   * this, so declaring an entity here is what routes it, and no second list of
+   * routes has to be kept in step with this one.
    */
   readonly descriptor?: EntityDescriptor;
+  /** True when there is no screen for it yet. */
+  readonly planned?: boolean;
 }
 
 export interface ComponentDefinition {

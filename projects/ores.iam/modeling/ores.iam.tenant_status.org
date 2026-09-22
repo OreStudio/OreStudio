@@ -158,27 +158,8 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant_status.hpp
-:domain_class:           iam::domain::tenant_status
-:protocol_include:       ores.iam.api/messaging/tenant_status_protocol.hpp
 :collection_name:        tenant_statuses
-:item_var:               tenant_status
 :key_field:              status
-:get_request_class:      iam::messaging::list_tenant_statuses_request
-:get_response_class:     iam::messaging::list_tenant_statuses_response
-:get_message_type:       list_tenant_statuses_request
-:save_request_class:     iam::messaging::put_tenant_status_request
-:save_response_class:    iam::messaging::put_tenant_status_response
-:save_message_type:      put_tenant_status_request
-:delete_request_class:   iam::messaging::delete_tenant_status_request
-:delete_response_class:  iam::messaging::delete_tenant_status_response
-:delete_message_type:    delete_tenant_status_request
-:history_request_class:  iam::messaging::list_tenant_status_versions_request
-:history_response_class: iam::messaging::list_tenant_status_versions_response
-:history_message_type:   list_tenant_status_versions_request
-:settings_group:         TenantStatusListWindow
-:window_title:           Tenant Statuses
-:icon:                   CheckmarkCircle
 :END:
 
 *** Detail fields

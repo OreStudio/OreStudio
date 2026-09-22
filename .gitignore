@@ -111,6 +111,10 @@ node_modules/
 # compass tool local cache (generated at repo root)
 /.compass.db*
 
+# codegen scratch: tests render into .runtime/render/, and probes keep
+# their one-off scripts and logs here
+/.runtime/
+
 # ores.shell runtime log, written at the repo root
 /log/
 

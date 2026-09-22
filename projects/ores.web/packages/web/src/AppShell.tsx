@@ -25,6 +25,8 @@ import { useSession } from './session/SessionProvider.js';
 import { useSiteState } from './api/site.js';
 import { Button, Tag, cx } from './ui/Primitives.js';
 import { PROJECT_SITE } from './assets/brand.js';
+import { entityBasePath } from './entity/entityPaths.js';
+import { accountDescriptor } from './generated/iam/web/account_declaration.js';
 import icon from './assets/ore-studio-icon.png';
 
 /**
@@ -62,7 +64,7 @@ export function AppChrome({ children }: { readonly children: ReactNode }): React
                 {site?.developerTools === true && (
                   <HeaderLink to="/deployment">Deployment</HeaderLink>
                 )}
-                <HeaderLink to="/accounts">Accounts</HeaderLink>
+                <HeaderLink to={entityBasePath(accountDescriptor)}>Accounts</HeaderLink>
                 <Button variant="ghost" size="sm" onClick={() => void signOut()}>
                   Sign out
                 </Button>

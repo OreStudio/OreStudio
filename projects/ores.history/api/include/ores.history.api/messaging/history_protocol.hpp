@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_HISTORY_MESSAGING_HISTORY_PROTOCOL_HPP
 #define ORES_HISTORY_MESSAGING_HISTORY_PROTOCOL_HPP
 
@@ -32,76 +37,85 @@ namespace ores::history::messaging {
 /**
  * @brief One rendered, diffed version of an entity's history.
  *
- * fields is the full render of this version, in mapper order — the
+ * fields is the full render of this version, in mapper order -- the
  * detail panel's need for complete values. changes is the field-level
- * diff (with intra-value spans) against the previous version; empty
- * for the oldest version.
+ * diff, with intra-value spans, against the previous version; empty for
+ * the oldest version.
  */
-struct entity_history_version final {
-    int version{};
+struct entity_history_version {
+    int version = 0;
     std::string modified_by;
     std::chrono::system_clock::time_point recorded_at;
     std::vector<ores::diff::domain::field_value> fields;
     ores::diff::domain::diff_result changes;
-
-    friend bool operator==(const entity_history_version&, const entity_history_version&) = default;
 };
-
-struct get_entity_history_response;
-
-/**
- * @brief Derives the component-scoped generic history subject for an
- * entity_type_of() dispatch key, e.g. "ores.dq.badge_definition" ->
- * "dq.v1.history.get".
- *
- * Every ORE Studio subject lives inside its owning component's
- * namespace (see the "ORE Studio Messaging Reference" knowledge doc).
- * A single bare "history.v1.get" subject shared by every service would
- * be delivered to every service's queue group at once — the client
- * would race the one service that actually owns the entity against
- * every other service replying "not found" near-instantly, and the
- * wrong reply usually wins. Scoping the subject to the owning
- * component (same segment as e.g. "dq.v1.badge_definitions.history")
- * means only that component's registrar ever receives the request.
- */
-[[nodiscard]] inline std::string history_subject_for(const std::string& entity_type) {
-    const auto first_dot = entity_type.find('.');
-    const auto second_dot =
-        first_dot == std::string::npos ? std::string::npos : entity_type.find('.', first_dot + 1);
-    const std::string component =
-        (first_dot != std::string::npos && second_dot != std::string::npos) ?
-            entity_type.substr(first_dot + 1, second_dot - first_dot - 1) :
-            std::string("unknown");
-    return component + ".v1.history.get";
-}
 
 /**
  * @brief The one generic history request every entity shares.
  *
- * entity_type is the entity_type_of() dispatch key (e.g.
- * "ores.refdata.currency"); entity_id is the entity's own primary key
- * rendered as a string, since key shapes vary across entities. No
- * typed domain payload crosses the wire for history.
+ * entity_type is the dispatch key (e.g. "ores.refdata.currency"); entity_id
+ * is the entity's own primary key rendered as a string, since key shapes vary
+ * across entities.
  *
- * nats_subject exists only to satisfy call sites' nats_request concept
- * check; it is never actually used to send a request — the real,
- * component-scoped subject is computed per-call from entity_type via
- * history_subject_for() and passed explicitly, since a static member
- * can't vary with the request's own data.
+ * The subject names the component that OWNS the entity, which this model
+ * cannot know: the same request reaches iam.v1.history.get for an IAM entity
+ * and refdata.v1.history.get for a refdata one. So the segment is left open
+ * and history_subject_for() derives it -- one rule, read by the service that
+ * subscribes and by every client that sends.
  */
-struct get_entity_history_request final {
+struct get_entity_history_request {
     using response_type = struct get_entity_history_response;
-    static constexpr std::string_view nats_subject = "history.v1.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string entity_type;
     std::string entity_id;
 };
 
-struct get_entity_history_response final {
+struct get_entity_history_response {
     std::vector<entity_history_version> versions;
     bool success = false;
     std::string message;
 };
 
+
+/**
+ * @brief The subject these messages are addressed at, for one component.
+ *
+ * The pattern is stated once, in the model, and this is its only derivation: a
+ * service composes the subject it listens on with it, and every client
+ * composes the subject it sends to with it, so no two callers can disagree
+ * about a subject that is not a constant.
+ */
+[[nodiscard]] inline std::string history_subject_by_component(std::string_view component) {
+    return std::string(component) + std::string(".v1.history.get");
+}
+
+/**
+ * @brief The subject these messages are addressed at, for the resource a
+ * dispatch key names.
+ *
+ * The same rule as history_subject_by_component(), reached from the key a
+ * client holds rather than from the component a service knows. The hole is the
+ * component segment of the key, which is always
+ * "<product>.<component>.<entity>" -- so "ores.iam.tenant_type" is addressed
+ * at iam.v1.history.get.
+ */
+[[nodiscard]] inline std::string history_subject_for(std::string_view entity_type) {
+    const auto first_dot = entity_type.find('.');
+    const auto second_dot = first_dot == std::string_view::npos ?
+                                std::string_view::npos :
+                                entity_type.find('.', first_dot + 1);
+    const std::string component =
+        first_dot != std::string_view::npos && second_dot != std::string_view::npos ?
+            std::string(entity_type.substr(first_dot + 1, second_dot - first_dot - 1)) :
+            std::string("unknown");
+    return history_subject_by_component(component);
+}
 }
 
 #endif

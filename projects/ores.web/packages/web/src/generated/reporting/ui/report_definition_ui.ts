@@ -155,36 +155,3 @@ export const reportDefinitionMeta = {
     columns: reportDefinitionColumns,
     fields: reportDefinitionFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const reportDefinitionMessages = {
-        report_definition: {
-            title: 'Report Definitions',
-            singular: 'report definition',
-            newTitle: 'New report definition',
-            description: 'The persistent template for a report. Describes what to run, when to run it, and how to handle concurrent executions. Type-specific configuration (e.g. risk parameters) lives in a separate table keyed by report_definition_id. Lifecycle is managed through the report_definition_lifecycle FSM machine. fsm_state_id points to the current state in ores_dq_fsm_states_tbl. scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set by the scheduler service when the definition is activated (state: active). It is cleared when the definition is suspended or archived.',
-            fldName: 'Name',
-            namePh: 'Enter report definition name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            fldReportType: 'Report Type',
-            reportTypePh: 'e.g. risk',
-            fldScheduleExpression: 'Schedule (cron)',
-            scheduleExpressionPh: 'e.g. 0 6 * * 1',
-            fldConcurrencyPolicy: 'Concurrency Policy',
-            concurrencyPolicyPh: 'e.g. skip',
-            colName: 'Name',
-            colReportType: 'Type',
-            colScheduleExpression: 'Schedule',
-            colConcurrencyPolicy: 'Concurrency',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

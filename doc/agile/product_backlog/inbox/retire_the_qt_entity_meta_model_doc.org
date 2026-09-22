@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 87156AAD-1E96-4225-9E05-9F470C5811F0
+:END:
+#+title: Retire the Qt entity meta-model doc
+#+description: entity_meta_model_cpp_qt.org documents a facet that no longer exists -- no Qt templates remain and ores.cpp.qt is in no graph -- and still describes the dead history properties as live.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:documentation:qt:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Retire =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=.
+
+The Qt client is gone and its codegen facet with it: no =qt= templates remain
+under =library/templates/=, and =ores.cpp.qt= appears in no graph, in no
+projection and in none of the codegen source. The page therefore documents a
+facet that cannot be admitted, and describes properties as live that nothing
+reads -- it is the last place =:history_request_class:=,
+=:history_response_class:= and =:history_message_type:= are still stated as the
+way history is reached.
+
+Retire it rather than correct it, unless the Qt client is coming back, in which
+case the properties it names are the ones that would need re-deriving from the
+generic history service.
+
+* Why it matters now
+
+Those three properties were removed from the entity scaffold in the same pass as
+this capture, so nothing generates them any more. A doc that still presents them
+as part of the model is how a dead property gets reintroduced: the scaffold was
+the last generator of them, and this page is the last description.
+
+* References
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] -- the hub that links the segments.
+
+* See also
+
+- =projects/ores.codegen/library/templates/ores.doc.modeling.entity_org.org= --
+  the scaffold, from which the properties were removed.

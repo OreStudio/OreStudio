@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the ir_curve_bootstrap_config service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_config_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const irCurveBootstrapConfigRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'ir_curve_bootstrap_config',
   collection: 'ir_curve_bootstrap_configs',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'ir_curve_bootstrap_config',
+  keyFields: ['id'],
   writeFields: ['id', 'output_series_id', 'source_series_id', 'curve_family_role', 'discount_curve_config_id', 'interpolation_method', 'day_count_convention', 'split_tenor_code'],
   writeDefaults: { id: MINTED_WRITE_DEFAULT, output_series_id: null, source_series_id: null, curve_family_role: '', discount_curve_config_id: null, interpolation_method: '', day_count_convention: '', split_tenor_code: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const irCurveBootstrapConfigRoute: EntityRouteDescriptor = {
     history: subjects.list_ir_curve_bootstrap_config_versions_request,
   },
   rowsField: 'bootstrap_configs',
+  getRowField: 'ir_curve_bootstrap_config',
   historyRowsField: 'versions',
 };

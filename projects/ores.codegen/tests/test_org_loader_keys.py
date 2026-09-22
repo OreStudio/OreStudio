@@ -17,6 +17,9 @@ from codegen.org_loader import (  # noqa: E402
     org_document_to_model,
     load_org_model,
     domain_entity_to_table_context,
+    declared_key_field,
+    key_is_primary,
+    key_finders,
 )
 
 REQUIRED_FLAGS = """\
@@ -27,6 +30,15 @@ REQUIRED_FLAGS = """\
 :component: dq
 :END:
 """
+
+
+def _flags(*extra: str) -> str:
+    """Build a Flags drawer, with any extra properties before the :END:."""
+    lines = ["* Flags", ":PROPERTIES:", ":schema: public", ":product: ores",
+             ":component: dq"]
+    lines += list(extra)
+    lines.append(":END:")
+    return "\n".join(lines) + "\n"
 
 
 def _model(columns_body: str) -> dict:
@@ -189,6 +201,101 @@ No field flagged primary_key.
         load_org_model(doc_path)
 
 
+COLUMNS_NO_KEY = """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:END:
+
+No field flagged primary_key.
+"""
+
+
+def test_a_keyless_record_is_admitted_when_it_says_so(tmp_path):
+    # A record that is only carried has no key to state. The flag is what tells
+    # the loader which of the two it is looking at, so the requirement above
+    # still holds for everything that does not declare it.
+    doc_path = tmp_path / "keyless.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true", ":no_primary_key: true")
+        + COLUMNS_NO_KEY,
+        encoding="utf-8",
+    )
+    de = load_org_model(doc_path)["domain_entity"]
+    assert "primary_key" not in de
+
+
+def test_stating_no_primary_key_and_flagging_one_is_refused(tmp_path):
+    doc_path = tmp_path / "contradiction.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true", ":no_primary_key: true")
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+Both at once.
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="also flags a primary key"):
+        load_org_model(doc_path)
+
+
+def test_no_subcomponent_flag_admits_a_model_without_one(tmp_path):
+    # A component that keeps its headers at its own include root has no
+    # sub-component for a model to name.
+    doc_path = tmp_path / "no_subcomponent.org"
+    doc_path.write_text(
+        _flags(":no_subcomponent: true")
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+Only the sub-component is absent.
+""",
+        encoding="utf-8",
+    )
+    de = load_org_model(doc_path)["domain_entity"]
+    assert de["primary_key"]["column"] == "name"
+
+
+def test_a_missing_subcomponent_without_the_flag_is_refused(tmp_path):
+    doc_path = tmp_path / "missing_subcomponent.org"
+    doc_path.write_text(
+        REQUIRED_FLAGS
+        + """
+* Columns
+
+** name
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:primary_key: true
+:END:
+
+The key is stated, only the sub-component is absent.
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Missing required flag: subcomponent"):
+        load_org_model(doc_path)
+
+
 def test_is_enum_default_value_becomes_scoped_enum_expression():
     # Regression test: default_value on an is_enum column used to be SQL-string-quoted
     # (the same handling as any other text-typed column), which the C++ domain template
@@ -269,3 +376,64 @@ Unique name.
     ctx = domain_entity_to_table_context(de)
     assert ctx["table"]["primary_key"]["column"] == "name"
     assert ctx["table"]["primary_key"]["is_text"] is True
+
+
+def _entity(key_field: str, primary: str = "id") -> dict:
+    """A hand-built enriched entity with a declared key and a storage key."""
+    return {
+        "entity_singular": "widget",
+        "primary_key": {"column": primary,
+                        "columns": [{"column": primary, "cpp_type": "std::string"}]},
+        "columns": [{"name": "code", "cpp_type": "std::string"},
+                    {"name": "name", "cpp_type": "std::string"}],
+        "natural_keys": [],
+        "presentation": {"collection_name": "widgets", "key_field": key_field},
+    }
+
+
+def test_a_model_with_no_screen_declares_no_key():
+    """Its storage key is the only key it has, and callers address it by that."""
+    entity = _entity("")
+    assert declared_key_field(entity) == ""
+    assert key_is_primary(entity) is True
+    assert key_finders(entity) == []
+
+
+def test_the_declared_key_is_the_storage_key_when_they_agree():
+    entity = _entity("code", primary="code")
+    assert declared_key_field(entity) == "code"
+    assert key_is_primary(entity) is True
+    assert key_finders(entity) == []
+
+
+def test_a_declared_key_that_is_not_the_storage_key_gets_a_read():
+    """This is the read a caller's address resolves to a row through."""
+    entity = _entity("code")
+    assert key_is_primary(entity) is False
+    assert key_finders(entity) == [{"column": "code", "suffix": "code"}]
+
+
+def test_the_older_opt_in_keeps_its_method_name_whatever_column_it_reads():
+    """Hand-written callers spell `read_latest_by_code`, so it cannot move."""
+    entity = _entity("short_code")
+    entity["service_find_by_code"] = {"column": "short_code"}
+    assert key_finders(entity) == [{"column": "short_code", "suffix": "code"}]
+
+
+def test_two_finders_that_name_one_column_are_one_method():
+    """Permission opts in with `code` and declares `code`, so it stays as it was."""
+    entity = _entity("code")
+    entity["service_find_by_code"] = {"column": "code"}
+    assert key_finders(entity) == [{"column": "code", "suffix": "code"}]
+
+
+def test_a_finder_the_model_states_itself_is_not_generated_twice():
+    """`role` declares `read_latest_by_name` as a paste block."""
+    entity = _entity("name")
+    entity["implementations"] = {
+        "DCA78C69-E508-48D9-9972-A9B8094D91FB": [
+            "std::vector<domain::widget> read_latest_by_name("
+            "context ctx, const std::string& name);",
+        ],
+    }
+    assert key_finders(entity) == []

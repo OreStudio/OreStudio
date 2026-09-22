@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 0592E5A9-8749-43A6-B33A-2B43BD38EB16
+:END:
+#+title: Say which key a service method takes in its signature
+#+description: The generated service takes every key as const std::string&, so the storage key and the declared key are indistinguishable at the call site; passing the wrong one compiles, returns empty, and looks like a missing record.
+#+type: capture
+:level: cross
+:filetags: :codegen:service:keys:
+#+created: 2026-09-22
+:updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the generated service's key parameters say which key they take.
+
+Both keys are spelled =const std::string&=, so nothing at the call site
+distinguishes them:
+
+#+begin_src cpp
+std::optional<domain::tenant> get_tenant(const std::string& id);          // storage key
+std::optional<domain::tenant> get_tenant_at_version(const std::string& id, std::uint32_t);
+void                          delete_tenant(const std::string& id);      // storage key
+std::vector<domain::tenant>   get_tenant_history(const std::string& key); // declared key
+#+end_src
+
+Only the parameter *name* differs, and a parameter name does not reach the
+call site in C++.
+
+* Why
+
+Passing the wrong one compiles and returns empty, which reads as "no such
+record" rather than as a mistake. This is not hypothetical: it cost two
+eventing tests, which passed a uuid where the history method now takes the
+declared key, and the failure looked like an entity with no history.
+
+The wire already answers this — the declared key is the one a caller holds,
+which is what the canonical protocol says and what the generated routes now
+send. The service has not caught up.
+
+* Decision
+
+Taken 2026-09-22.
+
+- The machine path keeps the plain verb and takes a *typed* uuid:
+  =get_tenant(const boost::uuids::uuid& id)=. The type carries the meaning;
+  =uuid= does not appear in the name, because that is an implementation
+  detail, not a distinction a caller should have to read.
+- The human path is named after the key field the model declares:
+  =get_tenant_by_code(const std::string& code)=,
+  =get_account_by_username(const std::string& username)=.
+- The wire keeps the declared key. That decision is already made and does
+  not move.
+
+* Notes for whoever takes it
+
+- =primary_key.params= is text for every column by design
+  (=projects/ores.codegen/src/codegen/core.py=, ~line 4067): the repository's
+  key parameters mirror the store, so a uuid column is converted there. The
+  typing therefore belongs at the service layer, which converts once.
+- The generator already emits a typed-uuid accessor under
+  ={{#service_find_by_uuid}}=, as =find_<e>(const boost::uuids::uuid&)=. The
+  work is mostly renaming that to the plain verb and deriving the
+  =by_<declared>= finder, rather than building new machinery.
+- A strong typedef for the declared key would be safer still, but it touches
+  every call site; the uuid/string split buys most of the safety for a
+  fraction of the churn.
+- Call sites to update: the two eventing tests that were just corrected, and
+  whatever else calls the string overloads.
+
+* See also
+
+- =projects/ores.codegen/library/templates/ores.cpp.service.service_header.org=
+  — the methods at ~lines 219, 228, 284 and 292.

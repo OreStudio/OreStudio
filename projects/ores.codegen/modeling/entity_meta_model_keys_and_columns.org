@@ -2,13 +2,13 @@
 :ID: 0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE
 :END:
 #+title: Codegen entity meta-model — keys and columns
-#+description: The Flags, Primary key, Natural keys, and Columns sections of an entity model — shared by both the C++ and SQL codegen pipelines, since both a database column and a C++ struct field come from the same declaration.
+#+description: The Flags, keys, and Columns sections of an entity model — shared by both the C++ and SQL codegen pipelines, since both a database column and a C++ struct field come from the same declaration.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+startup: inlineimages
 #+created: 2026-07-17
-#+updated: 2026-09-17
+#+updated: 2026-09-22
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub. It is
 the one segment that does not map to a single facet — a column
@@ -50,8 +50,13 @@ set once at the top of the file:
 | =:schema:=            | yes      | Postgres schema (almost always =public=).              |
 | =:product:=           | yes      | Top-level C++ namespace (=ores=).                       |
 | =:component:=         | yes      | Component name (=refdata=, =trading=, ...) — drives both the C++ namespace and the =<product>_<component>_...= SQL naming convention. |
+| =:no_primary_key:=    | no       | =true= for a record that carries no key. See [[*Keyless records][Keyless records]] below. |
 | =:has_tenant_id:=     | no       | See [[*Multi-tenancy: =has_tenant_id=/=has_workspace_id=][Multi-tenancy]] below.                                  |
 | =:has_workspace_id:=  | no       | See [[*Multi-tenancy: =has_tenant_id=/=has_workspace_id=][Multi-tenancy]] below.                                  |
+
+=:subcomponent:= is required, and =:no_subcomponent:= is its negation. Both
+belong in the =* C++ ** Flags= drawer, because that is where codegen reads the
+sub-component from. See [[*Records with no sub-component][Records with no sub-component]] below.
 
 Structural view — the identity properties above, plus the Primary
 key, Natural key, and Column property sets documented further down
@@ -71,6 +76,42 @@ this page:
 ,:has_tenant_id: true
 ,:END:
 #+end_src
+
+* Keyless records
+
+A key is required of a record that is *stored*, not of one that is only
+*carried*. =:no_primary_key: true= states which of the two this model is, so the
+loader asks a stored record for its key and lets a carried record have none.
+
+| State                                       | Result                        |
+|---------------------------------------------+-------------------------------|
+| No key flagged, no =:no_primary_key:=        | Refused — the loader reports a missing primary key. |
+| =:no_primary_key: true=, no key flagged      | Accepted.                     |
+| =:no_primary_key: true=, a key flagged       | Refused — the two contradict each other. |
+
+The flag is a statement, not a waiver. A model that says it has no key and then
+declares one fails, so the contradiction is caught at load time rather than
+producing a record whose identity nothing agrees on.
+
+A keyless record is never fetched by identity on its own. It is a member of a
+larger payload, such as a byte span inside a history response.
+
+* Records with no sub-component
+
+=:subcomponent:= names the directory between the component and the entity in a
+component that separates its headers by concern (=api=, =domain=, =messages=,
+...). Codegen reads it from the =* C++ ** Flags= drawer, and every domain-entity
+model states it there.
+
+=:no_subcomponent: true= states that the component keeps its headers at its own
+include root instead, so a model in it has no sub-component to name. State the
+flag in the same =* C++ ** Flags= drawer, in place of =:subcomponent:=, because
+it says the same thing by negation. The loader then requires no
+=:subcomponent:= property.
+
+A component whose headers sit one level up has no other use for the value: it
+feeds the include path and the class's qualified name, and both follow from the
+component alone.
 
 * Multi-tenancy: =has_tenant_id=/=has_workspace_id=
 

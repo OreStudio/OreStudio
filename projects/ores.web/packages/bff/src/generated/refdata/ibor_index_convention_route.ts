@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the ibor_index_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/ibor_index_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const iborIndexConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'ibor_index_convention',
   collection: 'ibor_index_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'ibor_index_convention',
+  keyFields: ['id'],
   writeFields: ['id', 'fixing_calendar', 'day_count_fraction', 'settlement_days', 'business_day_convention', 'end_of_month'],
   writeDefaults: { id: '', fixing_calendar: '', day_count_fraction: '', settlement_days: 0, business_day_convention: '', end_of_month: false },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const iborIndexConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_ibor_index_convention_versions_request,
   },
   rowsField: 'ibor_index_conventions',
+  getRowField: 'ibor_index_convention',
   historyRowsField: 'versions',
 };

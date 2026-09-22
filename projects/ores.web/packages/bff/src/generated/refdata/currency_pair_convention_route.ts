@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the currency_pair_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const currencyPairConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'currency_pair_convention',
   collection: 'conventions',
-  key: 'id',
-  keyField: 'pair_code',
-  rowField: 'currency_pair_convention',
+  keyFields: ['pair_code'],
   writeFields: ['pair_code', 'pip_factor', 'tick_size', 'decimal_places', 'business_day_convention', 'spot_relative', 'end_of_month'],
   writeDefaults: { pair_code: '', pip_factor: '', tick_size: '', decimal_places: 0, business_day_convention: null, spot_relative: null, end_of_month: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const currencyPairConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_currency_pair_convention_versions_request,
   },
   rowsField: 'conventions',
+  getRowField: 'currency_pair_convention',
   historyRowsField: 'versions',
 };

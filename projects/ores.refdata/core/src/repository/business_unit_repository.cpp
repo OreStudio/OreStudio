@@ -161,6 +161,38 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_code
         lg(),
         "Reading latest business unit by unit_name.");
 }
+std::vector<domain::business_unit>
+business_unit_repository::read_latest_by_unit_code(context ctx, const std::string& unit_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by unit_code: " << unit_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<business_unit_entity>> |
+        where("tenant_id"_c == tid && "unit_code"_c == unit_code && "valid_to"_c == max.value());
+
+    return execute_read_query<business_unit_entity, domain::business_unit>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_unit_mapper::map(entities); },
+        lg(),
+        "Reading latest business unit by unit_code.");
+}
+
+std::vector<domain::business_unit>
+business_unit_repository::read_any_by_unit_code(context ctx, const std::string& unit_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any business unit by unit_code: " << unit_code;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_unit_entity>> |
+                       where("tenant_id"_c == tid && "unit_code"_c == unit_code) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<business_unit_entity, domain::business_unit>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_unit_mapper::map(entities); },
+        lg(),
+        "Reading any business unit by unit_code.");
+}
 
 
 std::vector<domain::business_unit> business_unit_repository::read_all(context ctx,

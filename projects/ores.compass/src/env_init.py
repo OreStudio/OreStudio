@@ -688,6 +688,8 @@ def run(argv, project_root: Path) -> int:
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
     http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
     web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
+    service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
+    web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
     web_env = (existing.get(WEB_ENVIRONMENT_ID_VARIABLE)
                or _resolve_web_env_id(checkout_root, nats_port, nats_prefix,
                                       env_name))
@@ -799,6 +801,14 @@ ORES_WEB_PORT={web_port}
 # Interface the process binds. 127.0.0.1 keeps it on this host; 0.0.0.0
 # exposes it to a browser on another machine.
 ORES_WEB_BFF_HOST={web_bff_host}
+# Log level for the ores.web BFF (pino: trace, debug, info, warn or error).
+ORES_WEB_LOG_LEVEL={web_log_level}
+# Log level for every generated compiled-service unit (trace, debug, info,
+# warn or error). `compass systemd generate` bakes it into each unit's
+# --log-level, so `compass services restart` applies a change. Raise it to
+# debug or trace while diagnosing; every service writes its own log file
+# under the preset's publish/log directory.
+ORES_SERVICE_LOG_LEVEL={service_log_level}
 {web_env_block}ORES_NATS_PORT={nats_port}
 ORES_NATS_URL={nats_url}
 ORES_NATS_MONITOR_PORT={nats_monitor_port}

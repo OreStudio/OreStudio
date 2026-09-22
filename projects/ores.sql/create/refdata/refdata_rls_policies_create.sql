@@ -450,12 +450,21 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_parties_tbl enable row level security;
 
+-- The system tenant reads parties too. IAM resolves a party's name while
+-- authenticating -- the chooser a caller picks from -- and it authenticates as
+-- its own service account, which lives in the system tenant. A party row is
+-- owned by the tenant that created it, so without the widening below the read
+-- admits none of them and every name comes back empty. T2, the same form
+-- ores_marketdata_feed_bindings_tbl states and for the same reason:
+-- infrastructure reading rows it does not own.
 create policy parties_tenant_isolation_policy on ores_refdata_parties_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------

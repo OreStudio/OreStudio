@@ -38,6 +38,7 @@ abstract.
 | [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] | =lei_entity= | Enablement-only: no main table, only the artefact/staging table. Carries no feature Assignments -- bind it *alongside* a shape profile (=:profile: simple-lookup, artefact-staging-only=), not in place of one. |
 | [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][Trading instrument]] | =equity_position_instrument= | Flat ORE instrument sub-type: identity + audit field groups, tenant+workspace scope, =party_id= from session, no UI surface. |
 | [[id:95BF5857-D9DC-40B5-8081-FAB3C24FF0A4][Trading record]] | =trade= | Transactional trading data rather than reference data: tenant+workspace scope and the generated eventing test, leaving party derivation and struct composition to the model. |
+| [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] | =diff_span= | Never stored, only carried: a payload type with no table, no key, no repository, no service and no subject. The C++ domain class and its TypeScript twin, and nothing else. |
 
 * See also
 

@@ -103,6 +103,16 @@ public:
     std::vector<domain::account> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads the newest accounts filtered by username, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::account> read_any_by_username(context ctx, const std::string& username);
+
 
     /**
      * @brief Reads all accounts, possibly filtered by primary key.

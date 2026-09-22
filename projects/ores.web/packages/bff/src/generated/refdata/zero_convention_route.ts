@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the zero_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/zero_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const zeroConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'zero_convention',
   collection: 'zero_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'zero_convention',
+  keyFields: ['id'],
   writeFields: ['id', 'tenor_based', 'day_count_fraction', 'compounding', 'compounding_frequency', 'tenor_calendar', 'spot_lag', 'spot_calendar', 'roll_convention', 'end_of_month'],
   writeDefaults: { id: '', tenor_based: false, day_count_fraction: '', compounding: null, compounding_frequency: null, tenor_calendar: null, spot_lag: null, spot_calendar: null, roll_convention: null, end_of_month: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const zeroConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_zero_convention_versions_request,
   },
   rowsField: 'zero_conventions',
+  getRowField: 'zero_convention',
   historyRowsField: 'versions',
 };

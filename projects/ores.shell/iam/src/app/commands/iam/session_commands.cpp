@@ -126,14 +126,14 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id> <start_time>");
+        "get <id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id> <start_time>");
+        "get-many <id>");
 
     menu->Insert(
         "add",
@@ -167,14 +167,14 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <start_time> <reason> <commentary> [--version <n>]");
+        "delete <id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <start_time> <reason> <commentary>");
+        "delete-many <id> <reason> <commentary>");
 
     root_menu.Insert(std::move(menu));
 }
@@ -251,12 +251,11 @@ void session_commands::process_get(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2) {
-            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
-        read_token(req.key.start_time, parsed->positionals[next++], "start_time");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -294,15 +293,14 @@ void session_commands::process_get_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.empty() || parsed->positionals.size() % 2 != 0) {
-            fail(out) << "Expected a multiple of 2 arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
+            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::session_key key;
             read_token(key.id, parsed->positionals[i + 0], "id");
-            read_token(key.start_time, parsed->positionals[i + 1], "start_time");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -550,12 +548,11 @@ void session_commands::process_delete(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 1 + 2) {
+            fail(out) << "Expected " << (1 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.start_time, parsed->positionals[next++], "start_time");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -601,16 +598,15 @@ void session_commands::process_delete_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() < 2 + 2 || (parsed->positionals.size() - 2) % 2 != 0) {
+        if (parsed->positionals.size() < 1 + 2 || (parsed->positionals.size() - 2) % 1 != 0) {
             fail(out) << "Expected a whole number of key groups and an intent, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
-        const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::session_key key;
-            read_token(key.id, parsed->positionals[i * 2 + 0], "id");
-            read_token(key.start_time, parsed->positionals[i * 2 + 1], "start_time");
+            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::session_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];

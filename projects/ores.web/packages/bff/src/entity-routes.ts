@@ -19,50 +19,74 @@
  *
  */
 
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import type { LiveSession } from './sessions.js';
+
+/**
+ * The write default that says the caller names the row.
+ *
+ * A write member that is a surrogate identifier has no empty of its own type:
+ * the caller mints it. The generated descriptor states this marker for those
+ * members, and the factory replaces it with a fresh identifier, so the marker
+ * never reaches the wire.
+ */
+export const MINTED_WRITE_DEFAULT = '<minted>';
+
+/** What a write member takes when the form carries no value for it. */
+export type WriteDefault = string | number | boolean | null;
 
 /**
  * An entity's routes, registered from one declaration.
  *
  * The declaration holds /values/ and no functions. That is the point: a
  * descriptor with a callback in it is code, and code cannot be generated from
- * an entity model. The canonical protocol states one envelope per verb, so the
- * factory builds them from the descriptor's key, its write record's members and
- * the subjects:
+ * an entity model. The request envelopes are regular across every entity in
+ * the tree, so the factory builds them from the key and the collection:
  *
- *   list      { offset, limit, order, as_of?, filter? }
- *   get       { key: { <keyField> } }
- *   save      { change: { write, precondition }, intent }
- *   delete    { removal: { key, precondition }, intent }
- *   versions  { key: { <keyField> }, offset, limit, order, filter? }
+ *   list     { offset, limit, order[, as_of][, filter] }
+ *   get      { key }
+ *   save     { change: { write, precondition }, intent }
+ *   delete   { removal: { key, precondition }, intent }
+ *   history  { key, offset, limit, order[, filter] }
  *
- * Every request that names a row names it through the entity's key record, and
- * the path segment the web builds carries the natural key, so a route exists
- * only when the two are the same field: an entity whose key record holds its
- * surrogate primary key has no delete or versions route, rather than a route
- * that sends a value no row matches.
+ * Every one of those states the key the model declares, which is the key the
+ * path carries, so nothing is translated between an address and a request. The
+ * path has one segment per key member: a junction's key is the pair it links,
+ * and stating one member of it would address half a row.
  *
- * A refusal is not a failure. The service answers with a result whose outcome
- * says what went wrong, so the client did nothing wrong and the response is a
- * 409 carrying the service's own words rather than a 500 carrying ours.
+ * The wire format states every member a request or record declares, so the
+ * optional ones are sent as null and a write member the form does not carry
+ * takes the default the model gave it. A descriptor that omitted either would
+ * send a message the service cannot decode.
+ *
+ * The history request names the entity's key, so an entity whose key has more
+ * than one member has no history route: the route would address the pair the
+ * key record already states.
+ *
+ * A refusal is not a failure. When the service answers an outcome that is not
+ * `ok` the client did nothing wrong, so the response is a 409 carrying the
+ * service's own words rather than a 500 carrying ours.
  */
 export interface EntityRouteDescriptor {
+  /**
+   * The owning component and the entity, which together are the dispatch key
+   * the generic history request carries (`ores.iam.tenant`).
+   */
+  readonly component: string;
+  readonly entity: string;
   /** The collection segment of the path, without `/api/`, e.g. `tenant_types`. */
   readonly collection: string;
-  /** The name of the path parameter holding the natural key, e.g. `id`. */
-  readonly key: string;
-  /** The wire field the natural key lives in, e.g. `type`. */
-  readonly keyField: string;
   /**
-   * The wire field a single-record read answers in, e.g. `tenant`.
+   * The members of the key the model declares, in the order it declares them.
    *
-   * The canonical get response carries the entity under its own singular
-   * name, which is the name the model gave it rather than a name to guess.
+   * The route's address is a path and a segment carries one value, so a key
+   * with two members is addressed by two segments and this names both. A
+   * junction's key is the pair it links, which is the case that needs it;
+   * every other entity's is one field and its path is one segment.
    */
-  readonly rowField: string;
+  readonly keyFields: readonly string[];
   /**
    * The write record's members, in the order the model declares them.
    *
@@ -75,23 +99,18 @@ export interface EntityRouteDescriptor {
   /**
    * What each write member takes when the form does not carry it.
    *
-   * A create sends the whole record, and a member the form does not show -- a
-   * surrogate key, a field the entity hides -- has no value on the row yet.
-   * The blank is the empty of that member's own type, or
+   * The wire format states every member of a record, so a member the form
+   * does not show -- a surrogate key, a field the entity hides -- still has
+   * to be sent. The default is the empty of that member's own type, or
    * {@link MINTED_WRITE_DEFAULT} for a member the caller has to name.
    */
   readonly writeDefaults?: Readonly<Record<string, WriteDefault>>;
   /**
-   * The row fields carrying the change intent, e.g. `change_reason_code`.
+   * Whether the list request carries an as-of instant.
    *
-   * Empty strings for an entity whose rows keep no audit columns, which is
-   * an entity whose intent is empty rather than one whose intent is refused.
+   * The wire format states every member of a request, so the factory has to
+   * know which optional members a request declares and send them as null.
    */
-  readonly intentFields?: {
-    readonly reason: string;
-    readonly commentary: string;
-  };
-  /** Whether the list request carries an as-of instant. */
   readonly listHasAsOf: boolean;
   /** Whether the list request carries a filter record. */
   readonly listHasFilter: boolean;
@@ -101,12 +120,18 @@ export interface EntityRouteDescriptor {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
     readonly get?: string;
-    /** Present only when the model derives a write request. */
+    /**
+     * Present unless the entity is read-only.
+     *
+     * A read-only entity derives no put request, so there is no write to
+     * offer and no `POST` route is registered. The screen still reads, which
+     * is why `list` is the only subject a descriptor cannot do without.
+     */
     readonly save?: string;
     /** Present only when the delete request is keyed by the natural key. */
     readonly remove?: string;
     /**
-     * Present only when the entity is temporal and the versions request is
+     * Present only when the entity is temporal and the history request is
      * keyed by the natural key.
      */
     readonly history?: string;
@@ -114,7 +139,7 @@ export interface EntityRouteDescriptor {
   /** The array field the list response holds its rows in, e.g. `tenant_types`. */
   readonly rowsField: string;
   /**
-   * The array field the versions response holds its rows in, e.g. `versions`.
+   * The array field the history response holds its versions in, e.g. `history`.
    *
    * Present exactly when `subjects.history` is.
    */
@@ -132,30 +157,20 @@ export interface EntityRouteDescriptor {
   readonly removeResponse?: z.ZodTypeAny;
   readonly getResponse?: z.ZodTypeAny;
   readonly historyResponse?: z.ZodTypeAny;
+  /** The field a single-record read holds its row in, e.g. `data`. */
+  readonly getRowField?: string;
 }
 
 /** Passed in rather than imported, because the session store is per-server. */
 export type RequireSession = (request: FastifyRequest) => LiveSession;
 
-/**
- * A write default the caller mints rather than reads.
- *
- * The model states it for a surrogate primary key, whose value names a row the
- * store has never seen. The generated descriptors import this symbol rather
- * than spelling a string of their own, so the projection and the factory
- * cannot disagree about what a minted default means.
- */
-export const MINTED_WRITE_DEFAULT = { kind: 'mint' } as const;
-
-/** The value a write member falls back to when the form carried none. */
-export type WriteDefault =
-  | string
-  | number
-  | boolean
-  | null
-  | typeof MINTED_WRITE_DEFAULT;
-
 const identity = z.unknown();
+
+/** The order a list is read in when the caller names none: by key, ascending. */
+const defaultOrder = { field: '', descending: false } as const;
+
+/** How many versions a history answers with. One page, newest first. */
+const HISTORY_LIMIT = 500;
 
 /**
  * The page window a generic list accepts.
@@ -169,18 +184,6 @@ const listRequestSchema = z.object({
   offset: z.int().nonnegative(),
   limit: z.int().positive().max(1000),
 });
-
-/**
- * The order a page is returned in, when the caller names none.
- *
- * An empty field is the order by key, which is what makes a caller that names
- * no order still get a stable page. The protocol carries the order on every
- * list request, so a request that omitted it would not decode.
- */
-const defaultOrder = { field: '', descending: false } as const;
-
-/** The versions a history route asks for: one record, newest first. */
-const HISTORY_LIMIT = 1000;
 
 /** A parsed-but-unvalidated body, read by field name. */
 function body(value: unknown): Record<string, unknown> {
@@ -210,8 +213,8 @@ function resultMessage(value: unknown): string {
  * A member whose default is {@link MINTED_WRITE_DEFAULT} names a row the store
  * has never seen, so the caller mints it; every other default is already the
  * value to send. A member the descriptor states no default for is a descriptor
- * that disagrees with the model it was generated from, which the projection
- * tests prevent, so it is refused rather than sent as no value.
+ * that disagrees with the model it was generated from, so it is refused rather
+ * than sent as no value.
  */
 function blankWriteValue(blank: WriteDefault | undefined): unknown {
   if (blank === undefined) {
@@ -221,20 +224,20 @@ function blankWriteValue(blank: WriteDefault | undefined): unknown {
 }
 
 /**
- * The version a save was made against, or undefined when it cannot be read.
+ * The reason and commentary a write carries.
  *
- * A form sends the version of the record it read, or nought for a record that
- * does not exist yet. A value that is not a whole number is not that: `Number`
- * turns an absent member into zero and a malformed one into `NaN`, and either
- * would answer the create-or-amend question for the caller instead of making
- * the caller answer it.
+ * The wire format states every member, so a caller that names neither still
+ * sends both as empty strings rather than sending an intent that does not
+ * decode.
  */
-function readVersion(value: unknown): number | undefined {
-  if (value === undefined || value === null) return 0;
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
-    return undefined;
-  }
-  return value;
+function intent(value: unknown): { reason_code: string; commentary: string } {
+  const incoming = body(value);
+  const reason = incoming['reason_code'];
+  const commentary = incoming['commentary'];
+  return {
+    reason_code: typeof reason === 'string' ? reason : '',
+    commentary: typeof commentary === 'string' ? commentary : '',
+  };
 }
 
 /**
@@ -250,15 +253,20 @@ export function registerEntityRoutes(
   descriptor: EntityRouteDescriptor,
 ): void {
   const base = `/api/${descriptor.collection}`;
-  const keyPath = `${base}/:${descriptor.key}`;
-  const keyOf = (request: FastifyRequest): string => {
+  // One path segment per key member, named for the member, so the address and
+  // the request it fills state the same key and neither is derived from the
+  // other.
+  const keyPath = `${base}${descriptor.keyFields
+    .map((field) => `/:${field}`)
+    .join('')}`;
+  const keyOf = (request: FastifyRequest): Record<string, string> => {
     const params = request.params as Record<string, string>;
-    return params[descriptor.key] ?? '';
+    const key: Record<string, string> = {};
+    for (const field of descriptor.keyFields) {
+      key[field] = params[field] ?? '';
+    }
+    return key;
   };
-  /** The key record every canonical request that names a row carries. */
-  const keyRecord = (request: FastifyRequest): Record<string, string> => ({
-    [descriptor.keyField]: keyOf(request),
-  });
 
   server.get(base, async (request: FastifyRequest) => {
     const session = requireSession(request);
@@ -267,17 +275,18 @@ export function registerEntityRoutes(
       offset: query['offset'] === undefined ? 0 : Number(query['offset']),
       limit: query['limit'] === undefined ? 100 : Number(query['limit']),
     });
-    const asOf = query['asOf'];
     const response = await session.client.callAuthenticated(
       descriptor.subjects.list,
-      {
-        ...input,
-        order: defaultOrder,
-        ...(descriptor.listHasAsOf
-          ? { as_of: asOf === undefined || asOf.length === 0 ? null : asOf }
-          : {}),
-        ...(descriptor.listHasFilter ? { filter: null } : {}),
-      },
+      /*
+       * The order is part of the page, not an extra. The service's list
+       * request declares the field and the direction and refuses a payload
+       * that omits them, so a caller that names no order still states one:
+       * an empty field is the order by key, which is what keeps a page
+       * stable.
+       */
+      { ...input, order: defaultOrder,
+        ...(descriptor.listHasAsOf ? { as_of: null } : {}),
+        ...(descriptor.listHasFilter ? { filter: null } : {}) },
       descriptor.listResponse ?? identity,
     );
 
@@ -293,10 +302,13 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         getSubject,
-        { key: keyRecord(request) },
+        // The request's addressing is the key record the model declares, and
+        // the path segment carries the same key, so the two agree by
+        // construction rather than by a translation here.
+        { key: keyOf(request) },
         descriptor.getResponse ?? identity,
       );
-      return { row: body(response)[descriptor.rowField] };
+      return { row: body(response)[descriptor.getRowField ?? 'data'] };
     });
   }
 
@@ -304,59 +316,51 @@ export function registerEntityRoutes(
   if (saveSubject !== undefined) {
     const writeFields = descriptor.writeFields ?? [];
     const writeDefaults = descriptor.writeDefaults ?? {};
-    const intentFields = descriptor.intentFields;
     server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
-    const session = requireSession(request);
-    const incoming = body(request.body);
-    const data = body(incoming['data']);
-    /*
-     * The body states which question the save answers, and the precondition is
-     * that statement rather than something read off the version. A version is
-     * still required -- an amend names the row it read -- but a version that
-     * cannot be read is refused here rather than guessed at, because a create
-     * and an amend are different operations and neither is a fallback for the
-     * other.
-     */
-    const mode = incoming['mode'];
-    if (mode !== 'create' && mode !== 'amend') {
-      return reply.code(400).send({
-        message: 'a save states whether it creates or amends',
-      });
-    }
-    const version = readVersion(data['version']);
-    if (version === undefined || (mode === 'create' && version !== 0)) {
-      return reply.code(400).send({
-        message: 'a save states the version it read, as a whole number',
-      });
-    }
-    const response = await session.client.callAuthenticated(
-      saveSubject,
-      {
-        change: {
-          write: Object.fromEntries(
-            writeFields.map((field) => [
-              field,
-              data[field] === undefined
-                ? blankWriteValue(writeDefaults[field])
-                : data[field],
-            ]),
-          ),
-          precondition: mode === 'create'
-            ? { kind: 'must_not_exist', version: null }
-            : { kind: 'must_match_version', version },
+      const session = requireSession(request);
+      const incoming = body(request.body);
+      const data = body(incoming['data']);
+      /*
+       * A write states what it believes about the row, and why it is being
+       * made. The version is the one the screen read; stating none means the
+       * write creates, which the store refuses over a live row rather than
+       * replacing it.
+       */
+      const version = incoming['version'];
+      const response = await session.client.callAuthenticated(
+        saveSubject,
+        {
+          change: {
+            /*
+             * The record states every member the write record declares. A
+             * member the form did not carry -- a surrogate key, a member the
+             * screen hides -- takes the default the model gave it, because a
+             * record with a member absent does not decode.
+             */
+            write: Object.fromEntries(
+              writeFields.map((field) => [
+                field,
+                data[field] === undefined
+                  ? blankWriteValue(writeDefaults[field])
+                  : data[field],
+              ]),
+            ),
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'must_not_exist',
+              version: typeof version === 'number' ? version : null,
+            },
+          },
+          intent: intent(incoming['intent']),
         },
-        intent: {
-          reason_code: String(data[intentFields?.reason ?? ''] ?? ''),
-          commentary: String(data[intentFields?.commentary ?? ''] ?? ''),
-        },
-      },
-      descriptor.saveResponse ?? identity,
-    );
+        descriptor.saveResponse ?? identity,
+      );
 
-    if (outcome(response) !== 'ok') {
-      return reply.code(409).send({ message: resultMessage(response) });
-    }
-    return { ok: true, message: resultMessage(response) };
+      if (outcome(response) !== 'ok') {
+        return reply.code(409).send({ message: resultMessage(response) });
+      }
+      return { ok: true, message: resultMessage(response) };
     });
   }
 
@@ -364,19 +368,21 @@ export function registerEntityRoutes(
   if (removeSubject !== undefined) {
     server.delete(keyPath, async (request: FastifyRequest, reply: FastifyReply) => {
       const session = requireSession(request);
+      const incoming = body(request.body);
+      const version = incoming['version'];
       const response = await session.client.callAuthenticated(
         removeSubject,
         {
-          /*
-           * A removal the path segment drives is unconditional: the route
-           * carries the key and no version, and a version the client never
-           * read would be a claim it cannot make.
-           */
           removal: {
-            key: keyRecord(request),
-            precondition: { kind: 'any', version: null },
+            key: keyOf(request),
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'any',
+              version: typeof version === 'number' ? version : null,
+            },
           },
-          intent: { reason_code: '', commentary: '' },
+          intent: intent(incoming['intent']),
         },
         descriptor.removeResponse ?? identity,
       );
@@ -395,23 +401,32 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         historySubject,
+        // The versions request addresses the entity's own key record, the same
+        // one every other canonical request states, so the address and the
+        // request carry one key rather than two spellings of it.
         {
-          key: keyRecord(request),
+          key: keyOf(request),
           offset: 0,
           limit: HISTORY_LIMIT,
           /*
-           * Newest first, because that is how a person reads a history: what
-           * changed last is the question being asked. The service answers in
-           * the order it is asked for, so the request states it.
+           * Key order, which is the only order the store pages in. A history
+           * is read newest first, so the rows are reversed below rather than
+           * asked for in an order the store refuses.
            */
-          order: { field: '', descending: true },
+          order: { field: '', descending: false },
           ...(descriptor.versionsHasFilter ? { filter: null } : {}),
         },
         descriptor.historyResponse ?? identity,
       );
 
+      /*
+       * Newest first, because that is how a person reads a history: what
+       * changed last is the question being asked. The store answers in key
+       * order, so the screen's order is stated here once rather than by every
+       * caller.
+       */
       return {
-        versions: rows(response, historyRowsField),
+        versions: [...rows(response, historyRowsField)].reverse(),
         message: resultMessage(response),
       };
     });

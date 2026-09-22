@@ -107,6 +107,23 @@ public:
     read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads latest account contact informations filtered by email.
+     */
+    std::vector<domain::account_contact_information> read_latest_by_email(context ctx,
+                                                                          const std::string& email);
+
+    /**
+     * @brief Reads the newest account contact informations filtered by email, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::account_contact_information> read_any_by_email(context ctx,
+                                                                       const std::string& email);
+
 
     /**
      * @brief Reads all account contact informations, possibly filtered by primary key.
@@ -124,7 +141,6 @@ public:
      */
     std::optional<domain::account_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
-
 
     /**
      * @brief Reads latest account contact informations filtered by account_id, with pagination.

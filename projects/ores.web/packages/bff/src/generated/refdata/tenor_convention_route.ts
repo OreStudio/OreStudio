@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the tenor_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor_convention',
   collection: 'conventions',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor_convention',
+  keyFields: ['code'],
   writeFields: ['code', 'description', 'measured_from', 'resolution_algorithm'],
-  writeDefaults: { code: '', description: null, measured_from: '', resolution_algorithm: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { code: '', description: '', measured_from: '', resolution_algorithm: '' },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const tenorConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_convention_versions_request,
   },
   rowsField: 'conventions',
+  getRowField: 'tenor_convention',
   historyRowsField: 'versions',
 };

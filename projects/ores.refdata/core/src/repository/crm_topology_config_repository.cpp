@@ -147,6 +147,39 @@ crm_topology_config_repository::read_latest(context ctx, const std::string& id) 
         "Reading latest CRM topology config by id.");
 }
 
+std::vector<domain::crm_topology_config>
+crm_topology_config_repository::read_latest_by_name(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM topology config by name: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<crm_topology_config_entity>> |
+        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
+
+    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_topology_config_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM topology config by name.");
+}
+
+std::vector<domain::crm_topology_config>
+crm_topology_config_repository::read_any_by_name(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any CRM topology config by name: " << name;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
+                       where("tenant_id"_c == tid && "name"_c == name) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_topology_config_mapper::map(entities); },
+        lg(),
+        "Reading any CRM topology config by name.");
+}
+
 
 std::vector<domain::crm_topology_config>
 crm_topology_config_repository::read_all(context ctx, const std::string& id) {

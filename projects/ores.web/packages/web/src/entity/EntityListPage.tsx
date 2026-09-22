@@ -38,6 +38,14 @@ import type { EntityMeta } from '../ui-contract.js';
  */
 export interface EntityListPageProps<Row> {
   readonly meta: EntityMeta;
+  /**
+   * The key's members, which identify a row in the list.
+   *
+   * The metadata carries the natural key, which a junction does not have: its
+   * identity is the pair it links, so a row is named by both members. The
+   * declaration is where that list lives, and the container passes it down.
+   */
+  readonly keyFields: readonly string[];
   readonly title: string;
   readonly description?: string;
   readonly rows: readonly Row[];
@@ -79,22 +87,24 @@ export interface EntityListPageProps<Row> {
   readonly collectionName: string;
   /** The field the type filter groups on, and the values present. */
   readonly filterField?: string;
-  /**
-   * The instant the page is read as of, when the entity's list read takes one.
-   *
-   * Absent for an entity whose request carries no window, so the control is
-   * not rendered rather than rendered and refused.
-   */
-  readonly asOf?: string;
-  /** Present exactly when `asOf` is: an absent pair renders no control. */
-  readonly onAsOfChange?: (asOf: string) => void;
 }
 
 const PAGE_SIZES = [25, 50, 100, 200, 500] as const;
 const LOAD_ALL_CEILING = 1000;
 
+/**
+ * A row's identity in the list: the values of every key member, joined.
+ *
+ * Joined with a separator no generated value holds, so two different rows
+ * cannot fold to one key and collide in the table.
+ */
+function recordKeyOf(keyFields: readonly string[], row: Record<string, unknown>): string {
+  return keyFields.map((field) => String(row[field] ?? '')).join('\u0000');
+}
+
 export function EntityListPage<Row extends Record<string, unknown>>({
   meta,
+  keyFields,
   title,
   description,
   rows,
@@ -116,8 +126,6 @@ export function EntityListPage<Row extends Record<string, unknown>>({
   watchedAs,
   collectionName,
   filterField,
-  asOf,
-  onAsOfChange,
 }: EntityListPageProps<Row>): ReactNode {
   const { t, plural } = useTranslation();
   const [search, setSearch] = useState('');
@@ -220,10 +228,10 @@ export function EntityListPage<Row extends Record<string, unknown>>({
     const fromData = new Set(
       rows
         .filter((row) => String(row['recorded_at'] ?? '') > since)
-        .map((row) => String(row[meta.keyField] ?? '')),
+        .map((row) => recordKeyOf(keyFields, row)),
     );
     return fromData;
-  }, [rows, meta.keyField]);
+  }, [rows, keyFields]);
 
   /*
    * The badge fades on its own, as a mail client's does.
@@ -349,34 +357,6 @@ export function EntityListPage<Row extends Record<string, unknown>>({
           </select>
         )}
 
-        {asOf !== undefined && onAsOfChange !== undefined && (
-          /*
-           * The window the page is read as of. An absent date means the
-           * present, which is the request's own absent value, so clearing the
-           * control is what returns to now.
-           */
-          <label className="flex h-9 items-center gap-2 rounded-md border border-line bg-bg-secondary px-2.5 text-sm text-ink focus-within:border-line-strong">
-            <MaskIcon name="clock" className="size-3.5 opacity-60" />
-            <span className="text-xs text-ink-muted">{t('entity.asOf')}</span>
-            <input
-              type="date"
-              value={asOf}
-              onChange={(event) => onAsOfChange(event.target.value)}
-              aria-label={t('entity.asOf')}
-              className="bg-transparent text-sm text-ink focus:outline-none"
-            />
-            {asOf.length > 0 && (
-              <button
-                type="button"
-                onClick={() => onAsOfChange('')}
-                className="text-xs underline hover:text-ink"
-              >
-                {t('entity.asOfNow')}
-              </button>
-            )}
-          </label>
-        )}
-
         <span className="ml-auto text-xs tabular-nums text-ink-faint">
           {searching && !wholeCollectionLoaded && totalCount > LOAD_ALL_CEILING
             ? t('table.searchedSoFar', { shown: rows.length, total: totalCount })
@@ -392,7 +372,7 @@ export function EntityListPage<Row extends Record<string, unknown>>({
         <DataTable
           columns={meta.columns}
           rows={visible}
-          rowKey={(row) => String(row[meta.keyField] ?? '')}
+          rowKey={(row) => recordKeyOf(keyFields, row)}
           {...(onOpen === undefined ? {} : { onOpen })}
           {...(rowActions.length === 0 ? {} : { rowActions })}
           changed={badgesVisible ? marked : new Set()}

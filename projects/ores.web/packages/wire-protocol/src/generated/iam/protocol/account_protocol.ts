@@ -27,7 +27,7 @@ import type { Order } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface AccountKey {
-    id: string;
+    username: string;
 }
 
 export interface AccountLookup {

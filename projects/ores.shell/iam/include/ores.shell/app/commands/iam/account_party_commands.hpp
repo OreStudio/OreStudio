@@ -40,7 +40,7 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Every verb account_parties answer, as one command each.
+ * @brief Every verb parties answer, as one command each.
  *
  * The unit is the entity's own derivation addressed from the REPL, so a verb
  * the model gains appears as a command without an edit here and a verb it
@@ -61,7 +61,7 @@ private:
 
 public:
     /**
-     * @brief Register the account_parties submenu.
+     * @brief Register the parties submenu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 

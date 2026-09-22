@@ -23,8 +23,19 @@
 
 namespace ores::iam::service::config {
 
+/**
+ * The signing key is not written out.
+ *
+ * This operator is what the startup "Configuration:" log line at debug level
+ * uses, and the key signs every token this service issues: anyone who reads it
+ * out of a log file can mint a session for any account. The rest of the
+ * configuration stays, because a dump that omits the settings it is there to
+ * record is not worth having.
+ */
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    rfl::json::write(v, s);
+    auto redacted(v);
+    redacted.jwt_private_key = "***";
+    rfl::json::write(redacted, s);
     return s;
 }
 

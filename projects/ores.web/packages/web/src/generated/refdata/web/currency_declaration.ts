@@ -25,10 +25,9 @@
 /**
  * Where the currency screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { currencyMeta } from '../ui/currency_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,14 +38,14 @@ export const currencyDescriptor: EntityDescriptor = {
     meta: currencyMeta,
     routeSegment: 'currency',
     apiBase: '/api/currencies',
-    keyParam: 'id',
-    icon: 'currencyDollarEuro',
+    keyFields: [
+        'iso_code',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: true,
     },
     searchFields: [
         'iso_code',
@@ -60,6 +59,23 @@ export const currencyDescriptor: EntityDescriptor = {
         'format',
         'monetary_nature',
         'market_tier',
+        'spot_days',
+        'day_basis',
+        'base_precedence',
+    ],
+    writeFields: [
+        'iso_code',
+        'name',
+        'numeric_code',
+        'symbol',
+        'fraction_symbol',
+        'fractions_per_unit',
+        'rounding_type',
+        'rounding_precision',
+        'format',
+        'monetary_nature',
+        'market_tier',
+        'image_id',
         'spot_days',
         'day_basis',
         'base_precedence',

@@ -54,6 +54,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "has_parent_id": "",
     "system_scope": "sql",
     "nullable_tenant_id": "sql",
+    "no_audit_columns": "sql",
     "extra_checks": "sql",
     "extra_delete_sets": "sql",
     "fk_copy_validations": "sql",
@@ -133,6 +134,17 @@ def _load_profile_assignments(slug: str) -> tuple[tuple[str, Any], ...]:
         if name and value is not None:
             out.append((name, value))
     return tuple(out)
+
+
+@lru_cache(maxsize=None)
+def _custom_type_names() -> frozenset[str]:
+    """The type names the custom-type registry declares.
+
+    A name here is a value type the tree owns -- a domain enum, a cron
+    expression, a tenant uuid -- and not a model entity, which is what decides
+    whether a TypeScript twin is an interface or a string.
+    """
+    return frozenset(name for name, _ in _load_custom_type_headers())
 
 
 @lru_cache(maxsize=None)
@@ -1760,13 +1772,27 @@ def validate_model(model: dict[str, Any]) -> list[str]:
     de = model["domain_entity"]
 
     for k in REQUIRED_FLAGS:
+        # A model lives under its component's include root when the component
+        # has no sub-components, and says so rather than naming a directory
+        # that does not exist.
+        if k == "subcomponent" and de.get("no_subcomponent"):
+            continue
         if k not in de:
             errors.append(f"Missing required flag: {k}")
 
-    if "primary_key" not in de:
+    # A key is required of a record that is stored, not of one that is only
+    # carried. The two are told apart by the model saying which it is, so an
+    # entity that forgets a key still fails, and an entity that has none is not
+    # asked to invent one.
+    if de.get("no_primary_key"):
+        if "primary_key" in de:
+            errors.append(
+                "States :no_primary_key: true and also flags a primary key")
+    elif "primary_key" not in de:
         errors.append(
             "Missing primary key: no field in 'Columns' is flagged "
-            ":primary_key: true"
+            ":primary_key: true -- or state :no_primary_key: true if the "
+            "record carries no key"
         )
     elif "column" not in de["primary_key"]:
         errors.append("Primary key missing required property: column")
@@ -2225,6 +2251,10 @@ _TS_SCALARS = {
     "std::uint16_t": "number",
     "std::uint32_t": "number",
     "std::uint64_t": "number",
+    # A byte offset within a rendered value. It is a count, so it crosses as
+    # the same JavaScript number every other integer does; only the width
+    # differs, and JSON carries no width.
+    "std::size_t": "number",
     # Both cross the wire as a string, per their rfl reflectors in
     # ores.utility/rfl/reflectors.hpp.
     "boost::uuids::uuid": "string",
@@ -2256,13 +2286,16 @@ _TS_DOMAIN_TYPE_RE = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*)$"
 )
 
-# Hand-written utility domain types that cross the wire, mapped to the
-# TypeScript interface and the module in the wire-protocol package that
-# declares it. They have no codegen component, so there is no
-# ``ores.ts.domain`` facet to emit them and no per-component domain module
-# to import from; the generated protocol imports the shared module the same
-# way it imports an entity interface. An unlisted utility type still has no
-# projection, which is what keeps the gap loud.
+# Hand-written domain types that cross the wire, mapped to the TypeScript
+# interface and the module in the wire-protocol package that declares it. They
+# have no entity model, so there is no ``ores.ts.domain`` facet to emit them and
+# no per-component domain module to import from; the generated protocol imports
+# the shared module the same way it imports an entity interface. An unlisted
+# type of this kind still has no projection, which is what keeps the gap loud.
+#
+# Most are ``ores::utility::*`` -- the shared protocol records. The diff engine's
+# payloads are the other kind: a component with an engine but no entity models,
+# whose types still travel in a history response.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
     "ores::utility::domain::result": ("Result", "utility/protocol"),
@@ -2270,6 +2303,10 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
     "ores::utility::domain::order": ("Order", "utility/protocol"),
     "ores::utility::domain::scope": ("Scope", "utility/protocol"),
+    "ores::diff::domain::field_value": ("FieldValue", "diff/protocol"),
+    "ores::diff::domain::diff_span": ("DiffSpan", "diff/protocol"),
+    "ores::diff::domain::diff_entry": ("DiffEntry", "diff/protocol"),
+    "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.
@@ -2315,9 +2352,26 @@ def _ts_type(cpp_type: str) -> str | None:
         return _TS_SCALARS[cpp_type]
     if cpp_type == "std::chrono::system_clock::time_point":
         return "string"
+    # A registered custom value type -- a domain enum, a cron expression, a
+    # tenant uuid -- is not a model entity: the tree emits no interface for it,
+    # so a name invented from its C++ spelling would reference a type that does
+    # not exist, and the entity that names it would import a module nothing
+    # writes. Each crosses the wire as the string its reflector writes, and the
+    # registry is the one declaration of which names these are.
+    if cpp_type in _custom_type_names():
+        return "string"
     domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
     if domain:
         return _to_pascal_case(domain.group(1))
+    # An unqualified ``domain::<name>`` is an enum the model declares beside the
+    # entity rather than a type another component owns, and it crosses the wire
+    # as the enumerator's own name: rfl reflects an enum class to a string, and
+    # the store holds the same text (the SQL such a model writes compares the
+    # column to 'system', not to a number). The TypeScript twin is therefore
+    # ``string``, which is what every other enumerated column in the tree
+    # projects to.
+    if cpp_type.startswith("domain::"):
+        return "string"
     utility = _TS_UTILITY_DOMAIN_TYPES.get(cpp_type)
     if utility:
         return utility[0]
@@ -2425,12 +2479,23 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     reference it.
     """
     entities: set[str] = set()
+    registered = _custom_type_names()
     for message in messages:
         for field in message.get("fields") or []:
-            entities.update(_TS_DOMAIN_REF_RE.findall(field.get("cpp_type") or ""))
+            for match in _TS_DOMAIN_REF_RE.finditer(field.get("cpp_type") or ""):
+                # A registered custom value type renders as a string, so there
+                # is no interface to import. See _ts_type.
+                if match.group(0) in registered:
+                    continue
+                entities.add(match.group(1))
+    # A type whose TypeScript is hand-written is imported from its shared
+    # module by ts_utility_imports(); claiming it here too would emit a second
+    # import from a per-component domain module that does not exist.
+    hand_written = {qualified.rsplit("::", 1)[-1]
+                    for qualified in _TS_UTILITY_DOMAIN_TYPES}
     return [
         {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
-        for entity in sorted(entities)
+        for entity in sorted(entities - hand_written)
     ]
 
 
@@ -2637,16 +2702,140 @@ def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return write_record_fields(write_record_columns(entity), key_columns)
 
 
+def declared_key_field(entity: dict[str, Any]) -> str:
+    """The field the model declares as the entity's key on the wire.
+
+    The specification states that which key identifies an entity on the wire is
+    a declaration of the model, made once, and that it is the same key that
+    appears in the resource's operations and in the HTTP projection's path
+    parameter, so a caller never translates between an address and a request.
+    The one declaration is the presentation drawer's ``key_field``: it is
+    already the field the route's path segment carries, so reading it here is
+    what makes the operation and the path agree.
+
+    Empty when the model declares no key, which is a model with no screen. Its
+    storage key is then the only key it has, and callers address it by that.
+    """
+    return (entity.get("presentation") or {}).get("key_field") or ""
+
+
+def declared_key_column(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The declared key's own column dict, from wherever the model states it.
+
+    A declared key may be the primary key, a natural key or a plain column, and
+    the three are separate lists. Which one holds it does not matter to a
+    caller; the type it is written in does, so the search covers all three.
+    """
+    name = declared_key_field(entity)
+    if not name:
+        return None
+    primary_key = entity.get("primary_key") or {}
+    for column in (list(primary_key.get("columns") or [])
+                   + list(entity.get("natural_keys") or [])
+                   + list(entity.get("columns") or [])):
+        if _column_name(column) == name:
+            return column
+    return None
+
+
+def key_is_primary(entity: dict[str, Any]) -> bool:
+    """Whether the declared key is the storage key as well.
+
+    When the two agree nothing needs translating and the generated reads
+    already address the row. When they differ the model holds two keys -- a
+    natural one callers use and a surrogate the store keeps for foreign-key
+    stability -- so a read by the declared key has to exist for the address a
+    caller holds to resolve to a row.
+    """
+    name = declared_key_field(entity)
+    if not name:
+        return True
+    primary_key = entity.get("primary_key") or {}
+    columns = [_column_name(column)
+               for column in primary_key.get("columns") or []]
+    return columns == [name]
+
+
+def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every read by something other than the storage key, as method suffixes.
+
+    Two things ask for one. ``:service_find_by_code_column:`` is the older
+    opt-in and always names its method ``read_latest_by_code``, whatever column
+    it reads -- the name is load-bearing, because hand-written callers in
+    ``ores.cli`` and elsewhere spell it, so it is left exactly as it was. The
+    declared key asks for one whenever it is not the storage key, and names its
+    method after the column it reads.
+
+    When both name the same column the two are one method and it is stated
+    once, which is what keeps an entity that already opted in byte-identical.
+    """
+    finders: list[dict[str, Any]] = []
+    legacy = entity.get("service_find_by_code") or {}
+    if legacy.get("column"):
+        finder: dict[str, Any] = {"column": legacy["column"], "suffix": "code"}
+        if legacy.get("parent_column"):
+            finder["parent_column"] = legacy["parent_column"]
+        finders.append(finder)
+    declared = declared_key_field(entity)
+    if declared and not key_is_primary(entity):
+        if not any(f["column"] == declared for f in finders):
+            # A model may already state this read itself, as a paste block, and
+            # emitting a second declaration of the same method is a redefinition
+            # rather than an addition. The model's own is kept: it is the one a
+            # human wrote, and it may read more than the column's value.
+            stated = "\n".join(
+                code
+                for codes in (entity.get("implementations") or {}).values()
+                for code in codes)
+            if f"read_latest_by_{declared}" not in stated:
+                finders.append({"column": declared, "suffix": declared})
+    return finders
+
+
+def key_resolvers(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Reads that turn a declared key into a storage key, ignoring the window.
+
+    History is addressed by the key the model declares and has to stay readable
+    after a delete, which for a temporal entity closes the transaction-time
+    window instead of removing the version rows. A latest read cannot resolve a
+    closed row, so resolution needs its own read that ignores the window and
+    takes the newest match.
+
+    Deliberately independent of ``key_finders``. That list drops a finder the
+    model states itself, because emitting a second declaration of the same
+    method would be a redefinition. There is no such clash here: a model that
+    hand-writes ``read_latest_by_username`` has said nothing about
+    ``read_any_by_username``, and the resolver still has to exist for the
+    service to call. Keeping the two lists apart is what stops a hand-written
+    finder from silently leaving history unreadable.
+    """
+    declared = declared_key_field(entity)
+    if declared and not key_is_primary(entity):
+        return [{"column": declared, "suffix": declared}]
+    return []
+
+
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
-    """The typed key that addresses one entity -- every identifying column.
+    """The typed key that addresses one entity -- the key the model declares.
 
     The specification is explicit that a key carries each column with the
     column's own type, and that a composite key is never flattened to one
     string and never partially sent, because a partial key addresses a row
-    that need not exist. The derived delete request does both today: it sends
-    ``std::vector<std::string>`` per key column, so a uuid key and a text key
-    are indistinguishable to a caller.
+    that need not exist.
+
+    It is equally explicit that which key identifies an entity on the wire is a
+    declaration of the model, made once, and that the same key appears in the
+    resource's operations and in the HTTP path. That declaration is the
+    presentation drawer's ``key_field``, which is the field the path segment
+    already carries. Building the key record from the storage key instead is
+    what gave ``role``, ``tenant`` and ``permission`` two identities -- one the
+    path used and one the request did.
+
+    A model that declares no key has no other, so its storage key is the key.
     """
+    declared = declared_key_column(entity)
+    if declared is not None:
+        return [_ts_field(declared_key_field(entity), _key_cpp_type(declared))]
     primary_key = entity.get("primary_key") or {}
     return [_ts_field(_column_name(column), _key_cpp_type(column))
             for column in primary_key.get("columns") or []]
@@ -3238,6 +3427,59 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
     return messages
 
 
+# The segment a derived subject leaves to its caller. A cross-component request
+# is addressed to the component that OWNS the entity, which the model cannot
+# know: one history declaration reaches iam.v1.history.get for an IAM entity and
+# refdata.v1.history.get for a refdata one. So the model states the pattern and
+# codegen emits the rule, rather than every caller composing the subject itself
+# and no two of them being checked against each other.
+_DERIVED_SUBJECT_HOLE = "{component}"
+
+
+def derived_subject(messages: list[dict[str, Any]],
+                    entity_singular: str) -> dict[str, Any]:
+    """The subject rule a model states with a hole in it, if it states one.
+
+    One function per model rather than one per message: a model that derived two
+    different subjects from the same key would be stating two rules where its
+    caller has one, so a second pattern is refused rather than emitted.
+
+    The hole is the canonical component segment -- iam.v1.history.get is
+    component iam, resource history, verb get -- so the pattern is the canonical
+    subject grammar with the one segment the model cannot fill left open.
+    """
+    patterns = {
+        message["subject"] for message in messages
+        if _DERIVED_SUBJECT_HOLE in (message.get("subject") or "")
+    }
+    if not patterns:
+        return {}
+    if len(patterns) > 1:
+        raise ValueError(
+            f"{entity_singular}: more than one derived subject "
+            f"({', '.join(sorted(patterns))}); a model states one rule, so that "
+            "the subject is determined in one place")
+    head, _, tail = patterns.pop().partition(_DERIVED_SUBJECT_HOLE)
+    words = entity_singular.split("_")
+    return {
+        "derived_subject": True,
+        "derived_subject_prefix": head,
+        "derived_subject_suffix": tail,
+        # Two arities of one rule. A client holds the dispatch key of the
+        # resource it is asking about; a service subscribing knows only its own
+        # component. Both are generated from the one pattern, so neither has to
+        # spell the subject itself.
+        "subject_function": f"{entity_singular}_subject_for",
+        "subject_function_by_component": (
+            f"{entity_singular}_subject_by_component"),
+        # The TypeScript twin spells the same function the way its own language
+        # does, so the two say the same thing rather than sharing a spelling.
+        "subject_function_ts": (
+            words[0] + "".join(word.capitalize() for word in words[1:])
+            + "SubjectFor"),
+    }
+
+
 def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode protocol-operation model.
 
@@ -3294,7 +3536,13 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
         op["includes"] = _includes_from_named_block(inc)
 
     messages = parse_declared_messages(doc.root)
+    for message in messages:
+        if _DERIVED_SUBJECT_HOLE in (message.get("subject") or ""):
+            message["subject_is_derived"] = True
     op["messages"] = messages
+    # The subject rule the model states with a hole in it, emitted once for the
+    # whole model so the subscriber and every client read it from one place.
+    op.update(derived_subject(messages, op.get("entity_singular", "")))
     op["domain_imports"] = ts_domain_imports(messages)
     op["utility_imports"] = ts_utility_imports(messages)
 
@@ -3446,6 +3694,13 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         subject = message.get("subject")
         response = message.get("response_type")
         if not subject or not response:
+            continue
+        # A derived subject is addressed to the component that owns the entity,
+        # which a command cannot know: it would have to be handed the component
+        # as an argument, and the shell's subject is a constant it sends to. So
+        # the message is not addressable as a command, and a model that wants a
+        # command for one states a fixed subject.
+        if message.get("subject_is_derived"):
             continue
         public = message.get("requires_session") == "false"
         fields = [_shell_field(field) for field in message.get("fields") or []]
@@ -3788,10 +4043,17 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "fillable": cpp == _SHELL_LIST_TYPE or cpp in _SHELL_TOKEN_TYPES,
         }
 
-    keys = [
-        _input(column.get("column", ""), column.get("cpp_type", ""))
-        for column in (entity.get("primary_key") or {}).get("columns") or []
-    ]
+    # The key a command types is the one the model declares, because that is
+    # the key the request it fills carries. Reading the storage key here would
+    # have a command build a member the request does not have.
+    declared = declared_key_column(entity)
+    if declared is not None:
+        keys = [_input(_column_name(declared), _key_cpp_type(declared))]
+    else:
+        keys = [
+            _input(column.get("column", ""), column.get("cpp_type", ""))
+            for column in (entity.get("primary_key") or {}).get("columns") or []
+        ]
     writes = [
         _input(field.get("name", ""), field.get("cpp_type", ""))
         for field in entity.get("write_fields") or []

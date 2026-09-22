@@ -115,9 +115,16 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     REQUIRE(read_tenants.size() == 1);
-    CHECK(read_tenants[0].id == target_id);
-    CHECK(read_tenants[0].code == t.code);
-    CHECK(read_tenants[0].name == t.name);
+    // version, recorded_at and tenant_id are stamped by the database -- a
+    // tenant row is system-owned, so the insert trigger overwrites the
+    // tenant_id the generator set. Taking those three from the read row and
+    // then comparing whole objects asserts that every other field survived the
+    // round trip, rather than the three a hand-written comparison named.
+    auto expected = t;
+    expected.version = read_tenants[0].version;
+    expected.recorded_at = read_tenants[0].recorded_at;
+    expected.tenant_id = read_tenants[0].tenant_id;
+    CHECK(read_tenants[0] == expected);
 }
 
 TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
@@ -136,42 +143,52 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
     repo.write(sys_ctx, t);
 
     // Tenant rows are system-owned (tenant_id = system, stamped by the
-    // insert trigger), so the generated repository -- whose reads filter on
-    // the tenant carried by the context -- can never read one, not even
-    // under the row's own tenant context. The tenants_read_policy admits a
-    // tenant row to the system tenant (tenant_id = current) and to the
-    // row's own context (id = current); a peer tenant's context stays
-    // isolated. Login resolves tenants by hostname before any tenant
-    // context exists and the registrar warm-up reads on behalf of all
-    // tenants; both run under the system context, and the hand-authored
-    // lookups below (no tenant_id filter) are the reads that resolve the
-    // row there and under the row's own tenant context.
+    // insert trigger), and the tenants_read_policy admits one to the system
+    // tenant (tenant_id = current) and to the row's own context
+    // (id = current); a peer tenant's context stays isolated.
+    //
+    // The generated repository read used to filter on the tenant carried by
+    // the context alone, so it could never read one of these rows -- not
+    // even under the row's own tenant context -- and only the hand-authored
+    // lookups below (no tenant_id filter) resolved it. The model now states
+    // :system_tenant_visible:, which is what its own data says, so the
+    // generated read resolves the row too. A tenant that can be listed but
+    // not read by key is a tenant whose history, delete and single-record
+    // read all fail, so this is the behaviour the model is asserting.
     auto own_ctx =
         h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(target_id).value(), "");
 
     auto scoped = repo.read_latest(own_ctx, boost::uuids::to_string(target_id));
     BOOST_LOG_SEV(lg, debug) << "Repository read under own tenant: " << scoped;
-    CHECK(scoped.empty());
+    REQUIRE(scoped.size() == 1);
+    // As above: the database stamps version, recorded_at and tenant_id, and
+    // every lookup below returns that same row, so one expected object serves
+    // them all.
+    auto expected = t;
+    expected.version = scoped[0].version;
+    expected.recorded_at = scoped[0].recorded_at;
+    expected.tenant_id = scoped[0].tenant_id;
+    CHECK(scoped[0] == expected);
 
     auto by_id = read_active_tenant_by_id(own_ctx, target_id);
     BOOST_LOG_SEV(lg, debug) << "Read tenants by id: " << by_id;
     REQUIRE(by_id.size() == 1);
-    CHECK(by_id[0].id == target_id);
+    CHECK(by_id[0] == expected);
 
     auto by_hostname = read_active_tenant_by_hostname(own_ctx, target_hostname);
     BOOST_LOG_SEV(lg, debug) << "Read tenants by hostname: " << by_hostname;
     REQUIRE(by_hostname.size() == 1);
-    CHECK(by_hostname[0].id == target_id);
+    CHECK(by_hostname[0] == expected);
 
     auto bootstrap_by_id = read_active_tenant_by_id(sys_ctx, target_id);
     BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by id: " << bootstrap_by_id;
     REQUIRE(bootstrap_by_id.size() == 1);
-    CHECK(bootstrap_by_id[0].id == target_id);
+    CHECK(bootstrap_by_id[0] == expected);
 
     auto bootstrap_by_hostname = read_active_tenant_by_hostname(sys_ctx, target_hostname);
     BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by hostname: " << bootstrap_by_hostname;
     REQUIRE(bootstrap_by_hostname.size() == 1);
-    CHECK(bootstrap_by_hostname[0].id == target_id);
+    CHECK(bootstrap_by_hostname[0] == expected);
 
     // A peer tenant's context sees nothing: tenant rows are system-owned
     // and the policy admits them only to the system tenant and to the

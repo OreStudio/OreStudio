@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: 8A507DA9-1FFE-4DD3-992F-7359F5531253
 :END:
 #+title: ores.iam.login_info
@@ -215,6 +216,44 @@ Soft foreign key to the owning account.
 | password_reset_required | Password Reset Req. |
 | last_ip                 | Last IP             |
 | last_attempt_ip         | Last Attempt IP     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: login_info
+:key_field:       account_id
+:END:
+
+The screen's declaration. =account_id= is the primary key and the natural
+identity both, so the route's path segment carries the account and the form
+offers it as the one required field. The row is read-only: the service writes
+it as a side effect of signing in, so the screen shows security state rather
+than accepting it.
+
+*** Detail fields
+
+| field                  | label                  | widget                       | type      | is_key | is_required | placeholder                  |
+|------------------------+------------------------+------------------------------+-----------+--------+-------------+------------------------------|
+| account_id             | Account                | accountEdit                  | line_edit | true   | true        | Enter the account identifier |
+| last_login             | Last Login             | lastLoginEdit                | date      |        |             |                              |
+| failed_logins          | Failed Logins          | failedLoginsEdit             | spin_box  |        |             |                              |
+| locked                 | Locked                 | lockedEdit                   | check_box |        |             |                              |
+| online                 | Online                 | onlineEdit                   | check_box |        |             |                              |
+| password_reset_required | Password Reset Required | passwordResetRequiredEdit   | check_box |        |             |                              |
+| last_ip                | Last IP                | lastIpEdit                   | line_edit |        |             |                              |
+| last_attempt_ip        | Last Attempt IP        | lastAttemptIpEdit            | line_edit |        |             |                              |
+
+*** Columns
+
+| enum_name           | field                  | header                 | type    | width |
+|---------------------+------------------------+------------------------+---------+-------|
+| AccountId           | account_id             | Account                | string  | 300   |
+| LastLogin           | last_login             | Last Login             | timestamp | 160 |
+| FailedLogins        | failed_logins          | Failed Logins          | int     | 100   |
+| Locked              | locked                 | Locked                 | boolean | 80    |
+| Online              | online                 | Online                 | boolean | 80    |
+| PasswordResetRequired | password_reset_required | Password Reset Req.  | boolean | 140   |
+| LastIp              | last_ip                | Last IP                | string  | 140   |
+| LastAttemptIp       | last_attempt_ip        | Last Attempt IP        | string  | 140   |
 
 ** Paste blocks
 

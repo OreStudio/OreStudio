@@ -116,15 +116,30 @@ public:
      * @param version The version to fetch.
      * @return The tenant at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::tenant> get_tenant_at_version(const std::string& id,
+    std::optional<domain::tenant> get_tenant_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version);
 
     /**
      * @brief Retrieves a single tenant by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The tenant if found, std::nullopt otherwise.
      */
-    std::optional<domain::tenant> get_tenant(const std::string& id);
+    std::optional<domain::tenant> get_tenant(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single tenant by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The tenant if found, std::nullopt otherwise.
+     */
+    std::optional<domain::tenant> get_tenant_by_code(const std::string& code);
 
     /**
      * @brief Retrieves a batch of tenants by primary key.
@@ -152,7 +167,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_tenant(const std::string& id);
+    void delete_tenant(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes tenants by their primary keys.
@@ -161,8 +176,12 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a tenant.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::tenant> get_tenant_history(const std::string& id);
+    std::vector<domain::tenant> get_tenant_history(const std::string& key);
 
 private:
     context ctx_;

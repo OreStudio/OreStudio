@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the purpose_type service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/purpose_type_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const purposeTypeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'purpose_type',
   collection: 'types',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'purpose_type',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'display_order'],
   writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const purposeTypeRoute: EntityRouteDescriptor = {
     history: subjects.list_purpose_type_versions_request,
   },
   rowsField: 'types',
+  getRowField: 'purpose_type',
   historyRowsField: 'versions',
 };

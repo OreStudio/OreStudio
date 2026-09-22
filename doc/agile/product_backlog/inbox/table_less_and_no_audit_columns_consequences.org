@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 7CA3D478-597A-4175-A753-A88FFB463A4E
+:END:
+#+title: Bring the no-audit-columns entities over with the domain member gone
+#+description: :no_audit_columns: now drops the recorded_at domain member as well as the audit tail, so the marketdata entities that state it and the two hand-written tests that populate it need regenerating together when that component is brought over.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:marketdata:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate =ores.marketdata= in the same commit that brings it over, and fix
+the two hand-written tests that populate the member on the way.
+
+=:no_audit_columns:= now drops =recorded_at= from the domain type as well as the
+version column and the four audit columns. =marketdata= is to-do -- it is not in
+=COMPONENTS_UNDER_TEST=, so no gate covers it and its checked-in generated
+output is already behind the templates. When it is brought over, these change:
+
+- =projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org=
+- =projects/ores.marketdata/modeling/ores.marketdata.market_observation.org=
+
+Both state =:no_audit_columns:=, so their domain types lose the member. Two
+hand-written tests set it on a constructed object and will stop compiling:
+
+- =projects/ores.marketdata/api/tests/domain_market_fixing_tests.cpp= (three
+  assignments)
+- =projects/ores.marketdata/api/tests/domain_market_observation_tests.cpp= (two
+  assignments)
+
+Neither test asserts on the value -- they build a populated struct and then
+exercise something else -- so the fix is to delete the assignments, not to
+re-add the member.
+
+* Why
+
+Deleting is right because nothing reads the member. Its only consumer is
+=build_entity_history_versions=, and the history-provider facet is withheld for
+every =no_audit_columns= entity: =flat_history_version_source= requires a
+version type carrying =modified_by= *and* =recorded_at=, and =no_audit_columns=
+drops the actor. A lone timestamp cannot serve the one thing it is for.
+
+The table keeps its transaction-time window either way. =valid_from=/=valid_to=
+and the GIST exclusion are the table's, not the domain type's, and the insert
+function still sets =NEW.valid_from = clock_timestamp()=.
+
+* References
+
+- [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Story: Define and adopt the canonical NATS entity protocol]]
+
+* See also
+
+- [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Profile: Table-less record]] — the
+  profile that depends on the same behaviour.

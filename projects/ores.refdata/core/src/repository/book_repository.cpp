@@ -157,6 +157,40 @@ std::vector<domain::book> book_repository::read_latest(context ctx, const std::s
         "Reading latest book by id.");
 }
 
+std::vector<domain::book> book_repository::read_latest_by_name(context ctx,
+                                                               const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book by name: " << name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<book_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name &&
+                             "valid_to"_c == max.value());
+
+    return execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading latest book by name.");
+}
+
+std::vector<domain::book> book_repository::read_any_by_name(context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any book by name: " << name;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<book_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading any book by name.");
+}
+
 
 std::vector<domain::book> book_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all book versions. " << "id: " << id;

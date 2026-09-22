@@ -242,27 +242,29 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     return result
 
 
-def generated_marker(template_name):
+def generated_marker(template_name, cmake=False):
     """
     Build the generated-file marker for a source output.
 
     Mirrors the marker the SQL templates carry, so a reader of a
-    generated header, implementation or TypeScript module can tell it is
-    codegen output and which template produced it.
+    generated header, implementation, build file or TypeScript module can
+    tell it is codegen output and which template produced it.
 
     Args:
         template_name (str): Basename of the template being rendered
+        cmake (bool): Emit CMake's ``#`` comments instead of a C block
 
     Returns:
         str: Comment block naming the template
     """
-    return (
-        "/**\n"
-        " * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY\n"
-        f" * Template: {template_name}\n"
-        " * To modify, update the template and regenerate.\n"
-        " */"
+    lines = (
+        "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
+        f"Template: {template_name}",
+        "To modify, update the template and regenerate.",
     )
+    if cmake:
+        return "\n".join(f"# {line}" for line in lines)
+    return "/**\n" + "\n".join(f" * {line}" for line in lines) + "\n */"
 
 
 def _emits_cpp(template_name):
@@ -273,6 +275,18 @@ def _emits_cpp(template_name):
     output is not C++ even if that template carries the C++ licence.
     """
     return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+
+
+def _emits_cmake(template_name):
+    """
+    Whether a template produces a CMake build file.
+
+    CMake carries no marker of its own, so a generated ``component_files.cmake``
+    or test ``CMakeLists.txt`` looked hand-written and invited a hand edit --
+    which the next regeneration then discarded. The marker is emitted with
+    ``#`` comments, which is what CMake reads.
+    """
+    return template_name.startswith('cmake_')
 
 
 def _emits_ts(template_name):
@@ -311,14 +325,15 @@ def render_template(template_path, data):
     extended_data = data.copy()
 
     template_name = os.path.basename(template_path)
-    for licence_key, emits in (
-        ('cpp_license', _emits_cpp),
-        ('ts_license', _emits_ts),
+    for licence_key, emits, cmake in (
+        ('cpp_license', _emits_cpp, False),
+        ('ts_license', _emits_ts, False),
+        ('cmake_license', _emits_cmake, True),
     ):
         if licence_key in extended_data and emits(template_name):
             extended_data[licence_key] = (
                 f"{extended_data[licence_key]}\n"
-                f"{generated_marker(template_name)}"
+                f"{generated_marker(template_name, cmake=cmake)}"
             )
 
     return _RENDERER.render(template_content, extended_data)
@@ -1750,83 +1765,11 @@ _UI_CONTROLS = frozenset({
     'flagged_combo', 'check_box', 'spin_box', 'colour', 'date',
 })
 
-# The icon vocabulary the web application holds, spelled as
-# packages/web/src/ui/icons/index.ts declares it. A model states the icon it
-# wants by the name that file uses, so an icon no screen can render is refused
-# here rather than rendered as nothing.
-_WEB_ICONS = frozenset({
-    'add', 'apps', 'arrowDownload', 'arrowLeft',
-    'arrowRotateCounterclockwise', 'arrowSync', 'arrowTrending', 'arrowUpload',
-    'book', 'briefcase', 'building', 'buildingBank', 'buildingSkyscraper',
-    'calendarClock', 'chartMultiple', 'checkmark', 'checkmarkCircle',
-    'classification', 'clock', 'code', 'columnTriple', 'contactCard', 'copy',
-    'currencyDollarEuro', 'database', 'delete', 'deleteDismiss', 'desktop',
-    'dismiss', 'documentTable', 'edit', 'errorCircle', 'filter', 'flag',
-    'flashFlow', 'folder', 'globe', 'handshake', 'history', 'info',
-    'keyMultiple', 'library', 'lockClosed', 'lockOpen', 'notepad',
-    'organization', 'passwordReset', 'peopleTeam', 'person', 'personAccounts',
-    'personAdd', 'play', 'plugConnected', 'plugConnectedCheckmark',
-    'plugDisconnected', 'question', 'record', 'save', 'search', 'serverLink',
-    'settings', 'star', 'table', 'tag', 'tasksApp', 'wand', 'warning',
-    'windowConsole',
-})
-
-# Model icons whose web name is not the model's name in camel case. The model
-# vocabulary is the Qt one; where it states a concept the web draws under
-# another name, the pair is stated here rather than guessed at each use.
-_WEB_ICON_ALIASES = {
-    'Chart': 'chartMultiple',
-    'FileBarChart': 'chartMultiple',
-    'Key': 'keyMultiple',
-    'Currency': 'currencyDollarEuro',
-    'Database': 'serverLink',
-    'LayoutList': 'columnTriple',
-    'TextBulletListSquare': 'notepad',
-    'FileText': 'notepad',
-    'Code': 'code',
-    'Desktop': 'desktop',
-    'Record': 'record',
-    'Settings': 'settings',
-    'Star': 'star',
-    'Table': 'table',
-    'Tag': 'tag',
-    'Folder': 'folder',
-    'Apps': 'apps',
-    'CheckmarkCircle': 'checkmarkCircle',
-    'ServerLink': 'serverLink',
-    'FlashFlow': 'flashFlow',
-    # No anchor is drawn; a tenor anchor holds a tenor in place.
-    'Anchor': 'lockClosed',
-}
-# The icon an entity that states none gets, so a screen keeps its mark in the
-# navigation rather than losing it.
-_WEB_ICON_FALLBACK = 'tag'
-
 
 def _ui_camel(name):
     """``alpha2_code`` -> ``alpha2Code``; the entity prefix of a label key."""
     pascal = snake_to_pascal(name)
     return pascal[:1].lower() + pascal[1:]
-
-
-def _web_icon(presentation):
-    """The icon name the web application draws for this entity.
-
-    The model states a concept, and the web holds the vocabulary; a concept it
-    does not draw under that name is translated here, and one it does not draw
-    at all is refused, so a screen never renders an icon that is not there.
-    """
-    stated = (presentation.get('icon') or '').strip()
-    if not stated:
-        return _WEB_ICON_FALLBACK
-    name = _WEB_ICON_ALIASES.get(stated, stated[:1].lower() + stated[1:])
-    if name not in _WEB_ICONS:
-        raise ValueError(
-            f"ui declaration: icon '{stated}' resolves to '{name}', which the "
-            f"web icon vocabulary does not hold; add it to "
-            f"projects/ores.web/packages/web/src/ui/icons/index.ts and to "
-            f"_WEB_ICONS, or map it in _WEB_ICON_ALIASES")
-    return name
 
 
 def _ui_kebab(name):
@@ -2038,12 +1981,12 @@ def ui_meta_projection(entity, model_path):
         'collection': presentation.get('collection_name', ''),
         'display_field': _ui_display_field(columns, entity_singular, key_field) or '',
         'key_field': key_field,
-        'has_messages': bool(messages_block),
-        'messages_block': messages_block or '',
         # The template states the key is read-only after creation, which
         # only holds when the key is one of the emitted fields.
         'key_in_fields': any(
             row.get('field') == key_field for row in visible_fields),
+        'has_messages': bool(messages_block),
+        'messages_block': messages_block or '',
         'has_image': bool(image_block),
         'image_block': image_block or '',
         'fields_block': _ui_render_array(fields, 0),
@@ -2059,9 +2002,8 @@ def _ui_messages(entity, presentation, visible_fields, columns,
     The generated metadata refers to keys, and the words those keys resolve to
     are the model's own: the detail field's label, the column's header, the
     placeholder, the entity title and its brief. Emitting them beside the keys
-    is what stops sixty entities' worth of labels being hand-copied into a
-    catalogue, and what keeps a label the model changes from being changed in
-    one place only.
+    is what stops every entity's labels being hand-copied into a catalogue, and
+    what keeps a label the model changes from being changed in one place only.
 
     The words are English, because English is what the model states. A
     translation for another language is a separate artefact, and until it
@@ -2126,6 +2068,7 @@ def _ui_humanise(name):
 
 def _ui_image(presentation, entity):
     """The image member the screen renders, or None when it renders none.
+
     The model declares a flag by naming the column that shows it, which is
     also the claim that the entity owns an uploadable image: a country's flag,
     a party's logo. An entity that declares no such column offers no image for
@@ -2167,20 +2110,22 @@ def web_declaration_projection(entity, model_path):
     first. None when the entity has no column table, the condition
     ``_ui_projection_entity`` states and the BFF route projection shares.
 
-    The capabilities are read off the derived protocol messages rather than
-    guessed: a versions pair exists exactly when the entity has those versions
-    to serve, and a read-only paginated list is the model saying the entity is
-    not written from the interface. Deriving them from anything else -- a
-    version column, say -- gets junctions and current-state entities wrong.
+    The capabilities are the route projection's own facts, not a second
+    derivation from the protocol underneath it. The browser talks to the BFF,
+    so what a screen may offer is what the route serves. Deriving it a layer
+    down -- from the messaging protocol -- lets the declaration promise an
+    action the route withheld, which the screen then renders and the request
+    answers with 404. Asking the route makes "no affordance without a route"
+    true by construction, rather than by two derivations agreeing today and
+    drifting apart at the next entity shape.
 
-    Remove and history are the routes the BFF derives from the entity's
-    primary key, while the path segment carries the natural key, so the
-    declaration states them only when the primary key is the natural key --
-    the condition ``bff_route_projection`` withholds those routes on. A
-    declaration that promised them otherwise would render actions the BFF
-    answers with 404.
+    ``has_readonly_paginated_list`` is the one interface-level statement, and
+    it outranks the served routes: an entity whose route can write it is still
+    not written from this screen when the model says so. It does not suppress
+    history, which is a read.
     """
-    if _ui_projection_entity(entity) is None:
+    routes = bff_route_projection(entity, model_path)
+    if routes is None:
         return None
     presentation = entity.get('presentation') or {}
     columns = presentation.get('columns') or []
@@ -2188,26 +2133,10 @@ def web_declaration_projection(entity, model_path):
     entity_singular = entity.get('entity_singular', 'unknown')
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
-    keyed_by_natural_key = _keyed_by_natural_key(entity)
     messages = entity.get('messages') or []
-    # A write the model does not derive is a form that would send a request the
-    # service has no handler for, so the write affordances follow the verbs.
-    has_save = bool(_protocol_subject_key(messages, f'put_{entity_singular}_request'))
-    # A removal follows the verbs as well: an entity whose protocol derives no
-    # delete has no route for one, and an affordance to match would be the same
-    # promise the route projection refuses to make.
-    has_remove = bool(
-        _protocol_subject_key(messages, f'delete_{entity_singular}_request')
-    ) and keyed_by_natural_key
-    has_history = bool(_protocol_message(
-        messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
-    # Whether the list read can be asked for a point in time, which is what
-    # lets the shared screen offer the window rather than the entity's own
-    # screen doing it by hand.
-    list_request = _protocol_message(
-        messages, f'list_{entity.get("entity_plural", entity_singular + "s")}_request')
-    has_as_of = any(field.get('name') == 'as_of'
-                    for field in (list_request or {}).get('fields') or [])
+    key_record = _protocol_message(messages, f'{entity_singular}_key')
+    key_field_names = [field['name']
+                       for field in (key_record or {}).get('fields') or []]
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2219,15 +2148,28 @@ def web_declaration_projection(entity, model_path):
         'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
-        'icon': _web_icon(presentation),
-        'can_create': _ui_bool(not read_only and has_save),
-        'can_edit': _ui_bool(not read_only and has_save),
-        'can_remove': _ui_bool(not read_only and has_remove),
-        'can_history': _ui_bool(has_history),
-        'can_as_of': _ui_bool(has_as_of),
+        'can_create': _ui_bool(routes['serves_save'] and not read_only),
+        'can_edit': _ui_bool(routes['serves_save'] and not read_only),
+        'can_remove': _ui_bool(routes['serves_remove'] and not read_only),
+        'can_history': _ui_bool(routes['serves_history']),
         'key_field': key_field,
+        # The key's members, in the order the model declares them. The screens
+        # address a record by all of them: a path carries one value per member,
+        # and a junction's key is the pair it links, so naming one field would
+        # address half a row.
+        'key_fields_block': '\n'.join(
+            f"        '{name}'," for name in key_field_names) + ('\n' if key_field_names else ''),
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
+        # The members a write record states. The form builds the record it
+        # sends from these and nothing else: the row it read carries the audit
+        # tail and the version, which the write record does not state, and a
+        # member the form does not show would otherwise be sent as whatever the
+        # row happened to hold.
+        'write_fields_block': '\n'.join(
+            f"        '{field['name']}',"
+            for field in entity.get('write_fields') or []
+            if field.get('name')) + ('\n' if entity.get('write_fields') else ''),
     }
 
 
@@ -2265,55 +2207,6 @@ def _string_vector_field_name(message):
         if field.get('cpp_type') == 'std::vector<std::string>':
             return field.get('name')
     return None
-
-
-def _primary_key_columns(entity):
-    """The column names the entity's primary key is stated with, in order."""
-    primary_key = entity.get('primary_key') or {}
-    columns = [column.get('column')
-               for column in primary_key.get('columns') or []
-               if column.get('column')]
-    if not columns and primary_key.get('column'):
-        columns = [primary_key.get('column')]
-    return columns
-
-
-def _keyed_by_natural_key(entity):
-    """Whether the entity's primary key is exactly its presentation natural key.
-
-    The derived delete and history requests are keyed by the primary key,
-    while the route's path segment carries the natural key, so the two agree
-    only when the primary key is the natural key alone. The web declaration
-    and the BFF route descriptor read the condition here so neither can
-    promise a capability the other withholds.
-    """
-    natural_key = (entity.get('presentation') or {}).get('key_field', '')
-    return bool(natural_key) and _primary_key_columns(entity) == [natural_key]
-
-
-# The audit member every temporal domain type carries. The domain-type
-# templates name it directly; the BFF projection reads the name from here so
-# the descriptor and the wire shape are spelled in one place.
-_AUDIT_TIMESTAMP_FIELD = 'recorded_at'
-
-
-def _audit_timestamp_fields(entity):
-    """The audit timestamp members the entity's own domain type carries.
-
-    The web container seeds every member, so an audit timestamp arrives at
-    the save route as an empty string, which the service's decoder refuses.
-    The service stamps the real value; the save route only has to send a
-    value the decoder accepts. A current-state entity carries no such member,
-    and a composed entity carries it under its group member's name.
-    """
-    if entity.get('current_state'):
-        return []
-    prefix = entity.get('audit_prefix') or ''
-    if prefix:
-        return [prefix + _AUDIT_TIMESTAMP_FIELD]
-    if entity.get('has_audit_group') or entity.get('has_domain_groups'):
-        return []
-    return [_AUDIT_TIMESTAMP_FIELD]
 
 
 def _protocol_owned_by_operation(model_path, entity) -> bool:
@@ -2354,9 +2247,9 @@ def bff_route_projection(entity, model_path):
     Every ``subjects_*`` value is the protocol module's own member name,
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
-    current-state entity derives no versions pair -- and ``has_get``/
-    ``has_remove``/``has_history`` state the same fact as TypeScript
-    literals.
+    read-only entity derives no put, so it has no ``save``; a current-state
+    entity derives no versions pair -- and ``has_get``/``has_remove``/
+    ``has_history`` state the same fact as TypeScript literals.
 
     What the factory cannot derive from the entity's shape is stated too:
     the write record's members, so a save sends the record the protocol
@@ -2372,8 +2265,9 @@ def bff_route_projection(entity, model_path):
     record it does not fill would match no row on a read or a delete, or
     fail to decode on a versions read.
 
-    None when the derived set carries none of the required request roles --
-    a defensive guard, since an enriched domain entity always derives them.
+    None only when the entity derives no list request. That is the one role
+    a descriptor cannot do without: a route that cannot read the collection
+    reaches nothing, whereas a route that cannot write is still a screen.
     The operation-owned case is withheld before rendering, in
     ``resolve_targets``, because the replacement protocol module there need
     not export the derived names.
@@ -2387,38 +2281,35 @@ def bff_route_projection(entity, model_path):
     plural = entity.get('entity_plural', singular + 's')
     messages = entity.get('messages') or []
 
-    # A screen needs a list and nothing else: an entity the model declares as
-    # read-only has no write request, and withholding the whole screen set for
-    # it would hide the read that exists. Every other role is stated when the
-    # model derives it.
     subjects_list = _protocol_subject_key(messages, f'list_{plural}_request')
-    if not subjects_list:
-        return None
     subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
+    if not subjects_list:
+        return None
     subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
         messages, f'list_{singular}_versions_request')
 
-    natural_key = presentation.get('key_field', '')
-    keyed_by_natural_key = _keyed_by_natural_key(entity)
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # Every canonical request names the entity by its key record, never by a
-    # flattened string, so the path segment fills one member of that record.
-    # Only a single-column key can be driven from one path segment, and that
-    # is the same condition that lets the delete and the versions read be
-    # stated at all.
+    # A route's address is its path, and a path segment carries one value. A
+    # key with more than one member is therefore addressed by that many
+    # segments, and the descriptor states every member so the factory can build
+    # the record from them. A junction's key is the pair it links, which is the
+    # case that needs this: stating one member would address half a row.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    key_drivable = len(key_members) == 1 and keyed_by_natural_key
-    has_save = bool(subjects_save)
-    has_get = bool(subjects_get) and key_drivable
-    has_remove = bool(subjects_remove) and key_drivable
-    has_history = bool(history_response) and key_drivable
+    has_key = bool(key_members)
+    has_get = bool(subjects_get) and has_key
+    has_remove = has_key and bool(subjects_remove)
+    # The generic history request names one id, so it addresses a key with one
+    # member and cannot state one with more: the specification forbids sending
+    # half a key, and a pair joined into a string addresses no row.
+    has_history = (len(key_members) == 1 and bool(history_response)
+                   and bool(subjects_history))
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members
@@ -2435,44 +2326,42 @@ def bff_route_projection(entity, model_path):
         messages, f'list_{singular}_versions_request')
     versions_members = {field['name']
                         for field in (versions_request or {}).get('fields') or []}
-    has_audit_columns = bool(entity.get('has_audit_columns'))
+    write_defaults_block = _write_defaults_block(entity)
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
         'entity_camel': _ui_camel(singular),
         'collection': presentation.get('collection_name', ''),
-        'key': 'id',
-        'key_field': natural_key,
-        'row_field': singular,
-        'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
-        'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
+        'key_fields_block': ', '.join(f"'{name}'" for name in key_members),
+        # The write record's members and what each takes when the form carries
+        # none. The wire format states every member, so a record assembled from
+        # the form alone would leave the rest absent and not decode.
+        'has_save': bool(subjects_save),
+        'write_fields_block': ', '.join(
+            f"'{field}'" for field in write_fields),
+        'write_defaults_block': write_defaults_block,
+        'minted_write_default': 'MINTED_WRITE_DEFAULT' in write_defaults_block,
+        # The optional members the list and versions requests declare. The same
+        # wire-format rule applies to a request: an optional member that is
+        # absent is a request the service cannot decode.
         'list_has_as_of': _ui_bool('as_of' in list_members),
         'list_has_filter': _ui_bool('filter' in list_members),
         'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
+        'subjects_save': subjects_save,
         'has_get': _ui_bool(has_get),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
+        # The same facts again as booleans, because the declaration consumes
+        # them rather than re-deriving them from the protocol. The declaration
+        # states what the route serves, so a screen cannot promise an action
+        # this projection withheld -- which is the whole class of 404 the two
+        # used to reach independently, and disagree about.
+        'serves_save': bool(subjects_save),
+        'serves_remove': has_remove,
+        'serves_history': has_history,
     }
-    if has_save:
-        # A section member, present only when the model derives a write: a
-        # boolean spelled as the string 'false' reads as truthy to the
-        # renderer, so the section is gated on the member being there at all.
-        projection['has_save'] = 'true'
-        # The write record is what a save carries, so the descriptor states its
-        # members and the factory sends those and nothing else. An entity with
-        # no write request states none of this.
-        projection['subjects_save'] = subjects_save
-        projection['write_fields_block'] = ', '.join(
-            f"'{field}'" for field in write_fields)
-        write_defaults_block, has_minted_default = _write_defaults(entity)
-        projection['write_defaults_block'] = write_defaults_block
-        if has_minted_default:
-            # A section member, present only when a write member takes it:
-            # pystache reads the string 'false' as truthy, so a boolean spelled
-            # as a string cannot gate a section.
-            projection['minted_write_default'] = 'true'
     if has_get:
         projection['subjects_get'] = subjects_get
     if has_remove:
@@ -2488,52 +2377,54 @@ def _ui_bool(value):
     return 'true' if value else 'false'
 
 
-def _write_defaults(entity):
-    """(block, has_minted) for the value each write member falls back to.
+def _primary_key_columns(entity):
+    """The column names the entity's primary key is stated with, in order."""
+    primary_key = entity.get('primary_key') or {}
+    columns = [column.get('column')
+               for column in primary_key.get('columns') or []
+               if column.get('column')]
+    if not columns and primary_key.get('column'):
+        columns = [primary_key.get('column')]
+    return columns
 
-    A create sends the whole write record, and a member the form does not show
-    -- a surrogate key, a field the entity hides -- would otherwise go out
-    with no value at all, which is not a record the service can decode. Each
-    member takes the empty of its own type, and a surrogate primary key takes
-    the symbol the factory mints an identifier for, because naming a row the
-    store has never seen is the caller's to do.
 
-    Stated per member rather than inferred by the factory: only the model
-    knows which members are optional and which are identifiers. The minted
-    case is a symbol the generated module imports rather than a string it
-    spells, so the projection and the factory cannot disagree about it.
+def _write_defaults_block(entity):
+    """What each write member takes when the form carries no value for it.
+
+    The wire format states every member a record declares, so a member the form
+    does not show -- a field the entity hides, a surrogate key it never asks
+    for -- still has to be sent, or the service cannot decode the record. Each
+    member takes the empty of its own wire type, and the caller mints the
+    surrogate key, because naming a row the store has never seen is the
+    caller's to do.
+
+    The type read is the write record's own, not the column's: the domain type
+    holds a nullable member as an optional while the record states it plainly,
+    and the empty is the record's to state.
     """
-    from .org_loader import (  # noqa: PLC0415
-        _column_name,
-        write_record_columns,
-        write_record_for,
-    )
-    by_name = {_column_name(column): column
-               for column in write_record_columns(entity)}
+    from .org_loader import write_record_for  # noqa: PLC0415
+
     key_columns = set(_primary_key_columns(entity))
+    integers = ('std::int16_t', 'std::uint16_t', 'std::int32_t', 'std::uint32_t',
+                'std::int64_t', 'std::uint64_t', 'int')
     members = []
-    has_minted = False
     for field in write_record_for(entity):
         name = field['name']
-        column = by_name.get(name) or {}
-        cpp_type = str(column.get('cpp_type') or field.get('cpp_type') or '')
-        if column.get('nullable'):
+        cpp_type = str(field.get('cpp_type') or '')
+        if cpp_type.startswith('std::optional<'):
             literal = 'null'
         elif cpp_type == 'boost::uuids::uuid':
-            if name in key_columns:
-                literal = 'MINTED_WRITE_DEFAULT'
-                has_minted = True
-            else:
-                literal = 'null'
-        elif cpp_type in ('std::int32_t', 'std::uint32_t',
-                          'std::int64_t', 'std::uint64_t', 'int'):
+            literal = 'MINTED_WRITE_DEFAULT' if name in key_columns else 'null'
+        elif cpp_type in integers:
             literal = '0'
         elif cpp_type == 'bool':
             literal = 'false'
+        elif cpp_type == 'std::chrono::system_clock::time_point':
+            literal = "'1970-01-01T00:00:00Z'"
         else:
             literal = "''"
         members.append(f'{name}: {literal}')
-    return '{ ' + ', '.join(members) + ' }', has_minted
+    return '{ ' + ', '.join(members) + ' }'
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
@@ -4365,6 +4256,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'const std::string& {c["column"]}' for c in pk_columns
             )
             pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # The service's own key parameters, which name the type a caller
+            # holds rather than the text the store keeps. A uuid primary key is
+            # addressed as a uuid, so the signature alone says which key is
+            # wanted and a human-readable key cannot be passed where a storage
+            # key belongs -- the two are both text otherwise, and passing the
+            # wrong one compiles and reads as a missing record. A compound or
+            # non-uuid key has no uuid to name, so it stays text.
+            _single_uuid = (
+                len(pk_columns) == 1 and bool(pk_columns[0].get('is_uuid')))
+            pk['typed_params'] = (
+                f'const boost::uuids::uuid& {pk_columns[0]["column"]}'
+                if _single_uuid else pk['params'])
+            pk['typed_args'] = (
+                f'boost::uuids::to_string({pk_columns[0]["column"]})'
+                if _single_uuid else pk['args'])
+            pk['is_single_uuid'] = _single_uuid
             # The same key read from a protocol key record rather than from
             # bare parameters (the repository's own key parameters are text
             # for every column, so a uuid column is converted here and the
@@ -4417,6 +4324,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 return f'v.{column["column"]}'
 
             pk['v_args'] = ', '.join(_v_arg(c) for c in pk_columns)
+            # The storage key of a row already in hand, which is what the
+            # repository's own key parameters take. A service that resolved a
+            # caller's declared key to a row states the row's storage key from
+            # here rather than re-deriving the conversion at each operation.
+            def _row_arg(column: dict[str, Any]) -> str:
+                if column.get('is_uuid'):
+                    return f'boost::uuids::to_string(row.{column["column"]})'
+                if column.get('is_timestamp'):
+                    return (f'ores::platform::time::datetime::to_db_string('
+                            f'row.{column["column"]})')
+                return f'row.{column["column"]}'
+
+            pk['row_args'] = ', '.join(_row_arg(c) for c in pk_columns)
             pk['batch_keys_args'] = ', '.join(
                 f'{c["column"]}_keys' for c in pk_columns)
             # Complete stream expressions (leading string literal, trailing
@@ -4496,26 +4416,55 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # key column (not just the first) so a compound key's change
             # notification can distinguish two rows that share only their
             # leading key column (e.g. subject_area's name across domains).
+            from .org_loader import (  # deferred to avoid circular import
+                _column_name, declared_key_column)
+            # The key the trigger announces is the key the model declares --
+            # the same one the event type carries and the same one a history
+            # request names. Building it from the storage key announces a key
+            # no reader of the event has, which is how an entity that plainly
+            # publishes events appeared to publish none.
+            _notify_key_column = declared_key_column(domain_entity)
+            if _notify_key_column is not None:
+                # A declared key may come from the natural keys or the plain
+                # columns, where the field is spelled ``name``; the templates
+                # below read ``column``.
+                _notify_column = dict(_notify_key_column)
+                _notify_column.setdefault(
+                    'column', _column_name(_notify_key_column))
+                notify_columns = [_notify_column]
+            else:
+                notify_columns = pk_columns
             pk['notify_declarations'] = '\n    '.join(
-                f"changed_{c['column']} {c['type']};" for c in pk_columns
+                f"changed_{c['column']} {c['type']};" for c in notify_columns
             )
             pk['notify_assign_old'] = '\n        '.join(
-                f"changed_{c['column']} := OLD.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := OLD.{c['column']};" for c in notify_columns
             )
             pk['notify_assign_new'] = '\n        '.join(
-                f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := NEW.{c['column']};" for c in notify_columns
             )
             # The notification carries the key as its own object, because it is
             # the entity's key record: one column here, a pair there, and the
             # event type is what knows which.
             # The same comparison the test makes against a decoded event's key.
-            pk['key_equals_v'] = ' && '.join(
-                f'decoded->key.{c["column"]} == v.{c["column"]}' for c in pk_columns)
+            # The event carries the key the model declares, not the storage key,
+            # so the comparison is stated in the declared key's own member.
+            from .org_loader import (  # deferred to avoid circular import
+                declared_key_field)
+            _event_key = declared_key_column(domain_entity)
+            if _event_key is not None:
+                _event_name = declared_key_field(domain_entity)
+                pk['key_equals_v'] = (
+                    f'decoded->key.{_event_name} == v.{_event_name}')
+            else:
+                pk['key_equals_v'] = ' && '.join(
+                    f'decoded->key.{c["column"]} == v.{c["column"]}'
+                    for c in pk_columns)
             pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
                 f"'{c['column']}', changed_{c['column']}"
-                for c in pk_columns) + ')'
+                for c in notify_columns) + ')'
             pk['notify_id_array'] = ', '.join(
-                f"changed_{c['column']}" for c in pk_columns
+                f"changed_{c['column']}" for c in notify_columns
             )
         # Process the presentation drawer
         if 'presentation' in domain_entity:
@@ -5179,6 +5128,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
+            key_finders,
+            key_resolvers,
+            declared_key_field,
+            declared_key_column,
+            key_is_primary,
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
@@ -5217,6 +5171,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states.
         domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # Every read by something other than the storage key. The legacy
+        # opt-in contributes one; a model whose declared key is not its storage
+        # key contributes one more, so the address a caller holds resolves to a
+        # row. Stated as one list because the two are the same method with a
+        # different column and suffix, and the template states the query once.
+        domain_entity['key_finders'] = key_finders(domain_entity)
+        # The reads that resolve a declared key without the transaction-time
+        # window, which is what history needs so that a closed row is still
+        # addressable. Kept apart from key_finders because a model that states
+        # its own latest read has said nothing about this one.
+        domain_entity['key_resolvers'] = key_resolvers(domain_entity)
+        # The key the model declares, and whether the store keeps it as the
+        # storage key too. When the two differ the operations carry the
+        # declared key and the reads resolve it; when they agree nothing is
+        # translated and the templates take the storage-key path they always
+        # took.
+        domain_entity['declared_key'] = declared_key_field(domain_entity)
+        domain_entity['key_is_primary'] = key_is_primary(domain_entity)
+        _declared_column = declared_key_column(domain_entity)
+        domain_entity['declared_key_is_uuid'] = bool(
+            _declared_column
+            and (str(_declared_column.get('cpp_type', '')).find('boost::uuids::uuid') >= 0
+                 or _declared_column.get('type') == 'uuid'))
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
@@ -5378,6 +5355,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The derivation needs the enriched junction (sides, columns, stamped
         # ts_type), so it runs here rather than in the loader.
         junction['messages'] = junction_protocol_messages(junction)
+        # The record a caller sends, on the shape rather than on the junction
+        # dict: a junction states its fields as two sides, and the key the
+        # record carries is both of them. The screen builders read this, so it
+        # is derived here and not only where the shell commands are rendered.
+        junction['write_fields'] = write_record_for(
+            junction_entity_shape(junction))
         # The same list as operations, exactly as a domain entity states it:
         # a junction addresses the same verbs and its handler is the same
         # adapter, so the two are projected from one derivation.

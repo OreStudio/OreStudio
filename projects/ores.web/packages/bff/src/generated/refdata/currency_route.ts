@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the currency service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const currencyRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'currency',
   collection: 'currencies',
-  key: 'id',
-  keyField: 'iso_code',
-  rowField: 'currency',
+  keyFields: ['iso_code'],
   writeFields: ['iso_code', 'name', 'numeric_code', 'symbol', 'fraction_symbol', 'fractions_per_unit', 'rounding_type', 'rounding_precision', 'format', 'monetary_nature', 'market_tier', 'image_id', 'spot_days', 'day_basis', 'base_precedence'],
   writeDefaults: { iso_code: '', name: '', numeric_code: '', symbol: '', fraction_symbol: '', fractions_per_unit: 0, rounding_type: '', rounding_precision: 0, format: '', monetary_nature: '', market_tier: '', image_id: null, spot_days: 0, day_basis: '', base_precedence: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: true,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const currencyRoute: EntityRouteDescriptor = {
     history: subjects.list_currency_versions_request,
   },
   rowsField: 'currencies',
+  getRowField: 'currency',
   historyRowsField: 'versions',
 };

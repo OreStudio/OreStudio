@@ -103,6 +103,16 @@ public:
     std::vector<domain::role> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads the newest roles filtered by name, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::role> read_any_by_name(context ctx, const std::string& name);
+
 
     /**
      * @brief Reads all roles, possibly filtered by primary key.
@@ -120,7 +130,6 @@ public:
      */
     std::optional<domain::role>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
-
 
     /**
      * @brief Reads latest roles with pagination support.

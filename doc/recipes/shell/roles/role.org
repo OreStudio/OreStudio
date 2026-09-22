@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-roles get <id>
+roles get <name>
 #+end_example
 
 It is addressed at =iam.v1.roles.get=.
 
 #+name: roles-get
 #+begin_src ores-shell :tangle roles-get.ores :exports none
-roles get 00000000-0000-0000-0000-000000000000
+roles get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-roles get-many <id>
+roles get-many <name>
 #+end_example
 
 It is addressed at =iam.v1.roles.get_many=.
 
 #+name: roles-get-many
 #+begin_src ores-shell :tangle roles-get-many.ores :exports none
-roles get-many 00000000-0000-0000-0000-000000000000
+roles get-many __none__
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-roles delete <id> <reason> <commentary> [--version <n>]
+roles delete <name> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.roles.delete=.
 
 #+name: roles-delete
 #+begin_src ores-shell :tangle roles-delete.ores :exports none
-roles delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+roles delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-roles delete-many <id> <reason> <commentary>
+roles delete-many <name> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.roles.delete_many=.
 
 #+name: roles-delete-many
 #+begin_src ores-shell :tangle roles-delete-many.ores :exports none
-roles delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+roles delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -190,14 +190,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-roles versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+roles versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =iam.v1.roles_versions.list=.
 
 #+name: roles-versions
 #+begin_src ores-shell :tangle roles-versions.ores :exports none
-roles versions 00000000-0000-0000-0000-000000000000 --limit 1
+roles versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -211,13 +211,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-roles version <id> --version <n>
+roles version <name> --version <n>
 #+end_example
 
 It is addressed at =iam.v1.roles_versions.get=.
 
 #+name: roles-version
 #+begin_src ores-shell :tangle roles-version.ores :exports none
-roles version 00000000-0000-0000-0000-000000000000 --version 1
+roles version __none__ --version 1
 #+end_src
 

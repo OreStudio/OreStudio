@@ -111,10 +111,8 @@ export interface {{entity_pascal}} {
     performed_by: string;
     change_reason_code: string;
     change_commentary: string;
-{{/has_audit_columns}}
-{{^current_state}}
     recorded_at: string;
-{{/current_state}}
+{{/has_audit_columns}}
 {{/has_audit_group}}
 {{/has_domain_groups}}
 }

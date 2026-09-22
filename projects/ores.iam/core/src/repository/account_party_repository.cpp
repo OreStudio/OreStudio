@@ -28,7 +28,6 @@
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_party_entity.hpp"
 #include "ores.iam.core/repository/account_party_mapper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
 #include <optional>

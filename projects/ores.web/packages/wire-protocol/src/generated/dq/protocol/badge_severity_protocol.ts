@@ -23,50 +23,183 @@
  * To modify, update the template and regenerate.
  */
 import type { BadgeSeverity } from '../domain/badge_severity.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetBadgeSeveritiesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetBadgeSeveritiesResponse {
-    severities: BadgeSeverity[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveBadgeSeverityRequest {
-    data: BadgeSeverity;
-}
-
-export interface SaveBadgeSeverityResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteBadgeSeverityRequest {
-    codes: string[];
-}
-
-export interface DeleteBadgeSeverityResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetBadgeSeverityHistoryRequest {
+export interface BadgeSeverityKey {
     code: string;
 }
 
-export interface GetBadgeSeverityHistoryResponse {
-    history: BadgeSeverity[];
-    success: boolean;
-    message: string;
+export interface BadgeSeverityWrite {
+    code: string;
+    name: string;
+    description: string;
+    display_order: number;
+}
+
+export interface BadgeSeverityChange {
+    write: BadgeSeverityWrite;
+    precondition: Precondition;
+}
+
+export interface BadgeSeverityRemoval {
+    key: BadgeSeverityKey;
+    precondition: Precondition;
+}
+
+export interface BadgeSeverityLookup {
+    key: BadgeSeverityKey;
+    badge_severity: BadgeSeverity | null;
+}
+
+export interface BadgeSeverityEvent {
+    event_id: string;
+    key: BadgeSeverityKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface BadgeSeverityVersionKey {
+    badge_severity: BadgeSeverityKey;
+    version: number;
+}
+
+export interface BadgeSeverityVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListBadgeSeveritiesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListBadgeSeveritiesResponse {
+    result: Result;
+    severities: BadgeSeverity[];
+    total: number;
+}
+
+export interface GetBadgeSeverityRequest {
+    key: BadgeSeverityKey;
+}
+
+export interface GetBadgeSeverityResponse {
+    result: Result;
+    badge_severity: BadgeSeverity | null;
+}
+
+export interface GetManyBadgeSeveritiesRequest {
+    keys: BadgeSeverityKey[];
+}
+
+export interface GetManyBadgeSeveritiesResponse {
+    result: Result;
+    entries: BadgeSeverityLookup[];
+}
+
+export interface PutBadgeSeverityRequest {
+    change: BadgeSeverityChange;
+    intent: ChangeIntent;
+}
+
+export interface PutBadgeSeverityResponse {
+    result: Result;
+    badge_severity: BadgeSeverity;
+}
+
+export interface PutManyBadgeSeveritiesRequest {
+    changes: BadgeSeverityChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyBadgeSeveritiesResponse {
+    result: Result;
+    severities: BadgeSeverity[];
+}
+
+export interface DeleteBadgeSeverityRequest {
+    removal: BadgeSeverityRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteBadgeSeverityResponse {
+    result: Result;
+}
+
+export interface DeleteManyBadgeSeveritiesRequest {
+    removals: BadgeSeverityRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyBadgeSeveritiesResponse {
+    result: Result;
+}
+
+export interface ListBadgeSeverityVersionsRequest {
+    key: BadgeSeverityKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BadgeSeverityVersionsFilter | null;
+}
+
+export interface ListBadgeSeverityVersionsResponse {
+    result: Result;
+    versions: BadgeSeverity[];
+    total: number;
+}
+
+export interface GetBadgeSeverityVersionRequest {
+    key: BadgeSeverityVersionKey;
+}
+
+export interface GetBadgeSeverityVersionResponse {
+    result: Result;
+    version: BadgeSeverity;
 }
 
 export const subjects = {
-    get_badge_severities_request: "dq.v1.badge_severities.list",
-    save_badge_severity_request: "dq.v1.badge_severities.save",
+    list_badge_severities_request: "dq.v1.badge_severities.list",
+    get_badge_severity_request: "dq.v1.badge_severities.get",
+    get_many_badge_severities_request: "dq.v1.badge_severities.get_many",
+    put_badge_severity_request: "dq.v1.badge_severities.put",
+    put_many_badge_severities_request: "dq.v1.badge_severities.put_many",
     delete_badge_severity_request: "dq.v1.badge_severities.delete",
-    get_badge_severity_history_request: "dq.v1.badge_severities.history",
+    delete_many_badge_severities_request: "dq.v1.badge_severities.delete_many",
+    list_badge_severity_versions_request: "dq.v1.badge_severities_versions.list",
+    get_badge_severity_version_request: "dq.v1.badge_severities_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_badge_severities_request: true,
+    get_badge_severity_request: true,
+    get_many_badge_severities_request: true,
+    put_badge_severity_request: true,
+    put_many_badge_severities_request: true,
+    delete_badge_severity_request: true,
+    delete_many_badge_severities_request: true,
+    list_badge_severity_versions_request: true,
+    get_badge_severity_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "dq.v1.badge_severities_events.created",
+    updated: "dq.v1.badge_severities_events.updated",
+    deleted: "dq.v1.badge_severities_events.deleted",
 } as const;

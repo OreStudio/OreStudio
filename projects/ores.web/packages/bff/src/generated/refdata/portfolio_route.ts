@@ -25,31 +25,32 @@
 /**
  * How the BFF reaches the portfolio service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const portfolioRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'portfolio',
   collection: 'portfolios',
-  key: 'id',
-  keyField: 'name',
-  rowField: 'portfolio',
+  keyFields: ['name'],
   writeFields: ['id', 'name', 'description', 'parent_portfolio_id', 'owner_unit_id', 'purpose_type', 'aggregation_ccy', 'is_virtual', 'status'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, name: '', description: null, parent_portfolio_id: null, owner_unit_id: null, purpose_type: '', aggregation_ccy: null, is_virtual: false, status: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, name: '', description: '', parent_portfolio_id: null, owner_unit_id: null, purpose_type: '', aggregation_ccy: '', is_virtual: false, status: '' },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_portfolios_request,
+    get: subjects.get_portfolio_request,
     save: subjects.put_portfolio_request,
+    remove: subjects.delete_portfolio_request,
+    history: subjects.list_portfolio_versions_request,
   },
   rowsField: 'portfolios',
+  getRowField: 'portfolio',
+  historyRowsField: 'versions',
 };

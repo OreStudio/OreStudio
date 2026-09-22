@@ -25,10 +25,9 @@
 /**
  * Where the account_contact_information screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { accountContactInformationMeta } from '../ui/account_contact_information_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,14 +38,14 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
     meta: accountContactInformationMeta,
     routeSegment: 'account-contact-information',
     apiBase: '/api/account_contact_informations',
-    keyParam: 'id',
-    icon: 'personAccounts',
+    keyFields: [
+        'email',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
-        asOf: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
         'street_line_1',
@@ -54,5 +53,18 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
         'country_code',
         'phone',
         'email',
+    ],
+    writeFields: [
+        'id',
+        'account_id',
+        'street_line_1',
+        'street_line_2',
+        'city',
+        'state',
+        'country_code',
+        'postal_code',
+        'phone',
+        'email',
+        'web_page',
     ],
 };

@@ -33,9 +33,6 @@ import { entityRoutes } from './entity-route-registry.js';
 import {
   NatsTransport,
   OresClient,
-  accountPageSchema,
-  deleteAccount,
-  listAccountsRequestSchema,
   SUBJECTS,
   changeReasonPageSchema,
   getImagesRequestSchema,
@@ -47,7 +44,6 @@ import {
   loginResultSchema,
   selectPartyRequestSchema,
   sessionViewSchema,
-  setAccountsLocked,
   NotAuthenticatedError,
   type LoginOutcome,
   type PartySummary,
@@ -392,26 +388,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     return sessionResponse(activated);
   });
 
-  server.get('/api/accounts', async (request) => {
-    const session = requireSession(request);
-    const query = request.query as Record<string, string | undefined>;
-    const input = listAccountsRequestSchema.parse({
-      offset: query['offset'] === undefined ? undefined : Number(query['offset']),
-      limit: query['limit'] === undefined ? undefined : Number(query['limit']),
-    });
-
-    const page = await session.client.listAccounts(input);
-    return { accounts: page.accounts, totalCount: page.totalCount };
-  });
-
   /**
    * The entities whose screens their models declare, registered from their
    * generated route descriptors.
    *
    * The descriptor states the collection, the key, the write record's members
    * and the subjects; the factory states the canonical envelopes. Neither
-   * states a function, and the list is codegen's, so an entity that opts in is
-   * served without a line here.
+   * states a function, and the registry lists them all rather than the ones
+   * somebody remembered, so a screen the model declares is a screen this
+   * server serves.
    */
   for (const route of entityRoutes) {
     registerEntityRoutes(server, requireSession, route);

@@ -70,17 +70,6 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class account_version <<struct>> {
-                +data : account
-                +version_number : int
-                +modified_by : string
-                +recorded_at : chrono::system_clock::time_point
-                +change_summary : string
-            }
-            class account_version_history <<struct>> {
-                +username : string
-                +versions : vector<account_version>
-            }
             class login_info <<struct>> {
                 +last_login : chrono::system_clock::time_point
                 +account_id : boost::uuids::uuid
@@ -223,17 +212,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace messaging #F2F2F2 {
-            class account_version_history <<struct>> {
-                +versions : vector<ores::iam::domain::account_version>
-            }
-            class get_account_history_request <<struct>> {
-                +username : string
-            }
-            class get_account_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : account_version_history
-            }
             class account_party_key <<struct>> {
                 +account_id : string
                 +party_id : string

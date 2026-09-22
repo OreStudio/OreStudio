@@ -36,9 +36,6 @@ std::vector<ores::diff::domain::field_value> render_permission_fields(const doma
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
-    using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;
 }

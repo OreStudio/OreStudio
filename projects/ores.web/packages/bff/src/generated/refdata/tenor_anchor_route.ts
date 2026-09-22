@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the tenor_anchor service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_anchor_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorAnchorRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor_anchor',
   collection: 'anchors',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor_anchor',
+  keyFields: ['code'],
   writeFields: ['code', 'description', 'display_order'],
-  writeDefaults: { code: '', description: null, display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { code: '', description: '', display_order: 0 },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const tenorAnchorRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_anchor_versions_request,
   },
   rowsField: 'anchors',
+  getRowField: 'tenor_anchor',
   historyRowsField: 'versions',
 };

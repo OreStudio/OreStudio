@@ -19,23 +19,22 @@
  */
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/iam/account_commands.hpp"
+#include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/session_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/session_commands.hpp"
+#include "ores.shell/app/commands/iam/reset_operations_commands.hpp"
+#include "ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_contact_information_commands.hpp"
-#include "ores.shell/app/commands/iam/account_history_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_party_commands.hpp"
 #include "ores.shell/app/commands/iam/account_type_commands.hpp"
-#include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/login_info_commands.hpp"
 #include "ores.shell/app/commands/iam/permission_commands.hpp"
-#include "ores.shell/app/commands/iam/reset_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/role_commands.hpp"
-#include "ores.shell/app/commands/iam/session_commands.hpp"
-#include "ores.shell/app/commands/iam/session_operations_operations_commands.hpp"
-#include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_commands.hpp"
-#include "ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_status_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_type_commands.hpp"
 
@@ -59,7 +58,6 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     signup_operations_commands::register_commands(root_menu, session);
     account_commands::register_commands(root_menu, session);
     account_operations_operations_commands::register_commands(root_menu, session);
-    account_history_operations_commands::register_commands(root_menu, session);
     authorization_operations_commands::register_commands(root_menu, session);
     session_operations_operations_commands::register_commands(root_menu, session);
     session_samples_operations_commands::register_commands(root_menu, session);

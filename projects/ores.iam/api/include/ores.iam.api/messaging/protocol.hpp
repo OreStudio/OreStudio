@@ -20,7 +20,6 @@
 #ifndef ORES_IAM_MESSAGING_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_PROTOCOL_HPP
 
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"

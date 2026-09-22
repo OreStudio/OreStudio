@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the {{{bff_route.entity}}} service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
 {{#bff_route.minted_write_default}}import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
@@ -36,19 +36,15 @@ import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}
 {{/bff_route.minted_write_default}}
 
 export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
+  component: '{{{bff_route.component}}}',
+  entity: '{{{bff_route.entity}}}',
   collection: '{{{bff_route.collection}}}',
-  key: '{{{bff_route.key}}}',
-  keyField: '{{{bff_route.key_field}}}',
-  rowField: '{{{bff_route.row_field}}}',
+  keyFields: [{{{bff_route.key_fields_block}}}],
 {{#bff_route.has_save}}  writeFields: [{{{bff_route.write_fields_block}}}],
   writeDefaults: {{{bff_route.write_defaults_block}}},
-  intentFields: {
-    reason: '{{{bff_route.intent_reason_field}}}',
-    commentary: '{{{bff_route.intent_commentary_field}}}',
-  },
-{{/bff_route.has_save}}  listHasAsOf: {{bff_route.list_has_as_of}},
-  listHasFilter: {{bff_route.list_has_filter}},
-  versionsHasFilter: {{bff_route.versions_has_filter}},
+{{/bff_route.has_save}}  listHasAsOf: {{{bff_route.list_has_as_of}}},
+  listHasFilter: {{{bff_route.list_has_filter}}},
+  versionsHasFilter: {{{bff_route.versions_has_filter}}},
   subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
@@ -57,5 +53,6 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 {{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',
+  getRowField: '{{{bff_route.entity}}}',
 {{#bff_route.history_rows_field}}  historyRowsField: '{{{bff_route.history_rows_field}}}',
 {{/bff_route.history_rows_field}}};

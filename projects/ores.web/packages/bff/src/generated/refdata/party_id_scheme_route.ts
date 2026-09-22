@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the party_id_scheme service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_id_scheme_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyIdSchemeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'party_id_scheme',
   collection: 'schemes',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'party_id_scheme',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'coding_scheme_code', 'display_order', 'max_cardinality'],
-  writeDefaults: { code: '', name: '', description: '', coding_scheme_code: null, display_order: 0, max_cardinality: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { code: '', name: '', description: '', coding_scheme_code: '', display_order: 0, max_cardinality: null },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const partyIdSchemeRoute: EntityRouteDescriptor = {
     history: subjects.list_party_id_scheme_versions_request,
   },
   rowsField: 'schemes',
+  getRowField: 'party_id_scheme',
   historyRowsField: 'versions',
 };

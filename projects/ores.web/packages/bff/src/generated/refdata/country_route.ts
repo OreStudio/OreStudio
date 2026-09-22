@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the country service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/country_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const countryRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'country',
   collection: 'countries',
-  key: 'id',
-  keyField: 'alpha2_code',
-  rowField: 'country',
+  keyFields: ['alpha2_code'],
   writeFields: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name', 'image_id', 'coding_scheme_code'],
   writeDefaults: { alpha2_code: '', alpha3_code: '', numeric_code: '', name: '', official_name: '', image_id: null, coding_scheme_code: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: true,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const countryRoute: EntityRouteDescriptor = {
     history: subjects.list_country_versions_request,
   },
   rowsField: 'countries',
+  getRowField: 'country',
   historyRowsField: 'versions',
 };

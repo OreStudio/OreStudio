@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the instrument_code service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const instrumentCodeRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'instrument_code',
   collection: 'codes',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'instrument_code',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'asset_class', 'ore_trade_type', 'display_order', 'curve_role'],
   writeDefaults: { code: '', name: '', description: '', asset_class: null, ore_trade_type: null, display_order: 0, curve_role: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const instrumentCodeRoute: EntityRouteDescriptor = {
     history: subjects.list_instrument_code_versions_request,
   },
   rowsField: 'instruments',
+  getRowField: 'instrument_code',
   historyRowsField: 'versions',
 };

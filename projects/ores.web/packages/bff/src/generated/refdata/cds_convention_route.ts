@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the cds_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/cds_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const cdsConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'cds_convention',
   collection: 'cds_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'cds_convention',
+  keyFields: ['id'],
   writeFields: ['id', 'settlement_days', 'calendar', 'frequency', 'payment_convention', 'rule', 'day_count_fraction', 'settles_accrual', 'pays_at_default_time', 'upfront_settlement_days', 'last_period_day_count_fraction'],
   writeDefaults: { id: '', settlement_days: 0, calendar: '', frequency: '', payment_convention: '', rule: '', day_count_fraction: '', settles_accrual: false, pays_at_default_time: false, upfront_settlement_days: null, last_period_day_count_fraction: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const cdsConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_cds_convention_versions_request,
   },
   rowsField: 'cds_conventions',
+  getRowField: 'cds_convention',
   historyRowsField: 'versions',
 };

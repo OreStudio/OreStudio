@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 3F2A7C41-8D6E-4B95-A1C3-7E5D9B2F4A68
+:END:
+#+title: ores.diff.diff_span
+#+description: Codegen entity model for the diff engine's byte span: a table-less record that crosses the wire.
+#+type: ores.codegen.entity
+#+component: diff
+#+filetags: :model:entity:diff:
+#+brief: The byte range within a value that changed.
+#+entity_singular: diff_span
+#+entity_plural: diff_spans
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+A byte range within a rendered value. It is never stored: it is a member of a
+diff entry and reaches a client inside a history response.
+
+Generating this model overwrites the hand-written
+=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=, so it is still a
+probe rather than the real declaration of the type: the three sibling payloads
+(=field_value=, =diff_entry=, =diff_result=) have no model yet, and the
+hand-written TypeScript in =wire-protocol/src/diff/protocol.ts= is still what the
+protocol imports. The shape itself is right, and that is what it proves.
+
+* Flags
+:PROPERTIES:
+:schema:          public
+:product:         ores
+:component:       diff
+:no_primary_key:  true
+:profile:         table-less-record
+:END:
+
+=No primary key=: a byte range identifies nothing. Saying so is what tells the
+loader this is a record that is carried rather than stored.
+
+The profile supplies =:no_audit_columns:=, which is what keeps the version
+column, the audit tail and the transaction timestamp off the struct. This model
+deliberately does not restate it: the profile exists so that four records cannot
+each pick their own answer.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:no_subcomponent: true
+:END:
+
+=No sub-component=: =ores.diff= keeps its headers at its own include root, so
+there is no directory between the component and =domain/= for this model to
+name. The flag stands where =:subcomponent:= would, because it says the same
+thing by negation.
+
+* Columns
+
+** offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::size_t
+:END:
+
+Where the changed run begins.
+
+** length
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::size_t
+:END:
+
+How many bytes it covers.

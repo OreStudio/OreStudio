@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the calendar_exception service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_exception_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const calendarExceptionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'calendar_exception',
   collection: 'calendar_exceptions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'calendar_exception',
+  keyFields: ['id'],
   writeFields: ['id', 'calendar_code', 'exception_date', 'is_business_day', 'description'],
   writeDefaults: { id: MINTED_WRITE_DEFAULT, calendar_code: '', exception_date: '', is_business_day: false, description: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: true,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const calendarExceptionRoute: EntityRouteDescriptor = {
     history: subjects.list_calendar_exception_versions_request,
   },
   rowsField: 'calendar_exceptions',
+  getRowField: 'calendar_exception',
   historyRowsField: 'versions',
 };

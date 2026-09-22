@@ -21,24 +21,25 @@ database schema in use. Contains exactly one row.
 :PROPERTIES:
 :schema:        public
 :product:       ores
-:component:     database
-:has_tenant_id: false
+:component:       database
+:has_tenant_id:    false
+:no_subcomponent:  true
 :END:
 
-* Primary key
+* Natural keys
+
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :END:
 
 Fixed UUID identifying the singleton database info record.
 
 A well-known UUID inserted by the creation script.
-
-* Natural keys
-
-* Columns
 
 ** schema_version
 :PROPERTIES:

@@ -19,7 +19,6 @@
 set(files
     "app/commands/iam/account_commands.cpp"
     "app/commands/iam/account_contact_information_commands.cpp"
-    "app/commands/iam/account_history_operations_commands.cpp"
     "app/commands/iam/account_operations_operations_commands.cpp"
     "app/commands/iam/account_party_commands.cpp"
     "app/commands/iam/account_type_commands.cpp"
@@ -43,7 +42,6 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_contact_information_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_history_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_party_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/account_type_commands.hpp"

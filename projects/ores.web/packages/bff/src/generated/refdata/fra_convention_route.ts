@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the fra_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/fra_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const fraConventionRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'fra_convention',
   collection: 'fra_conventions',
-  key: 'id',
-  keyField: 'id',
-  rowField: 'fra_convention',
+  keyFields: ['id'],
   writeFields: ['id', 'index'],
   writeDefaults: { id: '', index: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const fraConventionRoute: EntityRouteDescriptor = {
     history: subjects.list_fra_convention_versions_request,
   },
   rowsField: 'fra_conventions',
+  getRowField: 'fra_convention',
   historyRowsField: 'versions',
 };

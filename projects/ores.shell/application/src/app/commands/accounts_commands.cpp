@@ -20,9 +20,7 @@
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.iam.api/domain/account_table_io.hpp"    // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/messaging/account_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_info_protocol.hpp"
@@ -34,6 +32,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
+#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -566,34 +565,14 @@ void accounts_commands::process_get_account_history(std::ostream& out,
                                                     nats_client& session,
                                                     std::string username) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: " << username;
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get account history." << std::endl;
-        return;
-    }
-
-    iam::messaging::get_account_history_request req;
-    req.username = std::move(username);
-
-    auto result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, iam::messaging::get_account_history_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
-        return;
-    }
-
-    if (result->history.versions.empty()) {
-        out << "No history found for this account." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.versions.size()
-                              << " history records.";
-    out << std::endl << result->history.versions << std::endl;
+    /*
+     * One generic history request serves every entity, so an account's history
+     * is read the way any other entity's is. The account's own hand-shaped
+     * history protocol is gone: it was keyed by the very username this command
+     * takes, which is the account's declared key, so the generic path covers it
+     * exactly.
+     */
+    render_history_diff(out, session, "ores.iam.account", std::move(username), std::nullopt);
 }
 
 void accounts_commands::process_set_default_party(std::ostream& out,
@@ -656,28 +635,26 @@ void accounts_commands::process_account_info(std::ostream& out,
         return;
     }
 
-    // Step 1: Get account details via history request
-    iam::messaging::get_account_history_request hist_req;
-    hist_req.username = username;
+    /*
+     * Step 1: the account itself. This asked for the history and read the
+     * record out of the newest version, which is the same record the single
+     * -record read answers with -- and answers with directly, rather than
+     * making the caller fetch every version to look at one.
+     */
+    iam::messaging::get_account_request get_req;
+    get_req.key.username = username;
 
-    auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, iam::messaging::get_account_history_request::nats_subject, hist_req);
-    if (!history_result)
+    auto account_result = do_auth_request<iam::messaging::get_account_response>(
+        out, session, std::string(get_req.nats_subject), get_req);
+    if (!account_result)
         return;
 
-    if (!history_result->success) {
-        fail(out) << "" << history_result->message << std::endl;
-        return;
-    }
-
-    if (history_result->history.versions.empty()) {
+    if (!account_result->account) {
         fail(out) << "Account not found: " << username << std::endl;
         return;
     }
 
-    // Get the current version (first in list, most recent)
-    const auto& current = history_result->history.versions.front();
-    const auto& account = current.data;
+    const auto& account = *account_result->account;
 
     // Display account header
     out << std::endl;
@@ -693,8 +670,8 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "  Email:     " << (account.email.empty() ? "(not set)" : account.email) << std::endl;
     out << "  Tenant ID: " << account.tenant_id << std::endl;
     out << "  Type:      " << account.account_type << std::endl;
-    out << "  Version:   " << current.version_number << std::endl;
-    out << "  Recorded:  " << format_time(current.recorded_at) << " by " << current.modified_by
+    out << "  Version:   " << account.version << std::endl;
+    out << "  Recorded:  " << format_time(account.recorded_at) << " by " << account.modified_by
         << std::endl;
 
     // Step 2: Get roles for this account

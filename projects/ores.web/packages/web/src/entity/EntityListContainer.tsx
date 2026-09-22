@@ -21,10 +21,18 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ChangeReasonDialog } from './ChangeReasonDialog.js';
+import {
+  ChangeReasonDialog,
+  type ChangeReasonResult,
+} from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityListPage } from './EntityListPage.js';
-import { entityBasePath, entityRecordPath } from './entityPaths.js';
+import {
+  entityBasePath,
+  entityRecordPath,
+  recordKeyFromValues,
+  recordLabel,
+} from './entityPaths.js';
 import { useDeleteEntity, useEntityList, type EntityRow } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -53,15 +61,8 @@ export function EntityListContainer({
   // without scrolling through a hundred of them.
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  /*
-   * The point in time the page is read as of, empty for the present. It is
-   * state of the screen rather than a query parameter of the route, because
-   * looking at an earlier page and looking at last quarter are two questions
-   * and only one of them is worth a link.
-   */
-  const [asOf, setAsOf] = useState('');
 
-  const query = useEntityList(descriptor, { page, pageSize, asOf });
+  const query = useEntityList(descriptor, { page, pageSize });
   const reasons = useChangeReasons();
   const remove = useDeleteEntity(descriptor);
 
@@ -77,15 +78,22 @@ export function EntityListContainer({
   const [failure, setFailure] = useState<string | undefined>(undefined);
 
   const base = entityBasePath(descriptor);
-  /** The record's identity, which is the field the declaration freezes. */
-  const keyOf = (row: EntityRow): string => String(row[descriptor.meta.keyField] ?? '');
 
-  function confirmDelete(): void {
+
+  function confirmDelete(result: ChangeReasonResult): void {
     const row = target;
     if (row === undefined) return;
     setFailure(undefined);
+    const version = Number(row['version']);
     remove.mutate(
-      { key: keyOf(row) },
+      {
+        key: recordKeyFromValues(descriptor, row),
+        intent: {
+          reason_code: result.reasonCode,
+          commentary: result.commentary,
+        },
+        version: Number.isFinite(version) ? version : undefined,
+      },
       {
         onSuccess: () => {
           setTarget(undefined);
@@ -104,6 +112,7 @@ export function EntityListContainer({
     <>
       <EntityListPage
         meta={descriptor.meta}
+        keyFields={descriptor.keyFields}
         title={t(`${descriptor.entity}.title`)}
         description={t(`${descriptor.entity}.description`)}
         rows={query.data?.rows ?? []}
@@ -119,20 +128,20 @@ export function EntityListContainer({
           setPage(1);
         }}
         onReload={() => void query.refetch()}
-        onOpen={(row) => navigate(entityRecordPath(descriptor, keyOf(row)))}
+        onOpen={(row) => navigate(entityRecordPath(descriptor, row))}
         {...(descriptor.capabilities.create
           ? { onCreate: () => navigate(`${base}/new`) }
           : {})}
         {...(descriptor.capabilities.edit
           ? {
               onEdit: (row: EntityRow) =>
-                navigate(`${entityRecordPath(descriptor, keyOf(row))}/edit`),
+                navigate(`${entityRecordPath(descriptor, row)}/edit`),
             }
           : {})}
         {...(descriptor.capabilities.history
           ? {
               onHistory: (row: EntityRow) =>
-                navigate(`${entityRecordPath(descriptor, keyOf(row))}/history`),
+                navigate(`${entityRecordPath(descriptor, row)}/history`),
             }
           : {})}
         {...(descriptor.capabilities.remove
@@ -145,17 +154,7 @@ export function EntityListContainer({
             }
           : {})}
         searchFields={descriptor.searchFields}
-        {...(descriptor.capabilities.asOf
-          ? {
-              asOf,
-              // A different instant is a different page: the one the person
-              // was on may not exist as of the window they just chose.
-              onAsOfChange: (value: string) => {
-                setAsOf(value);
-                setPage(1);
-              },
-            }
-          : {})}
+        searchPlaceholderKey={`${descriptor.entity}.searchPlaceholder`}
         collectionName={t(`${descriptor.entity}.title`)}
         watchedAs={{ component: descriptor.component, entity: descriptor.entity }}
         {...(failure === undefined ? {} : { failureMessage: failure })}
@@ -166,7 +165,7 @@ export function EntityListContainer({
           title={t('confirmation.deleteTitle', { singular: t(`${descriptor.entity}.singular`) })}
           body={t('confirmation.deleteBody', {
             singular: t(`${descriptor.entity}.singular`),
-            name: keyOf(target),
+            name: recordLabel(descriptor, target),
           })}
           confirmLabel={t('entity.delete')}
           pending={false}

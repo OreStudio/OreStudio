@@ -25,10 +25,9 @@
 /**
  * Where the tenant_status screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { tenantStatusMeta } from '../ui/tenant_status_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,22 @@ export const tenantStatusDescriptor: EntityDescriptor = {
     meta: tenantStatusMeta,
     routeSegment: 'tenant-status',
     apiBase: '/api/tenant_statuses',
-    keyParam: 'id',
-    icon: 'checkmarkCircle',
+    keyFields: [
+        'status',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
+        'status',
+        'name',
+        'description',
+        'display_order',
+    ],
+    writeFields: [
         'status',
         'name',
         'description',

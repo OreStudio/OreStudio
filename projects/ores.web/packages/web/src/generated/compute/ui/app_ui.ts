@@ -114,28 +114,3 @@ export const appMeta = {
     columns: appColumns,
     fields: appFields,
 } as const;
-/**
- * The entity's own words, in English, keyed the way the catalogue is.
- *
- * The model states them: the detail field's label, the column's header, the
- * placeholder, the title and the brief. They are emitted here rather than
- * written into a catalogue by hand, so a label the model changes changes in
- * one place, and a language that has no translation yet falls back to these
- * rather than to a key nobody can read.
- */
-export const appMessages = {
-        app: {
-            title: 'Compute Apps',
-            singular: 'app',
-            newTitle: 'New app',
-            description: 'Represents the high-level definition of an engine that can be executed on grid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of \'app\'.',
-            fldName: 'Name',
-            namePh: 'Enter compute app name',
-            fldDescription: 'Description',
-            descriptionPh: 'Enter a description',
-            colName: 'Name',
-            colDescription: 'Description',
-            colVersion: 'Version',
-            colModifiedBy: 'Modified By',
-        }
-};

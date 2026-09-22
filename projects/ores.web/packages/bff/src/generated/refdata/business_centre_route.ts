@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the business_centre service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/business_centre_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const businessCentreRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'business_centre',
   collection: 'business_centres',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'business_centre',
+  keyFields: ['code'],
   writeFields: ['code', 'source', 'description', 'city_name', 'country_alpha2_code', 'coding_scheme_code'],
-  writeDefaults: { code: '', source: null, description: null, city_name: null, country_alpha2_code: null, coding_scheme_code: '' },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { code: '', source: '', description: '', city_name: '', country_alpha2_code: '', coding_scheme_code: '' },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const businessCentreRoute: EntityRouteDescriptor = {
     history: subjects.list_business_centre_versions_request,
   },
   rowsField: 'centres',
+  getRowField: 'business_centre',
   historyRowsField: 'versions',
 };

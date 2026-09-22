@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the book_status service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/book_status_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const bookStatusRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'book_status',
   collection: 'statuses',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'book_status',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'display_order'],
   writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: true,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const bookStatusRoute: EntityRouteDescriptor = {
     history: subjects.list_book_status_versions_request,
   },
   rowsField: 'statuses',
+  getRowField: 'book_status',
   historyRowsField: 'versions',
 };

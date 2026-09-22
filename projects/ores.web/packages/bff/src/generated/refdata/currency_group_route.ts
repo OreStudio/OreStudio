@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the currency_group service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_group_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const currencyGroupRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'currency_group',
   collection: 'groups',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'currency_group',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'display_order'],
   writeDefaults: { code: '', name: '', description: '', display_order: 0 },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: false,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const currencyGroupRoute: EntityRouteDescriptor = {
     history: subjects.list_currency_group_versions_request,
   },
   rowsField: 'groups',
+  getRowField: 'currency_group',
   historyRowsField: 'versions',
 };

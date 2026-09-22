@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: CFD27CC5-451E-4DED-AFB7-84FDF6419582
+:END:
+#+title: Generate equality that ignores the columns the store stamps
+#+description: The generated operator== is defaulted over every member, so a record read back from the store never equals the one that was written; the audit columns, the version, and for system-owned rows the tenant id are all rewritten on write. Capture the decision and the C++ options.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:domain:equality:tests:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide what equality means for a generated domain type, and generate it.
+
+Today =ores.cpp.domain.class_header.org= emits
+
+#+begin_src cpp
+friend bool operator==(const {{entity_singular}}&, const {{entity_singular}}&) = default;
+#+end_src
+
+so two records are equal only when every member is. A round trip through
+the store never satisfies that, because the store rewrites members the
+caller supplied. Observed while making the IAM repository tests compare
+whole objects:
+
+| member | written | read back |
+|--------+----------------------+----------------------|
+| =version= | 0 | 1 |
+| =recorded_at= | 2024-11-15 07:49:57Z | 2026-09-22 07:49:57Z |
+| =tenant_id= | the test tenant | =ffffffff-…= (system) |
+
+=CHECK(read == written)= therefore fails for every entity that has audit
+columns.
+
+* Why
+
+The repository tests should compare whole objects rather than naming a few
+fields, so that adding a member to the model automatically enters the
+comparison. They cannot, while equality includes members the caller does
+not own. A hand-written comparison silently stops covering new members the
+day someone adds one.
+
+Five IAM tests currently work around this by copying the stamped members
+from the read row before comparing
+(=projects/ores.iam/core/tests/repository_tenant_repository_tests.cpp= and
+the permission, role, tenant_status and tenant_type siblings). That works
+but it is per-test ceremony that repeats the same knowledge, and it has to
+name each stamped member — three per entity here.
+
+* The members the store stamps
+
+Read from the template, in emission order, for the flat shape:
+
+- =version= — emitted only when =has_audit_columns=.
+- the audit set, which takes one of two shapes:
+  - a single nested =audit= member when =has_audit_group=;
+  - five flat members when only =has_audit_columns=:
+    =modified_by=, =performed_by=, =change_reason_code=,
+    =change_commentary=, =recorded_at=.
+- =tenant_id= — *not* audit. It scopes the row, and the insert trigger
+  rewrites it for system-owned rows.
+- =workspace_id= — likewise not audit.
+
+=permission= has no audit columns at all, so plain =operator== = default=
+already works for it.
+
+* Options
+
+**1. Wrapper member.** Give audit members a type whose =operator== = always
+returns true, so =default= keeps working and stays in sync by itself. This
+is the only option that needs no member list. It is invasive: member access
+becomes =v.version.value=, and =rfl= needs a reflector so JSON still shows a
+scalar. Rejected as too costly for the benefit.
+
+**2. Keep =default=, name the weaker relation.** =operator== = stays full
+equality and a named predicate carries business equality, for example
+=bool same_record(const tenant&, const tenant&)=. Unsurprising, but
+=operator== = then has no caller and is dead code.
+
+**3. Business equality *is* =operator== =** (recommended). A domain object
+here is explicitly a temporal record; the audit columns are metadata about
+how the row is stored, not part of what the record is. Generate the
+operator over the business members only and document that on the type.
+Tests read =CHECK(read == written)= with nothing else.
+
+* What option 3 would take
+
+The template already iterates exactly the lists needed, so no new model
+input is required:
+
+#+begin_src cpp
+friend bool operator==(const tenant& lhs, const tenant& rhs) {
+    return std::tie(lhs.id, lhs.code, lhs.name, lhs.type, lhs.description,
+                    lhs.hostname, lhs.status)
+        == std::tie(rhs.id, rhs.code, rhs.name, rhs.type, rhs.description,
+                    rhs.hostname, rhs.status);
+}
+#+end_src
+
+- Members come from the primary key columns, the natural keys, and the
+  =columns= loop skipping =is_identity_group_column= and =sql_only=.
+- Skip the audit block and =version=.
+- The composition shapes (=has_domain_groups=, =has_identity_group=) should
+  fall out for free: the entity's members are themselves generated types
+  with their own generated =operator==, so the rule applies recursively and
+  an audit member inside a group is excluded without extra work.
+- Do *not* add a per-entity switch. A bool means every reader must know
+  which entity excludes what, and the round-trip test becomes
+  entity-dependent.
+
+* Open questions
+
+- **=tenant_id=.** Audit exclusion alone does not fix the tenant case.
+  =tenant_id= is not audit, and the trigger rewrites it from the test tenant
+  to =system= for system-owned rows. Either it stays in equality and the
+  synthetic generator stops inventing an owner the store will overwrite, or
+  it is classified as system-managed and excluded. This is a semantic call.
+- **=operator== = and =operator<< = will disagree.** Two records can compare
+  equal and print differently, because the stream operator keeps the audit
+  fields. That is defensible — equality is about the record, printing is
+  diagnostic — but it must be stated where the operator is documented, so
+  nobody "fixes" it later.
+
+* Consequences
+
+- Revert the stamped-member normalisation in the five IAM repository tests.
+- The doc comment currently on the generated operator claims a round-trip
+  test justifies it; that claim only becomes true once this is done.
+
+* See also
+
+- =projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org=
+- [[id:82FBA173-0DCC-4F07-94BF-A6836FE8632E][Assert the history field projection covers every member]]

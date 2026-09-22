@@ -25,25 +25,21 @@
 /**
  * How the BFF reaches the tenor_schedule service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_schedule_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenorScheduleRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'tenor_schedule',
   collection: 'schedules',
-  key: 'id',
-  keyField: 'code',
-  rowField: 'tenor_schedule',
+  keyFields: ['code'],
   writeFields: ['code', 'name', 'description', 'display_order', 'schedule_source', 'calendar_code', 'diary_entry_type'],
   writeDefaults: { code: '', name: '', description: '', display_order: 0, schedule_source: '', calendar_code: null, diary_entry_type: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
   listHasAsOf: false,
   listHasFilter: true,
   versionsHasFilter: true,
@@ -55,5 +51,6 @@ export const tenorScheduleRoute: EntityRouteDescriptor = {
     history: subjects.list_tenor_schedule_versions_request,
   },
   rowsField: 'schedules',
+  getRowField: 'tenor_schedule',
   historyRowsField: 'versions',
 };

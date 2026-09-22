@@ -25,31 +25,32 @@
 /**
  * How the BFF reaches the party_contact_information service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_contact_information_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyContactInformationRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'party_contact_information',
   collection: 'party_contact_informations',
-  key: 'id',
-  keyField: 'contact_type',
-  rowField: 'party_contact_information',
+  keyFields: ['contact_type'],
   writeFields: ['id', 'contact_type', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, contact_type: '', street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, contact_type: '', street_line_1: '', street_line_2: '', city: '', state: '', country_code: '', postal_code: '', phone: '', email: '', web_page: '' },
   listHasAsOf: false,
   listHasFilter: true,
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_party_contact_informations_request,
+    get: subjects.get_party_contact_information_request,
     save: subjects.put_party_contact_information_request,
+    remove: subjects.delete_party_contact_information_request,
+    history: subjects.list_party_contact_information_versions_request,
   },
   rowsField: 'party_contact_informations',
+  getRowField: 'party_contact_information',
+  historyRowsField: 'versions',
 };

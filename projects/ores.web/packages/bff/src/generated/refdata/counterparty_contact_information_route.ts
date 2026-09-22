@@ -25,31 +25,32 @@
 /**
  * How the BFF reaches the counterparty_contact_information service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_contact_information_protocol';
 import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const counterpartyContactInformationRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'counterparty_contact_information',
   collection: 'counterparty_contact_informations',
-  key: 'id',
-  keyField: 'contact_type',
-  rowField: 'counterparty_contact_information',
+  keyFields: ['contact_type'],
   writeFields: ['id', 'counterparty_id', 'contact_type', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
-  writeDefaults: { id: MINTED_WRITE_DEFAULT, counterparty_id: null, contact_type: '', street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, counterparty_id: null, contact_type: '', street_line_1: '', street_line_2: '', city: '', state: '', country_code: '', postal_code: '', phone: '', email: '', web_page: '' },
   listHasAsOf: false,
   listHasFilter: true,
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_counterparty_contact_informations_request,
+    get: subjects.get_counterparty_contact_information_request,
     save: subjects.put_counterparty_contact_information_request,
+    remove: subjects.delete_counterparty_contact_information_request,
+    history: subjects.list_counterparty_contact_information_versions_request,
   },
   rowsField: 'counterparty_contact_informations',
+  getRowField: 'counterparty_contact_information',
+  historyRowsField: 'versions',
 };

@@ -25,10 +25,9 @@
 /**
  * Where the currency_pair screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { currencyPairMeta } from '../ui/currency_pair_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,16 +38,22 @@ export const currencyPairDescriptor: EntityDescriptor = {
     meta: currencyPairMeta,
     routeSegment: 'currency-pair',
     apiBase: '/api/pairs',
-    keyParam: 'id',
-    icon: 'currencyDollarEuro',
+    keyFields: [
+        'pair_code',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
+        'pair_code',
+        'base_currency',
+        'quote_currency',
+        'classification',
+    ],
+    writeFields: [
         'pair_code',
         'base_currency',
         'quote_currency',

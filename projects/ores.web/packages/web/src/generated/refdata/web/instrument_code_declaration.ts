@@ -25,10 +25,9 @@
 /**
  * Where the instrument_code screens live and what they can do.
  *
- * The route, the API path, the key parameter and the icon are values the model
- * carries, so a screen never repeats them and two screens cannot disagree. The
- * labels are translation keys, and the generated metadata beside this one
- * carries the words they resolve to.
+ * The route, the API path and the key parameter are values the model carries, so
+ * a screen never repeats them and two screens cannot disagree. The labels are
+ * translation keys and live in the catalogue with the rest of the words.
  */
 import { instrumentCodeMeta } from '../ui/instrument_code_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,14 +38,14 @@ export const instrumentCodeDescriptor: EntityDescriptor = {
     meta: instrumentCodeMeta,
     routeSegment: 'instrument-code',
     apiBase: '/api/codes',
-    keyParam: 'id',
-    icon: 'tag',
+    keyFields: [
+        'code',
+    ],
     capabilities: {
         create: true,
         edit: true,
         remove: true,
         history: true,
-        asOf: false,
     },
     searchFields: [
         'code',
@@ -56,5 +55,14 @@ export const instrumentCodeDescriptor: EntityDescriptor = {
         'ore_trade_type',
         'curve_role',
         'display_order',
+    ],
+    writeFields: [
+        'code',
+        'name',
+        'description',
+        'asset_class',
+        'ore_trade_type',
+        'display_order',
+        'curve_role',
     ],
 };

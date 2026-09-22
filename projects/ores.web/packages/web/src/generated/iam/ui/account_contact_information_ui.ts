@@ -215,7 +215,7 @@ export const accountContactInformationMeta = {
  */
 export const accountContactInformationMessages = {
         account_contact_information: {
-            title: 'Account Contact Information',
+            title: 'Account Contact Informations',
             singular: 'account contact information',
             newTitle: 'New account contact information',
             description: 'An account\'s address/phone/email/web page fields. The account\'s real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn\'t need a Legal/ Operations/Settlement/Billing split).',

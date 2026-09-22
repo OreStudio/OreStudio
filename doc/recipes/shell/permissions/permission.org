@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-permissions get <id>
+permissions get <code>
 #+end_example
 
 It is addressed at =iam.v1.permissions.get=.
 
 #+name: permissions-get
 #+begin_src ores-shell :tangle permissions-get.ores :exports none
-permissions get 00000000-0000-0000-0000-000000000000
+permissions get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-permissions get-many <id>
+permissions get-many <code>
 #+end_example
 
 It is addressed at =iam.v1.permissions.get_many=.
 
 #+name: permissions-get-many
 #+begin_src ores-shell :tangle permissions-get-many.ores :exports none
-permissions get-many 00000000-0000-0000-0000-000000000000
+permissions get-many __none__
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-permissions delete <id> <reason> <commentary> [--version <n>]
+permissions delete <code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.permissions.delete=.
 
 #+name: permissions-delete
 #+begin_src ores-shell :tangle permissions-delete.ores :exports none
-permissions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+permissions delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,13 +169,13 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-permissions delete-many <id> <reason> <commentary>
+permissions delete-many <code> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.permissions.delete_many=.
 
 #+name: permissions-delete-many
 #+begin_src ores-shell :tangle permissions-delete-many.ores :exports none
-permissions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+permissions delete-many __none__ system.new_record generated_script
 #+end_src
 

@@ -50,11 +50,15 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::permission> read_one(repository::permission_repository& repo,
                                          const ores::database::context& ctx,
                                          const messaging::permission_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest_by_code(ctx, key.code);
 }
 
 /**
@@ -65,7 +69,7 @@ std::vector<domain::permission> read_one(repository::permission_repository& repo
  */
 messaging::permission_key key_from(const domain::permission& v) {
     messaging::permission_key key;
-    key.id = v.id;
+    key.code = v.code;
     return key;
 }
 
@@ -199,7 +203,14 @@ permission_service::delete_permission(const messaging::delete_permission_request
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    const auto named = read_one(repo_, ctx_, request.removal.key);
+    if (named.empty()) {
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
         case repository::permission_repository::remove_status::removed:
             break;
         case repository::permission_repository::remove_status::missing:
@@ -240,10 +251,22 @@ messaging::delete_many_permissions_response permission_service::delete_many_perm
     }
     if (request.removals.empty())
         return response;
+    // A removal names its row by the key a caller holds, and the repository
+    // takes the storage key, so the two are joined once here rather than at
+    // each column's conversion. A name that matches no row is skipped: the
+    // batch reports what it removed, and a row that is already gone is not a
+    // failure.
+    std::vector<domain::permission> resolved;
+    resolved.reserve(request.removals.size());
+    for (const auto& removal : request.removals) {
+        auto named = read_one(repo_, ctx_, removal.key);
+        if (!named.empty())
+            resolved.push_back(std::move(named.front()));
+    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
+    id_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        id_keys.push_back(boost::uuids::to_string(row.id));
     repo_.remove(ctx_, id_keys);
     return response;
 }

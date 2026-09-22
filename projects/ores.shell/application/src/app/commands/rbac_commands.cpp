@@ -184,13 +184,15 @@ void rbac_commands::process_get_role(std::ostream& out,
                                      std::string role_identifier) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: " << role_identifier;
 
-    // A role is addressed by its id, which is what the key states.
-    const auto parsed_role_id = parse_uuid(out, role_identifier, "role id");
-    if (!parsed_role_id)
+    // A role is addressed by its name, which is the key the model declares and
+    // the one its subject's operations carry.
+    if (role_identifier.empty()) {
+        fail(out) << "A role name is required." << std::endl;
         return;
+    }
 
     iam::messaging::get_role_request req;
-    req.key.id = *parsed_role_id;
+    req.key.name = role_identifier;
 
     auto result = do_auth_request<iam::messaging::get_role_response>(
         out, session, std::string(req.nats_subject), req);

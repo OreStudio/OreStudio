@@ -38,12 +38,21 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}}_repository& repo,
                                                 const ores::database::context& ctx,
                                                 const messaging::{{entity_singular}}_key& key) {
+{{#key_is_primary}}
     return repo.read_latest(ctx,
                             {{#primary_key.key_columns}}{{#is_uuid}}boost::uuids::to_string(key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}key.{{column}}{{/is_timestamp}}{{/is_uuid}}{{^last}}, {{/last}}{{/primary_key.key_columns}});
+{{/key_is_primary}}
+{{^key_is_primary}}
+    return repo.read_latest_by_{{declared_key}}(ctx, {{#declared_key_is_uuid}}boost::uuids::to_string(key.{{declared_key}}){{/declared_key_is_uuid}}{{^declared_key_is_uuid}}key.{{declared_key}}{{/declared_key_is_uuid}});
+{{/key_is_primary}}
 }
 {{#put_operations}}
 
@@ -55,9 +64,14 @@ std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}
  */
 messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v) {
     messaging::{{entity_singular}}_key key;
+{{#key_is_primary}}
 {{#primary_key.key_columns}}
     key.{{column}} = v.{{column}};
 {{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+    key.{{declared_key}} = v.{{declared_key}};
+{{/key_is_primary}}
     return key;
 }
 
@@ -274,7 +288,16 @@ messaging::{{response}}
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, {{{primary_key.removal_key_args}}}, expected)) {
+{{^key_is_primary}}
+    const auto named = read_one(repo_, ctx_, request.removal.key);
+    if (named.empty()) {
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+{{/key_is_primary}}
+    switch (repo_.remove(ctx_, {{#key_is_primary}}{{{primary_key.removal_key_args}}}{{/key_is_primary}}{{^key_is_primary}}{{{primary_key.row_args}}}{{/key_is_primary}}, expected)) {
     case repository::{{entity_singular}}_repository::remove_status::removed:
         break;
     case repository::{{entity_singular}}_repository::remove_status::missing:
@@ -317,11 +340,32 @@ messaging::{{response}}
     }
     if (request.removals.empty())
         return response;
+{{^key_is_primary}}
+    // A removal names its row by the key a caller holds, and the repository
+    // takes the storage key, so the two are joined once here rather than at
+    // each column's conversion. A name that matches no row is skipped: the
+    // batch reports what it removed, and a row that is already gone is not a
+    // failure.
+    std::vector<domain::{{entity_singular}}> resolved;
+    resolved.reserve(request.removals.size());
+    for (const auto& removal : request.removals) {
+        auto named = read_one(repo_, ctx_, removal.key);
+        if (!named.empty())
+            resolved.push_back(std::move(named.front()));
+    }
+{{/key_is_primary}}
 {{#primary_key.key_columns}}
     std::vector<std::string> {{column}}_keys;
+{{#key_is_primary}}
     {{column}}_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(removal.key.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(removal.key.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}removal.key.{{column}}{{/is_timestamp}}{{/is_uuid}});
+{{/key_is_primary}}
+{{^key_is_primary}}
+    {{column}}_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        {{column}}_keys.push_back({{#is_uuid}}boost::uuids::to_string(row.{{column}}){{/is_uuid}}{{#is_timestamp}}ores::platform::time::datetime::to_db_string(row.{{column}}){{/is_timestamp}}{{^is_uuid}}{{^is_timestamp}}row.{{column}}{{/is_timestamp}}{{/is_uuid}});
+{{/key_is_primary}}
 {{/primary_key.key_columns}}
     repo_.remove(ctx_, {{{primary_key.batch_keys_args}}});
     return response;
@@ -349,7 +393,18 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
-    auto all = repo_.read_all(ctx_, {{{primary_key.key_request_args}}});
+{{^key_is_primary}}
+    // The versions of the row the caller's key names. The repository reads by
+    // the storage key, so the declared key is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key);
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+{{/key_is_primary}}
+    auto all = repo_.read_all(ctx_, {{#key_is_primary}}{{{primary_key.key_request_args}}}{{/key_is_primary}}{{^key_is_primary}}{{{primary_key.row_args}}}{{/key_is_primary}});
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -366,8 +421,19 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
+{{^key_is_primary}}
+    // The version key nests the entity's own key, which is the declared one.
+    // The repository reads by the storage key, so it is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key.{{entity_singular}});
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+{{/key_is_primary}}
     auto found = repo_.read_at_version(
-        ctx_, {{{primary_key.version_key_args}}}, request.key.version);
+        ctx_, {{#key_is_primary}}{{{primary_key.version_key_args}}}{{/key_is_primary}}{{^key_is_primary}}{{{primary_key.row_args}}}{{/key_is_primary}}, request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";

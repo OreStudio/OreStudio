@@ -36,7 +36,7 @@
 namespace ores::iam::messaging {
 
 struct account_contact_information_key {
-    boost::uuids::uuid id;
+    std::string email;
 };
 
 struct account_contact_information_write {

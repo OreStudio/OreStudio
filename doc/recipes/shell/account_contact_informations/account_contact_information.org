@@ -43,14 +43,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations get <id>
+account_contact_informations get <email>
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations.get=.
 
 #+name: account_contact_informations-get
 #+begin_src ores-shell :tangle account_contact_informations-get.ores :exports none
-account_contact_informations get 00000000-0000-0000-0000-000000000000
+account_contact_informations get __none__
 #+end_src
 
 ** =get-many=
@@ -64,14 +64,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations get-many <id>
+account_contact_informations get-many <email>
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations.get_many=.
 
 #+name: account_contact_informations-get-many
 #+begin_src ores-shell :tangle account_contact_informations-get-many.ores :exports none
-account_contact_informations get-many 00000000-0000-0000-0000-000000000000
+account_contact_informations get-many __none__
 #+end_src
 
 ** =add=
@@ -148,14 +148,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations delete <id> <reason> <commentary> [--version <n>]
+account_contact_informations delete <email> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations.delete=.
 
 #+name: account_contact_informations-delete
 #+begin_src ores-shell :tangle account_contact_informations-delete.ores :exports none
-account_contact_informations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+account_contact_informations delete __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -169,14 +169,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations delete-many <id> <reason> <commentary>
+account_contact_informations delete-many <email> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations.delete_many=.
 
 #+name: account_contact_informations-delete-many
 #+begin_src ores-shell :tangle account_contact_informations-delete-many.ores :exports none
-account_contact_informations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+account_contact_informations delete-many __none__ system.new_record generated_script
 #+end_src
 
 ** =by-account-id=
@@ -211,14 +211,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+account_contact_informations versions <email> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations_versions.list=.
 
 #+name: account_contact_informations-versions
 #+begin_src ores-shell :tangle account_contact_informations-versions.ores :exports none
-account_contact_informations versions 00000000-0000-0000-0000-000000000000 --limit 1
+account_contact_informations versions __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -232,13 +232,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-account_contact_informations version <id> --version <n>
+account_contact_informations version <email> --version <n>
 #+end_example
 
 It is addressed at =iam.v1.account_contact_informations_versions.get=.
 
 #+name: account_contact_informations-version
 #+begin_src ores-shell :tangle account_contact_informations-version.ores :exports none
-account_contact_informations version 00000000-0000-0000-0000-000000000000 --version 1
+account_contact_informations version __none__ --version 1
 #+end_src
 

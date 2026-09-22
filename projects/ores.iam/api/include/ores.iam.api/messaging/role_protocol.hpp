@@ -36,7 +36,7 @@
 namespace ores::iam::messaging {
 
 struct role_key {
-    boost::uuids::uuid id;
+    std::string name;
 };
 
 struct role_write {

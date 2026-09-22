@@ -50,11 +50,15 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenant> read_one(repository::tenant_repository& repo,
                                      const ores::database::context& ctx,
                                      const messaging::tenant_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest_by_code(ctx, key.code);
 }
 
 /**
@@ -65,7 +69,7 @@ std::vector<domain::tenant> read_one(repository::tenant_repository& repo,
  */
 messaging::tenant_key key_from(const domain::tenant& v) {
     messaging::tenant_key key;
-    key.id = v.id;
+    key.code = v.code;
     return key;
 }
 
@@ -203,7 +207,14 @@ tenant_service::delete_tenant(const messaging::delete_tenant_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    const auto named = read_one(repo_, ctx_, request.removal.key);
+    if (named.empty()) {
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
         case repository::tenant_repository::remove_status::removed:
             break;
         case repository::tenant_repository::remove_status::missing:
@@ -244,10 +255,22 @@ tenant_service::delete_many_tenants(const messaging::delete_many_tenants_request
     }
     if (request.removals.empty())
         return response;
+    // A removal names its row by the key a caller holds, and the repository
+    // takes the storage key, so the two are joined once here rather than at
+    // each column's conversion. A name that matches no row is skipped: the
+    // batch reports what it removed, and a row that is already gone is not a
+    // failure.
+    std::vector<domain::tenant> resolved;
+    resolved.reserve(request.removals.size());
+    for (const auto& removal : request.removals) {
+        auto named = read_one(repo_, ctx_, removal.key);
+        if (!named.empty())
+            resolved.push_back(std::move(named.front()));
+    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
+    id_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        id_keys.push_back(boost::uuids::to_string(row.id));
     repo_.remove(ctx_, id_keys);
     return response;
 }
@@ -268,7 +291,16 @@ tenant_service::list_tenant_versions(const messaging::list_tenant_versions_reque
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
+    // The versions of the row the caller's key names. The repository reads by
+    // the storage key, so the declared key is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key);
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -283,8 +315,16 @@ tenant_service::list_tenant_versions(const messaging::list_tenant_versions_reque
 messaging::get_tenant_version_response
 tenant_service::get_tenant_version(const messaging::get_tenant_version_request& request) {
     messaging::get_tenant_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.tenant.id), request.key.version);
+    // The version key nests the entity's own key, which is the declared one.
+    // The repository reads by the storage key, so it is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key.tenant);
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";

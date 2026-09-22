@@ -167,21 +167,18 @@ void tenants_commands::process_add_tenant(std::ostream& out,
 
 void tenants_commands::process_tenant_history(std::ostream& out,
                                               nats_client& session,
-                                              std::string tenant_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating tenant history request for: " << tenant_id;
+                                              std::string tenant_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating tenant history request for: " << tenant_code;
 
-    // Validate UUID format
-    try {
-        boost::lexical_cast<boost::uuids::uuid>(tenant_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
-        fail(out) << "Invalid tenant ID format. Expected UUID." << std::endl;
+    // A tenant is addressed by its code, which is the key the model declares
+    // and the one its subject's operations carry.
+    if (tenant_code.empty()) {
+        fail(out) << "A tenant code is required." << std::endl;
         return;
     }
 
-    // The format was validated above, so the key can be parsed from it.
     iam::messaging::list_tenant_versions_request req;
-    req.key.id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
+    req.key.code = tenant_code;
 
     auto result = do_auth_request<iam::messaging::list_tenant_versions_response>(
         out, session, std::string(req.nats_subject), req);
@@ -199,11 +196,11 @@ void tenants_commands::process_tenant_history(std::ostream& out,
                               << " history entries.";
 
     if (versions.empty()) {
-        out << "No history found for tenant: " << tenant_id << std::endl;
+        out << "No history found for tenant: " << tenant_code << std::endl;
         return;
     }
 
-    out << "History for tenant " << tenant_id << " (" << versions.size()
+    out << "History for tenant " << tenant_code << " (" << versions.size()
         << " versions):" << std::endl;
     out << std::string(80, '-') << std::endl;
 
@@ -237,17 +234,14 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
         return;
     }
 
-    // Validate UUID format
-    try {
-        boost::lexical_cast<boost::uuids::uuid>(tenant_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
-        fail(out) << "Invalid tenant ID format. Expected UUID." << std::endl;
+    // A tenant is addressed by its code, which is the key the model declares.
+    if (tenant_id.empty()) {
+        fail(out) << "A tenant code is required." << std::endl;
         return;
     }
 
     iam::messaging::delete_tenant_request req;
-    req.removal.key.id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
+    req.removal.key.code = tenant_id;
     req.intent.reason_code = "deleted_via_shell";
     req.intent.commentary = "Deleted via shell";
 

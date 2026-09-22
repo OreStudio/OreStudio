@@ -61,6 +61,9 @@ WEB_PORT="$(env_value ORES_WEB_PORT)"
 WEB_PORT="${WEB_PORT:-8080}"
 WEB_DEV_PORT="$(env_value ORES_WEB_DEV_PORT)"
 WEB_DEV_PORT="${WEB_DEV_PORT:-5173}"
+# The address the Vite dev server binds. Set ORES_WEB_DEV_HOST to a LAN
+# address (or 0.0.0.0) to reach the dev server from another machine.
+WEB_DEV_HOST="${ORES_WEB_DEV_HOST:-127.0.0.1}"
 DB_PORT="$(env_value ORES_IAM_SERVICE_DB_PORT)"
 DB_PORT="${DB_PORT:-5432}"
 
@@ -107,8 +110,9 @@ stop_one() {
 wait_for_port() {
   local port="$1"
   local label="$2"
+  local host="${3:-127.0.0.1}"
   for _ in $(seq 1 60); do
-    if (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+    if (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null; then
       exec 3<&- 3>&- || true
       echo "  $label is up on $port"
       return 0
@@ -160,11 +164,11 @@ case "${1:-start}" in
     # as its own; both come from the environment file.
     start_one web env -C "$WORKSPACE" \
       ORES_WEB_PORT="$WEB_PORT" ORES_WEB_DEV_PORT="$WEB_DEV_PORT" \
-      npx vite --host 127.0.0.1 --port "$WEB_DEV_PORT" packages/web
-    wait_for_port "$WEB_DEV_PORT" vite
+      npx vite --host "$WEB_DEV_HOST" --port "$WEB_DEV_PORT" packages/web
+    wait_for_port "$WEB_DEV_PORT" vite "$([ "$WEB_DEV_HOST" = 0.0.0.0 ] && echo 127.0.0.1 || echo "$WEB_DEV_HOST")"
 
     echo
-    echo "open http://127.0.0.1:$WEB_DEV_PORT/ for hot reload"
+    echo "open http://$WEB_DEV_HOST:$WEB_DEV_PORT/ for hot reload"
     echo "the BFF serves the built bundle on http://127.0.0.1:$WEB_PORT/"
     echo "logs in $LOG_DIR"
     ;;

@@ -66,9 +66,9 @@ export function NewTenantJourneyPrototype(): ReactNode {
  * administrator's first sign-in -- one flat list of steps.
  */
 export function FirstRunJourneyPrototype(): ReactNode {
-  const t = useNewTenant();
-  const [at, setAt] = useState(0);
   const [admin, setAdmin] = useState({ username: 'super_admin', email: '', password: '', ok: false });
+  const t = useNewTenant(admin.password);
+  const [at, setAt] = useState(0);
   const [handedOff, setHandedOff] = useState(false);
   const [signIn, setSignIn] = useState({ password: '', ok: false, party: '' });
   useAdvanceWhenProvisioned(t, at === PROVISIONING + 1, useCallback(() => setAt(HANDOFF + 1), []));

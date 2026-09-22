@@ -162,6 +162,10 @@ export const countryColumns: readonly ColumnMeta[] = [
  *
  * Emitted so the sidebar and the lookup selects do not have to know it
  * separately.
+ *
+ * The image member is present because the model declares a flag, and the
+ * shared screen renders its picker from this member rather than from a
+ * field, because no form control edits an image.
  */
 export const countryMeta = {
     entity: 'country',
@@ -170,4 +174,5 @@ export const countryMeta = {
     keyField: 'alpha2_code',
     columns: countryColumns,
     fields: countryFields,
+    image: { field: 'image_id', kind: 'flag' },
 } as const;

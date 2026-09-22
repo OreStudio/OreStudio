@@ -26,17 +26,26 @@
  * How the BFF reaches the tenant_status service.
  *
  * The descriptor holds values and no functions: the collection, the natural
- * key, the array fields and the subjects. The generic factory builds the
- * routes from it, so the entity adds no handler of its own.
+ * key, the members a write record carries and the subjects. The generic
+ * factory builds the canonical envelopes from those, so the entity adds no
+ * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_status_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenantStatusRoute: EntityRouteDescriptor = {
-  component: 'iam',
-  entity: 'tenant_status',
   collection: 'tenant_statuses',
-  keyFields: ['status'],
+  key: 'id',
+  keyField: 'status',
+  rowField: 'tenant_status',
+  writeFields: ['status', 'name', 'description', 'display_order'],
+  intentFields: {
+    reason: 'change_reason_code',
+    commentary: 'change_commentary',
+  },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_tenant_statuses_request,
     get: subjects.get_tenant_status_request,
@@ -45,6 +54,5 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
     history: subjects.list_tenant_status_versions_request,
   },
   rowsField: 'statuses',
-  getRowField: 'tenant_status',
   historyRowsField: 'versions',
 };

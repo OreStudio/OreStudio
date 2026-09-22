@@ -113,9 +113,17 @@ via its "Verifies task" field.
 
 * Review
 
+The review of PR #2127 raised three observations and called none of them a
+blocker. All three belong to the shared web layer rather than to the country
+conversion, so they are queued on
+[[id:DF8A46BF-1A4C-4424-B3D0-06080E28170C][Address the web-layer review findings]]
+and land in the next PR that touches that layer.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The save route infers create from =version > 0=, so a version it cannot read becomes a create rather than a refusal | =packages/bff/src/entity-routes.ts= | Accepted, deferred | Read an explicit create-or-amend signal and refuse a version that does not parse. |
+| 2 | The ='uuid'= write default is a string contract two languages must spell alike | =src/codegen/core.py=, =entity-routes.ts= | Accepted, deferred | One spelling shared by the projection and the factory, rather than two literals that have to match. |
+| 3 | The flag picker narrows on one hardcoded phrase | =packages/web/src/entity/EntityDetailContainer.tsx= | Accepted, deferred | Follow the generated image kind, so a second kind narrows its own way. |
 
 * Result
 

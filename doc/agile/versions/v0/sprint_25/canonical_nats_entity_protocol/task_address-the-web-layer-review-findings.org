@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: DF8A46BF-1A4C-4424-B3D0-06080E28170C
+:END:
+#+title: Task: Address the web-layer review findings
+#+description: The review of PR #2127 left three observations and the PR itself left two limitations. They belong to the shared web layer, so they land in the next PR that touches it rather than a reopened #2127: the save route's implicit create/amend contract, the write-default sentinel Python and TypeScript share, the image picker's hardcoded narrowing, a route-level test for the factory, and the as-of control the BFF forwards but the shared list screen does not offer.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/address-the-web-layer-review-findings
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shared web layer answers every point the review of PR #2127 raised, and the two limitations that PR named are closed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- The save route decides create from amend explicitly, and a version it cannot read is refused rather than treated as a create.
+- The write-default sentinel cannot drift between the projection that emits it and the factory that reads it.
+- The image picker's narrowing follows the generated image kind rather than one hardcoded phrase.
+- The route factory has a test that pins the canonical request each verb builds and the outcome it answers from.
+- The shared list screen offers the as-of control the BFF already forwards.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

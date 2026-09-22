@@ -6,7 +6,7 @@
 #+type: archetype
 #+output: projects/ores.web/packages/bff/src/generated/{component}/{entity}_route.ts
 #+facet: ores.ts.web
-#+model_types: domain_entity
+#+model_types: domain_entity junction
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-21
@@ -105,20 +105,20 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   key: '{{{bff_route.key}}}',
   keyField: '{{{bff_route.key_field}}}',
   rowField: '{{{bff_route.row_field}}}',
-  writeFields: [{{{bff_route.write_fields_block}}}],
+{{#bff_route.has_save}}  writeFields: [{{{bff_route.write_fields_block}}}],
   writeDefaults: {{{bff_route.write_defaults_block}}},
   intentFields: {
     reason: '{{{bff_route.intent_reason_field}}}',
     commentary: '{{{bff_route.intent_commentary_field}}}',
   },
-  listHasAsOf: {{bff_route.list_has_as_of}},
+{{/bff_route.has_save}}  listHasAsOf: {{bff_route.list_has_as_of}},
   listHasFilter: {{bff_route.list_has_filter}},
   versionsHasFilter: {{bff_route.versions_has_filter}},
   subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
-{{/bff_route.subjects_get}}    save: subjects.{{{bff_route.subjects_save}}},
-{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
+{{/bff_route.subjects_get}}{{#bff_route.subjects_save}}    save: subjects.{{{bff_route.subjects_save}}},
+{{/bff_route.subjects_save}}{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
 {{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',

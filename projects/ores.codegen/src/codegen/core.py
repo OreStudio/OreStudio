@@ -2190,6 +2190,9 @@ def web_declaration_projection(entity, model_path):
     key_field = presentation.get('key_field', '')
     keyed_by_natural_key = _keyed_by_natural_key(entity)
     messages = entity.get('messages') or []
+    # A write the model does not derive is a form that would send a request the
+    # service has no handler for, so the write affordances follow the verbs.
+    has_save = bool(_protocol_subject_key(messages, f'put_{entity_singular}_request'))
     has_history = bool(_protocol_message(
         messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
     # Whether the list read can be asked for a point in time, which is what
@@ -2211,8 +2214,8 @@ def web_declaration_projection(entity, model_path):
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
         'icon': _web_icon(presentation),
-        'can_create': _ui_bool(not read_only),
-        'can_edit': _ui_bool(not read_only),
+        'can_create': _ui_bool(not read_only and has_save),
+        'can_edit': _ui_bool(not read_only and has_save),
         'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
         'can_history': _ui_bool(has_history),
         'can_as_of': _ui_bool(has_as_of),
@@ -2378,12 +2381,16 @@ def bff_route_projection(entity, model_path):
     plural = entity.get('entity_plural', singular + 's')
     messages = entity.get('messages') or []
 
+    # A screen needs a list and nothing else: an entity the model declares as
+    # read-only has no write request, and withholding the whole screen set for
+    # it would hide the read that exists. Every other role is stated when the
+    # model derives it.
     subjects_list = _protocol_subject_key(messages, f'list_{plural}_request')
+    if not subjects_list:
+        return None
     subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
-    if not (subjects_list and subjects_save and subjects_remove):
-        return None
     subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
         messages, f'list_{singular}_versions_request')
@@ -2402,8 +2409,9 @@ def bff_route_projection(entity, model_path):
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
     key_drivable = len(key_members) == 1 and keyed_by_natural_key
+    has_save = bool(subjects_save)
     has_get = bool(subjects_get) and key_drivable
-    has_remove = key_drivable
+    has_remove = bool(subjects_remove) and key_drivable
     has_history = bool(history_response) and key_drivable
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
@@ -2431,9 +2439,6 @@ def bff_route_projection(entity, model_path):
         'key': 'id',
         'key_field': natural_key,
         'row_field': singular,
-        'write_fields_block': ', '.join(
-            f"'{field}'" for field in write_fields),
-        'write_defaults_block': write_defaults_block,
         'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
         'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
         'list_has_as_of': _ui_bool('as_of' in list_members),
@@ -2441,11 +2446,22 @@ def bff_route_projection(entity, model_path):
         'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
-        'subjects_save': subjects_save,
         'has_get': _ui_bool(has_get),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
     }
+    if has_save:
+        # A section member, present only when the model derives a write: a
+        # boolean spelled as the string 'false' reads as truthy to the
+        # renderer, so the section is gated on the member being there at all.
+        projection['has_save'] = 'true'
+        # The write record is what a save carries, so the descriptor states its
+        # members and the factory sends those and nothing else. An entity with
+        # no write request states none of this.
+        projection['subjects_save'] = subjects_save
+        projection['write_fields_block'] = ', '.join(
+            f"'{field}'" for field in write_fields)
+        projection['write_defaults_block'] = write_defaults_block
     if has_get:
         projection['subjects_get'] = subjects_get
     if has_remove:

@@ -165,7 +165,7 @@ export interface RunState {
  * semantics the contract chose over compensation.
  */
 export function useSimulatedRun(
-  profile: SeedProfile | undefined,
+  profile: Pick<SeedProfile, 'code' | 'steps'> | undefined,
   started: boolean,
   failAt: number | undefined,
 ): RunState & { readonly retry: () => void } {

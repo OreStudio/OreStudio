@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: 76B113F4-410A-4DE5-9757-A4E263B7B8E7
 :END:
 #+title: ores.iam.permission
@@ -134,6 +135,30 @@ std::string("Synthetic test permission")
 | id          | ID (UUID)   |
 | code        | Code        |
 | description | Description |
+
+** Presentation
+:PROPERTIES:
+:collection_name: permissions
+:key_field:       code
+:END:
+
+The screen's declaration. Every permission is seeded by the SQL create script,
+so the screen introduces none. =code= is the natural key, which is what the
+route's path segment carries and what the BFF addresses the entity by.
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder             |
+|-------------+-------------+-----------------+-----------+--------+-------------+-------------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter a permission code |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description     |
+
+*** Columns
+
+| enum_name   | field       | header      | type   | width |
+|-------------+-------------+-------------+--------+-------|
+| Code        | code        | Code        | string | 260   |
+| Description | description | Description | string | 480   |
 
 ** Paste blocks
 

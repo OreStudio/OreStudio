@@ -45,6 +45,7 @@ import { accountContactInformationDescriptor } from '../generated/iam/web/accoun
 import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
 import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
+import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -120,6 +121,7 @@ export const iamComponent: ComponentDefinition = {
     wired(tenantDescriptor, 'tenant', 'buildingSkyscraper'),
     wired(tenantStatusDescriptor, 'tenantStatus', 'clock'),
     wired(tenantTypeDescriptor, 'tenantType', 'classification'),
+    wired(permissionDescriptor, 'permission', 'keyMultiple'),
     entity('systemSetting', 'settings', planned),
   ],
   shortcuts: [

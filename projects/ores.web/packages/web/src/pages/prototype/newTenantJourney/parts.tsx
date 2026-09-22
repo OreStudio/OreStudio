@@ -109,6 +109,7 @@ export function ProfileChoice({
             selected === p.code ? 'border-accent ring-3 ring-accent/20' : 'hover:border-line-strong',
           )}
         >
+          {p.logo !== undefined && <img src={p.logo} alt="" className="mb-3 h-12 w-auto rounded-md bg-white p-1.5" />}
           <div className="flex items-baseline justify-between gap-2">
             <span className="font-semibold">{p.name}</span>
             <span className="text-xs text-ink-faint">{p.audience}</span>
@@ -147,6 +148,9 @@ export function DetailsForm({
 
   return (
     <div className="space-y-6">
+      {profile.defaults !== undefined && (
+        <p className="text-sm text-ink-muted">Filled in for {profile.name}. Change anything you need, then set the administrator's password.</p>
+      )}
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 text-sm font-semibold">Tenant</legend>
         <Field label="Name">

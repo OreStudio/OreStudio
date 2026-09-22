@@ -2045,6 +2045,13 @@ def web_declaration_projection(entity, model_path):
     messages = entity.get('messages') or []
     has_history = bool(_protocol_message(
         messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
+    # Whether the list read can be asked for a point in time, which is what
+    # lets the shared screen offer the window rather than the entity's own
+    # screen doing it by hand.
+    list_request = _protocol_message(
+        messages, f'list_{entity.get("entity_plural", entity_singular + "s")}_request')
+    has_as_of = any(field.get('name') == 'as_of'
+                    for field in (list_request or {}).get('fields') or [])
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2060,6 +2067,7 @@ def web_declaration_projection(entity, model_path):
         'can_edit': _ui_bool(not read_only),
         'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
         'can_history': _ui_bool(has_history),
+        'can_as_of': _ui_bool(has_as_of),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2266,6 +2274,7 @@ def bff_route_projection(entity, model_path):
     versions_members = {field['name']
                         for field in (versions_request or {}).get('fields') or []}
     has_audit_columns = bool(entity.get('has_audit_columns'))
+    write_defaults_block, has_minted_default = _write_defaults(entity)
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
@@ -2276,7 +2285,7 @@ def bff_route_projection(entity, model_path):
         'row_field': singular,
         'write_fields_block': ', '.join(
             f"'{field}'" for field in write_fields),
-        'write_defaults_block': _write_defaults_block(entity),
+        'write_defaults_block': write_defaults_block,
         'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
         'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
         'list_has_as_of': _ui_bool('as_of' in list_members),
@@ -2296,6 +2305,11 @@ def bff_route_projection(entity, model_path):
     if has_history:
         projection['subjects_history'] = subjects_history
         projection['history_rows_field'] = history_rows_field
+    if has_minted_default:
+        # A section member, present only when a write member takes it: pystache
+        # reads the string 'false' as truthy, so a boolean spelled as a string
+        # cannot gate a section.
+        projection['minted_write_default'] = 'true'
     return projection
 
 
@@ -2304,18 +2318,20 @@ def _ui_bool(value):
     return 'true' if value else 'false'
 
 
-def _write_defaults_block(entity):
-    """The value a write member takes when the form does not carry it.
+def _write_defaults(entity):
+    """(block, has_minted) for the value each write member falls back to.
 
     A create sends the whole write record, and a member the form does not show
     -- a surrogate key, a field the entity hides -- would otherwise go out
     with no value at all, which is not a record the service can decode. Each
     member takes the empty of its own type, and a surrogate primary key takes
-    a fresh identifier, because naming a row the store has never seen is the
-    caller's to do.
+    the symbol the factory mints an identifier for, because naming a row the
+    store has never seen is the caller's to do.
 
     Stated per member rather than inferred by the factory: only the model
-    knows which members are optional and which are identifiers.
+    knows which members are optional and which are identifiers. The minted
+    case is a symbol the generated module imports rather than a string it
+    spells, so the projection and the factory cannot disagree about it.
     """
     from .org_loader import (  # noqa: PLC0415
         _column_name,
@@ -2326,6 +2342,7 @@ def _write_defaults_block(entity):
                for column in write_record_columns(entity)}
     key_columns = set(_primary_key_columns(entity))
     members = []
+    has_minted = False
     for field in write_record_for(entity):
         name = field['name']
         column = by_name.get(name) or {}
@@ -2333,7 +2350,11 @@ def _write_defaults_block(entity):
         if column.get('nullable'):
             literal = 'null'
         elif cpp_type == 'boost::uuids::uuid':
-            literal = "'uuid'" if name in key_columns else 'null'
+            if name in key_columns:
+                literal = 'MINTED_WRITE_DEFAULT'
+                has_minted = True
+            else:
+                literal = 'null'
         elif cpp_type in ('std::int32_t', 'std::uint32_t',
                           'std::int64_t', 'std::uint64_t', 'int'):
             literal = '0'
@@ -2342,7 +2363,7 @@ def _write_defaults_block(entity):
         else:
             literal = "''"
         members.append(f'{name}: {literal}')
-    return '{ ' + ', '.join(members) + ' }'
+    return '{ ' + ', '.join(members) + ' }', has_minted
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):

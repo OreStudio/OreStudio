@@ -44,6 +44,7 @@ export const tenantTypeDescriptor: EntityDescriptor = {
         edit: true,
         remove: true,
         history: true,
+        asOf: false,
     },
     searchFields: [
         'type',

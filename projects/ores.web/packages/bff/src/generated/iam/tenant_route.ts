@@ -31,7 +31,7 @@
  * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/tenant_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const tenantRoute: EntityRouteDescriptor = {
   collection: 'tenants',
@@ -39,7 +39,7 @@ export const tenantRoute: EntityRouteDescriptor = {
   keyField: 'code',
   rowField: 'tenant',
   writeFields: ['id', 'code', 'name', 'type', 'description', 'hostname', 'status'],
-  writeDefaults: { id: 'uuid', code: '', name: '', type: '', description: null, hostname: '', status: '' },
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, code: '', name: '', type: '', description: null, hostname: '', status: '' },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

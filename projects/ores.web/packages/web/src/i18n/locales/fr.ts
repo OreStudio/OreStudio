@@ -173,6 +173,8 @@ const fr: SourceCatalogue = {
     last: 'Dernière',
     new: 'Nouveau',
     provenance: 'Provenance',
+    asOf: 'À la date du',
+    asOfNow: 'Maintenant',
     general: 'Général',
     related: 'Associé',
   },

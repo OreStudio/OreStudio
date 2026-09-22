@@ -44,6 +44,7 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
         edit: true,
         remove: false,
         history: false,
+        asOf: false,
     },
     searchFields: [
         'street_line_1',

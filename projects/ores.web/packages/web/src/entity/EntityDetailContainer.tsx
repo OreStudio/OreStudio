@@ -170,7 +170,12 @@ export function EntityDetailContainer({
     }
 
     save.mutate(
-      { data },
+      {
+        data,
+        // The question the form is answering, stated rather than left for the
+        // route to infer from the version it happens to hold.
+        mode: mode === 'create' ? 'create' : 'amend',
+      },
       {
         onSuccess: () => {
           setStage(undefined);
@@ -258,12 +263,7 @@ export function EntityDetailContainer({
                   String(values[descriptor.meta.image.field] ?? '').length === 0
                     ? undefined
                     : String(values[descriptor.meta.image.field]),
-                /*
-                 * A flag picker must not offer a staff photograph. Flags are
-                 * not tagged by kind, so the picker narrows by the convention
-                 * their descriptions and keys follow.
-                 */
-                ...(descriptor.meta.image.kind === 'flag' ? { filter: 'flag of' } : {}),
+                ...imageNarrowing(descriptor.meta.image.kind),
                 onPick: (chosen: string | null) => {
                   change(descriptor.meta.image?.field ?? '', chosen ?? '');
                 },
@@ -353,4 +353,21 @@ function blankField(control: FieldControl): unknown {
  */
 function isNumericColumn(style: ColumnStyle): boolean {
   return style === 'mono_center' || style === 'mono_right' || style === 'mono_bold_center';
+}
+
+/**
+ * What an image picker narrows to, by the kind the model states.
+ *
+ * The images are not tagged by kind; their keys and descriptions follow a
+ * convention instead, so the phrase is per kind rather than per entity. A kind
+ * with no phrase here offers every image, which is the honest default for an
+ * entity whose images have no convention to match on.
+ */
+const IMAGE_NARROWING: Readonly<Record<string, string>> = {
+  flag: 'flag of',
+};
+
+function imageNarrowing(kind: string): { readonly filter?: string } {
+  const phrase = IMAGE_NARROWING[kind];
+  return phrase === undefined ? {} : { filter: phrase };
 }

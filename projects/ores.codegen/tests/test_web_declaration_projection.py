@@ -28,7 +28,7 @@ COUNTRY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.country.org"
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
 
-def _project(columns, primary_key=None, *, current_state=False, **drawer):
+def _project(columns, primary_key=None, *, current_state=False, as_of=False, **drawer):
     """Project one hand-built entity, the way the enrichment leaves it.
 
     The primary key defaults to the natural key the drawer states, so remove
@@ -41,6 +41,7 @@ def _project(columns, primary_key=None, *, current_state=False, **drawer):
                     "key_field": "code", **drawer}
     entity = {"component": "refdata", "entity_singular": "book_status",
               "current_state": current_state,
+              "has_as_of_lookup": as_of,
               "presentation": presentation}
     entity["primary_key"] = primary_key or {
         "column": "code", "columns": [{"column": "code"}]}
@@ -126,6 +127,13 @@ def test_search_covers_the_declared_columns_and_drops_the_audit_tail():
     assert "'name'," in projection["search_fields_block"]
     assert "modified_by" not in projection["search_fields_block"]
     assert "version" not in projection["search_fields_block"]
+
+
+def test_a_list_that_takes_a_window_states_it():
+    """The control is offered only where the request can carry the instant."""
+    assert _project([{"field": "code"}])["can_as_of"] == "false"
+    assert _project([{"field": "code"}],
+                    as_of=True)["can_as_of"] == "true"
 
 
 def test_the_template_renders_the_declaration_for_a_real_model(tmp_path):

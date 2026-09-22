@@ -79,6 +79,15 @@ export interface EntityListPageProps<Row> {
   readonly collectionName: string;
   /** The field the type filter groups on, and the values present. */
   readonly filterField?: string;
+  /**
+   * The instant the page is read as of, when the entity's list read takes one.
+   *
+   * Absent for an entity whose request carries no window, so the control is
+   * not rendered rather than rendered and refused.
+   */
+  readonly asOf?: string;
+  /** Present exactly when `asOf` is: an absent pair renders no control. */
+  readonly onAsOfChange?: (asOf: string) => void;
 }
 
 const PAGE_SIZES = [25, 50, 100, 200, 500] as const;
@@ -107,6 +116,8 @@ export function EntityListPage<Row extends Record<string, unknown>>({
   watchedAs,
   collectionName,
   filterField,
+  asOf,
+  onAsOfChange,
 }: EntityListPageProps<Row>): ReactNode {
   const { t, plural } = useTranslation();
   const [search, setSearch] = useState('');
@@ -336,6 +347,34 @@ export function EntityListPage<Row extends Record<string, unknown>>({
               </option>
             ))}
           </select>
+        )}
+
+        {asOf !== undefined && onAsOfChange !== undefined && (
+          /*
+           * The window the page is read as of. An absent date means the
+           * present, which is the request's own absent value, so clearing the
+           * control is what returns to now.
+           */
+          <label className="flex h-9 items-center gap-2 rounded-md border border-line bg-bg-secondary px-2.5 text-sm text-ink focus-within:border-line-strong">
+            <MaskIcon name="clock" className="size-3.5 opacity-60" />
+            <span className="text-xs text-ink-muted">{t('entity.asOf')}</span>
+            <input
+              type="date"
+              value={asOf}
+              onChange={(event) => onAsOfChange(event.target.value)}
+              aria-label={t('entity.asOf')}
+              className="bg-transparent text-sm text-ink focus:outline-none"
+            />
+            {asOf.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onAsOfChange('')}
+                className="text-xs underline hover:text-ink"
+              >
+                {t('entity.asOfNow')}
+              </button>
+            )}
+          </label>
         )}
 
         <span className="ml-auto text-xs tabular-nums text-ink-faint">

@@ -100,6 +100,7 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
         edit: {{{web_declaration.can_edit}}},
         remove: {{{web_declaration.can_remove}}},
         history: {{{web_declaration.can_history}}},
+        asOf: {{{web_declaration.can_as_of}}},
     },
     searchFields: [
 {{{web_declaration.search_fields_block}}}    ],

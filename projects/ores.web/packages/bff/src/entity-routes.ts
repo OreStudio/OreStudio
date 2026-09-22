@@ -77,11 +77,10 @@ export interface EntityRouteDescriptor {
    *
    * A create sends the whole record, and a member the form does not show -- a
    * surrogate key, a field the entity hides -- has no value on the row yet.
-   * The blank is the empty of that member's own type, and `'uuid'` means the
-   * caller mints the identifier, because the model says that member names a
-   * row the store has never seen.
+   * The blank is the empty of that member's own type, or
+   * {@link MINTED_WRITE_DEFAULT} for a member the caller has to name.
    */
-  readonly writeDefaults: Readonly<Record<string, unknown>>;
+  readonly writeDefaults: Readonly<Record<string, WriteDefault>>;
   /**
    * The row fields carrying the change intent, e.g. `change_reason_code`.
    *
@@ -137,6 +136,24 @@ export interface EntityRouteDescriptor {
 /** Passed in rather than imported, because the session store is per-server. */
 export type RequireSession = (request: FastifyRequest) => LiveSession;
 
+/**
+ * A write default the caller mints rather than reads.
+ *
+ * The model states it for a surrogate primary key, whose value names a row the
+ * store has never seen. The generated descriptors import this symbol rather
+ * than spelling a string of their own, so the projection and the factory
+ * cannot disagree about what a minted default means.
+ */
+export const MINTED_WRITE_DEFAULT = { kind: 'mint' } as const;
+
+/** The value a write member falls back to when the form carried none. */
+export type WriteDefault =
+  | string
+  | number
+  | boolean
+  | null
+  | typeof MINTED_WRITE_DEFAULT;
+
 const identity = z.unknown();
 
 /**
@@ -189,11 +206,34 @@ function resultMessage(value: unknown): string {
 /**
  * The value a write member takes when the form carried none.
  *
- * A member whose default is `'uuid'` names a row the store has never seen, so
- * the caller mints it; every other default is already the value to send.
+ * A member whose default is {@link MINTED_WRITE_DEFAULT} names a row the store
+ * has never seen, so the caller mints it; every other default is already the
+ * value to send. A member the descriptor states no default for is a descriptor
+ * that disagrees with the model it was generated from, which the projection
+ * tests prevent, so it is refused rather than sent as no value.
  */
-function blankWriteValue(blank: unknown): unknown {
-  return blank === 'uuid' ? randomUUID() : blank;
+function blankWriteValue(blank: WriteDefault | undefined): unknown {
+  if (blank === undefined) {
+    throw new Error('the write record states no default for a member');
+  }
+  return blank === MINTED_WRITE_DEFAULT ? randomUUID() : blank;
+}
+
+/**
+ * The version a save was made against, or undefined when it cannot be read.
+ *
+ * A form sends the version of the record it read, or nought for a record that
+ * does not exist yet. A value that is not a whole number is not that: `Number`
+ * turns an absent member into zero and a malformed one into `NaN`, and either
+ * would answer the create-or-amend question for the caller instead of making
+ * the caller answer it.
+ */
+function readVersion(value: unknown): number | undefined {
+  if (value === undefined || value === null) return 0;
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+    return undefined;
+  }
+  return value;
 }
 
 /**
@@ -261,14 +301,28 @@ export function registerEntityRoutes(
 
   server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
     const session = requireSession(request);
-    const data = body(body(request.body)['data']);
+    const incoming = body(request.body);
+    const data = body(incoming['data']);
     /*
-     * A create states that the row is not there; an amend states the version
-     * it was made against. The web form carries the version it read, which is
-     * zero for a record that does not exist yet, so the two cases are the one
-     * member rather than a mode the caller has to state twice.
+     * The body states which question the save answers, and the precondition is
+     * that statement rather than something read off the version. A version is
+     * still required -- an amend names the row it read -- but a version that
+     * cannot be read is refused here rather than guessed at, because a create
+     * and an amend are different operations and neither is a fallback for the
+     * other.
      */
-    const version = Number(data['version'] ?? 0);
+    const mode = incoming['mode'];
+    if (mode !== 'create' && mode !== 'amend') {
+      return reply.code(400).send({
+        message: 'a save states whether it creates or amends',
+      });
+    }
+    const version = readVersion(data['version']);
+    if (version === undefined || (mode === 'create' && version !== 0)) {
+      return reply.code(400).send({
+        message: 'a save states the version it read, as a whole number',
+      });
+    }
     const response = await session.client.callAuthenticated(
       descriptor.subjects.save,
       {
@@ -281,9 +335,9 @@ export function registerEntityRoutes(
                 : data[field],
             ]),
           ),
-          precondition: version > 0
-            ? { kind: 'must_match_version', version }
-            : { kind: 'must_not_exist', version: null },
+          precondition: mode === 'create'
+            ? { kind: 'must_not_exist', version: null }
+            : { kind: 'must_match_version', version },
         },
         intent: {
           reason_code: String(data[descriptor.intentFields.reason] ?? ''),

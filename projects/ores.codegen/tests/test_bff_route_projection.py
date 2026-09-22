@@ -276,10 +276,13 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
     assert "list: subjects.list_tenants_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
-    # A surrogate key the form does not show is minted by the caller, and a
-    # nullable member the form does not show goes out as no value.
-    assert "writeDefaults: { id: 'uuid', code: '', name: '', type: '', " \
-           "description: null, hostname: '', status: '' }," in rendered
+    # A surrogate key the form does not show is minted by the caller, through
+    # the symbol the factory exports, and a nullable member the form does not
+    # show goes out as no value.
+    assert ("import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from "
+            "'../../entity-routes.js';" in rendered)
+    assert "writeDefaults: { id: MINTED_WRITE_DEFAULT, code: '', name: '', " \
+           "type: '', description: null, hostname: '', status: '' }," in rendered
     # The key record names the UUID primary key, so no route the path segment
     # drives is stated, and neither field is left behind.
     assert "get: subjects." not in rendered

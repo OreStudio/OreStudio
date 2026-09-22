@@ -129,6 +129,7 @@ public:
                     std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
             auto entries_t = cache_t::entries_map{}.transient();
             std::uint64_t count = 0;
+            std::size_t kept = 0;
             constexpr std::uint32_t page_size = 100;
             std::uint32_t offset = 0;
             while (true) {
@@ -146,8 +147,21 @@ public:
                     return msg;
                 }
                 const auto page_count = resp->parties.size();
-                for (auto& v : resp->parties)
+                for (auto& v : resp->parties) {
+                    /*
+                     * The read is widened to the system tenant so this service
+                     * can resolve a party's name during authentication, and a
+                     * party row belongs to the tenant that created it. Every
+                     * tenant's rows therefore arrive here, and only this
+                     * partition's may enter it: filing another tenant's rows
+                     * under this key would answer a lookup with a party the
+                     * caller's tenant never had.
+                     */
+                    if (v.tenant_id.to_string() != tenant_id)
+                        continue;
                     entries_t.set(v.id, std::move(v));
+                    ++kept;
+                }
                 count += page_count;
                 if (page_count == 0 || count >= resp->total)
                     break;
@@ -166,7 +180,8 @@ public:
             auto aux = children_t.persistent();
             cache_.replace_partition(tenant_id, entries, aux);
             BOOST_LOG_SEV(party_cache_lg(), debug)
-                << "Loaded " << count << " parties for tenant " << tenant_id;
+                << "Loaded " << kept << " parties for tenant " << tenant_id
+                << " (of " << count << " read)";
             return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_cache_lg(), warn)

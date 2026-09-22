@@ -406,11 +406,21 @@ Everything below is consumed by the C++ codegen pipeline only.
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope:      shared
 :entity_singular_short: party
 :entity_plural_short:   parties
 :entity_singular_words: party
 :entity_plural_words:   parties
 :END:
+
+Reads are left to row level security rather than filtered again in the
+query. IAM resolves a party's name while authenticating -- the chooser a
+caller picks from -- and it authenticates as its own service account, which
+lives in the system tenant. A party row belongs to the tenant that created
+it, so an app-level filter of =tenant_id = the caller= admits none of them,
+and every name in the chooser comes back empty. The policy on this table
+admits the owning tenant or the system tenant, and that is the statement
+that should decide it. Every other tenant still sees only its own rows.
 
 ** Domain includes
 

@@ -124,6 +124,7 @@ public:
     std::optional<domain::calendar_event>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest calendar events filtered by calendar_code, with pagination.
      * @param ctx Repository context with database connection

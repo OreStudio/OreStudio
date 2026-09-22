@@ -124,6 +124,25 @@ public:
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
     /**
+     * @brief Reads book statuses as they stood at a specific
+     * timepoint — @c valid_from <= as_of < valid_to — optionally filtered by
+     * code.
+     *
+     * Distinct from a versions read, which names a version number, and from a
+     * composite child's as-of read, which overlaps a parent's validity window:
+     * this resolves what the entity's own row meant at one instant.
+     *
+     * @param ctx Repository context with database connection
+     * @param as_of The instant to resolve, as the store writes timestamps
+     * @param code Optional key filter; empty reads every key
+     */
+    /**@{*/
+    std::vector<domain::book_status> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::book_status>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
+    /**@}*/
+
+    /**
      * @brief Reads latest book statuses with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

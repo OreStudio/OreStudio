@@ -210,6 +210,7 @@ std::optional<domain::ibor_index_convention> ibor_index_convention_repository::r
     return entities.front();
 }
 
+
 ibor_index_convention_repository::remove_status ibor_index_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing IBOR index convention. " << "id: " << id;

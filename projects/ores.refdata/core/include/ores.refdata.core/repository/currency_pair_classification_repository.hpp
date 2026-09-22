@@ -126,6 +126,7 @@ public:
     std::optional<domain::currency_pair_classification>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest currency pair classifications with pagination support.
      * @param ctx Repository context with database connection

@@ -190,6 +190,7 @@ std::optional<domain::currency_market_tier> currency_market_tier_repository::rea
     return entities.front();
 }
 
+
 currency_market_tier_repository::remove_status currency_market_tier_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier. " << "code: " << code;

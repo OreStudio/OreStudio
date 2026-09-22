@@ -184,6 +184,7 @@ std::optional<domain::tenor_convention> tenor_convention_repository::read_at_ver
     return entities.front();
 }
 
+
 tenor_convention_repository::remove_status tenor_convention_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention. " << "code: " << code;

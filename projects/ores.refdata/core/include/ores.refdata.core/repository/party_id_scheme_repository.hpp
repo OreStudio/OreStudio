@@ -124,6 +124,7 @@ public:
     std::optional<domain::party_id_scheme>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest party ID schemes with pagination support.
      * @param ctx Repository context with database connection

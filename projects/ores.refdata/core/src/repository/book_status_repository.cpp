@@ -180,6 +180,42 @@ std::optional<domain::book_status> book_status_repository::read_at_version(conte
     return entities.front();
 }
 
+std::vector<domain::book_status>
+book_status_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book statuses at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_status_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("code"_c);
+
+    return execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading book statuses at timepoint.");
+}
+
+std::vector<domain::book_status> book_status_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book status at timepoint. "
+                               << "code: " << code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_status_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading book status at timepoint.");
+}
+
 book_status_repository::remove_status book_status_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;

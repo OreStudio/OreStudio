@@ -183,6 +183,7 @@ std::optional<domain::instrument_code> instrument_code_repository::read_at_versi
     return entities.front();
 }
 
+
 instrument_code_repository::remove_status instrument_code_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing instrument code. " << "code: " << code;

@@ -123,6 +123,7 @@ public:
     std::optional<domain::purpose_type>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest purpose types with pagination support.
      * @param ctx Repository context with database connection

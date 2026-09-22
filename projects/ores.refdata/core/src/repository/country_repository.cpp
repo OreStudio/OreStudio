@@ -183,6 +183,43 @@ std::optional<domain::country> country_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
+                                                                   const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading countries at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<country_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("alpha2_code"_c);
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint.");
+}
+
+std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
+                                                                   const std::string& as_of,
+                                                                   const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint. "
+                               << "alpha2_code: " << alpha2_code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading country at timepoint.");
+}
+
 country_repository::remove_status country_repository::remove(context ctx,
                                                              const std::string& alpha2_code,
                                                              std::optional<std::uint32_t> version) {

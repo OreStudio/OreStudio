@@ -190,6 +190,7 @@ std::optional<domain::series_subclass_code> series_subclass_code_repository::rea
     return entities.front();
 }
 
+
 series_subclass_code_repository::remove_status series_subclass_code_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing series subclass code. " << "code: " << code;

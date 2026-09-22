@@ -183,6 +183,7 @@ std::optional<domain::monetary_nature> monetary_nature_repository::read_at_versi
     return entities.front();
 }
 
+
 monetary_nature_repository::remove_status monetary_nature_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing monetary nature. " << "code: " << code;

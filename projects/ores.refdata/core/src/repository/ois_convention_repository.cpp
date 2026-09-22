@@ -202,6 +202,7 @@ std::optional<domain::ois_convention> ois_convention_repository::read_at_version
     return entities.front();
 }
 
+
 ois_convention_repository::remove_status ois_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing OIS convention. " << "id: " << id;

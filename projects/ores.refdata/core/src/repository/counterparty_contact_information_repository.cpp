@@ -221,6 +221,7 @@ counterparty_contact_information_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_latest_by_counterparty_id(
     context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {

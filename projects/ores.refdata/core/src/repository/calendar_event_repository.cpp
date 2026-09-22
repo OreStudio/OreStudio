@@ -183,6 +183,7 @@ std::optional<domain::calendar_event> calendar_event_repository::read_at_version
     return entities.front();
 }
 
+
 std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_calendar_code(
     context ctx, const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events. calendar_code: " << calendar_code

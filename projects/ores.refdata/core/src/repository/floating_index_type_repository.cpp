@@ -187,6 +187,7 @@ std::optional<domain::floating_index_type> floating_index_type_repository::read_
     return entities.front();
 }
 
+
 floating_index_type_repository::remove_status floating_index_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing floating index type. " << "code: " << code;

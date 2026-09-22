@@ -185,6 +185,7 @@ std::optional<domain::business_unit_type> business_unit_type_repository::read_at
     return entities.front();
 }
 
+
 business_unit_type_repository::remove_status business_unit_type_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit type. " << "id: " << id;

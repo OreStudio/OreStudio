@@ -180,6 +180,7 @@ std::optional<domain::tenor_kind> tenor_kind_repository::read_at_version(context
     return entities.front();
 }
 
+
 tenor_kind_repository::remove_status tenor_kind_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor kind. " << "code: " << code;

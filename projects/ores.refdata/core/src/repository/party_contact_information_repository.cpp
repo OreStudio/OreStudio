@@ -216,6 +216,7 @@ party_contact_information_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest_by_party_id(context ctx,
                                                               const std::string& party_id,

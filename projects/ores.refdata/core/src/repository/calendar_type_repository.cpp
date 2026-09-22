@@ -181,6 +181,7 @@ std::optional<domain::calendar_type> calendar_type_repository::read_at_version(
     return entities.front();
 }
 
+
 calendar_type_repository::remove_status calendar_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar type. " << "code: " << code;

@@ -281,6 +281,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:      api
+:has_as_of_lookup:  true
 :END:
 
 ** Repository

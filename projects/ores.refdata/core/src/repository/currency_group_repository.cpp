@@ -183,6 +183,7 @@ std::optional<domain::currency_group> currency_group_repository::read_at_version
     return entities.front();
 }
 
+
 currency_group_repository::remove_status currency_group_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency group. " << "code: " << code;

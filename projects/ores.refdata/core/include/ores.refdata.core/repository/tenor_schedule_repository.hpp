@@ -124,6 +124,7 @@ public:
     std::optional<domain::tenor_schedule>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest tenor schedules filtered by calendar_code, with pagination.
      * @param ctx Repository context with database connection

@@ -183,6 +183,7 @@ std::optional<domain::tenor_schedule> tenor_schedule_repository::read_at_version
     return entities.front();
 }
 
+
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_calendar_code(
     context ctx, const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. calendar_code: " << calendar_code

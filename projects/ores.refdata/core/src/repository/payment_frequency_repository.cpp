@@ -186,6 +186,7 @@ std::optional<domain::payment_frequency> payment_frequency_repository::read_at_v
     return entities.front();
 }
 
+
 payment_frequency_repository::remove_status payment_frequency_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing payment frequency. " << "code: " << code;

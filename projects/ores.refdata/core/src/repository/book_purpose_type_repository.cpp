@@ -184,6 +184,7 @@ std::optional<domain::book_purpose_type> book_purpose_type_repository::read_at_v
     return entities.front();
 }
 
+
 book_purpose_type_repository::remove_status book_purpose_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book purpose type. " << "code: " << code;

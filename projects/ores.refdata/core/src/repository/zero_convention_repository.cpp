@@ -202,6 +202,7 @@ std::optional<domain::zero_convention> zero_convention_repository::read_at_versi
     return entities.front();
 }
 
+
 zero_convention_repository::remove_status zero_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing zero convention. " << "id: " << id;

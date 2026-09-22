@@ -199,6 +199,7 @@ currency_pair_classification_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 currency_pair_classification_repository::remove_status
 currency_pair_classification_repository::remove(context ctx,
                                                 const std::string& code,

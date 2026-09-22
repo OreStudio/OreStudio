@@ -124,6 +124,7 @@ public:
     std::optional<domain::overnight_index_convention>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest overnight index conventions with pagination support.
      * @param ctx Repository context with database connection

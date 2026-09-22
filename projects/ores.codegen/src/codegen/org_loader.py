@@ -2856,9 +2856,15 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
                    if filter_fields else None)
 
-    messages += paged_list_messages(
+    plain_list = paged_list_messages(
         f"list_{plural}", request_subject(component, plural, "list"),
         [], list_filter, plural_short, domain_type)
+    if entity.get("has_as_of_lookup"):
+        # A stated instant resolves the row's own validity window rather than
+        # naming a version, so the list carries it beside the page it narrows.
+        plain_list[0]["fields"].append(
+            _ts_field("as_of", "std::optional<std::string>"))
+    messages += plain_list
 
     messages += [
         _ts_message(f"get_{singular}_request",

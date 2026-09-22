@@ -199,6 +199,7 @@ tenor_resolution_algorithm_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 tenor_resolution_algorithm_repository::remove_status tenor_resolution_algorithm_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;

@@ -38,12 +38,14 @@ export const accountDescriptor: EntityDescriptor = {
     meta: accountMeta,
     routeSegment: 'account',
     apiBase: '/api/accounts',
-    keyParam: 'id',
+    keyFields: [
+        'username',
+    ],
     capabilities: {
         create: false,
         edit: false,
         remove: false,
-        history: false,
+        history: true,
     },
     searchFields: [
         'username',
@@ -51,5 +53,20 @@ export const accountDescriptor: EntityDescriptor = {
         'email',
         'job_title',
         'account_type',
+    ],
+    writeFields: [
+        'id',
+        'username',
+        'account_type',
+        'full_name',
+        'password_hash',
+        'password_salt',
+        'service_password_hash',
+        'totp_secret',
+        'email',
+        'default_party_id',
+        'image_id',
+        'job_title',
+        'reports_to_account_id',
     ],
 };

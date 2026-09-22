@@ -38,7 +38,9 @@ export const sessionDescriptor: EntityDescriptor = {
     meta: sessionMeta,
     routeSegment: 'session',
     apiBase: '/api/sessions',
-    keyParam: 'id',
+    keyFields: [
+        'id',
+    ],
     capabilities: {
         create: false,
         edit: false,
@@ -54,5 +56,19 @@ export const sessionDescriptor: EntityDescriptor = {
         'protocol',
         'bytes_sent',
         'bytes_received',
+    ],
+    writeFields: [
+        'id',
+        'start_time',
+        'account_id',
+        'end_time',
+        'client_ip',
+        'client_identifier',
+        'client_version_major',
+        'client_version_minor',
+        'bytes_sent',
+        'bytes_received',
+        'country_code',
+        'protocol',
     ],
 };

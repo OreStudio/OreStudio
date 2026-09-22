@@ -38,7 +38,9 @@ export const countryDescriptor: EntityDescriptor = {
     meta: countryMeta,
     routeSegment: 'country',
     apiBase: '/api/countries',
-    keyParam: 'id',
+    keyFields: [
+        'alpha2_code',
+    ],
     capabilities: {
         create: true,
         edit: true,
@@ -51,5 +53,14 @@ export const countryDescriptor: EntityDescriptor = {
         'numeric_code',
         'name',
         'official_name',
+    ],
+    writeFields: [
+        'alpha2_code',
+        'alpha3_code',
+        'numeric_code',
+        'name',
+        'official_name',
+        'image_id',
+        'coding_scheme_code',
     ],
 };

@@ -34,22 +34,18 @@ import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_con
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const accountContactInformationRoute: EntityRouteDescriptor = {
+  component: 'iam',
+  entity: 'account_contact_information',
   collection: 'account_contact_informations',
-  key: 'id',
-  keyField: 'email',
-  rowField: 'account_contact_information',
-  writeFields: ['id', 'account_id', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
-  writeDefaults: { id: 'uuid', account_id: null, street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: false,
-  listHasFilter: true,
-  versionsHasFilter: true,
+  keyFields: ['email'],
   subjects: {
     list: subjects.list_account_contact_informations_request,
+    get: subjects.get_account_contact_information_request,
     save: subjects.put_account_contact_information_request,
+    remove: subjects.delete_account_contact_information_request,
+    history: subjects.list_account_contact_information_versions_request,
   },
   rowsField: 'account_contact_informations',
+  getRowField: 'account_contact_information',
+  historyRowsField: 'versions',
 };

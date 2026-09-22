@@ -23,7 +23,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChangeReasonDialog, type ChangeReasonResult } from './ChangeReasonDialog.js';
 import { EntityHistoryPage, type HistoryVersion } from './EntityHistoryPage.js';
-import { entityRecordPath } from './entityPaths.js';
+import { entityRecordPath, keyFromParams } from './entityPaths.js';
 import { useEntityHistory, useSaveEntity, type EntityRow } from './useEntity.js';
 import { useChangeReasons } from '../api/changeReasons.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -45,7 +45,7 @@ export function EntityHistoryContainer({
   readonly descriptor: EntityDescriptor;
 }): ReactNode {
   const params = useParams();
-  const key = params[descriptor.keyParam];
+  const key = keyFromParams(descriptor, params);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -70,13 +70,30 @@ export function EntityHistoryContainer({
     const current = query.data?.[0];
     if (target === undefined || current === undefined) return;
     setFailure(undefined);
+    /*
+     * A version states its field values as the history rendered them, one
+     * entry per field, so the record a revert sends is built from those rather
+     * than from the version row -- which carries the provenance, not the
+     * entity. Only the members a write record states are taken.
+     */
+    const rendered = new Map<string, unknown>(
+      ((target['fields'] ?? []) as readonly { name: string; value: unknown }[])
+        .map((field) => [field.name, field.value]),
+    );
+    const data: Record<string, unknown> = {};
+    for (const name of descriptor.writeFields) {
+      if (rendered.has(name)) data[name] = rendered.get(name);
+    }
     save.mutate(
       {
-        data: {
-          ...target,
-          version: Number(current['version'] ?? 0),
-          change_reason_code: result.reasonCode,
-          change_commentary: result.commentary,
+        data,
+        // The current version, because that number is the optimistic lock:
+        // sending the reverted version would ask to overwrite a record that
+        // has moved on since.
+        version: Number(current['version'] ?? 0),
+        intent: {
+          reason_code: result.reasonCode,
+          commentary: result.commentary,
         },
       },
       {
@@ -129,7 +146,7 @@ export function EntityHistoryContainer({
         onRetry={() => void query.refetch()}
         // Opening a version is reading it, which is a route rather than a mode, so
         // the back button means something.
-        onOpenVersion={() => navigate(entityRecordPath(descriptor, String(key ?? '')))}
+        onOpenVersion={() => navigate(entityRecordPath(descriptor, key))}
         recordName={name}
         {...(descriptor.capabilities.edit
           ? {

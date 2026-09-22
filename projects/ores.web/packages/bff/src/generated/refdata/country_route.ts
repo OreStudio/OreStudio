@@ -34,19 +34,10 @@ import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/country
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const countryRoute: EntityRouteDescriptor = {
+  component: 'refdata',
+  entity: 'country',
   collection: 'countries',
-  key: 'id',
-  keyField: 'alpha2_code',
-  rowField: 'country',
-  writeFields: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name', 'image_id', 'coding_scheme_code'],
-  writeDefaults: { alpha2_code: '', alpha3_code: '', numeric_code: '', name: '', official_name: '', image_id: null, coding_scheme_code: null },
-  intentFields: {
-    reason: 'change_reason_code',
-    commentary: 'change_commentary',
-  },
-  listHasAsOf: true,
-  listHasFilter: false,
-  versionsHasFilter: true,
+  keyFields: ['alpha2_code'],
   subjects: {
     list: subjects.list_countries_request,
     get: subjects.get_country_request,
@@ -55,5 +46,6 @@ export const countryRoute: EntityRouteDescriptor = {
     history: subjects.list_country_versions_request,
   },
   rowsField: 'countries',
+  getRowField: 'country',
   historyRowsField: 'versions',
 };

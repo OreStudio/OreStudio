@@ -38,7 +38,8 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     meta: {{{web_declaration.entity_camel}}}Meta,
     routeSegment: '{{{web_declaration.route_segment}}}',
     apiBase: '{{{web_declaration.api_base}}}',
-    keyParam: '{{{web_declaration.key_param}}}',
+    keyFields: [
+{{{web_declaration.key_fields_block}}}    ],
     capabilities: {
         create: {{{web_declaration.can_create}}},
         edit: {{{web_declaration.can_edit}}},
@@ -47,4 +48,6 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     },
     searchFields: [
 {{{web_declaration.search_fields_block}}}    ],
+    writeFields: [
+{{{web_declaration.write_fields_block}}}    ],
 };

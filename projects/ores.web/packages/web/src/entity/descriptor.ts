@@ -54,16 +54,28 @@ export interface EntityDescriptor {
   /** Where the BFF serves it, e.g. `/api/countries`. */
   readonly apiBase: string;
   /**
-   * The route parameter that carries the natural key, e.g. `id`.
+   * The members of the key the model declares, in the order it declares them.
    *
-   * The parameter's name in the URL, which is not always the field's name: a
-   * route reads `/refdata/country/:id` and the key it carries is `alpha2_code`.
+   * The route carries one path segment per member, named for the member, and
+   * the record the form reads and writes is built from the same list. Most
+   * entities declare one; a junction declares none of its own and is
+   * identified by the pair it links, so it has two.
    */
-  readonly keyParam: string;
+  readonly keyFields: readonly string[];
   /** What the entity lets a person do. An absent capability is not rendered. */
   readonly capabilities: EntityCapabilities;
   /** The fields the list's search reaches across. */
   readonly searchFields: readonly string[];
+  /**
+   * The members a write record states, in the order the model declares them.
+   *
+   * The form builds the record it sends from these and nothing else. The row
+   * it read carries the audit tail and the version, which the write record
+   * does not state -- the service derives them and the store decides the
+   * version -- and a member the form does not show would otherwise be sent
+   * back as whatever the row happened to hold.
+   */
+  readonly writeFields: readonly string[];
   /**
    * How the detail form's fields group into tabs.
    *

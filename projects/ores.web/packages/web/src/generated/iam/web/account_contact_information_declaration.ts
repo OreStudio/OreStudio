@@ -38,12 +38,14 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
     meta: accountContactInformationMeta,
     routeSegment: 'account-contact-information',
     apiBase: '/api/account_contact_informations',
-    keyParam: 'id',
+    keyFields: [
+        'email',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
-        history: false,
+        remove: true,
+        history: true,
     },
     searchFields: [
         'street_line_1',
@@ -51,5 +53,18 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
         'country_code',
         'phone',
         'email',
+    ],
+    writeFields: [
+        'id',
+        'account_id',
+        'street_line_1',
+        'street_line_2',
+        'city',
+        'state',
+        'country_code',
+        'postal_code',
+        'phone',
+        'email',
+        'web_page',
     ],
 };

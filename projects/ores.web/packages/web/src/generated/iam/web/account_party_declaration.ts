@@ -38,14 +38,21 @@ export const accountPartyDescriptor: EntityDescriptor = {
     meta: accountPartyMeta,
     routeSegment: 'account-party',
     apiBase: '/api/account_parties',
-    keyParam: 'id',
+    keyFields: [
+        'account_id',
+        'party_id',
+    ],
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
+        remove: true,
         history: false,
     },
     searchFields: [
+        'account_id',
+        'party_id',
+    ],
+    writeFields: [
         'account_id',
         'party_id',
     ],

@@ -200,8 +200,7 @@ book_status_repository::read_at_timepoint(context ctx, const std::string& as_of)
 
 std::vector<domain::book_status> book_status_repository::read_at_timepoint(
     context ctx, const std::string& as_of, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading book status at timepoint. "
-                               << "code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading book status at timepoint. " << code;
     const auto ts = make_timestamp(as_of, lg());
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_status_entity>> |

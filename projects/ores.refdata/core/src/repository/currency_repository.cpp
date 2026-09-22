@@ -202,8 +202,7 @@ std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx
 std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
                                                                      const std::string& as_of,
                                                                      const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency at timepoint. "
-                               << "iso_code: " << iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency at timepoint. " << iso_code;
     const auto ts = make_timestamp(as_of, lg());
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |

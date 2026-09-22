@@ -8,7 +8,7 @@
 #+filetags: :iam_notify_triggers_unwired:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/iam-notify-triggers-unwired
-#+pr:
+#+pr: 2123
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2123][#2123]] | [sql] Wire the IAM current-state notify triggers into the aggregators |
 
 * Review
 

@@ -2668,6 +2668,96 @@ def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return write_record_fields(write_record_columns(entity), key_columns)
 
 
+def declared_key_field(entity: dict[str, Any]) -> str:
+    """The field the model declares as the entity's key on the wire.
+
+    The specification states that which key identifies an entity on the wire is
+    a declaration of the model, made once, and that it is the same key that
+    appears in the resource's operations and in the HTTP projection's path
+    parameter, so a caller never translates between an address and a request.
+    The one declaration is the presentation drawer's ``key_field``: it is
+    already the field the route's path segment carries, so reading it here is
+    what makes the operation and the path agree.
+
+    Empty when the model declares no key, which is a model with no screen. Its
+    storage key is then the only key it has, and callers address it by that.
+    """
+    return (entity.get("presentation") or {}).get("key_field") or ""
+
+
+def declared_key_column(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The declared key's own column dict, from wherever the model states it.
+
+    A declared key may be the primary key, a natural key or a plain column, and
+    the three are separate lists. Which one holds it does not matter to a
+    caller; the type it is written in does, so the search covers all three.
+    """
+    name = declared_key_field(entity)
+    if not name:
+        return None
+    primary_key = entity.get("primary_key") or {}
+    for column in (list(primary_key.get("columns") or [])
+                   + list(entity.get("natural_keys") or [])
+                   + list(entity.get("columns") or [])):
+        if _column_name(column) == name:
+            return column
+    return None
+
+
+def key_is_primary(entity: dict[str, Any]) -> bool:
+    """Whether the declared key is the storage key as well.
+
+    When the two agree nothing needs translating and the generated reads
+    already address the row. When they differ the model holds two keys -- a
+    natural one callers use and a surrogate the store keeps for foreign-key
+    stability -- so a read by the declared key has to exist for the address a
+    caller holds to resolve to a row.
+    """
+    name = declared_key_field(entity)
+    if not name:
+        return True
+    primary_key = entity.get("primary_key") or {}
+    columns = [_column_name(column)
+               for column in primary_key.get("columns") or []]
+    return columns == [name]
+
+
+def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every read by something other than the storage key, as method suffixes.
+
+    Two things ask for one. ``:service_find_by_code_column:`` is the older
+    opt-in and always names its method ``read_latest_by_code``, whatever column
+    it reads -- the name is load-bearing, because hand-written callers in
+    ``ores.cli`` and elsewhere spell it, so it is left exactly as it was. The
+    declared key asks for one whenever it is not the storage key, and names its
+    method after the column it reads.
+
+    When both name the same column the two are one method and it is stated
+    once, which is what keeps an entity that already opted in byte-identical.
+    """
+    finders: list[dict[str, Any]] = []
+    legacy = entity.get("service_find_by_code") or {}
+    if legacy.get("column"):
+        finder: dict[str, Any] = {"column": legacy["column"], "suffix": "code"}
+        if legacy.get("parent_column"):
+            finder["parent_column"] = legacy["parent_column"]
+        finders.append(finder)
+    declared = declared_key_field(entity)
+    if declared and not key_is_primary(entity):
+        if not any(f["column"] == declared for f in finders):
+            # A model may already state this read itself, as a paste block, and
+            # emitting a second declaration of the same method is a redefinition
+            # rather than an addition. The model's own is kept: it is the one a
+            # human wrote, and it may read more than the column's value.
+            stated = "\n".join(
+                code
+                for codes in (entity.get("implementations") or {}).values()
+                for code in codes)
+            if f"read_latest_by_{declared}" not in stated:
+                finders.append({"column": declared, "suffix": declared})
+    return finders
+
+
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """The typed key that addresses one entity -- every identifying column.
 

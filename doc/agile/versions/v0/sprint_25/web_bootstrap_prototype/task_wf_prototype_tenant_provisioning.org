@@ -26,11 +26,11 @@ Question: how should the Tenants page (state, retry, discard) and the new tenant
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance

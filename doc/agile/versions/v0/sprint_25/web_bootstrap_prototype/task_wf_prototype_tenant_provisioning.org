@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 7C655052-D82F-485A-A506-6F0C496546C6
 :END:
-#+title: Task: Prototype the tenant provisioning screens
-#+description: [wayfinder:prototype] Web-idiomatic tenant provisioning with seed profile choice.
+#+title: Task: Prototype the new tenant journey
+#+description: Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff.
 #+type: task
 #+level: s1
 #+filetags: :web_bootstrap_prototype:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Question: how should provisioning an operational or ACME demo tenant look and behave on ores.web, including progress? Blocked by: Decide the bootstrap workflow catalogue.
+Question: how should the Tenants page (state, retry, discard) and the new tenant journey (profile, parameters form, progress, handoff) look and behave on ores.web? Blocked by: nothing.
 
 * Status
 

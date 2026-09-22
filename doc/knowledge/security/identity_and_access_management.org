@@ -69,6 +69,10 @@ operation for each stage.
 - *Onboard*: a person's first use of a tenant or party that exists
   already. Onboarding sets what the person needs to start work. It
   does not create the tenant.
+- *Journey*: a guided path that takes a person through workflows and
+  their own actions (sign-in, onboarding) in order. The journeys are
+  /first run/, /new tenant/ and /new party/. The server keeps the
+  journey's state, so any client can resume it where it stopped.
 - *Seed profile*: the data set that provisioning gives a new tenant.
   The profile selects where the parties come from and which bundles
   are published. The profiles are:

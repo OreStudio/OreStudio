@@ -37,6 +37,7 @@ knowledge doc.
   of the same request. Build on [[file:../../../../../knowledge/architecture/internal_actor_impersonation.org][internal actor impersonation]], as
   the Acme provisioning does. No SQL shortcuts.
 - Seed profile, not source: profiles are data, not code branches.
+- Every new data type is generated with ores.codegen.
 - Grilling tasks: use the grilling and domain-modeling skills.
   Research tasks: use the research skill.
 - Legacy reference: ores.qt SystemProvisionerWizard,
@@ -78,10 +79,10 @@ knowledge doc.
 | [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
 | [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
 | [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
-| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | BACKLOG | | | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
-| [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the system bootstrap screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first-run screens. |
-| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the tenant provisioning screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic tenant provisioning with seed profile choice. |
-| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the onboarding and party provisioning screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic tenant onboarding and party provisioning. |
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
+| [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding. |
+| [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff. |
+| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic Parties page and new party journey. |
 
 * Decisions
 
@@ -90,6 +91,10 @@ knowledge doc.
   over a fixed step-kind catalogue; two profiles (Empty operational,
   ACME demo); new =party_essentials= bundle; resume on failure; who
   runs what is fixed.
+- [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]]: three workflows, three
+  journeys (first run, new tenant, new party) built from shared steps,
+  journey state in =ores.workflow=, journeys in web and shell,
+  onboarding is first sign-in only, automatic handoff sign-in.
 - [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
   Onboard and Seed profile are defined in the IAM knowledge doc's
   Tenant lifecycle section.

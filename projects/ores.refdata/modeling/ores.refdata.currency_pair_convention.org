@@ -185,6 +185,7 @@ trigger's DQ validation (see below) remains the production guard, and
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:cached_by:       refdata.client
 :END:
 
 ** Repository

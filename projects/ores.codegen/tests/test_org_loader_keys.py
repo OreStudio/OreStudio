@@ -17,6 +17,9 @@ from codegen.org_loader import (  # noqa: E402
     org_document_to_model,
     load_org_model,
     domain_entity_to_table_context,
+    declared_key_field,
+    key_is_primary,
+    key_finders,
 )
 
 REQUIRED_FLAGS = """\
@@ -373,3 +376,64 @@ Unique name.
     ctx = domain_entity_to_table_context(de)
     assert ctx["table"]["primary_key"]["column"] == "name"
     assert ctx["table"]["primary_key"]["is_text"] is True
+
+
+def _entity(key_field: str, primary: str = "id") -> dict:
+    """A hand-built enriched entity with a declared key and a storage key."""
+    return {
+        "entity_singular": "widget",
+        "primary_key": {"column": primary,
+                        "columns": [{"column": primary, "cpp_type": "std::string"}]},
+        "columns": [{"name": "code", "cpp_type": "std::string"},
+                    {"name": "name", "cpp_type": "std::string"}],
+        "natural_keys": [],
+        "presentation": {"collection_name": "widgets", "key_field": key_field},
+    }
+
+
+def test_a_model_with_no_screen_declares_no_key():
+    """Its storage key is the only key it has, and callers address it by that."""
+    entity = _entity("")
+    assert declared_key_field(entity) == ""
+    assert key_is_primary(entity) is True
+    assert key_finders(entity) == []
+
+
+def test_the_declared_key_is_the_storage_key_when_they_agree():
+    entity = _entity("code", primary="code")
+    assert declared_key_field(entity) == "code"
+    assert key_is_primary(entity) is True
+    assert key_finders(entity) == []
+
+
+def test_a_declared_key_that_is_not_the_storage_key_gets_a_read():
+    """This is the read a caller's address resolves to a row through."""
+    entity = _entity("code")
+    assert key_is_primary(entity) is False
+    assert key_finders(entity) == [{"column": "code", "suffix": "code"}]
+
+
+def test_the_older_opt_in_keeps_its_method_name_whatever_column_it_reads():
+    """Hand-written callers spell `read_latest_by_code`, so it cannot move."""
+    entity = _entity("short_code")
+    entity["service_find_by_code"] = {"column": "short_code"}
+    assert key_finders(entity) == [{"column": "short_code", "suffix": "code"}]
+
+
+def test_two_finders_that_name_one_column_are_one_method():
+    """Permission opts in with `code` and declares `code`, so it stays as it was."""
+    entity = _entity("code")
+    entity["service_find_by_code"] = {"column": "code"}
+    assert key_finders(entity) == [{"column": "code", "suffix": "code"}]
+
+
+def test_a_finder_the_model_states_itself_is_not_generated_twice():
+    """`role` declares `read_latest_by_name` as a paste block."""
+    entity = _entity("name")
+    entity["implementations"] = {
+        "DCA78C69-E508-48D9-9972-A9B8094D91FB": [
+            "std::vector<domain::widget> read_latest_by_name("
+            "context ctx, const std::string& name);",
+        ],
+    }
+    assert key_finders(entity) == []

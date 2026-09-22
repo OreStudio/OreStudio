@@ -23,61 +23,186 @@
  * To modify, update the template and regenerate.
  */
 import type { CurrencyPairConvention } from '../domain/currency_pair_convention.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetCurrencyPairConventionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCurrencyPairConventionsResponse {
-    conventions: CurrencyPairConvention[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveCurrencyPairConventionRequest {
-    data: CurrencyPairConvention;
-}
-
-export interface SaveCurrencyPairConventionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteCurrencyPairConventionRequest {
-    pair_codes: string[];
-}
-
-export interface DeleteCurrencyPairConventionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetCurrencyPairConventionHistoryRequest {
+export interface CurrencyPairConventionKey {
     pair_code: string;
 }
 
-export interface GetCurrencyPairConventionHistoryResponse {
-    history: CurrencyPairConvention[];
-    success: boolean;
-    message: string;
+export interface CurrencyPairConventionWrite {
+    pair_code: string;
+    pip_factor: number;
+    tick_size: number;
+    decimal_places: number;
+    business_day_convention: string | null;
+    spot_relative: boolean | null;
+    end_of_month: boolean | null;
 }
 
-export interface ReadCurrencyPairConventionsForCacheRequest {
-    tenant_id: string;
+export interface CurrencyPairConventionChange {
+    write: CurrencyPairConventionWrite;
+    precondition: Precondition;
 }
 
-export interface ReadCurrencyPairConventionsForCacheResponse {
-    success: boolean;
-    message: string;
+export interface CurrencyPairConventionRemoval {
+    key: CurrencyPairConventionKey;
+    precondition: Precondition;
+}
+
+export interface CurrencyPairConventionLookup {
+    key: CurrencyPairConventionKey;
+    currency_pair_convention: CurrencyPairConvention | null;
+}
+
+export interface CurrencyPairConventionEvent {
+    event_id: string;
+    key: CurrencyPairConventionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface CurrencyPairConventionVersionKey {
+    currency_pair_convention: CurrencyPairConventionKey;
+    version: number;
+}
+
+export interface CurrencyPairConventionVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListCurrencyPairConventionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListCurrencyPairConventionsResponse {
+    result: Result;
+    conventions: CurrencyPairConvention[];
+    total: number;
+}
+
+export interface GetCurrencyPairConventionRequest {
+    key: CurrencyPairConventionKey;
+}
+
+export interface GetCurrencyPairConventionResponse {
+    result: Result;
+    currency_pair_convention: CurrencyPairConvention | null;
+}
+
+export interface GetManyCurrencyPairConventionsRequest {
+    keys: CurrencyPairConventionKey[];
+}
+
+export interface GetManyCurrencyPairConventionsResponse {
+    result: Result;
+    entries: CurrencyPairConventionLookup[];
+}
+
+export interface PutCurrencyPairConventionRequest {
+    change: CurrencyPairConventionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCurrencyPairConventionResponse {
+    result: Result;
+    currency_pair_convention: CurrencyPairConvention;
+}
+
+export interface PutManyCurrencyPairConventionsRequest {
+    changes: CurrencyPairConventionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCurrencyPairConventionsResponse {
+    result: Result;
     conventions: CurrencyPairConvention[];
 }
 
+export interface DeleteCurrencyPairConventionRequest {
+    removal: CurrencyPairConventionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCurrencyPairConventionResponse {
+    result: Result;
+}
+
+export interface DeleteManyCurrencyPairConventionsRequest {
+    removals: CurrencyPairConventionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCurrencyPairConventionsResponse {
+    result: Result;
+}
+
+export interface ListCurrencyPairConventionVersionsRequest {
+    key: CurrencyPairConventionKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CurrencyPairConventionVersionsFilter | null;
+}
+
+export interface ListCurrencyPairConventionVersionsResponse {
+    result: Result;
+    versions: CurrencyPairConvention[];
+    total: number;
+}
+
+export interface GetCurrencyPairConventionVersionRequest {
+    key: CurrencyPairConventionVersionKey;
+}
+
+export interface GetCurrencyPairConventionVersionResponse {
+    result: Result;
+    version: CurrencyPairConvention;
+}
+
 export const subjects = {
-    get_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.list",
-    save_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.save",
+    list_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.list",
+    get_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.get",
+    get_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.get_many",
+    put_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.put",
+    put_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.put_many",
     delete_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.delete",
-    get_currency_pair_convention_history_request: "refdata.v1.currency_pair_conventions.history",
-    read_currency_pair_conventions_for_cache_request: "refdata.v1.currency_pair_conventions.read",
+    delete_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.delete_many",
+    list_currency_pair_convention_versions_request: "refdata.v1.currency_pair_conventions_versions.list",
+    get_currency_pair_convention_version_request: "refdata.v1.currency_pair_conventions_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_currency_pair_conventions_request: true,
+    get_currency_pair_convention_request: true,
+    get_many_currency_pair_conventions_request: true,
+    put_currency_pair_convention_request: true,
+    put_many_currency_pair_conventions_request: true,
+    delete_currency_pair_convention_request: true,
+    delete_many_currency_pair_conventions_request: true,
+    list_currency_pair_convention_versions_request: true,
+    get_currency_pair_convention_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.currency_pair_conventions_events.created",
+    updated: "refdata.v1.currency_pair_conventions_events.updated",
+    deleted: "refdata.v1.currency_pair_conventions_events.deleted",
 } as const;

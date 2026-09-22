@@ -24,8 +24,13 @@
  */
 #include "ores.refdata.core/service/currency_pair_convention_calendar_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -37,100 +42,308 @@ currency_pair_convention_calendar_service::currency_pair_convention_calendar_ser
     : ctx_(std::move(ctx))
     , repo_(ctx_) {}
 
+namespace {
+
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A junction key is the pair of columns that names one link, and the
+ * repository takes each in its own column's type, so the pair passes
+ * straight through.
+ */
 std::vector<domain::currency_pair_convention_calendar>
-currency_pair_convention_calendar_service::list_pair_convention_calendars() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currency pair convention calendars";
-    return repo_.read_latest();
+read_one(repository::currency_pair_convention_calendar_repository& repo,
+         const messaging::currency_pair_convention_calendar_key& key) {
+    return repo.read_latest(key.pair_code, key.calendar_code);
 }
 
-std::vector<domain::currency_pair_convention_calendar>
-currency_pair_convention_calendar_service::list_pair_convention_calendars(std::uint32_t offset,
-                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currency pair convention calendars with offset: "
-                               << offset << " limit: " << limit;
-    return repo_.read_latest(offset, limit);
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::currency_pair_convention_calendar_key
+key_from(const domain::currency_pair_convention_calendar& v) {
+    messaging::currency_pair_convention_calendar_key key;
+    key.pair_code = v.pair_code;
+    key.calendar_code = v.calendar_code;
+    return key;
 }
 
-std::uint32_t
-currency_pair_convention_calendar_service::get_total_pair_convention_calendar_count() {
-    return repo_.get_total_pair_convention_calendar_count();
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the two halves of the key and the junction's own
+ * columns and nothing else: tenancy, provenance, the version and the
+ * validity window are the service's and the database's to state, and are
+ * set after this conversion.
+ */
+domain::currency_pair_convention_calendar
+to_domain(const messaging::currency_pair_convention_calendar_write& write) {
+    domain::currency_pair_convention_calendar v;
+    v.pair_code = write.pair_code;
+    v.calendar_code = write.calendar_code;
+    return v;
 }
 
-std::vector<domain::currency_pair_convention_calendar>
-currency_pair_convention_calendar_service::list_pair_convention_calendars_by_pair(
-    const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing currency pair convention calendars for pair: "
-                               << pair_code;
-    return repo_.read_latest_by_pair(pair_code);
-}
+} // namespace
 
-std::vector<domain::currency_pair_convention_calendar>
-currency_pair_convention_calendar_service::list_pair_convention_calendars_by_pair(
-    const std::string& pair_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing currency pair convention calendars for pair: "
-                               << pair_code << " offset: " << offset << " limit: " << limit;
-    return repo_.read_latest_by_pair(pair_code, offset, limit);
-}
-
-std::uint32_t
-currency_pair_convention_calendar_service::get_total_pair_convention_calendar_count_by_pair(
-    const std::string& pair_code) {
-    return repo_.get_total_pair_convention_calendar_count_by_pair(pair_code);
-}
-
-std::uint32_t
-currency_pair_convention_calendar_service::get_total_pair_convention_calendar_count_by_calendar(
-    const std::string& calendar_code) {
-    return repo_.get_total_pair_convention_calendar_count_by_calendar(calendar_code);
-}
-
-void currency_pair_convention_calendar_service::save_pair_convention_calendar(
-    const domain::currency_pair_convention_calendar& pair_convention_calendar) {
-    if (pair_convention_calendar.pair_code.empty()) {
-        throw std::invalid_argument("Pair cannot be empty.");
+messaging::list_currency_pair_convention_calendars_response
+currency_pair_convention_calendar_service::list_currency_pair_convention_calendars(
+    const messaging::list_currency_pair_convention_calendars_request& request) {
+    messaging::list_currency_pair_convention_calendars_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
     }
-    if (pair_convention_calendar.calendar_code.empty()) {
-        throw std::invalid_argument("Calendar cannot be empty.");
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency pair convention calendar: "
-                               << pair_convention_calendar.pair_code << "/"
-                               << pair_convention_calendar.calendar_code;
-    auto t = pair_convention_calendar;
-    stamp(t, ctx_);
-    repo_.write(t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency pair convention calendar: "
-                              << pair_convention_calendar.pair_code << "/"
-                              << pair_convention_calendar.calendar_code;
+    response.pair_convention_calendars = repo_.read_latest(request.offset, request.limit);
+    response.total = repo_.get_total_pair_convention_calendar_count();
+    return response;
 }
 
-void currency_pair_convention_calendar_service::save_pair_convention_calendars(
-    const std::vector<domain::currency_pair_convention_calendar>& pair_convention_calendars) {
-    for (const auto& e : pair_convention_calendars) {
-        if (e.pair_code.empty()) {
-            throw std::invalid_argument("Pair cannot be empty.");
+messaging::list_by_pair_code_currency_pair_convention_calendars_response
+currency_pair_convention_calendar_service::list_by_pair_code_currency_pair_convention_calendars(
+    const messaging::list_by_pair_code_currency_pair_convention_calendars_request& request) {
+    messaging::list_by_pair_code_currency_pair_convention_calendars_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    response.pair_convention_calendars =
+        repo_.read_latest_by_pair(request.pair_code, request.offset, request.limit);
+    response.total = repo_.get_total_pair_convention_calendar_count_by_pair(request.pair_code);
+    return response;
+}
+
+messaging::get_currency_pair_convention_calendar_response
+currency_pair_convention_calendar_service::get_currency_pair_convention_calendar(
+    const messaging::get_currency_pair_convention_calendar_request& request) {
+    messaging::get_currency_pair_convention_calendar_response response;
+    auto found = read_one(repo_, request.key);
+    if (found.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.currency_pair_convention_calendar = std::move(found.front());
+    return response;
+}
+
+messaging::get_many_currency_pair_convention_calendars_response
+currency_pair_convention_calendar_service::get_many_currency_pair_convention_calendars(
+    const messaging::get_many_currency_pair_convention_calendars_request& request) {
+    messaging::get_many_currency_pair_convention_calendars_response response;
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    for (const auto& k : request.keys) {
+        messaging::currency_pair_convention_calendar_lookup entry;
+        entry.key = k;
+        auto found = read_one(repo_, k);
+        if (!found.empty())
+            entry.currency_pair_convention_calendar = std::move(found.front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+messaging::put_currency_pair_convention_calendar_response
+currency_pair_convention_calendar_service::put_currency_pair_convention_calendar(
+    const messaging::put_currency_pair_convention_calendar_request& request) {
+    messaging::put_currency_pair_convention_calendar_response response;
+    domain::currency_pair_convention_calendar value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(value, request.change.precondition);
+    auto written = read_one(repo_, key_from(value));
+    if (!written.empty())
+        response.currency_pair_convention_calendar = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_currency_pair_convention_calendars_response
+currency_pair_convention_calendar_service::put_many_currency_pair_convention_calendars(
+    const messaging::put_many_currency_pair_convention_calendars_request& request) {
+    messaging::put_many_currency_pair_convention_calendars_response response;
+    std::vector<domain::currency_pair_convention_calendar> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::currency_pair_convention_calendar value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
         }
-        if (e.calendar_code.empty()) {
-            throw std::invalid_argument("Calendar cannot be empty.");
-        }
+        batch.push_back(std::move(value));
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << pair_convention_calendars.size()
-                               << " currency pair convention calendars";
-    auto ts = pair_convention_calendars;
-    for (auto& e : ts) {
-        stamp(e, ctx_);
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(batch, claims);
+    response.pair_convention_calendars.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, key_from(value));
+        response.pair_convention_calendars.push_back(written.empty() ? value :
+                                                                       std::move(written.front()));
     }
-    repo_.write(ts);
-    BOOST_LOG_SEV(lg(), info) << "Saved " << pair_convention_calendars.size()
-                              << " currency pair convention calendars";
+    return response;
 }
 
-void currency_pair_convention_calendar_service::remove_pair_convention_calendar(
-    const std::string& pair_code, const std::string& calendar_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention calendar: " << pair_code << "/"
-                               << calendar_code;
-    repo_.remove(pair_code, calendar_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency pair convention calendar: " << pair_code << "/"
-                              << calendar_code;
+messaging::delete_currency_pair_convention_calendar_response
+currency_pair_convention_calendar_service::delete_currency_pair_convention_calendar(
+    const messaging::delete_currency_pair_convention_calendar_request& request) {
+    messaging::delete_currency_pair_convention_calendar_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result.outcome = outcome::invalid;
+        response.result.code = "precondition_not_supported";
+        response.result.message = "A removal cannot require that a row is absent.";
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_incomplete";
+            response.result.message = "A versioned removal must state the version it expects.";
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (
+        repo_.remove(request.removal.key.pair_code, request.removal.key.calendar_code, expected)) {
+        case repository::currency_pair_convention_calendar_repository::remove_status::removed:
+            break;
+        case repository::currency_pair_convention_calendar_repository::remove_status::missing:
+            response.result.outcome = outcome::missing;
+            response.result.code = "not_found";
+            break;
+        case repository::currency_pair_convention_calendar_repository::remove_status::conflicting:
+            response.result.outcome = outcome::conflict;
+            response.result.code = "version_conflict";
+            break;
+        case repository::currency_pair_convention_calendar_repository::remove_status::unsupported:
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_not_supported";
+            response.result.message = "This resource keeps no version to match.";
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_currency_pair_convention_calendars_response
+currency_pair_convention_calendar_service::delete_many_currency_pair_convention_calendars(
+    const messaging::delete_many_currency_pair_convention_calendars_request& request) {
+    messaging::delete_many_currency_pair_convention_calendars_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result.outcome = outcome::invalid;
+            response.result.code = "batch_removal_is_unconditional";
+            response.result.message =
+                "A batch removal is unconditional; remove the rows one at a time "
+                "to state a version.";
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> pair_code_keys;
+    pair_code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        pair_code_keys.push_back(removal.key.pair_code);
+    std::vector<std::string> calendar_code_keys;
+    calendar_code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        calendar_code_keys.push_back(removal.key.calendar_code);
+    repo_.remove(pair_code_keys, calendar_code_keys);
+    return response;
+}
+
+ores::utility::domain::result currency_pair_convention_calendar_service::prepare_change(
+    const messaging::currency_pair_convention_calendar_change& change,
+    const ores::utility::domain::change_intent& intent,
+    domain::currency_pair_convention_calendar& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, key_from(out));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty()) {
+                result.outcome = outcome::conflict;
+                result.code = "already_exists";
+                return result;
+            }
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty()) {
+                result.outcome = outcome::missing;
+                result.code = "not_found";
+                return result;
+            }
+            // The protocol states the version as a uint32 and the row carries it
+            // as an int, so the comparison states the conversion.
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                result.outcome = outcome::conflict;
+                result.code = "version_conflict";
+                return result;
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    return result;
 }
 
 }

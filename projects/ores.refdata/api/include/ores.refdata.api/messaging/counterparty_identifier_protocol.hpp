@@ -26,80 +26,280 @@
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_IDENTIFIER_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-struct get_counterparty_identifiers_request {
-    using response_type = struct get_counterparty_identifiers_response;
+struct counterparty_identifier_key {
+    boost::uuids::uuid id;
+};
+
+struct counterparty_identifier_write {
+    boost::uuids::uuid id;
+    boost::uuids::uuid counterparty_id;
+    std::string id_scheme;
+    std::string id_value;
+    std::string description;
+};
+
+struct counterparty_identifier_change {
+    counterparty_identifier_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct counterparty_identifier_removal {
+    counterparty_identifier_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct counterparty_identifier_lookup {
+    counterparty_identifier_key key;
+    std::optional<ores::refdata::domain::counterparty_identifier> counterparty_identifier;
+};
+
+struct counterparty_identifiers_filter {
+    std::optional<boost::uuids::uuid> counterparty_id;
+};
+
+struct counterparty_identifier_event {
+    boost::uuids::uuid event_id;
+    counterparty_identifier_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct counterparty_identifier_version_key {
+    counterparty_identifier_key counterparty_identifier;
+    std::uint32_t version;
+};
+
+struct counterparty_identifier_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_counterparty_identifiers_request {
+    using response_type = struct list_counterparty_identifiers_response;
     static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<counterparty_identifiers_filter> filter;
 };
 
-struct get_counterparty_identifiers_response {
+struct list_counterparty_identifiers_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_counterparty_identifier_request {
-    using response_type = struct save_counterparty_identifier_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.save";
-    ores::refdata::domain::counterparty_identifier data;
-
-    static save_counterparty_identifier_request
-    from(ores::refdata::domain::counterparty_identifier v) {
-        return {.data = std::move(v)};
-    }
+struct get_counterparty_identifier_request {
+    using response_type = struct get_counterparty_identifier_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_identifier_key key;
 };
 
-struct save_counterparty_identifier_response {
-    bool success = false;
-    std::string message;
+struct get_counterparty_identifier_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::counterparty_identifier> counterparty_identifier;
+};
+
+struct get_many_counterparty_identifiers_request {
+    using response_type = struct get_many_counterparty_identifiers_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<counterparty_identifier_key> keys;
+};
+
+struct get_many_counterparty_identifiers_response {
+    ores::utility::domain::result result;
+    std::vector<counterparty_identifier_lookup> entries;
+};
+
+struct put_counterparty_identifier_request {
+    using response_type = struct put_counterparty_identifier_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_identifier_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_counterparty_identifier_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::counterparty_identifier counterparty_identifier;
+};
+
+struct put_many_counterparty_identifiers_request {
+    using response_type = struct put_many_counterparty_identifiers_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<counterparty_identifier_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_counterparty_identifiers_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
 };
 
 struct delete_counterparty_identifier_request {
     using response_type = struct delete_counterparty_identifier_response;
     static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_identifier_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_counterparty_identifier_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_counterparty_identifier_history_request {
-    using response_type = struct get_counterparty_identifier_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.history";
-    std::string id;
+struct delete_many_counterparty_identifiers_request {
+    using response_type = struct delete_many_counterparty_identifiers_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparty_identifiers.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<counterparty_identifier_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_counterparty_identifier_history_response {
-    std::vector<ores::refdata::domain::counterparty_identifier> history;
-    bool success = false;
-    std::string message;
+struct delete_many_counterparty_identifiers_response {
+    ores::utility::domain::result result;
 };
 
-struct get_counterparty_identifiers_by_counterparty_id_request {
-    using response_type = struct get_counterparty_identifiers_by_counterparty_id_response;
+struct list_by_counterparty_id_counterparty_identifiers_request {
+    using response_type = struct list_by_counterparty_id_counterparty_identifiers_response;
     static constexpr std::string_view nats_subject =
         "refdata.v1.counterparty_identifiers.list_by_counterparty_id";
-    std::string counterparty_id;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid counterparty_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<counterparty_identifiers_filter> filter;
 };
 
-struct get_counterparty_identifiers_by_counterparty_id_response {
+struct list_by_counterparty_id_counterparty_identifiers_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
+
+struct list_counterparty_identifier_versions_request {
+    using response_type = struct list_counterparty_identifier_versions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparty_identifiers_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_identifier_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<counterparty_identifier_versions_filter> filter;
+};
+
+struct list_counterparty_identifier_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::counterparty_identifier> versions;
+    std::uint64_t total;
+};
+
+struct get_counterparty_identifier_version_request {
+    using response_type = struct get_counterparty_identifier_version_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparty_identifiers_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_identifier_version_key key;
+};
+
+struct get_counterparty_identifier_version_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::counterparty_identifier version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace counterparty_identifier_event_subjects {
+inline constexpr std::string_view created = "refdata.v1.counterparty_identifiers_events.created";
+inline constexpr std::string_view updated = "refdata.v1.counterparty_identifiers_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.counterparty_identifiers_events.deleted";
+}
 
 }
 

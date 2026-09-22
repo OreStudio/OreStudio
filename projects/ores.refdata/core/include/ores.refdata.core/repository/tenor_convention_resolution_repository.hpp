@@ -29,6 +29,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -61,6 +64,15 @@ public:
     std::vector<domain::tenor_convention_resolution> read_latest();
     std::vector<domain::tenor_convention_resolution> read_latest(std::uint32_t offset,
                                                                  std::uint32_t limit);
+
+    /**
+     * @brief Reads the tenor convention resolution rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::tenor_convention_resolution> read_latest(const std::string& convention_code,
+                                                                 const std::string& tenor_code);
 
     /**
      * @brief Gets the total count of active tenor convention resolutions.

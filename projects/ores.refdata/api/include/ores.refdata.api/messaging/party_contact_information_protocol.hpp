@@ -26,81 +26,288 @@
 #define ORES_REFDATA_API_MESSAGING_PARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-struct get_party_contact_informations_request {
-    using response_type = struct get_party_contact_informations_response;
+struct party_contact_information_key {
+    boost::uuids::uuid id;
+};
+
+struct party_contact_information_write {
+    boost::uuids::uuid id;
+    std::string contact_type;
+    std::string street_line_1;
+    std::string street_line_2;
+    std::string city;
+    std::string state;
+    std::string country_code;
+    std::string postal_code;
+    std::string phone;
+    std::string email;
+    std::string web_page;
+};
+
+struct party_contact_information_change {
+    party_contact_information_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct party_contact_information_removal {
+    party_contact_information_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct party_contact_information_lookup {
+    party_contact_information_key key;
+    std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
+};
+
+struct party_contact_informations_filter {
+    std::optional<boost::uuids::uuid> party_id;
+};
+
+struct party_contact_information_event {
+    boost::uuids::uuid event_id;
+    party_contact_information_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct party_contact_information_version_key {
+    party_contact_information_key party_contact_information;
+    std::uint32_t version;
+};
+
+struct party_contact_information_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_party_contact_informations_request {
+    using response_type = struct list_party_contact_informations_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_contact_informations.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_contact_informations_filter> filter;
 };
 
-struct get_party_contact_informations_response {
+struct list_party_contact_informations_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_party_contact_information_request {
-    using response_type = struct save_party_contact_information_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_contact_informations.save";
-    ores::refdata::domain::party_contact_information data;
-
-    static save_party_contact_information_request
-    from(ores::refdata::domain::party_contact_information v) {
-        return {.data = std::move(v)};
-    }
+struct get_party_contact_information_request {
+    using response_type = struct get_party_contact_information_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_contact_informations.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_contact_information_key key;
 };
 
-struct save_party_contact_information_response {
-    bool success = false;
-    std::string message;
+struct get_party_contact_information_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
+};
+
+struct get_many_party_contact_informations_request {
+    using response_type = struct get_many_party_contact_informations_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_contact_informations.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_contact_information_key> keys;
+};
+
+struct get_many_party_contact_informations_response {
+    ores::utility::domain::result result;
+    std::vector<party_contact_information_lookup> entries;
+};
+
+struct put_party_contact_information_request {
+    using response_type = struct put_party_contact_information_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_contact_informations.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_contact_information_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_party_contact_information_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::party_contact_information party_contact_information;
+};
+
+struct put_many_party_contact_informations_request {
+    using response_type = struct put_many_party_contact_informations_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_contact_informations.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_contact_information_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_party_contact_informations_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
 };
 
 struct delete_party_contact_information_request {
     using response_type = struct delete_party_contact_information_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_contact_informations.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_contact_information_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_party_contact_information_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_party_contact_information_history_request {
-    using response_type = struct get_party_contact_information_history_response;
+struct delete_many_party_contact_informations_request {
+    using response_type = struct delete_many_party_contact_informations_response;
     static constexpr std::string_view nats_subject =
-        "refdata.v1.party_contact_informations.history";
-    std::string id;
+        "refdata.v1.party_contact_informations.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_contact_information_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_party_contact_information_history_response {
-    std::vector<ores::refdata::domain::party_contact_information> history;
-    bool success = false;
-    std::string message;
+struct delete_many_party_contact_informations_response {
+    ores::utility::domain::result result;
 };
 
-struct get_party_contact_informations_by_party_id_request {
-    using response_type = struct get_party_contact_informations_by_party_id_response;
+struct list_by_party_id_party_contact_informations_request {
+    using response_type = struct list_by_party_id_party_contact_informations_response;
     static constexpr std::string_view nats_subject =
         "refdata.v1.party_contact_informations.list_by_party_id";
-    std::string party_id;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid party_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_contact_informations_filter> filter;
 };
 
-struct get_party_contact_informations_by_party_id_response {
+struct list_by_party_id_party_contact_informations_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
+
+struct list_party_contact_information_versions_request {
+    using response_type = struct list_party_contact_information_versions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_contact_informations_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_contact_information_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_contact_information_versions_filter> filter;
+};
+
+struct list_party_contact_information_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_contact_information> versions;
+    std::uint64_t total;
+};
+
+struct get_party_contact_information_version_request {
+    using response_type = struct get_party_contact_information_version_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_contact_informations_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_contact_information_version_key key;
+};
+
+struct get_party_contact_information_version_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::party_contact_information version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace party_contact_information_event_subjects {
+inline constexpr std::string_view created = "refdata.v1.party_contact_informations_events.created";
+inline constexpr std::string_view updated = "refdata.v1.party_contact_informations_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.party_contact_informations_events.deleted";
+}
 
 }
 

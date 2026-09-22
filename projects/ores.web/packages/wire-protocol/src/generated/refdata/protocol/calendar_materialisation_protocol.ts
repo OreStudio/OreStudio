@@ -44,3 +44,11 @@ export interface RegenerateCalendarDatesResponse {
 export const subjects = {
     regenerate_calendar_dates_request: "refdata.v1.calendar_dates.regenerate",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    regenerate_calendar_dates_request: true,
+} as const;

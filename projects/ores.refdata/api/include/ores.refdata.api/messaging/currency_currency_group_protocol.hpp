@@ -26,100 +26,211 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_CURRENCY_GROUP_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief The currency group row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct currency_currency_group_view {
+struct currency_currency_group_key {
+    std::string currency_iso_code;
+    std::string currency_group_code;
+};
+
+struct currency_currency_group_write {
+    std::string currency_iso_code;
+    std::string currency_group_code;
+};
+
+struct currency_currency_group_change {
+    currency_currency_group_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct currency_currency_group_removal {
+    currency_currency_group_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct currency_currency_group_lookup {
+    currency_currency_group_key key;
+    std::optional<ores::refdata::domain::currency_currency_group> currency_currency_group;
+};
+
+struct currency_currency_groups_filter {
+    std::optional<std::string> currency_iso_code;
+};
+
+struct currency_currency_group_event {
+    boost::uuids::uuid event_id;
+    currency_currency_group_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct list_currency_currency_groups_request {
+    using response_type = struct list_currency_currency_groups_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<currency_currency_groups_filter> filter;
+};
+
+struct list_currency_currency_groups_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::currency_currency_group> currency_currency_groups;
+    std::uint64_t total;
+};
+
+struct get_currency_currency_group_request {
+    using response_type = struct get_currency_currency_group_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_currency_group_key key;
+};
+
+struct get_currency_currency_group_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::currency_currency_group> currency_currency_group;
+};
+
+struct get_many_currency_currency_groups_request {
+    using response_type = struct get_many_currency_currency_groups_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_currency_group_key> keys;
+};
+
+struct get_many_currency_currency_groups_response {
+    ores::utility::domain::result result;
+    std::vector<currency_currency_group_lookup> entries;
+};
+
+struct put_currency_currency_group_request {
+    using response_type = struct put_currency_currency_group_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_currency_group_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_currency_currency_group_response {
+    ores::utility::domain::result result;
     ores::refdata::domain::currency_currency_group currency_currency_group;
 };
 
-struct get_currency_currency_groups_request {
-    using response_type = struct get_currency_currency_groups_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+struct put_many_currency_currency_groups_request {
+    using response_type = struct put_many_currency_currency_groups_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_currency_group_change> changes;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_currency_currency_groups_response {
+struct put_many_currency_currency_groups_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_currency_group> currency_currency_groups;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct get_currency_currency_groups_by_currency_request {
-    using response_type = struct get_currency_currency_groups_by_currency_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_currency_groups.list_by_currency_iso_code";
-    std::string currency_iso_code;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_currency_currency_groups_by_currency_response {
-    std::vector<currency_currency_group_view> currency_currency_groups;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct save_currency_currency_group_request {
-    using response_type = struct save_currency_currency_group_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.save";
-    std::vector<ores::refdata::domain::currency_currency_group> currency_currency_groups;
-
-    static save_currency_currency_group_request
-    from(std::vector<ores::refdata::domain::currency_currency_group> v) {
-        return {.currency_currency_groups = std::move(v)};
-    }
-};
-
-struct save_currency_currency_group_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_currency_currency_group_request {
     using response_type = struct delete_currency_currency_group_response;
     static constexpr std::string_view nats_subject = "refdata.v1.currency_currency_groups.delete";
-    std::vector<std::string> currency_iso_codes;
-    std::vector<std::string> currency_group_codes;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    currency_currency_group_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_currency_currency_group_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct count_currency_currency_groups_by_currency_request {
-    using response_type = struct count_currency_currency_groups_by_currency_response;
+struct delete_many_currency_currency_groups_request {
+    using response_type = struct delete_many_currency_currency_groups_response;
     static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_currency_groups.count_by_currency_iso_code";
+        "refdata.v1.currency_currency_groups.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<currency_currency_group_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_currency_currency_groups_response {
+    ores::utility::domain::result result;
+};
+
+struct list_by_currency_iso_code_currency_currency_groups_request {
+    using response_type = struct list_by_currency_iso_code_currency_currency_groups_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.currency_currency_groups.list_by_currency_iso_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string currency_iso_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<currency_currency_groups_filter> filter;
 };
 
-struct count_currency_currency_groups_by_currency_response {
-    int total_available_count = 0;
+struct list_by_currency_iso_code_currency_currency_groups_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::currency_currency_group> currency_currency_groups;
+    std::uint64_t total;
 };
 
-struct count_currency_currency_groups_by_group_request {
-    using response_type = struct count_currency_currency_groups_by_group_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.currency_currency_groups.count_by_currency_group_code";
-    std::string currency_group_code;
-};
-
-struct count_currency_currency_groups_by_group_response {
-    int total_available_count = 0;
-};
 }
 
 #endif

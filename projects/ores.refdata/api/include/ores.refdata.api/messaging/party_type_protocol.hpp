@@ -26,63 +26,246 @@
 #define ORES_REFDATA_API_MESSAGING_PARTY_TYPE_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-struct get_party_types_request {
-    using response_type = struct get_party_types_response;
+struct party_type_key {
+    std::string code;
+};
+
+struct party_type_write {
+    std::string code;
+    std::string name;
+    std::string description;
+    int display_order;
+};
+
+struct party_type_change {
+    party_type_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct party_type_removal {
+    party_type_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct party_type_lookup {
+    party_type_key key;
+    std::optional<ores::refdata::domain::party_type> party_type;
+};
+
+struct party_type_event {
+    boost::uuids::uuid event_id;
+    party_type_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct party_type_version_key {
+    party_type_key party_type;
+    std::uint32_t version;
+};
+
+struct party_type_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_party_types_request {
+    using response_type = struct list_party_types_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_types.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_party_types_response {
+struct list_party_types_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_type> types;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_party_type_request {
-    using response_type = struct save_party_type_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_types.save";
-    ores::refdata::domain::party_type data;
-
-    static save_party_type_request from(ores::refdata::domain::party_type v) {
-        return {.data = std::move(v)};
-    }
+struct get_party_type_request {
+    using response_type = struct get_party_type_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_type_key key;
 };
 
-struct save_party_type_response {
-    bool success = false;
-    std::string message;
+struct get_party_type_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::party_type> party_type;
+};
+
+struct get_many_party_types_request {
+    using response_type = struct get_many_party_types_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_type_key> keys;
+};
+
+struct get_many_party_types_response {
+    ores::utility::domain::result result;
+    std::vector<party_type_lookup> entries;
+};
+
+struct put_party_type_request {
+    using response_type = struct put_party_type_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_type_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_party_type_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::party_type party_type;
+};
+
+struct put_many_party_types_request {
+    using response_type = struct put_many_party_types_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_type_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_party_types_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_type> types;
 };
 
 struct delete_party_type_request {
     using response_type = struct delete_party_type_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_types.delete";
-    std::vector<std::string> codes;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_type_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_party_type_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_party_type_history_request {
-    using response_type = struct get_party_type_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_types.history";
-    std::string code;
+struct delete_many_party_types_request {
+    using response_type = struct delete_many_party_types_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_type_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_party_type_history_response {
-    std::vector<ores::refdata::domain::party_type> history;
-    bool success = false;
-    std::string message;
+struct delete_many_party_types_response {
+    ores::utility::domain::result result;
 };
+
+struct list_party_type_versions_request {
+    using response_type = struct list_party_type_versions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_type_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_type_versions_filter> filter;
+};
+
+struct list_party_type_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_type> versions;
+    std::uint64_t total;
+};
+
+struct get_party_type_version_request {
+    using response_type = struct get_party_type_version_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_type_version_key key;
+};
+
+struct get_party_type_version_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::party_type version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace party_type_event_subjects {
+inline constexpr std::string_view created = "refdata.v1.party_types_events.created";
+inline constexpr std::string_view updated = "refdata.v1.party_types_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.party_types_events.deleted";
+}
 
 }
 

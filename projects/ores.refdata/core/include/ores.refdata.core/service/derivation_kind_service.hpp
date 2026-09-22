@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/derivation_kind.hpp"
+#include "ores.refdata.api/messaging/derivation_kind_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/derivation_kind_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit derivation_kind_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_derivation_kinds_response
+    list_derivation_kinds(const messaging::list_derivation_kinds_request& request);
+    messaging::get_derivation_kind_response
+    get_derivation_kind(const messaging::get_derivation_kind_request& request);
+    messaging::get_many_derivation_kinds_response
+    get_many_derivation_kinds(const messaging::get_many_derivation_kinds_request& request);
+    messaging::put_derivation_kind_response
+    put_derivation_kind(const messaging::put_derivation_kind_request& request);
+    messaging::put_many_derivation_kinds_response
+    put_many_derivation_kinds(const messaging::put_many_derivation_kinds_request& request);
+    messaging::delete_derivation_kind_response
+    delete_derivation_kind(const messaging::delete_derivation_kind_request& request);
+    messaging::delete_many_derivation_kinds_response
+    delete_many_derivation_kinds(const messaging::delete_many_derivation_kinds_request& request);
+    messaging::list_derivation_kind_versions_response
+    list_derivation_kind_versions(const messaging::list_derivation_kind_versions_request& request);
+    messaging::get_derivation_kind_version_response
+    get_derivation_kind_version(const messaging::get_derivation_kind_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists derivation kinds with pagination support.
      *
      * @param offset Number of records to skip.
@@ -97,6 +128,11 @@ public:
      * @return The derivation kind if found, std::nullopt otherwise.
      */
     std::optional<domain::derivation_kind> get_kind(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of derivation kinds by primary key.
+     */
+    std::vector<domain::derivation_kind> get_kinds(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a derivation kind (creates or updates).
@@ -134,6 +170,23 @@ public:
 private:
     context ctx_;
     repository::derivation_kind_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::derivation_kind_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::derivation_kind& out);
 };
 
 }

@@ -39,21 +39,22 @@ register_calendar_date_handlers(ores::nats::service::client& nats,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<calendar_date_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_calendar_dates_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_calendar_dates_by_calendar_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->list_by_calendar(std::move(msg)); }));
+        list_calendar_dates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_calendar_dates(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
-        count_calendar_dates_by_calendar_request::nats_subject,
+        get_calendar_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_date(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_calendar_dates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_calendar_dates(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_calendar_code_calendar_dates_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->count_by_calendar(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(count_calendar_dates_by_date_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->count_by_date(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->list_by_calendar_code_calendar_dates(std::move(msg)); }));
     return subs;
 }
 

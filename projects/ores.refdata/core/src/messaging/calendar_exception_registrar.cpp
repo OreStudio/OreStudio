@@ -40,24 +40,48 @@ std::vector<ores::nats::service::subscription> register_calendar_exception_handl
     std::vector<ores::nats::service::subscription> subs;
     auto h =
         std::make_shared<calendar_exception_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_calendar_exceptions_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_calendar_exception_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_calendar_exceptions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_calendar_exceptions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_exception_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_calendar_exception(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_calendar_exceptions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_calendar_exceptions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_calendar_exception_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_calendar_exception(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_calendar_exceptions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_calendar_exceptions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_calendar_exception_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_calendar_exception(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_calendar_exception_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_calendar_exceptions_by_calendar_code_request::nats_subject,
+        delete_many_calendar_exceptions_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_calendar_code(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->delete_many_calendar_exceptions(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_calendar_code_calendar_exceptions_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_calendar_code_calendar_exceptions(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        list_calendar_exception_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_calendar_exception_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_calendar_exception_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_calendar_exception_version(std::move(msg)); }));
     return subs;
 }
 

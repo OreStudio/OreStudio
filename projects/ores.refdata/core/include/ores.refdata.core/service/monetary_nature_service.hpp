@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/monetary_nature_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit monetary_nature_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_monetary_natures_response
+    list_monetary_natures(const messaging::list_monetary_natures_request& request);
+    messaging::get_monetary_nature_response
+    get_monetary_nature(const messaging::get_monetary_nature_request& request);
+    messaging::get_many_monetary_natures_response
+    get_many_monetary_natures(const messaging::get_many_monetary_natures_request& request);
+    messaging::put_monetary_nature_response
+    put_monetary_nature(const messaging::put_monetary_nature_request& request);
+    messaging::put_many_monetary_natures_response
+    put_many_monetary_natures(const messaging::put_many_monetary_natures_request& request);
+    messaging::delete_monetary_nature_response
+    delete_monetary_nature(const messaging::delete_monetary_nature_request& request);
+    messaging::delete_many_monetary_natures_response
+    delete_many_monetary_natures(const messaging::delete_many_monetary_natures_request& request);
+    messaging::list_monetary_nature_versions_response
+    list_monetary_nature_versions(const messaging::list_monetary_nature_versions_request& request);
+    messaging::get_monetary_nature_version_response
+    get_monetary_nature_version(const messaging::get_monetary_nature_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists monetary natures with pagination support.
      *
      * @param offset Number of records to skip.
@@ -97,6 +128,11 @@ public:
      * @return The monetary nature if found, std::nullopt otherwise.
      */
     std::optional<domain::monetary_nature> get_type(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of monetary natures by primary key.
+     */
+    std::vector<domain::monetary_nature> get_types(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a monetary nature (creates or updates).
@@ -134,6 +170,23 @@ public:
 private:
     context ctx_;
     repository::monetary_nature_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::monetary_nature_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::monetary_nature& out);
 };
 
 }

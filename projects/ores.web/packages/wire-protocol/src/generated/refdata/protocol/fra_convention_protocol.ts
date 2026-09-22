@@ -23,50 +23,181 @@
  * To modify, update the template and regenerate.
  */
 import type { FraConvention } from '../domain/fra_convention.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetFraConventionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetFraConventionsResponse {
-    fra_conventions: FraConvention[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveFraConventionRequest {
-    data: FraConvention;
-}
-
-export interface SaveFraConventionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteFraConventionRequest {
-    ids: string[];
-}
-
-export interface DeleteFraConventionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetFraConventionHistoryRequest {
+export interface FraConventionKey {
     id: string;
 }
 
-export interface GetFraConventionHistoryResponse {
-    history: FraConvention[];
-    success: boolean;
-    message: string;
+export interface FraConventionWrite {
+    id: string;
+    index: string;
+}
+
+export interface FraConventionChange {
+    write: FraConventionWrite;
+    precondition: Precondition;
+}
+
+export interface FraConventionRemoval {
+    key: FraConventionKey;
+    precondition: Precondition;
+}
+
+export interface FraConventionLookup {
+    key: FraConventionKey;
+    fra_convention: FraConvention | null;
+}
+
+export interface FraConventionEvent {
+    event_id: string;
+    key: FraConventionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface FraConventionVersionKey {
+    fra_convention: FraConventionKey;
+    version: number;
+}
+
+export interface FraConventionVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListFraConventionsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListFraConventionsResponse {
+    result: Result;
+    fra_conventions: FraConvention[];
+    total: number;
+}
+
+export interface GetFraConventionRequest {
+    key: FraConventionKey;
+}
+
+export interface GetFraConventionResponse {
+    result: Result;
+    fra_convention: FraConvention | null;
+}
+
+export interface GetManyFraConventionsRequest {
+    keys: FraConventionKey[];
+}
+
+export interface GetManyFraConventionsResponse {
+    result: Result;
+    entries: FraConventionLookup[];
+}
+
+export interface PutFraConventionRequest {
+    change: FraConventionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutFraConventionResponse {
+    result: Result;
+    fra_convention: FraConvention;
+}
+
+export interface PutManyFraConventionsRequest {
+    changes: FraConventionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyFraConventionsResponse {
+    result: Result;
+    fra_conventions: FraConvention[];
+}
+
+export interface DeleteFraConventionRequest {
+    removal: FraConventionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteFraConventionResponse {
+    result: Result;
+}
+
+export interface DeleteManyFraConventionsRequest {
+    removals: FraConventionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyFraConventionsResponse {
+    result: Result;
+}
+
+export interface ListFraConventionVersionsRequest {
+    key: FraConventionKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: FraConventionVersionsFilter | null;
+}
+
+export interface ListFraConventionVersionsResponse {
+    result: Result;
+    versions: FraConvention[];
+    total: number;
+}
+
+export interface GetFraConventionVersionRequest {
+    key: FraConventionVersionKey;
+}
+
+export interface GetFraConventionVersionResponse {
+    result: Result;
+    version: FraConvention;
 }
 
 export const subjects = {
-    get_fra_conventions_request: "refdata.v1.fra_conventions.list",
-    save_fra_convention_request: "refdata.v1.fra_conventions.save",
+    list_fra_conventions_request: "refdata.v1.fra_conventions.list",
+    get_fra_convention_request: "refdata.v1.fra_conventions.get",
+    get_many_fra_conventions_request: "refdata.v1.fra_conventions.get_many",
+    put_fra_convention_request: "refdata.v1.fra_conventions.put",
+    put_many_fra_conventions_request: "refdata.v1.fra_conventions.put_many",
     delete_fra_convention_request: "refdata.v1.fra_conventions.delete",
-    get_fra_convention_history_request: "refdata.v1.fra_conventions.history",
+    delete_many_fra_conventions_request: "refdata.v1.fra_conventions.delete_many",
+    list_fra_convention_versions_request: "refdata.v1.fra_conventions_versions.list",
+    get_fra_convention_version_request: "refdata.v1.fra_conventions_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_fra_conventions_request: true,
+    get_fra_convention_request: true,
+    get_many_fra_conventions_request: true,
+    put_fra_convention_request: true,
+    put_many_fra_conventions_request: true,
+    delete_fra_convention_request: true,
+    delete_many_fra_conventions_request: true,
+    list_fra_convention_versions_request: true,
+    get_fra_convention_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.fra_conventions_events.created",
+    updated: "refdata.v1.fra_conventions_events.updated",
+    deleted: "refdata.v1.fra_conventions_events.deleted",
 } as const;

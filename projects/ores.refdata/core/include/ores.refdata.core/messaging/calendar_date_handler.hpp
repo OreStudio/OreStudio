@@ -34,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <cstddef>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -55,6 +54,12 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for calendar dates operations.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission a
+ * write needs, decodes the canonical request, calls the service and replies
+ * with the response the service filled. The outcome a caller reads -- missing,
+ * conflicting, denied -- is the service's answer, so the two cannot disagree
+ * about what happened.
  */
 class calendar_date_handler {
 public:
@@ -65,7 +70,10 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_dates.list.
+     */
+    void list_calendar_dates(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -73,28 +81,35 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_date_service svc(req_ctx);
-        if (auto req = decode<get_calendar_dates_request>(msg)) {
-            get_calendar_dates_response resp;
-            try {
-                resp.calendar_dates = svc.list_calendar_dates(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.get_total_calendar_date_count());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_date_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_calendar_dates_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_date_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_date_service svc(req_ctx);
+        try {
+            auto response = svc.list_calendar_dates(*req);
+            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_date_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_calendar_dates_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_calendar(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_dates.get.
+     */
+    void get_calendar_date(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -102,37 +117,35 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_date_service svc(req_ctx);
-        if (auto req = decode<get_calendar_dates_by_calendar_request>(msg)) {
-            get_calendar_dates_by_calendar_response resp;
-            try {
-                auto rows = svc.list_calendar_dates_by_calendar(
-                    req->calendar_code, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_calendar_date_count_by_calendar(req->calendar_code));
-                resp.calendar_dates.reserve(rows.size());
-                for (auto& row : rows) {
-                    calendar_date_view view;
-                    view.calendar_date = std::move(row);
-                    resp.calendar_dates.push_back(std::move(view));
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_date_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_calendar_date_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_date_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_date_service svc(req_ctx);
+        try {
+            auto response = svc.get_calendar_date(*req);
+            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_date_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_calendar_date_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-
-    void count_by_calendar(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_dates.get_many.
+     */
+    void get_many_calendar_dates(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -140,26 +153,35 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_date_service svc(req_ctx);
-        if (auto req = decode<count_calendar_dates_by_calendar_request>(msg)) {
-            count_calendar_dates_by_calendar_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_calendar_date_count_by_calendar(req->calendar_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_date_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_many_calendar_dates_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_date_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_date_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_calendar_dates(*req);
+            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_date_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_calendar_dates_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_date(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_dates.list_by_calendar_code.
+     */
+    void list_by_calendar_code_calendar_dates(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -167,22 +189,28 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_date_service svc(req_ctx);
-        if (auto req = decode<count_calendar_dates_by_date_request>(msg)) {
-            count_calendar_dates_by_date_response resp;
-            try {
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_calendar_date_count_by_date(req->date));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_date_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_by_calendar_code_calendar_dates_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_date_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_date_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_calendar_code_calendar_dates(*req);
+            BOOST_LOG_SEV(calendar_date_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_date_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_calendar_code_calendar_dates_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

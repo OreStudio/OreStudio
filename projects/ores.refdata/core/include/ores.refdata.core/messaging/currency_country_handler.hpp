@@ -34,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <cstddef>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -55,6 +54,12 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for currency countries operations.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission a
+ * write needs, decodes the canonical request, calls the service and replies
+ * with the response the service filled. The outcome a caller reads -- missing,
+ * conflicting, denied -- is the service's answer, so the two cannot disagree
+ * about what happened.
  */
 class currency_country_handler {
 public:
@@ -65,7 +70,10 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.list.
+     */
+    void list_currency_countries(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -73,30 +81,36 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<get_currency_countries_request>(msg)) {
-            get_currency_countries_response resp;
-            try {
-                resp.currency_countries = svc.list_currency_countries(req->offset, req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_currency_country_count());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_currency_countries_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.list_currency_countries(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_currency_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_currency(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.get.
+     */
+    void get_currency_country(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -104,37 +118,73 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<get_currency_countries_by_currency_request>(msg)) {
-            get_currency_countries_by_currency_response resp;
-            try {
-                auto rows = svc.list_currency_countries_by_currency(
-                    req->currency_iso_code, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_currency_country_count_by_currency(req->currency_iso_code));
-                resp.currency_countries.reserve(rows.size());
-                for (auto& row : rows) {
-                    currency_country_view view;
-                    view.currency_country = std::move(row);
-                    resp.currency_countries.push_back(std::move(view));
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_currency_country_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.get_currency_country(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_currency_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.get_many.
+     */
+    void get_many_currency_countries(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_currency_countries_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_country_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_currency_countries(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_currency_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_countries.put.
+     */
+    void put_currency_country(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -146,28 +196,36 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<save_currency_country_request>(msg)) {
-            save_currency_country_response resp;
-            try {
-                svc.save_currency_countries(req->currency_countries);
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_currency_country_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.put_currency_country(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_currency_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.put_many.
+     */
+    void put_many_currency_countries(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -179,40 +237,36 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<delete_currency_country_request>(msg)) {
-            if (req->currency_iso_codes.size() != req->country_alpha2_codes.size()) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), warn)
-                    << msg.subject << " rejected: key vectors differ in length, "
-                    << req->currency_iso_codes.size() << " and "
-                    << req->country_alpha2_codes.size();
-                error_reply(nats_, msg, ores::service::error_code::bad_request);
-                return;
-            }
-            delete_currency_country_response resp;
-            try {
-                for (std::size_t i = 0; i < req->currency_iso_codes.size(); ++i) {
-                    const auto& currency_iso_code_key = req->currency_iso_codes[i];
-                    const auto& country_alpha2_code_key = req->country_alpha2_codes[i];
-                    svc.remove_currency_country(currency_iso_code_key, country_alpha2_code_key);
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_many_currency_countries_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_currency_countries(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_currency_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_currency(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.delete.
+     */
+    void delete_currency_country(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -220,27 +274,40 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<count_currency_countries_by_currency_request>(msg)) {
-            count_currency_countries_by_currency_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_currency_country_count_by_currency(req->currency_iso_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        if (!has_permission(req_ctx, "refdata::currency_countries:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_currency_country_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.delete_currency_country(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_currency_country_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_country(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_countries.delete_many.
+     */
+    void delete_many_currency_countries(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -248,23 +315,70 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_country_service svc(req_ctx);
-        if (auto req = decode<count_currency_countries_by_country_request>(msg)) {
-            count_currency_countries_by_country_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_currency_country_count_by_country(req->country_alpha2_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_country_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        if (!has_permission(req_ctx, "refdata::currency_countries:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_currency_countries_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_country_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_currency_countries(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_currency_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_countries.list_by_currency_iso_code.
+     */
+    void list_by_currency_iso_code_currency_countries(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_by_currency_iso_code_currency_countries_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_country_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_country_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_currency_iso_code_currency_countries(*req);
+            BOOST_LOG_SEV(currency_country_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_country_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_currency_iso_code_currency_countries_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

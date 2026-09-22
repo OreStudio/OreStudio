@@ -26,97 +26,209 @@
 #define ORES_REFDATA_API_MESSAGING_PARTY_COUNTRY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/party_country.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief The party country row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct party_country_view {
+struct party_country_key {
+    boost::uuids::uuid party_id;
+    std::string country_alpha2_code;
+};
+
+struct party_country_write {
+    boost::uuids::uuid party_id;
+    std::string country_alpha2_code;
+};
+
+struct party_country_change {
+    party_country_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct party_country_removal {
+    party_country_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct party_country_lookup {
+    party_country_key key;
+    std::optional<ores::refdata::domain::party_country> party_country;
+};
+
+struct party_countries_filter {
+    std::optional<boost::uuids::uuid> party_id;
+};
+
+struct party_country_event {
+    boost::uuids::uuid event_id;
+    party_country_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct list_party_countries_request {
+    using response_type = struct list_party_countries_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_countries_filter> filter;
+};
+
+struct list_party_countries_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_country> party_countries;
+    std::uint64_t total;
+};
+
+struct get_party_country_request {
+    using response_type = struct get_party_country_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_country_key key;
+};
+
+struct get_party_country_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::party_country> party_country;
+};
+
+struct get_many_party_countries_request {
+    using response_type = struct get_many_party_countries_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_country_key> keys;
+};
+
+struct get_many_party_countries_response {
+    ores::utility::domain::result result;
+    std::vector<party_country_lookup> entries;
+};
+
+struct put_party_country_request {
+    using response_type = struct put_party_country_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_country_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_party_country_response {
+    ores::utility::domain::result result;
     ores::refdata::domain::party_country party_country;
 };
 
-struct get_party_countries_request {
-    using response_type = struct get_party_countries_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+struct put_many_party_countries_request {
+    using response_type = struct put_many_party_countries_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_country_change> changes;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_party_countries_response {
+struct put_many_party_countries_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_country> party_countries;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct get_party_countries_by_party_request {
-    using response_type = struct get_party_countries_by_party_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.list_by_party_id";
-    std::string party_id;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_party_countries_by_party_response {
-    std::vector<party_country_view> party_countries;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct save_party_country_request {
-    using response_type = struct save_party_country_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.save";
-    std::vector<ores::refdata::domain::party_country> party_countries;
-
-    static save_party_country_request from(std::vector<ores::refdata::domain::party_country> v) {
-        return {.party_countries = std::move(v)};
-    }
-};
-
-struct save_party_country_response {
-    bool success = false;
-    std::string message;
 };
 
 struct delete_party_country_request {
     using response_type = struct delete_party_country_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_countries.delete";
-    std::vector<std::string> party_ids;
-    std::vector<std::string> country_alpha2_codes;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    party_country_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_party_country_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct count_party_countries_by_party_request {
-    using response_type = struct count_party_countries_by_party_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.count_by_party_id";
-    std::string party_id;
+struct delete_many_party_countries_request {
+    using response_type = struct delete_many_party_countries_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<party_country_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct count_party_countries_by_party_response {
-    int total_available_count = 0;
+struct delete_many_party_countries_response {
+    ores::utility::domain::result result;
 };
 
-struct count_party_countries_by_country_request {
-    using response_type = struct count_party_countries_by_country_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.party_countries.count_by_country_alpha2_code";
-    std::string country_alpha2_code;
+struct list_by_party_id_party_countries_request {
+    using response_type = struct list_by_party_id_party_countries_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party_countries.list_by_party_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid party_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_countries_filter> filter;
 };
 
-struct count_party_countries_by_country_response {
-    int total_available_count = 0;
+struct list_by_party_id_party_countries_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_country> party_countries;
+    std::uint64_t total;
 };
+
 }
 
 #endif

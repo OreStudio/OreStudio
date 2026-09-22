@@ -28,7 +28,10 @@
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_mapper.hpp"
+#include <cstddef>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
 
 namespace ores::refdata::repository {
 
@@ -79,6 +82,27 @@ tenor_convention_resolution_repository::read_latest(std::uint32_t offset, std::u
         [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
         lg(),
         "Reading latest tenor convention resolutions (paginated).");
+}
+
+std::vector<domain::tenor_convention_resolution>
+tenor_convention_resolution_repository::read_latest(const std::string& convention_code,
+                                                    const std::string& tenor_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolution. " << convention_code
+                               << "/" << tenor_code;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
+                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+                             "tenor_code"_c == tenor_code && "valid_to"_c == max.value());
+
+    return execute_read_query<tenor_convention_resolution_entity,
+                              domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolution by key.");
 }
 
 std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count() {

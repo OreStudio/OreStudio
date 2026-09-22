@@ -23,64 +23,207 @@
  * To modify, update the template and regenerate.
  */
 import type { CalendarException } from '../domain/calendar_exception.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetCalendarExceptionsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCalendarExceptionsResponse {
-    calendar_exceptions: CalendarException[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveCalendarExceptionRequest {
-    data: CalendarException;
-}
-
-export interface SaveCalendarExceptionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteCalendarExceptionRequest {
-    ids: string[];
-}
-
-export interface DeleteCalendarExceptionResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetCalendarExceptionHistoryRequest {
+export interface CalendarExceptionKey {
     id: string;
 }
 
-export interface GetCalendarExceptionHistoryResponse {
-    history: CalendarException[];
-    success: boolean;
-    message: string;
+export interface CalendarExceptionWrite {
+    id: string;
+    calendar_code: string;
+    exception_date: string;
+    is_business_day: boolean;
+    description: string | null;
 }
 
-export interface GetCalendarExceptionsByCalendarCodeRequest {
-    calendar_code: string;
+export interface CalendarExceptionChange {
+    write: CalendarExceptionWrite;
+    precondition: Precondition;
+}
+
+export interface CalendarExceptionRemoval {
+    key: CalendarExceptionKey;
+    precondition: Precondition;
+}
+
+export interface CalendarExceptionLookup {
+    key: CalendarExceptionKey;
+    calendar_exception: CalendarException | null;
+}
+
+export interface CalendarExceptionsFilter {
+    calendar_code: string | null;
+}
+
+export interface CalendarExceptionEvent {
+    event_id: string;
+    key: CalendarExceptionKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface CalendarExceptionVersionKey {
+    calendar_exception: CalendarExceptionKey;
+    version: number;
+}
+
+export interface CalendarExceptionVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListCalendarExceptionsRequest {
     offset: number;
     limit: number;
+    order: Order;
+    filter: CalendarExceptionsFilter | null;
 }
 
-export interface GetCalendarExceptionsByCalendarCodeResponse {
+export interface ListCalendarExceptionsResponse {
+    result: Result;
     calendar_exceptions: CalendarException[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
+    total: number;
+}
+
+export interface GetCalendarExceptionRequest {
+    key: CalendarExceptionKey;
+}
+
+export interface GetCalendarExceptionResponse {
+    result: Result;
+    calendar_exception: CalendarException | null;
+}
+
+export interface GetManyCalendarExceptionsRequest {
+    keys: CalendarExceptionKey[];
+}
+
+export interface GetManyCalendarExceptionsResponse {
+    result: Result;
+    entries: CalendarExceptionLookup[];
+}
+
+export interface PutCalendarExceptionRequest {
+    change: CalendarExceptionChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCalendarExceptionResponse {
+    result: Result;
+    calendar_exception: CalendarException;
+}
+
+export interface PutManyCalendarExceptionsRequest {
+    changes: CalendarExceptionChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCalendarExceptionsResponse {
+    result: Result;
+    calendar_exceptions: CalendarException[];
+}
+
+export interface DeleteCalendarExceptionRequest {
+    removal: CalendarExceptionRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCalendarExceptionResponse {
+    result: Result;
+}
+
+export interface DeleteManyCalendarExceptionsRequest {
+    removals: CalendarExceptionRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCalendarExceptionsResponse {
+    result: Result;
+}
+
+export interface ListByCalendarCodeCalendarExceptionsRequest {
+    calendar_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CalendarExceptionsFilter | null;
+}
+
+export interface ListByCalendarCodeCalendarExceptionsResponse {
+    result: Result;
+    calendar_exceptions: CalendarException[];
+    total: number;
+}
+
+export interface ListCalendarExceptionVersionsRequest {
+    key: CalendarExceptionKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CalendarExceptionVersionsFilter | null;
+}
+
+export interface ListCalendarExceptionVersionsResponse {
+    result: Result;
+    versions: CalendarException[];
+    total: number;
+}
+
+export interface GetCalendarExceptionVersionRequest {
+    key: CalendarExceptionVersionKey;
+}
+
+export interface GetCalendarExceptionVersionResponse {
+    result: Result;
+    version: CalendarException;
 }
 
 export const subjects = {
-    get_calendar_exceptions_request: "refdata.v1.calendar_exceptions.list",
-    save_calendar_exception_request: "refdata.v1.calendar_exceptions.save",
+    list_calendar_exceptions_request: "refdata.v1.calendar_exceptions.list",
+    get_calendar_exception_request: "refdata.v1.calendar_exceptions.get",
+    get_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.get_many",
+    put_calendar_exception_request: "refdata.v1.calendar_exceptions.put",
+    put_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.put_many",
     delete_calendar_exception_request: "refdata.v1.calendar_exceptions.delete",
-    get_calendar_exception_history_request: "refdata.v1.calendar_exceptions.history",
-    get_calendar_exceptions_by_calendar_code_request: "refdata.v1.calendar_exceptions.list_by_calendar_code",
+    delete_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.delete_many",
+    list_by_calendar_code_calendar_exceptions_request: "refdata.v1.calendar_exceptions.list_by_calendar_code",
+    list_calendar_exception_versions_request: "refdata.v1.calendar_exceptions_versions.list",
+    get_calendar_exception_version_request: "refdata.v1.calendar_exceptions_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_calendar_exceptions_request: true,
+    get_calendar_exception_request: true,
+    get_many_calendar_exceptions_request: true,
+    put_calendar_exception_request: true,
+    put_many_calendar_exceptions_request: true,
+    delete_calendar_exception_request: true,
+    delete_many_calendar_exceptions_request: true,
+    list_by_calendar_code_calendar_exceptions_request: true,
+    list_calendar_exception_versions_request: true,
+    get_calendar_exception_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.calendar_exceptions_events.created",
+    updated: "refdata.v1.calendar_exceptions_events.updated",
+    deleted: "refdata.v1.calendar_exceptions_events.deleted",
 } as const;

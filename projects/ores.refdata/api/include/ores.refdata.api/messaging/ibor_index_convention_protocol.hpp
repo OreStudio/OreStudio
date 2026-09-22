@@ -26,63 +26,251 @@
 #define ORES_REFDATA_API_MESSAGING_IBOR_INDEX_CONVENTION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-struct get_ibor_index_conventions_request {
-    using response_type = struct get_ibor_index_conventions_response;
+struct ibor_index_convention_key {
+    std::string id;
+};
+
+struct ibor_index_convention_write {
+    std::string id;
+    std::string fixing_calendar;
+    std::string day_count_fraction;
+    int settlement_days;
+    std::string business_day_convention;
+    bool end_of_month;
+};
+
+struct ibor_index_convention_change {
+    ibor_index_convention_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct ibor_index_convention_removal {
+    ibor_index_convention_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct ibor_index_convention_lookup {
+    ibor_index_convention_key key;
+    std::optional<ores::refdata::domain::ibor_index_convention> ibor_index_convention;
+};
+
+struct ibor_index_convention_event {
+    boost::uuids::uuid event_id;
+    ibor_index_convention_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct ibor_index_convention_version_key {
+    ibor_index_convention_key ibor_index_convention;
+    std::uint32_t version;
+};
+
+struct ibor_index_convention_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_ibor_index_conventions_request {
+    using response_type = struct list_ibor_index_conventions_response;
     static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_ibor_index_conventions_response {
+struct list_ibor_index_conventions_response {
+    ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ibor_index_convention> ibor_index_conventions;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_ibor_index_convention_request {
-    using response_type = struct save_ibor_index_convention_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.save";
-    ores::refdata::domain::ibor_index_convention data;
-
-    static save_ibor_index_convention_request from(ores::refdata::domain::ibor_index_convention v) {
-        return {.data = std::move(v)};
-    }
+struct get_ibor_index_convention_request {
+    using response_type = struct get_ibor_index_convention_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ibor_index_convention_key key;
 };
 
-struct save_ibor_index_convention_response {
-    bool success = false;
-    std::string message;
+struct get_ibor_index_convention_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::ibor_index_convention> ibor_index_convention;
+};
+
+struct get_many_ibor_index_conventions_request {
+    using response_type = struct get_many_ibor_index_conventions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<ibor_index_convention_key> keys;
+};
+
+struct get_many_ibor_index_conventions_response {
+    ores::utility::domain::result result;
+    std::vector<ibor_index_convention_lookup> entries;
+};
+
+struct put_ibor_index_convention_request {
+    using response_type = struct put_ibor_index_convention_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ibor_index_convention_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_ibor_index_convention_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::ibor_index_convention ibor_index_convention;
+};
+
+struct put_many_ibor_index_conventions_request {
+    using response_type = struct put_many_ibor_index_conventions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<ibor_index_convention_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_ibor_index_conventions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::ibor_index_convention> ibor_index_conventions;
 };
 
 struct delete_ibor_index_convention_request {
     using response_type = struct delete_ibor_index_convention_response;
     static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ibor_index_convention_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_ibor_index_convention_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_ibor_index_convention_history_request {
-    using response_type = struct get_ibor_index_convention_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.history";
-    std::string id;
+struct delete_many_ibor_index_conventions_request {
+    using response_type = struct delete_many_ibor_index_conventions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ibor_index_conventions.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<ibor_index_convention_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_ibor_index_convention_history_response {
-    std::vector<ores::refdata::domain::ibor_index_convention> history;
-    bool success = false;
-    std::string message;
+struct delete_many_ibor_index_conventions_response {
+    ores::utility::domain::result result;
 };
+
+struct list_ibor_index_convention_versions_request {
+    using response_type = struct list_ibor_index_convention_versions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ibor_index_conventions_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ibor_index_convention_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<ibor_index_convention_versions_filter> filter;
+};
+
+struct list_ibor_index_convention_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::ibor_index_convention> versions;
+    std::uint64_t total;
+};
+
+struct get_ibor_index_convention_version_request {
+    using response_type = struct get_ibor_index_convention_version_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ibor_index_conventions_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ibor_index_convention_version_key key;
+};
+
+struct get_ibor_index_convention_version_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::ibor_index_convention version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace ibor_index_convention_event_subjects {
+inline constexpr std::string_view created = "refdata.v1.ibor_index_conventions_events.created";
+inline constexpr std::string_view updated = "refdata.v1.ibor_index_conventions_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.ibor_index_conventions_events.deleted";
+}
 
 }
 

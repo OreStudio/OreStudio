@@ -26,7 +26,6 @@
 #define ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -35,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <limits>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -66,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_currency_pair_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -74,30 +81,131 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_service svc(req_ctx);
-        get_currency_pair_conventions_response resp;
-        if (auto req = decode<get_currency_pair_conventions_request>(msg)) {
-            try {
-                resp.conventions = svc.list_conventions(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_conventions());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_currency_pair_conventions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.list_currency_pair_conventions(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_currency_pair_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_currency_pair_convention(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_currency_pair_convention_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_currency_pair_convention(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_currency_pair_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_currency_pair_conventions(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_currency_pair_conventions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_currency_pair_conventions(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_currency_pair_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_currency_pair_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -109,29 +217,43 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_pair_convention_service svc(req_ctx);
-        if (auto req = decode<save_currency_pair_convention_request>(msg)) {
-            try {
-                svc.save_convention(req->data);
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_currency_pair_convention_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_,
-                    msg,
-                    save_currency_pair_convention_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_currency_pair_convention_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.put_currency_pair_convention(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_currency_pair_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_currency_pair_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -139,32 +261,47 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_service svc(req_ctx);
-        if (auto req = decode<get_currency_pair_convention_history_request>(msg)) {
-            try {
-                auto hist = svc.get_convention_history(req->pair_code);
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_currency_pair_convention_history_response{.history = std::move(hist),
-                                                                    .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_currency_pair_convention_history_response{.success = false,
-                                                                    .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::currency_pair_conventions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_currency_pair_conventions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_currency_pair_conventions(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_currency_pair_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_currency_pair_convention(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -176,69 +313,166 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_pair_convention_service svc(req_ctx);
-        if (auto req = decode<delete_currency_pair_convention_request>(msg)) {
-            try {
-                svc.delete_conventions(req->pair_codes);
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_currency_pair_convention_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_currency_pair_convention_response{.success = false,
-                                                               .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_currency_pair_convention_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.delete_currency_pair_convention(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_currency_pair_convention_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void read_for_cache(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_currency_pair_conventions(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
-        // Authentication-only, deliberately not tenant-scoped: this proves
-        // the caller holds *a* valid signed JWT, but does not check that
-        // token's own tenant against req->tenant_id below (the tenant a
-        // cache-warming service account reads is unrelated to any tenant
-        // its own token carries). Do not copy this method as a template
-        // for a tenant-authorized endpoint.
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        if (auto req = decode<read_currency_pair_conventions_for_cache_request>(msg)) {
-            try {
-                using ores::database::service::tenant_context;
-                auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
-                service::currency_pair_convention_service svc(tctx);
-                // No dedicated unpaginated list method is generated; reuse
-                // the paginated one with an unbounded limit.
-                auto conventions =
-                    svc.list_conventions(0, std::numeric_limits<std::uint32_t>::max());
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject << " (tenant=" << req->tenant_id
-                    << ", count=" << conventions.size() << ")";
-                reply(nats_,
-                      msg,
-                      read_currency_pair_conventions_for_cache_response{
-                          .success = true, .conventions = std::move(conventions)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      read_currency_pair_conventions_for_cache_response{.success = false,
-                                                                        .message = e.what()});
-            }
-        } else {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_conventions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_currency_pair_conventions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_currency_pair_conventions(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_currency_pair_conventions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_currency_pair_convention_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_currency_pair_convention_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.list_currency_pair_convention_versions(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_currency_pair_convention_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_conventions_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_currency_pair_convention_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_currency_pair_convention_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_service svc(req_ctx);
+        try {
+            auto response = svc.get_currency_pair_convention_version(*req);
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_currency_pair_convention_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

@@ -126,7 +126,7 @@ def test_a_natural_key_primary_key_drives_delete_and_history():
     assert projection["history_rows_field"] == "versions"
 
 
-def test_a_surrogate_primary_key_withholds_delete_and_history():
+def test_a_surrogate_primary_key_withholds_remove_and_history():
     """The key record names the surrogate primary key, not the natural key.
 
     The path segment the web builds is the natural key, so a route that filled
@@ -138,8 +138,10 @@ def test_a_surrogate_primary_key_withholds_delete_and_history():
         "columns": [{"column": "id", "is_uuid": True}],
     })
     projection = bff_route_projection(entity, MODEL)
+    assert projection["has_get"] == "false"
     assert projection["has_remove"] == "false"
     assert projection["has_history"] == "false"
+    assert "subjects_get" not in projection
     assert "subjects_remove" not in projection
     assert "subjects_history" not in projection
     assert "history_rows_field" not in projection
@@ -230,6 +232,8 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "keyField: 'type'," in rendered
     assert "rowField: 'tenant_type'," in rendered
     assert "writeFields: ['type', 'name', 'description', 'display_order']," in rendered
+    assert ("writeDefaults: { type: '', name: '', description: '', "
+            "display_order: 0 }," in rendered)
     assert "list: subjects.list_tenant_types_request," in rendered
     assert "get: subjects.get_tenant_type_request," in rendered
     assert "save: subjects.put_tenant_type_request," in rendered
@@ -259,7 +263,7 @@ def test_the_template_states_whether_the_list_takes_an_as_of(tmp_path):
 
 
 def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
-    """A real model whose delete and history requests are keyed by its UUID."""
+    """A real model whose key record is its UUID, not its natural key."""
     generate_from_model(
         str(TENANT), CODEGEN / "library" / "data",
         CODEGEN / "library" / "templates", tmp_path,
@@ -270,11 +274,15 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
     assert "export const tenantRoute: EntityRouteDescriptor = {" in rendered
     assert "keyField: 'code'," in rendered
     assert "list: subjects.list_tenants_request," in rendered
-    assert "get: subjects.get_tenant_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
-    # The key record names the UUID primary key, so neither route is stated and
-    # neither field is left behind.
+    # A surrogate key the form does not show is minted by the caller, and a
+    # nullable member the form does not show goes out as no value.
+    assert "writeDefaults: { id: 'uuid', code: '', name: '', type: '', " \
+           "description: null, hostname: '', status: '' }," in rendered
+    # The key record names the UUID primary key, so no route the path segment
+    # drives is stated, and neither field is left behind.
+    assert "get: subjects." not in rendered
     assert "remove: subjects." not in rendered
     assert "history: subjects." not in rendered
     assert "historyRowsField" not in rendered

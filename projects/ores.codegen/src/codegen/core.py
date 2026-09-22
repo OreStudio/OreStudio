@@ -2199,12 +2199,13 @@ def bff_route_projection(entity, model_path):
     carry the optional as-of and filter members, so the factory sends the
     envelope each request decodes.
 
-    The delete and versions reads address the entity's whole key record,
-    while the route's path segment carries the natural key the web builds it
-    from. The two agree only when the key is the natural key alone, so the
-    projection states those routes only then. A descriptor that sent a path
-    segment into a key record it does not fill would match no row on delete,
-    or fail to decode on a versions read.
+    The single-record read, the delete and the versions read address the
+    entity's whole key record, while the route's path segment carries the
+    natural key the web builds it from. The three agree only when the key
+    record holds the natural key alone, so the projection states those
+    routes only then. A descriptor that sent a path segment into a key
+    record it does not fill would match no row on a read or a delete, or
+    fail to decode on a versions read.
 
     None when the derived set carries none of the required request roles --
     a defensive guard, since an enriched domain entity always derives them.
@@ -2244,8 +2245,10 @@ def bff_route_projection(entity, model_path):
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    has_remove = len(key_members) == 1 and keyed_by_natural_key
-    has_history = bool(history_response) and keyed_by_natural_key
+    key_drivable = len(key_members) == 1 and keyed_by_natural_key
+    has_get = bool(subjects_get) and key_drivable
+    has_remove = key_drivable
+    has_history = bool(history_response) and key_drivable
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members
@@ -2273,6 +2276,7 @@ def bff_route_projection(entity, model_path):
         'row_field': singular,
         'write_fields_block': ', '.join(
             f"'{field}'" for field in write_fields),
+        'write_defaults_block': _write_defaults_block(entity),
         'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
         'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
         'list_has_as_of': _ui_bool('as_of' in list_members),
@@ -2281,11 +2285,11 @@ def bff_route_projection(entity, model_path):
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
-        'has_get': _ui_bool(bool(subjects_get)),
+        'has_get': _ui_bool(has_get),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
     }
-    if subjects_get:
+    if has_get:
         projection['subjects_get'] = subjects_get
     if has_remove:
         projection['subjects_remove'] = subjects_remove
@@ -2298,6 +2302,47 @@ def bff_route_projection(entity, model_path):
 def _ui_bool(value):
     """A Mustache boolean, spelled as TypeScript rather than as a Python repr."""
     return 'true' if value else 'false'
+
+
+def _write_defaults_block(entity):
+    """The value a write member takes when the form does not carry it.
+
+    A create sends the whole write record, and a member the form does not show
+    -- a surrogate key, a field the entity hides -- would otherwise go out
+    with no value at all, which is not a record the service can decode. Each
+    member takes the empty of its own type, and a surrogate primary key takes
+    a fresh identifier, because naming a row the store has never seen is the
+    caller's to do.
+
+    Stated per member rather than inferred by the factory: only the model
+    knows which members are optional and which are identifiers.
+    """
+    from .org_loader import (  # noqa: PLC0415
+        _column_name,
+        write_record_columns,
+        write_record_for,
+    )
+    by_name = {_column_name(column): column
+               for column in write_record_columns(entity)}
+    key_columns = set(_primary_key_columns(entity))
+    members = []
+    for field in write_record_for(entity):
+        name = field['name']
+        column = by_name.get(name) or {}
+        cpp_type = str(column.get('cpp_type') or field.get('cpp_type') or '')
+        if column.get('nullable'):
+            literal = 'null'
+        elif cpp_type == 'boost::uuids::uuid':
+            literal = "'uuid'" if name in key_columns else 'null'
+        elif cpp_type in ('std::int32_t', 'std::uint32_t',
+                          'std::int64_t', 'std::uint64_t', 'int'):
+            literal = '0'
+        elif cpp_type == 'bool':
+            literal = 'false'
+        else:
+            literal = "''"
+        members.append(f'{name}: {literal}')
+    return '{ ' + ', '.join(members) + ' }'
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):

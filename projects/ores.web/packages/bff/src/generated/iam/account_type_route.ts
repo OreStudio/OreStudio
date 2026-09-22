@@ -39,6 +39,7 @@ export const accountTypeRoute: EntityRouteDescriptor = {
   keyField: 'type',
   rowField: 'account_type',
   writeFields: ['type', 'name', 'description', 'display_order'],
+  writeDefaults: { type: '', name: '', description: '', display_order: 0 },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',

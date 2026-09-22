@@ -39,6 +39,7 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   keyField: 'email',
   rowField: 'account_contact_information',
   writeFields: ['id', 'account_id', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
+  writeDefaults: { id: 'uuid', account_id: null, street_line_1: null, street_line_2: null, city: null, state: null, country_code: null, postal_code: null, phone: null, email: null, web_page: null },
   intentFields: {
     reason: 'change_reason_code',
     commentary: 'change_commentary',
@@ -48,7 +49,6 @@ export const accountContactInformationRoute: EntityRouteDescriptor = {
   versionsHasFilter: true,
   subjects: {
     list: subjects.list_account_contact_informations_request,
-    get: subjects.get_account_contact_information_request,
     save: subjects.put_account_contact_information_request,
   },
   rowsField: 'account_contact_informations',

@@ -40,6 +40,7 @@ export const tenantRoute: EntityRouteDescriptor = {
   keyFields: ['code'],
   subjects: {
     list: subjects.list_tenants_request,
+    get: subjects.get_tenant_request,
     save: subjects.put_tenant_request,
     remove: subjects.delete_tenant_request,
     history: subjects.list_tenant_versions_request,

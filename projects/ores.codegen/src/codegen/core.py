@@ -2020,20 +2020,22 @@ def web_declaration_projection(entity, model_path):
     first. None when the entity has no column table, the condition
     ``_ui_projection_entity`` states and the BFF route projection shares.
 
-    The capabilities are read off the protocol the entity derives, not off a
-    property that names a message: a write exists exactly when the entity
-    derives a put request, a history exactly when it derives the versions
-    pair, and a delete exactly when it derives a delete request keyed by the
-    natural key. Deriving them from anything else -- a version column, or a
-    hand-written name for the message the client would send -- gets
-    junctions, current-state entities and read-only entities wrong, and lets
-    the declaration promise an action the BFF answers with 404.
+    The capabilities are the route projection's own facts, not a second
+    derivation from the protocol underneath it. The browser talks to the BFF,
+    so what a screen may offer is what the route serves. Deriving it a layer
+    down -- from the messaging protocol -- lets the declaration promise an
+    action the route withheld, which the screen then renders and the request
+    answers with 404. Asking the route makes "no affordance without a route"
+    true by construction, rather than by two derivations agreeing today and
+    drifting apart at the next entity shape.
 
     ``has_readonly_paginated_list`` is the one interface-level statement, and
-    it outranks the derived writes: an entity whose service can write it is
-    still not written from this screen when the model says so.
+    it outranks the served routes: an entity whose route can write it is still
+    not written from this screen when the model says so. It does not suppress
+    history, which is a read.
     """
-    if _ui_projection_entity(entity) is None:
+    routes = bff_route_projection(entity, model_path)
+    if routes is None:
         return None
     presentation = entity.get('presentation') or {}
     columns = presentation.get('columns') or []
@@ -2045,12 +2047,6 @@ def web_declaration_projection(entity, model_path):
     key_record = _protocol_message(messages, f'{entity_singular}_key')
     key_field_names = [field['name']
                        for field in (key_record or {}).get('fields') or []]
-    can_write = bool(_protocol_subject_key(
-        messages, f'put_{entity_singular}_request'))
-    can_delete = bool(_protocol_subject_key(
-        messages, f'delete_{entity_singular}_request'))
-    can_read_history = bool(_protocol_subject_key(
-        messages, f'list_{entity_singular}_versions_request'))
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2062,10 +2058,10 @@ def web_declaration_projection(entity, model_path):
         'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
-        'can_create': _ui_bool(can_write and not read_only),
-        'can_edit': _ui_bool(can_write and not read_only),
-        'can_remove': _ui_bool(can_delete and not read_only),
-        'can_history': _ui_bool(can_read_history),
+        'can_create': _ui_bool(routes['serves_save'] and not read_only),
+        'can_edit': _ui_bool(routes['serves_save'] and not read_only),
+        'can_remove': _ui_bool(routes['serves_remove'] and not read_only),
+        'can_history': _ui_bool(routes['serves_history']),
         'key_field': key_field,
         # The key's members, in the order the model declares them. The screens
         # address a record by all of them: a path carries one value per member,
@@ -2217,6 +2213,7 @@ def bff_route_projection(entity, model_path):
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
     has_key = bool(key_members)
+    has_get = bool(subjects_get) and has_key
     has_remove = has_key and bool(subjects_remove)
     # The generic history request names one id, so it addresses a key with one
     # member and cannot state one with more: the specification forbids sending
@@ -2249,9 +2246,17 @@ def bff_route_projection(entity, model_path):
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
-        'has_get': _ui_bool(bool(subjects_get) and has_key),
+        'has_get': _ui_bool(has_get),
         'has_remove': _ui_bool(has_remove),
         'has_history': _ui_bool(has_history),
+        # The same facts again as booleans, because the declaration consumes
+        # them rather than re-deriving them from the protocol. The declaration
+        # states what the route serves, so a screen cannot promise an action
+        # this projection withheld -- which is the whole class of 404 the two
+        # used to reach independently, and disagree about.
+        'serves_save': bool(subjects_save),
+        'serves_remove': has_remove,
+        'serves_history': has_history,
     }
     if has_get:
         projection['subjects_get'] = subjects_get

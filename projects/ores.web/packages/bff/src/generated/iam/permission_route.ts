@@ -26,8 +26,9 @@
  * How the BFF reaches the permission service.
  *
  * The descriptor holds values and no functions: the collection, the natural
- * key, the array fields and the subjects. The generic factory builds the
- * routes from it, so the entity adds no handler of its own.
+ * key, the members a write record carries and the subjects. The generic
+ * factory builds the canonical envelopes from those, so the entity adds no
+ * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/permission_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';

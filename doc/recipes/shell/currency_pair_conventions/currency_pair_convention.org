@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: C06682A7-2F57-5CA1-91C7-D1A797405DFB
+:END:
+#+title: How do I run the currency_pair_conventions commands from the shell?
+#+description: Every command the currency_pair_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:currency_pair_conventions:
+
+This file documents the currency_pair_conventions resource at the shell, one section per command. Every command is a subcommand of =currency_pair_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 01294AA6-2606-57D9-BAB7-81CA28B870C1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.list=.
+
+#+name: currency_pair_conventions-list
+#+begin_src ores-shell :tangle currency_pair_conventions-list.ores :exports none
+currency_pair_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4982F529-B485-5C01-8D19-D81B5F57CBC2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions get <pair_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.get=.
+
+#+name: currency_pair_conventions-get
+#+begin_src ores-shell :tangle currency_pair_conventions-get.ores :exports none
+currency_pair_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1B898FF6-B63A-5AF4-81BE-004E836DCBD5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions get-many <pair_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.get_many=.
+
+#+name: currency_pair_conventions-get-many
+#+begin_src ores-shell :tangle currency_pair_conventions-get-many.ores :exports none
+currency_pair_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0298D9CC-374F-5304-B5DA-E52E8726FB03
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions add <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.put=.
+
+#+name: currency_pair_conventions-add
+#+begin_src ores-shell :tangle currency_pair_conventions-add.ores :exports none
+currency_pair_conventions add __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8BE57691-646A-5069-B03E-6C11904DD965
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions set <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.put=.
+
+#+name: currency_pair_conventions-set
+#+begin_src ores-shell :tangle currency_pair_conventions-set.ores :exports none
+currency_pair_conventions set __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 94B6A36C-A40E-5190-AB92-B6A8DFA3AB98
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions put-many --count <n> <pair_code> <pip_factor> <tick_size> <decimal_places> <business_day_convention> <spot_relative> <end_of_month> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.put_many=.
+
+#+name: currency_pair_conventions-put-many
+#+begin_src ores-shell :tangle currency_pair_conventions-put-many.ores :exports none
+currency_pair_conventions put-many --count 1 __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 535F3EC7-1C8A-5D8C-B723-7EBACE23CA8E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions delete <pair_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.delete=.
+
+#+name: currency_pair_conventions-delete
+#+begin_src ores-shell :tangle currency_pair_conventions-delete.ores :exports none
+currency_pair_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 68F1DBB7-8F6F-55BA-BA76-74D5BE6A7619
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions delete-many <pair_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions.delete_many=.
+
+#+name: currency_pair_conventions-delete-many
+#+begin_src ores-shell :tangle currency_pair_conventions-delete-many.ores :exports none
+currency_pair_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D1B742CE-2318-5128-A7E9-7BD0A66D06C2
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions versions <pair_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions_versions.list=.
+
+#+name: currency_pair_conventions-versions
+#+begin_src ores-shell :tangle currency_pair_conventions-versions.ores :exports none
+currency_pair_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8504CEC6-FDA1-5882-8934-5E182225202A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_pair_conventions version <pair_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.currency_pair_conventions_versions.get=.
+
+#+name: currency_pair_conventions-version
+#+begin_src ores-shell :tangle currency_pair_conventions-version.ores :exports none
+currency_pair_conventions version __none__ --version 1
+#+end_src
+

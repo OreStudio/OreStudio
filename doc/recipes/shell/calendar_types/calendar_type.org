@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 8ECFE32B-0FDA-50D2-9673-84BE44C64345
+:END:
+#+title: How do I run the calendar_types commands from the shell?
+#+description: Every command the calendar_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:calendar_types:
+
+This file documents the calendar_types resource at the shell, one section per command. Every command is a subcommand of =calendar_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3C227EC9-2B1A-5BF2-A757-1DA35B87F9A9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.list=.
+
+#+name: calendar_types-list
+#+begin_src ores-shell :tangle calendar_types-list.ores :exports none
+calendar_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D1671AE8-D910-5C7A-AB48-25AEA8B6227B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.get=.
+
+#+name: calendar_types-get
+#+begin_src ores-shell :tangle calendar_types-get.ores :exports none
+calendar_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 79621609-9E35-5D7E-ABF8-337E78481B18
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.get_many=.
+
+#+name: calendar_types-get-many
+#+begin_src ores-shell :tangle calendar_types-get-many.ores :exports none
+calendar_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: F7056CE5-B638-56F1-AAAB-25E7B86A2990
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.put=.
+
+#+name: calendar_types-add
+#+begin_src ores-shell :tangle calendar_types-add.ores :exports none
+calendar_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8E11B202-F58E-51A4-AB42-22FC7CA0945A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.put=.
+
+#+name: calendar_types-set
+#+begin_src ores-shell :tangle calendar_types-set.ores :exports none
+calendar_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9D883EBE-EB2B-561E-A812-8431625100DE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.put_many=.
+
+#+name: calendar_types-put-many
+#+begin_src ores-shell :tangle calendar_types-put-many.ores :exports none
+calendar_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 3543072C-28B9-5055-AD55-DC88E2C168ED
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.delete=.
+
+#+name: calendar_types-delete
+#+begin_src ores-shell :tangle calendar_types-delete.ores :exports none
+calendar_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2FAB4689-E7BF-597B-845F-E2D24A55333F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types.delete_many=.
+
+#+name: calendar_types-delete-many
+#+begin_src ores-shell :tangle calendar_types-delete-many.ores :exports none
+calendar_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B0EF1C7A-EAB3-579B-AF62-0E43EBEED8BD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types_versions.list=.
+
+#+name: calendar_types-versions
+#+begin_src ores-shell :tangle calendar_types-versions.ores :exports none
+calendar_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 548928B6-0A2F-5774-BC8A-01A8274B03C8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+calendar_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.calendar_types_versions.get=.
+
+#+name: calendar_types-version
+#+begin_src ores-shell :tangle calendar_types-version.ores :exports none
+calendar_types version __none__ --version 1
+#+end_src
+

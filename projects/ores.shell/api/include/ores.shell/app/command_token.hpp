@@ -23,12 +23,15 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::shell::app {
 
@@ -87,6 +90,10 @@ T from_token(const std::string& token) {
         return token;
     } else if constexpr (std::is_same_v<T, bool>) {
         return token == "true" || token == "1";
+    } else if constexpr (std::is_same_v<T, std::chrono::year_month_day>) {
+        // A date column is stored as an ISO calendar date, which is also the
+        // token a caller types.
+        return ores::platform::time::datetime::from_iso8601_date(token);
     } else if constexpr (detail::has_token_conversion_v<T>) {
         return boost::lexical_cast<T>(token);
     } else {

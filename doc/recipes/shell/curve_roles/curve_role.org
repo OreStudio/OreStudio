@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: A4777779-637F-521D-A2AE-08DC10959102
+:END:
+#+title: How do I run the curve_roles commands from the shell?
+#+description: Every command the curve_roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_roles:
+
+This file documents the curve_roles resource at the shell, one section per command. Every command is a subcommand of =curve_roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C6FF2AF1-3168-59FE-8FE0-FA7D3D96BE00
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.list=.
+
+#+name: curve_roles-list
+#+begin_src ores-shell :tangle curve_roles-list.ores :exports none
+curve_roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A4BF3C72-4103-52AA-96B6-BAA1CBE9F56D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles get <code>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.get=.
+
+#+name: curve_roles-get
+#+begin_src ores-shell :tangle curve_roles-get.ores :exports none
+curve_roles get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 700788CA-19CC-5746-AB81-DEDECA943281
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.get_many=.
+
+#+name: curve_roles-get-many
+#+begin_src ores-shell :tangle curve_roles-get-many.ores :exports none
+curve_roles get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 37D4CE80-180A-597E-B360-3808101084B0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.put=.
+
+#+name: curve_roles-add
+#+begin_src ores-shell :tangle curve_roles-add.ores :exports none
+curve_roles add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FDE34FC4-E451-502C-8C6A-C625DB727585
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.put=.
+
+#+name: curve_roles-set
+#+begin_src ores-shell :tangle curve_roles-set.ores :exports none
+curve_roles set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D42E5C68-3051-5D9E-A232-DA560D6C57A9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.put_many=.
+
+#+name: curve_roles-put-many
+#+begin_src ores-shell :tangle curve_roles-put-many.ores :exports none
+curve_roles put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8304A19D-25E4-5738-94DA-DF575F6506ED
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.delete=.
+
+#+name: curve_roles-delete
+#+begin_src ores-shell :tangle curve_roles-delete.ores :exports none
+curve_roles delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9B1ED025-3EFC-5F41-8712-1FE4639FC9CA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles.delete_many=.
+
+#+name: curve_roles-delete-many
+#+begin_src ores-shell :tangle curve_roles-delete-many.ores :exports none
+curve_roles delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 511BD619-71D5-522D-9DC4-700685133104
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles_versions.list=.
+
+#+name: curve_roles-versions
+#+begin_src ores-shell :tangle curve_roles-versions.ores :exports none
+curve_roles versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1EEBA04C-FFDB-5E8D-80C5-F7FBEAE17FE9
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_roles version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_roles_versions.get=.
+
+#+name: curve_roles-version
+#+begin_src ores-shell :tangle curve_roles-version.ores :exports none
+curve_roles version __none__ --version 1
+#+end_src
+

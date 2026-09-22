@@ -120,11 +120,7 @@ tangled into the runnable script library
 
 * Currencies
 
-- [[id:EF2D7EDC-4470-4976-8A29-4189103CDC15][Add]]
-- [[id:51B7ADAA-2673-444E-A4AC-9367C4ADD568][Delete]]
-- [[id:53E30B9F-E327-4250-8F8F-A4865FD5FE23][Get]]
-- [[id:A9E5D960-D1DC-43B5-84E9-F7730D927080][Help Menu]]
-- [[id:F807E5C7-198D-4D13-9105-68513D07C193][History]]
+- [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I run the currencies commands from the shell?]]
 
 * Roles
 
@@ -158,11 +154,7 @@ tangled into the runnable script library
 
 * Countries
 
-- [[id:911100ED-309C-48A8-BC69-A81336F04E68][Add]]
-- [[id:A9DB4566-672B-4565-A27E-F28DDB9C00A3][Delete]]
-- [[id:11E13D6C-39EE-445A-A758-1DEA7E83D589][Get]]
-- [[id:3CC3A006-31A6-424F-8176-A1BA8CA9A2B5][Help]]
-- [[id:39BF64EC-A6C4-4359-8FAE-00E135826794][History]]
+- [[id:68AB74F4-E6B4-50CF-A721-3A738BAB70C4][How do I run the countries commands from the shell?]]
 
 * Change Reasons
 
@@ -247,3 +239,283 @@ tangled into the runnable script library
 * Tenant Types
 
 - [[id:8427B6C2-8E9C-5846-866B-DBBF5973DAFB][How do I run the tenant_types commands from the shell?]]
+
+* Asset Class Codes
+
+- [[id:B715B481-D664-55AD-9999-80D9DCAF672A][How do I run the asset_class_codes commands from the shell?]]
+
+* Book Purpose Types
+
+- [[id:ED99A346-C59D-5AFA-8150-CD7ACEEA0D24][How do I run the book_purpose_types commands from the shell?]]
+
+* Book Statuses
+
+- [[id:134432DF-FAC3-5872-AB19-49F395DFCF30][How do I run the book_statuses commands from the shell?]]
+
+* Books
+
+- [[id:A4B0EAC3-6FA9-5721-9906-5ED8AA50F6DF][How do I run the books commands from the shell?]]
+
+* Business Centres
+
+- [[id:0B71D41D-A37C-5094-B7BF-670C74F060D1][How do I run the business_centres commands from the shell?]]
+
+* Business Day Convention Types
+
+- [[id:189B6353-4A70-5FFF-A518-526FBCBCC4B5][How do I run the business_day_convention_types commands from the shell?]]
+
+* Business Unit Types
+
+- [[id:76BDBAB6-4C76-5B60-94D6-CF81A519A806][How do I run the business_unit_types commands from the shell?]]
+
+* Business Units
+
+- [[id:000E583B-AFD8-59AF-ABB3-793C651006C8][How do I run the business_units commands from the shell?]]
+
+* Calendar Dates
+
+- [[id:B93E32EE-696F-51A7-B326-47E00BB69204][How do I run the calendar_dates commands from the shell?]]
+
+* Calendar Events
+
+- [[id:B555FCF8-E7F1-5E19-9680-6585BD1DD2A6][How do I run the calendar_events commands from the shell?]]
+
+* Calendar Exceptions
+
+- [[id:6B6F3AD7-3E55-53EB-816B-8332E697D5F7][How do I run the calendar_exceptions commands from the shell?]]
+
+* Calendar Rules
+
+- [[id:17563C50-1133-5AEE-8288-18CF02D4DF7B][How do I run the calendar_rules commands from the shell?]]
+
+* Calendar Types
+
+- [[id:8ECFE32B-0FDA-50D2-9673-84BE44C64345][How do I run the calendar_types commands from the shell?]]
+
+* Calendars
+
+- [[id:55C57939-B346-5FAE-B1E5-E7B0FC1FFC7A][How do I run the calendars commands from the shell?]]
+
+* Cds Conventions
+
+- [[id:15801D31-22FC-5EB7-95B1-F5184B2CE397][How do I run the cds_conventions commands from the shell?]]
+
+* Contact Types
+
+- [[id:3CF64D27-362C-57E1-8000-18A06D96A6A7][How do I run the contact_types commands from the shell?]]
+
+* Counterparties
+
+- [[id:F4EF9DE2-4780-5249-AE88-4AB4E0CB848F][How do I run the counterparties commands from the shell?]]
+
+* Counterparty Contact Informations
+
+- [[id:EA544B3B-CBB5-5BA3-A1FD-A17C2F714D47][How do I run the counterparty_contact_informations commands from the shell?]]
+
+* Counterparty Identifiers
+
+- [[id:6A28FC85-8EF9-598B-925C-52AFE71AE0AD][How do I run the counterparty_identifiers commands from the shell?]]
+
+* Crm Driver Pairs
+
+- [[id:F78E4F94-8167-534C-B580-B9B8F641794D][How do I run the crm_driver_pairs commands from the shell?]]
+
+* Crm Enabled Derived Pairs
+
+- [[id:7A3B7648-6664-5E45-A03B-BA62076DFC1A][How do I run the crm_enabled_derived_pairs commands from the shell?]]
+
+* Crm Topology Configs
+
+- [[id:6691ADF3-F294-5C86-84DF-677CE5D15F41][How do I run the crm_topology_configs commands from the shell?]]
+
+* Currency Calendars
+
+- [[id:6164DD01-790A-5D85-835C-4A54ECED5E3E][How do I run the currency_calendars commands from the shell?]]
+
+* Currency Countries
+
+- [[id:ED5A2310-8B95-5ED1-A46E-C535168E71A0][How do I run the currency_countries commands from the shell?]]
+
+* Currency Currency Groups
+
+- [[id:A49FCBED-4988-5C7F-B3DE-EF60C037FE7E][How do I run the currency_currency_groups commands from the shell?]]
+
+* Currency Groups
+
+- [[id:2E8066E7-9FE6-51ED-9CD4-809B67241282][How do I run the currency_groups commands from the shell?]]
+
+* Currency Market Tiers
+
+- [[id:37B72D1C-8875-54AF-A0A1-814B36AEBD62][How do I run the currency_market_tiers commands from the shell?]]
+
+* Currency Pair Classifications
+
+- [[id:F9B6D0EE-2471-5BEC-AD7A-5BB9F6F88301][How do I run the currency_pair_classifications commands from the shell?]]
+
+* Currency Pair Convention Calendars
+
+- [[id:6BE10342-5BE6-5AAD-8F11-855C574ED473][How do I run the currency_pair_convention_calendars commands from the shell?]]
+
+* Currency Pair Conventions
+
+- [[id:C06682A7-2F57-5CA1-91C7-D1A797405DFB][How do I run the currency_pair_conventions commands from the shell?]]
+
+* Currency Pairs
+
+- [[id:8467498E-2E7C-5967-AE2F-7172B74B3E30][How do I run the currency_pairs commands from the shell?]]
+
+* Curve Roles
+
+- [[id:A4777779-637F-521D-A2AE-08DC10959102][How do I run the curve_roles commands from the shell?]]
+
+* Day Count Fraction Types
+
+- [[id:D93554F3-2EC1-544F-A479-A15122FECC34][How do I run the day_count_fraction_types commands from the shell?]]
+
+* Deposit Conventions
+
+- [[id:E83160B8-F626-584D-84B2-085B07AC6038][How do I run the deposit_conventions commands from the shell?]]
+
+* Derivation Kinds
+
+- [[id:F2C0F428-7C2F-5D79-A4C8-A22F0E69113E][How do I run the derivation_kinds commands from the shell?]]
+
+* Diary Entry Types
+
+- [[id:13202401-5160-5A92-9855-967C9F46979C][How do I run the diary_entry_types commands from the shell?]]
+
+* Floating Index Types
+
+- [[id:17A9739E-C482-5334-82F1-5E3E41A7E4EC][How do I run the floating_index_types commands from the shell?]]
+
+* Fra Conventions
+
+- [[id:DD0C34CB-9EDF-5BE7-A013-1CF42360E503][How do I run the fra_conventions commands from the shell?]]
+
+* Ibor Index Conventions
+
+- [[id:680E90E4-651A-5AB8-A079-4584B9630EA0][How do I run the ibor_index_conventions commands from the shell?]]
+
+* Instrument Codes
+
+- [[id:E30A8D21-AC70-52F6-9F23-D15302271A80][How do I run the instrument_codes commands from the shell?]]
+
+* Ledger Feed Types
+
+- [[id:A90DEF41-7495-5A64-93E9-717CF2386BE3][How do I run the ledger_feed_types commands from the shell?]]
+
+* Leg Types
+
+- [[id:8D1F0772-AF9A-524F-AE6A-FB6EF6EE6F78][How do I run the leg_types commands from the shell?]]
+
+* Monetary Natures
+
+- [[id:828F5A32-74CA-5162-BCC6-C3A8665B9CEC][How do I run the monetary_natures commands from the shell?]]
+
+* Ois Conventions
+
+- [[id:CAA45F91-B05E-57F2-B3B0-9F1A02B2FF72][How do I run the ois_conventions commands from the shell?]]
+
+* Overnight Index Conventions
+
+- [[id:F83F0959-8CF5-5E5D-BAC7-03081BC3CC06][How do I run the overnight_index_conventions commands from the shell?]]
+
+* Parties
+
+- [[id:3BF91809-0EBE-5540-BCF6-B6D52F9CAEBA][How do I run the parties commands from the shell?]]
+
+* Party Contact Informations
+
+- [[id:C1E4FA85-067C-54CE-ACDF-9FE9EA8492F8][How do I run the party_contact_informations commands from the shell?]]
+
+* Party Counterparties
+
+- [[id:CF9A1FBE-4137-5CB8-AA61-634765EDAD21][How do I run the party_counterparties commands from the shell?]]
+
+* Party Countries
+
+- [[id:1C3CAFC3-5713-5574-86E2-8281BF296968][How do I run the party_countries commands from the shell?]]
+
+* Party Currencies
+
+- [[id:AEC91FB7-31FD-532D-841F-5372C8AE7E7F][How do I run the party_currencies commands from the shell?]]
+
+* Party Id Schemes
+
+- [[id:C65D7B78-A0C0-5E88-98E6-6CCA36FE8459][How do I run the party_id_schemes commands from the shell?]]
+
+* Party Identifiers
+
+- [[id:F760D166-11B7-5C39-BA37-F9A8D8588B5B][How do I run the party_identifiers commands from the shell?]]
+
+* Party Statuses
+
+- [[id:56912B94-4CEA-594F-9A9C-2B504A66AF5F][How do I run the party_statuses commands from the shell?]]
+
+* Party Types
+
+- [[id:BD6249F2-EF5F-5225-8E34-5DC8C4571EA5][How do I run the party_types commands from the shell?]]
+
+* Payment Frequencies
+
+- [[id:1283A57A-4E15-52ED-9C04-5C9D0D03A92D][How do I run the payment_frequencies commands from the shell?]]
+
+* Portfolios
+
+- [[id:57D582E9-81E9-5B4C-B129-959A9F584EB6][How do I run the portfolios commands from the shell?]]
+
+* Purpose Types
+
+- [[id:B943E13B-E74B-58F4-8D98-CDABD01BD165][How do I run the purpose_types commands from the shell?]]
+
+* Regulatory Book Types
+
+- [[id:D9637C71-DCF1-5826-BB3F-4D4FED3CAC2A][How do I run the regulatory_book_types commands from the shell?]]
+
+* Rounding Types
+
+- [[id:16274B73-D144-54D4-BE72-5F4039178F02][How do I run the rounding_types commands from the shell?]]
+
+* Series Subclass Codes
+
+- [[id:C95D3A97-C1FD-5FB4-A12C-3A70B3B50F0C][How do I run the series_subclass_codes commands from the shell?]]
+
+* Swap Conventions
+
+- [[id:5BE68D51-3A85-5D62-B840-8D9DFE299250][How do I run the swap_conventions commands from the shell?]]
+
+* Tenor Anchors
+
+- [[id:47F528BA-B861-5C5E-A320-66185DA2C53E][How do I run the tenor_anchors commands from the shell?]]
+
+* Tenor Convention Resolutions
+
+- [[id:FBCEE21A-CC3F-5EC1-BC7F-3E42C933DBAD][How do I run the tenor_convention_resolutions commands from the shell?]]
+
+* Tenor Conventions
+
+- [[id:10D467BE-9F59-5C13-92BE-698C469DE6C2][How do I run the tenor_conventions commands from the shell?]]
+
+* Tenor Kinds
+
+- [[id:4CC8FF6D-889B-550D-A2AC-5E2D3F891260][How do I run the tenor_kinds commands from the shell?]]
+
+* Tenor Resolution Algorithms
+
+- [[id:E2FE5D11-E8B1-52E1-AA59-2C46663EF553][How do I run the tenor_resolution_algorithms commands from the shell?]]
+
+* Tenor Schedules
+
+- [[id:03C02F24-EAE2-5F3A-9859-8467F2C0C71F][How do I run the tenor_schedules commands from the shell?]]
+
+* Tenor Units
+
+- [[id:173E7EB2-CE91-5CF9-B63B-2FFF00E04432][How do I run the tenor_units commands from the shell?]]
+
+* Tenors
+
+- [[id:6C5AC576-1626-5384-9588-B8F5BE133146][How do I run the tenors commands from the shell?]]
+
+* Zero Conventions
+
+- [[id:316E5305-BB65-52D7-A217-437A5D5A27AF][How do I run the zero_conventions commands from the shell?]]

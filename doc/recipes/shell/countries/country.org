@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 68AB74F4-E6B4-50CF-A721-3A738BAB70C4
+:END:
+#+title: How do I run the countries commands from the shell?
+#+description: Every command the countries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:countries:
+
+This file documents the countries resource at the shell, one section per command. Every command is a subcommand of =countries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9F238BC5-1BEF-5960-8FDA-E316A78E323A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.countries.list=.
+
+#+name: countries-list
+#+begin_src ores-shell :tangle countries-list.ores :exports none
+countries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: EFBAE9D1-17D5-528D-99BD-983BE5222DB5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries get <alpha2_code>
+#+end_example
+
+It is addressed at =refdata.v1.countries.get=.
+
+#+name: countries-get
+#+begin_src ores-shell :tangle countries-get.ores :exports none
+countries get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 2B16B557-3A8D-50D7-B3E5-F10828D30061
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries get-many <alpha2_code>
+#+end_example
+
+It is addressed at =refdata.v1.countries.get_many=.
+
+#+name: countries-get-many
+#+begin_src ores-shell :tangle countries-get-many.ores :exports none
+countries get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 811DEEF7-4487-5E2E-A30E-F2931E7F5A13
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries add <alpha2_code> <alpha3_code> <numeric_code> <name> <official_name> <image_id> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.countries.put=.
+
+#+name: countries-add
+#+begin_src ores-shell :tangle countries-add.ores :exports none
+countries add __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8F0FFCCC-38E4-5F2D-BADF-D2E9886413F0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries set <alpha2_code> <alpha3_code> <numeric_code> <name> <official_name> <image_id> <coding_scheme_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.countries.put=.
+
+#+name: countries-set
+#+begin_src ores-shell :tangle countries-set.ores :exports none
+countries set __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7D748E40-50F4-5E24-BB82-D37AB3628339
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries put-many --count <n> <alpha2_code> <alpha3_code> <numeric_code> <name> <official_name> <image_id> <coding_scheme_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.countries.put_many=.
+
+#+name: countries-put-many
+#+begin_src ores-shell :tangle countries-put-many.ores :exports none
+countries put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C9E98576-83EB-5961-8EF0-3DF2410AF84A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries delete <alpha2_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.countries.delete=.
+
+#+name: countries-delete
+#+begin_src ores-shell :tangle countries-delete.ores :exports none
+countries delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EAF26EF4-4274-539D-B090-7D62614C3298
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries delete-many <alpha2_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.countries.delete_many=.
+
+#+name: countries-delete-many
+#+begin_src ores-shell :tangle countries-delete-many.ores :exports none
+countries delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9E1C0F00-F125-5363-85FC-100BC2055B84
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries versions <alpha2_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.countries_versions.list=.
+
+#+name: countries-versions
+#+begin_src ores-shell :tangle countries-versions.ores :exports none
+countries versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9CC1FA2F-D347-5BDF-9115-DBDD404E42B6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+countries version <alpha2_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.countries_versions.get=.
+
+#+name: countries-version
+#+begin_src ores-shell :tangle countries-version.ores :exports none
+countries version __none__ --version 1
+#+end_src
+

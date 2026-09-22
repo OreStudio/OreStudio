@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: A4B0EAC3-6FA9-5721-9906-5ED8AA50F6DF
+:END:
+#+title: How do I run the books commands from the shell?
+#+description: Every command the books submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:books:
+
+This file documents the books resource at the shell, one section per command. Every command is a subcommand of =books=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A569318A-E78C-5EAB-B917-953A9D6F001E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+books list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.books.list=.
+
+#+name: books-list
+#+begin_src ores-shell :tangle books-list.ores :exports none
+books list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E032009A-6D6D-5BAF-A90E-DB81F2788C25
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+books get <id>
+#+end_example
+
+It is addressed at =refdata.v1.books.get=.
+
+#+name: books-get
+#+begin_src ores-shell :tangle books-get.ores :exports none
+books get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B5658A01-6591-5320-994D-8BE8CD6D614F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+books get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.books.get_many=.
+
+#+name: books-get-many
+#+begin_src ores-shell :tangle books-get-many.ores :exports none
+books get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7E59DB28-7047-5A39-B814-73FF63418AB2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+books add <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable> <rates_centre_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.books.put=.
+
+#+name: books-add
+#+begin_src ores-shell :tangle books-add.ores :exports none
+books add 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 92EB1F47-818C-563B-A432-8A848FD7DE2D
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+books set <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable> <rates_centre_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.books.put=.
+
+#+name: books-set
+#+begin_src ores-shell :tangle books-set.ores :exports none
+books set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5025B247-D798-5109-B7C8-040BCAE56B60
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+books put-many --count <n> <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <functional_currency> <gl_account_ref> <cost_center> <book_status> <regulatory_book_type> <is_sweepable> <rates_centre_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.books.put_many=.
+
+#+name: books-put-many
+#+begin_src ores-shell :tangle books-put-many.ores :exports none
+books put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A7E9698B-3A6B-5BCB-88A0-CE2D31BD6C1C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+books delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.books.delete=.
+
+#+name: books-delete
+#+begin_src ores-shell :tangle books-delete.ores :exports none
+books delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8F57735C-F28D-5280-B494-05E9E3E041CF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+books delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.books.delete_many=.
+
+#+name: books-delete-many
+#+begin_src ores-shell :tangle books-delete-many.ores :exports none
+books delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-parent-portfolio-id=
+:PROPERTIES:
+:ID: 275DF3FC-081E-50D9-B831-17B26E99E868
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+books by-parent-portfolio-id <parent_portfolio_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.books.list_by_parent_portfolio_id=.
+
+#+name: books-by-parent-portfolio-id
+#+begin_src ores-shell :tangle books-by-parent-portfolio-id.ores :exports none
+books by-parent-portfolio-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EE5B6603-F168-56F3-ADAA-5652A4CC0225
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+books versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.books_versions.list=.
+
+#+name: books-versions
+#+begin_src ores-shell :tangle books-versions.ores :exports none
+books versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 69F95DD8-DF73-5344-AD7C-80195AB89FF1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+books version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.books_versions.get=.
+
+#+name: books-version
+#+begin_src ores-shell :tangle books-version.ores :exports none
+books version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

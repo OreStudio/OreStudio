@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: B715B481-D664-55AD-9999-80D9DCAF672A
+:END:
+#+title: How do I run the asset_class_codes commands from the shell?
+#+description: Every command the asset_class_codes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:asset_class_codes:
+
+This file documents the asset_class_codes resource at the shell, one section per command. Every command is a subcommand of =asset_class_codes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1627DFB7-F5A1-571B-9DAE-917166CBFCC1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.list=.
+
+#+name: asset_class_codes-list
+#+begin_src ores-shell :tangle asset_class_codes-list.ores :exports none
+asset_class_codes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 88FE3431-8FF7-5670-A60E-27FEA51169A3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes get <code>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.get=.
+
+#+name: asset_class_codes-get
+#+begin_src ores-shell :tangle asset_class_codes-get.ores :exports none
+asset_class_codes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 6E76E726-4E63-5DBD-968A-C67ACCD5D5C9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.get_many=.
+
+#+name: asset_class_codes-get-many
+#+begin_src ores-shell :tangle asset_class_codes-get-many.ores :exports none
+asset_class_codes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EDD6A9CD-27FD-5532-A367-D411EFD89623
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.put=.
+
+#+name: asset_class_codes-add
+#+begin_src ores-shell :tangle asset_class_codes-add.ores :exports none
+asset_class_codes add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A77E9EE5-D427-5661-9DFB-CBE59EEA26DA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.put=.
+
+#+name: asset_class_codes-set
+#+begin_src ores-shell :tangle asset_class_codes-set.ores :exports none
+asset_class_codes set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 706B5526-4E1D-5C39-9788-ADA1506EA9D4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.put_many=.
+
+#+name: asset_class_codes-put-many
+#+begin_src ores-shell :tangle asset_class_codes-put-many.ores :exports none
+asset_class_codes put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 38A1F007-E017-5FF0-800B-D7340E9F2103
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.delete=.
+
+#+name: asset_class_codes-delete
+#+begin_src ores-shell :tangle asset_class_codes-delete.ores :exports none
+asset_class_codes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6D389728-8E9B-5E04-B651-8D0D83D810AB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes.delete_many=.
+
+#+name: asset_class_codes-delete-many
+#+begin_src ores-shell :tangle asset_class_codes-delete-many.ores :exports none
+asset_class_codes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EC3A0249-C70F-5FFD-9890-7950B052D2D4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes_versions.list=.
+
+#+name: asset_class_codes-versions
+#+begin_src ores-shell :tangle asset_class_codes-versions.ores :exports none
+asset_class_codes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 67B79A52-72EA-5C6A-80BF-58298EFC6EB7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+asset_class_codes version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.asset_class_codes_versions.get=.
+
+#+name: asset_class_codes-version
+#+begin_src ores-shell :tangle asset_class_codes-version.ores :exports none
+asset_class_codes version __none__ --version 1
+#+end_src
+

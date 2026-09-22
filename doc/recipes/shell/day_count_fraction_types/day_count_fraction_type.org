@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: D93554F3-2EC1-544F-A479-A15122FECC34
+:END:
+#+title: How do I run the day_count_fraction_types commands from the shell?
+#+description: Every command the day_count_fraction_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:day_count_fraction_types:
+
+This file documents the day_count_fraction_types resource at the shell, one section per command. Every command is a subcommand of =day_count_fraction_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EF5560BB-2E67-532C-BF95-E8A5625E4ACE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.list=.
+
+#+name: day_count_fraction_types-list
+#+begin_src ores-shell :tangle day_count_fraction_types-list.ores :exports none
+day_count_fraction_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 850833D5-7EC8-569F-A6ED-F8B1F910C401
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types get <code>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.get=.
+
+#+name: day_count_fraction_types-get
+#+begin_src ores-shell :tangle day_count_fraction_types-get.ores :exports none
+day_count_fraction_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 6FBFBD9C-2835-536D-AFA2-82C648419CDD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.get_many=.
+
+#+name: day_count_fraction_types-get-many
+#+begin_src ores-shell :tangle day_count_fraction_types-get-many.ores :exports none
+day_count_fraction_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0BEB47AE-4743-53B8-B484-76F9439182E2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.put=.
+
+#+name: day_count_fraction_types-add
+#+begin_src ores-shell :tangle day_count_fraction_types-add.ores :exports none
+day_count_fraction_types add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7513EB05-9F66-59B6-8262-F8D7A8185190
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.put=.
+
+#+name: day_count_fraction_types-set
+#+begin_src ores-shell :tangle day_count_fraction_types-set.ores :exports none
+day_count_fraction_types set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C1DFB4E5-E78C-5612-81CE-4A89A46CC032
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.put_many=.
+
+#+name: day_count_fraction_types-put-many
+#+begin_src ores-shell :tangle day_count_fraction_types-put-many.ores :exports none
+day_count_fraction_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D8250D3C-EA2D-54BC-A458-5C4432E69BFC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.delete=.
+
+#+name: day_count_fraction_types-delete
+#+begin_src ores-shell :tangle day_count_fraction_types-delete.ores :exports none
+day_count_fraction_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6D64683A-95CD-5F8D-94BF-CEA3B964F75D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types.delete_many=.
+
+#+name: day_count_fraction_types-delete-many
+#+begin_src ores-shell :tangle day_count_fraction_types-delete-many.ores :exports none
+day_count_fraction_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0E5DD823-4036-5900-BD36-D35609197631
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types_versions.list=.
+
+#+name: day_count_fraction_types-versions
+#+begin_src ores-shell :tangle day_count_fraction_types-versions.ores :exports none
+day_count_fraction_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5FE361BC-EE48-5116-8E7C-0C3106F14254
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_count_fraction_types version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.day_count_fraction_types_versions.get=.
+
+#+name: day_count_fraction_types-version
+#+begin_src ores-shell :tangle day_count_fraction_types-version.ores :exports none
+day_count_fraction_types version __none__ --version 1
+#+end_src
+

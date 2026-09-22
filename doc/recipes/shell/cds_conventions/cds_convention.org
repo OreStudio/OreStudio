@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 15801D31-22FC-5EB7-95B1-F5184B2CE397
+:END:
+#+title: How do I run the cds_conventions commands from the shell?
+#+description: Every command the cds_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cds_conventions:
+
+This file documents the cds_conventions resource at the shell, one section per command. Every command is a subcommand of =cds_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 56ED1AF0-15CF-52FE-A0D2-CECF5A279D0E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.list=.
+
+#+name: cds_conventions-list
+#+begin_src ores-shell :tangle cds_conventions-list.ores :exports none
+cds_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 54136084-849D-52A8-8B4F-68107EE9DD69
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.get=.
+
+#+name: cds_conventions-get
+#+begin_src ores-shell :tangle cds_conventions-get.ores :exports none
+cds_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E600854A-E3FF-5F9F-B5BA-58D29771A963
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.get_many=.
+
+#+name: cds_conventions-get-many
+#+begin_src ores-shell :tangle cds_conventions-get-many.ores :exports none
+cds_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4718025D-1CD7-56E9-B11C-B2D8F4C8C39F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions add <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.put=.
+
+#+name: cds_conventions-add
+#+begin_src ores-shell :tangle cds_conventions-add.ores :exports none
+cds_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ false false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2D56473F-AAFF-571C-9D6A-781ED3017C1A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions set <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.put=.
+
+#+name: cds_conventions-set
+#+begin_src ores-shell :tangle cds_conventions-set.ores :exports none
+cds_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ false false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5169D1BF-35BE-52FC-BDA9-BDEE4CEC955B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions put-many --count <n> <id> <settlement_days> <calendar> <frequency> <payment_convention> <rule> <day_count_fraction> <settles_accrual> <pays_at_default_time> <upfront_settlement_days> <last_period_day_count_fraction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.put_many=.
+
+#+name: cds_conventions-put-many
+#+begin_src ores-shell :tangle cds_conventions-put-many.ores :exports none
+cds_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ false false __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6F4F6AF0-BC4D-533D-882C-B422A2CCD4B6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.delete=.
+
+#+name: cds_conventions-delete
+#+begin_src ores-shell :tangle cds_conventions-delete.ores :exports none
+cds_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6F95E46A-4083-5FAF-A76F-C537950398B6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions.delete_many=.
+
+#+name: cds_conventions-delete-many
+#+begin_src ores-shell :tangle cds_conventions-delete-many.ores :exports none
+cds_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6DC1EB64-CAFE-5FC6-99F7-4869E5F19C37
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions_versions.list=.
+
+#+name: cds_conventions-versions
+#+begin_src ores-shell :tangle cds_conventions-versions.ores :exports none
+cds_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 962DD2AA-DCFA-55F9-BB36-2AAE417B8FD5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cds_conventions_versions.get=.
+
+#+name: cds_conventions-version
+#+begin_src ores-shell :tangle cds_conventions-version.ores :exports none
+cds_conventions version __none__ --version 1
+#+end_src
+

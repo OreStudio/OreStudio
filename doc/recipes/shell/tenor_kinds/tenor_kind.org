@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 4CC8FF6D-889B-550D-A2AC-5E2D3F891260
+:END:
+#+title: How do I run the tenor_kinds commands from the shell?
+#+description: Every command the tenor_kinds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_kinds:
+
+This file documents the tenor_kinds resource at the shell, one section per command. Every command is a subcommand of =tenor_kinds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 58DD831F-21B7-5EC9-A0FB-B5D54AAD7140
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.list=.
+
+#+name: tenor_kinds-list
+#+begin_src ores-shell :tangle tenor_kinds-list.ores :exports none
+tenor_kinds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4612D8E3-CB70-5642-B2F2-059B8433B4F6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds get <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.get=.
+
+#+name: tenor_kinds-get
+#+begin_src ores-shell :tangle tenor_kinds-get.ores :exports none
+tenor_kinds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F4736898-519D-5A06-AA69-EB8DC26ADCC1
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.get_many=.
+
+#+name: tenor_kinds-get-many
+#+begin_src ores-shell :tangle tenor_kinds-get-many.ores :exports none
+tenor_kinds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 06303B37-0E48-5961-9A0E-799A6BDB7E70
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.put=.
+
+#+name: tenor_kinds-add
+#+begin_src ores-shell :tangle tenor_kinds-add.ores :exports none
+tenor_kinds add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D106CDC0-44EF-532F-9373-7647E9DF863C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.put=.
+
+#+name: tenor_kinds-set
+#+begin_src ores-shell :tangle tenor_kinds-set.ores :exports none
+tenor_kinds set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 43FAE4EA-A769-5F43-AD84-614E6A9A81C9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.put_many=.
+
+#+name: tenor_kinds-put-many
+#+begin_src ores-shell :tangle tenor_kinds-put-many.ores :exports none
+tenor_kinds put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8E3AACA2-39B2-50E1-8BC1-B8D4EA87AAA0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.delete=.
+
+#+name: tenor_kinds-delete
+#+begin_src ores-shell :tangle tenor_kinds-delete.ores :exports none
+tenor_kinds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A0D0BF87-020F-51D7-AC6B-D7D257664E48
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds.delete_many=.
+
+#+name: tenor_kinds-delete-many
+#+begin_src ores-shell :tangle tenor_kinds-delete-many.ores :exports none
+tenor_kinds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DCDE841D-ADC4-53B8-B402-A66892182A7A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds_versions.list=.
+
+#+name: tenor_kinds-versions
+#+begin_src ores-shell :tangle tenor_kinds-versions.ores :exports none
+tenor_kinds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 97B93580-667B-5F9B-A8AC-AE599ECE1CD7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_kinds version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_kinds_versions.get=.
+
+#+name: tenor_kinds-version
+#+begin_src ores-shell :tangle tenor_kinds-version.ores :exports none
+tenor_kinds version __none__ --version 1
+#+end_src
+

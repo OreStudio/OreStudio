@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: A49FCBED-4988-5C7F-B3DE-EF60C037FE7E
+:END:
+#+title: How do I run the currency_currency_groups commands from the shell?
+#+description: Every command the currency_currency_groups submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:currency_currency_groups:
+
+This file documents the currency_currency_groups resource at the shell, one section per command. Every command is a subcommand of =currency_currency_groups=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1128AB2C-330E-5266-987D-3761376502E1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.list=.
+
+#+name: currency_currency_groups-list
+#+begin_src ores-shell :tangle currency_currency_groups-list.ores :exports none
+currency_currency_groups list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CBBEB600-7310-5734-9FEF-6951788F25E5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups get <currency_iso_code> <currency_group_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.get=.
+
+#+name: currency_currency_groups-get
+#+begin_src ores-shell :tangle currency_currency_groups-get.ores :exports none
+currency_currency_groups get __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 69196C33-FFB4-5A1B-A838-73FFEA6B94C5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups get-many <currency_iso_code> <currency_group_code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.get_many=.
+
+#+name: currency_currency_groups-get-many
+#+begin_src ores-shell :tangle currency_currency_groups-get-many.ores :exports none
+currency_currency_groups get-many __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6B1CCCD1-355D-5147-B914-AB49B900D645
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups add <currency_iso_code> <currency_group_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.put=.
+
+#+name: currency_currency_groups-add
+#+begin_src ores-shell :tangle currency_currency_groups-add.ores :exports none
+currency_currency_groups add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4009219F-C325-59FA-B7A0-762536FF9FF7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups set <currency_iso_code> <currency_group_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.put=.
+
+#+name: currency_currency_groups-set
+#+begin_src ores-shell :tangle currency_currency_groups-set.ores :exports none
+currency_currency_groups set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5CF42134-0FC1-5A95-A78D-B0B528E3AF27
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups put-many --count <n> <currency_iso_code> <currency_group_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.put_many=.
+
+#+name: currency_currency_groups-put-many
+#+begin_src ores-shell :tangle currency_currency_groups-put-many.ores :exports none
+currency_currency_groups put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 76EB8A71-F332-56D2-BFE7-4793374AE418
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups delete <currency_iso_code> <currency_group_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.delete=.
+
+#+name: currency_currency_groups-delete
+#+begin_src ores-shell :tangle currency_currency_groups-delete.ores :exports none
+currency_currency_groups delete __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AFC6CEC0-6787-5DFE-BC46-DAFAD93FEF10
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups delete-many <currency_iso_code> <currency_group_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.delete_many=.
+
+#+name: currency_currency_groups-delete-many
+#+begin_src ores-shell :tangle currency_currency_groups-delete-many.ores :exports none
+currency_currency_groups delete-many __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =by-currency-iso-code=
+:PROPERTIES:
+:ID: E05DB8B5-7105-5E0D-AEF0-F22E2327A23E
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_currency_groups by-currency-iso-code <currency_iso_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_currency_groups.list_by_currency_iso_code=.
+
+#+name: currency_currency_groups-by-currency-iso-code
+#+begin_src ores-shell :tangle currency_currency_groups-by-currency-iso-code.ores :exports none
+currency_currency_groups by-currency-iso-code __none__ --limit 1
+#+end_src
+

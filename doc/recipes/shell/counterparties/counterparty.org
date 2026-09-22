@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: F4EF9DE2-4780-5249-AE88-4AB4E0CB848F
+:END:
+#+title: How do I run the counterparties commands from the shell?
+#+description: Every command the counterparties submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:counterparties:
+
+This file documents the counterparties resource at the shell, one section per command. Every command is a subcommand of =counterparties=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9F8FE01A-2327-569E-8880-24E6F7030A2C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.list=.
+
+#+name: counterparties-list
+#+begin_src ores-shell :tangle counterparties-list.ores :exports none
+counterparties list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FACCA85D-3955-5219-8D34-5BF2F87007FA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties get <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.get=.
+
+#+name: counterparties-get
+#+begin_src ores-shell :tangle counterparties-get.ores :exports none
+counterparties get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 60A75BF6-0974-5E71-B8EC-585E6CCCB961
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.get_many=.
+
+#+name: counterparties-get-many
+#+begin_src ores-shell :tangle counterparties-get-many.ores :exports none
+counterparties get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D686FDC0-D892-5D23-9203-EB988465E2D0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties add <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.put=.
+
+#+name: counterparties-add
+#+begin_src ores-shell :tangle counterparties-add.ores :exports none
+counterparties add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6C4699F9-AB27-53C7-8961-E21CB789776B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties set <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.put=.
+
+#+name: counterparties-set
+#+begin_src ores-shell :tangle counterparties-set.ores :exports none
+counterparties set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: FB392499-0C99-5592-9698-448369A0B4E5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties put-many --count <n> <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.put_many=.
+
+#+name: counterparties-put-many
+#+begin_src ores-shell :tangle counterparties-put-many.ores :exports none
+counterparties put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 75983D5A-CA7B-55B0-BE6A-A062846DA559
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.delete=.
+
+#+name: counterparties-delete
+#+begin_src ores-shell :tangle counterparties-delete.ores :exports none
+counterparties delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 95FA3ADE-8822-58DE-83D1-EAC18CEBCE8B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties.delete_many=.
+
+#+name: counterparties-delete-many
+#+begin_src ores-shell :tangle counterparties-delete-many.ores :exports none
+counterparties delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: FCFB1FCB-1886-5F94-916F-4D9393DA7513
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.counterparties_versions.list=.
+
+#+name: counterparties-versions
+#+begin_src ores-shell :tangle counterparties-versions.ores :exports none
+counterparties versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: ECE3C86A-8296-5EDE-8D7D-4852367979AA
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparties version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.counterparties_versions.get=.
+
+#+name: counterparties-version
+#+begin_src ores-shell :tangle counterparties-version.ores :exports none
+counterparties version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

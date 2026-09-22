@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: 2E8066E7-9FE6-51ED-9CD4-809B67241282
+:END:
+#+title: How do I run the currency_groups commands from the shell?
+#+description: Every command the currency_groups submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:currency_groups:
+
+This file documents the currency_groups resource at the shell, one section per command. Every command is a subcommand of =currency_groups=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 287C9F3D-AC4E-5B6C-863E-0FE3E3684A59
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.list=.
+
+#+name: currency_groups-list
+#+begin_src ores-shell :tangle currency_groups-list.ores :exports none
+currency_groups list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D121C18C-1929-5245-A5A5-071DA690937C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups get <code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.get=.
+
+#+name: currency_groups-get
+#+begin_src ores-shell :tangle currency_groups-get.ores :exports none
+currency_groups get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 15719B2C-59FA-5DF8-859A-B024C316B900
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.get_many=.
+
+#+name: currency_groups-get-many
+#+begin_src ores-shell :tangle currency_groups-get-many.ores :exports none
+currency_groups get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6D7A20EE-4EF7-50C4-AA58-E73169FA0423
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.put=.
+
+#+name: currency_groups-add
+#+begin_src ores-shell :tangle currency_groups-add.ores :exports none
+currency_groups add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 11948F49-5A46-558A-8EA8-901534710187
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.put=.
+
+#+name: currency_groups-set
+#+begin_src ores-shell :tangle currency_groups-set.ores :exports none
+currency_groups set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 908BFE8B-4383-5DD0-99B7-0315BF5B9B7E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.put_many=.
+
+#+name: currency_groups-put-many
+#+begin_src ores-shell :tangle currency_groups-put-many.ores :exports none
+currency_groups put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1A7E47A2-092E-5102-BEB3-44043B46E085
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.delete=.
+
+#+name: currency_groups-delete
+#+begin_src ores-shell :tangle currency_groups-delete.ores :exports none
+currency_groups delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 75C5EC60-5D7D-5A94-A33C-E7CFC68EAB03
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups.delete_many=.
+
+#+name: currency_groups-delete-many
+#+begin_src ores-shell :tangle currency_groups-delete-many.ores :exports none
+currency_groups delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 14A17B6B-48CF-5A80-AB85-C0F02ADF1946
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups_versions.list=.
+
+#+name: currency_groups-versions
+#+begin_src ores-shell :tangle currency_groups-versions.ores :exports none
+currency_groups versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9E635896-F986-5FCD-AB57-EA3857262A38
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+currency_groups version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.currency_groups_versions.get=.
+
+#+name: currency_groups-version
+#+begin_src ores-shell :tangle currency_groups-version.ores :exports none
+currency_groups version __none__ --version 1
+#+end_src
+

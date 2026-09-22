@@ -44,7 +44,9 @@
 -- Sessions and login
 \ir ./iam_auth_events_drop.sql
 \ir ./iam_session_stats_drop.sql
+\ir ./iam_sessions_notify_trigger_drop.sql
 \ir ./iam_sessions_drop.sql
+\ir ./iam_login_info_notify_trigger_drop.sql
 \ir ./iam_login_info_drop.sql
 
 -- Accounts

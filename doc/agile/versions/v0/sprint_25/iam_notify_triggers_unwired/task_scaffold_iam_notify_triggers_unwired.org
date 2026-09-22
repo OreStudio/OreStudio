@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: B2B26F3E-59F2-437B-BE0F-4F03245347B0
+:END:
+#+title: Task: Scaffold story: Hotfix: IAM current-state notify triggers are not wired into the aggregators
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :iam_notify_triggers_unwired:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/iam-notify-triggers-unwired
+#+pr: 2123
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:54897BD4-A38C-4271-AA3B-CE79C43663E3][Hotfix: IAM current-state notify triggers are not wired into the aggregators]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the hotfix story and task on =hotfix/iam-notify-triggers-unwired= off
+=origin/main=, and wire both into Sprint 25's =** Hotfixes= table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:54897BD4-A38C-4271-AA3B-CE79C43663E3][Hotfix: IAM current-state notify triggers are not wired into the aggregators]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Story and task exist under =doc/agile/versions/v0/sprint_25/=.
+- The sprint's =** Hotfixes= table carries the story row.
+
+* Plan
+
+Scaffold only: =compass story new --kind hotfix= creates the branch, the
+story, the task and the sprint wiring in one step.
+
+* Notes
+
+=compass story new= wired the story into =** Hotfixes= directly. The first
+invocation timed out at 60s while the command was still running; the retry
+completed and created the branch cleanly.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2123][#2123]] | [sql] Wire the IAM current-state notify triggers into the aggregators |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The hotfix branch, story and task exist, and Sprint 25's =** Hotfixes= table
+carries the story row.
+
+Acceptance met: =doc/agile/versions/v0/sprint_25/iam_notify_triggers_unwired/=
+holds =story.org= and both task files, and the sprint row records the story
+with a =2026-09-22= start date.

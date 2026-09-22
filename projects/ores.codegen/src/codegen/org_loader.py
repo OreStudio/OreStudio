@@ -137,6 +137,17 @@ def _load_profile_assignments(slug: str) -> tuple[tuple[str, Any], ...]:
 
 
 @lru_cache(maxsize=None)
+def _custom_type_names() -> frozenset[str]:
+    """The type names the custom-type registry declares.
+
+    A name here is a value type the tree owns -- a domain enum, a cron
+    expression, a tenant uuid -- and not a model entity, which is what decides
+    whether a TypeScript twin is an interface or a string.
+    """
+    return frozenset(name for name, _ in _load_custom_type_headers())
+
+
+@lru_cache(maxsize=None)
 def _load_custom_type_headers() -> tuple[tuple[str, str], ...]:
     """Parse projects/modeling/cpp_custom_types.org into (type, header) pairs.
 
@@ -2341,6 +2352,14 @@ def _ts_type(cpp_type: str) -> str | None:
         return _TS_SCALARS[cpp_type]
     if cpp_type == "std::chrono::system_clock::time_point":
         return "string"
+    # A registered custom value type -- a domain enum, a cron expression, a
+    # tenant uuid -- is not a model entity: the tree emits no interface for it,
+    # so a name invented from its C++ spelling would reference a type that does
+    # not exist, and the entity that names it would import a module nothing
+    # writes. Each crosses the wire as the string its reflector writes, and the
+    # registry is the one declaration of which names these are.
+    if cpp_type in _custom_type_names():
+        return "string"
     domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
     if domain:
         return _to_pascal_case(domain.group(1))
@@ -2460,9 +2479,15 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     reference it.
     """
     entities: set[str] = set()
+    registered = _custom_type_names()
     for message in messages:
         for field in message.get("fields") or []:
-            entities.update(_TS_DOMAIN_REF_RE.findall(field.get("cpp_type") or ""))
+            for match in _TS_DOMAIN_REF_RE.finditer(field.get("cpp_type") or ""):
+                # A registered custom value type renders as a string, so there
+                # is no interface to import. See _ts_type.
+                if match.group(0) in registered:
+                    continue
+                entities.add(match.group(1))
     # A type whose TypeScript is hand-written is imported from its shared
     # module by ts_utility_imports(); claiming it here too would emit a second
     # import from a per-component domain module that does not exist.

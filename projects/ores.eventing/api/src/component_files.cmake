@@ -30,6 +30,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/entity_change_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/entity_change_event_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/entity_change_event_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/entity_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/entity_event_traits.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/event_channel_info.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/event_channel_info_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.api/domain/event_traits.hpp"

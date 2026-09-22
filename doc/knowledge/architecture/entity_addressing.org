@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: E2521A56-E053-4FDC-A9F3-AAE47918241B
+:END:
+#+title: Entity Addressing
+#+description: The one way a record is addressed: every member of the key the model declares, in the order it declares them -- one path segment per member in the BFF, one positional per member in the shell, and the key record the protocol carries; emitted by codegen from the model, with the generic history request as the stated exception.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:protocol:codegen:addressing:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+* Summary
+
+A record is addressed by *every member of the key its model declares*, in the
+order the model declares them. There is no second way, and nothing is
+translated on the way through: the protocol's key struct carries those members,
+the shell takes one positional per member, the BFF route carries one path
+segment per member named for the member, and the browser builds the same
+segments from the same list. A junction's key is the pair it links, so it is
+addressed by two segments; an entity whose key is one field is addressed by
+one. Codegen emits the key into both generated descriptors from the model, so
+the address, the request and the screen cannot disagree.
+
+The one exception is the generic history request, which states a single id. An
+entity whose key has more than one member therefore has no history route at
+all, rather than one that addresses half a row.
+
+* Detail
+
+** The key is declared once, in the model
+
+The addressing key is the *wire key* the model declares, not the surrogate
+primary key the store happens to use. An entity states it with =:key_field:= in
+its presentation drawer -- =username= for an account, =name= for a role,
+=code= for a tenant. The column it names is the one a person reads and types,
+and the store's uuid stays storage-only.
+
+A junction declares no =:key_field:=, because its identity is not one of its
+columns: =account_party= is the link between an account and a party, and the
+pair is what names it. That absence is the declaration, not a gap.
+
+A model declares its key one way. The key column carries =:primary_key: true=
+in its =* Columns= section, and a model with no key states =:no_primary_key:
+true=. There is no separate primary-key section, and a model that carries one
+is a model that has not been migrated.
+
+** What each layer does with it
+
+| Layer            | How it addresses                                              |
+|------------------+---------------------------------------------------------------|
+| C++ protocol     | =<entity>_key=, a struct of exactly those members             |
+| TypeScript twin  | the same interface, from the same model                       |
+| Shell            | one positional per member: =get <account_id> <party_id>=      |
+| BFF route        | one path segment per member: =/api/account_parties/:account_id/:party_id= |
+| Browser          | =entityRecordPath= builds one segment per member from the row  |
+| Codegen          | =keyFields=, emitted into both descriptors                    |
+
+The request states the same key: ={ key: { account_id, party_id } }= for a
+read, and the same record inside =removal= for a delete. The path and the
+request are two renderings of one declaration, which is why neither is derived
+from the other.
+
+** Why not one synthetic segment
+
+A single segment can carry one value. Joining a pair into one string invents an
+address that no key struct can state, so the request would have to split it
+again -- or not, and address a row nobody asked for. It also cannot say which
+member is which: the two halves of a junction key are not interchangeable, and
+a separator that appears inside a value would change the address.
+
+** The history exception
+
+The history request is generic: it names an =entity_type= and one =entity_id=,
+so it can address a record with one key member and nothing else. A descriptor
+whose key has more than one member therefore declares no history subject and
+registers no history route. The alternative -- joining a pair into the one id
+-- would answer for a row that does not exist while looking like it answered
+for the one that does.
+
+** Where this is emitted
+
+Two projections read the model's declared key and write it into the generated
+declarations: the web declaration (=keyFields=, with =writeFields=, for the
+browser) and the BFF route descriptor (=keyFields=, =subjects=, the row fields,
+for the server). Both come from the same loader, so an entity cannot be
+addressable by one and not the other.
+
+The codegen projection tests state the rule in code:
+=test_web_declaration_projection.py= and =test_bff_route_projection.py=.
+
+* See also
+
+- [[file:../../knowledge/architecture/nats_wire_format.org][NATS Wire Format]] -- the envelope the key record travels in.
+- =projects/ores.codegen/modeling/entity_meta_model_keys_and_columns.org= --
+  the meta-model for keys and columns.

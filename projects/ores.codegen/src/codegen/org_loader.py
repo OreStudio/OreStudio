@@ -2344,6 +2344,15 @@ def _ts_type(cpp_type: str) -> str | None:
     domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
     if domain:
         return _to_pascal_case(domain.group(1))
+    # An unqualified ``domain::<name>`` is an enum the model declares beside the
+    # entity rather than a type another component owns, and it crosses the wire
+    # as the enumerator's own name: rfl reflects an enum class to a string, and
+    # the store holds the same text (the SQL such a model writes compares the
+    # column to 'system', not to a number). The TypeScript twin is therefore
+    # ``string``, which is what every other enumerated column in the tree
+    # projects to.
+    if cpp_type.startswith("domain::"):
+        return "string"
     utility = _TS_UTILITY_DOMAIN_TYPES.get(cpp_type)
     if utility:
         return utility[0]

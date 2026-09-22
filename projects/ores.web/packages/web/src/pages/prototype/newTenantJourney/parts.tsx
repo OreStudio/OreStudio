@@ -19,7 +19,7 @@
  *
  */
 
-import type { ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { Button, Field, Input, Select, cx } from '../../../ui/Primitives.js';
 import { NewPasswordField } from '../../../ui/PasswordField.js';
 import type { RunState, SeedProfile, StepState, TenantDetails } from './stub.js';
@@ -82,13 +82,11 @@ export function DetailsForm({
   details,
   onChange,
   onPasswordAcceptable,
-  passwordPrefilled = false,
 }: {
   readonly profile: SeedProfile;
   readonly details: TenantDetails;
   readonly onChange: (details: TenantDetails) => void;
   readonly onPasswordAcceptable: (acceptable: boolean) => void;
-  readonly passwordPrefilled?: boolean;
 }): ReactNode {
   const set = (key: keyof Omit<TenantDetails, 'params'>, value: string): void =>
     onChange({ ...details, [key]: value });
@@ -97,10 +95,7 @@ export function DetailsForm({
 
   return (
     <div className="space-y-6">
-      {profile.defaults !== undefined && (
-        <p className="text-sm text-ink-muted">Filled in for {profile.name}. Change anything you need, then set the administrator's password.</p>
-      )}
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+            <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 text-sm font-semibold">Tenant</legend>
         <Field label="Name">
           <Input value={details.name} onChange={(e) => set('name', e.target.value)} placeholder="Northwind Capital" />
@@ -140,23 +135,76 @@ export function DetailsForm({
         <Field label="Email">
           <Input value={details.adminEmail} onChange={(e) => set('adminEmail', e.target.value)} />
         </Field>
-        <div className="sm:col-span-2">
-          <NewPasswordField
-            label="Initial password"
-            hint={
-              passwordPrefilled
-                ? "Set to the super admin's password. They must change it at first sign-in."
-                : 'They must change it at first sign-in.'
-            }
-            value={details.adminPassword}
-            prefilled={passwordPrefilled}
-            onChange={(password, acceptable) => {
-              set('adminPassword', password);
-              onPasswordAcceptable(acceptable);
-            }}
-          />
-        </div>
+        {profile.inheritsAdminPassword === true && (
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={details.useMyPassword}
+              onChange={(e) => onChange({ ...details, useMyPassword: e.target.checked })}
+            />
+            Use my password
+          </label>
+        )}
+        {!details.useMyPassword && (
+          <div className="sm:col-span-2">
+            <NewPasswordField
+              label="Initial password"
+              {...(profile.forcePasswordChange && { hint: 'They must change it at first sign-in.' })}
+              value={details.adminPassword}
+              onChange={(password, acceptable) => {
+                set('adminPassword', password);
+                onPasswordAcceptable(acceptable);
+              }}
+            />
+          </div>
+        )}
       </fieldset>
+    </div>
+  );
+}
+
+/**
+ * The details step. A profile with defaults (ACME) shows a summary and keeps
+ * the form closed unless the person asks for it. ACME reuses the creating
+ * super admin's password, so it asks for nothing, in every journey.
+ */
+export function DetailsStep(props: Parameters<typeof DetailsForm>[0]): ReactNode {
+  const { profile, details } = props;
+  const [open, setOpen] = useState(profile.defaults === undefined);
+  if (open) return <DetailsForm {...props} />;
+
+  const rows = [
+    ['Tenant', `${details.name} (${details.code})`],
+    ['Hostname', details.hostname],
+    ['Administrator', `${details.adminUsername}@${details.code}`],
+    ['Password', details.useMyPassword ? 'Same as yours' : 'Set below'],
+  ];
+  return (
+    <div className="space-y-5">
+      <div className="rounded-md border border-line bg-surface-overlay p-4">
+        <p className="text-sm">{profile.name} uses its standard settings.</p>
+        <dl className="mt-3 grid grid-cols-[8rem_1fr] gap-y-1 text-sm">
+          {rows.map(([k, v]) => (
+            <Fragment key={k}>
+              <dt className="text-ink-faint">{k}</dt>
+              <dd>{v}</dd>
+            </Fragment>
+          ))}
+        </dl>
+        <Button variant="ghost" size="sm" className="mt-3 -ml-3" onClick={() => setOpen(true)}>
+          Change settings
+        </Button>
+      </div>
+      {!details.useMyPassword && (
+        <NewPasswordField
+          label="Administrator password"
+          value={details.adminPassword}
+          onChange={(password, acceptable) => {
+            props.onChange({ ...details, adminPassword: password });
+            props.onPasswordAcceptable(acceptable);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -212,10 +260,12 @@ export function ProgressList({
 
 export function Handoff({
   details,
+  mustChange,
   onContinue,
   onElsewhere,
 }: {
   readonly details: TenantDetails;
+  readonly mustChange: boolean;
   readonly onContinue: () => void;
   readonly onElsewhere: () => void;
 }): ReactNode {
@@ -228,11 +278,13 @@ export function Handoff({
       <div className="grid gap-3 sm:grid-cols-2">
         <button type="button" className="card p-4 text-left hover:border-accent" onClick={onContinue}>
           <span className="font-semibold">Continue as tenant admin</span>
-          <p className="mt-1 text-sm text-ink-muted">Sign in as {user} now and finish their first sign-in.</p>
+          <p className="mt-1 text-sm text-ink-muted">Sign in as {user} now.</p>
         </button>
         <button type="button" className="card p-4 text-left hover:border-line-strong" onClick={onElsewhere}>
           <span className="font-semibold">Hand off to someone else</span>
-          <p className="mt-1 text-sm text-ink-muted">Give them the username. They set their own password at first sign-in.</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Give them the username{mustChange ? '. They set their own password at first sign-in.' : ' and password.'}
+          </p>
         </button>
       </div>
     </div>

@@ -67,7 +67,7 @@ export function NewTenantJourneyPrototype(): ReactNode {
  */
 export function FirstRunJourneyPrototype(): ReactNode {
   const [admin, setAdmin] = useState({ username: 'super_admin', email: '', password: '', ok: false });
-  const t = useNewTenant(admin.password);
+  const t = useNewTenant();
   const [at, setAt] = useState(0);
   const [handedOff, setHandedOff] = useState(false);
   const [signIn, setSignIn] = useState({ password: '', ok: false, party: '' });
@@ -162,17 +162,18 @@ function firstSignIn(
   setSignIn: (value: { password: string; ok: boolean; party: string }) => void,
 ): JourneyStep {
   const parties = t.profile?.parties ?? [];
+  const mustChange = t.profile?.forcePasswordChange ?? true;
   return {
     id: 'first-sign-in',
     title: 'First sign-in',
-    lead: 'Set a password only you know, then choose where you start.',
+    lead: mustChange ? 'Set a password only you know, then choose where you start.' : 'Choose where you start.',
     body: (
       <div className="space-y-5">
-        <NewPasswordField
+        {mustChange && <NewPasswordField
           label="New password"
           value={signIn.password}
           onChange={(password, ok) => setSignIn({ ...signIn, password, ok })}
-        />
+        />}
         {parties.length > 1 && (
           <Field label="Start in" hint="You work in more than one party. You can switch at any time.">
             <Select value={signIn.party || parties[0]} onChange={(e) => setSignIn({ ...signIn, party: e.target.value })}>
@@ -184,7 +185,7 @@ function firstSignIn(
         )}
       </div>
     ),
-    next: { label: 'Finish', enabled: signIn.ok },
+    next: { label: 'Finish', enabled: signIn.ok || !mustChange },
     final: true,
   };
 }
@@ -198,8 +199,8 @@ function ready(t: NewTenant, handedOff: boolean): JourneyStep {
       <div className="space-y-4">
         {handedOff ? (
           <Notice tone="success">
-            Give <span className="font-mono">{tenantAdmin(t)}</span> their username. They set their own password at
-            first sign-in.
+            Give <span className="font-mono">{tenantAdmin(t)}</span> their username.
+            {(t.profile?.forcePasswordChange ?? true) ? ' They set their own password at first sign-in.' : ''}
           </Notice>
         ) : (
           <Notice tone="success">You are signed in to {t.details?.name ?? 'the new tenant'}.</Notice>

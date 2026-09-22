@@ -538,7 +538,7 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_at_timepoint(
     context ctx, const std::string& as_of, const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at timepoint. "
-                               << "{{primary_key.column}}: " << {{primary_key.column}};
+                               << {{primary_key.column}};
     const auto ts = make_timestamp(as_of, lg());
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}

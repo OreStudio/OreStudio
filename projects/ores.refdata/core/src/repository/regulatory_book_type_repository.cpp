@@ -210,8 +210,7 @@ regulatory_book_type_repository::read_at_timepoint(context ctx, const std::strin
 
 std::vector<domain::regulatory_book_type> regulatory_book_type_repository::read_at_timepoint(
     context ctx, const std::string& as_of, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at timepoint. "
-                               << "code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at timepoint. " << code;
     const auto ts = make_timestamp(as_of, lg());
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<regulatory_book_type_entity>> |

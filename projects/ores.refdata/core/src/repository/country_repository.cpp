@@ -204,8 +204,7 @@ std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
 std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
                                                                    const std::string& as_of,
                                                                    const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint. "
-                               << "alpha2_code: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint. " << alpha2_code;
     const auto ts = make_timestamp(as_of, lg());
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> |

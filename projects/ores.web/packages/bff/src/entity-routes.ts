@@ -49,54 +49,18 @@ import type { LiveSession } from './sessions.js';
  * 409 carrying the service's own words rather than a 500 carrying ours.
  */
 export interface EntityRouteDescriptor {
+  /**
+   * The owning component and the entity, which together are the dispatch key
+   * the generic history request carries (`ores.iam.tenant`).
+   */
+  readonly component: string;
+  readonly entity: string;
   /** The collection segment of the path, without `/api/`, e.g. `tenant_types`. */
   readonly collection: string;
   /** The name of the path parameter holding the natural key, e.g. `id`. */
   readonly key: string;
   /** The wire field the natural key lives in, e.g. `type`. */
   readonly keyField: string;
-  /**
-   * The wire field a single-record read answers in, e.g. `tenant`.
-   *
-   * The canonical get response carries the entity under its own singular
-   * name, which is the name the model gave it rather than a name to guess.
-   */
-  readonly rowField: string;
-  /**
-   * The write record's members, in the order the model declares them.
-   *
-   * A save sends these and nothing else. The record a form holds carries
-   * members the write record does not -- the version the edit was made
-   * against, the reason it was made -- and those travel in the precondition
-   * and the intent, while the rest are the server's to own.
-   */
-  readonly writeFields: readonly string[];
-  /**
-   * What each write member takes when the form does not carry it.
-   *
-   * A create sends the whole record, and a member the form does not show -- a
-   * surrogate key, a field the entity hides -- has no value on the row yet.
-   * The blank is the empty of that member's own type, and `'uuid'` means the
-   * caller mints the identifier, because the model says that member names a
-   * row the store has never seen.
-   */
-  readonly writeDefaults: Readonly<Record<string, unknown>>;
-  /**
-   * The row fields carrying the change intent, e.g. `change_reason_code`.
-   *
-   * Empty strings for an entity whose rows keep no audit columns, which is
-   * an entity whose intent is empty rather than one whose intent is refused.
-   */
-  readonly intentFields: {
-    readonly reason: string;
-    readonly commentary: string;
-  };
-  /** Whether the list request carries an as-of instant. */
-  readonly listHasAsOf: boolean;
-  /** Whether the list request carries a filter record. */
-  readonly listHasFilter: boolean;
-  /** Whether the versions request carries a filter record. */
-  readonly versionsHasFilter: boolean;
   readonly subjects: {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
@@ -236,7 +200,10 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         getSubject,
-        { key: keyRecord(request) },
+        // The request's addressing is the key record the model declares, and
+        // the path segment carries the same key, so the two agree by
+        // construction rather than by a translation here.
+        { key: { [descriptor.keyField]: keyOf(request) } },
         descriptor.getResponse ?? identity,
       );
       return { row: body(response)[descriptor.rowField] };
@@ -249,9 +216,27 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const incoming = body(request.body);
       const data = incoming['data'];
+      /*
+       * A write states what it believes about the row, and why it is being
+       * made. The version is the one the screen read; stating none means the
+       * write creates, which the store refuses over a live row rather than
+       * replacing it.
+       */
+      const version = incoming['version'];
       const response = await session.client.callAuthenticated(
         saveSubject,
-        { data },
+        {
+          change: {
+            write: data,
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'must_not_exist',
+              version: typeof version === 'number' ? version : null,
+            },
+          },
+          intent: body(incoming['intent']),
+        },
         descriptor.saveResponse ?? identity,
       );
 
@@ -266,19 +251,21 @@ export function registerEntityRoutes(
   if (removeSubject !== undefined) {
     server.delete(keyPath, async (request: FastifyRequest, reply: FastifyReply) => {
       const session = requireSession(request);
+      const incoming = body(request.body);
+      const version = incoming['version'];
       const response = await session.client.callAuthenticated(
         removeSubject,
         {
-          /*
-           * A removal the path segment drives is unconditional: the route
-           * carries the key and no version, and a version the client never
-           * read would be a claim it cannot make.
-           */
           removal: {
-            key: keyRecord(request),
-            precondition: { kind: 'any', version: null },
+            key: { [descriptor.keyField]: keyOf(request) },
+            precondition: {
+              kind: typeof version === 'number'
+                ? 'must_match_version'
+                : 'any',
+              version: typeof version === 'number' ? version : null,
+            },
           },
-          intent: { reason_code: '', commentary: '' },
+          intent: body(incoming['intent']),
         },
         descriptor.removeResponse ?? identity,
       );
@@ -297,17 +284,12 @@ export function registerEntityRoutes(
       const session = requireSession(request);
       const response = await session.client.callAuthenticated(
         historySubject,
+        // One generic request serves every entity: the type is the dispatch
+        // key and the id is the declared key's value, rendered as the string
+        // the request carries.
         {
-          key: keyRecord(request),
-          offset: 0,
-          limit: HISTORY_LIMIT,
-          /*
-           * Newest first, because that is how a person reads a history: what
-           * changed last is the question being asked. The service answers in
-           * the order it is asked for, so the request states it.
-           */
-          order: { field: '', descending: true },
-          ...(descriptor.versionsHasFilter ? { filter: null } : {}),
+          entity_type: `ores.${descriptor.component}.${descriptor.entity}`,
+          entity_id: String(keyOf(request)),
         },
         descriptor.historyResponse ?? identity,
       );

@@ -2041,7 +2041,6 @@ def web_declaration_projection(entity, model_path):
     entity_singular = entity.get('entity_singular', 'unknown')
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
-    keyed_by_natural_key = _keyed_by_natural_key(entity)
     messages = entity.get('messages') or []
     can_write = bool(_protocol_subject_key(
         messages, f'put_{entity_singular}_request'))
@@ -2062,9 +2061,8 @@ def web_declaration_projection(entity, model_path):
         'key_param': 'id',
         'can_create': _ui_bool(can_write and not read_only),
         'can_edit': _ui_bool(can_write and not read_only),
-        'can_remove': _ui_bool(
-            can_delete and not read_only and keyed_by_natural_key),
-        'can_history': _ui_bool(can_read_history and keyed_by_natural_key),
+        'can_remove': _ui_bool(can_delete and not read_only),
+        'can_history': _ui_bool(can_read_history),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2105,30 +2103,6 @@ def _string_vector_field_name(message):
         if field.get('cpp_type') == 'std::vector<std::string>':
             return field.get('name')
     return None
-
-
-def _primary_key_columns(entity):
-    """The column names the entity's primary key is stated with, in order."""
-    primary_key = entity.get('primary_key') or {}
-    columns = [column.get('column')
-               for column in primary_key.get('columns') or []
-               if column.get('column')]
-    if not columns and primary_key.get('column'):
-        columns = [primary_key.get('column')]
-    return columns
-
-
-def _keyed_by_natural_key(entity):
-    """Whether the entity's primary key is exactly its presentation natural key.
-
-    The derived delete and history requests are keyed by the primary key,
-    while the route's path segment carries the natural key, so the two agree
-    only when the primary key is the natural key alone. The web declaration
-    and the BFF route descriptor read the condition here so neither can
-    promise a capability the other withholds.
-    """
-    natural_key = (entity.get('presentation') or {}).get('key_field', '')
-    return bool(natural_key) and _primary_key_columns(entity) == [natural_key]
 
 
 def _protocol_owned_by_operation(model_path, entity) -> bool:
@@ -2214,23 +2188,20 @@ def bff_route_projection(entity, model_path):
         messages, f'list_{singular}_versions_request')
 
     natural_key = presentation.get('key_field', '')
-    keyed_by_natural_key = _keyed_by_natural_key(entity)
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # Every canonical request names the entity by its key record, never by a
-    # flattened string, so the path segment fills one member of that record.
-    # Only a single-column key can be driven from one path segment, and that
-    # is the same condition that lets the delete and the versions read be
-    # stated at all.
+    # A removal carries the entity's whole key as a record, never a flattened
+    # string, so the route states it only when one path segment can fill it.
+    # That is now the only condition: the key record is the key the model
+    # declares, which is the one the path segment carries, so the request and
+    # the address agree and nothing has to be translated between them.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
     delete_keys_field = key_members[0] if len(key_members) == 1 else ''
-    has_remove = (bool(delete_keys_field) and keyed_by_natural_key
-                  and bool(subjects_remove))
-    has_history = (bool(history_response) and keyed_by_natural_key
-                   and bool(subjects_history))
+    has_remove = bool(delete_keys_field) and bool(subjects_remove)
+    has_history = bool(history_response) and bool(subjects_history)
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members
@@ -4208,6 +4179,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 return f'v.{column["column"]}'
 
             pk['v_args'] = ', '.join(_v_arg(c) for c in pk_columns)
+            # The storage key of a row already in hand, which is what the
+            # repository's own key parameters take. A service that resolved a
+            # caller's declared key to a row states the row's storage key from
+            # here rather than re-deriving the conversion at each operation.
+            def _row_arg(column: dict[str, Any]) -> str:
+                if column.get('is_uuid'):
+                    return f'boost::uuids::to_string(row.{column["column"]})'
+                if column.get('is_timestamp'):
+                    return (f'ores::platform::time::datetime::to_db_string('
+                            f'row.{column["column"]})')
+                return f'row.{column["column"]}'
+
+            pk['row_args'] = ', '.join(_row_arg(c) for c in pk_columns)
             pk['batch_keys_args'] = ', '.join(
                 f'{c["column"]}_keys' for c in pk_columns)
             # Complete stream expressions (leading string literal, trailing
@@ -4300,8 +4284,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # the entity's key record: one column here, a pair there, and the
             # event type is what knows which.
             # The same comparison the test makes against a decoded event's key.
-            pk['key_equals_v'] = ' && '.join(
-                f'decoded->key.{c["column"]} == v.{c["column"]}' for c in pk_columns)
+            # The event carries the key the model declares, not the storage key,
+            # so the comparison is stated in the declared key's own member.
+            from .org_loader import (  # deferred to avoid circular import
+                declared_key_column, declared_key_field)
+            _event_key = declared_key_column(domain_entity)
+            if _event_key is not None:
+                _event_name = declared_key_field(domain_entity)
+                pk['key_equals_v'] = (
+                    f'decoded->key.{_event_name} == v.{_event_name}')
+            else:
+                pk['key_equals_v'] = ' && '.join(
+                    f'decoded->key.{c["column"]} == v.{c["column"]}'
+                    for c in pk_columns)
             pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
                 f"'{c['column']}', changed_{c['column']}"
                 for c in pk_columns) + ')'
@@ -4970,6 +4965,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
+            key_finders,
+            declared_key_field,
+            declared_key_column,
+            key_is_primary,
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
@@ -5008,6 +5007,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states.
         domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # Every read by something other than the storage key. The legacy
+        # opt-in contributes one; a model whose declared key is not its storage
+        # key contributes one more, so the address a caller holds resolves to a
+        # row. Stated as one list because the two are the same method with a
+        # different column and suffix, and the template states the query once.
+        domain_entity['key_finders'] = key_finders(domain_entity)
+        # The key the model declares, and whether the store keeps it as the
+        # storage key too. When the two differ the operations carry the
+        # declared key and the reads resolve it; when they agree nothing is
+        # translated and the templates take the storage-key path they always
+        # took.
+        domain_entity['declared_key'] = declared_key_field(domain_entity)
+        domain_entity['key_is_primary'] = key_is_primary(domain_entity)
+        _declared_column = declared_key_column(domain_entity)
+        domain_entity['declared_key_is_uuid'] = bool(
+            _declared_column
+            and (str(_declared_column.get('cpp_type', '')).find('boost::uuids::uuid') >= 0
+                 or _declared_column.get('type') == 'uuid'))
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)

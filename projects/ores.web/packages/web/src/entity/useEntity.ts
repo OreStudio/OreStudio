@@ -170,50 +170,21 @@ function keyMatches(value: unknown, key: string): boolean {
  * one, not the finished shape: when the model gains a single-record read, this
  * becomes a direct fetch again and the ceiling goes.
  */
-/**
- * A key record as one string, for a query key and for an emptiness test.
- *
- * The members are joined with a separator no generated value holds, so two
- * different records cannot fold to the same string.
- */
-function keyText(key: Readonly<Record<string, string>> | undefined): string {
-  if (key === undefined) return '';
-  return Object.values(key).join('\u0000');
-}
-
-/**
- * Whether a row is the one a key record names.
- *
- * Every member has to match. Half a junction's key names one side of a link,
- * not the link, so a row that agrees on one member and not the other is a
- * different row.
- */
-function rowMatchesKey(
-  descriptor: EntityDescriptor,
-  row: EntityRow,
-  key: Readonly<Record<string, string>>,
-): boolean {
-  return descriptor.keyFields.every((field) =>
-    keyMatches(row[field], key[field] ?? ''),
-  );
-}
-
 export function useEntity(
   descriptor: EntityDescriptor,
-  key: Readonly<Record<string, string>> | undefined,
+  key: string | undefined,
 ): UseQueryResult<EntityRow | undefined> {
-  const text = keyText(key);
   return useQuery({
-    queryKey: entityKey(descriptor, text),
-    enabled: text.length > 0,
+    queryKey: entityKey(descriptor, key ?? ''),
+    enabled: key !== undefined && key.length > 0,
     queryFn: async () => {
       const body = await request(
         `${descriptor.apiBase}?offset=0&limit=${String(LOAD_ONE_CEILING)}`,
         { method: 'GET' },
       );
       const page = pageSchema.parse(body);
-      return page.rows.find((row) =>
-        key === undefined ? false : rowMatchesKey(descriptor, row, key),
+      return page.rows.find(
+        (row) => keyMatches(row[descriptor.meta.keyField], key ?? ''),
       );
     },
   });
@@ -221,17 +192,14 @@ export function useEntity(
 
 export function useEntityHistory(
   descriptor: EntityDescriptor,
-  key: Readonly<Record<string, string>> | undefined,
+  key: string | undefined,
 ): UseQueryResult<readonly EntityRow[]> {
-  const text = keyText(key);
   return useQuery({
-    queryKey: [...entityKey(descriptor, text), 'history'],
-    enabled: text.length > 0,
+    queryKey: [...entityKey(descriptor, key ?? ''), 'history'],
+    enabled: key !== undefined && key.length > 0,
     queryFn: async () => {
       const body = await request(
-        `${descriptor.apiBase}/${descriptor.keyFields
-          .map((field) => encodeURIComponent(key?.[field] ?? ''))
-          .join('/')}/history`,
+        `${descriptor.apiBase}/${encodeURIComponent(key ?? '')}/history`,
         { method: 'GET' },
       );
       return historySchema.parse(body).versions;
@@ -270,8 +238,7 @@ export function useDeleteEntity(
   unknown,
   Error,
   {
-    /** The record the route's parameters state, one member per key field. */
-    readonly key: Readonly<Record<string, string>>;
+    readonly key: string;
     readonly intent: { readonly reason_code: string; readonly commentary: string };
     readonly version?: number | undefined;
   }
@@ -280,19 +247,14 @@ export function useDeleteEntity(
   return useMutation({
     mutationFn: async (input) =>
       writeSchema.parse(
-        await request(
-          `${descriptor.apiBase}/${descriptor.keyFields
-            .map((field) => encodeURIComponent(input.key[field] ?? ''))
-            .join('/')}`,
-          {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              intent: input.intent,
-              version: input.version,
-            }),
-          },
-        ),
+        await request(`${descriptor.apiBase}/${encodeURIComponent(input.key)}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            intent: input.intent,
+            version: input.version,
+          }),
+        }),
       ),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: [descriptor.component, descriptor.entity] });

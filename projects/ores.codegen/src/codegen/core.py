@@ -2066,6 +2066,15 @@ def web_declaration_projection(entity, model_path):
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
+        # The members a write record states. The form builds the record it
+        # sends from these and nothing else: the row it read carries the audit
+        # tail and the version, which the write record does not state, and a
+        # member the form does not show would otherwise be sent as whatever the
+        # row happened to hold.
+        'write_fields_block': '\n'.join(
+            f"        '{field['name']}',"
+            for field in entity.get('write_fields') or []
+            if field.get('name')) + ('\n' if entity.get('write_fields') else ''),
     }
 
 

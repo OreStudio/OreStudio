@@ -26,11 +26,11 @@ Question: how should the first run journey look and behave on ores.web: Setup pa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -69,3 +69,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Accepted by the user on 2026-09-22. Snapshot: branch
+=prototype/first-run-journey=; the route is =/setup=.
+
+- *Welcome*: the first screen of a new installation. Splash, "Welcome
+  to ORE Studio", one sentence, three unnumbered stage cards (create
+  the administrator, create the first tenant, sign in), *Get started*.
+- *One flat step rail*: Create the administrator → the new tenant
+  steps inline (starting point, describe, review, provisioning, hand
+  off) → First sign-in → Ready. Steps that change server state are
+  final: no going back past them.
+- *System administrator*: username defaults to =super_admin=, with the
+  shared =NewPasswordField=.
+- *Tenancy*: every deployment is multi-tenant; first run does not ask.
+- *ACME asks for nothing*, in first run and in the new tenant journey
+  alike: its details show as a summary behind *Change settings*; its
+  tenant admin reuses the calling super admin's password (the provision
+  request carries a flag, the server copies the hash); no forced
+  password change at first sign-in. Operational keeps the forced change.
+- *Journeys are data*: a journey is an ordered list of step definitions
+  rendered by one page; the new tenant steps are written once and
+  reused. The new party journey should be built the same way.
+
+Contract additions for the rework story: a "use caller's password"
+flag on provision tenant; =forcePasswordChange= and prefilled tenant
+details on the seed profile.

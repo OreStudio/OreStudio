@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 28587424-CF9B-40C6-A48C-F26B83861124
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_resolution_algorithm
 #+description: Codegen entity model for the refdata tenor_resolution_algorithm table: how a tenor_convention resolves a tenor's anchor/offset (fixed anchor offset vs IMM-quarter roll).

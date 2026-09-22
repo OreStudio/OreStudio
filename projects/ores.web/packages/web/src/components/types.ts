@@ -30,6 +30,7 @@
  * screen, it is the same decision being made a hundred times and drifting.
  */
 import type { IconName } from '../ui/icons/index.js';
+import type { EntityDescriptor } from '../entity/descriptor.js';
 
 /** A shortcut card on a component's landing page. */
 export interface ShortcutDefinition {
@@ -59,6 +60,13 @@ export interface EntityDefinition {
   readonly path: string;
   /** True when there is no screen for it yet. */
   readonly planned?: boolean;
+  /**
+   * The declaration this entity's screens are built from, when it has them.
+   *
+   * Absent for an entity that is only declared, which is what `planned` means:
+   * the navigation says so and the router serves no route.
+   */
+  readonly descriptor?: EntityDescriptor;
 }
 
 export interface ComponentDefinition {

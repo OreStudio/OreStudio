@@ -146,3 +146,33 @@ export const currencyMarketTierMeta = {
     columns: currencyMarketTierColumns,
     fields: currencyMarketTierFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const currencyMarketTierMessages = {
+        currency_market_tier: {
+            title: 'Currency Market Tiers',
+            singular: 'currency market tier',
+            newTitle: 'New currency market tier',
+            description: 'Reference data defining valid currency market tier classifications. Values include: G10, Emerging, Exotic, Frontier, Historical.',
+            fldCode: 'Code',
+            codePh: 'Enter currency market tier code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

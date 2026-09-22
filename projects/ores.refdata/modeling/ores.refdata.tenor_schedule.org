@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: CD180696-6558-469E-8FE5-66BFBB6E3E00
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_schedule
 #+description: A named schedule axis a tenor resolves along: ROLL_QUARTER (closed-form IMM rule) or FOMC_MEETING (event-lookup into calendar_event rows).

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: D2DBA1FB-DA28-4D67-8267-551D3EE801FD
+:END:
+#+title: Task: Add screens for every refdata entity
+#+description: Sixty-four refdata entities have generated protocol, domain and UI metadata, and one of them (country) has screens. This wires the rest onto the shared machinery: the model opts into ores.ts.web, codegen emits the declaration, the route descriptor and the catalogue words it already holds, and the navigation and the router read a generated list rather than one hand-written line per entity.
+#+type: task
+#+level: s1
+#+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-screens-for-every-refdata-entity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every refdata entity that declares a presentation has a screen set in ores.web, driven by generated declarations and their own model's words.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Every refdata domain entity with a UI column table opts into ores.ts.web and has a generated route descriptor and web declaration.
+- The entity's English words come from its own model, so no screen renders a raw catalogue key.
+- The navigation and the router read the wired entities from generated data rather than one hand-written line per entity.
+- A generated label with no French or Portuguese translation falls back to English explicitly, and the hand-written catalogue keeps its exact-parity guarantee.
+- The web typecheck, suites and build pass; the drift gate is clean; the site build succeeds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

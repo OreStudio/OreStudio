@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 852FE06C-70D9-48BC-B768-D99D87D0D796
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.ibor_index_convention
 #+description: Codegen entity model for the refdata =ibor_index_convention= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

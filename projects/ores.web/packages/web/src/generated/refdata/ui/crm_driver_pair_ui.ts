@@ -146,3 +146,31 @@ export const crmDriverPairMeta = {
     columns: crmDriverPairColumns,
     fields: crmDriverPairFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const crmDriverPairMessages = {
+        crm_driver_pair: {
+            title: 'CRM Driver Pairs',
+            singular: 'crm driver pair',
+            newTitle: 'New crm driver pair',
+            description: 'A single [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge for its parent crm_topology_config: the directly-quoted pair a producer publishes ticks for. The enabled rows for a (tenant, party) are read by ores.marketdata.service and fed straight into ores.analytics.quant::topology_builder::build as its ccy_pair_input list -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Scoped to a tenant and a party, matching its parent config.',
+            fldConfigId: 'Config',
+            fldBaseCurrencyCode: 'Base',
+            fldQuoteCurrencyCode: 'Quote',
+            fldEnabled: 'Enabled',
+            colConfigId: 'Config Id',
+            colBaseCurrencyCode: 'Base',
+            colQuoteCurrencyCode: 'Quote',
+            colEnabled: 'Enabled',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

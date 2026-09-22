@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F2DD5F1F-759C-44E3-8BBD-EB451494E9A0
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.book_purpose_type
 #+description: Codegen entity model for the refdata =book_purpose_type= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

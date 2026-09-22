@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.ir_curve_bootstrap_config
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.

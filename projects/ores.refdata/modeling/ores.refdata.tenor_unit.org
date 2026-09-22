@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 01E76440-B9A5-4D0A-A32C-B0C4A7484B26
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_unit
 #+description: Codegen entity model for the refdata tenor_unit table: the period unit (day/week/month/year) for PERIOD tenors, or NONE for SPECIAL tenors.

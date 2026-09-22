@@ -150,3 +150,34 @@ export const seriesSubclassCodeMeta = {
     columns: seriesSubclassCodeColumns,
     fields: seriesSubclassCodeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const seriesSubclassCodeMessages = {
+        series_subclass_code: {
+            title: 'Series Subclass Codes',
+            singular: 'series subclass code',
+            newTitle: 'New series subclass code',
+            description: 'Fine-grained classification of a market series within its asset class. market_series.series_subclass carries one of these codes, so a query can slice a tenant\'s series by shape ("all FX vol surfaces", "all discount curves") without parsing the ORE key. Most codes are shared across asset classes: spot covers both FX spot and equity spot, volatility covers FX options, swaptions and commodity options alike. The table therefore does not partition by asset_class_code; the pairing a producer actually emits is declared where the series is written. This table is the single source of truth for the taxonomy. Code carries no parallel enumeration, because the list is runtime-managed and no compiled list can be exhaustive over it. market_series and ir_curve_tick FK-validate against this table. Managed by the system tenant, like other shared code tables.',
+            fldCode: 'Code',
+            codePh: 'Enter series subclass code (e.g. yield)',
+            fldName: 'Name',
+            namePh: 'Enter name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

@@ -25,9 +25,10 @@
 /**
  * Where the {{{web_declaration.entity}}} screens live and what they can do.
  *
- * The route, the API path and the key parameter are values the model carries, so
- * a screen never repeats them and two screens cannot disagree. The labels are
- * translation keys and live in the catalogue with the rest of the words.
+ * The route, the API path, the key parameter and the icon are values the model
+ * carries, so a screen never repeats them and two screens cannot disagree. The
+ * labels are translation keys, and the generated metadata beside this one
+ * carries the words they resolve to.
  */
 import { {{{web_declaration.entity_camel}}}Meta } from '../ui/{{{web_declaration.entity}}}_ui.js';
 import type { EntityDescriptor } from '../../../entity/descriptor.js';
@@ -39,6 +40,7 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     routeSegment: '{{{web_declaration.route_segment}}}',
     apiBase: '{{{web_declaration.api_base}}}',
     keyParam: '{{{web_declaration.key_param}}}',
+    icon: '{{{web_declaration.icon}}}',
     capabilities: {
         create: {{{web_declaration.can_create}}},
         edit: {{{web_declaration.can_edit}}},

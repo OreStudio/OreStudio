@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 03728847-1C53-4B1D-AFB1-E83B2C3F3E14
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.regulatory_book_type
 #+description: Codegen entity model for the refdata =regulatory_book_type= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_anchor
 #+description: Codegen entity model for the refdata tenor_anchor table; the reference point (spot, today, tomorrow, near leg, IMM roll) a tenor convention resolves its tenors from.

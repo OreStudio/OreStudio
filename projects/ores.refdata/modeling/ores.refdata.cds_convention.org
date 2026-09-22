@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 558BC028-D6EF-473C-96E7-8518D6302472
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.cds_convention
 #+description: Codegen entity model for the refdata =cds_convention= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

@@ -141,3 +141,33 @@ export const bookStatusMeta = {
     columns: bookStatusColumns,
     fields: bookStatusFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const bookStatusMessages = {
+        book_status: {
+            title: 'Book Statuses',
+            singular: 'book status',
+            newTitle: 'New book status',
+            description: 'Reference data table defining valid book status values. Examples: \'Active\', \'Closed\', \'Frozen\'. Book statuses are managed by the system tenant and are used to track the lifecycle of book records.',
+            fldCode: 'Code',
+            codePh: 'Enter book status code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

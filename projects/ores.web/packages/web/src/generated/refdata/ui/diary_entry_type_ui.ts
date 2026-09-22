@@ -150,3 +150,34 @@ export const diaryEntryTypeMeta = {
     columns: diaryEntryTypeColumns,
     fields: diaryEntryTypeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const diaryEntryTypeMessages = {
+        diary_entry_type: {
+            title: 'Diary Entry Types',
+            singular: 'diary entry type',
+            newTitle: 'New diary entry type',
+            description: 'Reference data classifying what a [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] entry represents. Values include: holiday, central_bank_meeting, data_release, other. Lets a single calendar_events table hold heterogeneous diary entries -- a central bank\'s meeting schedule, a statistical office\'s release calendar, an open-ended memo entry -- without collapsing their distinct semantics. The vocabulary is deliberately open-ended: consumers (e.g. the tenor resolution engine\'s event-lookup schedules) key off specific codes, but new codes can be added without schema change.',
+            fldCode: 'Code',
+            codePh: 'Enter diary entry type code',
+            fldName: 'Name',
+            namePh: 'Enter name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

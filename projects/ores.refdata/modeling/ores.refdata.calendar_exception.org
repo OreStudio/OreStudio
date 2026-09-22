@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8B6E1C53-871E-4B6D-BD20-CB3F551B5C46
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.calendar_exception
 #+description: One-off override for a single calendar day -- an additional holiday or a business-day override -- applying uniformly to any calendar, transcribed or user-authored, based or base-less.

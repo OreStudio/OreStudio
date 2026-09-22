@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_convention
 #+description: Codegen entity model for the refdata tenor_convention table; one row per asset-class resolution scheme (spot/forward, FX swap near-leg, credit/CDS IMM, vol-surface-from-today).

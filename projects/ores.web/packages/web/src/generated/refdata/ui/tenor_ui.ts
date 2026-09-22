@@ -201,3 +201,39 @@ export const tenorMeta = {
     columns: tenorColumns,
     fields: tenorFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const tenorMessages = {
+        tenor: {
+            title: 'Tenors',
+            singular: 'tenor',
+            newTitle: 'New tenor',
+            description: 'Persisted catalog of the standard [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] labels, so a user can see, manage, and order the set of tenors the system knows about rather than relying on labels implied by parsing logic alone. This table carries convention-independent identity only — how a given tenor resolves under a particular curve type is [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][Tenor Convention]]\'s concern, recorded via [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]]. [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken dates]] are deliberately out of scope — they are per-instance ladder data, not master data, and reference a row here only when they happen to coincide with a standard label.',
+            fldCode: 'Code',
+            codePh: 'Enter tenor code (e.g. 1M)',
+            fldDisplayName: 'Display Name',
+            displayNamePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldSortOrder: 'Sort Order',
+            fldKind: 'Kind',
+            fldUnit: 'Unit',
+            fldMultiplier: 'Multiplier',
+            colCode: 'Code',
+            colDisplayName: 'Display Name',
+            colDescription: 'Description',
+            colSortOrder: 'Sort Order',
+            colKind: 'Kind',
+            colUnit: 'Unit',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

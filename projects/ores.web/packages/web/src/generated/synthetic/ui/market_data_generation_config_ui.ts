@@ -147,3 +147,33 @@ export const marketDataGenerationConfigMeta = {
     columns: marketDataGenerationConfigColumns,
     fields: marketDataGenerationConfigFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const marketDataGenerationConfigMessages = {
+        market_data_generation_config: {
+            title: 'Market Data Generation Configs',
+            singular: 'market data generation config',
+            newTitle: 'New market data generation config',
+            description: 'A top-level container that owns one or more typed sub-configurations (FX spot now; vol surface, interest-rate curves later). It is the recipe for how synthetic market data is produced. Carries two orthogonal axes: scope (system/tenant/party) decides the sharing radius -- who consumes the same generated data -- and binding_mode (bound/sandboxed) decides whether that data is authoritative for real feed consumers or reachable only by explicit selection. tenant_id and party_id are populated per scope level: system leaves both null, tenant sets tenant_id only, party sets both.',
+            fldName: 'Name',
+            namePh: 'Enter config name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter description',
+            fldEnabled: 'Enabled',
+            colName: 'Name',
+            colDescription: 'Description',
+            colScope: 'Scope',
+            colBindingMode: 'Binding Mode',
+            colEnabled: 'Enabled',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

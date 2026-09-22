@@ -168,3 +168,38 @@ export const gmmComponentMeta = {
     columns: gmmComponentColumns,
     fields: gmmComponentFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const gmmComponentMessages = {
+        gmm_component: {
+            title: 'GMM Components',
+            singular: 'gmm component',
+            newTitle: 'New gmm component',
+            description: 'A single weighted Gaussian component (mean, standard deviation, weight) of the Gaussian Mixture Model that drives an fx_spot_generation_config\'s price process. Components belong to a parent FX spot config via fx_spot_config_id; their weights are normalised at generation time. Party- and tenant-scoped.',
+            fldComponentIndex: 'Component Index',
+            componentIndexPh: 'Enter component index',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter description',
+            fldMean: 'Mean',
+            meanPh: 'Enter mean',
+            fldStdev: 'Std Dev',
+            stdevPh: 'Enter standard deviation',
+            fldWeight: 'Weight',
+            weightPh: 'Enter weight',
+            colComponentIndex: 'Component Index',
+            colDescription: 'Description',
+            colMean: 'Mean',
+            colStdev: 'Std Dev',
+            colWeight: 'Weight',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

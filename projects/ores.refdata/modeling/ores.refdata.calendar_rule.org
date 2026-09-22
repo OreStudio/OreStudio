@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F
+:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.calendar_rule
 #+description: One indefinite recurring rule for a calendar template (fixed-date, nth/last-weekday-of-month, or Easter-offset), with an optional observance shift and effective year range.

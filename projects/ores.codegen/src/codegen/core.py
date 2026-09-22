@@ -1750,11 +1750,83 @@ _UI_CONTROLS = frozenset({
     'flagged_combo', 'check_box', 'spin_box', 'colour', 'date',
 })
 
+# The icon vocabulary the web application holds, spelled as
+# packages/web/src/ui/icons/index.ts declares it. A model states the icon it
+# wants by the name that file uses, so an icon no screen can render is refused
+# here rather than rendered as nothing.
+_WEB_ICONS = frozenset({
+    'add', 'apps', 'arrowDownload', 'arrowLeft',
+    'arrowRotateCounterclockwise', 'arrowSync', 'arrowTrending', 'arrowUpload',
+    'book', 'briefcase', 'building', 'buildingBank', 'buildingSkyscraper',
+    'calendarClock', 'chartMultiple', 'checkmark', 'checkmarkCircle',
+    'classification', 'clock', 'code', 'columnTriple', 'contactCard', 'copy',
+    'currencyDollarEuro', 'database', 'delete', 'deleteDismiss', 'desktop',
+    'dismiss', 'documentTable', 'edit', 'errorCircle', 'filter', 'flag',
+    'flashFlow', 'folder', 'globe', 'handshake', 'history', 'info',
+    'keyMultiple', 'library', 'lockClosed', 'lockOpen', 'notepad',
+    'organization', 'passwordReset', 'peopleTeam', 'person', 'personAccounts',
+    'personAdd', 'play', 'plugConnected', 'plugConnectedCheckmark',
+    'plugDisconnected', 'question', 'record', 'save', 'search', 'serverLink',
+    'settings', 'star', 'table', 'tag', 'tasksApp', 'wand', 'warning',
+    'windowConsole',
+})
+
+# Model icons whose web name is not the model's name in camel case. The model
+# vocabulary is the Qt one; where it states a concept the web draws under
+# another name, the pair is stated here rather than guessed at each use.
+_WEB_ICON_ALIASES = {
+    'Chart': 'chartMultiple',
+    'FileBarChart': 'chartMultiple',
+    'Key': 'keyMultiple',
+    'Currency': 'currencyDollarEuro',
+    'Database': 'serverLink',
+    'LayoutList': 'columnTriple',
+    'TextBulletListSquare': 'notepad',
+    'FileText': 'notepad',
+    'Code': 'code',
+    'Desktop': 'desktop',
+    'Record': 'record',
+    'Settings': 'settings',
+    'Star': 'star',
+    'Table': 'table',
+    'Tag': 'tag',
+    'Folder': 'folder',
+    'Apps': 'apps',
+    'CheckmarkCircle': 'checkmarkCircle',
+    'ServerLink': 'serverLink',
+    'FlashFlow': 'flashFlow',
+    # No anchor is drawn; a tenor anchor holds a tenor in place.
+    'Anchor': 'lockClosed',
+}
+# The icon an entity that states none gets, so a screen keeps its mark in the
+# navigation rather than losing it.
+_WEB_ICON_FALLBACK = 'tag'
+
 
 def _ui_camel(name):
     """``alpha2_code`` -> ``alpha2Code``; the entity prefix of a label key."""
     pascal = snake_to_pascal(name)
     return pascal[:1].lower() + pascal[1:]
+
+
+def _web_icon(presentation):
+    """The icon name the web application draws for this entity.
+
+    The model states a concept, and the web holds the vocabulary; a concept it
+    does not draw under that name is translated here, and one it does not draw
+    at all is refused, so a screen never renders an icon that is not there.
+    """
+    stated = (presentation.get('icon') or '').strip()
+    if not stated:
+        return _WEB_ICON_FALLBACK
+    name = _WEB_ICON_ALIASES.get(stated, stated[:1].lower() + stated[1:])
+    if name not in _WEB_ICONS:
+        raise ValueError(
+            f"ui declaration: icon '{stated}' resolves to '{name}', which the "
+            f"web icon vocabulary does not hold; add it to "
+            f"projects/ores.web/packages/web/src/ui/icons/index.ts and to "
+            f"_WEB_ICONS, or map it in _WEB_ICON_ALIASES")
+    return name
 
 
 def _ui_kebab(name):
@@ -1958,12 +2030,16 @@ def ui_meta_projection(entity, model_path):
     fields = _ui_fields(visible_fields, entity_singular, nullable_by_field,
                         projects_dir)
     image_block = _ui_image(presentation, entity)
+    messages_block = _ui_messages(entity, presentation, visible_fields, columns,
+                                  entity_singular, key_field)
     return {
         'entity': entity_singular,
         'entity_camel': _ui_camel(entity_singular),
         'collection': presentation.get('collection_name', ''),
         'display_field': _ui_display_field(columns, entity_singular, key_field) or '',
         'key_field': key_field,
+        'has_messages': bool(messages_block),
+        'messages_block': messages_block or '',
         # The template states the key is read-only after creation, which
         # only holds when the key is one of the emitted fields.
         'key_in_fields': any(
@@ -1976,9 +2052,80 @@ def ui_meta_projection(entity, model_path):
     }
 
 
+def _ui_messages(entity, presentation, visible_fields, columns,
+                 entity_singular, key_field):
+    """The entity's own words, as the catalogue nested under its name.
+
+    The generated metadata refers to keys, and the words those keys resolve to
+    are the model's own: the detail field's label, the column's header, the
+    placeholder, the entity title and its brief. Emitting them beside the keys
+    is what stops sixty entities' worth of labels being hand-copied into a
+    catalogue, and what keeps a label the model changes from being changed in
+    one place only.
+
+    The words are English, because English is what the model states. A
+    translation for another language is a separate artefact, and until it
+    exists the translator falls back to these.
+    """
+    entity_singular = entity_singular or 'unknown'
+    singular = entity_singular.replace('_', ' ')
+    plural = (entity.get('entity_plural') or '').replace('_', ' ')
+    window_title = _ui_words(presentation.get('window_title'))
+    members = [
+        ('title', window_title or _ui_humanise(plural or entity_singular)),
+        ('singular', singular),
+        ('newTitle', f'New {singular}'),
+        ('description', _ui_words(entity.get('description') or entity.get('brief'))),
+    ]
+    for row in visible_fields:
+        field = row.get('field', '')
+        if not field:
+            continue
+        label = _ui_words(row.get('label')) or _ui_humanise(field)
+        members.append((f'fld{snake_to_pascal(field)}', label))
+        placeholder = _ui_words(row.get('placeholder'))
+        if placeholder:
+            members.append((f'{_ui_camel(field)}Ph', placeholder))
+    for column in columns:
+        field = column.get('field', '')
+        enum_name = column.get('enum_name', '')
+        if not enum_name:
+            continue
+        header = _ui_words(column.get('header')) or _ui_humanise(field)
+        members.append((f'col{enum_name}', header))
+    if not members:
+        return None
+    body = ',\n'.join(
+        ' ' * (_UI_MEMBER_INDENT + 4) + f'{name}: {_ui_str(value)}'
+        for name, value in members)
+    return ('{\n'
+            + ' ' * _UI_MEMBER_INDENT + f"{entity_singular}: {{\n"
+            + body + ',\n'
+            + ' ' * _UI_MEMBER_INDENT + '}\n'
+            + '}')
+
+
+def _ui_words(text):
+    """A model's prose on one line, because a literal spans one line.
+
+    A brief is written as a paragraph and a header may carry a line break, and
+    either would close the string it is written into.
+    """
+    return ' '.join(str(text or '').split())
+
+
+def _ui_humanise(name):
+    """A member's name as words, for a model that states none.
+
+    The words a person reads are the model's to state; this is the fallback for
+    a member the model left unlabelled, and it says the name rather than
+    nothing at all.
+    """
+    return name.replace('_', ' ').strip().title()
+
+
 def _ui_image(presentation, entity):
     """The image member the screen renders, or None when it renders none.
-
     The model declares a flag by naming the column that shows it, which is
     also the claim that the entity owns an uploadable image: a country's flag,
     a party's logo. An entity that declares no such column offers no image for
@@ -2063,6 +2210,7 @@ def web_declaration_projection(entity, model_path):
         'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
+        'icon': _web_icon(presentation),
         'can_create': _ui_bool(not read_only),
         'can_edit': _ui_bool(not read_only),
         'can_remove': _ui_bool(not read_only and keyed_by_natural_key),

@@ -129,3 +129,30 @@ export const feedBindingMeta = {
     columns: feedBindingColumns,
     fields: feedBindingFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const feedBindingMessages = {
+        feed_binding: {
+            title: 'Feed Bindings',
+            singular: 'feed binding',
+            newTitle: 'New feed binding',
+            description: 'A feed binding records which raw producer channel feeds an official market series, in which workspace. The marketdata service reads all enabled bindings at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per (tenant, party, workspace), persists each arriving tick as a market_observation under the binding\'s party, and republishes on the per-party realtime stream marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>. workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa), which resolves in every tenant. It is the seam where the future workspaces feature binds scenario data: a binding reads "party P consumes source S in workspace W" (see [[file:../../../doc/llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]]). Bindings are created by provisioning against the system party\'s config, not per office: each party consumes the shared stream into its own per-party series. Rebinding (editing source_name) switches the ingest source without restarting producers. Setting enabled false= suspends the subscription without deleting the binding.',
+            fldOreKey: 'ORE Key',
+            oreKeyPh: 'Enter ORE key',
+            fldSourceName: 'Source Name',
+            sourceNamePh: 'Enter source name',
+            fldEnabled: 'Enabled',
+            colOreKey: 'ORE Key',
+            colSourceName: 'Source Name',
+            colEnabled: 'Enabled',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+        }
+};

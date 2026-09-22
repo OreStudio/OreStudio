@@ -213,3 +213,40 @@ export const currencyPairConventionMeta = {
     columns: currencyPairConventionColumns,
     fields: currencyPairConventionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const currencyPairConventionMessages = {
+        currency_pair_convention: {
+            title: 'Currency Pair Conventions',
+            singular: 'currency pair convention',
+            newTitle: 'New currency pair convention',
+            description: 'Quoting and date-convention fields for a currency pair — pip factor, tick size, calendars, business day convention, spot-relative/end-of- month flags — folded in from the retired fx_convention entity (see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]). Keyed 1:1 by pair_code, the same value space as [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]\'s own primary key — every pair has at most one convention record, so a separate identifier scheme would be pure overhead. Like every other soft-FK relationship in this codebase, pair_code is validated via trigger, not a hard DB foreign key.',
+            fldPairCode: 'Pair Code',
+            pairCodePh: 'e.g. EUR/USD',
+            fldPipFactor: 'Pip Factor',
+            pipFactorPh: 'e.g. 0.0001',
+            fldTickSize: 'Tick Size',
+            tickSizePh: 'e.g. 0.1',
+            fldDecimalPlaces: 'Decimal Places',
+            fldBusinessDayConvention: 'Business Day Convention',
+            fldSpotRelative: 'Spot Relative',
+            fldEndOfMonth: 'End Of Month',
+            colPairCode: 'Pair',
+            colPipFactor: 'Pip Factor',
+            colTickSize: 'Tick Size',
+            colDecimalPlaces: 'Decimal Places',
+            colBusinessDayConvention: 'Business Day Convention',
+            colSpotRelative: 'Spot Relative',
+            colEndOfMonth: 'End Of Month',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

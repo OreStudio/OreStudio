@@ -170,3 +170,38 @@ export const tenantMeta = {
     columns: tenantColumns,
     fields: tenantFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const tenantMessages = {
+        tenant: {
+            title: 'Tenants',
+            singular: 'tenant',
+            newTitle: 'New tenant',
+            description: 'Core entity for multi-tenancy support. Each tenant represents an isolated organisation with its own users, roles, and data. The system tenant is a special tenant used for shared reference data and system administration; its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff). Tenants are identified by: - id: UUID primary key (SQL also has tenant_id = id for self-reference) - code: Unique text code for stable referencing (e.g., \'system\', \'acme\') - hostname: Unique hostname for tenant routing during login',
+            fldCode: 'Code',
+            codePh: 'Enter tenant code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldType: 'Type',
+            typePh: 'Enter tenant type',
+            fldHostname: 'Hostname',
+            hostnamePh: 'Enter hostname',
+            fldStatus: 'Status',
+            statusPh: 'Enter status',
+            colCode: 'Code',
+            colName: 'Name',
+            colType: 'Type',
+            colHostname: 'Hostname',
+            colStatus: 'Status',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

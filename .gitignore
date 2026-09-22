@@ -127,3 +127,6 @@ tools/.fed_h10_cache/
 
 # Emacs lock files
 .\#*
+
+# Scratch output from a web build or test run, never source.
+projects/ores.web/tmp/

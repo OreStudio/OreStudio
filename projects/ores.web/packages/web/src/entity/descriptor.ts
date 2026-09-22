@@ -20,6 +20,7 @@
  */
 
 import type { EntityMeta, FieldGroup } from '../ui-contract.js';
+import type { IconName } from '../ui/icons/index.js';
 
 /**
  * Everything one entity's screens need, and nothing about how they render.
@@ -53,6 +54,14 @@ export interface EntityDescriptor {
   readonly routeSegment: string;
   /** Where the BFF serves it, e.g. `/api/countries`. */
   readonly apiBase: string;
+  /**
+   * The mark the navigation and the breadcrumbs draw for it.
+   *
+   * Stated by the model, so an entity's mark is one value rather than a choice
+   * each screen makes, and validated against the icon vocabulary at codegen
+   * time rather than rendering as nothing.
+   */
+  readonly icon: IconName;
   /**
    * The route parameter that carries the natural key, e.g. `id`.
    *

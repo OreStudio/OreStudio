@@ -167,3 +167,35 @@ export const businessUnitMeta = {
     columns: businessUnitColumns,
     fields: businessUnitFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const businessUnitMessages = {
+        business_unit: {
+            title: 'Business Units',
+            singular: 'business unit',
+            newTitle: 'New business unit',
+            description: 'Represents internal organizational units (e.g., desks, departments, branches). Supports hierarchical structure via self-referencing parent_business_unit_id. Each unit belongs to a top-level legal entity (party).',
+            fldUnitCode: 'Unit Code',
+            unitCodePh: 'Enter unit code',
+            fldUnitName: 'Unit Name',
+            unitNamePh: 'Enter unit name',
+            fldBusinessCentreCode: 'Business Centre',
+            businessCentreCodePh: 'Enter business centre code',
+            fldStatus: 'Status',
+            fldUnitTypeId: 'Unit Type',
+            colUnitCode: 'Code',
+            colUnitName: 'Name',
+            colBusinessCentreCode: 'Business Centre',
+            colStatus: 'Status',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/address-the-web-layer-review-findings
-#+pr:
+#+pr: 2128
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2128][#2128]] | [codegen,web] Answer the web-layer review findings |
 
 * Review
 

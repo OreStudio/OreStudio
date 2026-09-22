@@ -41,6 +41,7 @@ export interface SeedProfile {
   readonly code: string;
   readonly name: string;
   readonly summary: string;
+  readonly bullets: readonly string[];
   readonly audience: string;
   readonly params: readonly ProfileParam[];
   readonly steps: readonly string[];
@@ -50,7 +51,8 @@ export const PROFILES: readonly SeedProfile[] = [
   {
     code: 'empty_operational',
     name: 'Operational',
-    summary: 'A production tenant: reference data, counterparties and your own legal entities. No test data.',
+    summary: 'Production-ready setup',
+    bullets: ['Standard reference data and counterparties', 'Your legal entities, from their LEI', 'No test data'],
     audience: 'For real use',
     params: [
       {
@@ -83,7 +85,8 @@ export const PROFILES: readonly SeedProfile[] = [
   {
     code: 'acme_demo',
     name: 'ACME demo',
-    summary: 'The Acme Corporation holding group: four legal entities, desks, books, 45 staff and live synthetic market data.',
+    summary: 'Pre-configured sandbox',
+    bullets: ['4 legal entities, books and desks', '45 staff to sign in as', 'Live synthetic market data'],
     audience: 'For demos and testing',
     params: [],
     steps: [

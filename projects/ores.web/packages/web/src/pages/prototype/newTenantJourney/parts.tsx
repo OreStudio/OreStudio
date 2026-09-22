@@ -32,23 +32,23 @@ import type { RunState, SeedProfile, StepState, TenantDetails } from './stub.js'
 export const JOURNEY_STEPS = [
   {
     title: 'Choose a starting point',
-    lead: 'A tenant is a separate organisation in ORE Studio, with its own users, parties and data. Choose what it starts with.',
+    lead: 'Choose a starting point for the new tenant.',
   },
   {
     title: 'Describe the tenant',
-    lead: 'Name the tenant and create its administrator. The administrator manages the tenant\'s users and parties.',
+    lead: 'Name the tenant and create its administrator.',
   },
   {
     title: 'Review',
-    lead: 'Check the details. Nothing is created until you confirm.',
+    lead: 'Nothing is created until you confirm.',
   },
   {
     title: 'Provisioning',
-    lead: 'ORE Studio publishes the reference data, creates the parties and prepares them for use. This runs on the server: you can leave and come back.',
+    lead: 'This runs on the server. You can leave this page and come back.',
   },
   {
     title: 'Hand off',
-    lead: 'The tenant is ready. Its administrator signs in next and sets their own password.',
+    lead: 'The tenant is ready. Its administrator signs in next.',
   },
 ] as const;
 
@@ -114,8 +114,16 @@ export function ProfileChoice({
             <span className="text-xs text-ink-faint">{p.audience}</span>
           </div>
           <p className="mt-1 text-sm text-ink-muted">{p.summary}</p>
-          <p className="mt-2 text-xs text-ink-faint">
-            {p.params.length === 0 ? 'Nothing to configure.' : `${p.params.length} setting(s).`} {p.steps.length} steps.
+          <ul className="mt-3 space-y-1 text-sm">
+            {p.bullets.map((b) => (
+              <li key={b} className="flex gap-2">
+                <span aria-hidden className="text-ink-faint">•</span>
+                {b}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-ink-faint">
+            {p.params.length} {p.params.length === 1 ? 'setting' : 'settings'} · {p.steps.length} steps
           </p>
         </button>
       ))}

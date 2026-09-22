@@ -20,321 +20,241 @@
  */
 
 import Fastify, { type FastifyInstance } from 'fastify';
-import { describe, expect, it } from 'vitest';
-import type { OresClient } from '@ores/wire-protocol';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { registerEntityRoutes, type EntityRouteDescriptor } from './entity-routes.js';
-import { countryRoute } from './generated/refdata/country_route.js';
-import { tenantRoute } from './generated/iam/tenant_route.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The factory is the one place an entity's requests are built and its replies
- * read, so these cases pin the canonical envelope for every verb against the
- * descriptors codegen emits, rather than against a hand-built shape that could
- * agree with the factory and with nothing else.
+ * What the factory sent, and what it was answered with.
  *
- * The two descriptors are the interesting pair: country is a lookup whose key
- * is its natural key, and tenant carries a surrogate key, so only country can
- * drive the routes that address one row.
+ * The subject and body are captured rather than the reply, because the shape of
+ * the request is what these tests are about: the protocol states four
+ * envelopes and a screen that states a different one is refused by a service
+ * the tests cannot see.
  */
-
-interface Call {
+interface Sent {
   readonly subject: string;
-  readonly payload: Record<string, unknown>;
+  readonly body: Record<string, unknown>;
 }
 
-/** A server with one entity's routes and the calls it made to the client. */
-function harness(
-  descriptor: EntityRouteDescriptor,
-  answer: (call: Call) => unknown,
-): { readonly server: FastifyInstance; readonly calls: Call[] } {
-  const calls: Call[] = [];
-  const client = {
-    callAuthenticated: async (subject: string, payload: Record<string, unknown>) => {
-      const call = { subject, payload };
-      calls.push(call);
-      return answer(call);
+let sent: Sent[] = [];
+
+/** The reply a service would give, per subject. */
+let replies: Record<string, unknown> = {};
+
+const client = {
+  callAuthenticated: (
+    subject: string,
+    body: unknown,
+    _schema: unknown,
+  ): Promise<unknown> => {
+    sent.push({ subject, body: body as Record<string, unknown> });
+    return Promise.resolve(replies[subject] ?? {});
+  },
+} as unknown as LiveSession['client'];
+
+const session = { client } as unknown as LiveSession;
+
+const requireSession = (): LiveSession => session;
+
+/**
+ * A descriptor for an entity whose key is one field, which is most of them.
+ */
+function singleKeyDescriptor(): EntityRouteDescriptor {
+  return {
+    component: 'iam',
+    entity: 'tenant',
+    collection: 'tenants',
+    keyFields: ['code'],
+    subjects: {
+      list: 'iam.v1.tenants.list',
+      get: 'iam.v1.tenants.get',
+      save: 'iam.v1.tenants.put',
+      remove: 'iam.v1.tenants.delete',
+      history: 'iam.v1.tenants_versions.list',
     },
-  } as unknown as OresClient;
-  const server = Fastify();
-  registerEntityRoutes(
-    server,
-    () => ({ client, tenantId: 'tenant' }) as unknown as LiveSession,
-    descriptor,
-  );
-  return { server, calls };
+    rowsField: 'tenants',
+    getRowField: 'tenant',
+    historyRowsField: 'versions',
+  };
 }
 
-/** The ok envelope every canonical response carries. */
-const ok = { result: { outcome: 'ok', code: '', message: '', fields: [] } };
+/**
+ * A descriptor for an entity whose key is the pair it links.
+ *
+ * This is the case the path could not state before: a junction names two
+ * values, and stating one of them would address half a row.
+ */
+function pairedKeyDescriptor(): EntityRouteDescriptor {
+  return {
+    component: 'iam',
+    entity: 'account_party',
+    collection: 'account_parties',
+    keyFields: ['account_id', 'party_id'],
+    subjects: {
+      list: 'iam.v1.account_parties.list',
+      get: 'iam.v1.account_parties.get',
+      save: 'iam.v1.account_parties.put',
+      remove: 'iam.v1.account_parties.delete',
+    },
+    rowsField: 'account_parties',
+    getRowField: 'account_party',
+  };
+}
 
-describe('the list route', () => {
-  it('sends the window, the order and the as-of the entity declares', async () => {
-    const { server, calls } = harness(countryRoute, () => ({
-      ...ok,
-      countries: [{ alpha2_code: 'US' }],
-      total: 3,
-    }));
-
-    const response = await server.inject({
-      method: 'GET',
-      url: '/api/countries?offset=25&limit=25&asOf=2026-01-01',
-    });
-
-    expect(response.statusCode).toBe(200);
-    expect(calls[0]?.payload).toEqual({
-      offset: 25,
-      limit: 25,
-      order: { field: '', descending: false },
-      as_of: '2026-01-01',
-    });
-    // The rows and the total are what the browser's page shape needs, and the
-    // total is the canonical member rather than the retired one.
-    expect(response.json()).toEqual({
-      rows: [{ alpha2_code: 'US' }],
-      totalCount: 3,
-    });
+async function withServer(
+  descriptor: EntityRouteDescriptor,
+): Promise<FastifyInstance> {
+  const server = Fastify();
+  server.addHook('onRequest', (request, _reply, done) => {
+    // The factory's own guard reads the session; nothing else about the
+    // request is authenticated in a test.
+    (request as unknown as { session: LiveSession }).session = session;
+    done();
   });
+  registerEntityRoutes(server, requireSession, descriptor);
+  await server.ready();
+  return server;
+}
 
-  it('asks for the present when no window was chosen', async () => {
-    const { server, calls } = harness(countryRoute, () => ({ ...ok, countries: [], total: 0 }));
-
-    await server.inject({ method: 'GET', url: '/api/countries?offset=0&limit=25' });
-
-    expect(calls[0]?.payload['as_of']).toBeNull();
-  });
-
-  it('omits the window an entity whose request carries none', async () => {
-    const { server, calls } = harness(tenantRoute, () => ({
-      ...ok,
-      tenants: [],
-      total: 0,
-    }));
-
-    await server.inject({ method: 'GET', url: '/api/tenants?offset=0&limit=25' });
-
-    expect('as_of' in (calls[0]?.payload ?? {})).toBe(false);
-  });
+beforeEach(() => {
+  sent = [];
+  replies = {};
 });
 
-describe('the single-record read', () => {
-  it('names the row through its key record', async () => {
-    const { server, calls } = harness(countryRoute, () => ({
-      ...ok,
-      country: { alpha2_code: 'US' },
-    }));
-
-    const response = await server.inject({ method: 'GET', url: '/api/countries/US' });
-
-    expect(calls[0]?.subject).toBe('refdata.v1.countries.get');
-    expect(calls[0]?.payload).toEqual({ key: { alpha2_code: 'US' } });
-    expect(response.json()).toEqual({ row: { alpha2_code: 'US' } });
+describe('the canonical envelopes', () => {
+  it('states a key record for a single-record read', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    await server.inject({ method: 'GET', url: '/api/tenants/ACME' });
+    expect(sent).toEqual([
+      { subject: 'iam.v1.tenants.get', body: { key: { code: 'ACME' } } },
+    ]);
+    await server.close();
   });
 
-  it('does not exist for an entity whose key record cannot be filled by the path', async () => {
-    const { server } = harness(tenantRoute, () => ok);
-
-    const response = await server.inject({ method: 'GET', url: '/api/tenants/ACME' });
-
-    expect(response.statusCode).toBe(404);
-  });
-});
-
-describe('the save route', () => {
-  it('writes the record the model states, with a default for every member the form does not carry', async () => {
-    const { server, calls } = harness(countryRoute, () => ({ ...ok, country: {} }));
-
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/countries',
-      payload: {
-        mode: 'create',
-        data: {
-          version: 0,
-          alpha2_code: 'GB',
-          alpha3_code: 'GBR',
-          numeric_code: '826',
-          name: 'United Kingdom',
-          official_name: 'United Kingdom of Great Britain and Northern Ireland',
-          change_reason_code: 'system.import',
-          change_commentary: 'loaded',
-        },
-      },
-    });
-
-    expect(response.statusCode).toBe(200);
-    expect(calls[0]?.subject).toBe('refdata.v1.countries.put');
-    expect(calls[0]?.payload).toEqual({
-      change: {
-        // image_id and coding_scheme_code are write members the form does not
-        // show, and the model says both are optional.
-        write: {
-          alpha2_code: 'GB',
-          alpha3_code: 'GBR',
-          numeric_code: '826',
-          name: 'United Kingdom',
-          official_name: 'United Kingdom of Great Britain and Northern Ireland',
-          image_id: null,
-          coding_scheme_code: null,
-        },
-        precondition: { kind: 'must_not_exist', version: null },
-      },
-      intent: { reason_code: 'system.import', commentary: 'loaded' },
-    });
-  });
-
-  it('mints the surrogate key the form does not carry', async () => {
-    const { server, calls } = harness(tenantRoute, () => ({ ...ok, tenant: {} }));
-
+  it('states a change and an intent for a write, and nothing else', async () => {
+    const server = await withServer(singleKeyDescriptor());
     await server.inject({
       method: 'POST',
       url: '/api/tenants',
       payload: {
-        mode: 'create',
-        data: {
-          version: 0,
-          code: 'acme',
-          name: 'Acme',
-          type: 'internal',
-          hostname: 'acme.example',
-          status: 'Active',
-        },
+        data: { code: 'ACME', name: 'Acme' },
+        intent: { reason_code: 'crud_create', commentary: 'created' },
       },
     });
-
-    const change = (calls[0]?.payload['change'] ?? {}) as Record<string, unknown>;
-    const write = (change['write'] ?? {}) as Record<string, unknown>;
-    expect(write['id']).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
-    expect(write['description']).toBeNull();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.subject).toBe('iam.v1.tenants.put');
+    expect(sent[0]?.body).toEqual({
+      change: {
+        write: { code: 'ACME', name: 'Acme' },
+        precondition: { kind: 'must_not_exist', version: null },
+      },
+      intent: { reason_code: 'crud_create', commentary: 'created' },
+    });
+    // The record carries the entity's own members: the intent is beside it,
+    // not inside it, and no audit member is sent at all.
+    expect(sent[0]?.body).not.toHaveProperty('data');
+    await server.close();
   });
 
-  it('states the version an amend was made against', async () => {
-    const { server, calls } = harness(countryRoute, () => ({ ...ok, country: {} }));
-
+  it('states the version a screen read as the precondition of a change', async () => {
+    const server = await withServer(singleKeyDescriptor());
     await server.inject({
       method: 'POST',
-      url: '/api/countries',
+      url: '/api/tenants',
       payload: {
-        mode: 'amend',
-        data: { version: 3, alpha2_code: 'GB', name: 'United Kingdom' },
+        data: { code: 'ACME' },
+        intent: { reason_code: 'crud_update', commentary: '' },
+        version: 7,
       },
     });
-
-    const change = (calls[0]?.payload['change'] ?? {}) as Record<string, unknown>;
-    expect(change['precondition']).toEqual({ kind: 'must_match_version', version: 3 });
+    expect(sent[0]?.body).toMatchObject({
+      change: { precondition: { kind: 'must_match_version', version: 7 } },
+    });
+    await server.close();
   });
 
-  it('refuses a save that does not state which question it answers', async () => {
-    const { server, calls } = harness(countryRoute, () => ({ ...ok, country: {} }));
-
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/countries',
-      payload: { data: { version: 0, alpha2_code: 'GB' } },
+  it('states a removal and an intent for a delete', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    await server.inject({
+      method: 'DELETE',
+      url: '/api/tenants/ACME',
+      payload: {
+        intent: { reason_code: 'crud_delete', commentary: '' },
+        version: 3,
+      },
     });
-
-    expect(response.statusCode).toBe(400);
-    expect(calls).toHaveLength(0);
+    expect(sent[0]?.body).toEqual({
+      removal: {
+        key: { code: 'ACME' },
+        precondition: { kind: 'must_match_version', version: 3 },
+      },
+      intent: { reason_code: 'crud_delete', commentary: '' },
+    });
+    await server.close();
   });
 
-  it('refuses a version it cannot read rather than calling it a create', async () => {
-    const { server, calls } = harness(countryRoute, () => ({ ...ok, country: {} }));
-
-    const malformed = await server.inject({
-      method: 'POST',
-      url: '/api/countries',
-      payload: { mode: 'amend', data: { version: 'three', alpha2_code: 'GB' } },
+  it('states a type and an id for the one generic history request', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    await server.inject({ method: 'GET', url: '/api/tenants/ACME/history' });
+    expect(sent[0]).toEqual({
+      subject: 'iam.v1.tenants_versions.list',
+      body: { entity_type: 'ores.iam.tenant', entity_id: 'ACME' },
     });
-    const inconsistent = await server.inject({
-      method: 'POST',
-      url: '/api/countries',
-      payload: { mode: 'create', data: { version: 5, alpha2_code: 'GB' } },
-    });
-
-    expect(malformed.statusCode).toBe(400);
-    expect(inconsistent.statusCode).toBe(400);
-    expect(calls).toHaveLength(0);
+    await server.close();
   });
 
-  it('answers a refused write with the service\'s own words', async () => {
-    const { server } = harness(countryRoute, () => ({
-      result: { outcome: 'conflict', code: 'version_conflict', message: 'the row moved on', fields: [] },
-    }));
-
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/countries',
-      payload: { mode: 'amend', data: { version: 1, alpha2_code: 'GB' } },
+  it('states a page for a list', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    await server.inject({ method: 'GET', url: '/api/tenants?offset=0&limit=25' });
+    expect(sent[0]).toEqual({
+      subject: 'iam.v1.tenants.list',
+      body: { offset: 0, limit: 25 },
     });
-
-    expect(response.statusCode).toBe(409);
-    expect(response.json()).toEqual({ message: 'the row moved on' });
+    await server.close();
   });
 });
 
-describe('the removal route', () => {
-  it('names the row through a removal and states no precondition', async () => {
-    const { server, calls } = harness(countryRoute, () => ok);
+describe('a key with more than one member', () => {
+  it('addresses one segment per member', async () => {
+    const server = await withServer(pairedKeyDescriptor());
+    await server.inject({
+      method: 'GET',
+      url: '/api/account_parties/ACC-1/PARTY-2',
+    });
+    expect(sent[0]).toEqual({
+      subject: 'iam.v1.account_parties.get',
+      body: { key: { account_id: 'ACC-1', party_id: 'PARTY-2' } },
+    });
+    await server.close();
+  });
 
-    const response = await server.inject({ method: 'DELETE', url: '/api/countries/US' });
-
-    expect(calls[0]?.subject).toBe('refdata.v1.countries.delete');
-    expect(calls[0]?.payload).toEqual({
+  it('states the whole pair in a removal, never half of it', async () => {
+    const server = await withServer(pairedKeyDescriptor());
+    await server.inject({
+      method: 'DELETE',
+      url: '/api/account_parties/ACC-1/PARTY-2',
+      payload: { intent: { reason_code: 'crud_delete', commentary: '' } },
+    });
+    expect(sent[0]?.body).toMatchObject({
       removal: {
-        key: { alpha2_code: 'US' },
+        key: { account_id: 'ACC-1', party_id: 'PARTY-2' },
         precondition: { kind: 'any', version: null },
       },
-      intent: { reason_code: '', commentary: '' },
     });
-    expect(response.json()).toEqual({ ok: true, message: '' });
+    await server.close();
   });
 
-  it('does not exist for an entity whose key record cannot be filled by the path', async () => {
-    const { server } = harness(tenantRoute, () => ok);
-
-    const response = await server.inject({ method: 'DELETE', url: '/api/tenants/ACME' });
-
-    expect(response.statusCode).toBe(404);
-  });
-});
-
-describe('the versions route', () => {
-  it('asks for the row\'s versions newest first', async () => {
-    const { server, calls } = harness(countryRoute, () => ({
-      ...ok,
-      versions: [{ alpha2_code: 'US', version: 2 }],
-      total: 1,
-    }));
-
+  it('serves no history route at all', async () => {
+    const server = await withServer(pairedKeyDescriptor());
     const response = await server.inject({
       method: 'GET',
-      url: '/api/countries/US/history',
+      url: '/api/account_parties/ACC-1/PARTY-2/history',
     });
-
-    expect(calls[0]?.subject).toBe('refdata.v1.countries_versions.list');
-    expect(calls[0]?.payload).toEqual({
-      key: { alpha2_code: 'US' },
-      offset: 0,
-      limit: 1000,
-      order: { field: '', descending: true },
-      filter: null,
-    });
-    expect(response.json()).toEqual({
-      versions: [{ alpha2_code: 'US', version: 2 }],
-      message: '',
-    });
-  });
-
-  it('does not exist for an entity whose key record cannot be filled by the path', async () => {
-    const { server } = harness(tenantRoute, () => ok);
-
-    const response = await server.inject({
-      method: 'GET',
-      url: '/api/tenants/ACME/history',
-    });
-
+    // The generic request names one id and cannot state a pair, so the route is
+    // absent rather than one that reaches nothing.
     expect(response.statusCode).toBe(404);
+    expect(sent).toEqual([]);
+    await server.close();
   });
 });

@@ -112,10 +112,15 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
                 "Failed to parse response from {}: {}", Req::nats_subject, result.error().what());
             return std::nullopt;
         }
-        if constexpr (requires {
-                          result->success;
-                          result->message;
-                      }) {
+        // A canonical response states its outcome in a result; an older
+        // response states it in success and message.
+        if constexpr (requires { result->result.outcome; }) {
+            if (result->result.outcome != ores::utility::domain::outcome::ok)
+                out_error = result->result.message;
+        } else if constexpr (requires {
+                                 result->success;
+                                 result->message;
+                             }) {
             if (!result->success)
                 out_error = result->message;
         }
@@ -124,6 +129,55 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
         out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
         return std::nullopt;
     }
+}
+
+// The canonical write record carries what the caller owns. The imported
+// domain objects carry the server's fields too, so each projects by name.
+ores::refdata::messaging::currency_write
+to_write(const ores::refdata::domain::currency& c) {
+    return {.iso_code = c.iso_code,
+            .name = c.name,
+            .numeric_code = c.numeric_code,
+            .symbol = c.symbol,
+            .fraction_symbol = c.fraction_symbol,
+            .fractions_per_unit = c.fractions_per_unit,
+            .rounding_type = c.rounding_type,
+            .rounding_precision = c.rounding_precision,
+            .format = c.format,
+            .monetary_nature = c.monetary_nature,
+            .market_tier = c.market_tier,
+            .image_id = c.image_id,
+            .spot_days = c.spot_days,
+            .day_basis = c.day_basis,
+            .base_precedence = c.base_precedence};
+}
+
+ores::refdata::messaging::portfolio_write
+to_write(const ores::refdata::domain::portfolio& p) {
+    return {.id = p.id,
+            .name = p.name,
+            .description = p.description,
+            .parent_portfolio_id = p.parent_portfolio_id,
+            .owner_unit_id = p.owner_unit_id,
+            .purpose_type = p.purpose_type,
+            .aggregation_ccy = p.aggregation_ccy,
+            .is_virtual = p.is_virtual,
+            .status = p.status};
+}
+
+ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book& b) {
+    return {.id = b.id,
+            .name = b.name,
+            .description = b.description,
+            .parent_portfolio_id = b.parent_portfolio_id,
+            .owner_unit_id = b.owner_unit_id,
+            .functional_currency = b.functional_currency,
+            .gl_account_ref = b.gl_account_ref,
+            .cost_center = b.cost_center,
+            .book_status = b.book_status,
+            .regulatory_book_type = b.regulatory_book_type,
+            .is_sweepable = b.is_sweepable,
+            .rates_centre_code = b.rates_centre_code};
 }
 
 /**
@@ -1036,7 +1090,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     std::set<std::string> existing_iso_codes;
     {
-        ores::refdata::messaging::get_currencies_request list_req;
+        ores::refdata::messaging::list_currencies_request list_req;
         constexpr int max_currency_fetch = 10'000;
         list_req.offset = 0;
         list_req.limit = max_currency_fetch;
@@ -1106,15 +1160,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     for (auto& currency : plan.currencies) {
         const auto iso = currency.iso_code;
-        ores::refdata::messaging::save_currency_request save_req;
-        save_req.data = std::move(currency);
+        ores::refdata::messaging::put_currency_request save_req{
+            .change = {.write = to_write(currency)},
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
+                                                  .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
-        if (!resp || !resp->success) {
-            const auto failure = err.empty() ? std::format("save_currency failed for {}: {}",
-                                                           iso,
-                                                           resp ? resp->message : "(no response)") :
-                                               err;
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto failure = err.empty() ?
+                                     std::format("save_currency failed for {}: {}",
+                                                 iso,
+                                                 resp ? resp->result.message : "(no response)") :
+                                     err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.execute step 4 failed | corr=" << req.correlation_id
                 << " iso_code=" << iso << " error=" << failure;
@@ -1138,16 +1195,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     for (auto& portfolio : plan.portfolios) {
         const auto pid = boost::uuids::to_string(portfolio.id);
         const auto name = portfolio.name;
-        ores::refdata::messaging::save_portfolio_request save_req;
-        save_req.data = std::move(portfolio);
+        ores::refdata::messaging::put_portfolio_request save_req{
+            .change = {.write = to_write(portfolio)},
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
+                                                  .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
-        if (!resp || !resp->success) {
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
             const auto failure = err.empty() ?
                                      std::format("save_portfolio failed for '{}' ({}): {}",
                                                  name,
                                                  pid,
-                                                 resp ? resp->message : "(no response)") :
+                                                 resp ? resp->result.message : "(no response)") :
                                      err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.execute step 5 failed | corr=" << req.correlation_id
@@ -1172,16 +1231,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     for (auto& book : plan.books) {
         const auto bid = boost::uuids::to_string(book.id);
         const auto name = book.name;
-        ores::refdata::messaging::save_book_request save_req;
-        save_req.data = std::move(book);
+        ores::refdata::messaging::put_book_request save_req{
+            .change = {.write = to_write(book)}, .intent = ores::utility::domain::change_intent{.reason_code = "ore_import",
+                                                  .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
-        if (!resp || !resp->success) {
-            const auto failure = err.empty() ? std::format("save_book failed for '{}' ({}): {}",
-                                                           name,
-                                                           bid,
-                                                           resp ? resp->message : "(no response)") :
-                                               err;
+        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto failure = err.empty() ?
+                                     std::format("save_book failed for '{}' ({}): {}",
+                                                 name,
+                                                 bid,
+                                                 resp ? resp->result.message : "(no response)") :
+                                     err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.execute step 6 failed | corr=" << req.correlation_id
                 << " book=" << bid << " error=" << failure;
@@ -1599,12 +1660,17 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     if (!req.saved_book_ids.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
                                   << req.correlation_id << " count=" << req.saved_book_ids.size();
-        ores::refdata::messaging::delete_book_request del_req;
-        del_req.ids = req.saved_book_ids;
+        ores::refdata::messaging::delete_many_books_request del_req{
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import_rollback",
+                .commentary = "Rolling back a failed ORE import"}};
+        for (const auto& id : req.saved_book_ids)
+            del_req.removals.push_back(
+                {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(id)}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || !r->success) {
-            const auto reason = (r && !r->message.empty()) ? r->message : err;
+        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_books failed | corr=" << req.correlation_id
                 << " error=" << reason;
@@ -1616,13 +1682,19 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete portfolios | corr="
                                   << req.correlation_id
                                   << " count=" << req.saved_portfolio_ids.size();
-        ores::refdata::messaging::delete_portfolio_request del_req;
-        del_req.ids = std::vector<std::string>(req.saved_portfolio_ids.rbegin(),
-                                               req.saved_portfolio_ids.rend());
+        ores::refdata::messaging::delete_many_portfolios_request del_req{
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import_rollback",
+                .commentary = "Rolling back a failed ORE import"}};
+        for (auto it = req.saved_portfolio_ids.rbegin();
+             it != req.saved_portfolio_ids.rend();
+             ++it)
+            del_req.removals.push_back(
+                {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(*it)}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || !r->success) {
-            const auto reason = (r && !r->message.empty()) ? r->message : err;
+        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_portfolios failed | corr=" << req.correlation_id
                 << " error=" << reason;
@@ -1634,12 +1706,16 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete currencies | corr="
                                   << req.correlation_id
                                   << " count=" << req.saved_currency_iso_codes.size();
-        ores::refdata::messaging::delete_currency_request del_req;
-        del_req.iso_codes = req.saved_currency_iso_codes;
+        ores::refdata::messaging::delete_many_currencies_request del_req{
+            .intent = ores::utility::domain::change_intent{
+                .reason_code = "ore_import_rollback",
+                .commentary = "Rolling back a failed ORE import"}};
+        for (const auto& iso : req.saved_currency_iso_codes)
+            del_req.removals.push_back({.key = {.iso_code = iso}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || !r->success) {
-            const auto reason = (r && !r->message.empty()) ? r->message : err;
+        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
+            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback delete_currencies failed | corr=" << req.correlation_id
                 << " error=" << reason;

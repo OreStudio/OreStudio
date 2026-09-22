@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003
 :END:
-#+title: Task: Prototype the system bootstrap screens
-#+description: [wayfinder:prototype] Web-idiomatic first-run screens.
+#+title: Task: Prototype the first run journey
+#+description: Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding.
 #+type: task
 #+level: s1
 #+filetags: :web_bootstrap_prototype:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Question: how should the first-run system bootstrap look and behave on ores.web? Blocked by: Decide the bootstrap workflow catalogue.
+Question: how should the first run journey look and behave on ores.web: Setup page, flat step list, new tenant steps inline, handoff, onboarding? Blocked by: Prototype the new tenant journey (first run reuses its steps).
 
 * Status
 

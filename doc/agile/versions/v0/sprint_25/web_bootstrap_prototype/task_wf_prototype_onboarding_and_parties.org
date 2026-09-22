@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A
 :END:
-#+title: Task: Prototype the onboarding and party provisioning screens
-#+description: [wayfinder:prototype] Web-idiomatic tenant onboarding and party provisioning.
+#+title: Task: Prototype the new party journey
+#+description: Web-idiomatic Parties page and new party journey.
 #+type: task
 #+level: s1
 #+filetags: :web_bootstrap_prototype:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Question: how should first-login tenant onboarding and adding parties look and behave on ores.web? Blocked by: Decide the bootstrap workflow catalogue.
+Question: how should the Parties page (state, retry) and the new party journey (details by LEI, progress, next steps) look and behave on ores.web? Blocked by: nothing.
 
 * Status
 

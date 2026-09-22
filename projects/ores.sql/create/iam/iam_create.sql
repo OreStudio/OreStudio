@@ -35,6 +35,7 @@
 \ir ./iam_accounts_create.sql
 \ir ./iam_accounts_notify_trigger_create.sql
 \ir ./iam_login_info_create.sql
+\ir ./iam_login_info_notify_trigger_create.sql
 
 -- Account contact information (an account's real name; depends on accounts)
 \ir ./iam_account_contact_informations_create.sql
@@ -42,6 +43,7 @@
 
 -- Sessions
 \ir ./iam_sessions_create.sql
+\ir ./iam_sessions_notify_trigger_create.sql
 \ir ./iam_session_stats_create.sql
 \ir ./iam_session_samples_create.sql
 \ir ./iam_auth_events_create.sql

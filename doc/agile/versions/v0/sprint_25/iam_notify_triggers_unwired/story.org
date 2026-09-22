@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 54897BD4-A38C-4271-AA3B-CE79C43663E3
+:END:
+#+title: Hotfix: IAM current-state notify triggers are not wired into the aggregators
+#+description: SQL schema validation fails on main with four WIRE_001 warnings because the login_info and session notify trigger scripts are not reachable from the create and drop aggregators; Continuous Linux and Nightly Build have been red since 2026-09-21.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:sql:iam:ci:sprint_25:v0:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore Continuous Linux and Nightly Build by wiring the four unreachable IAM notify trigger scripts into their component aggregators.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-22                               |
+
+* Acceptance
+
+- validate_schemas.sh reports 0 warnings and Validation Passed.
+- The four notify trigger scripts are reachable from create.sql and drop.sql.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B2B26F3E-59F2-437B-BE0F-4F03245347B0][Scaffold story: Hotfix: IAM current-state notify triggers are not wired into the aggregators]] | DONE | 2026-09-22 | 2026-09-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:75B63B3A-1764-4B6D-85D4-446E8CD01B15][Implement Hotfix: IAM current-state notify triggers are not wired into the aggregators]] | DONE | | 2026-09-22 | Initial task for: Hotfix: IAM current-state notify triggers are not wired into the aggregators |
+
+* Decisions
+
+- Fix the aggregators directly rather than adding the four files to
+  =validation_ignore.txt=. The ignore list silences real wiring gaps; these
+  scripts genuinely need to run, so the include is the correct repair.
+- Keep the change to the four includes. The validator reports no other
+  unreachable script, so nothing else needed wiring.
+
+* Out of scope
+
+- Generating the component aggregators. They are hand-maintained files with no
+  generator today; making codegen own them is the durable fix and belongs to
+  the codegen work, not this hotfix.
+
+* Result
+
+Continuous Linux and the Nightly Build are unblocked. The four IAM notify
+trigger scripts are reachable from =create.sql= and =drop.sql=, and
+=validate_schemas.sh= reports 0 warnings and Validation Passed.
+
+The regression came from the IAM current-state work: =login_info= and
+=session= are the only two =:current_state: true= entities in =ores.iam=, and
+the only two whose generated notify triggers were never wired in. Every other
+IAM notify trigger was already included.

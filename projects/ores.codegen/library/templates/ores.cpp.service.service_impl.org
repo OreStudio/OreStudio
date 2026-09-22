@@ -715,11 +715,36 @@ void {{entity_singular}}_service::delete_{{entity_plural_short}}({{{primary_key.
 }
 
 {{^current_state}}
+{{#key_is_primary}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}_history({{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     return repo_.read_all(ctx_, {{{primary_key.args}}});
 }
+{{/key_is_primary}}
+{{^key_is_primary}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}. key: " << key;
+    // The caller holds the key the model declares and this reads by the
+    // storage key, so the two are joined here exactly as they are for any
+    // other read. Without this step a provider looks the versions up under a
+    // value the storage key never holds, and reports an entity that has a
+    // history as having none.
+    messaging::{{entity_singular}}_key k;
+{{#declared_key_is_uuid}}
+    k.{{declared_key}} = boost::lexical_cast<boost::uuids::uuid>(key);
+{{/declared_key_is_uuid}}
+{{^declared_key_is_uuid}}
+    k.{{declared_key}} = key;
+{{/declared_key_is_uuid}}
+    const auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return {};
+    const auto& row = found.front();
+    return repo_.read_all(ctx_, {{{primary_key.row_args}}});
+}
+{{/key_is_primary}}
 {{#service_find_by_uuid}}
 
 std::vector<domain::{{entity_singular}}>

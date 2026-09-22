@@ -300,9 +300,24 @@ public:
 {{^current_state}}
     /**
      * @brief Retrieves all historical versions of a {{entity_singular_words}}.
+{{#key_is_primary}}
+     *
+     * Addressed by the entity's key, which is its storage key.
+{{/key_is_primary}}
+{{^key_is_primary}}
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
+{{/key_is_primary}}
      */
     std::vector<domain::{{entity_singular}}>
+{{#key_is_primary}}
     get_{{entity_singular_short}}_history({{{primary_key.params}}});
+{{/key_is_primary}}
+{{^key_is_primary}}
+    get_{{entity_singular_short}}_history(const std::string& key);
+{{/key_is_primary}}
 {{#service_find_by_uuid}}
 
     /**

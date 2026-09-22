@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :security_unreferenced_catch_exception:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/security-unreferenced-catch-exception
 #+pr:
 #+blocked_on:
 #+blocked_since:

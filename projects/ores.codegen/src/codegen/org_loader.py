@@ -2247,13 +2247,16 @@ _TS_DOMAIN_TYPE_RE = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*)$"
 )
 
-# Hand-written utility domain types that cross the wire, mapped to the
-# TypeScript interface and the module in the wire-protocol package that
-# declares it. They have no codegen component, so there is no
-# ``ores.ts.domain`` facet to emit them and no per-component domain module
-# to import from; the generated protocol imports the shared module the same
-# way it imports an entity interface. An unlisted utility type still has no
-# projection, which is what keeps the gap loud.
+# Hand-written domain types that cross the wire, mapped to the TypeScript
+# interface and the module in the wire-protocol package that declares it. They
+# have no entity model, so there is no ``ores.ts.domain`` facet to emit them and
+# no per-component domain module to import from; the generated protocol imports
+# the shared module the same way it imports an entity interface. An unlisted
+# type of this kind still has no projection, which is what keeps the gap loud.
+#
+# Most are ``ores::utility::*`` -- the shared protocol records. The diff engine's
+# payloads are the other kind: a component with an engine but no entity models,
+# whose types still travel in a history response.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
     "ores::utility::domain::result": ("Result", "utility/protocol"),
@@ -2261,6 +2264,10 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
     "ores::utility::domain::order": ("Order", "utility/protocol"),
     "ores::utility::domain::scope": ("Scope", "utility/protocol"),
+    "ores::diff::domain::field_value": ("FieldValue", "diff/protocol"),
+    "ores::diff::domain::diff_span": ("DiffSpan", "diff/protocol"),
+    "ores::diff::domain::diff_entry": ("DiffEntry", "diff/protocol"),
+    "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.
@@ -2419,9 +2426,14 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for message in messages:
         for field in message.get("fields") or []:
             entities.update(_TS_DOMAIN_REF_RE.findall(field.get("cpp_type") or ""))
+    # A type whose TypeScript is hand-written is imported from its shared
+    # module by ts_utility_imports(); claiming it here too would emit a second
+    # import from a per-component domain module that does not exist.
+    hand_written = {qualified.rsplit("::", 1)[-1]
+                    for qualified in _TS_UTILITY_DOMAIN_TYPES}
     return [
         {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
-        for entity in sorted(entities)
+        for entity in sorted(entities - hand_written)
     ]
 
 

@@ -51,7 +51,7 @@ const PARTY_STEPS = [
   'Create the party',
   'Activate it',
   'Publish its essential data',
-  'Add its members',
+  'Link its accounts',
   'Complete',
 ];
 
@@ -62,7 +62,7 @@ export function NewPartyJourneyPrototype(): ReactNode {
   const [query, setQuery] = useState('Northwind');
   const [entity, setEntity] = useState<LegalEntity>();
   const [shortName, setShortName] = useState('');
-  const [members, setMembers] = useState<ReadonlySet<string>>(new Set(['tenant_admin']));
+  const [accounts, setAccounts] = useState<ReadonlySet<string>>(new Set(['tenant_admin']));
   const [started, setStarted] = useState(false);
   const [failOnce, setFailOnce] = useState(false);
   const run = useSimulatedRun(entity && { code: entity.lei, steps: PARTY_STEPS }, started, failOnce ? 2 : undefined);
@@ -77,10 +77,10 @@ export function NewPartyJourneyPrototype(): ReactNode {
     setShortName(e.name.replace(/ (Ltd|LLC|Pte Ltd|plc|Inc)$/u, ''));
   };
   const toggle = (account: string): void => {
-    const next = new Set(members);
+    const next = new Set(accounts);
     if (next.has(account)) next.delete(account);
     else next.add(account);
-    setMembers(next);
+    setAccounts(next);
   };
 
   const matches = GLEIF_RESULTS.filter(
@@ -142,7 +142,7 @@ export function NewPartyJourneyPrototype(): ReactNode {
     {
       id: 'describe',
       title: 'Describe the party',
-      lead: 'Name it and choose who works in it.',
+      lead: 'Name it and choose the accounts that work in it.',
       ...(header !== undefined && { header }),
       body: (
         <div className="space-y-5">
@@ -150,11 +150,12 @@ export function NewPartyJourneyPrototype(): ReactNode {
             <Input value={shortName} onChange={(e) => setShortName(e.target.value)} />
           </Field>
           <fieldset>
-            <legend className="mb-2 text-sm font-medium text-ink-muted">Members</legend>
+            <legend className="text-sm font-medium text-ink-muted">Accounts that work in it</legend>
+            <p className="mb-2 text-xs text-ink-faint">They can sign in to this party and act for it.</p>
             <div className="grid gap-1 sm:grid-cols-2">
               {TENANT_ACCOUNTS.map((a) => (
                 <label key={a} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={members.has(a)} onChange={() => toggle(a)} />
+                  <input type="checkbox" checked={accounts.has(a)} onChange={() => toggle(a)} />
                   <span className="font-mono">{a}</span>
                 </label>
               ))}
@@ -162,7 +163,7 @@ export function NewPartyJourneyPrototype(): ReactNode {
           </fieldset>
         </div>
       ),
-      next: { label: 'Continue', enabled: shortName.trim() !== '' && members.size > 0 },
+      next: { label: 'Continue', enabled: shortName.trim() !== '' && accounts.size > 0 },
     },
     {
       id: 'review',
@@ -176,7 +177,7 @@ export function NewPartyJourneyPrototype(): ReactNode {
               ['Legal entity', entity?.name ?? '-'],
               ['LEI', entity?.lei ?? '-'],
               ['Short name', shortName],
-              ['Members', [...members].join(', ')],
+              ['Accounts', [...accounts].join(', ')],
               ['Data', "The tenant's standard party data"],
             ].map(([k, v]) => (
               <Fragment key={k}>

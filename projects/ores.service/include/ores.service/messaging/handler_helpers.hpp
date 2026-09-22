@@ -242,13 +242,34 @@ inline void error_reply(ores::nats::service::client& nats,
                  {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
 }
 
-// Deserialise the message payload into Req using the process-wide default
-// wire_codec. Returns nullopt on parse failure.
+namespace {
+inline auto& decode_lg() {
+    static auto instance = ores::logging::make_logger("ores.service.messaging.decode");
+    return instance;
+}
+} // namespace
+
+/**
+ * @brief Deserialises the message payload into Req using the process-wide
+ * default wire_codec. Returns nullopt on parse failure.
+ *
+ * The failure is logged with the codec's own reason before it is discarded:
+ * the caller can only tell the peer "bad_request", so this line is the only
+ * account of what the request got wrong. The payload itself is deliberately
+ * not logged — a rejected request can carry a credential — but the reason
+ * names the field that did not fit, which is what a mismatch between two
+ * ends of the protocol turns on.
+ */
 template <typename Req>
 std::optional<Req> decode(const ores::nats::message& msg) {
+    using namespace ores::logging;
     auto r = ores::nats::default_wire_codec().decode<Req>(msg.data);
-    if (!r)
+    if (!r) {
+        BOOST_LOG_SEV(decode_lg(), warn) << "Failed to decode " << msg.subject
+                                         << " (" << msg.data.size()
+                                         << " bytes): " << r.error().what();
         return std::nullopt;
+    }
     return *r;
 }
 

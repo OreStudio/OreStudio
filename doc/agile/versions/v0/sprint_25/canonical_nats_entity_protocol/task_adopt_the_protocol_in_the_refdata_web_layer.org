@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-22
 #+updated: 2026-09-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The refdata screens speak the canonical protocol from generated schemas rather t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | The shared factory builds the canonical envelopes, and the country screens run on the generated declaration. The PR is raised. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | CI green, then review.                 |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -42,11 +42,57 @@ The refdata screens speak the canonical protocol from generated schemas rather t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The BFF and the browser have one generic layer each: the route factory
+turns a generated descriptor into an entity's routes, and the browser's
+screens render from a generated declaration. Both were built against the
+protocol before the canonical verb set, so the work was to make the shared
+layer speak the canonical protocol once, and then move country onto it.
+
+1. *Fix the shared factory rather than the country route.* The factory sent
+   ={data}= for a save, a flat array of keys for a delete and a bare key field
+   for a versions read, and read a top-level =success= no canonical response
+   carries. It now builds the request each verb states -- ={offset, limit,
+   order, as_of?, filter?}=, ={key}=, ={change: {write, precondition},
+   intent}=, ={removal, intent}= -- and answers from =result.outcome=.
+   A create states =must_not_exist=; an amend states =must_match_version= with
+   the version the form read.
+2. *State in the descriptor what the factory cannot derive.* The write
+   record's members, the row fields holding the intent, and whether the list
+   and versions requests carry an as-of or a filter. Two shapes the factory
+   could not build came out of the same pass: a single-record read for an
+   entity whose key record is a surrogate key (withheld, like the delete and
+   versions reads), and a write member the form never shows (each takes the
+   empty of its type, and a surrogate key is minted).
+3. *Read the capabilities from the protocol.* The web declaration's history
+   capability came from the retired =history_message_type= drawer property,
+   which the converted refdata models no longer carry; it now comes from the
+   derived versions pair, as the BFF route already did.
+4. *Express the flag in codegen.* An entity that declares a flag and owns an
+   =image_id= column states its image in the UI metadata, and the shared
+   detail screen renders the picker and saves the chosen image, which no
+   field control could carry.
+5. *Move country onto the generated declaration.* The model opts into
+   =ores.ts.web=, so codegen emits the route descriptor and the declaration,
+   and the hand-written schema, api client, four subjects and five routes go.
+   The =ores.ts.web= family is opted into one entity at a time, which is why
+   the model states it rather than the component.
 
 * Notes
+
+- The =ores.ts.web= facet is per-entity opt-in
+  ( =:ores.ts.web.enabled: true= ), because a descriptor whose request shapes
+  the entity's protocol does not derive is worse than no descriptor. Refdata
+  now opts in for country alone; the other entities keep their hand-written
+  absence and join as their screens are converted.
+- A write member the form does not show but which names another row -- an
+  FK such as =account_contact_information='s =account_id= -- takes no value
+  rather than a minted one, because the caller cannot invent a parent. An
+  entity whose screen must create such a row carries the field in its
+  presentation drawer.
+- The generic factory still has no test of its own; the envelopes are pinned
+  only through the descriptor projection tests. The route shapes are the
+  single translation point for every screen, so a factory test with a stub
+  session is the next thing this task owes.
 
 * Test Scenarios
 

@@ -217,7 +217,6 @@ Tenant lifecycle status (FK to tenant_statuses).
 :PROPERTIES:
 :collection_name:        tenants
 :key_field:              code
-:history_message_type:   list_tenant_versions_request
 :END:
 
 *** Detail fields

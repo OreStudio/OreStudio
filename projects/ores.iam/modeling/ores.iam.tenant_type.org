@@ -160,7 +160,6 @@ drop function if exists ores_iam_validate_tenant_type_fn;
 :PROPERTIES:
 :collection_name:        tenant_types
 :key_field:              type
-:history_message_type:   list_tenant_type_versions_request
 :END:
 
 *** Detail fields

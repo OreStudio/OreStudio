@@ -25,18 +25,18 @@ Instances are append-mostly; status transitions are the primary mutation.
 :has_tenant_id: true
 :END:
 
-* Primary key
-:PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:END:
-
-UUID primary key for the workflow instance.
-
 * Natural keys
 
 * Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID primary key for the workflow instance.
 
 ** tenant_id
 :PROPERTIES:

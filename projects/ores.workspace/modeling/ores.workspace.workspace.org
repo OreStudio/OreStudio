@@ -27,18 +27,6 @@ workspace is resolved from the parent chain up to the Live workspace
 :has_workspace_id: false
 :END:
 
-* Primary key
-:PROPERTIES:
-:column:        id
-:type:          uuid
-:cpp_type:      boost::uuids::uuid
-:uuid_check_fn: ores_utility_nil_uuid_fn()
-:END:
-
-UUID primary key.
-
-Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.
-
 * Natural keys
 
 ** name
@@ -54,6 +42,18 @@ std::string(faker::word::noun())
 #+end_src
 
 * Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID primary key.
+
+Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.
 
 ** description
 :PROPERTIES:

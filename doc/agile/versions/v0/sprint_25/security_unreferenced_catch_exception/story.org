@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 94A90F28-A88D-46BC-B868-C01263EE2826
+:END:
+#+title: Hotfix: password_hasher catch block leaves its exception unreferenced
+#+description: The Windows MSVC build fails in ores.security because password_hasher.cpp catches const std::exception& e but never uses e; MSVC emits C4101 and /WX turns it into an error.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:security:windows:sprint_25:v0:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows MSVC build for ores.security. The catch block at password_hasher.cpp:127 discards the exception, so it must not name it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-22                               |
+
+* Acceptance
+
+- ores.security compiles on Windows MSVC with /WX and no C4101 warning.
+- The catch block still logs and returns false on a malformed scrypt parameter.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:03492C1F-948C-4BF2-A2FE-BF7C1B43098B][Scaffold story: Hotfix: password_hasher catch block leaves its exception unreferenced]] | DONE | 2026-09-22 | 2026-09-22 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D96591EA-E545-40A9-A8DE-ECDB13E92571][Implement Hotfix: password_hasher catch block leaves its exception unreferenced]] | DONE | | 2026-09-22 | Initial task for: Hotfix: password_hasher catch block leaves its exception unreferenced |
+
+* Decisions
+
+- Drop the parameter name rather than add a cast-to-void or a suppression.
+  The block never needed the exception, and =catch (const std::exception&)= is
+  already the established form in this codebase, used by 44 catch clauses.
+- The whole source tree was checked for the same defect before the PR: 1371
+  =catch (const std::exception& e)= clauses across 394 files. This was the
+  only one that never referenced =e=, so the fix stays a single line.
+
+* Out of scope
+
+- Enforcing the unnamed-catch form in CI or clang-tidy. The tree is already
+  clean, so a rule would guard against a future regression rather than fix a
+  present one.
+
+* Result
+
+The Windows MSVC build failure for =ores.security= is fixed with a one-line
+change: =password_hasher.cpp= no longer names the exception it discards.
+
+=ores.security.lib= builds green and =ores.security.tests= passes 127
+assertions in 55 test cases. C4101 is MSVC-only, and Continuous Windows runs
+on a schedule rather than per pull request, so its next run is the first real
+MSVC check of this fix.

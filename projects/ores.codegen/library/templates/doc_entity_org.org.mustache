@@ -150,9 +150,6 @@ TODO -- one row per column needing an insert-time validation function.
 :delete_request_class:    {{component}}::messaging::delete_{{slug}}_request
 :delete_response_class:   {{component}}::messaging::delete_{{slug}}_response
 :delete_message_type:     delete_{{slug}}_request
-:history_request_class:   {{component}}::messaging::get_{{slug}}_history_request
-:history_response_class:  {{component}}::messaging::get_{{slug}}_history_response
-:history_message_type:    get_{{slug}}_history_request
 {{#presentation_has_uuid_primary_key}}
 :has_uuid_primary_key:    true
 {{/presentation_has_uuid_primary_key}}

@@ -100,8 +100,11 @@ knowledge doc.
   shared password field for the whole app.
 - Every deployment is multi-tenant; "single-tenant" is just one tenant.
   First run does not ask.
-- ACME asks for its admin password like any profile; no known demo
-  password.
+- ACME's tenant admin reuses the creating super admin's password: the
+  provision request carries a flag and the server copies the hash, so
+  every journey behaves the same and asks for nothing. ACME forces no
+  password change at first sign-in (a profile flag); Operational does.
+  ACME's details stay hidden behind "Change settings".
 - [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
   Onboard and Seed profile are defined in the IAM knowledge doc's
   Tenant lifecycle section.

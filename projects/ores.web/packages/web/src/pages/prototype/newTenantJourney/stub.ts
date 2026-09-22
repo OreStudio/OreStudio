@@ -49,8 +49,10 @@ export interface SeedProfile {
   /** Tenant details the profile fills in; the person can still change them. */
   readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
   readonly logo?: string;
-  /** In first run, the tenant admin's password starts as the super admin's. */
+  /** The tenant admin reuses the creating super admin's password (the server copies the hash). */
   readonly inheritsAdminPassword?: boolean;
+  /** The tenant admin must change the password at first sign-in. */
+  readonly forcePasswordChange: boolean;
   /** The parties the tenant ends up with, for the first sign-in's default party. */
   readonly parties: readonly string[];
 }
@@ -63,6 +65,7 @@ export const PROFILES: readonly SeedProfile[] = [
     bullets: ['Standard reference data and counterparties', 'Your legal entities, from their LEI', 'No test data'],
     audience: 'For real use',
     parties: ['The legal entity of the root LEI'],
+    forcePasswordChange: true,
     params: [
       {
         name: 'root_lei',
@@ -99,6 +102,7 @@ export const PROFILES: readonly SeedProfile[] = [
     audience: 'For demos and testing',
     logo: acmeLogo,
     inheritsAdminPassword: true,
+    forcePasswordChange: false,
     parties: ['Acme Corporation Plc', 'ACME Corporation UK plc', 'ACME Corporation US Inc', 'ACME Corporation HK Ltd'],
     defaults: {
       code: 'acme_corporation',
@@ -129,6 +133,8 @@ export interface TenantDetails {
   adminUsername: string;
   adminEmail: string;
   adminPassword: string;
+  /** Reuse the creating super admin's password instead of adminPassword. */
+  useMyPassword: boolean;
   params: Record<string, string>;
 }
 
@@ -140,6 +146,7 @@ export function emptyDetails(profile: SeedProfile): TenantDetails {
     adminUsername: 'tenant_admin',
     adminEmail: '',
     adminPassword: '',
+    useMyPassword: profile.inheritsAdminPassword === true,
     ...profile.defaults,
     params: Object.fromEntries(profile.params.map((p) => [p.name, p.default])),
   };

@@ -21,8 +21,7 @@
 
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { Button, cx } from '../../../ui/Primitives.js';
-import { DetailsForm, FailToggle, Handoff, ProfileChoice, ProgressList } from './parts.js';
-import { assessPassword } from '../../../ui/passwordPolicy.js';
+import { DetailsStep, FailToggle, Handoff, ProfileChoice, ProgressList } from './parts.js';
 import { PROFILES, emptyDetails, useSimulatedRun, type TenantDetails } from './stub.js';
 
 /**
@@ -112,28 +111,21 @@ export function JourneyPage({
 }
 
 /** The new tenant steps' state: profile, details, and a simulated run. */
-export function useNewTenant(superAdminPassword?: string) {
+export function useNewTenant() {
   const [profileCode, setProfileCode] = useState<string>();
   const profile = PROFILES.find((p) => p.code === profileCode);
   const [details, setDetails] = useState<TenantDetails>();
-  const [passwordOk, setPasswordOk] = useState(false);
-  const [passwordPrefilled, setPasswordPrefilled] = useState(false);
+  const [typedPasswordOk, setPasswordOk] = useState(false);
   const [started, setStarted] = useState(false);
   const [failOnce, setFailOnce] = useState(false);
   const run = useSimulatedRun(profile, started, failOnce ? 2 : undefined);
+  const passwordOk = details?.useMyPassword === true || typedPasswordOk;
 
   const choose = (code: string): void => {
     setProfileCode(code);
     const p = PROFILES.find((x) => x.code === code);
-    if (p === undefined) return;
-    const inherited = p.inheritsAdminPassword === true && superAdminPassword !== undefined && superAdminPassword !== '';
-    setDetails({ ...emptyDetails(p), adminPassword: inherited ? superAdminPassword : '' });
-    setPasswordPrefilled(inherited);
-    setPasswordOk(inherited && assessPassword(superAdminPassword).valid);
-  };
-  const updateDetails = (next: TenantDetails): void => {
-    setDetails(next);
-    if (next.adminPassword !== superAdminPassword) setPasswordPrefilled(false);
+    if (p !== undefined) setDetails(emptyDetails(p));
+    setPasswordOk(false);
   };
   const restart = (): void => {
     setStarted(false);
@@ -141,7 +133,7 @@ export function useNewTenant(superAdminPassword?: string) {
     setDetails(undefined);
     setPasswordOk(false);
   };
-  return { profile, details, setDetails: updateDetails, passwordOk, passwordPrefilled, setPasswordOk, started, setStarted, failOnce, setFailOnce, run, choose, restart };
+  return { profile, details, setDetails, passwordOk, setPasswordOk, started, setStarted, failOnce, setFailOnce, run, choose, restart };
 }
 
 export type NewTenant = ReturnType<typeof useNewTenant>;
@@ -190,12 +182,11 @@ export function newTenantSteps(
       header,
       body:
         t.profile && t.details ? (
-          <DetailsForm
+          <DetailsStep
             profile={t.profile}
             details={t.details}
             onChange={t.setDetails}
             onPasswordAcceptable={t.setPasswordOk}
-            passwordPrefilled={t.passwordPrefilled}
           />
         ) : null,
       next: { label: 'Continue', enabled: t.passwordOk },
@@ -247,7 +238,7 @@ export function newTenantSteps(
       header,
       final: true,
       body: t.details ? (
-        <Handoff details={t.details} onContinue={handoff.onContinue} onElsewhere={handoff.onElsewhere} />
+        <Handoff details={t.details} mustChange={t.profile?.forcePasswordChange ?? true} onContinue={handoff.onContinue} onElsewhere={handoff.onElsewhere} />
       ) : null,
     },
   ];

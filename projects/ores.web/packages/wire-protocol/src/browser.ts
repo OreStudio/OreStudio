@@ -52,7 +52,6 @@ export {
 export type { Account, AccountPage, AccountType, ActiveParty, PartySummary } from './domain.js';
 
 export {
-  accountListSchema,
   apiErrorSchema,
   loginResultSchema,
   loginSuccessSchema,
@@ -61,7 +60,6 @@ export {
   sseEnvelopeSchema,
 } from './contracts.js';
 export type {
-  AccountList,
   ApiError,
   LoginResult,
   LoginSuccess,

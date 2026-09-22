@@ -22,7 +22,6 @@
 import {
   loginResultSchema,
   sessionViewSchema,
-  type AccountList,
   type LoginResult,
   type SessionView,
 } from '@ores/wire-protocol/browser';

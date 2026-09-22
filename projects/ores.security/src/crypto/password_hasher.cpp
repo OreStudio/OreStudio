@@ -124,7 +124,7 @@ bool password_hasher::verify(const std::string& password, const std::string& has
             } else if (key == "p") {
                 p = std::stoul(value);
             }
-        } catch (const std::exception& e) {
+        } catch (const std::exception&) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to parse parameter: " << param;
             return false;
         }

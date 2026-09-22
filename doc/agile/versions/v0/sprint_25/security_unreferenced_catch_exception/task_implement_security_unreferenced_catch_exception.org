@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: D96591EA-E545-40A9-A8DE-ECDB13E92571
+:END:
+#+title: Task: Implement Hotfix: password_hasher catch block leaves its exception unreferenced
+#+description: Initial task for: Hotfix: password_hasher catch block leaves its exception unreferenced
+#+type: task
+#+level: s1
+#+filetags: :security_unreferenced_catch_exception:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94A90F28-A88D-46BC-B868-C01263EE2826][Hotfix: password_hasher catch block leaves its exception unreferenced]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the Windows MSVC build for ores.security. The catch block at password_hasher.cpp:127 discards the exception, so it must not name it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:94A90F28-A88D-46BC-B868-C01263EE2826][Hotfix: password_hasher catch block leaves its exception unreferenced]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- ores.security compiles on Windows MSVC with /WX and no C4101 warning.
+- The catch block still logs and returns false on a malformed scrypt parameter.
+
+* Plan
+
+One-line change: drop the unused name from the catch clause. The block
+already logs =param= and returns false, so it never needed the exception
+object.
+
+* Notes
+
+Root cause: the catch clause declares =const std::exception& e= but the body
+logs =param= instead, so =e= is never referenced. MSVC reports C4101, and =/WX=
+promotes the warning to error C2220.
+
+Replacing the name with an unnamed parameter is the established convention in
+this codebase: 44 catch clauses already use =catch (const std::exception&)=
+for the same reason.
+
+The same C4101 risk was checked across every =catch (const std::exception& e)=
+clause in the source tree: 1371 clauses in 394 files. Only
+=password_hasher.cpp:127= failed to reference its exception; all others use it
+directly or pass it on. No further changes were needed.
+
+Build check: =compass build ores.security.lib= is green, and
+=ores.security.tests= passes 127 assertions in 55 test cases.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Windows MSVC build failure for =ores.security= is fixed. The catch clause
+in =password_hasher.cpp= no longer names the exception it discards:
+
+#+begin_src cpp
+} catch (const std::exception&) {
+    BOOST_LOG_SEV(lg(), warn) << "Failed to parse parameter: " << param;
+    return false;
+}
+#+end_src
+
+Acceptance met: =ores.security.lib= builds green and =ores.security.tests=
+passes 127 assertions in 55 test cases, so the verify path still rejects a
+malformed scrypt parameter. C4101 is MSVC-only and no Windows build runs on
+pull requests, so the next scheduled Continuous Windows run is the first
+MSVC check of this change.

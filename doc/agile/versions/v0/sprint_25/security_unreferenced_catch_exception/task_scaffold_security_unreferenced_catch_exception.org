@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 03492C1F-948C-4BF2-A2FE-BF7C1B43098B
+:END:
+#+title: Task: Scaffold story: Hotfix: password_hasher catch block leaves its exception unreferenced
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :security_unreferenced_catch_exception:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/security-unreferenced-catch-exception
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94A90F28-A88D-46BC-B868-C01263EE2826][Hotfix: password_hasher catch block leaves its exception unreferenced]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the hotfix story and task on =hotfix/security-unreferenced-catch-exception=
+off =origin/main=, and wire both into Sprint 25's =** Hotfixes= table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:94A90F28-A88D-46BC-B868-C01263EE2826][Hotfix: password_hasher catch block leaves its exception unreferenced]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-22                               |
+
+* Acceptance
+
+- Story and task exist under =doc/agile/versions/v0/sprint_25/=.
+- The sprint's =** Hotfixes= table carries the story row.
+
+* Plan
+
+Scaffold only: =compass story new --kind hotfix= creates the branch, the
+story, the task and the sprint wiring in one step.
+
+* Notes
+
+=compass story new= wired the story into =** Hotfixes= directly, so no manual
+move was needed. The branch was created off the then-current =origin/main=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The hotfix branch, story and task exist, and Sprint 25's =** Hotfixes= table
+carries the story row.
+
+Acceptance met:
+=doc/agile/versions/v0/sprint_25/security_unreferenced_catch_exception/= holds
+=story.org= and both task files, and the sprint row records the story with a
+=2026-09-22= start date.

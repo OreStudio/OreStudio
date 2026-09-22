@@ -46,10 +46,7 @@ knowledge doc.
 
 ** Not yet specified
 
-- Progress and failure screens: retry from a failed step, discard tenant.
 - Re-provisioning or extending an existing tenant.
-- How ores.web receives streamed progress events (the Acme response
-  returns all steps at the end today).
 
 
 * Status
@@ -82,7 +79,7 @@ knowledge doc.
 | [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
 | [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic first run: Setup page, then the new tenant steps inline, handoff and onboarding. |
 | [[id:7C655052-D82F-485A-A506-6F0C496546C6][Prototype the new tenant journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic Tenants page and new tenant journey with profile choice, progress and handoff. |
-| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]] | STARTED | 2026-09-22 | | [wayfinder:prototype] Web-idiomatic Parties page and new party journey. |
+| [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:prototype] Web-idiomatic Parties page and new party journey. |
 
 * Decisions
 
@@ -108,6 +105,9 @@ knowledge doc.
 - [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the first run journey]]: welcome screen, then one flat step
   rail from super admin to first sign-in; ACME asks for nothing in any
   journey; journeys are ordered step definitions rendered by one page.
+- [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Prototype the new party journey]]: same journey page; find by LEI,
+  name it, choose the accounts that work in it; no data choice, since
+  bundles follow the tenant's seed profile.
 - [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
   Onboard and Seed profile are defined in the IAM knowledge doc's
   Tenant lifecycle section.
@@ -128,5 +128,7 @@ knowledge doc.
   publish of essential data (e.g. counterparties) stays in scope.
 - Building the server-side provisioning rework: a later story.
 - The Synthetic seed profile: dropped; ACME holds all test data.
+- How ores.web receives workflow progress events: an implementation
+  detail of the rework story, not a screen decision.
 - Localhost-only access until system bootstrap completes: a future
   hardening.

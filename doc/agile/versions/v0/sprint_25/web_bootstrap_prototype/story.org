@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8
+:END:
+#+title: Story: Prototype ORE Studio bootstrap in ores.web
+#+description: Revisit the ores.qt bootstrap wizards from first principles for ores.web, taking the ACME work into account.
+#+type: story
+#+level: s2
+#+filetags: :web:bootstrap:prototype:sprint_25:v0:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-22                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | STARTED | 2026-09-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E148332B-4006-4FB1-A0ED-EA47688040CF][Prototype the ores.web bootstrap flow]] | BACKLOG | | | Initial task for: Prototype ORE Studio bootstrap in ores.web |
+
+* Decisions
+
+* Out of scope
+
+-

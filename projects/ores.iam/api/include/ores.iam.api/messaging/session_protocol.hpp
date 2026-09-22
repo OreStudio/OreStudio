@@ -37,7 +37,6 @@ namespace ores::iam::messaging {
 
 struct session_key {
     boost::uuids::uuid id;
-    std::chrono::system_clock::time_point start_time;
 };
 
 struct session_write {

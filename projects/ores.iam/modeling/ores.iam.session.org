@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.ts.web.enabled: true
 :ID: 7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63
 :END:
 #+title: ores.iam.session
@@ -290,6 +291,49 @@ std::string("binary")
 | protocol             | Protocol        |
 | bytes_sent           | Bytes Sent      |
 | bytes_received       | Bytes Received  |
+
+** Presentation
+:PROPERTIES:
+:collection_name:              sessions
+:key_field:                    id
+:has_readonly_paginated_list:  true
+:END:
+
+The screen's declaration. A session is addressed by its =id=, which is the
+session's own identifier: the storage key is composite because the table is a
+hypertable partitioned by =start_time=, and a partition column has to be part of
+a primary key. That composite addresses a row for the store; it is not what an
+operator means by a session, and it is not what a path segment can carry.
+
+The screen is read-only. A session is opened by signing in and closed by the
+service that ends it, so there is nothing for a person to write here; what the
+screen is for is seeing who is connected and from where.
+
+*** Detail fields
+
+| field             | label          | widget                | type      | is_key | is_required | placeholder          |
+|-------------------+----------------+-----------------------+-----------+--------+-------------+----------------------|
+| id                | ID             | idEdit                | line_edit | true   | true        | Enter the session id |
+| account_id        | Account        | accountIdEdit         | line_edit |        |             |                      |
+| start_time        | Start          | startTimeEdit         | date      |        |             |                      |
+| end_time          | End            | endTimeEdit           | date      |        |             |                      |
+| client_ip         | Client IP      | clientIpEdit          | line_edit |        |             |                      |
+| client_identifier | Client         | clientIdentifierEdit  | line_edit |        |             |                      |
+| country_code      | Country        | countryCodeEdit       | line_edit |        |             |                      |
+| protocol          | Protocol       | protocolEdit          | line_edit |        |             |                      |
+
+*** Columns
+
+| enum_name    | field             | header       | type      | width |
+|--------------+-------------------+--------------+-----------+-------|
+| AccountId    | account_id        | Account      | string    | 300   |
+| StartTime    | start_time        | Start        | timestamp | 160   |
+| EndTime      | end_time          | End          | timestamp | 160   |
+| ClientIp     | client_ip         | Client IP    | string    | 150   |
+| CountryCode  | country_code      | Country      | string    | 90    |
+| Protocol     | protocol          | Protocol     | string    | 110   |
+| BytesSent    | bytes_sent        | Bytes Sent   | int       | 110   |
+| BytesReceived | bytes_received   | Bytes Recv.  | int       | 110   |
 
 ** Paste blocks
 

@@ -58,9 +58,7 @@ namespace {
 std::vector<domain::session> read_one(repository::session_repository& repo,
                                       const ores::database::context& ctx,
                                       const messaging::session_key& key) {
-    return repo.read_latest(ctx,
-                            boost::uuids::to_string(key.id),
-                            ores::platform::time::datetime::to_db_string(key.start_time));
+    return repo.read_latest_by_id(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
@@ -72,7 +70,6 @@ std::vector<domain::session> read_one(repository::session_repository& repo,
 messaging::session_key key_from(const domain::session& v) {
     messaging::session_key key;
     key.id = v.id;
-    key.start_time = v.start_time;
     return key;
 }
 
@@ -215,11 +212,17 @@ session_service::delete_session(const messaging::delete_session_request& request
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_,
-                     boost::uuids::to_string(request.removal.key.id),
-                     ores::platform::time::datetime::to_db_string(request.removal.key.start_time),
-                     expected)) {
+    const auto named = read_one(repo_, ctx_, request.removal.key);
+    if (named.empty()) {
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(row.id),
+                         ores::platform::time::datetime::to_db_string(row.start_time),
+                         expected)) {
         case repository::session_repository::remove_status::removed:
             break;
         case repository::session_repository::remove_status::missing:
@@ -260,15 +263,26 @@ session_service::delete_many_sessions(const messaging::delete_many_sessions_requ
     }
     if (request.removals.empty())
         return response;
+    // A removal names its row by the key a caller holds, and the repository
+    // takes the storage key, so the two are joined once here rather than at
+    // each column's conversion. A name that matches no row is skipped: the
+    // batch reports what it removed, and a row that is already gone is not a
+    // failure.
+    std::vector<domain::session> resolved;
+    resolved.reserve(request.removals.size());
+    for (const auto& removal : request.removals) {
+        auto named = read_one(repo_, ctx_, removal.key);
+        if (!named.empty())
+            resolved.push_back(std::move(named.front()));
+    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
+    id_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        id_keys.push_back(boost::uuids::to_string(row.id));
     std::vector<std::string> start_time_keys;
-    start_time_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        start_time_keys.push_back(
-            ores::platform::time::datetime::to_db_string(removal.key.start_time));
+    start_time_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        start_time_keys.push_back(ores::platform::time::datetime::to_db_string(row.start_time));
     repo_.remove(ctx_, id_keys, start_time_keys);
     return response;
 }

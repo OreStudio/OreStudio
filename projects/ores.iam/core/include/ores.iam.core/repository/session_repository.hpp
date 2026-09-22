@@ -111,6 +111,11 @@ public:
                                              const std::vector<std::string>& start_times);
     /**@}*/
 
+    /**
+     * @brief Reads latest sessions filtered by id.
+     */
+    std::vector<domain::session> read_latest_by_id(context ctx, const std::string& id);
+
 
     /**
      * @brief Reads the session rows for the given primary key.

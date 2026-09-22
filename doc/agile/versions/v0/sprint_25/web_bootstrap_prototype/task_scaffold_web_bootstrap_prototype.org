@@ -8,7 +8,7 @@
 #+filetags: :web_bootstrap_prototype:sprint_25:v0:
 #+owner: marco
 #+branch: feature/web-bootstrap-prototype
-#+pr:
+#+pr: 2125
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2125][#2125]] | [agile] Chart the ores.web bootstrap journeys |
 
 * Review
 

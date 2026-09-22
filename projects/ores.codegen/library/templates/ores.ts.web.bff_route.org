@@ -47,6 +47,13 @@ them. No domain entity derives a single-record get, so =get= is absent
 today; a current-state entity derives no history pair, so =history= is
 absent for it.
 
+=save= is optional for the same reason, and it is what lets a read-only
+entity have a screen at all. A read-only entity derives no put request, so
+there is no write route to state; the list and the single-record reads
+still exist, and a descriptor that named a save subject the protocol
+module does not export would not compile. Only =list= is required, because
+a descriptor with no way to read the collection reaches nothing.
+
 A junction is deliberately not served: its delete request names one array
 per side, and the generic factory sends a single key, so a junction route
 would silently drop half its key. The archetype admits =domain_entity=
@@ -115,8 +122,8 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
-{{/bff_route.subjects_get}}    save: subjects.{{{bff_route.subjects_save}}},
-{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
+{{/bff_route.subjects_get}}{{#bff_route.subjects_save}}    save: subjects.{{{bff_route.subjects_save}}},
+{{/bff_route.subjects_save}}{{#bff_route.subjects_remove}}    remove: subjects.{{{bff_route.subjects_remove}}},
 {{/bff_route.subjects_remove}}{{#bff_route.subjects_history}}    history: subjects.{{{bff_route.subjects_history}}},
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',

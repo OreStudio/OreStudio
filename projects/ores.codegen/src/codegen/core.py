@@ -2020,18 +2020,18 @@ def web_declaration_projection(entity, model_path):
     first. None when the entity has no column table, the condition
     ``_ui_projection_entity`` states and the BFF route projection shares.
 
-    The capabilities are read off the derived protocol messages rather than
-    guessed: a versions pair exists exactly when the entity has those versions
-    to serve, and a read-only paginated list is the model saying the entity is
-    not written from the interface. Deriving them from anything else -- a
-    version column, say -- gets junctions and current-state entities wrong.
+    The capabilities are read off the protocol the entity derives, not off a
+    property that names a message: a write exists exactly when the entity
+    derives a put request, a history exactly when it derives the versions
+    pair, and a delete exactly when it derives a delete request keyed by the
+    natural key. Deriving them from anything else -- a version column, or a
+    hand-written name for the message the client would send -- gets
+    junctions, current-state entities and read-only entities wrong, and lets
+    the declaration promise an action the BFF answers with 404.
 
-    Remove and history are the routes the BFF derives from the entity's
-    primary key, while the path segment carries the natural key, so the
-    declaration states them only when the primary key is the natural key --
-    the condition ``bff_route_projection`` withholds those routes on. A
-    declaration that promised them otherwise would render actions the BFF
-    answers with 404.
+    ``has_readonly_paginated_list`` is the one interface-level statement, and
+    it outranks the derived writes: an entity whose service can write it is
+    still not written from this screen when the model says so.
     """
     if _ui_projection_entity(entity) is None:
         return None
@@ -2043,8 +2043,12 @@ def web_declaration_projection(entity, model_path):
     key_field = presentation.get('key_field', '')
     keyed_by_natural_key = _keyed_by_natural_key(entity)
     messages = entity.get('messages') or []
-    has_history = bool(_protocol_message(
-        messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
+    can_write = bool(_protocol_subject_key(
+        messages, f'put_{entity_singular}_request'))
+    can_delete = bool(_protocol_subject_key(
+        messages, f'delete_{entity_singular}_request'))
+    can_read_history = bool(_protocol_subject_key(
+        messages, f'list_{entity_singular}_versions_request'))
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2056,10 +2060,11 @@ def web_declaration_projection(entity, model_path):
         'route_segment': _ui_kebab(entity_singular),
         'api_base': '/api/' + presentation.get('collection_name', ''),
         'key_param': 'id',
-        'can_create': _ui_bool(not read_only),
-        'can_edit': _ui_bool(not read_only),
-        'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
-        'can_history': _ui_bool(has_history),
+        'can_create': _ui_bool(can_write and not read_only),
+        'can_edit': _ui_bool(can_write and not read_only),
+        'can_remove': _ui_bool(
+            can_delete and not read_only and keyed_by_natural_key),
+        'can_history': _ui_bool(can_read_history and keyed_by_natural_key),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2189,9 +2194,9 @@ def bff_route_projection(entity, model_path):
     Every ``subjects_*`` value is the protocol module's own member name,
     which is what the template writes after ``subjects.``. The optional
     roles are omitted when the derived set has no such request -- a
-    current-state entity derives no versions pair -- and ``has_get``/
-    ``has_remove``/``has_history`` state the same fact as TypeScript
-    literals.
+    read-only entity derives no put, so it has no ``save``; a current-state
+    entity derives no versions pair -- and ``has_get``/``has_remove``/
+    ``has_history`` state the same fact as TypeScript literals.
 
     What the factory cannot derive from the entity's shape is stated too:
     the write record's members, so a save sends the record the protocol
@@ -2207,8 +2212,9 @@ def bff_route_projection(entity, model_path):
     record it does not fill would match no row on a read or a delete, or
     fail to decode on a versions read.
 
-    None when the derived set carries none of the required request roles --
-    a defensive guard, since an enriched domain entity always derives them.
+    None only when the entity derives no list request. That is the one role
+    a descriptor cannot do without: a route that cannot read the collection
+    reaches nothing, whereas a route that cannot write is still a screen.
     The operation-owned case is withheld before rendering, in
     ``resolve_targets``, because the replacement protocol module there need
     not export the derived names.
@@ -2226,7 +2232,7 @@ def bff_route_projection(entity, model_path):
     subjects_save = _protocol_subject_key(messages, f'put_{singular}_request')
     subjects_remove = _protocol_subject_key(
         messages, f'delete_{singular}_request')
-    if not (subjects_list and subjects_save and subjects_remove):
+    if not subjects_list:
         return None
     subjects_get = _protocol_subject_key(messages, f'get_{singular}_request')
     subjects_history = _protocol_subject_key(
@@ -2245,10 +2251,11 @@ def bff_route_projection(entity, model_path):
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    key_drivable = len(key_members) == 1 and keyed_by_natural_key
-    has_get = bool(subjects_get) and key_drivable
-    has_remove = key_drivable
-    has_history = bool(history_response) and key_drivable
+    delete_keys_field = key_members[0] if len(key_members) == 1 else ''
+    has_remove = (bool(delete_keys_field) and keyed_by_natural_key
+                  and bool(subjects_remove))
+    has_history = (bool(history_response) and keyed_by_natural_key
+                   and bool(subjects_history))
     history_rows_field = _vector_field_name(history_response) or ''
     # The write record is what a save carries, so the descriptor states its
     # members and the factory sends those and nothing else. The audit members

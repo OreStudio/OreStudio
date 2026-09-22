@@ -46,5 +46,4 @@ export const accountTypeRoute: EntityRouteDescriptor = {
   },
   rowsField: 'types',
   historyRowsField: 'versions',
-  timestampFields: ['recorded_at'],
 };

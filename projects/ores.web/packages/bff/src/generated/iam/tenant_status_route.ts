@@ -46,5 +46,4 @@ export const tenantStatusRoute: EntityRouteDescriptor = {
   },
   rowsField: 'statuses',
   historyRowsField: 'versions',
-  timestampFields: ['recorded_at'],
 };

@@ -20,7 +20,6 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { toWireTimestamp } from '@ores/wire-protocol';
 import { z } from 'zod';
 import type { LiveSession } from './sessions.js';
 
@@ -93,15 +92,6 @@ export interface EntityRouteDescriptor {
    */
   readonly historyRowsField?: string;
   /**
-   * The audit timestamp fields the wire decoder refuses to see empty.
-   *
-   * The shared web container seeds every member, so an audit timestamp arrives
-   * at the save as an empty string. The service stamps the real time from its
-   * own clock; the save only has to send a value the decoder accepts, and an
-   * empty string is not one.
-   */
-  readonly timestampFields?: readonly string[];
-  /**
    * The response schemas, when a caller wants them.
    *
    * Absent by default, and that is deliberate: the service owns the shape of its
@@ -144,65 +134,6 @@ function body(value: unknown): Record<string, unknown> {
 function rows(value: unknown, field: string): readonly unknown[] {
   const found = body(value)[field];
   return Array.isArray(found) ? (found as readonly unknown[]) : [];
-}
-
-/** The value at a possibly-dotted field path of a save payload. */
-function readPath(root: Record<string, unknown>, path: string): unknown {
-  let current: unknown = root;
-  for (const part of path.split('.')) {
-    if (typeof current !== 'object' || current === null) {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[part];
-  }
-  return current;
-}
-
-/** Sets a possibly-dotted field path, creating the members it walks through. */
-function writePath(
-  root: Record<string, unknown>,
-  path: string,
-  value: unknown,
-): void {
-  const parts = path.split('.');
-  const last = parts[parts.length - 1];
-  if (last === undefined) {
-    return;
-  }
-  let current = root;
-  for (const part of parts.slice(0, -1)) {
-    const next = current[part];
-    if (typeof next !== 'object' || next === null) {
-      current[part] = {};
-    }
-    current = current[part] as Record<string, unknown>;
-  }
-  current[last] = value;
-}
-
-/**
- * A copy of a save payload whose empty audit timestamps carry the current time.
- *
- * The shared web container seeds every member, so an audit timestamp arrives
- * here as an empty string, and the service's decoder refuses an empty string as
- * a timestamp. The service stamps the real time; this value only has to decode.
- */
-function stampTimestamps(
-  value: unknown,
-  fields: readonly string[],
-): unknown {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return value;
-  }
-  const stamped = { ...(value as Record<string, unknown>) };
-  for (const field of fields) {
-    const current = readPath(stamped, field);
-    if (typeof current === 'string' && current.length > 0) {
-      continue;
-    }
-    writePath(stamped, field, toWireTimestamp(new Date()));
-  }
-  return stamped;
 }
 
 /**
@@ -264,11 +195,7 @@ export function registerEntityRoutes(
       const data = incoming['data'];
       const response = await session.client.callAuthenticated(
         saveSubject,
-        {
-          data: descriptor.timestampFields === undefined
-            ? data
-            : stampTimestamps(data, descriptor.timestampFields),
-        },
+        { data },
         descriptor.saveResponse ?? identity,
       );
 

@@ -42,5 +42,4 @@ export const tenantRoute: EntityRouteDescriptor = {
     save: subjects.put_tenant_request,
   },
   rowsField: 'tenants',
-  timestampFields: ['recorded_at'],
 };

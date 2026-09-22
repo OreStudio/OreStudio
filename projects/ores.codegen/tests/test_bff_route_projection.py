@@ -158,20 +158,21 @@ def test_a_compound_primary_key_withholds_delete_and_history():
     assert "subjects_history" not in projection
 
 
-def test_the_save_states_the_audit_timestamp_field():
-    """The web seeds every member, so the save has to fill an empty timestamp."""
+def test_the_save_states_no_system_field():
+    """The write record carries the entity's own fields and nothing else.
+
+    `recorded_at` is the transaction-time window the store fills from its own
+    clock, and the derived write record has never carried it. The save route
+    used to state it anyway and stamp a value into a member the wire shape does
+    not have, which is a system field computed on the client.
+    """
     projection = bff_route_projection(_entity(), MODEL)
-    assert projection["timestamp_fields_block"] == "'recorded_at'"
+    assert "timestamp_fields_block" not in projection
 
 
-def test_a_grouped_audit_timestamp_is_stated_with_its_member_path():
+def test_a_composed_entity_states_no_system_field_either():
     projection = bff_route_projection(
         _entity(has_audit_group=True, audit_prefix="audit."), MODEL)
-    assert projection["timestamp_fields_block"] == "'audit.recorded_at'"
-
-
-def test_a_current_state_entity_states_no_audit_timestamp_field():
-    projection = bff_route_projection(_entity(current_state=True), MODEL)
     assert "timestamp_fields_block" not in projection
 
 
@@ -226,7 +227,7 @@ def test_the_template_renders_the_route_for_a_real_model(tmp_path):
     assert "history: subjects.list_tenant_type_versions_request," in rendered
     assert "rowsField: 'types'," in rendered
     assert "historyRowsField: 'versions'," in rendered
-    assert "timestampFields: ['recorded_at']," in rendered
+    assert "timestampFields" not in rendered
     # The descriptor holds values and no behaviour.
     assert "=>" not in rendered
     # No blank line left behind by an optional member, which pystache would emit
@@ -249,7 +250,7 @@ def test_the_template_omits_the_routes_a_surrogate_key_cannot_drive(tmp_path):
     assert "get: subjects.get_tenant_request," in rendered
     assert "save: subjects.put_tenant_request," in rendered
     assert "rowsField: 'tenants'," in rendered
-    assert "timestampFields: ['recorded_at']," in rendered
+    assert "timestampFields" not in rendered
     # The key record names the UUID primary key, so neither route is stated and
     # neither field is left behind.
     assert "deleteKeysField" not in rendered

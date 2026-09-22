@@ -118,8 +118,7 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 {{/bff_route.subjects_history}}  },
   rowsField: '{{{bff_route.rows_field}}}',
 {{#bff_route.history_rows_field}}  historyRowsField: '{{{bff_route.history_rows_field}}}',
-{{/bff_route.history_rows_field}}{{#bff_route.timestamp_fields_block}}  timestampFields: [{{{bff_route.timestamp_fields_block}}}],
-{{/bff_route.timestamp_fields_block}}};
+{{/bff_route.history_rows_field}}};
 #+end_src
 
 * Template variables
@@ -137,7 +136,6 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 | =history_rows_field= | The array field the history response holds its versions in; present only when the route is |
 | =subjects_list=, =subjects_get=, =subjects_save=, =subjects_remove=, =subjects_history= | The protocol module's =subjects= members, by message name |
 | =has_get=, =has_remove=, =has_history= | Whether the optional members are present, as TypeScript literals |
-| =timestamp_fields_block= | The audit timestamp members the save route fills when empty, pre-rendered as a TypeScript array |
 
 * See also
 

@@ -893,7 +893,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/party_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/payment_frequency_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/portfolio_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/purpose_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/rounding_type_protocol.hpp"

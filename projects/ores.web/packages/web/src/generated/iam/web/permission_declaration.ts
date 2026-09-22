@@ -49,4 +49,9 @@ export const permissionDescriptor: EntityDescriptor = {
         'code',
         'description',
     ],
+    writeFields: [
+        'id',
+        'code',
+        'description',
+    ],
 };

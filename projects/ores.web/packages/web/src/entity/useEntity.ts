@@ -87,6 +87,22 @@ export interface EntityPage {
 
 export interface EntityWrite {
   readonly data: Readonly<Record<string, unknown>>;
+  /**
+   * Why the write is being made.
+   *
+   * User-owned, unlike the audit provenance: the service derives who and when
+   * from the authenticated context, and the reason is the one thing only the
+   * caller knows.
+   */
+  readonly intent: { readonly reason_code: string; readonly commentary: string };
+  /**
+   * The version the screen read, for a change to an existing row.
+   *
+   * Absent for a create, which states the absence of a row rather than a
+   * version. Stating the version the screen read is what makes two people
+   * editing one row a conflict rather than a silent overwrite.
+   */
+  readonly version?: number | undefined;
 }
 
 /**
@@ -203,6 +219,8 @@ export function useSaveEntity(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             data: write.data,
+            intent: write.intent,
+            version: write.version,
           }),
         }),
       ),
@@ -216,13 +234,26 @@ export function useSaveEntity(
 
 export function useDeleteEntity(
   descriptor: EntityDescriptor,
-): UseMutationResult<unknown, Error, { readonly key: string }> {
+): UseMutationResult<
+  unknown,
+  Error,
+  {
+    readonly key: string;
+    readonly intent: { readonly reason_code: string; readonly commentary: string };
+    readonly version?: number | undefined;
+  }
+> {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (input) =>
       writeSchema.parse(
         await request(`${descriptor.apiBase}/${encodeURIComponent(input.key)}`, {
           method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            intent: input.intent,
+            version: input.version,
+          }),
         }),
       ),
     onSuccess: () => {

@@ -70,13 +70,30 @@ export function EntityHistoryContainer({
     const current = query.data?.[0];
     if (target === undefined || current === undefined) return;
     setFailure(undefined);
+    /*
+     * A version states its field values as the history rendered them, one
+     * entry per field, so the record a revert sends is built from those rather
+     * than from the version row -- which carries the provenance, not the
+     * entity. Only the members a write record states are taken.
+     */
+    const rendered = new Map<string, unknown>(
+      ((target['fields'] ?? []) as readonly { name: string; value: unknown }[])
+        .map((field) => [field.name, field.value]),
+    );
+    const data: Record<string, unknown> = {};
+    for (const name of descriptor.writeFields) {
+      if (rendered.has(name)) data[name] = rendered.get(name);
+    }
     save.mutate(
       {
-        data: {
-          ...target,
-          version: Number(current['version'] ?? 0),
-          change_reason_code: result.reasonCode,
-          change_commentary: result.commentary,
+        data,
+        // The current version, because that number is the optimistic lock:
+        // sending the reverted version would ask to overwrite a record that
+        // has moved on since.
+        version: Number(current['version'] ?? 0),
+        intent: {
+          reason_code: result.reasonCode,
+          commentary: result.commentary,
         },
       },
       {

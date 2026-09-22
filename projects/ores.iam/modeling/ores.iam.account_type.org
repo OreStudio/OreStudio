@@ -161,7 +161,6 @@ drop function if exists ores_iam_validate_account_type_fn;
 :PROPERTIES:
 :collection_name:        account_types
 :key_field:              type
-:history_message_type:   list_account_type_versions_request
 :END:
 
 *** Detail fields

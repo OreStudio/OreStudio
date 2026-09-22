@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-screens-for-every-refdata-entity
-#+pr: 2129
+#+pr: 2130
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -94,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2130][#2130]] | [codegen,web] Serve the screen sets a read-only entity declares |
 | [[https://github.com/OreStudio/OreStudio/pull/2129][#2129]] | [codegen,web] Add screens for every refdata entity |
 
 * Review

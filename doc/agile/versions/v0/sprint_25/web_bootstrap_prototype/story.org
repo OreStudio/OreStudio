@@ -48,7 +48,10 @@ knowledge doc.
 
 - Progress and failure UX: retry, partial failure, rollback.
 - Re-provisioning or extending an existing tenant.
-- How ores.web receives streamed progress events.
+- How ores.web receives streamed progress events (the Acme response
+  returns all steps at the end today).
+- A non-test per-party bundle for an operational tenant (report
+  definitions, CRM topology?).
 
 * Status
 
@@ -73,8 +76,8 @@ knowledge doc.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | STARTED | 2026-09-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | BACKLOG | | | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
-| [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | BACKLOG | | | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
+| [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
+| [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
 | [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | BACKLOG | | | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
 | [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | BACKLOG | | | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
 | [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | BACKLOG | | | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
@@ -89,6 +92,13 @@ knowledge doc.
 - Contract only: this map decides the server-side contract. Building
   the rework is a later story.
 - System bootstrap is open to any caller for now.
+- [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]]: GLEIF/synthetic
+  tenant and party provisioning run client-side in shell and Qt; only
+  Acme runs server-side, and its code must become profile data to host
+  the others. Progress is not streamed yet.
+- [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]]: =base= bundle plus a
+  counterparty size plus activated, onboarded parties. The party bundle
+  plan seeds test and synthetic data, so it is demo-only.
 
 * Out of scope
 

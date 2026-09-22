@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-22
 #+updated: 2026-09-22
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Question: which provisioning steps does ores.shell (provision tenant --source gl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -69,3 +69,68 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Answer: today there are three orchestrators for the same job, and the
+Acme server workflow is not yet data-driven enough to absorb the others
+as plain seed profiles. It can absorb them if the Acme-specific code
+becomes profile data.
+
+** Who orchestrates what
+
+| Workflow | ores.shell | ores.qt (legacy) | Server |
+|----------+------------+------------------+--------|
+| System bootstrap | =provision system=: status, =create_initial_admin=, login, =provision_tenant= (3 client steps) | SystemProvisionerWizard: same 3 requests | Each request is atomic; no workflow |
+| Tenant, GLEIF/synthetic | =provision tenant=: publish =base= + wait, generate org (synthetic), =put_many_account_parties=, =complete_tenant_provisioning= (4 client steps) | TenantProvisioningWizard: same, plus =save_account_party= per party | None |
+| Tenant, Acme | One =provision_acme_tenant_command=, then =complete_tenant_provisioning= | Same, via the wizard's ACME choice | =tenant_provisioning_handler::provision_acme=, internal actor impersonation |
+| Tenant onboarding | n/a | TenantOnboardingWizard: calls =provision_tenant= again (duplicates SystemProvisioner) | None |
+| Party provisioning | =provision party=: publish counterparties, bundle plan, =save_party= (activate), =complete_party_onboarding= (5 client steps) | PartyProvisioningWizard: same | None; Acme does it server-side per office |
+
+Sources: =projects/ores.shell/application/src/app/commands/provision_commands.cpp=
+(lines 202-257, 312-464, 549-661);
+=projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=
+(lines 190-640, 1155-1190); ores.qt wizards under
+=~/Development/OreStudio/ores.qt/{application,iam}/src/=.
+
+** Findings
+
+1. *Divergence is structural.* GLEIF and synthetic provisioning run
+   on the client, in the shell and again in Qt. Only Acme runs on the
+   server. That is why the shell and the wizards can drift.
+2. *Party provisioning already exists server-side, but only inside
+   Acme.* The Acme handler activates, onboards and publishes the
+   bundle plan per office. The generic =provision party= does the same
+   steps on the client. The steps can be extracted into one server
+   workflow step that both use.
+3. *Shared logic exists, but is templated per client.*
+   =publish_party_provisioning_plan()= (=ores.dq.api/messaging/party_provisioning_plan.hpp=)
+   is shared by the shell and Acme only through a template, because
+   the two sides reach NATS differently. With all orchestration on the
+   server, the template has one caller and can become plain code.
+4. *Acme is partly data-driven.* The offices are a table
+   (=acme_offices()=), but the handler also hard-codes the holding
+   company name, the root LEI (=9695ACMEGROUP0000030=), staff photos
+   and the system-party market data. To be a seed profile, these must
+   move into profile data or become optional workflow steps.
+5. *Progress is not streamed.* =provision_acme_tenant_response=
+   returns all =steps= at the end. The shell waits up to 45 minutes
+   with no feedback. The web needs streamed progress events.
+6. *System bootstrap also creates the first tenant.* =provision system= and SystemProvisionerWizard create the initial admin *and* the first tenant in one flow. Qt tenant onboarding duplicates this:
+   TenantOnboardingWizard sends =provision_tenant_request= again. The
+   workflow catalogue must decide if onboarding is a separate flow.
+7. *ores.web has hooks already.* It reads =bootstrap_status=
+   (=wire-protocol/src/operations.ts:53=), returns a =bootstrap-mode=
+   error from the BFF (=bff/src/errors.ts:80=), and has an
+   =onboard-tenant= shortcut to =tenant/onboard=
+   (=web/src/components/registry.ts:140=). The generated wire protocol
+   already includes the tenant provisioning messages.
+
+** Consequence for the seed profile contract
+
+One server workflow with ordered steps:
+create tenant and admin → publish base (with profile's opted-in
+datasets) → create parties (GLEIF root LEI | synthetic generator |
+Acme LEI import) → per party: activate, onboard, membership, bundle
+plan → optional profile extras (staff, photos, market data feeds) →
+complete provisioning. The profile chooses the party source, the
+opted-in datasets, the bundle plan and the extras. Progress streams
+per step.

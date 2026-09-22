@@ -100,6 +100,18 @@ export function EntityDetailContainer({
    */
   const seedKey =
     record === undefined ? undefined : `${String(key)}:${String(record['version'] ?? 0)}`;
+  /**
+   * The version the screen read, which a change states back.
+   *
+   * Absent when there is no record to have read, which is a create: the
+   * request then states the absence of a row rather than a version, and the
+   * store refuses it over a live row instead of replacing it.
+   */
+  const recordVersion = useMemo(() => {
+    const raw = record?.['version'];
+    const value = typeof raw === 'number' ? raw : Number(raw);
+    return Number.isFinite(value) ? value : undefined;
+  }, [record]);
   const [seeded, setSeeded] = useState<string | undefined>(undefined);
   if (!touched && seedKey !== undefined && seeded !== seedKey) {
     setSeeded(seedKey);
@@ -146,23 +158,30 @@ export function EntityDetailContainer({
   function submit(result: ChangeReasonResult): void {
     setFailure(undefined);
     /*
-     * The reason and the commentary are carried in the record, because the
-     * service stamps the audit from the record it decodes.
+     * The record carries the entity's own members and nothing else. The reason
+     * and the commentary are the intent, and the version the screen read is the
+     * precondition: the request states those separately, and the record states
+     * neither, because the service derives the audit tail and the store decides
+     * the version.
+     *
+     * The members come from the descriptor's write record rather than from the
+     * row, so a field the form does not show is not sent back as whatever the
+     * row happened to hold.
      */
-    const data: Record<string, unknown> = {
-      ...(mode === 'create' || record === undefined ? blankValues(descriptor) : record),
-      change_reason_code: result.reasonCode,
-      change_commentary: result.commentary,
-    };
+    const data: Record<string, unknown> = {};
+    for (const name of descriptor.writeFields) {
+      data[name] = values[name];
+    }
     for (const field of descriptor.meta.fields) {
       data[field.name] = values[field.name];
     }
-    if (mode === 'create') {
-      data['version'] = 0;
-    }
 
     save.mutate(
-      { data },
+      {
+        data,
+        intent: { reason_code: result.reasonCode, commentary: result.commentary },
+        version: mode === 'create' ? undefined : recordVersion,
+      },
       {
         onSuccess: () => {
           setStage(undefined);
@@ -177,11 +196,16 @@ export function EntityDetailContainer({
     );
   }
 
-  function confirmDelete(): void {
+  function confirmDelete(result: ChangeReasonResult): void {
     setFailure(undefined);
     remove.mutate(
       {
         key: String(values[descriptor.meta.keyField] ?? ''),
+        intent: {
+          reason_code: result.reasonCode,
+          commentary: result.commentary,
+        },
+        version: recordVersion,
       },
       {
         onSuccess: () => {

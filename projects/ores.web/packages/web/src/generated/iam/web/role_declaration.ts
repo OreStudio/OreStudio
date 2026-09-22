@@ -49,4 +49,9 @@ export const roleDescriptor: EntityDescriptor = {
         'name',
         'description',
     ],
+    writeFields: [
+        'id',
+        'name',
+        'description',
+    ],
 };

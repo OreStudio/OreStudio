@@ -164,19 +164,16 @@ TODO -- one row per column needing an insert-time validation function.
 :collection_name:         {{entity_plural}}
 :item_var:                {{slug}}
 :key_field:                TODO -- field used as the user-facing key in the GUI, e.g. name.
-:get_request_class:       {{component}}::messaging::list_{{entity_plural}}_request
-:get_response_class:      {{component}}::messaging::list_{{entity_plural}}_response
-:get_message_type:        list_{{entity_plural}}_request
-:save_request_class:      {{component}}::messaging::put_{{slug}}_request
-:save_response_class:     {{component}}::messaging::put_{{slug}}_response
-:save_message_type:       put_{{slug}}_request
+:get_request_class:       {{component}}::messaging::get_{{entity_plural}}_request
+:get_response_class:      {{component}}::messaging::get_{{entity_plural}}_response
+:get_message_type:        get_{{entity_plural}}_request
+:save_request_class:      {{component}}::messaging::save_{{slug}}_request
+:save_response_class:     {{component}}::messaging::save_{{slug}}_response
+:save_message_type:       save_{{slug}}_request
 :save_request_item_field: {{slug}}
 :delete_request_class:    {{component}}::messaging::delete_{{slug}}_request
 :delete_response_class:   {{component}}::messaging::delete_{{slug}}_response
 :delete_message_type:     delete_{{slug}}_request
-:history_request_class:   {{component}}::messaging::list_{{slug}}_versions_request
-:history_response_class:  {{component}}::messaging::list_{{slug}}_versions_response
-:history_message_type:    list_{{slug}}_versions_request
 {{#presentation_has_uuid_primary_key}}
 :has_uuid_primary_key:    true
 {{/presentation_has_uuid_primary_key}}

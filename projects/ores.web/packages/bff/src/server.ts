@@ -38,6 +38,7 @@ import { countryRoute } from './generated/refdata/country_route.js';
 import { permissionRoute } from './generated/iam/permission_route.js';
 import { roleRoute } from './generated/iam/role_route.js';
 import { loginInfoRoute } from './generated/iam/login_info_route.js';
+import { accountRoute } from './generated/iam/account_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -430,6 +431,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     permissionRoute,
     roleRoute,
     loginInfoRoute,
+    accountRoute,
   ]) {
     registerEntityRoutes(server, requireSession, route);
   }

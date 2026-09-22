@@ -156,10 +156,15 @@ one.
 
 *** Detail fields
 
-| field      | label   | widget      | type      | is_key | is_required | placeholder |
-|------------+---------+-------------+-----------+--------+-------------+-------------|
-| account_id | Account | accountEdit | line_edit | true   | true        |             |
-| party_id   | Party   | partyEdit   | line_edit | true   | true        |             |
+Both members name a row in another collection, so each is a combo that lists
+that collection rather than a field a person types. A screen that asked for two
+UUIDs would be a screen nobody uses: nobody knows them, and the ones that do
+did not need the screen.
+
+| field      | label   | widget         | type          | is_key | is_required | placeholder | combo_domain_type      | combo_code_field | combo_display_field |
+|------------+---------+----------------+---------------+--------+-------------+-------------+------------------------+------------------+---------------------|
+| account_id | Account | accountIdCombo | dynamic_combo | true   | true        |             | iam::domain::account   | id               | username            |
+| party_id   | Party   | partyIdCombo   | dynamic_combo | true   | true        |             | refdata::domain::party | id               | name                |
 
 *** Columns
 

@@ -26,11 +26,11 @@ The refdata screens speak the canonical protocol from generated schemas rather t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:97EDFED1-5706-4A07-8921-69AE367811FF][Define and adopt the canonical NATS entity protocol]] |
-| Now          | The shared factory builds the canonical envelopes, and the country screens run on the generated declaration. The PR is raised. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | CI green, then review.                 |
+| Next         | Nothing. |
 | Last touched | 2026-09-22                               |
 
 * Acceptance
@@ -118,3 +118,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The refdata web layer speaks the canonical protocol, and the shared layer it
+reads was finished rather than worked around.
+
+- The BFF route factory builds the request each verb states and answers from
+  the result's outcome; a create states =must_not_exist= and an amend
+  =must_match_version=.
+- The generated route descriptor states the write record's members and their
+  per-member defaults, the intent fields, and whether the list and versions
+  requests take an as-of instant or a filter.
+- The routes a natural-key path segment cannot drive are withheld -- the
+  single-record read with the delete and versions reads -- and a write member
+  the form does not show takes the empty of its type, a surrogate key being
+  minted by the caller.
+- The web declaration's history capability is read from the derived versions
+  pair rather than the retired =history_message_type= drawer property.
+- An entity that declares a flag states its image in the generated UI
+  metadata, and the shared detail screen renders the picker and saves the
+  chosen image.
+- Country opts into =ores.ts.web=: its route descriptor and web declaration
+  are generated, and its hand-written schema, api client, four subjects, five
+  routes and bespoke screens are gone. The component's screens are 1,351
+  lines lighter.
+- The technical spaces document names the two generated TypeScript facets it
+  was missing, and the refdata api CMake list drops the umbrella header the
+  conversion removed.
+
+Verified locally: codegen 573 passed; the drift gate clean for iam and
+refdata; protocol twins 98/98; model drift clean; handler permissions seeded;
+populate references resolve; the CMake component lists up to date; the shell
+recipe inventory current; the web typecheck and build clean; BFF 32, browser
+16 and wire-protocol 36 tests pass; the full C++ build compiles; the site
+page build reports 184 files and 0 failures. CI on #2127 agrees: drift,
+typescript, inventory, model, permissions and compass lint all pass.
+
+Left behind, and named in the PR: the generic factory has no route-level test
+of its own, so its envelopes are pinned through the descriptor projection
+tests and the typecheck; and the shared list screen does not yet offer the
+as-of control the BFF forwards.

@@ -300,7 +300,6 @@ and the context-carrying account repository.
 :PROPERTIES:
 :collection_name:         account_contact_informations
 :key_field:               email
-:history_message_type:    list_account_contact_information_versions_request
 :has_explorer_api:        true
 :has_export_macro:        true
 :parent_entity_singular:  account

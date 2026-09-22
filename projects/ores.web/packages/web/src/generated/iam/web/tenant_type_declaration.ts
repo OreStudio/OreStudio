@@ -54,4 +54,10 @@ export const tenantTypeDescriptor: EntityDescriptor = {
         'description',
         'display_order',
     ],
+    writeFields: [
+        'type',
+        'name',
+        'description',
+        'display_order',
+    ],
 };

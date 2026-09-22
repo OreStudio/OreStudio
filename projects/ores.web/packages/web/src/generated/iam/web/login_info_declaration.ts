@@ -55,4 +55,14 @@ export const loginInfoDescriptor: EntityDescriptor = {
         'last_ip',
         'last_attempt_ip',
     ],
+    writeFields: [
+        'account_id',
+        'last_ip',
+        'last_attempt_ip',
+        'failed_logins',
+        'locked',
+        'last_login',
+        'online',
+        'password_reset_required',
+    ],
 };

@@ -55,4 +55,17 @@ export const accountContactInformationDescriptor: EntityDescriptor = {
         'phone',
         'email',
     ],
+    writeFields: [
+        'id',
+        'account_id',
+        'street_line_1',
+        'street_line_2',
+        'city',
+        'state',
+        'country_code',
+        'postal_code',
+        'phone',
+        'email',
+        'web_page',
+    ],
 };

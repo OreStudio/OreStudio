@@ -106,6 +106,8 @@ export const {{{web_declaration.entity_camel}}}Descriptor: EntityDescriptor = {
     },
     searchFields: [
 {{{web_declaration.search_fields_block}}}    ],
+    writeFields: [
+{{{web_declaration.write_fields_block}}}    ],
 };
 #+end_src
 

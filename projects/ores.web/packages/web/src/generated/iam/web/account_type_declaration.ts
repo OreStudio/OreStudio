@@ -54,4 +54,10 @@ export const accountTypeDescriptor: EntityDescriptor = {
         'description',
         'display_order',
     ],
+    writeFields: [
+        'type',
+        'name',
+        'description',
+        'display_order',
+    ],
 };

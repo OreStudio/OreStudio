@@ -21,7 +21,10 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ChangeReasonDialog } from './ChangeReasonDialog.js';
+import {
+  ChangeReasonDialog,
+  type ChangeReasonResult,
+} from './ChangeReasonDialog.js';
 import { ConfirmDialog } from './ConfirmDialog.js';
 import { EntityListPage } from './EntityListPage.js';
 import { entityBasePath, entityRecordPath } from './entityPaths.js';
@@ -80,12 +83,20 @@ export function EntityListContainer({
   /** The record's identity, which is the field the declaration freezes. */
   const keyOf = (row: EntityRow): string => String(row[descriptor.meta.keyField] ?? '');
 
-  function confirmDelete(): void {
+  function confirmDelete(result: ChangeReasonResult): void {
     const row = target;
     if (row === undefined) return;
     setFailure(undefined);
+    const version = Number(row['version']);
     remove.mutate(
-      { key: keyOf(row) },
+      {
+        key: keyOf(row),
+        intent: {
+          reason_code: result.reasonCode,
+          commentary: result.commentary,
+        },
+        version: Number.isFinite(version) ? version : undefined,
+      },
       {
         onSuccess: () => {
           setTarget(undefined);

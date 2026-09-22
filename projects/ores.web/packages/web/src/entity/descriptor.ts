@@ -74,6 +74,16 @@ export interface EntityDescriptor {
   /** The fields the list's search reaches across. */
   readonly searchFields: readonly string[];
   /**
+   * The members a write record states, in the order the model declares them.
+   *
+   * The form builds the record it sends from these and nothing else. The row
+   * it read carries the audit tail and the version, which the write record
+   * does not state -- the service derives them and the store decides the
+   * version -- and a member the form does not show would otherwise be sent
+   * back as whatever the row happened to hold.
+   */
+  readonly writeFields: readonly string[];
+  /**
    * How the detail form's fields group into tabs.
    *
    * Emitted when the model declares a grouping. Absent means the form shows the

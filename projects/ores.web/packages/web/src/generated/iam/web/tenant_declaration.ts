@@ -55,4 +55,13 @@ export const tenantDescriptor: EntityDescriptor = {
         'hostname',
         'status',
     ],
+    writeFields: [
+        'id',
+        'code',
+        'name',
+        'type',
+        'description',
+        'hostname',
+        'status',
+    ],
 };

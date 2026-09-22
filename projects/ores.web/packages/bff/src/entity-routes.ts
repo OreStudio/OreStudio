@@ -68,7 +68,14 @@ export interface EntityRouteDescriptor {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
     readonly get?: string;
-    readonly save: string;
+    /**
+     * Present unless the entity is read-only.
+     *
+     * A read-only entity derives no put request, so there is no write to
+     * offer and no `POST` route is registered. The screen still reads, which
+     * is why `list` is the only subject a descriptor cannot do without.
+     */
+    readonly save?: string;
     /** Present only when the delete request is keyed by the natural key. */
     readonly remove?: string;
     /**
@@ -249,25 +256,28 @@ export function registerEntityRoutes(
     });
   }
 
-  server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
-    const session = requireSession(request);
-    const incoming = body(request.body);
-    const data = incoming['data'];
-    const response = await session.client.callAuthenticated(
-      descriptor.subjects.save,
-      {
-        data: descriptor.timestampFields === undefined
-          ? data
-          : stampTimestamps(data, descriptor.timestampFields),
-      },
-      descriptor.saveResponse ?? identity,
-    );
+  const saveSubject = descriptor.subjects.save;
+  if (saveSubject !== undefined) {
+    server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = requireSession(request);
+      const incoming = body(request.body);
+      const data = incoming['data'];
+      const response = await session.client.callAuthenticated(
+        saveSubject,
+        {
+          data: descriptor.timestampFields === undefined
+            ? data
+            : stampTimestamps(data, descriptor.timestampFields),
+        },
+        descriptor.saveResponse ?? identity,
+      );
 
-    if (body(response)['success'] === false) {
-      return reply.code(409).send({ message: body(response)['message'] ?? '' });
-    }
-    return { ok: true, message: body(response)['message'] ?? '' };
-  });
+      if (body(response)['success'] === false) {
+        return reply.code(409).send({ message: body(response)['message'] ?? '' });
+      }
+      return { ok: true, message: body(response)['message'] ?? '' };
+    });
+  }
 
   const removeSubject = descriptor.subjects.remove;
   const deleteKeysField = descriptor.deleteKeysField;

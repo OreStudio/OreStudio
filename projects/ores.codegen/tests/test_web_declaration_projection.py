@@ -6,10 +6,10 @@ Run::
 
 The facet emits one declaration per entity so the web client holds no
 per-entity TypeScript at all. Two things have to hold and both are tested
-here: the projection reads the enriched presentation rather than guessing,
-and the template and the projection agree on every variable name -- a
-mismatch renders an empty descriptor that typechecks, which is the failure
-this file exists to catch.
+here: the projection reads the entity's derived protocol rather than
+guessing, and the template and the projection agree on every variable name
+-- a mismatch renders an empty descriptor that typechecks, which is the
+failure this file exists to catch.
 """
 import sys
 from pathlib import Path
@@ -26,18 +26,40 @@ MODEL = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book_status.org
 COUNTRY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.country.org"
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 
+# The three requests that decide the write, remove and history capabilities,
+# as ``entity_protocol_messages`` derives them for an ordinary writable
+# entity with a natural-key primary key.
+WRITABLE = (
+    "put_book_status_request",
+    "delete_book_status_request",
+    "list_book_status_versions_request",
+)
 
-def _project(columns, primary_key=None, **drawer):
+
+def _requests(*names):
+    """Derived protocol messages carrying these subjects.
+
+    Only the name and the presence of a subject matter to the projection: a
+    request with no subject is a plain payload, and contributes no member to
+    the protocol module's ``subjects``.
+    """
+    return [{"name": name, "subject": f"refdata.v1.{name}"} for name in names]
+
+
+def _project(columns, primary_key=None, messages=None, **drawer):
     """Project one hand-built entity, the way the enrichment leaves it.
 
     The primary key defaults to the natural key the drawer states, so remove
     and history are the routes the entity can drive unless a test overrides
-    the key.
+    the key. The derived requests default to the writable set; a test that
+    needs a read-only or history-less entity says so.
     """
     presentation = {"collection_name": "statuses", "columns": list(columns),
                     "key_field": "code", **drawer}
     entity = {"component": "refdata", "entity_singular": "book_status",
-              "presentation": presentation}
+              "presentation": presentation,
+              "messages": _requests(*(
+                  WRITABLE if messages is None else messages))}
     entity["primary_key"] = primary_key or {
         "column": "code", "columns": [{"column": "code"}]}
     return web_declaration_projection(entity, MODEL)
@@ -52,13 +74,26 @@ def test_a_model_with_no_column_table_projects_nothing():
 
 
 def test_a_writable_entity_with_history_gets_all_four_capabilities():
-    projection = _project(
-        [{"field": "code"}],
-        history_message_type="get_book_status_history_request")
+    projection = _project([{"field": "code"}])
     assert projection["can_create"] == "true"
     assert projection["can_edit"] == "true"
     assert projection["can_remove"] == "true"
     assert projection["can_history"] == "true"
+
+
+def test_an_entity_with_no_put_request_is_not_writable():
+    """How a read-only entity's screen comes out honest.
+
+    ``login_info`` states ``:read_only: true``, so its service derives no put
+    request. This projection used to report create and edit anyway, and the
+    declaration then offered actions no subject could serve.
+    """
+    projection = _project(
+        [{"field": "code"}],
+        messages=("list_book_status_versions_request",))
+    assert projection["can_create"] == "false"
+    assert projection["can_edit"] == "false"
+    assert projection["can_remove"] == "false"
 
 
 def test_a_read_only_list_is_not_writable():
@@ -69,13 +104,18 @@ def test_a_read_only_list_is_not_writable():
     assert projection["can_remove"] == "false"
 
 
-def test_history_is_read_from_the_history_message_not_from_a_version_column():
+def test_history_comes_from_the_derived_versions_request():
     """A junction is versioned and still has no history.
 
     Deriving the capability from a version column gets exactly this case
-    wrong, which is why it is read off the history message type.
+    wrong. It is read from the protocol the entity derives, so an entity
+    with no versions pair reports no history, and one with it reports
+    history -- where the old rule read a hand-written message name the
+    model carried, which a model that omitted it silently lost.
     """
-    projection = _project([{"field": "code"}])
+    projection = _project(
+        [{"field": "code"}],
+        messages=("put_book_status_request", "delete_book_status_request"))
     assert projection["can_history"] == "false"
 
 
@@ -89,7 +129,6 @@ def test_a_surrogate_primary_key_withholds_remove_and_history():
     """
     projection = _project(
         [{"field": "code"}],
-        history_message_type="get_book_status_history_request",
         primary_key={"column": "id", "columns": [{"column": "id"}]})
     assert projection["can_create"] == "true"
     assert projection["can_edit"] == "true"
@@ -101,7 +140,6 @@ def test_a_natural_key_primary_key_keeps_remove_and_history():
     """The primary key and the natural key agree, so both routes are drivable."""
     projection = _project(
         [{"field": "code"}],
-        history_message_type="get_book_status_history_request",
         primary_key={"column": "code", "columns": [{"column": "code"}]})
     assert projection["can_remove"] == "true"
     assert projection["can_history"] == "true"

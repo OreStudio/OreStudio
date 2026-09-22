@@ -142,6 +142,7 @@ public:
     std::optional<domain::account_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest account contact informations filtered by account_id, with pagination.
      * @param ctx Repository context with database connection

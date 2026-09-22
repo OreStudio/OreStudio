@@ -123,6 +123,7 @@ public:
     std::optional<domain::tenant_type>
     read_at_version(context ctx, const std::string& type, std::uint32_t version);
 
+
     /**
      * @brief Reads latest tenant types with pagination support.
      * @param ctx Repository context with database connection

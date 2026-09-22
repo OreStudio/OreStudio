@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: E4174872-13EA-4ECD-AD46-1E52C176701F
+:END:
+#+title: Give a table-less record a way to suppress the audit envelope
+#+description: The table-less-record profile cannot reach :no_audit_columns:, and no flag suppresses the audit recorded_at member, so a generated table-less record still carries a timestamp it has no use for.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let a model say "this record carries no audit envelope at all", and let the
+[[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] profile say it.
+Two changes are needed:
+
+- Add =no_audit_columns= to =_FEATURE_NAMESPACE= in
+  =projects/ores.codegen/src/codegen/org_loader.py= with the namespace =sql=,
+  then add the row to the profile's * Assignments table. Without the map entry
+  the profile's row is silently skipped (the loader will not guess a namespace),
+  so the profile cannot guarantee the shape it documents.
+- Decide how =recorded_at= is suppressed. It is the one audit member
+  =:no_audit_columns:= does not remove:
+  =ores.cpp.domain.class_header.org= gates =version=, =modified_by=,
+  =performed_by=, =change_reason_code= and =change_commentary= behind
+  ={{#has_audit_columns}}=, but gates =recorded_at= behind ={{^current_state}}=
+  alone.
+
+* Why
+
+Probed with =projects/ores.diff/modeling/ores.diff.diff_span.org=. With
+=:no_audit_columns: true= stated, the generated =diff_span= domain struct comes
+out with =std::size_t offset=, =std::size_t length= and one stray member:
+
+#+begin_src cpp
+std::chrono::system_clock::time_point recorded_at;
+#+end_src
+
+A byte span has no recording time, so the member is wrong. It also drags in a
+=std::chrono= include the type does not otherwise need.
+
+Both gaps block the four =ores.diff= payloads (=field_value=, =diff_span=,
+=diff_entry=, =diff_result=) from being generated from models, which is the whole
+point of the profile: today their C++ and TypeScript twins are hand-written and
+nothing checks them against each other.
+
+Fixing the =recorded_at= gate is not a one-line change to
+=:no_audit_columns:=. Four entities already state it -- =iam.login_info=,
+=iam.permission=, =marketdata.market_fixing=, =marketdata.market_observation= --
+and =market_observation.hpp= carries =recorded_at= today. Whatever knobs the fix
+adds must leave those four rendering as they do now.
+
+* References
+
+- [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Profile: Table-less record]]
+- [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Codegen entity meta-model — keys and columns]]
+
+* See also
+
+- [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — where =has_audit_columns= is consumed.

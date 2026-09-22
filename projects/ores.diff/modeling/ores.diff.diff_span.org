@@ -2,7 +2,7 @@
 :ID: 3F2A7C41-8D6E-4B95-A1C3-7E5D9B2F4A68
 :END:
 #+title: ores.diff.diff_span
-#+description: Codegen entity model for the diff engine's byte span: a table-less value record that crosses the wire.
+#+description: Codegen entity model for the diff engine's byte span: a table-less record that crosses the wire.
 #+type: ores.codegen.entity
 #+component: diff
 #+filetags: :model:entity:diff:
@@ -15,22 +15,51 @@
 A byte range within a rendered value. It is never stored: it is a member of a
 diff entry and reaches a client inside a history response.
 
+This model does not yet replace the hand-written
+=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=, and generating it
+overwrites that file. Two things stand in the way, both recorded on the
+[[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Table-less record]] profile: an audit
+=recorded_at= member that no profile feature suppresses, and a profile that
+cannot reach =:no_audit_columns:= at all. Fix those before adopting this model as
+the real declaration of the type.
+
 * Flags
 :PROPERTIES:
-:schema:    public
-:product:   ores
-:component: diff
-:subcomponent:
-:profile:   table-less-record
+:schema:          public
+:product:         ores
+:component:       diff
+:no_primary_key:  true
+:profile:         table-less-record
 :END:
+
+=No primary key=: a byte range identifies nothing. Saying so is what tells the
+loader this is a record that is carried rather than stored.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:no_audit_columns: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:no_subcomponent: true
+:END:
+
+=No sub-component=: =ores.diff= keeps its headers at its own include root, so
+there is no directory between the component and =domain/= for this model to
+name. The flag stands where =:subcomponent:= would, because it says the same
+thing by negation.
 
 * Columns
 
 ** offset
 :PROPERTIES:
-:type:         integer
-:cpp_type:     std::size_t
-:primary_key:  true
+:type:     integer
+:cpp_type: std::size_t
 :END:
 
 Where the changed run begins.

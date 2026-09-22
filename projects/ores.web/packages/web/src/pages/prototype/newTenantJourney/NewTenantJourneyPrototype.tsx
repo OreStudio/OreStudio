@@ -22,6 +22,7 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Button, Field, Input, Notice, PageHeader, Select } from '../../../ui/Primitives.js';
 import { NewPasswordField } from '../../../ui/PasswordField.js';
+import { heroSplash } from '../../../assets/brand.js';
 import {
   JourneyPage,
   newTenantSteps,
@@ -71,6 +72,7 @@ export function FirstRunJourneyPrototype(): ReactNode {
   const [handedOff, setHandedOff] = useState(false);
   const [signIn, setSignIn] = useState({ password: '', ok: false, party: '' });
   useAdvanceWhenProvisioned(t, at === PROVISIONING + 1, useCallback(() => setAt(HANDOFF + 1), []));
+  const [welcomed, setWelcomed] = useState(false);
 
   const tenantSteps = newTenantSteps(t, {
     onContinue: () => setAt(HANDOFF + 2),
@@ -84,7 +86,7 @@ export function FirstRunJourneyPrototype(): ReactNode {
     {
       id: 'system-admin',
       title: 'Create the administrator',
-      lead: 'ORE Studio is not set up yet. Create the administrator who sets it up and creates tenants.',
+      lead: 'This account sets up ORE Studio and creates its tenants.',
       body: (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Username">
@@ -106,6 +108,8 @@ export function FirstRunJourneyPrototype(): ReactNode {
     ready(t, handedOff),
   ];
 
+  if (!welcomed) return <Welcome onStart={() => setWelcomed(true)} />;
+
   return (
     <>
       <PageHeader title="Set up ORE Studio" />
@@ -116,6 +120,36 @@ export function FirstRunJourneyPrototype(): ReactNode {
       )}
       <JourneyPage steps={steps} at={at} onMove={setAt} />
     </>
+  );
+}
+
+/** The first thing a new installation shows: where you are, what is next. */
+function Welcome({ onStart }: { readonly onStart: () => void }): ReactNode {
+  const stages = [
+    { title: 'Create the administrator', text: 'The account that sets up ORE Studio.' },
+    { title: 'Create the first tenant', text: 'Your organisation, or the ACME demo bank.' },
+    { title: 'Sign in', text: 'As the tenant\'s administrator, ready to work.' },
+  ];
+  return (
+    <article className="mx-auto max-w-[920px] pb-16 text-center">
+      <img src={heroSplash} alt="ORE Studio" className="mx-auto mt-4 w-full rounded-[var(--radius-card)] border border-line" />
+      <h1 className="mt-10 text-4xl font-semibold tracking-tight">Welcome to ORE Studio</h1>
+      <p className="mx-auto mt-4 max-w-[60ch] text-lg text-ink-muted">
+        This installation is new. Set it up in three stages; it takes a few minutes.
+      </p>
+      <ol className="mx-auto mt-10 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
+        {stages.map((s, i) => (
+          <li key={s.title} className="card p-4">
+            <span className="text-xs text-ink-faint">{i + 1}</span>
+            <div className="mt-1 font-medium">{s.title}</div>
+            <p className="mt-1 text-sm text-ink-muted">{s.text}</p>
+          </li>
+        ))}
+      </ol>
+      <Button variant="primary" size="xl" className="mt-10" onClick={onStart}>
+        Get started
+      </Button>
+    </article>
   );
 }
 

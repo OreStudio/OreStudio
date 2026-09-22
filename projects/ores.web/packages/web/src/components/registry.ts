@@ -89,7 +89,7 @@ function wired(
   id: string,
   icon: EntityDefinition['icon'],
 ): EntityDefinition {
-  return { id, icon, path: descriptor.routeSegment };
+  return { id, icon, path: descriptor.routeSegment, descriptor };
 }
 
 /**

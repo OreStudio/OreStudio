@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_pair_classification.hpp"
+#include "ores.refdata.api/messaging/currency_pair_classification_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include <chrono>
@@ -66,6 +67,41 @@ public:
     explicit currency_pair_classification_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_currency_pair_classifications_response list_currency_pair_classifications(
+        const messaging::list_currency_pair_classifications_request& request);
+    messaging::get_currency_pair_classification_response get_currency_pair_classification(
+        const messaging::get_currency_pair_classification_request& request);
+    messaging::get_many_currency_pair_classifications_response
+    get_many_currency_pair_classifications(
+        const messaging::get_many_currency_pair_classifications_request& request);
+    messaging::put_currency_pair_classification_response put_currency_pair_classification(
+        const messaging::put_currency_pair_classification_request& request);
+    messaging::put_many_currency_pair_classifications_response
+    put_many_currency_pair_classifications(
+        const messaging::put_many_currency_pair_classifications_request& request);
+    messaging::delete_currency_pair_classification_response delete_currency_pair_classification(
+        const messaging::delete_currency_pair_classification_request& request);
+    messaging::delete_many_currency_pair_classifications_response
+    delete_many_currency_pair_classifications(
+        const messaging::delete_many_currency_pair_classifications_request& request);
+    messaging::list_currency_pair_classification_versions_response
+    list_currency_pair_classification_versions(
+        const messaging::list_currency_pair_classification_versions_request& request);
+    messaging::get_currency_pair_classification_version_response
+    get_currency_pair_classification_version(
+        const messaging::get_currency_pair_classification_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists currency pair classifications with pagination support.
      *
      * @param offset Number of records to skip.
@@ -99,6 +135,12 @@ public:
      * @return The currency pair classification if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_pair_classification> get_classification(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of currency pair classifications by primary key.
+     */
+    std::vector<domain::currency_pair_classification>
+    get_classifications(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a currency pair classification (creates or updates).
@@ -138,6 +180,24 @@ public:
 private:
     context ctx_;
     repository::currency_pair_classification_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::currency_pair_classification_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::currency_pair_classification& out);
 };
 
 }

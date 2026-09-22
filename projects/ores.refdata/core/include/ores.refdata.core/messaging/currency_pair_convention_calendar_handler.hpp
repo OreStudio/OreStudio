@@ -34,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <cstddef>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -55,6 +54,12 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for currency pair convention calendars operations.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission a
+ * write needs, decodes the canonical request, calls the service and replies
+ * with the response the service filled. The outcome a caller reads -- missing,
+ * conflicting, denied -- is the service's answer, so the two cannot disagree
+ * about what happened.
  */
 class currency_pair_convention_calendar_handler {
 public:
@@ -66,7 +71,10 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.list.
+     */
+    void list_currency_pair_convention_calendars(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -75,32 +83,37 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<get_currency_pair_convention_calendars_request>(msg)) {
-            get_currency_pair_convention_calendars_response resp;
-            try {
-                resp.currency_pair_convention_calendars =
-                    svc.list_pair_convention_calendars(req->offset, req->limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_pair_convention_calendar_count());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_currency_pair_convention_calendars_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.list_currency_pair_convention_calendars(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_currency_pair_convention_calendars_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_pair(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.get.
+     */
+    void get_currency_pair_convention_calendar(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -109,38 +122,76 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<get_currency_pair_convention_calendars_by_pair_request>(msg)) {
-            get_currency_pair_convention_calendars_by_pair_response resp;
-            try {
-                auto rows = svc.list_pair_convention_calendars_by_pair(
-                    req->pair_code, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_pair_convention_calendar_count_by_pair(req->pair_code));
-                resp.currency_pair_convention_calendars.reserve(rows.size());
-                for (auto& row : rows) {
-                    currency_pair_convention_calendar_view view;
-                    view.currency_pair_convention_calendar = std::move(row);
-                    resp.currency_pair_convention_calendars.push_back(std::move(view));
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_currency_pair_convention_calendar_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.get_currency_pair_convention_calendar(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_currency_pair_convention_calendar_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.get_many.
+     */
+    void get_many_currency_pair_convention_calendars(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_currency_pair_convention_calendars_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_currency_pair_convention_calendars(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_currency_pair_convention_calendars_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.put.
+     */
+    void put_currency_pair_convention_calendar(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -153,29 +204,37 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<save_currency_pair_convention_calendar_request>(msg)) {
-            save_currency_pair_convention_calendar_response resp;
-            try {
-                svc.save_pair_convention_calendars(req->currency_pair_convention_calendars);
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_currency_pair_convention_calendar_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.put_currency_pair_convention_calendar(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_currency_pair_convention_calendar_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.put_many.
+     */
+    void put_many_currency_pair_convention_calendars(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -188,40 +247,37 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<delete_currency_pair_convention_calendar_request>(msg)) {
-            if (req->pair_codes.size() != req->calendar_codes.size()) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
-                    << msg.subject << " rejected: key vectors differ in length, "
-                    << req->pair_codes.size() << " and " << req->calendar_codes.size();
-                error_reply(nats_, msg, ores::service::error_code::bad_request);
-                return;
-            }
-            delete_currency_pair_convention_calendar_response resp;
-            try {
-                for (std::size_t i = 0; i < req->pair_codes.size(); ++i) {
-                    const auto& pair_code_key = req->pair_codes[i];
-                    const auto& calendar_code_key = req->calendar_codes[i];
-                    svc.remove_pair_convention_calendar(pair_code_key, calendar_code_key);
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<put_many_currency_pair_convention_calendars_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_currency_pair_convention_calendars(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_currency_pair_convention_calendars_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_pair(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.delete.
+     */
+    void delete_currency_pair_convention_calendar(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -230,28 +286,41 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<count_currency_pair_convention_calendars_by_pair_request>(msg)) {
-            count_currency_pair_convention_calendars_by_pair_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_pair_convention_calendar_count_by_pair(req->pair_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_currency_pair_convention_calendar_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.delete_currency_pair_convention_calendar(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_currency_pair_convention_calendar_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_calendar(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.delete_many.
+     */
+    void delete_many_currency_pair_convention_calendars(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -260,24 +329,73 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::currency_pair_convention_calendar_service svc(req_ctx);
-        if (auto req = decode<count_currency_pair_convention_calendars_by_calendar_request>(msg)) {
-            count_currency_pair_convention_calendars_by_calendar_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_pair_convention_calendar_count_by_calendar(req->calendar_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        if (!has_permission(req_ctx, "refdata::currency_pair_convention_calendars:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_currency_pair_convention_calendars_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_currency_pair_convention_calendars(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_currency_pair_convention_calendars_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.currency_pair_convention_calendars.list_by_pair_code.
+     */
+    void list_by_pair_code_currency_pair_convention_calendars(ores::nats::message msg) {
+        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_by_pair_code_currency_pair_convention_calendars_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::currency_pair_convention_calendar_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_pair_code_currency_pair_convention_calendars(*req);
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_pair_code_currency_pair_convention_calendars_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

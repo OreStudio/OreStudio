@@ -39,20 +39,42 @@ register_ledger_feed_type_handlers(ores::nats::service::client& nats,
                                    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<ledger_feed_type_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_ledger_feed_types_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_ledger_feed_type_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_ledger_feed_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_ledger_feed_types(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_ledger_feed_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_ledger_feed_type(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_ledger_feed_types_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_ledger_feed_types(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_ledger_feed_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_ledger_feed_type(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_ledger_feed_types_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_ledger_feed_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_ledger_feed_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_ledger_feed_type(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_ledger_feed_type_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_ledger_feed_types_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_ledger_feed_types(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_ledger_feed_type_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_ledger_feed_type_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_ledger_feed_type_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_ledger_feed_type_version(std::move(msg)); }));
     return subs;
 }
 

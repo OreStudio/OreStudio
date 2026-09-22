@@ -23,76 +23,156 @@
  * To modify, update the template and regenerate.
  */
 import type { CurrencyPairConventionCalendar } from '../domain/currency_pair_convention_calendar.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
-export interface GetCurrencyPairConventionCalendarsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCurrencyPairConventionCalendarsResponse {
-    currency_pair_convention_calendars: CurrencyPairConventionCalendar[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface GetCurrencyPairConventionCalendarsByPairRequest {
+export interface CurrencyPairConventionCalendarKey {
     pair_code: string;
-    offset: number;
-    limit: number;
-}
-
-export interface GetCurrencyPairConventionCalendarsByPairResponse {
-    currency_pair_convention_calendars: CurrencyPairConventionCalendarView[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveCurrencyPairConventionCalendarRequest {
-    currency_pair_convention_calendars: CurrencyPairConventionCalendar[];
-}
-
-export interface SaveCurrencyPairConventionCalendarResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteCurrencyPairConventionCalendarRequest {
-    pair_codes: string[];
-    calendar_codes: string[];
-}
-
-export interface DeleteCurrencyPairConventionCalendarResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface CountCurrencyPairConventionCalendarsByPairRequest {
-    pair_code: string;
-}
-
-export interface CountCurrencyPairConventionCalendarsByPairResponse {
-    total_available_count: number;
-}
-
-export interface CountCurrencyPairConventionCalendarsByCalendarRequest {
     calendar_code: string;
 }
 
-export interface CountCurrencyPairConventionCalendarsByCalendarResponse {
-    total_available_count: number;
+export interface CurrencyPairConventionCalendarWrite {
+    pair_code: string;
+    calendar_code: string;
 }
 
-export interface CurrencyPairConventionCalendarView {
+export interface CurrencyPairConventionCalendarChange {
+    write: CurrencyPairConventionCalendarWrite;
+    precondition: Precondition;
+}
+
+export interface CurrencyPairConventionCalendarRemoval {
+    key: CurrencyPairConventionCalendarKey;
+    precondition: Precondition;
+}
+
+export interface CurrencyPairConventionCalendarLookup {
+    key: CurrencyPairConventionCalendarKey;
+    currency_pair_convention_calendar: CurrencyPairConventionCalendar | null;
+}
+
+export interface CurrencyPairConventionCalendarsFilter {
+    pair_code: string | null;
+}
+
+export interface CurrencyPairConventionCalendarEvent {
+    event_id: string;
+    key: CurrencyPairConventionCalendarKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListCurrencyPairConventionCalendarsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CurrencyPairConventionCalendarsFilter | null;
+}
+
+export interface ListCurrencyPairConventionCalendarsResponse {
+    result: Result;
+    currency_pair_convention_calendars: CurrencyPairConventionCalendar[];
+    total: number;
+}
+
+export interface GetCurrencyPairConventionCalendarRequest {
+    key: CurrencyPairConventionCalendarKey;
+}
+
+export interface GetCurrencyPairConventionCalendarResponse {
+    result: Result;
+    currency_pair_convention_calendar: CurrencyPairConventionCalendar | null;
+}
+
+export interface GetManyCurrencyPairConventionCalendarsRequest {
+    keys: CurrencyPairConventionCalendarKey[];
+}
+
+export interface GetManyCurrencyPairConventionCalendarsResponse {
+    result: Result;
+    entries: CurrencyPairConventionCalendarLookup[];
+}
+
+export interface PutCurrencyPairConventionCalendarRequest {
+    change: CurrencyPairConventionCalendarChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCurrencyPairConventionCalendarResponse {
+    result: Result;
     currency_pair_convention_calendar: CurrencyPairConventionCalendar;
 }
 
+export interface PutManyCurrencyPairConventionCalendarsRequest {
+    changes: CurrencyPairConventionCalendarChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCurrencyPairConventionCalendarsResponse {
+    result: Result;
+    currency_pair_convention_calendars: CurrencyPairConventionCalendar[];
+}
+
+export interface DeleteCurrencyPairConventionCalendarRequest {
+    removal: CurrencyPairConventionCalendarRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCurrencyPairConventionCalendarResponse {
+    result: Result;
+}
+
+export interface DeleteManyCurrencyPairConventionCalendarsRequest {
+    removals: CurrencyPairConventionCalendarRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCurrencyPairConventionCalendarsResponse {
+    result: Result;
+}
+
+export interface ListByPairCodeCurrencyPairConventionCalendarsRequest {
+    pair_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CurrencyPairConventionCalendarsFilter | null;
+}
+
+export interface ListByPairCodeCurrencyPairConventionCalendarsResponse {
+    result: Result;
+    currency_pair_convention_calendars: CurrencyPairConventionCalendar[];
+    total: number;
+}
+
 export const subjects = {
-    get_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.list",
-    get_currency_pair_convention_calendars_by_pair_request: "refdata.v1.currency_pair_convention_calendars.list_by_pair_code",
-    save_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.save",
+    list_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.list",
+    get_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.get",
+    get_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.get_many",
+    put_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.put",
+    put_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.put_many",
     delete_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.delete",
-    count_currency_pair_convention_calendars_by_pair_request: "refdata.v1.currency_pair_convention_calendars.count_by_pair_code",
-    count_currency_pair_convention_calendars_by_calendar_request: "refdata.v1.currency_pair_convention_calendars.count_by_calendar_code",
+    delete_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.delete_many",
+    list_by_pair_code_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.list_by_pair_code",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_currency_pair_convention_calendars_request: true,
+    get_currency_pair_convention_calendar_request: true,
+    get_many_currency_pair_convention_calendars_request: true,
+    put_currency_pair_convention_calendar_request: true,
+    put_many_currency_pair_convention_calendars_request: true,
+    delete_currency_pair_convention_calendar_request: true,
+    delete_many_currency_pair_convention_calendars_request: true,
+    list_by_pair_code_currency_pair_convention_calendars_request: true,
 } as const;

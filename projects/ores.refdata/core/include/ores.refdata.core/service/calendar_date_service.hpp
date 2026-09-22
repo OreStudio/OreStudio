@@ -28,7 +28,10 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
+#include "ores.refdata.api/messaging/calendar_date_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,8 +40,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing calendar dates.
  *
- * This service provides functionality for:
- * - Managing calendar dates (CRUD operations)
+ * Provides a higher-level interface for calendar date operations,
+ * wrapping the underlying repository.
  */
 class calendar_date_service {
 private:
@@ -54,51 +57,31 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a calendar_date_service with required repositories.
+     * @brief Constructs a calendar_date_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit calendar_date_service(context ctx);
 
     /**
-     * @brief Lists all calendar dates.
-     */
-    std::vector<domain::calendar_date> list_calendar_dates();
-
-    /**
-     * @brief Lists calendar dates with pagination.
-     */
-    std::vector<domain::calendar_date> list_calendar_dates(std::uint32_t offset,
-                                                           std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active calendar dates.
-     */
-    std::uint32_t get_total_calendar_date_count();
-
-    /**
-     * @brief Lists calendar dates for a specific calendar.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param calendar_code The calendar to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::calendar_date>
-    list_calendar_dates_by_calendar(const std::string& calendar_code);
-
-    /**
-     * @brief Lists calendar dates for a specific calendar, with pagination.
-     */
-    std::vector<domain::calendar_date> list_calendar_dates_by_calendar(
-        const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active calendar dates filtered by calendar_code.
-     */
-    std::uint32_t get_total_calendar_date_count_by_calendar(const std::string& calendar_code);
-
-    /**
-     * @brief Gets the total count of active calendar dates filtered by date.
-     */
-    std::uint32_t get_total_calendar_date_count_by_date(const std::string& date);
+    /**@{*/
+    messaging::list_calendar_dates_response
+    list_calendar_dates(const messaging::list_calendar_dates_request& request);
+    messaging::get_calendar_date_response
+    get_calendar_date(const messaging::get_calendar_date_request& request);
+    messaging::get_many_calendar_dates_response
+    get_many_calendar_dates(const messaging::get_many_calendar_dates_request& request);
+    messaging::list_by_calendar_code_calendar_dates_response list_by_calendar_code_calendar_dates(
+        const messaging::list_by_calendar_code_calendar_dates_request& request);
+    /**@}*/
 
 private:
     context ctx_;

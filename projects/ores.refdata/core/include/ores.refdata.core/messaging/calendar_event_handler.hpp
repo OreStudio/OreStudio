@@ -64,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_calendar_events(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -72,29 +81,125 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_event_service svc(req_ctx);
-        get_calendar_events_response resp;
-        if (auto req = decode<get_calendar_events_request>(msg)) {
-            try {
-                resp.calendar_events = svc.list_calendar_events(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_calendar_events());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_calendar_events_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.list_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_calendar_event(ores::nats::message msg) {
+        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_calendar_event_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.get_calendar_event(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_calendar_event_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.calendar_events.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_calendar_events(ores::nats::message msg) {
+        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_calendar_events_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.calendar_events.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_calendar_event(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -106,26 +211,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::calendar_event_service svc(req_ctx);
-        if (auto req = decode<save_calendar_event_request>(msg)) {
-            try {
-                svc.save_calendar_event(req->data);
-                BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_calendar_event_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      save_calendar_event_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_calendar_event_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.put_calendar_event(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_calendar_event_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_calendar_events(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -133,29 +253,45 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_event_service svc(req_ctx);
-        if (auto req = decode<get_calendar_event_history_request>(msg)) {
-            try {
-                auto hist = svc.get_calendar_event_history(req->id);
-                BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_calendar_event_history_response{.history = std::move(hist),
-                                                          .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_calendar_event_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::calendar_events:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_calendar_events_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_calendar_event(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -167,26 +303,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::calendar_event_service svc(req_ctx);
-        if (auto req = decode<delete_calendar_event_request>(msg)) {
-            try {
-                svc.delete_calendar_events(req->ids);
-                BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_calendar_event_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_calendar_event_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_calendar_event_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.delete_calendar_event(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_calendar_event_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_calendar_code(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_calendar_events(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -194,30 +345,45 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_event_service svc(req_ctx);
-        if (auto req = decode<get_calendar_events_by_calendar_code_request>(msg)) {
-            get_calendar_events_by_calendar_code_response resp;
-            try {
-                resp.calendar_events = svc.list_calendar_events_by_calendar_code(
-                    req->calendar_code, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.count_calendar_events_by_calendar_code(req->calendar_code));
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        if (!has_permission(req_ctx, "refdata::calendar_events:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_calendar_events_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_diary_entry_type(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.calendar_events.list_by_calendar_code.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_by_calendar_code_calendar_events(ores::nats::message msg) {
         BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -225,26 +391,154 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::calendar_event_service svc(req_ctx);
-        if (auto req = decode<get_calendar_events_by_diary_entry_type_request>(msg)) {
-            get_calendar_events_by_diary_entry_type_response resp;
-            try {
-                resp.calendar_events = svc.list_calendar_events_by_diary_entry_type(
-                    req->diary_entry_type, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.count_calendar_events_by_diary_entry_type(req->diary_entry_type));
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(calendar_event_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_by_calendar_code_calendar_events_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_calendar_code_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_calendar_code_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.calendar_events.list_by_diary_entry_type.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_by_diary_entry_type_calendar_events(ores::nats::message msg) {
+        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_by_diary_entry_type_calendar_events_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_diary_entry_type_calendar_events(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_diary_entry_type_calendar_events_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.calendar_events_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_calendar_event_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_calendar_event_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.list_calendar_event_versions(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_calendar_event_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.calendar_events_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_calendar_event_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_calendar_event_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(calendar_event_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::calendar_event_service svc(req_ctx);
+        try {
+            auto response = svc.get_calendar_event_version(*req);
+            BOOST_LOG_SEV(calendar_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(calendar_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_calendar_event_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

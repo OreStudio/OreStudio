@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.service/messaging/zero_convention_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.refdata.api/eventing/zero_convention_changed_event.hpp"
+#include "ores.refdata.api/eventing/zero_convention_event.hpp"
+#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
 
 namespace ores::refdata::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_zero_convention_event_mapping(ev::service::postgres_event_source& event_source,
                                        ev::service::event_bus& event_bus,
                                        ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<refdata::eventing::zero_convention_changed_event>(
-        event_source, "ores.refdata.zero_convention", "ores_refdata_zero_conventions");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<refdata::messaging::zero_convention_event>(
+        "ores_refdata_zero_conventions");
 
-    return event_bus.subscribe<refdata::eventing::zero_convention_changed_event>(
-        [&nats](const refdata::eventing::zero_convention_changed_event& e) {
+    return event_bus.subscribe<refdata::messaging::zero_convention_event>(
+        [&nats](const refdata::messaging::zero_convention_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            refdata::eventing::zero_convention_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.zero_convention",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<refdata::messaging::zero_convention_event>(e.action),
+                e);
         });
 }
 

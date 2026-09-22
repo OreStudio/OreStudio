@@ -40,24 +40,46 @@ std::vector<ores::nats::service::subscription> register_currency_pair_convention
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<currency_pair_convention_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_currency_pair_conventions_request::nats_subject,
+    subs.push_back(nats.queue_subscribe(
+        list_currency_pair_conventions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_currency_pair_conventions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_currency_pair_convention_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_currency_pair_convention(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_currency_pair_conventions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_currency_pair_conventions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_currency_pair_convention_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_currency_pair_convention(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_currency_pair_conventions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_currency_pair_conventions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_currency_pair_convention_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_currency_pair_convention(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(delete_many_currency_pair_conventions_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_currency_pair_convention_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+                                        [h](ores::nats::message msg) {
+                                            h->delete_many_currency_pair_conventions(
+                                                std::move(msg));
+                                        }));
     subs.push_back(
-        nats.queue_subscribe(delete_currency_pair_convention_request::nats_subject,
+        nats.queue_subscribe(list_currency_pair_convention_versions_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_currency_pair_convention_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(read_currency_pair_conventions_for_cache_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_currency_pair_convention_versions(std::move(msg));
+                             }));
+    subs.push_back(nats.queue_subscribe(
+        get_currency_pair_convention_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_currency_pair_convention_version(std::move(msg)); }));
     return subs;
 }
 

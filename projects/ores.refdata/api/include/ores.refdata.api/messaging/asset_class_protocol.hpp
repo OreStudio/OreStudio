@@ -51,7 +51,14 @@ struct asset_class_info {
  */
 struct get_asset_classes_request {
     using response_type = struct get_asset_classes_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.asset-classes.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.asset_classes.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::string coding_scheme_code;
     int offset = 0;
     int limit = 200;

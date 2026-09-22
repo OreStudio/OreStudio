@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
+#include "ores.refdata.api/messaging/payment_frequency_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit payment_frequency_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_payment_frequencies_response
+    list_payment_frequencies(const messaging::list_payment_frequencies_request& request);
+    messaging::get_payment_frequency_response
+    get_payment_frequency(const messaging::get_payment_frequency_request& request);
+    messaging::get_many_payment_frequencies_response
+    get_many_payment_frequencies(const messaging::get_many_payment_frequencies_request& request);
+    messaging::put_payment_frequency_response
+    put_payment_frequency(const messaging::put_payment_frequency_request& request);
+    messaging::put_many_payment_frequencies_response
+    put_many_payment_frequencies(const messaging::put_many_payment_frequencies_request& request);
+    messaging::delete_payment_frequency_response
+    delete_payment_frequency(const messaging::delete_payment_frequency_request& request);
+    messaging::delete_many_payment_frequencies_response delete_many_payment_frequencies(
+        const messaging::delete_many_payment_frequencies_request& request);
+    messaging::list_payment_frequency_versions_response list_payment_frequency_versions(
+        const messaging::list_payment_frequency_versions_request& request);
+    messaging::get_payment_frequency_version_response
+    get_payment_frequency_version(const messaging::get_payment_frequency_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists payment frequencies with pagination support.
      *
      * @param offset Number of records to skip.
@@ -98,6 +129,12 @@ public:
      * @return The payment frequency if found, std::nullopt otherwise.
      */
     std::optional<domain::payment_frequency> get_payment_frequency(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of payment frequencies by primary key.
+     */
+    std::vector<domain::payment_frequency>
+    get_payment_frequencies(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a payment frequency (creates or updates).
@@ -136,6 +173,23 @@ public:
 private:
     context ctx_;
     repository::payment_frequency_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::payment_frequency_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::payment_frequency& out);
 };
 
 }

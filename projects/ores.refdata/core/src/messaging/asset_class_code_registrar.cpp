@@ -39,20 +39,42 @@ register_asset_class_code_handlers(ores::nats::service::client& nats,
                                    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<asset_class_code_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_asset_class_codes_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_asset_class_code_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_asset_class_codes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_asset_class_codes(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_asset_class_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_asset_class_code(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_asset_class_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_asset_class_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_asset_class_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_asset_class_code(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_asset_class_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_asset_class_codes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_asset_class_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_asset_class_code(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_asset_class_code_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_asset_class_codes_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_asset_class_codes(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_asset_class_code_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_asset_class_code_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_asset_class_code_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_asset_class_code_version(std::move(msg)); }));
     return subs;
 }
 

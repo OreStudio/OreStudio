@@ -23,7 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -33,8 +34,9 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/domain/party_status_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/eventing/party_status_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_status_event.hpp"
 #include "ores.refdata.api/generators/party_status_generator.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.core/repository/party_status_repository.hpp"
 #include "ores.refdata.core/service/party_status_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -65,7 +67,7 @@ using ores::refdata::repository::party_status_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_party_status_publishes_nats_changed_event", tags) {
+TEST_CASE("write_party_status_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -83,27 +85,22 @@ TEST_CASE("write_party_status_publishes_nats_changed_event", tags) {
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    auto sub = bus.subscribe<ores::refdata::eventing::party_status_changed_event>(
-        [&nats](const ores::refdata::eventing::party_status_changed_event& e) {
-            ev::service::publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<
-                            ores::refdata::eventing::party_status_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party_status",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
+    using event_type = ores::refdata::messaging::party_status_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
 
-    event_source.register_mapping<ores::refdata::eventing::party_status_changed_event>(
-        "ores.refdata.party_status", "ores_refdata_party_statuses");
+    event_source.register_entity_event_mapping<event_type>("ores_refdata_party_statuses");
 
     // 2. Subscribe as an external observer would, on the relative subject --
-    // client::subscribe() prepends the subject_prefix itself.
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
     auto observer = nats.subscribe_buffered(
-        std::string(
-            ev::domain::event_traits<ores::refdata::eventing::party_status_changed_event>::name),
-        10);
+        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -142,15 +139,11 @@ TEST_CASE("write_party_status_publishes_nats_changed_event", tags) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             auto snap = observer.snapshot();
             for (const auto& msg : snap) {
-                auto decoded =
-                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
-                        msg.data);
-                if (decoded && decoded->entity == "ores.refdata.party_status") {
-                    for (const auto& changed_id : decoded->entity_ids) {
-                        if (changed_id == id_str)
-                            received.push_back(msg);
-                    }
-                }
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.code == v.code)
+                    received.push_back(msg);
             }
         }
     }

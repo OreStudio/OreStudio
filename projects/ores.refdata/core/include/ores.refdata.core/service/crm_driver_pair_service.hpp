@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
+#include "ores.refdata.api/messaging/crm_driver_pair_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
 #include <chrono>
@@ -65,6 +66,36 @@ public:
     explicit crm_driver_pair_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_crm_driver_pairs_response
+    list_crm_driver_pairs(const messaging::list_crm_driver_pairs_request& request);
+    messaging::get_crm_driver_pair_response
+    get_crm_driver_pair(const messaging::get_crm_driver_pair_request& request);
+    messaging::get_many_crm_driver_pairs_response
+    get_many_crm_driver_pairs(const messaging::get_many_crm_driver_pairs_request& request);
+    messaging::put_crm_driver_pair_response
+    put_crm_driver_pair(const messaging::put_crm_driver_pair_request& request);
+    messaging::put_many_crm_driver_pairs_response
+    put_many_crm_driver_pairs(const messaging::put_many_crm_driver_pairs_request& request);
+    messaging::delete_crm_driver_pair_response
+    delete_crm_driver_pair(const messaging::delete_crm_driver_pair_request& request);
+    messaging::delete_many_crm_driver_pairs_response
+    delete_many_crm_driver_pairs(const messaging::delete_many_crm_driver_pairs_request& request);
+    messaging::list_crm_driver_pair_versions_response
+    list_crm_driver_pair_versions(const messaging::list_crm_driver_pair_versions_request& request);
+    messaging::get_crm_driver_pair_version_response
+    get_crm_driver_pair_version(const messaging::get_crm_driver_pair_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists CRM driver pairs with pagination support.
      *
      * @param offset Number of records to skip.
@@ -98,6 +129,11 @@ public:
      * @return The CRM driver pair if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_driver_pair> get_crm_driver_pair(const std::string& id);
+
+    /**
+     * @brief Retrieves a batch of CRM driver pairs by primary key.
+     */
+    std::vector<domain::crm_driver_pair> get_crm_driver_pairs(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a CRM driver pair (creates or updates).
@@ -135,6 +171,23 @@ public:
 private:
     context ctx_;
     repository::crm_driver_pair_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::crm_driver_pair_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::crm_driver_pair& out);
 };
 
 }

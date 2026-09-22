@@ -63,3 +63,11 @@ export interface GetCalendarAdjustmentsResponse {
 export const subjects = {
     get_calendar_adjustments_request: "refdata.v1.calendar_adjustments.export",
 } as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_calendar_adjustments_request: true,
+} as const;

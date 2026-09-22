@@ -28,8 +28,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
+#include "ores.refdata.api/messaging/party_country_protocol.hpp"
 #include "ores.refdata.core/repository/party_country_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,8 +41,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing party countries.
  *
- * This service provides functionality for:
- * - Managing party countries (CRUD operations)
+ * Provides a higher-level interface for party country operations,
+ * wrapping the underlying repository.
  */
 class party_country_service {
 private:
@@ -55,78 +58,60 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a party_country_service with required repositories.
+     * @brief Constructs a party_country_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit party_country_service(context ctx);
 
     /**
-     * @brief Lists all party countries.
-     */
-    std::vector<domain::party_country> list_party_countries();
-
-    /**
-     * @brief Lists party countries with pagination.
-     */
-    std::vector<domain::party_country> list_party_countries(std::uint32_t offset,
-                                                            std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active party countries.
-     */
-    std::uint32_t get_total_party_country_count();
-
-    /**
-     * @brief Lists party countries for a specific party.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param party_id The party to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::party_country>
-    list_party_countries_by_party(const boost::uuids::uuid& party_id);
-
-    /**
-     * @brief Lists party countries for a specific party, with pagination.
-     */
-    std::vector<domain::party_country> list_party_countries_by_party(
-        const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active party countries filtered by party_id.
-     */
-    std::uint32_t get_total_party_country_count_by_party(const boost::uuids::uuid& party_id);
-
-    /**
-     * @brief Gets the total count of active party countries filtered by country_alpha2_code.
-     */
-    std::uint32_t get_total_party_country_count_by_country(const std::string& country_alpha2_code);
-    /**
-     * @brief Saves a party country (creates or updates).
-     *
-     * @param party_country The party country to save
-     */
-    void save_party_country(const domain::party_country& party_country);
-
-    /**
-     * @brief Saves a batch of party countries in one transaction.
-     *
-     * @param party_countries The party countries to save
-     */
-    void save_party_countries(const std::vector<domain::party_country>& party_countries);
-
-    /**
-     * @brief Removes a party country.
-     *
-     * @param party_id The party
-     * @param country_alpha2_code The country
-     */
-    void remove_party_country(const boost::uuids::uuid& party_id,
-                              const std::string& country_alpha2_code);
-
+    /**@{*/
+    messaging::list_party_countries_response
+    list_party_countries(const messaging::list_party_countries_request& request);
+    messaging::get_party_country_response
+    get_party_country(const messaging::get_party_country_request& request);
+    messaging::get_many_party_countries_response
+    get_many_party_countries(const messaging::get_many_party_countries_request& request);
+    messaging::put_party_country_response
+    put_party_country(const messaging::put_party_country_request& request);
+    messaging::put_many_party_countries_response
+    put_many_party_countries(const messaging::put_many_party_countries_request& request);
+    messaging::delete_party_country_response
+    delete_party_country(const messaging::delete_party_country_request& request);
+    messaging::delete_many_party_countries_response
+    delete_many_party_countries(const messaging::delete_many_party_countries_request& request);
+    messaging::list_by_party_id_party_countries_response list_by_party_id_party_countries(
+        const messaging::list_by_party_id_party_countries_request& request);
+    /**@}*/
 
 private:
     context ctx_;
     repository::party_country_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::party_country_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::party_country& out);
 };
 
 }

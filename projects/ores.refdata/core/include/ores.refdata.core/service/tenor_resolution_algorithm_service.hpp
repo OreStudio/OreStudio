@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
+#include "ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_resolution_algorithm_repository.hpp"
 #include <chrono>
@@ -66,6 +67,39 @@ public:
     explicit tenor_resolution_algorithm_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_tenor_resolution_algorithms_response list_tenor_resolution_algorithms(
+        const messaging::list_tenor_resolution_algorithms_request& request);
+    messaging::get_tenor_resolution_algorithm_response get_tenor_resolution_algorithm(
+        const messaging::get_tenor_resolution_algorithm_request& request);
+    messaging::get_many_tenor_resolution_algorithms_response get_many_tenor_resolution_algorithms(
+        const messaging::get_many_tenor_resolution_algorithms_request& request);
+    messaging::put_tenor_resolution_algorithm_response put_tenor_resolution_algorithm(
+        const messaging::put_tenor_resolution_algorithm_request& request);
+    messaging::put_many_tenor_resolution_algorithms_response put_many_tenor_resolution_algorithms(
+        const messaging::put_many_tenor_resolution_algorithms_request& request);
+    messaging::delete_tenor_resolution_algorithm_response delete_tenor_resolution_algorithm(
+        const messaging::delete_tenor_resolution_algorithm_request& request);
+    messaging::delete_many_tenor_resolution_algorithms_response
+    delete_many_tenor_resolution_algorithms(
+        const messaging::delete_many_tenor_resolution_algorithms_request& request);
+    messaging::list_tenor_resolution_algorithm_versions_response
+    list_tenor_resolution_algorithm_versions(
+        const messaging::list_tenor_resolution_algorithm_versions_request& request);
+    messaging::get_tenor_resolution_algorithm_version_response
+    get_tenor_resolution_algorithm_version(
+        const messaging::get_tenor_resolution_algorithm_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists tenor resolution algorithms with pagination support.
      *
      * @param offset Number of records to skip.
@@ -99,6 +133,12 @@ public:
      * @return The tenor resolution algorithm if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_resolution_algorithm> get_algorithm(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of tenor resolution algorithms by primary key.
+     */
+    std::vector<domain::tenor_resolution_algorithm>
+    get_algorithms(const std::vector<std::string>& codes);
 
     /**
      * @brief Saves a tenor resolution algorithm (creates or updates).
@@ -136,6 +176,24 @@ public:
 private:
     context ctx_;
     repository::tenor_resolution_algorithm_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::tenor_resolution_algorithm_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::tenor_resolution_algorithm& out);
 };
 
 }

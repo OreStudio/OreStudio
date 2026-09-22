@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.service/messaging/business_unit_type_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.refdata.api/eventing/business_unit_type_changed_event.hpp"
+#include "ores.refdata.api/eventing/business_unit_type_event.hpp"
+#include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
 
 namespace ores::refdata::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_business_unit_type_event_mapping(ev::service::postgres_event_source& event_source,
                                           ev::service::event_bus& event_bus,
                                           ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<refdata::eventing::business_unit_type_changed_event>(
-        event_source, "ores.refdata.business_unit_type", "ores_refdata_business_unit_types");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<refdata::messaging::business_unit_type_event>(
+        "ores_refdata_business_unit_types");
 
-    return event_bus.subscribe<refdata::eventing::business_unit_type_changed_event>(
-        [&nats](const refdata::eventing::business_unit_type_changed_event& e) {
+    return event_bus.subscribe<refdata::messaging::business_unit_type_event>(
+        [&nats](const refdata::messaging::business_unit_type_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            refdata::eventing::business_unit_type_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.business_unit_type",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.type_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<refdata::messaging::business_unit_type_event>(e.action),
+                e);
         });
 }
 

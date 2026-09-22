@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/derivation_kind_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/derivation_kind_entity.hpp"
 #include "ores.refdata.core/repository/derivation_kind_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -41,16 +42,75 @@ std::string derivation_kind_repository::sql() {
     return generate_create_table_sql<derivation_kind_entity>(lg());
 }
 
+ores::utility::domain::precondition
+derivation_kind_repository::replace_claim(context ctx, const domain::derivation_kind& v) {
+    const auto current = read_latest(ctx, v.code);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::derivation_kind
+derivation_kind_repository::apply_claim(context ctx,
+                                        const domain::derivation_kind& v,
+                                        const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.code);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void derivation_kind_repository::write(context ctx, const domain::derivation_kind& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kind. " << "code: " << v.code;
-    execute_write_query(
-        ctx, derivation_kind_mapper::map(v), lg(), "Writing derivation kind to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void derivation_kind_repository::write(context ctx, const std::vector<domain::derivation_kind>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kinds. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void derivation_kind_repository::write(context ctx,
+                                       const domain::derivation_kind& v,
+                                       const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kind. " << "code: " << v.code;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, derivation_kind_mapper::map(v), lg(), "Writing derivation kinds to database.");
+        ctx, derivation_kind_mapper::map(t), lg(), "Writing derivation kind to database.");
+}
+
+void derivation_kind_repository::write(
+    context ctx,
+    const std::vector<domain::derivation_kind>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kinds. Count: " << v.size();
+    std::vector<domain::derivation_kind> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, derivation_kind_mapper::map(batch), lg(), "Writing derivation kinds to database.");
 }
 
 std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(context ctx) {
@@ -123,15 +183,32 @@ std::optional<domain::derivation_kind> derivation_kind_repository::read_at_versi
     return entities.front();
 }
 
-void derivation_kind_repository::remove(context ctx, const std::string& code) {
+derivation_kind_repository::remove_status derivation_kind_repository::remove(
+    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
+    const auto current = read_latest(ctx, code);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<derivation_kind_entity> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    const auto query = sqlgen::delete_from<derivation_kind_entity> |
+                       where("tenant_id"_c == tid && "code"_c == code &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing derivation kind from database.");
+    return remove_status::removed;
+}
+
+void derivation_kind_repository::remove(context ctx, const std::string& code) {
+    static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::derivation_kind>
@@ -171,6 +248,24 @@ std::uint32_t derivation_kind_repository::get_total_kind_count(context ctx) {
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active derivation kind count: " << count;
     return count;
+}
+
+std::vector<domain::derivation_kind>
+derivation_kind_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+    if (codes.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<derivation_kind_entity>> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    auto result = execute_read_query<derivation_kind_entity, domain::derivation_kind>(
+        ctx,
+        query,
+        [](const auto& entities) { return derivation_kind_mapper::map(entities); },
+        lg(),
+        "Reading latest derivation kinds by ids.");
+    return result;
 }
 
 void derivation_kind_repository::remove(context ctx, const std::vector<std::string>& codes) {

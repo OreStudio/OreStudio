@@ -29,6 +29,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_country.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -56,11 +59,49 @@ public:
 
     std::string sql();
 
-    void write(const domain::currency_country& currency_country);
-    void write(const std::vector<domain::currency_country>& currency_countries);
+    /**
+     * @brief Writes currency countries to database.
+     *
+     * The plain form replaces the link the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a
+     * silent overwrite.
+     */
+    /**@{*/
+    void write(const domain::currency_country& v);
+    void write(const std::vector<domain::currency_country>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a currency country, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const domain::currency_country& v, const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of currency countries, each honouring its own claim, as
+     * one statement.
+     */
+    void write(const std::vector<domain::currency_country>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
 
     std::vector<domain::currency_country> read_latest();
     std::vector<domain::currency_country> read_latest(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Reads the currency country rows for the given pair of keys.
+     *
+     * A junction key is the whole pair the link names, so a read that states
+     * only one half addresses a set and not a row.
+     */
+    std::vector<domain::currency_country> read_latest(const std::string& currency_iso_code,
+                                                      const std::string& country_alpha2_code);
 
     /**
      * @brief Gets the total count of active currency countries.
@@ -89,11 +130,57 @@ public:
     std::uint32_t
     get_total_currency_country_count_by_country(const std::string& country_alpha2_code);
 
+    /**
+     * @brief Deletes a currency country by its pair of keys.
+     */
     void remove(const std::string& currency_iso_code, const std::string& country_alpha2_code);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a currency country, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status remove(const std::string& currency_iso_code,
+                         const std::string& country_alpha2_code,
+                         std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes currency countries by their pairs of keys.
+     */
+    void remove(const std::vector<std::string>& currency_iso_codes,
+                const std::vector<std::string>& country_alpha2_codes);
+
     void remove_by_currency(const std::string& currency_iso_code);
 
 private:
     context ctx_;
+
+    /**
+     * @brief The claim a replace makes: the version the row carries now, or
+     * that no row exists yet.
+     */
+    ores::utility::domain::precondition replace_claim(const domain::currency_country& v);
+
+    /**
+     * @brief The object with the claim's version stamped onto it.
+     *
+     * A claim the store cannot check is refused here rather than ignored.
+     */
+    domain::currency_country apply_claim(const domain::currency_country& v,
+                                         const ores::utility::domain::precondition& claim);
 };
 
 }

@@ -39,28 +39,40 @@ std::vector<ores::nats::service::subscription> register_currency_calendar_handle
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<currency_calendar_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_currency_calendars_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_currency_calendars_by_currency_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->list_by_currency(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_currency_calendar_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+        list_currency_calendars_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_currency_calendars(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        count_currency_calendars_by_currency_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->count_by_currency(std::move(msg)); }));
+        get_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_currency_calendar(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
-        count_currency_calendars_by_calendar_request::nats_subject,
+        get_many_currency_calendars_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->count_by_calendar(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->get_many_currency_calendars(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_currency_calendar(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_currency_calendars_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_currency_calendars(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_currency_calendar_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_currency_calendar(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_currency_calendars_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_currency_calendars(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_currency_iso_code_currency_calendars_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_currency_iso_code_currency_calendars(std::move(msg));
+                             }));
     return subs;
 }
 

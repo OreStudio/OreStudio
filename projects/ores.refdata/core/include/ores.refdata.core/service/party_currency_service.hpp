@@ -28,8 +28,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
+#include "ores.refdata.api/messaging/party_currency_protocol.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,8 +41,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing party currencies.
  *
- * This service provides functionality for:
- * - Managing party currencies (CRUD operations)
+ * Provides a higher-level interface for party currency operations,
+ * wrapping the underlying repository.
  */
 class party_currency_service {
 private:
@@ -55,78 +58,60 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a party_currency_service with required repositories.
+     * @brief Constructs a party_currency_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit party_currency_service(context ctx);
 
     /**
-     * @brief Lists all party currencies.
-     */
-    std::vector<domain::party_currency> list_party_currencies();
-
-    /**
-     * @brief Lists party currencies with pagination.
-     */
-    std::vector<domain::party_currency> list_party_currencies(std::uint32_t offset,
-                                                              std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active party currencies.
-     */
-    std::uint32_t get_total_party_currency_count();
-
-    /**
-     * @brief Lists party currencies for a specific party.
+     * @brief The protocol operations, one method per subject.
      *
-     * @param party_id The party to filter by
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::party_currency>
-    list_party_currencies_by_party(const boost::uuids::uuid& party_id);
-
-    /**
-     * @brief Lists party currencies for a specific party, with pagination.
-     */
-    std::vector<domain::party_currency> list_party_currencies_by_party(
-        const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active party currencies filtered by party_id.
-     */
-    std::uint32_t get_total_party_currency_count_by_party(const boost::uuids::uuid& party_id);
-
-    /**
-     * @brief Gets the total count of active party currencies filtered by currency_iso_code.
-     */
-    std::uint32_t get_total_party_currency_count_by_currency(const std::string& currency_iso_code);
-    /**
-     * @brief Saves a party currency (creates or updates).
-     *
-     * @param party_currency The party currency to save
-     */
-    void save_party_currency(const domain::party_currency& party_currency);
-
-    /**
-     * @brief Saves a batch of party currencies in one transaction.
-     *
-     * @param party_currencies The party currencies to save
-     */
-    void save_party_currencies(const std::vector<domain::party_currency>& party_currencies);
-
-    /**
-     * @brief Removes a party currency.
-     *
-     * @param party_id The party
-     * @param currency_iso_code The currency
-     */
-    void remove_party_currency(const boost::uuids::uuid& party_id,
-                               const std::string& currency_iso_code);
-
+    /**@{*/
+    messaging::list_party_currencies_response
+    list_party_currencies(const messaging::list_party_currencies_request& request);
+    messaging::get_party_currency_response
+    get_party_currency(const messaging::get_party_currency_request& request);
+    messaging::get_many_party_currencies_response
+    get_many_party_currencies(const messaging::get_many_party_currencies_request& request);
+    messaging::put_party_currency_response
+    put_party_currency(const messaging::put_party_currency_request& request);
+    messaging::put_many_party_currencies_response
+    put_many_party_currencies(const messaging::put_many_party_currencies_request& request);
+    messaging::delete_party_currency_response
+    delete_party_currency(const messaging::delete_party_currency_request& request);
+    messaging::delete_many_party_currencies_response
+    delete_many_party_currencies(const messaging::delete_many_party_currencies_request& request);
+    messaging::list_by_party_id_party_currencies_response list_by_party_id_party_currencies(
+        const messaging::list_by_party_id_party_currencies_request& request);
+    /**@}*/
 
 private:
     context ctx_;
     repository::party_currency_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::party_currency_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::party_currency& out);
 };
 
 }

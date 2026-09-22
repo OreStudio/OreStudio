@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -65,6 +66,41 @@ public:
      * @param ctx The database context for operations.
      */
     explicit party_contact_information_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_party_contact_informations_response list_party_contact_informations(
+        const messaging::list_party_contact_informations_request& request);
+    messaging::get_party_contact_information_response
+    get_party_contact_information(const messaging::get_party_contact_information_request& request);
+    messaging::get_many_party_contact_informations_response get_many_party_contact_informations(
+        const messaging::get_many_party_contact_informations_request& request);
+    messaging::put_party_contact_information_response
+    put_party_contact_information(const messaging::put_party_contact_information_request& request);
+    messaging::put_many_party_contact_informations_response put_many_party_contact_informations(
+        const messaging::put_many_party_contact_informations_request& request);
+    messaging::delete_party_contact_information_response delete_party_contact_information(
+        const messaging::delete_party_contact_information_request& request);
+    messaging::delete_many_party_contact_informations_response
+    delete_many_party_contact_informations(
+        const messaging::delete_many_party_contact_informations_request& request);
+    messaging::list_by_party_id_party_contact_informations_response
+    list_by_party_id_party_contact_informations(
+        const messaging::list_by_party_id_party_contact_informations_request& request);
+    messaging::list_party_contact_information_versions_response
+    list_party_contact_information_versions(
+        const messaging::list_party_contact_information_versions_request& request);
+    messaging::get_party_contact_information_version_response get_party_contact_information_version(
+        const messaging::get_party_contact_information_version_request& request);
+    /**@}*/
 
     /**
      * @brief Lists party contact informations with pagination support.
@@ -122,6 +158,7 @@ public:
      */
     std::uint32_t count_party_contact_informations_by_party_id(const boost::uuids::uuid& party_id);
 
+
     /**
      * @brief Lists party contact informations filtered by party_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
@@ -137,6 +174,7 @@ public:
         const std::string& party_id,
         std::chrono::system_clock::time_point valid_from_bound,
         std::chrono::system_clock::time_point valid_to_bound);
+
     /**
      * @brief Retrieves a single party contact information as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
@@ -173,6 +211,12 @@ public:
     std::optional<domain::party_contact_information>
     find_party_contact_information_by_code(const boost::uuids::uuid& party_id,
                                            const std::string& contact_type);
+
+    /**
+     * @brief Retrieves a batch of party contact informations by primary key.
+     */
+    std::vector<domain::party_contact_information>
+    get_party_contact_informations(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a party contact information (creates or updates).
@@ -227,6 +271,24 @@ public:
 private:
     context ctx_;
     repository::party_contact_information_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::party_contact_information_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party_contact_information& out);
 };
 
 }

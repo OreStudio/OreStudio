@@ -39,20 +39,42 @@ register_monetary_nature_handlers(ores::nats::service::client& nats,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<monetary_nature_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_monetary_natures_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_monetary_nature_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_monetary_natures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_monetary_natures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_monetary_nature_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_monetary_nature(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_monetary_natures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_many_monetary_natures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_monetary_nature_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_monetary_nature(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_monetary_natures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_monetary_natures(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
         delete_monetary_nature_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->remove(std::move(msg));
+            h->delete_monetary_nature(std::move(msg));
         }));
-    subs.push_back(
-        nats.queue_subscribe(get_monetary_nature_history_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_monetary_natures_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_monetary_natures(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_monetary_nature_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_monetary_nature_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_monetary_nature_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_monetary_nature_version(std::move(msg)); }));
     return subs;
 }
 

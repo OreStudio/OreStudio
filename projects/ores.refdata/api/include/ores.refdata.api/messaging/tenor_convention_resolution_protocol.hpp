@@ -26,72 +26,122 @@
 #define ORES_REFDATA_API_MESSAGING_TENOR_CONVENTION_RESOLUTION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief The tenor convention resolution row enriched with the joined row's
- * display fields, so a screen needs one request for the whole set rather
- * than one per row. The by-side read returns this view.
- */
-struct tenor_convention_resolution_view {
-    ores::refdata::domain::tenor_convention_resolution tenor_convention_resolution;
-};
-
-struct get_tenor_convention_resolutions_request {
-    using response_type = struct get_tenor_convention_resolutions_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.tenor_convention_resolutions.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_tenor_convention_resolutions_response {
-    std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct get_tenor_convention_resolutions_by_convention_request {
-    using response_type = struct get_tenor_convention_resolutions_by_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_convention_resolutions.list_by_convention_code";
+struct tenor_convention_resolution_key {
     std::string convention_code;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-};
-
-struct get_tenor_convention_resolutions_by_convention_response {
-    std::vector<tenor_convention_resolution_view> tenor_convention_resolutions;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
-};
-
-struct count_tenor_convention_resolutions_by_convention_request {
-    using response_type = struct count_tenor_convention_resolutions_by_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_convention_resolutions.count_by_convention_code";
-    std::string convention_code;
-};
-
-struct count_tenor_convention_resolutions_by_convention_response {
-    int total_available_count = 0;
-};
-
-struct count_tenor_convention_resolutions_by_tenor_request {
-    using response_type = struct count_tenor_convention_resolutions_by_tenor_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_convention_resolutions.count_by_tenor_code";
     std::string tenor_code;
 };
 
-struct count_tenor_convention_resolutions_by_tenor_response {
-    int total_available_count = 0;
+struct tenor_convention_resolution_lookup {
+    tenor_convention_resolution_key key;
+    std::optional<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolution;
 };
+
+struct tenor_convention_resolutions_filter {
+    std::optional<std::string> convention_code;
+};
+
+struct tenor_convention_resolution_event {
+    boost::uuids::uuid event_id;
+    tenor_convention_resolution_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct list_tenor_convention_resolutions_request {
+    using response_type = struct list_tenor_convention_resolutions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.tenor_convention_resolutions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<tenor_convention_resolutions_filter> filter;
+};
+
+struct list_tenor_convention_resolutions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
+    std::uint64_t total;
+};
+
+struct get_tenor_convention_resolution_request {
+    using response_type = struct get_tenor_convention_resolution_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.tenor_convention_resolutions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    tenor_convention_resolution_key key;
+};
+
+struct get_tenor_convention_resolution_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolution;
+};
+
+struct get_many_tenor_convention_resolutions_request {
+    using response_type = struct get_many_tenor_convention_resolutions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.tenor_convention_resolutions.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<tenor_convention_resolution_key> keys;
+};
+
+struct get_many_tenor_convention_resolutions_response {
+    ores::utility::domain::result result;
+    std::vector<tenor_convention_resolution_lookup> entries;
+};
+
+struct list_by_convention_code_tenor_convention_resolutions_request {
+    using response_type = struct list_by_convention_code_tenor_convention_resolutions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.tenor_convention_resolutions.list_by_convention_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string convention_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<tenor_convention_resolutions_filter> filter;
+};
+
+struct list_by_convention_code_tenor_convention_resolutions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::tenor_convention_resolution> tenor_convention_resolutions;
+    std::uint64_t total;
+};
+
 }
 
 #endif

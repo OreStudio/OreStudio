@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.service/messaging/calendar_exception_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.refdata.api/eventing/calendar_exception_changed_event.hpp"
+#include "ores.refdata.api/eventing/calendar_exception_event.hpp"
+#include "ores.refdata.api/messaging/calendar_exception_protocol.hpp"
 
 namespace ores::refdata::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_calendar_exception_event_mapping(ev::service::postgres_event_source& event_source,
                                           ev::service::event_bus& event_bus,
                                           ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<refdata::eventing::calendar_exception_changed_event>(
-        event_source, "ores.refdata.calendar_exception", "ores_refdata_calendar_exceptions");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<refdata::messaging::calendar_exception_event>(
+        "ores_refdata_calendar_exceptions");
 
-    return event_bus.subscribe<refdata::eventing::calendar_exception_changed_event>(
-        [&nats](const refdata::eventing::calendar_exception_changed_event& e) {
+    return event_bus.subscribe<refdata::messaging::calendar_exception_event>(
+        [&nats](const refdata::messaging::calendar_exception_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            refdata::eventing::calendar_exception_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.calendar_exception",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.calendar_exception_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<refdata::messaging::calendar_exception_event>(e.action),
+                e);
         });
 }
 

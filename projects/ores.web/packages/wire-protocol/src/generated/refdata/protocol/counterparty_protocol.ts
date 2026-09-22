@@ -25,57 +25,151 @@
 import type { Counterparty } from '../domain/counterparty.js';
 import type { CounterpartyContactInformation } from '../domain/counterparty_contact_information.js';
 import type { CounterpartyIdentifier } from '../domain/counterparty_identifier.js';
-import type { HierarchyNode } from '../../../utility/hierarchy.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetCounterpartiesRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetCounterpartiesResponse {
-    counterparties: Counterparty[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveCounterpartyRequest {
-    data: Counterparty;
-}
-
-export interface SaveCounterpartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteCounterpartyRequest {
-    ids: string[];
-}
-
-export interface DeleteCounterpartyResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetCounterpartyHistoryRequest {
+export interface CounterpartyKey {
     id: string;
 }
 
-export interface GetCounterpartyHistoryResponse {
-    history: Counterparty[];
-    success: boolean;
-    message: string;
+export interface CounterpartyWrite {
+    id: string;
+    short_code: string;
+    full_name: string;
+    transliterated_name: string | null;
+    party_type: string;
+    parent_counterparty_id: string | null;
+    business_center_code: string;
+    status: string;
+    image_id: string | null;
 }
 
-export interface GetCounterpartyHierarchyRequest {
-    root_id: string;
-    from_root: boolean;
+export interface CounterpartyChange {
+    write: CounterpartyWrite;
+    precondition: Precondition;
 }
 
-export interface GetCounterpartyHierarchyResponse {
-    success: boolean;
-    message: string;
-    roots: HierarchyNode[];
+export interface CounterpartyRemoval {
+    key: CounterpartyKey;
+    precondition: Precondition;
+}
+
+export interface CounterpartyLookup {
+    key: CounterpartyKey;
+    counterparty: Counterparty | null;
+}
+
+export interface CounterpartyEvent {
+    event_id: string;
+    key: CounterpartyKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface CounterpartyVersionKey {
+    counterparty: CounterpartyKey;
+    version: number;
+}
+
+export interface CounterpartyVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListCounterpartiesRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListCounterpartiesResponse {
+    result: Result;
+    counterparties: Counterparty[];
+    total: number;
+}
+
+export interface GetCounterpartyRequest {
+    key: CounterpartyKey;
+}
+
+export interface GetCounterpartyResponse {
+    result: Result;
+    counterparty: Counterparty | null;
+}
+
+export interface GetManyCounterpartiesRequest {
+    keys: CounterpartyKey[];
+}
+
+export interface GetManyCounterpartiesResponse {
+    result: Result;
+    entries: CounterpartyLookup[];
+}
+
+export interface PutCounterpartyRequest {
+    change: CounterpartyChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCounterpartyResponse {
+    result: Result;
+    counterparty: Counterparty;
+}
+
+export interface PutManyCounterpartiesRequest {
+    changes: CounterpartyChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCounterpartiesResponse {
+    result: Result;
+    counterparties: Counterparty[];
+}
+
+export interface DeleteCounterpartyRequest {
+    removal: CounterpartyRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCounterpartyResponse {
+    result: Result;
+}
+
+export interface DeleteManyCounterpartiesRequest {
+    removals: CounterpartyRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCounterpartiesResponse {
+    result: Result;
+}
+
+export interface ListCounterpartyVersionsRequest {
+    key: CounterpartyKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CounterpartyVersionsFilter | null;
+}
+
+export interface ListCounterpartyVersionsResponse {
+    result: Result;
+    versions: Counterparty[];
+    total: number;
+}
+
+export interface GetCounterpartyVersionRequest {
+    key: CounterpartyVersionKey;
+}
+
+export interface GetCounterpartyVersionResponse {
+    result: Result;
+    version: Counterparty;
 }
 
 /**
@@ -98,10 +192,42 @@ export interface GetCounterpartyCompositeAsOfResponse {
 }
 
 export const subjects = {
-    get_counterparties_request: "refdata.v1.counterparties.list",
-    save_counterparty_request: "refdata.v1.counterparties.save",
+    list_counterparties_request: "refdata.v1.counterparties.list",
+    get_counterparty_request: "refdata.v1.counterparties.get",
+    get_many_counterparties_request: "refdata.v1.counterparties.get_many",
+    put_counterparty_request: "refdata.v1.counterparties.put",
+    put_many_counterparties_request: "refdata.v1.counterparties.put_many",
     delete_counterparty_request: "refdata.v1.counterparties.delete",
-    get_counterparty_history_request: "refdata.v1.counterparties.history",
-    get_counterparty_hierarchy_request: "refdata.v1.counterparties.hierarchy",
+    delete_many_counterparties_request: "refdata.v1.counterparties.delete_many",
+    list_counterparty_versions_request: "refdata.v1.counterparties_versions.list",
+    get_counterparty_version_request: "refdata.v1.counterparties_versions.get",
     get_counterparty_composite_as_of_request: "refdata.v1.counterparties.composite_as_of",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_counterparties_request: true,
+    get_counterparty_request: true,
+    get_many_counterparties_request: true,
+    put_counterparty_request: true,
+    put_many_counterparties_request: true,
+    delete_counterparty_request: true,
+    delete_many_counterparties_request: true,
+    list_counterparty_versions_request: true,
+    get_counterparty_version_request: true,
+    get_counterparty_composite_as_of_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.counterparties_events.created",
+    updated: "refdata.v1.counterparties_events.updated",
+    deleted: "refdata.v1.counterparties_events.deleted",
 } as const;

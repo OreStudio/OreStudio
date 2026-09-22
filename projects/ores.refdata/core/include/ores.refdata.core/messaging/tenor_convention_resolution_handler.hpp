@@ -34,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <cstddef>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -55,6 +54,12 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for tenor convention resolutions operations.
+ *
+ * The adapter decides nothing: it proves the request, checks the permission a
+ * write needs, decodes the canonical request, calls the service and replies
+ * with the response the service filled. The outcome a caller reads -- missing,
+ * conflicting, denied -- is the service's answer, so the two cannot disagree
+ * about what happened.
  */
 class tenor_convention_resolution_handler {
 public:
@@ -66,7 +71,10 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_convention_resolutions.list.
+     */
+    void list_tenor_convention_resolutions(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -75,30 +83,37 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_convention_resolution_service svc(req_ctx);
-        if (auto req = decode<get_tenor_convention_resolutions_request>(msg)) {
-            get_tenor_convention_resolutions_response resp;
-            try {
-                resp.tenor_convention_resolutions = svc.list_resolutions(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.get_total_resolution_count());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_tenor_convention_resolutions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_convention_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.list_tenor_convention_resolutions(*req);
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_tenor_convention_resolutions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void list_by_convention(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_convention_resolutions.get.
+     */
+    void get_tenor_convention_resolution(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -107,39 +122,37 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_convention_resolution_service svc(req_ctx);
-        if (auto req = decode<get_tenor_convention_resolutions_by_convention_request>(msg)) {
-            get_tenor_convention_resolutions_by_convention_response resp;
-            try {
-                auto rows = svc.list_resolutions_by_convention(
-                    req->convention_code, req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_resolution_count_by_convention(req->convention_code));
-                resp.tenor_convention_resolutions.reserve(rows.size());
-                for (auto& row : rows) {
-                    tenor_convention_resolution_view view;
-                    view.tenor_convention_resolution = std::move(row);
-                    resp.tenor_convention_resolutions.push_back(std::move(view));
-                }
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_tenor_convention_resolution_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_convention_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.get_tenor_convention_resolution(*req);
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_tenor_convention_resolution_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-
-    void count_by_convention(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_convention_resolutions.get_many.
+     */
+    void get_many_tenor_convention_resolutions(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -148,28 +161,37 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_convention_resolution_service svc(req_ctx);
-        if (auto req = decode<count_tenor_convention_resolutions_by_convention_request>(msg)) {
-            count_tenor_convention_resolutions_by_convention_response resp;
-            try {
-                resp.total_available_count = static_cast<int>(
-                    svc.get_total_resolution_count_by_convention(req->convention_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<get_many_tenor_convention_resolutions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_convention_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_tenor_convention_resolutions(*req);
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_tenor_convention_resolutions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void count_by_tenor(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.tenor_convention_resolutions.list_by_convention_code.
+     */
+    void list_by_convention_code_tenor_convention_resolutions(ores::nats::message msg) {
         BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -178,24 +200,30 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::tenor_convention_resolution_service svc(req_ctx);
-        if (auto req = decode<count_tenor_convention_resolutions_by_tenor_request>(msg)) {
-            count_tenor_convention_resolutions_by_tenor_response resp;
-            try {
-                resp.total_available_count =
-                    static_cast<int>(svc.get_total_resolution_count_by_tenor(req->tenor_code));
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.total_available_count = 0;
-            }
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
+        auto req = decode<list_by_convention_code_tenor_convention_resolutions_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_convention_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_convention_code_tenor_convention_resolutions(*req);
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_convention_code_tenor_convention_resolutions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

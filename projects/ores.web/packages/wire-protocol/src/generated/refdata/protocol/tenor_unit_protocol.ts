@@ -23,50 +23,183 @@
  * To modify, update the template and regenerate.
  */
 import type { TenorUnit } from '../domain/tenor_unit.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetTenorUnitsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetTenorUnitsResponse {
-    units: TenorUnit[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveTenorUnitRequest {
-    data: TenorUnit;
-}
-
-export interface SaveTenorUnitResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteTenorUnitRequest {
-    codes: string[];
-}
-
-export interface DeleteTenorUnitResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetTenorUnitHistoryRequest {
+export interface TenorUnitKey {
     code: string;
 }
 
-export interface GetTenorUnitHistoryResponse {
-    history: TenorUnit[];
-    success: boolean;
-    message: string;
+export interface TenorUnitWrite {
+    code: string;
+    name: string;
+    description: string;
+    display_order: number;
+}
+
+export interface TenorUnitChange {
+    write: TenorUnitWrite;
+    precondition: Precondition;
+}
+
+export interface TenorUnitRemoval {
+    key: TenorUnitKey;
+    precondition: Precondition;
+}
+
+export interface TenorUnitLookup {
+    key: TenorUnitKey;
+    tenor_unit: TenorUnit | null;
+}
+
+export interface TenorUnitEvent {
+    event_id: string;
+    key: TenorUnitKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface TenorUnitVersionKey {
+    tenor_unit: TenorUnitKey;
+    version: number;
+}
+
+export interface TenorUnitVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListTenorUnitsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListTenorUnitsResponse {
+    result: Result;
+    units: TenorUnit[];
+    total: number;
+}
+
+export interface GetTenorUnitRequest {
+    key: TenorUnitKey;
+}
+
+export interface GetTenorUnitResponse {
+    result: Result;
+    tenor_unit: TenorUnit | null;
+}
+
+export interface GetManyTenorUnitsRequest {
+    keys: TenorUnitKey[];
+}
+
+export interface GetManyTenorUnitsResponse {
+    result: Result;
+    entries: TenorUnitLookup[];
+}
+
+export interface PutTenorUnitRequest {
+    change: TenorUnitChange;
+    intent: ChangeIntent;
+}
+
+export interface PutTenorUnitResponse {
+    result: Result;
+    tenor_unit: TenorUnit;
+}
+
+export interface PutManyTenorUnitsRequest {
+    changes: TenorUnitChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyTenorUnitsResponse {
+    result: Result;
+    units: TenorUnit[];
+}
+
+export interface DeleteTenorUnitRequest {
+    removal: TenorUnitRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteTenorUnitResponse {
+    result: Result;
+}
+
+export interface DeleteManyTenorUnitsRequest {
+    removals: TenorUnitRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyTenorUnitsResponse {
+    result: Result;
+}
+
+export interface ListTenorUnitVersionsRequest {
+    key: TenorUnitKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TenorUnitVersionsFilter | null;
+}
+
+export interface ListTenorUnitVersionsResponse {
+    result: Result;
+    versions: TenorUnit[];
+    total: number;
+}
+
+export interface GetTenorUnitVersionRequest {
+    key: TenorUnitVersionKey;
+}
+
+export interface GetTenorUnitVersionResponse {
+    result: Result;
+    version: TenorUnit;
 }
 
 export const subjects = {
-    get_tenor_units_request: "refdata.v1.tenor_units.list",
-    save_tenor_unit_request: "refdata.v1.tenor_units.save",
+    list_tenor_units_request: "refdata.v1.tenor_units.list",
+    get_tenor_unit_request: "refdata.v1.tenor_units.get",
+    get_many_tenor_units_request: "refdata.v1.tenor_units.get_many",
+    put_tenor_unit_request: "refdata.v1.tenor_units.put",
+    put_many_tenor_units_request: "refdata.v1.tenor_units.put_many",
     delete_tenor_unit_request: "refdata.v1.tenor_units.delete",
-    get_tenor_unit_history_request: "refdata.v1.tenor_units.history",
+    delete_many_tenor_units_request: "refdata.v1.tenor_units.delete_many",
+    list_tenor_unit_versions_request: "refdata.v1.tenor_units_versions.list",
+    get_tenor_unit_version_request: "refdata.v1.tenor_units_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_tenor_units_request: true,
+    get_tenor_unit_request: true,
+    get_many_tenor_units_request: true,
+    put_tenor_unit_request: true,
+    put_many_tenor_units_request: true,
+    delete_tenor_unit_request: true,
+    delete_many_tenor_units_request: true,
+    list_tenor_unit_versions_request: true,
+    get_tenor_unit_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "refdata.v1.tenor_units_events.created",
+    updated: "refdata.v1.tenor_units_events.updated",
+    deleted: "refdata.v1.tenor_units_events.deleted",
 } as const;

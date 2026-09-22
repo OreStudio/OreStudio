@@ -40,20 +40,48 @@ std::vector<ores::nats::service::subscription> register_tenor_resolution_algorit
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tenor_resolution_algorithm_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_tenor_resolution_algorithms_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_tenor_resolution_algorithm_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_tenor_resolution_algorithms_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_tenor_resolution_algorithms(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_tenor_resolution_algorithm_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_tenor_resolution_algorithm(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_tenor_resolution_algorithms_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_tenor_resolution_algorithms(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_tenor_resolution_algorithm_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_tenor_resolution_algorithm(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_tenor_resolution_algorithms_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_tenor_resolution_algorithms(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_tenor_resolution_algorithm_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_tenor_resolution_algorithm(std::move(msg)); }));
     subs.push_back(
-        nats.queue_subscribe(delete_tenor_resolution_algorithm_request::nats_subject,
+        nats.queue_subscribe(delete_many_tenor_resolution_algorithms_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_tenor_resolution_algorithms(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(get_tenor_resolution_algorithm_history_request::nats_subject,
+        nats.queue_subscribe(list_tenor_resolution_algorithm_versions_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_tenor_resolution_algorithm_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_tenor_resolution_algorithm_version_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_tenor_resolution_algorithm_version(std::move(msg));
+                             }));
     return subs;
 }
 

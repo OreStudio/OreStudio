@@ -40,21 +40,26 @@ std::vector<ores::nats::service::subscription> register_tenor_convention_resolut
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tenor_convention_resolution_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_tenor_convention_resolutions_request::nats_subject,
+    subs.push_back(nats.queue_subscribe(
+        list_tenor_convention_resolutions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_tenor_convention_resolutions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_tenor_convention_resolution_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_tenor_convention_resolution(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(get_many_tenor_convention_resolutions_request::nats_subject,
                                         queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+                                        [h](ores::nats::message msg) {
+                                            h->get_many_tenor_convention_resolutions(
+                                                std::move(msg));
+                                        }));
     subs.push_back(nats.queue_subscribe(
-        get_tenor_convention_resolutions_by_convention_request::nats_subject,
+        list_by_convention_code_tenor_convention_resolutions_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_convention(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        count_tenor_convention_resolutions_by_convention_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->count_by_convention(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(count_tenor_convention_resolutions_by_tenor_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) { h->count_by_tenor(std::move(msg)); }));
+        [h](ores::nats::message msg) {
+            h->list_by_convention_code_tenor_convention_resolutions(std::move(msg));
+        }));
     return subs;
 }
 

@@ -68,7 +68,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.counterparties.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_counterparties(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -76,29 +85,125 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::counterparty_service svc(req_ctx);
-        get_counterparties_response resp;
-        if (auto req = decode<get_counterparties_request>(msg)) {
-            try {
-                resp.counterparties = svc.list_counterparties(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_counterparties());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(counterparty_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_counterparties_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.list_counterparties(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_counterparties_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.counterparties.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_counterparty(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_counterparty_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.get_counterparty(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_counterparty_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.counterparties.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_counterparties(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_counterparties_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_counterparties(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_counterparties_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.counterparties.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_counterparty(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -110,25 +215,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::counterparty_service svc(req_ctx);
-        if (auto req = decode<save_counterparty_request>(msg)) {
-            try {
-                svc.save_counterparty(req->data);
-                BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_counterparty_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(counterparty_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, save_counterparty_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_counterparty_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.put_counterparty(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_counterparty_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.counterparties.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_counterparties(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -136,29 +257,45 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::counterparty_service svc(req_ctx);
-        if (auto req = decode<get_counterparty_history_request>(msg)) {
-            try {
-                auto hist = svc.get_counterparty_history(req->id);
-                BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(
-                    nats_,
-                    msg,
-                    get_counterparty_history_response{.history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(counterparty_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_counterparty_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::counterparties:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_counterparties_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_counterparties(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_counterparties_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.counterparties.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_counterparty(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -170,26 +307,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::counterparty_service svc(req_ctx);
-        if (auto req = decode<delete_counterparty_request>(msg)) {
-            try {
-                svc.delete_counterparties(req->ids);
-                BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_counterparty_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(counterparty_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_counterparty_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_counterparty_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.delete_counterparty(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_counterparty_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void hierarchy(ores::nats::message msg) {
+    /**
+     * @brief Serves refdata.v1.counterparties.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_counterparties(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -197,26 +349,116 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::counterparty_service svc(req_ctx);
-        if (auto req = decode<get_counterparty_hierarchy_request>(msg)) {
-            try {
-                boost::uuids::string_generator gen;
-                auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
-                BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_counterparty_hierarchy_response{.success = true,
-                                                          .roots = std::move(roots)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(counterparty_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_counterparty_hierarchy_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "refdata::counterparties:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_counterparties_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_counterparties(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_counterparties_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.counterparties_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_counterparty_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_counterparty_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.list_counterparty_versions(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_counterparty_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.counterparties_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_counterparty_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_counterparty_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.get_counterparty_version(*req);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_counterparty_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

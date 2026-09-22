@@ -250,18 +250,7 @@ std::string("federalreserve.gov")
 :item_var:                    evt
 :key_field:                   id
 :has_export_macro:            true
-:get_request_class:           refdata::messaging::get_calendar_events_request
-:get_response_class:          refdata::messaging::get_calendar_events_response
-:get_message_type:            get_calendar_events_request
-:save_request_class:          refdata::messaging::save_calendar_event_request
-:save_response_class:         refdata::messaging::save_calendar_event_response
-:save_message_type:           save_calendar_event_request
 :save_request_item_field:     data
-:delete_request_class:        refdata::messaging::delete_calendar_event_request
-:delete_response_class:       refdata::messaging::delete_calendar_event_response
-:delete_message_type:         delete_calendar_event_request
-:history_request_class:       refdata::messaging::get_calendar_event_history_request
-:history_response_class:      refdata::messaging::get_calendar_event_history_response
 :history_message_type:        get_calendar_event_history_request
 :settings_group:               CalendarEventListWindow
 :window_title:                Calendar Events

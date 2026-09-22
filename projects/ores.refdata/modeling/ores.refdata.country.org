@@ -220,17 +220,6 @@ drop function if exists ores_refdata_validate_country_fn;
 :flag_icon_column:            Alpha2Code
 :flag_inline_widget:          codeEdit
 :flag_accessor:               getCountryFlagIcon
-:get_request_class:           refdata::messaging::get_countries_request
-:get_response_class:          refdata::messaging::get_countries_response
-:get_message_type:            get_countries_request
-:save_request_class:          refdata::messaging::save_country_request
-:save_response_class:         refdata::messaging::save_country_response
-:save_message_type:           save_country_request
-:delete_request_class:        refdata::messaging::delete_country_request
-:delete_response_class:       refdata::messaging::delete_country_response
-:delete_message_type:         delete_country_request
-:history_request_class:       refdata::messaging::get_country_history_request
-:history_response_class:      refdata::messaging::get_country_history_response
 :history_message_type:        get_country_history_request
 :settings_group:              CountryListWindow
 :window_title:                Countries

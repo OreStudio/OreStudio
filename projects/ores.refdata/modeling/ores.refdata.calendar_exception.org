@@ -196,18 +196,7 @@ std::string("Test exception")
 :item_var:                    exc
 :key_field:                   id
 :has_export_macro:            true
-:get_request_class:           refdata::messaging::get_calendar_exceptions_request
-:get_response_class:          refdata::messaging::get_calendar_exceptions_response
-:get_message_type:            get_calendar_exceptions_request
-:save_request_class:          refdata::messaging::save_calendar_exception_request
-:save_response_class:         refdata::messaging::save_calendar_exception_response
-:save_message_type:           save_calendar_exception_request
 :save_request_item_field:     data
-:delete_request_class:        refdata::messaging::delete_calendar_exception_request
-:delete_response_class:       refdata::messaging::delete_calendar_exception_response
-:delete_message_type:         delete_calendar_exception_request
-:history_request_class:       refdata::messaging::get_calendar_exception_history_request
-:history_response_class:      refdata::messaging::get_calendar_exception_history_response
 :history_message_type:        get_calendar_exception_history_request
 :settings_group:               CalendarExceptionListWindow
 :window_title:                Calendar Exceptions

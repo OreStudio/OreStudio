@@ -196,18 +196,7 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :item_var:                config
 :key_field:                name
 :has_export_macro:        true
-:get_request_class:       refdata::messaging::get_crm_topology_configs_request
-:get_response_class:      refdata::messaging::get_crm_topology_configs_response
-:get_message_type:        get_crm_topology_configs_request
-:save_request_class:      refdata::messaging::save_crm_topology_config_request
-:save_response_class:     refdata::messaging::save_crm_topology_config_response
-:save_message_type:       save_crm_topology_config_request
 :save_request_item_field: data
-:delete_request_class:    refdata::messaging::delete_crm_topology_config_request
-:delete_response_class:   refdata::messaging::delete_crm_topology_config_response
-:delete_message_type:     delete_crm_topology_config_request
-:history_request_class:   refdata::messaging::get_crm_topology_config_history_request
-:history_response_class:  refdata::messaging::get_crm_topology_config_history_response
 :history_message_type:    get_crm_topology_config_history_request
 :settings_group:          CrmTopologyConfigListWindow
 :window_title:            CRM Topology Configs

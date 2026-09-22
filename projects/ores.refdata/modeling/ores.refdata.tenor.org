@@ -186,17 +186,6 @@ ctx.random_int(1, 30)
 :collection_name:        tenors
 :item_var:               tenor
 :key_field:              code
-:get_request_class:      refdata::messaging::get_tenors_request
-:get_response_class:     refdata::messaging::get_tenors_response
-:get_message_type:       get_tenors_request
-:save_request_class:     refdata::messaging::save_tenor_request
-:save_response_class:    refdata::messaging::save_tenor_response
-:save_message_type:      save_tenor_request
-:delete_request_class:   refdata::messaging::delete_tenor_request
-:delete_response_class:  refdata::messaging::delete_tenor_response
-:delete_message_type:    delete_tenor_request
-:history_request_class:  refdata::messaging::get_tenor_history_request
-:history_response_class: refdata::messaging::get_tenor_history_response
 :history_message_type:   get_tenor_history_request
 :settings_group:         TenorListWindow
 :window_title:           Tenors

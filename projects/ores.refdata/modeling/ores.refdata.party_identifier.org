@@ -199,18 +199,7 @@ std::string("Test identifier")
 :collection_name:         party_identifiers
 :item_var:                partyIdentifier
 :key_field:               id_value
-:get_request_class:       refdata::messaging::get_party_identifiers_request
-:get_response_class:      refdata::messaging::get_party_identifiers_response
-:get_message_type:        get_party_identifiers_request
-:save_request_class:      refdata::messaging::save_party_identifier_request
-:save_response_class:     refdata::messaging::save_party_identifier_response
-:save_message_type:       save_party_identifier_request
 :save_request_item_field: data
-:delete_request_class:    refdata::messaging::delete_party_identifier_request
-:delete_response_class:   refdata::messaging::delete_party_identifier_response
-:delete_message_type:     delete_party_identifier_request
-:history_request_class:   refdata::messaging::get_party_identifier_history_request
-:history_response_class:  refdata::messaging::get_party_identifier_history_response
 :history_message_type:    get_party_identifier_history_request
 :settings_group:          PartyIdentifierListWindow
 :window_title:            Party Identifiers

@@ -299,18 +299,7 @@ std::nullopt
 :item_var:                    rule
 :key_field:                   id
 :has_export_macro:            true
-:get_request_class:           refdata::messaging::get_calendar_rules_request
-:get_response_class:          refdata::messaging::get_calendar_rules_response
-:get_message_type:            get_calendar_rules_request
-:save_request_class:          refdata::messaging::save_calendar_rule_request
-:save_response_class:         refdata::messaging::save_calendar_rule_response
-:save_message_type:           save_calendar_rule_request
 :save_request_item_field:     data
-:delete_request_class:        refdata::messaging::delete_calendar_rule_request
-:delete_response_class:       refdata::messaging::delete_calendar_rule_response
-:delete_message_type:         delete_calendar_rule_request
-:history_request_class:       refdata::messaging::get_calendar_rule_history_request
-:history_response_class:      refdata::messaging::get_calendar_rule_history_response
 :history_message_type:        get_calendar_rule_history_request
 :settings_group:               CalendarRuleListWindow
 :window_title:                Calendar Rules

@@ -46,6 +46,7 @@ import { accountTypeDescriptor } from '../generated/iam/web/account_type_declara
 import { tenantDescriptor } from '../generated/iam/web/tenant_declaration.js';
 import { tenantStatusDescriptor } from '../generated/iam/web/tenant_status_declaration.js';
 import { permissionDescriptor } from '../generated/iam/web/permission_declaration.js';
+import { roleDescriptor } from '../generated/iam/web/role_declaration.js';
 
 /** Marks an entity whose screen is not built yet. */
 const planned = { planned: true } as const;
@@ -115,7 +116,7 @@ export const iamComponent: ComponentDefinition = {
   path: 'iam',
   entities: [
     entity('account', 'personAccounts'),
-    entity('role', 'keyMultiple', planned),
+    wired(roleDescriptor, 'role', 'keyMultiple'),
     wired(accountContactInformationDescriptor, 'accountContactInformation', 'peopleTeam'),
     wired(accountTypeDescriptor, 'accountType', 'settings'),
     wired(tenantDescriptor, 'tenant', 'buildingSkyscraper'),

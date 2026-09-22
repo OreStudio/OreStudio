@@ -386,6 +386,11 @@ currency_pair_convention_calendar_repository::remove(const std::string& pair_cod
 
     execute_delete_query(
         ctx_, query, lg(), "removing currency pair convention calendar from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(pair_code, calendar_code).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

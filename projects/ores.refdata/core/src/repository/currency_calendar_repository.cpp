@@ -345,6 +345,11 @@ currency_calendar_repository::remove(const std::string& currency_iso_code,
                              "version"_c == expected);
 
     execute_delete_query(ctx_, query, lg(), "removing currency calendar from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(currency_iso_code, calendar_code).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

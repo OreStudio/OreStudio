@@ -738,6 +738,13 @@ std::vector<domain::{{entity_singular}}>
 {{/has_tenant_id}}
 
     execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
+{{#has_audit_columns}}
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, {{{primary_key.args}}}).empty())
+        return remove_status::conflicting;
+{{/has_audit_columns}}
     return remove_status::removed;
 }
 
@@ -1692,6 +1699,11 @@ void {{name_singular}}_repository::remove(
 
     execute_delete_query(ctx_, query, lg(),
         "removing {{name_singular_words}} from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest({{left.column}}, {{right.column}}).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

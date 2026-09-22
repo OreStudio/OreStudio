@@ -1178,10 +1178,6 @@ private:
             }
         }
         if (changed) {
-            party.change_reason_code = "system.external_data_import";
-            party.change_commentary = "Activated (and logo attached) during Acme provisioning";
-            party.modified_by = username;
-            party.performed_by = username;
             // The party was read above, so the write states the version it
             // read and the store refuses a row that moved on.
             ores::refdata::messaging::put_party_request save_req;

@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod';
-import { accountSchema, activePartySchema, partySummarySchema } from './domain.js';
+import { activePartySchema, partySummarySchema } from './domain.js';
 
 /**
  * The HTTP contract between the BFF and the browser.
@@ -105,13 +105,6 @@ export const selectPartyRequestSchema = z.object({
   partyId: z.string().min(1),
 });
 export type SelectPartyRequest = z.infer<typeof selectPartyRequestSchema>;
-
-/** One page of accounts, as the accounts screen consumes it. */
-export const accountListSchema = z.object({
-  accounts: z.array(accountSchema),
-  totalCount: z.int().nonnegative(),
-});
-export type AccountList = z.infer<typeof accountListSchema>;
 
 /**
  * A failure the browser can show.

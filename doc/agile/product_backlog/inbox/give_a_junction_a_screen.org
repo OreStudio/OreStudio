@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: C2B966A7-189A-4868-823F-7D04CE5D7EFD
+:END:
+#+title: Give a junction a screen
+#+description: A junction gets UI metadata and a declaration but no BFF route, because the route archetype admits domain_entity only; the projection also derives its write record from columns it does not have.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:web:junction:
+#+created: 2026-09-22
+#+updated: 2026-09-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make a junction render a working screen. Probed with
+=projects/ores.iam/modeling/ores.iam.account_party_junction.org=, given a
+Presentation drawer and =:ores.ts.web.enabled:=. Three things are missing, and
+only the first is what the code says:
+
+- =ores.ts.web.bff_route.org= declares =#+model_types: domain_entity=, so a
+  junction gets a declaration and UI metadata and no route. Its two siblings,
+  =ores.ts.ui.org= and =ores.ts.web.org=, already admit =junction=.
+- =write_record_for= derives the record from =entity['columns']=, which a
+  junction does not have -- its fields are its two sides. The generated
+  declaration came out with =writeFields: []=, so a save would send an empty
+  record.
+- The route has one path segment and a junction's key has two members.
+
+* Why the stated reason is wrong
+
+The archetype's own comment says a junction is not served because "its delete
+request names one array per side, and the generic factory sends a single key, so
+a junction route would silently drop half its key". That describes the shape the
+canonical protocol replaced. The generated removal carries one key record with
+both members:
+
+#+begin_src typescript
+export interface AccountPartyRemoval {
+    key: AccountPartyKey;      // { account_id, party_id }
+    precondition: Precondition;
+}
+#+end_src
+
+So the factory does not have to send a pair of arrays, and nothing would be half
+dropped. The real blocker is only that =keyField= is singular: the route's
+address is one path segment and this entity's address is two values.
+
+* Decision needed
+
+How a two-member key is addressed by an HTTP path. Either the descriptor carries
+a list of key fields and the path grows a segment per member
+(=/api/account_parties/:account_id/:party_id=), or both values travel in the
+query and body and the path carries a synthetic identifier. The first keeps the
+rule that the address and the request state the same key, which is why the key
+work was done; the second does not.
+
+* Notes for whoever takes it
+
+- Both sides are uuids, so the detail form's fields are not text a person can
+  type. A usable screen needs lookup controls that name the account and the
+  party, which the shared form does not have yet -- see the "dynamic_combo" and
+  "LookupSource" support in =ui-contract.ts=.
+- =order_column: party_id= is declared on the junction, so the list's order is
+  the model's business rather than the screen's.
+
+* References
+
+- [[id:60D7964C-49DB-485B-B4FF-D0DA68B2E7FA][Profile: Table-less record]] — not
+  related, but the other place a model shape did not fit the generated path.
+
+* See also
+
+- =projects/ores.codegen/library/templates/ores.ts.web.bff_route.org= — the
+  archetype and the stale comment.

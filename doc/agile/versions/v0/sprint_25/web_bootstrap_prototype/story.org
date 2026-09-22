@@ -78,7 +78,7 @@ knowledge doc.
 | [[id:BC32C097-4A3A-4C33-9535-8FDC8955749F][Scaffold story: Prototype ORE Studio bootstrap in ores.web]] | STARTED | 2026-09-22 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:3A907A86-1AB7-4A8C-97FF-377795226941][Inventory client-side provisioning orchestration]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Compare shell/Qt client-side orchestration with the Acme server workflow. |
 | [[id:51075CB4-C21B-4D3E-84D9-708D49DCBD41][Define minimum data for an operational tenant]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:research] Derive the minimum bundle set an operational tenant needs. |
-| [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | BACKLOG | | | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
+| [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]] | DONE | 2026-09-22 | 2026-09-22 | [wayfinder:task] Add a Tenant lifecycle section to the IAM knowledge doc. |
 | [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Decide the seed profile contract]] | BACKLOG | | | [wayfinder:grilling] Shape the single server-side provision-tenant request. |
 | [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow catalogue]] | BACKLOG | | | [wayfinder:grilling] Fix entry points, order and actors for workflows 1-5. |
 | [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Prototype the system bootstrap screens]] | BACKLOG | | | [wayfinder:prototype] Web-idiomatic first-run screens. |
@@ -87,8 +87,9 @@ knowledge doc.
 
 * Decisions
 
-- Terms: System bootstrap, Provision, Onboard, Seed profile. "System
-  bootstrap" never means service startup.
+- [[id:719CA9CC-14C8-4F56-9700-E60DC1F85245][Formalise the tenant lifecycle glossary]]: System bootstrap, Provision,
+  Onboard and Seed profile are defined in the IAM knowledge doc's
+  Tenant lifecycle section.
 - Contract only: this map decides the server-side contract. Building
   the rework is a later story.
 - System bootstrap is open to any caller for now.

@@ -103,6 +103,11 @@ public:
     std::vector<domain::tenant> read_latest(context ctx, const std::vector<std::string>& ids);
     /**@}*/
 
+    /**
+     * @brief Reads latest tenants filtered by code.
+     */
+    std::vector<domain::tenant> read_latest_by_code(context ctx, const std::string& code);
+
 
     /**
      * @brief Reads all tenants, possibly filtered by primary key.

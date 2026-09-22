@@ -139,6 +139,23 @@ std::vector<domain::tenant> tenant_repository::read_latest(context ctx, const st
         "Reading latest tenant by id.");
 }
 
+std::vector<domain::tenant> tenant_repository::read_latest_by_code(context ctx,
+                                                                   const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<tenant_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+
+    return execute_read_query<tenant_entity, domain::tenant>(
+        ctx,
+        query,
+        [](const auto& entities) { return tenant_mapper::map(entities); },
+        lg(),
+        "Reading latest tenant by code.");
+}
+
 
 std::vector<domain::tenant> tenant_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenant versions. " << "id: " << id;

@@ -4970,6 +4970,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
+            key_finders,
             entity_shell_plan,
             operations_by_verb,
             protocol_operations,
@@ -5008,6 +5009,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states.
         domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # Every read by something other than the storage key. The legacy
+        # opt-in contributes one; a model whose declared key is not its storage
+        # key contributes one more, so the address a caller holds resolves to a
+        # row. Stated as one list because the two are the same method with a
+        # different column and suffix, and the template states the query once.
+        domain_entity['key_finders'] = key_finders(domain_entity)
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)

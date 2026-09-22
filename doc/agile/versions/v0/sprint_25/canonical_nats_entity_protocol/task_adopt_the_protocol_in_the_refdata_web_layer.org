@@ -8,7 +8,7 @@
 #+filetags: :canonical_nats_entity_protocol:sprint_25:v0:
 #+owner: marco
 #+branch: feature/adopt-the-protocol-in-the-refdata-web-layer
-#+pr:
+#+pr: 2127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2127][#2127]] | [refdata,web,codegen] Adopt the canonical protocol in the refdata web layer |
 
 * Review
 

@@ -242,27 +242,29 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     return result
 
 
-def generated_marker(template_name):
+def generated_marker(template_name, cmake=False):
     """
     Build the generated-file marker for a source output.
 
     Mirrors the marker the SQL templates carry, so a reader of a
-    generated header, implementation or TypeScript module can tell it is
-    codegen output and which template produced it.
+    generated header, implementation, build file or TypeScript module can
+    tell it is codegen output and which template produced it.
 
     Args:
         template_name (str): Basename of the template being rendered
+        cmake (bool): Emit CMake's ``#`` comments instead of a C block
 
     Returns:
         str: Comment block naming the template
     """
-    return (
-        "/**\n"
-        " * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY\n"
-        f" * Template: {template_name}\n"
-        " * To modify, update the template and regenerate.\n"
-        " */"
+    lines = (
+        "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
+        f"Template: {template_name}",
+        "To modify, update the template and regenerate.",
     )
+    if cmake:
+        return "\n".join(f"# {line}" for line in lines)
+    return "/**\n" + "\n".join(f" * {line}" for line in lines) + "\n */"
 
 
 def _emits_cpp(template_name):
@@ -273,6 +275,18 @@ def _emits_cpp(template_name):
     output is not C++ even if that template carries the C++ licence.
     """
     return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+
+
+def _emits_cmake(template_name):
+    """
+    Whether a template produces a CMake build file.
+
+    CMake carries no marker of its own, so a generated ``component_files.cmake``
+    or test ``CMakeLists.txt`` looked hand-written and invited a hand edit --
+    which the next regeneration then discarded. The marker is emitted with
+    ``#`` comments, which is what CMake reads.
+    """
+    return template_name.startswith('cmake_')
 
 
 def _emits_ts(template_name):
@@ -311,14 +325,15 @@ def render_template(template_path, data):
     extended_data = data.copy()
 
     template_name = os.path.basename(template_path)
-    for licence_key, emits in (
-        ('cpp_license', _emits_cpp),
-        ('ts_license', _emits_ts),
+    for licence_key, emits, cmake in (
+        ('cpp_license', _emits_cpp, False),
+        ('ts_license', _emits_ts, False),
+        ('cmake_license', _emits_cmake, True),
     ):
         if licence_key in extended_data and emits(template_name):
             extended_data[licence_key] = (
                 f"{extended_data[licence_key]}\n"
-                f"{generated_marker(template_name)}"
+                f"{generated_marker(template_name, cmake=cmake)}"
             )
 
     return _RENDERER.render(template_content, extended_data)
@@ -4138,6 +4153,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'const std::string& {c["column"]}' for c in pk_columns
             )
             pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # The service's own key parameters, which name the type a caller
+            # holds rather than the text the store keeps. A uuid primary key is
+            # addressed as a uuid, so the signature alone says which key is
+            # wanted and a human-readable key cannot be passed where a storage
+            # key belongs -- the two are both text otherwise, and passing the
+            # wrong one compiles and reads as a missing record. A compound or
+            # non-uuid key has no uuid to name, so it stays text.
+            _single_uuid = (
+                len(pk_columns) == 1 and bool(pk_columns[0].get('is_uuid')))
+            pk['typed_params'] = (
+                f'const boost::uuids::uuid& {pk_columns[0]["column"]}'
+                if _single_uuid else pk['params'])
+            pk['typed_args'] = (
+                f'boost::uuids::to_string({pk_columns[0]["column"]})'
+                if _single_uuid else pk['args'])
+            pk['is_single_uuid'] = _single_uuid
             # The same key read from a protocol key record rather than from
             # bare parameters (the repository's own key parameters are text
             # for every column, so a uuid column is converted here and the
@@ -4282,14 +4313,32 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # key column (not just the first) so a compound key's change
             # notification can distinguish two rows that share only their
             # leading key column (e.g. subject_area's name across domains).
+            from .org_loader import (  # deferred to avoid circular import
+                _column_name, declared_key_column)
+            # The key the trigger announces is the key the model declares --
+            # the same one the event type carries and the same one a history
+            # request names. Building it from the storage key announces a key
+            # no reader of the event has, which is how an entity that plainly
+            # publishes events appeared to publish none.
+            _notify_key_column = declared_key_column(domain_entity)
+            if _notify_key_column is not None:
+                # A declared key may come from the natural keys or the plain
+                # columns, where the field is spelled ``name``; the templates
+                # below read ``column``.
+                _notify_column = dict(_notify_key_column)
+                _notify_column.setdefault(
+                    'column', _column_name(_notify_key_column))
+                notify_columns = [_notify_column]
+            else:
+                notify_columns = pk_columns
             pk['notify_declarations'] = '\n    '.join(
-                f"changed_{c['column']} {c['type']};" for c in pk_columns
+                f"changed_{c['column']} {c['type']};" for c in notify_columns
             )
             pk['notify_assign_old'] = '\n        '.join(
-                f"changed_{c['column']} := OLD.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := OLD.{c['column']};" for c in notify_columns
             )
             pk['notify_assign_new'] = '\n        '.join(
-                f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := NEW.{c['column']};" for c in notify_columns
             )
             # The notification carries the key as its own object, because it is
             # the entity's key record: one column here, a pair there, and the
@@ -4298,7 +4347,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # The event carries the key the model declares, not the storage key,
             # so the comparison is stated in the declared key's own member.
             from .org_loader import (  # deferred to avoid circular import
-                declared_key_column, declared_key_field)
+                declared_key_field)
             _event_key = declared_key_column(domain_entity)
             if _event_key is not None:
                 _event_name = declared_key_field(domain_entity)
@@ -4310,9 +4359,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     for c in pk_columns)
             pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
                 f"'{c['column']}', changed_{c['column']}"
-                for c in pk_columns) + ')'
+                for c in notify_columns) + ')'
             pk['notify_id_array'] = ', '.join(
-                f"changed_{c['column']}" for c in pk_columns
+                f"changed_{c['column']}" for c in notify_columns
             )
         # Process the presentation drawer
         if 'presentation' in domain_entity:
@@ -4977,6 +5026,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_protocol_messages,
             key_finders,
+            key_resolvers,
             declared_key_field,
             declared_key_column,
             key_is_primary,
@@ -5024,6 +5074,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # row. Stated as one list because the two are the same method with a
         # different column and suffix, and the template states the query once.
         domain_entity['key_finders'] = key_finders(domain_entity)
+        # The reads that resolve a declared key without the transaction-time
+        # window, which is what history needs so that a closed row is still
+        # addressable. Kept apart from key_finders because a model that states
+        # its own latest read has said nothing about this one.
+        domain_entity['key_resolvers'] = key_resolvers(domain_entity)
         # The key the model declares, and whether the store keeps it as the
         # storage key too. When the two differ the operations carry the
         # declared key and the reads resolve it; when they agree nothing is

@@ -128,8 +128,12 @@ TEST_CASE("read_latest_tenant_type_by_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read types: " << read_types;
 
     REQUIRE(read_types.size() == 1);
-    CHECK(read_types[0].type == target_type);
-    CHECK(read_types[0].name == tt.name);
+    // version and recorded_at are stamped by the database, so they are taken
+    // from the read row; everything else must survive the round trip.
+    auto expected = tt;
+    expected.version = read_types[0].version;
+    expected.recorded_at = read_types[0].recorded_at;
+    CHECK(read_types[0] == expected);
 }
 
 TEST_CASE("read_nonexistent_tenant_type", tags) {

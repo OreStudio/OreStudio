@@ -93,8 +93,7 @@ TEST_CASE("read_latest_permission_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read permissions: " << read_perms;
 
     REQUIRE(read_perms.size() == 1);
-    CHECK(read_perms[0].id == target_id);
-    CHECK(read_perms[0].code == p.code);
+    CHECK(read_perms[0] == p);
 }
 
 TEST_CASE("read_nonexistent_permission", tags) {

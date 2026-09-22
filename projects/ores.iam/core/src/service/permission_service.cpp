@@ -321,12 +321,23 @@ std::uint32_t permission_service::count_permissions() {
 }
 
 
-std::optional<domain::permission> permission_service::get_permission(const std::string& id) {
+std::optional<domain::permission> permission_service::get_permission(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting permission. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
+}
+
+std::optional<domain::permission>
+permission_service::get_permission_by_code(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting permission by code: " << code;
+    messaging::permission_key k;
+    k.code = code;
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 std::optional<domain::permission>
@@ -366,9 +377,9 @@ void permission_service::save_permissions(const std::vector<domain::permission>&
     repo_.write(ctx_, ts);
 }
 
-void permission_service::delete_permission(const std::string& id) {
+void permission_service::delete_permission(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing permission. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed permission. " << "id: " << id;
 }
 
@@ -385,7 +396,12 @@ std::vector<domain::permission> permission_service::get_permission_history(const
     // history as having none.
     messaging::permission_key k;
     k.code = key;
-    const auto found = read_one(repo_, ctx_, k);
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+    const auto found = repo_.read_any_by_code(ctx_, k.code);
     if (found.empty())
         return {};
     const auto& row = found.front();

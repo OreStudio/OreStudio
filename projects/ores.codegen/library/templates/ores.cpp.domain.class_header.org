@@ -164,6 +164,17 @@ struct {{entity_singular}} final {
 {{/has_audit_columns}}
 {{/has_audit_group}}
 {{/has_domain_groups}}
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const {{entity_singular}}&, const {{entity_singular}}&) = default;
 };
 
 /**
@@ -268,6 +279,10 @@ struct {{name_singular}} final {
     std::chrono::system_clock::time_point recorded_at;
 
 <<paste:B1E09FE1-51D0-49DF-BDF4-2610598C8A1C>>
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const {{name_singular}}&, const {{name_singular}}&) = default;
 };
 
 /**

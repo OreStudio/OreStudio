@@ -2758,6 +2758,29 @@ def key_finders(entity: dict[str, Any]) -> list[dict[str, Any]]:
     return finders
 
 
+def key_resolvers(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """Reads that turn a declared key into a storage key, ignoring the window.
+
+    History is addressed by the key the model declares and has to stay readable
+    after a delete, which for a temporal entity closes the transaction-time
+    window instead of removing the version rows. A latest read cannot resolve a
+    closed row, so resolution needs its own read that ignores the window and
+    takes the newest match.
+
+    Deliberately independent of ``key_finders``. That list drops a finder the
+    model states itself, because emitting a second declaration of the same
+    method would be a redefinition. There is no such clash here: a model that
+    hand-writes ``read_latest_by_username`` has said nothing about
+    ``read_any_by_username``, and the resolver still has to exist for the
+    service to call. Keeping the two lists apart is what stops a hand-written
+    finder from silently leaving history unreadable.
+    """
+    declared = declared_key_field(entity)
+    if declared and not key_is_primary(entity):
+        return [{"column": declared, "suffix": declared}]
+    return []
+
+
 def key_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """The typed key that addresses one entity -- the key the model declares.
 

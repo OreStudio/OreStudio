@@ -326,6 +326,48 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
 }
 {{/key_finders}}
+{{^current_state}}
+{{#key_resolvers}}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_any_by_{{suffix}}(context ctx,
+    const std::string& {{column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any {{entity_singular_words}} by {{column}}: " << {{column}};
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading any {{entity_singular_words}} by {{column}}.");
+}
+{{/key_resolvers}}
+{{/current_state}}
 
 
 std::vector<domain::{{entity_singular}}>

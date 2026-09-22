@@ -35,8 +35,6 @@ import { SignUpPage } from './pages/SignUpPage.js';
 import { DeveloperPage } from './pages/DeveloperPage.js';
 import { SignInPage } from './pages/SignInPage.js';
 import { AccountsPage } from './pages/AccountsPage.js';
-import { FirstRunJourneyPrototype, NewTenantJourneyPrototype } from './pages/prototype/newTenantJourney/NewTenantJourneyPrototype.js';
-import { NewPartyJourneyPrototype } from './pages/prototype/newTenantJourney/NewPartyJourneyPrototype.js';
 import { CountryListPage } from './components/refdata/entities/country/CountryListPage.js';
 import { CountryDetailPage } from './components/refdata/entities/country/CountryDetailPage.js';
 import { CountryHistoryPage } from './components/refdata/entities/country/CountryHistoryPage.js';
@@ -113,9 +111,6 @@ function App(): ReactNode {
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/iam/account" element={<AccountsPage />} />
-          {/* PROTOTYPE ONLY: the new tenant journey variants. */}
-          <Route path="/iam/tenant/onboard" element={<NewTenantJourneyPrototype />} />
-          <Route path="/refdata/party/new" element={<NewPartyJourneyPrototype />} />
 
           {/* The first entity on the shared machinery. Every other entity will
               look exactly like this: a list page and a detail page, both thin.
@@ -178,32 +173,6 @@ function App(): ReactNode {
             }
           />
           <Route path="/login" element={<SignInRoute />} />
-          <Route
-            path="/refdata/party/new"
-            element={
-              <PublicShell>
-                <NewPartyJourneyPrototype />
-              </PublicShell>
-            }
-          />
-          {/* PROTOTYPE ONLY: first run, the page a system in bootstrap mode shows. */}
-          <Route
-            path="/setup"
-            element={
-              <PublicShell>
-                <FirstRunJourneyPrototype />
-              </PublicShell>
-            }
-          />
-          {/* PROTOTYPE ONLY: stubbed, so it needs no session. */}
-          <Route
-            path="/iam/tenant/onboard"
-            element={
-              <PublicShell>
-                <NewTenantJourneyPrototype />
-              </PublicShell>
-            }
-          />
         </>
       )}
 

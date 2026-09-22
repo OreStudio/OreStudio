@@ -36,7 +36,7 @@ The units are output of the =ores.cpp.shell-command= facet, which is opt-in per
 model through an =:ores.cpp.shell-command.enabled: true= entry in the model's
 properties drawer. The facet writes here because the part is named after the
 domain the units project, which is the fractal naming rule in
-[[id:F27E5DF7-6223-4B6F-80A5-CEFEB1BC756][Component architecture]].
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
 
 * Inputs
 
@@ -75,4 +75,4 @@ domain the units project, which is the fractal naming rule in
 - [[id:9533D9D5-2928-4DC3-A39B-B48155B855EA][ores.shell.api]] -- the shared shell plumbing.
 - [[id:35C549C4-A6C0-4037-84DF-63E677C8C61E][ores.shell.application]] -- the runnable host.
 - [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] -- the facet that emits the units.
-- [[id:F27E5DF7-6223-4B6F-80A5-CEFEB1BC756][Component architecture]] -- the composite and adapter kinds.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.

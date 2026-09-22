@@ -25,38 +25,6 @@ import { NewPasswordField } from '../../../ui/PasswordField.js';
 import type { RunState, SeedProfile, StepState, TenantDetails } from './stub.js';
 
 /**
- * PROTOTYPE ONLY. The words that tell a person where they are. Adapted from
- * the ores.qt wizards' welcome pages and subtitles: say why, list the steps
- * up front, say what happens after.
- */
-export const JOURNEY_STEPS = [
-  {
-    title: 'Choose a starting point',
-    lead: 'Choose a starting point for the new tenant.',
-  },
-  {
-    title: 'Describe the tenant',
-    lead: 'Name the tenant and create its administrator.',
-  },
-  {
-    title: 'Review',
-    lead: 'Nothing is created until you confirm.',
-  },
-  {
-    title: 'Provisioning',
-    lead: 'This runs on the server. You can leave this page and come back.',
-  },
-  {
-    title: 'Hand off',
-    lead: 'The tenant is ready. Its administrator signs in next.',
-  },
-] as const;
-
-export function StepLead({ index }: { readonly index: number }): ReactNode {
-  return <p className="mb-5 text-sm text-ink-muted">{JOURNEY_STEPS[index]?.lead}</p>;
-}
-
-/**
  * PROTOTYPE ONLY. The journey's steps, written once and placed differently by
  * each variant -- the "library of steps" the catalogue decided on.
  */
@@ -113,10 +81,12 @@ export function DetailsForm({
   profile,
   details,
   onChange,
+  onPasswordAcceptable,
 }: {
   readonly profile: SeedProfile;
   readonly details: TenantDetails;
   readonly onChange: (details: TenantDetails) => void;
+  readonly onPasswordAcceptable: (acceptable: boolean) => void;
 }): ReactNode {
   const set = (key: keyof Omit<TenantDetails, 'params'>, value: string): void =>
     onChange({ ...details, [key]: value });
@@ -173,7 +143,10 @@ export function DetailsForm({
             label="Initial password"
             hint="They must change it at first sign-in."
             value={details.adminPassword}
-            onChange={(password) => set('adminPassword', password)}
+            onChange={(password, acceptable) => {
+              set('adminPassword', password);
+              onPasswordAcceptable(acceptable);
+            }}
           />
         </div>
       </fieldset>
@@ -232,30 +205,29 @@ export function ProgressList({
 
 export function Handoff({
   details,
-  onRestart,
+  onContinue,
+  onElsewhere,
 }: {
   readonly details: TenantDetails;
-  readonly onRestart: () => void;
+  readonly onContinue: () => void;
+  readonly onElsewhere: () => void;
 }): ReactNode {
   const user = `${details.adminUsername}@${details.code || 'tenant'}`;
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-muted">
-        The tenant is ready. Its administrator is <span className="font-mono text-ink">{user}</span>.
+        Its administrator is <span className="font-mono text-ink">{user}</span>.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <button type="button" className="card p-4 text-left hover:border-accent" onClick={() => alert('PROTOTYPE: signs out, signs in as ' + user + ', opens first sign-in (new password).')}>
+        <button type="button" className="card p-4 text-left hover:border-accent" onClick={onContinue}>
           <span className="font-semibold">Continue as tenant admin</span>
           <p className="mt-1 text-sm text-ink-muted">Sign in as {user} now and finish their first sign-in.</p>
         </button>
-        <button type="button" className="card p-4 text-left hover:border-line-strong" onClick={() => alert('PROTOTYPE: signs out; shows ' + user + ' to pass on.')}>
+        <button type="button" className="card p-4 text-left hover:border-line-strong" onClick={onElsewhere}>
           <span className="font-semibold">Hand off to someone else</span>
           <p className="mt-1 text-sm text-ink-muted">Give them the username. They set their own password at first sign-in.</p>
         </button>
       </div>
-      <Button variant="ghost" size="sm" onClick={onRestart}>
-        Start over (prototype)
-      </Button>
     </div>
   );
 }

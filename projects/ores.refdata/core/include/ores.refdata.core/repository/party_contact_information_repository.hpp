@@ -130,6 +130,7 @@ public:
     std::optional<domain::party_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest party contact informations filtered by party_id, with pagination.
      * @param ctx Repository context with database connection

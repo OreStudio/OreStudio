@@ -181,6 +181,7 @@ std::optional<domain::tenor_anchor> tenor_anchor_repository::read_at_version(
     return entities.front();
 }
 
+
 tenor_anchor_repository::remove_status tenor_anchor_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor anchor. " << "code: " << code;

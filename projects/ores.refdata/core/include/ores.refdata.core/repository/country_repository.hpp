@@ -123,6 +123,25 @@ public:
     read_at_version(context ctx, const std::string& alpha2_code, std::uint32_t version);
 
     /**
+     * @brief Reads countries as they stood at a specific
+     * timepoint — @c valid_from <= as_of < valid_to — optionally filtered by
+     * alpha2_code.
+     *
+     * Distinct from a versions read, which names a version number, and from a
+     * composite child's as-of read, which overlaps a parent's validity window:
+     * this resolves what the entity's own row meant at one instant.
+     *
+     * @param ctx Repository context with database connection
+     * @param as_of The instant to resolve, as the store writes timestamps
+     * @param alpha2_code Optional key filter; empty reads every key
+     */
+    /**@{*/
+    std::vector<domain::country> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::country>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code);
+    /**@}*/
+
+    /**
      * @brief Reads latest countries with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

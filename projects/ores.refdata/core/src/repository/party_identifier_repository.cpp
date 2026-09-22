@@ -202,6 +202,7 @@ std::optional<domain::party_identifier> party_identifier_repository::read_at_ver
     return entities.front();
 }
 
+
 std::vector<domain::party_identifier> party_identifier_repository::read_latest_by_party_id(
     context ctx, const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifiers. party_id: " << party_id

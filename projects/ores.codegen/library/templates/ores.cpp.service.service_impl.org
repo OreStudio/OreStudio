@@ -143,6 +143,16 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
+{{#has_as_of_lookup}}
+    // A stated instant asks what the row meant then, which is the entity's own
+    // validity window rather than a page of its versions. The answer is the
+    // whole set at that instant, so the page bounds do not narrow it.
+    if (request.as_of) {
+        response.{{entity_plural_short}} = repo_.read_at_timepoint(ctx_, *request.as_of);
+        response.total = response.{{entity_plural_short}}.size();
+        return response;
+    }
+{{/has_as_of_lookup}}
     response.{{entity_plural_short}} = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_);
     return response;

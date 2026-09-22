@@ -123,6 +123,7 @@ public:
     std::optional<domain::party_status>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest party statuses with pagination support.
      * @param ctx Repository context with database connection

@@ -130,6 +130,7 @@ public:
     std::optional<domain::counterparty_identifier>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest counterparty identifiers filtered by counterparty_id, with pagination.
      * @param ctx Repository context with database connection

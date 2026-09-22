@@ -180,6 +180,7 @@ std::optional<domain::tenor_unit> tenor_unit_repository::read_at_version(context
     return entities.front();
 }
 
+
 tenor_unit_repository::remove_status tenor_unit_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor unit. " << "code: " << code;

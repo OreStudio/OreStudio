@@ -286,6 +286,7 @@ list_<resource>_request {
     limit  : uint32          -- default 100
     order  : order           -- the sort, stated explicitly
     filter : <resource>_filter   -- optional; absent means no filter
+    as_of  : optional of string  -- optional; the instant to resolve at
 }
 list_<resource>_response {
     result : result
@@ -318,6 +319,36 @@ Three rules make the contract unambiguous.
 and the entities beneath a node in a hierarchy are scoped reads of collections
 in their own right, and they differ from the plain case only in how the scope is
 named.
+
+*** Resolving a row at an instant
+
+A row whose store keeps its validity window can be resolved at an instant rather
+than at a version number. The list carries the instant in =as_of=: when it is
+stated, the read returns the rows whose own window covers it -- @c valid_from <=
+as_of < valid_to -- and when it is absent, the read is the ordinary page.
+
+#+begin_src
+-- absent: one page of the current state
+list_<resource>_request { offset, limit, order }
+-- stated: every row that was current at that instant, in key order
+list_<resource>_request { as_of }
+#+end_src
+
+Four things follow from it, and each is deliberate.
+
+- *It names an instant, not a version.* A versions read names a version number
+  and returns the row that version produced, validity window and all. This read
+  names a point in time and returns what was current then. The two answer
+  different questions and neither replaces the other.
+- *It is the entity's own window.* A composite child's as-of read overlaps a
+  parent version's window; this one resolves the entity's own row. The two are
+  composed by a caller that wants the composite object as it stood.
+- *The instant is a condition, not a page bound.* Every row current at that
+  instant is returned, so =offset=, =limit= and =total= do not narrow it. The
+  reply's =total= is the size of the set it returned.
+- *It is declared, not inferred.* A resource offers it when the model says so.
+  A model that does not declare it serves the page alone, and the field is
+  absent from its request.
 
 *** get
 

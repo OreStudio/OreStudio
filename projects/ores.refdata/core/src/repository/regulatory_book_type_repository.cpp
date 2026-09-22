@@ -190,6 +190,42 @@ std::optional<domain::regulatory_book_type> regulatory_book_type_repository::rea
     return entities.front();
 }
 
+std::vector<domain::regulatory_book_type>
+regulatory_book_type_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book types at timepoint: " << as_of;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<regulatory_book_type_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
+        order_by("code"_c);
+
+    return execute_read_query<regulatory_book_type_entity, domain::regulatory_book_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return regulatory_book_type_mapper::map(entities); },
+        lg(),
+        "Reading regulatory book types at timepoint.");
+}
+
+std::vector<domain::regulatory_book_type> regulatory_book_type_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at timepoint. "
+                               << "code: " << code;
+    const auto ts = make_timestamp(as_of, lg());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<regulatory_book_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
+
+    return execute_read_query<regulatory_book_type_entity, domain::regulatory_book_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return regulatory_book_type_mapper::map(entities); },
+        lg(),
+        "Reading regulatory book type at timepoint.");
+}
+
 regulatory_book_type_repository::remove_status regulatory_book_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type. " << "code: " << code;

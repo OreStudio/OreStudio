@@ -113,6 +113,7 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :subcomponent:       api
+:has_as_of_lookup:   true
 :END:
 
 ** Repository

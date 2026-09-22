@@ -124,6 +124,7 @@ public:
     std::optional<domain::currency_group>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest currency groups with pagination support.
      * @param ctx Repository context with database connection

@@ -133,6 +133,7 @@ public:
     std::optional<domain::counterparty_contact_information>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest counterparty contact informations filtered by counterparty_id, with
      * pagination.

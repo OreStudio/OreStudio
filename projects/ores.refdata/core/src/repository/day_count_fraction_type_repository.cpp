@@ -193,6 +193,7 @@ std::optional<domain::day_count_fraction_type> day_count_fraction_type_repositor
     return entities.front();
 }
 
+
 day_count_fraction_type_repository::remove_status day_count_fraction_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type. " << "code: " << code;

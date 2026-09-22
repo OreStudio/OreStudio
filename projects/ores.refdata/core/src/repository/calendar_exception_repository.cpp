@@ -186,6 +186,7 @@ std::optional<domain::calendar_exception> calendar_exception_repository::read_at
     return entities.front();
 }
 
+
 std::vector<domain::calendar_exception> calendar_exception_repository::read_latest_by_calendar_code(
     context ctx, const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exceptions. calendar_code: "

@@ -205,6 +205,7 @@ std::optional<domain::deposit_convention> deposit_convention_repository::read_at
     return entities.front();
 }
 
+
 deposit_convention_repository::remove_status deposit_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing deposit convention. " << "id: " << id;

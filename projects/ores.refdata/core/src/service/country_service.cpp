@@ -103,6 +103,14 @@ country_service::list_countries(const messaging::list_countries_request& request
             "This store pages in key order and cannot order by a stated field.";
         return response;
     }
+    // A stated instant asks what the row meant then, which is the entity's own
+    // validity window rather than a page of its versions. The answer is the
+    // whole set at that instant, so the page bounds do not narrow it.
+    if (request.as_of) {
+        response.countries = repo_.read_at_timepoint(ctx_, *request.as_of);
+        response.total = response.countries.size();
+        return response;
+    }
     response.countries = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_country_count(ctx_);
     return response;

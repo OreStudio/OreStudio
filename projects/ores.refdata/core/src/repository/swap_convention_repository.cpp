@@ -202,6 +202,7 @@ std::optional<domain::swap_convention> swap_convention_repository::read_at_versi
     return entities.front();
 }
 
+
 swap_convention_repository::remove_status swap_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing swap convention. " << "id: " << id;

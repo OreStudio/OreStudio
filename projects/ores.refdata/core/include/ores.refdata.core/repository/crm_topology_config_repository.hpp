@@ -124,6 +124,7 @@ public:
     std::optional<domain::crm_topology_config>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest CRM topology configs with pagination support.
      * @param ctx Repository context with database connection

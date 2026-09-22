@@ -184,6 +184,7 @@ std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_ver
     return entities.front();
 }
 
+
 ledger_feed_type_repository::remove_status ledger_feed_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;

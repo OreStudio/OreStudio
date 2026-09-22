@@ -213,6 +213,7 @@ std::optional<domain::counterparty_identifier> counterparty_identifier_repositor
     return entities.front();
 }
 
+
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_counterparty_id(
     context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {

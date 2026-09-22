@@ -124,6 +124,7 @@ public:
     std::optional<domain::series_subclass_code>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest series subclass codes with pagination support.
      * @param ctx Repository context with database connection

@@ -28,6 +28,7 @@ import { businessCentreRoute } from './generated/refdata/business_centre_route.j
 import { businessDayConventionTypeRoute } from './generated/refdata/business_day_convention_type_route.js';
 import { businessUnitRoute } from './generated/refdata/business_unit_route.js';
 import { businessUnitTypeRoute } from './generated/refdata/business_unit_type_route.js';
+import { calendarDateRoute } from './generated/refdata/calendar_date_route.js';
 import { calendarEventRoute } from './generated/refdata/calendar_event_route.js';
 import { calendarExceptionRoute } from './generated/refdata/calendar_exception_route.js';
 import { calendarRoute } from './generated/refdata/calendar_route.js';
@@ -107,6 +108,7 @@ export const entityRoutes: readonly EntityRouteDescriptor[] = [
   businessDayConventionTypeRoute,
   businessUnitRoute,
   businessUnitTypeRoute,
+  calendarDateRoute,
   calendarEventRoute,
   calendarExceptionRoute,
   calendarRoute,

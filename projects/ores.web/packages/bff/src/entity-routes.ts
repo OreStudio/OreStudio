@@ -71,7 +71,7 @@ export interface EntityRouteDescriptor {
    * against, the reason it was made -- and those travel in the precondition
    * and the intent, while the rest are the server's to own.
    */
-  readonly writeFields: readonly string[];
+  readonly writeFields?: readonly string[];
   /**
    * What each write member takes when the form does not carry it.
    *
@@ -80,14 +80,14 @@ export interface EntityRouteDescriptor {
    * The blank is the empty of that member's own type, or
    * {@link MINTED_WRITE_DEFAULT} for a member the caller has to name.
    */
-  readonly writeDefaults: Readonly<Record<string, WriteDefault>>;
+  readonly writeDefaults?: Readonly<Record<string, WriteDefault>>;
   /**
    * The row fields carrying the change intent, e.g. `change_reason_code`.
    *
    * Empty strings for an entity whose rows keep no audit columns, which is
    * an entity whose intent is empty rather than one whose intent is refused.
    */
-  readonly intentFields: {
+  readonly intentFields?: {
     readonly reason: string;
     readonly commentary: string;
   };
@@ -101,7 +101,8 @@ export interface EntityRouteDescriptor {
     readonly list: string;
     /** Present only when the service can answer for one record by its key. */
     readonly get?: string;
-    readonly save: string;
+    /** Present only when the model derives a write request. */
+    readonly save?: string;
     /** Present only when the delete request is keyed by the natural key. */
     readonly remove?: string;
     /**
@@ -299,7 +300,12 @@ export function registerEntityRoutes(
     });
   }
 
-  server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
+  const saveSubject = descriptor.subjects.save;
+  if (saveSubject !== undefined) {
+    const writeFields = descriptor.writeFields ?? [];
+    const writeDefaults = descriptor.writeDefaults ?? {};
+    const intentFields = descriptor.intentFields;
+    server.post(base, async (request: FastifyRequest, reply: FastifyReply) => {
     const session = requireSession(request);
     const incoming = body(request.body);
     const data = body(incoming['data']);
@@ -324,14 +330,14 @@ export function registerEntityRoutes(
       });
     }
     const response = await session.client.callAuthenticated(
-      descriptor.subjects.save,
+      saveSubject,
       {
         change: {
           write: Object.fromEntries(
-            descriptor.writeFields.map((field) => [
+            writeFields.map((field) => [
               field,
               data[field] === undefined
-                ? blankWriteValue(descriptor.writeDefaults[field])
+                ? blankWriteValue(writeDefaults[field])
                 : data[field],
             ]),
           ),
@@ -340,8 +346,8 @@ export function registerEntityRoutes(
             : { kind: 'must_match_version', version },
         },
         intent: {
-          reason_code: String(data[descriptor.intentFields.reason] ?? ''),
-          commentary: String(data[descriptor.intentFields.commentary] ?? ''),
+          reason_code: String(data[intentFields?.reason ?? ''] ?? ''),
+          commentary: String(data[intentFields?.commentary ?? ''] ?? ''),
         },
       },
       descriptor.saveResponse ?? identity,
@@ -351,7 +357,8 @@ export function registerEntityRoutes(
       return reply.code(409).send({ message: resultMessage(response) });
     }
     return { ok: true, message: resultMessage(response) };
-  });
+    });
+  }
 
   const removeSubject = descriptor.subjects.remove;
   if (removeSubject !== undefined) {

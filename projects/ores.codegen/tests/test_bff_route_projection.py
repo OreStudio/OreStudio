@@ -161,6 +161,40 @@ def test_a_compound_primary_key_withholds_delete_and_history():
     assert "subjects_history" not in projection
 
 
+def test_a_read_only_entity_gets_a_screen_without_the_write_routes():
+    """A materialised junction derives reads and no writes.
+
+    The screen set exists because the list does; the write affordances follow
+    the verbs the model derives, so an entity with no write request states no
+    write record, no save subject and no create affordance -- which is the
+    difference between a screen that reads and a screen that offers a form the
+    service has no handler for.
+    """
+    entity = _entity()
+    entity["messages"] = [
+        message for message in entity["messages"]
+        if not str(message.get("name", "")).startswith(("put_", "delete_"))
+    ]
+    projection = bff_route_projection(entity, MODEL)
+    assert projection is not None
+    assert projection["subjects_list"] == "list_tenant_types_request"
+    assert "subjects_save" not in projection
+    assert "write_fields_block" not in projection
+    assert "write_defaults_block" not in projection
+    assert "has_save" not in projection
+    assert projection["has_remove"] == "false"
+    declaration = web_declaration_projection(entity, MODEL)
+    assert declaration["can_create"] == "false"
+    assert declaration["can_edit"] == "false"
+    # The natural key is one column, so the key could drive a removal route --
+    # but the model derives no delete request, so neither the route nor the
+    # affordance exists.
+    assert declaration["can_remove"] == "false"
+    # History is a read, so it survives a model that derives no writes; the
+    # route and the affordance must agree about whether it is served.
+    assert declaration["can_history"] == projection["has_history"]
+
+
 def test_the_save_states_the_write_record_the_intent_and_the_list_shape():
     """What the factory cannot derive from the entity's shape is stated."""
     projection = bff_route_projection(_entity(), MODEL)

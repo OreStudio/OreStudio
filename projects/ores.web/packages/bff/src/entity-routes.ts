@@ -20,7 +20,6 @@
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { LiveSession } from './sessions.js';
 
@@ -181,28 +180,6 @@ function rows(value: unknown, field: string): readonly unknown[] {
   return Array.isArray(found) ? (found as readonly unknown[]) : [];
 }
 
-/** The outcome the service reported, or a value no caller can mistake for ok. */
-function outcome(value: unknown): string {
-  const result = body(body(value)['result']);
-  return typeof result['outcome'] === 'string' ? result['outcome'] : 'failed';
-}
-
-/** The service's own words about how the request ended. */
-function resultMessage(value: unknown): string {
-  const message = body(body(value)['result'])['message'];
-  return typeof message === 'string' ? message : '';
-}
-
-/**
- * The value a write member takes when the form carried none.
- *
- * A member whose default is `'uuid'` names a row the store has never seen, so
- * the caller mints it; every other default is already the value to send.
- */
-function blankWriteValue(blank: unknown): unknown {
-  return blank === 'uuid' ? randomUUID() : blank;
-}
-
 /**
  * Registers an entity's routes.
  *
@@ -274,11 +251,7 @@ export function registerEntityRoutes(
       const data = incoming['data'];
       const response = await session.client.callAuthenticated(
         saveSubject,
-        {
-          data: descriptor.timestampFields === undefined
-            ? data
-            : stampTimestamps(data, descriptor.timestampFields),
-        },
+        { data },
         descriptor.saveResponse ?? identity,
       );
 

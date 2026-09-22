@@ -42,5 +42,4 @@ export const permissionRoute: EntityRouteDescriptor = {
     save: subjects.put_permission_request,
   },
   rowsField: 'permissions',
-  timestampFields: ['recorded_at'],
 };

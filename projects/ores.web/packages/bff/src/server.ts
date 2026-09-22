@@ -34,6 +34,7 @@ import { accountTypeRoute } from './generated/iam/account_type_route.js';
 import { tenantRoute } from './generated/iam/tenant_route.js';
 import { tenantStatusRoute } from './generated/iam/tenant_status_route.js';
 import { tenantTypeRoute } from './generated/iam/tenant_type_route.js';
+import { countryRoute } from './generated/refdata/country_route.js';
 import {
   NatsTransport,
   OresClient,
@@ -41,23 +42,12 @@ import {
   deleteAccount,
   listAccountsRequestSchema,
   SUBJECTS,
-  listCountriesRequestSchema,
-  countryPageSchema,
   changeReasonPageSchema,
   getImagesRequestSchema,
   listImagesRequestSchema,
   listImagesResponseSchema,
   getImagesResponseSchema,
   imageBytesToBuffer,
-  countryHistoryRequestSchema,
-  countryHistoryResponseSchema,
-  saveCountryRequestSchema,
-  saveCountryResponseSchema,
-  deleteCountriesRequestSchema,
-  deleteCountryResponseSchema,
-  mapCountry,
-  wireCountrySchema,
-  applyEdit,
   toWireTimestamp,
   loginResultSchema,
   selectPartyRequestSchema,
@@ -420,165 +410,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
   });
 
   /**
-   * Lists one page of countries.
+   * The entities whose screens their models declare, registered from their
+   * generated route descriptors.
    *
-   * The same shape as the accounts route above, deliberately: every entity list
-   * takes offset and limit, returns the page and the total, and maps the wire
-   * shape to the interface's own. A hundred entities with a hundred route shapes
-   * is a hundred chances to differ.
-   */
-  server.get('/api/countries', async (request) => {
-    const session = requireSession(request);
-    const query = request.query as Record<string, string | undefined>;
-    const input = listCountriesRequestSchema.parse({
-      offset: query['offset'] === undefined ? 0 : Number(query['offset']),
-      limit: query['limit'] === undefined ? 100 : Number(query['limit']),
-      as_of: query['asOf'] ?? '',
-    });
-
-    const raw = await session.client.callAuthenticated(
-      SUBJECTS.listCountries,
-      input,
-      countryPageSchema,
-    );
-    return {
-      countries: raw.countries.map(mapCountry),
-      totalCount: raw.total_available_count,
-    };
-  });
-
-  server.post('/api/accounts/:id/lock', async (request) => {
-    const session = requireSession(request);
-    const { id } = request.params as { id: string };
-    return { results: await setAccountsLocked(session.client, { accountIds: [id], locked: true }) };
-  });
-
-  server.post('/api/accounts/:id/unlock', async (request) => {
-    const session = requireSession(request);
-    const { id } = request.params as { id: string };
-    return { results: await setAccountsLocked(session.client, { accountIds: [id], locked: false }) };
-  });
-
-  server.delete('/api/accounts/:id', async (request) => {
-    const session = requireSession(request);
-    const { id } = request.params as { id: string };
-    await deleteAccount(session.client, id);
-    return { ok: true };
-  });
-
-  /**
-   * Creates or amends one country.
-   *
-   * A save replaces the whole record, so the client sends the record it was
-   * looking at with the edits applied, and the audit reason alongside. The
-   * version it was looking at is the optimistic lock: a stale one is refused by
-   * the service rather than silently overwriting somebody else's change.
-   */
-  server.post('/api/countries', async (request, reply) => {
-    const session = requireSession(request);
-    const body = z
-      .object({
-        data: wireCountrySchema,
-        reason: z.string(),
-        commentary: z.string().default(''),
-      })
-      .parse(request.body);
-
-    /*
-     * The tenant is the session's, not the client's.
-     *
-     * The service overwrites it from the request context and never trusts the
-     * client, so this is not what enforces the boundary. It matters anyway,
-     * because the field has to *decode*: an empty string is not a UUID, and a
-     * request that cannot be decoded is refused before any of the service's
-     * checks run. A create arrives with no tenant, and would fail as an
-     * unexplained refusal rather than as a validation error.
-     */
-    const saved = {
-      ...applyEdit(body.data, {
-        alpha3Code: body.data.alpha3_code,
-        numericCode: body.data.numeric_code,
-        name: body.data.name,
-        officialName: body.data.official_name,
-        version: body.data.version,
-        changeReasonCode: body.reason,
-        changeCommentary: body.commentary,
-      }),
-      /*
-       * Always the session's tenant, never the client's.
-       *
-       * The tenant is a security boundary: the service overwrites it from the
-       * request context and never trusts the client, and the interface must not
-       * appear to be choosing one. A client that sends its own is either echoing
-       * back what it was given or mistaken, and neither is a reason to believe it.
-       */
-      tenant_id: session.tenantId,
-      // Same reasoning as the tenant: the service stamps the real time, so this
-      // only has to be a timestamp the decoder accepts, and an empty string is
-      // not one.
-      recorded_at: body.data.recorded_at.length > 0 ? body.data.recorded_at : toWireTimestamp(new Date()),
-    };
-
-    const response = await session.client.callAuthenticated(
-      SUBJECTS.saveCountry,
-      saveCountryRequestSchema.parse({ data: saved }),
-      saveCountryResponseSchema,
-    );
-    // A refusal is a refusal, not a failure: the person did nothing wrong, the
-    // service said no, and its words are better than ours.
-    if (!response.success) {
-      return reply.code(409).send({ message: response.message });
-    }
-    return { ok: true, message: response.message };
-  });
-
-  /**
-   * Deletes one country by its natural key.
-   */
-  server.delete('/api/countries/:code', async (request, reply) => {
-    const session = requireSession(request);
-    const { code } = request.params as { code: string };
-    const response = await session.client.callAuthenticated(
-      SUBJECTS.deleteCountries,
-      deleteCountriesRequestSchema.parse({ alpha2_codes: [code] }),
-      deleteCountryResponseSchema,
-    );
-    if (!response.success) {
-      return reply.code(409).send({ message: response.message });
-    }
-    return { ok: true, message: response.message };
-  });
-
-  /**
-   * Every version of one country.
-   *
-   * Newest first, because that is how a person reads a history: what changed
-   * last is the question being asked.
-   */
-  server.get('/api/countries/:code/history', async (request) => {
-    const session = requireSession(request);
-    const { code } = request.params as { code: string };
-    const response = await session.client.callAuthenticated(
-      SUBJECTS.countryHistory,
-      countryHistoryRequestSchema.parse({ alpha2_code: code }),
-      countryHistoryResponseSchema,
-    );
-    /*
-     * The service returns the versions newest first, which is how a person
-     * reads a history: what changed last is the question being asked. The
-     * rows are passed through in that order.
-     */
-    return {
-      versions: response.history.map(mapCountry),
-      message: response.message,
-    };
-  });
-
-  /**
-   * The IAM entities, registered from their generated route descriptors.
-   *
-   * The descriptor states the collection, the key and the subjects; the factory
-   * states the envelopes. Neither states a function.
+   * The descriptor states the collection, the key, the write record's members
+   * and the subjects; the factory states the canonical envelopes. Neither
+   * states a function.
    */
   for (const route of [
     accountContactInformationRoute,
@@ -586,6 +423,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     tenantRoute,
     tenantStatusRoute,
     tenantTypeRoute,
+    countryRoute,
   ]) {
     registerEntityRoutes(server, requireSession, route);
   }

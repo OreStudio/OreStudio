@@ -26,8 +26,9 @@
  * How the BFF reaches the account_type service.
  *
  * The descriptor holds values and no functions: the collection, the natural
- * key, the array fields and the subjects. The generic factory builds the
- * routes from it, so the entity adds no handler of its own.
+ * key, the members a write record carries and the subjects. The generic
+ * factory builds the canonical envelopes from those, so the entity adds no
+ * handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/account_type_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -36,7 +37,15 @@ export const accountTypeRoute: EntityRouteDescriptor = {
   collection: 'account_types',
   key: 'id',
   keyField: 'type',
-  deleteKeysField: 'type',
+  rowField: 'account_type',
+  writeFields: ['type', 'name', 'description', 'display_order'],
+  intentFields: {
+    reason: 'change_reason_code',
+    commentary: 'change_commentary',
+  },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_account_types_request,
     get: subjects.get_account_type_request,
@@ -46,5 +55,4 @@ export const accountTypeRoute: EntityRouteDescriptor = {
   },
   rowsField: 'types',
   historyRowsField: 'versions',
-  timestampFields: ['recorded_at'],
 };

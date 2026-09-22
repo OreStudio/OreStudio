@@ -1957,6 +1957,7 @@ def ui_meta_projection(entity, model_path):
     ]
     fields = _ui_fields(visible_fields, entity_singular, nullable_by_field,
                         projects_dir)
+    image_block = _ui_image(presentation, entity)
     return {
         'entity': entity_singular,
         'entity_camel': _ui_camel(entity_singular),
@@ -1967,10 +1968,33 @@ def ui_meta_projection(entity, model_path):
         # only holds when the key is one of the emitted fields.
         'key_in_fields': any(
             row.get('field') == key_field for row in visible_fields),
+        'has_image': bool(image_block),
+        'image_block': image_block or '',
         'fields_block': _ui_render_array(fields, 0),
         'columns_block': _ui_render_array(
             _ui_columns(columns, entity_singular, presentation, icon_columns), 0),
     }
+
+
+def _ui_image(presentation, entity):
+    """The image member the screen renders, or None when it renders none.
+
+    The model declares a flag by naming the column that shows it, which is
+    also the claim that the entity owns an uploadable image: a country's flag,
+    a party's logo. An entity that declares no such column offers no image for
+    editing, so the member is absent rather than empty.
+
+    The image itself is the entity's own ``image_id`` column. The model states
+    it as a column rather than as a detail field because no form control edits
+    it -- the shared screen renders the picker from this member -- so the two
+    have to be stated in one place and read in one place.
+    """
+    if not presentation.get('flag_icon_column'):
+        return None
+    column_names = {column.get('name') for column in entity.get('columns') or []}
+    if 'image_id' not in column_names:
+        return None
+    return "{ field: 'image_id', kind: 'flag' }"
 
 
 def _ui_projection_entity(entity):
@@ -1996,9 +2020,9 @@ def web_declaration_projection(entity, model_path):
     first. None when the entity has no column table, the condition
     ``_ui_projection_entity`` states and the BFF route projection shares.
 
-    The capabilities are read off the enriched presentation rather than guessed:
-    a history message type exists exactly when the service serves the entity's
-    history, and a read-only paginated list is the model saying the entity is
+    The capabilities are read off the derived protocol messages rather than
+    guessed: a versions pair exists exactly when the entity has those versions
+    to serve, and a read-only paginated list is the model saying the entity is
     not written from the interface. Deriving them from anything else -- a
     version column, say -- gets junctions and current-state entities wrong.
 
@@ -2018,6 +2042,9 @@ def web_declaration_projection(entity, model_path):
     read_only = bool(presentation.get('has_readonly_paginated_list'))
     key_field = presentation.get('key_field', '')
     keyed_by_natural_key = _keyed_by_natural_key(entity)
+    messages = entity.get('messages') or []
+    has_history = bool(_protocol_message(
+        messages, f'list_{entity_singular}_versions_response')) and keyed_by_natural_key
     searchable = [
         c.get('field', '') for c in columns
         if c.get('field') and c.get('field') not in _UI_HIDDEN_FIELDS
@@ -2032,9 +2059,7 @@ def web_declaration_projection(entity, model_path):
         'can_create': _ui_bool(not read_only),
         'can_edit': _ui_bool(not read_only),
         'can_remove': _ui_bool(not read_only and keyed_by_natural_key),
-        'can_history': _ui_bool(
-            bool(presentation.get('history_message_type'))
-            and keyed_by_natural_key),
+        'can_history': _ui_bool(has_history),
         'key_field': key_field,
         'search_fields_block': '\n'.join(
             f"        '{name}'," for name in searchable) + ('\n' if searchable else ''),
@@ -2168,6 +2193,12 @@ def bff_route_projection(entity, model_path):
     ``has_remove``/``has_history`` state the same fact as TypeScript
     literals.
 
+    What the factory cannot derive from the entity's shape is stated too:
+    the write record's members, so a save sends the record the protocol
+    declares and nothing else, and whether the list and versions requests
+    carry the optional as-of and filter members, so the factory sends the
+    envelope each request decodes.
+
     The delete and versions reads address the entity's whole key record,
     while the route's path segment carries the natural key the web builds it
     from. The two agree only when the key is the natural key alone, so the
@@ -2205,17 +2236,33 @@ def bff_route_projection(entity, model_path):
     list_response = _protocol_message(messages, f'list_{plural}_response')
     history_response = _protocol_message(
         messages, f'list_{singular}_versions_response')
-    # A removal carries the entity's whole key as a record, never a flattened
-    # string, so the descriptor states the one member the route's path segment
-    # fills. Only a single-column key can be driven from one path segment, and
-    # that is the same condition that lets the delete be stated at all.
+    # Every canonical request names the entity by its key record, never by a
+    # flattened string, so the path segment fills one member of that record.
+    # Only a single-column key can be driven from one path segment, and that
+    # is the same condition that lets the delete and the versions read be
+    # stated at all.
     key_record = _protocol_message(messages, f'{singular}_key')
     key_members = [field['name']
                    for field in (key_record or {}).get('fields') or []]
-    delete_keys_field = key_members[0] if len(key_members) == 1 else ''
-    has_remove = bool(delete_keys_field) and keyed_by_natural_key
+    has_remove = len(key_members) == 1 and keyed_by_natural_key
     has_history = bool(history_response) and keyed_by_natural_key
     history_rows_field = _vector_field_name(history_response) or ''
+    # The write record is what a save carries, so the descriptor states its
+    # members and the factory sends those and nothing else. The audit members
+    # a form happens to hold -- the version the edit was made against, the
+    # reason it was made -- travel in the precondition and the intent instead,
+    # and the server owns the rest.
+    write_record = _protocol_message(messages, f'{singular}_write')
+    write_fields = [field['name']
+                    for field in (write_record or {}).get('fields') or []]
+    list_request = _protocol_message(messages, f'list_{plural}_request')
+    list_members = {field['name']
+                    for field in (list_request or {}).get('fields') or []}
+    versions_request = _protocol_message(
+        messages, f'list_{singular}_versions_request')
+    versions_members = {field['name']
+                        for field in (versions_request or {}).get('fields') or []}
+    has_audit_columns = bool(entity.get('has_audit_columns'))
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
@@ -2223,6 +2270,14 @@ def bff_route_projection(entity, model_path):
         'collection': presentation.get('collection_name', ''),
         'key': 'id',
         'key_field': natural_key,
+        'row_field': singular,
+        'write_fields_block': ', '.join(
+            f"'{field}'" for field in write_fields),
+        'intent_reason_field': 'change_reason_code' if has_audit_columns else '',
+        'intent_commentary_field': 'change_commentary' if has_audit_columns else '',
+        'list_has_as_of': _ui_bool('as_of' in list_members),
+        'list_has_filter': _ui_bool('filter' in list_members),
+        'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
@@ -2233,15 +2288,10 @@ def bff_route_projection(entity, model_path):
     if subjects_get:
         projection['subjects_get'] = subjects_get
     if has_remove:
-        projection['delete_keys_field'] = delete_keys_field
         projection['subjects_remove'] = subjects_remove
     if has_history:
         projection['subjects_history'] = subjects_history
         projection['history_rows_field'] = history_rows_field
-    timestamp_fields = _audit_timestamp_fields(entity)
-    if timestamp_fields:
-        projection['timestamp_fields_block'] = ', '.join(
-            f"'{field}'" for field in timestamp_fields)
     return projection
 
 

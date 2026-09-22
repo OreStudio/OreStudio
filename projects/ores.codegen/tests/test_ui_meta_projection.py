@@ -78,6 +78,35 @@ def test_the_flag_column_is_marked():
     assert "flag: true" in projection["columns_block"]
 
 
+def test_a_flag_declaring_entity_states_its_image():
+    """The model declares a flag, and the entity's own column holds it.
+
+    A field cannot carry the image: no form control edits one, so the shared
+    screen renders a picker from this member instead.
+    """
+    projection = _project(
+        [{"field": "alpha2_code", "enum_name": "Alpha2Code"}],
+        flag_icon_column="Alpha2Code",
+        level1=[{"name": "image_id", "nullable": True}])
+    assert projection["has_image"] is True
+    assert projection["image_block"] == "{ field: 'image_id', kind: 'flag' }"
+
+
+def test_an_entity_without_a_flag_declaration_states_no_image():
+    projection = _project(
+        [{"field": "code", "enum_name": "Code"}],
+        level1=[{"name": "image_id", "nullable": True}])
+    assert projection["has_image"] is False
+    assert projection["image_block"] == ""
+
+
+def test_a_flag_declaration_without_an_image_column_states_no_image():
+    """A derived flag -- a currency pair's -- is not the entity's own image."""
+    projection = _project([{"field": "flagged", "enum_name": "Flagged"}],
+                          flag_icon_column="Flagged")
+    assert projection["has_image"] is False
+
+
 def test_temporal_columns_are_marked():
     projection = _project(
         [{"field": "recorded_at", "enum_name": "RecordedAt",

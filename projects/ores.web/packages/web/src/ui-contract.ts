@@ -142,6 +142,28 @@ export interface FieldGroup {
   readonly fields: readonly string[];
 }
 
+/**
+ * The image an entity carries, when it carries one.
+ *
+ * Emitted from the model's own flag declaration, because an image is not a
+ * field: no form control edits it, and the shared screen renders a picker
+ * beside the fields rather than among them. What is generated is where the
+ * image lives and what kind it is; what it looks like when chosen is the
+ * screen's business.
+ */
+export interface EntityImage {
+  /** The wire field holding the image's identifier, e.g. `image_id`. */
+  readonly field: string;
+  /**
+   * What the images are.
+   *
+   * A country's image is its flag and a party's is its logo, and a picker
+   * that offered both would offer the wrong ones. The kind is the model's
+   * statement; the words a picker narrows by are the screen's.
+   */
+  readonly kind: 'flag' | 'image';
+}
+
 /** The per-entity bundle, so the registry has one thing to hold. */
 export interface EntityMeta {
   readonly entity: string;
@@ -152,4 +174,6 @@ export interface EntityMeta {
   readonly keyField: string;
   readonly columns: readonly ColumnMeta[];
   readonly fields: readonly FieldMeta[];
+  /** Present exactly when the entity owns an image the screen can change. */
+  readonly image?: EntityImage;
 }

@@ -1349,43 +1349,26 @@ def _format_columns_for_doxygen(columns):
             col['detail'] = _format_detail_for_doxygen(col['detail'])
 
 
-def validate_read_for_cache(domain_entity):
-    """
-    Validate and default the read_for_cache messaging flag: a bulk
-    unpaginated read of a tenant's active entities, used to warm
-    client-side caches. Requires tenant scoping.
-
-    Args:
-        domain_entity (dict): mutated in place; defaults read_for_cache
-            to False if unset.
-
-    Raises:
-        ValueError: if read_for_cache is set without has_tenant_id.
-    """
-    if domain_entity.get('read_for_cache') and not domain_entity.get('has_tenant_id'):
-        raise ValueError(
-            f"{domain_entity.get('entity_singular', '?')}: read_for_cache requires has_tenant_id")
-    domain_entity.setdefault('read_for_cache', False)
-
-
 def validate_cached_by(domain_entity):
     """
     Validate the cached_by messaging flag: the consumer component a
     generated nats-event-cache lives in (e.g. party is defined in refdata
-    but cached_by: iam moves its generated cache into ores.iam). Requires
-    read_for_cache, since the generated cache warms/reloads itself via
-    that RPC.
+    but cached_by: iam moves its generated cache into ores.iam). The cache
+    keeps one partition per tenant, so the entity must be tenant-scoped.
+    The flag stands alone: it names the cache's consumer, and the cache's
+    warm-up and refresh are the canonical list read and the canonical
+    entity events, not a verb the model declares.
 
     Args:
         domain_entity (dict): not mutated; cached_by has no default (its
             absence simply means no nats-event-cache archetype applies).
 
     Raises:
-        ValueError: if cached_by is set without read_for_cache.
+        ValueError: if cached_by is set without has_tenant_id.
     """
-    if domain_entity.get('cached_by') and not domain_entity.get('read_for_cache'):
+    if domain_entity.get('cached_by') and not domain_entity.get('has_tenant_id'):
         raise ValueError(
-            f"{domain_entity.get('entity_singular', '?')}: cached_by requires read_for_cache")
+            f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
 def validate_cache_aux_type(domain_entity):
@@ -3645,7 +3628,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             'delete_request_extra_args',
             [{'name': c['column'] + 's'} for c in pk_extra_cols])
         domain_entity.setdefault('single_delete', False)
-        validate_read_for_cache(domain_entity)
         validate_cached_by(domain_entity)
         validate_cache_aux_type(domain_entity)
         # Derive paged list-by-foreign-key NATS operations (protocol/handler/

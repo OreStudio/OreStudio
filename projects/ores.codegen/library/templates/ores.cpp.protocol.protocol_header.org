@@ -15,21 +15,15 @@ Request/response message types for the entity's NATS API. =protocol= profile.  N
 
 Model flags consumed by this template:
 
-- =read_for_cache= (bool, Flags) — emit a =read_<entity_plural>_for_cache_request/response=
-  pair: an unpaginated, tenant-scoped bulk read used to warm client-side
-  caches. Requires =has_tenant_id=.
-
-For a junction model the block renders the generic relationship protocol: a
-paged unscoped read of the junction rows, a paged by-side read per
-=:list_by:= side that returns the =<junction>_view= payload, an opt-in
-whole-set replacement per =:replace_by:= side, a batch additive =save=, a
-batch =delete= by the pair, a count per side, and the view type. A junction
-that declares =:read_only:= or =:client_read_only:= renders no write verb --
-no =save=, =delete= or =replace_by=. The first also stops the repository
-writing, for a table provisioned outside the application; the second leaves
-the repository writable and stops the write surface short of it, at the
-service methods and the wire verbs, so a server-side producer writes through
-the repository rather than the service.
+For a junction model the block renders the same canonical protocol an entity
+renders: a paged list of the junction rows, a read of one row by its pair, a
+batch read by pair, a paged read per =:list_by:= side, and the three write
+verbs as single and batch forms. A junction that declares =:read_only:= or
+=:client_read_only:= renders no write verb. The first also stops the
+repository writing, for a table provisioned outside the application; the
+second leaves the repository writable and stops the write surface short of
+it, at the service methods and the wire verbs, so a server-side producer
+writes through the repository rather than the service.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

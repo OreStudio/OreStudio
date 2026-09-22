@@ -142,15 +142,16 @@ Phase 1 subscribes =auth_handler= (so real login traffic can already
 be arriving) before Phase 2 arms =party_cache= with a token and warms
 it. A login landing in that exact window that triggers a cache miss
 (=auth_ensure_parties_cached=) calls =party_cache::load()= with no
-token provider set yet; since =read_for_cache= now requires a valid
-JWT, that particular load is rejected server-side and
+token provider set yet; since the canonical list the warm-up pages
+through requires a valid JWT, that particular load is rejected server-side
+and
 =party_cache::load()= just logs a warning and returns — leaving that
 one tenant's partition empty for that request. It is self-healing (the
 next cache miss, after Phase 2 completes, succeeds normally) and the
 window is only open for the few subscribe calls between =auth_handler=
 and the end of Phase 2 — but it is a real, if narrow, behavioural
-change from before this pattern existed (previously =read_for_cache=
-had no auth check, so the same race was silently harmless). Accepted
+change from before this pattern existed, when the warm-up read carried
+no auth check and the same race was harmless. Accepted
 as-is rather than engineered away, because doing so would mean
 delaying real traffic until Phase 2 completes — a bigger change with
 its own tradeoffs — for a window that is already this narrow and
@@ -187,7 +188,7 @@ diagnosable rather than a generic warning.
   Delegation]] — when to mint vs. delegate; this doc is about *when*
   in the startup sequence minting is safe.
 - [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as
-  first consumer)]] — the story whose =read_for_cache= auth fix
+  first consumer)]] — the story whose cache-warm-up auth fix
   surfaced this ordering question.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — how Phase 1's per-entity
   =register_<entity>_handlers()= calls compose into one registrar.

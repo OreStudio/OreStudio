@@ -113,6 +113,23 @@ public:
     std::vector<domain::business_unit>
     read_latest_by_code(context ctx, const std::string& party_id, const std::string& unit_name);
 
+    /**
+     * @brief Reads latest business units filtered by unit_code.
+     */
+    std::vector<domain::business_unit> read_latest_by_unit_code(context ctx,
+                                                                const std::string& unit_code);
+
+    /**
+     * @brief Reads the newest business units filtered by unit_code, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::business_unit> read_any_by_unit_code(context ctx,
+                                                             const std::string& unit_code);
+
 
     /**
      * @brief Reads all business units, possibly filtered by primary key.

@@ -112,6 +112,17 @@ public:
     std::vector<domain::counterparty> read_latest_by_code(context ctx,
                                                           const std::string& short_code);
 
+    /**
+     * @brief Reads the newest counterparties filtered by short_code, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::counterparty> read_any_by_short_code(context ctx,
+                                                             const std::string& short_code);
+
 
     /**
      * @brief Reads all counterparties, possibly filtered by primary key.

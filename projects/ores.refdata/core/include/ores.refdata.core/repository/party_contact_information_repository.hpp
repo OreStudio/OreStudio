@@ -112,6 +112,17 @@ public:
     std::vector<domain::party_contact_information>
     read_latest_by_code(context ctx, const std::string& party_id, const std::string& contact_type);
 
+    /**
+     * @brief Reads the newest party contact informations filtered by contact_type, current or not.
+     *
+     * History is addressed by the key the model declares and must stay readable
+     * after a delete, which closes the transaction-time window rather than
+     * removing the row. A latest read cannot resolve a closed row, so this one
+     * ignores the window and takes the newest match.
+     */
+    std::vector<domain::party_contact_information>
+    read_any_by_contact_type(context ctx, const std::string& contact_type);
+
 
     /**
      * @brief Reads all party contact informations, possibly filtered by primary key.

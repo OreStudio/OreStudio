@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Question: how should the first run journey look and behave on ores.web: Setup page, flat step list, new tenant steps inline, handoff, onboarding? Blocked by: Prototype the new tenant journey (first run reuses its steps).
+Question: how should the first run journey look and behave on ores.web: Setup page, flat step list, new tenant steps inline, handoff, onboarding? Blocked by: nothing. Build on the new tenant journey's variant A (stepper page); first run prepends Create system admin and appends onboarding.
 
 * Status
 

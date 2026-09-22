@@ -69,3 +69,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Verdict (user, 2026-09-22): *variant A, the stepper page*, wins.
+
+- *Layout*: a dedicated page with a flat step rail on the left and one
+  step at a time: Choose a starting point → Describe the tenant →
+  Review → Provisioning → Hand off.
+- *Text*: no intro box; the rail already lists the steps. One lead line
+  under each heading. The "you can leave and come back" note sits on
+  the provisioning step only.
+- *Profile cards*: tagline plus three bullets plus "N settings · M steps".
+- *Profile defaults*: a profile may fill in the tenant details. ACME
+  fills in name, code (=acme_corporation=), hostname
+  (=acme_corporation.localhost=), admin username and email. Only the
+  admin password stays blank.
+- *Logo*: ACME's logo shows on its card and in a tenant header on every
+  later step, on a light tile (its black text fails on the dark theme).
+  In the real build it comes from the image store, not the bundle.
+- *Passwords*: every new password uses the shared =NewPasswordField=
+  (policy rules, strength, confirmation, show/hide), kept in
+  =projects/ores.web/packages/web/src/ui/PasswordField.tsx=.
+
+Rejected: B (drawer over the Tenants list) and C (one progressive page).
+All three variants are kept on the throwaway branch
+=prototype/new-tenant-journey=. The feature branch keeps only A, as the
+base for the first run journey prototype.
+
+Open, for the contract: should a demo profile set a known admin
+password (forced change at first sign-in) so its details step needs no
+input?

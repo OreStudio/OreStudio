@@ -52,29 +52,6 @@ export const JOURNEY_STEPS = [
   },
 ] as const;
 
-export function JourneyIntro({ compact = false }: { readonly compact?: boolean }): ReactNode {
-  return (
-    <div className={cx('rounded-md border border-line bg-surface-overlay text-sm', compact ? 'p-3' : 'p-5')}>
-      <p className="text-ink">
-        You are creating a new tenant. When you finish, the tenant has its reference data, its parties and an
-        administrator who can sign in.
-      </p>
-      {!compact && (
-        <ol className="mt-3 list-decimal space-y-1 pl-5 text-ink-muted">
-          {JOURNEY_STEPS.map((s) => (
-            <li key={s.title}>
-              <span className="font-medium text-ink">{s.title}</span>: {s.lead}
-            </li>
-          ))}
-        </ol>
-      )}
-      <p className="mt-3 text-xs text-ink-faint">
-        Every tenant, and its progress, stays listed on the Tenants page. You can resume or retry from there.
-      </p>
-    </div>
-  );
-}
-
 export function StepLead({ index }: { readonly index: number }): ReactNode {
   return <p className="mb-5 text-sm text-ink-muted">{JOURNEY_STEPS[index]?.lead}</p>;
 }

@@ -551,3 +551,25 @@ def test_a_junction_keeps_the_key_column_named_like_provenance():
         "account_id", "party_id"]
     assert [f["name"] for f in messages["account_party_write"]["fields"]] == [
         "account_id", "party_id"]
+
+
+def test_a_fetched_combo_names_the_collection_its_options_come_from(tmp_path):
+    """A field states a domain type; the hop to a collection is resolved.
+
+    A junction links an account to a party, and neither is a value a person can
+    type, so both members are combos whose choices come from the other entity's
+    collection. Naming the collection here rather than in the field's row means
+    renaming that collection moves this with it, and a hop that does not resolve
+    states no source rather than a wrong one.
+    """
+    generate_from_model(
+        str(ACCOUNT_PARTY), CODEGEN / "library" / "data",
+        CODEGEN / "library" / "templates", tmp_path,
+        target_template="ts_ui.ts.mustache",
+        target_output="account_party_ui.ts")
+    rendered = (tmp_path / "account_party_ui.ts").read_text(encoding="utf-8")
+
+    assert ("lookup: { collection: 'accounts', valueField: 'id', "
+            "labelField: 'username' }") in rendered
+    assert ("lookup: { collection: 'parties', valueField: 'id', "
+            "labelField: 'name' }") in rendered

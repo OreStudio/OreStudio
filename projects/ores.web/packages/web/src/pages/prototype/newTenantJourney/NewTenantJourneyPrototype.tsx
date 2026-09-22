@@ -68,7 +68,7 @@ export function NewTenantJourneyPrototype(): ReactNode {
 export function FirstRunJourneyPrototype(): ReactNode {
   const t = useNewTenant();
   const [at, setAt] = useState(0);
-  const [admin, setAdmin] = useState({ username: 'admin', email: '', password: '', ok: false });
+  const [admin, setAdmin] = useState({ username: 'super_admin', email: '', password: '', ok: false });
   const [handedOff, setHandedOff] = useState(false);
   const [signIn, setSignIn] = useState({ password: '', ok: false, party: '' });
   useAdvanceWhenProvisioned(t, at === PROVISIONING + 1, useCallback(() => setAt(HANDOFF + 1), []));

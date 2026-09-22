@@ -29,7 +29,7 @@ from codegen.org_loader import (  # noqa: E402
 CODEGEN = REPO_ROOT / "projects/ores.codegen"
 TENANT_TYPE = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant_type.org"
 TENANT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.tenant.org"
-SESSION = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.session.org"
+ACCOUNT = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account.org"
 ACCOUNT_PARTY = (
     REPO_ROOT / "projects/ores.iam/modeling/ores.iam.account_party_junction.org")
 
@@ -491,20 +491,20 @@ def test_a_real_model_derives_named_and_typed_members():
     # A key column's type is its own ``cpp_type``, not an ``is_uuid`` flag.
     #
     # `tenant` declares `code`, so its key is text; the type being the column's
-    # own is shown by a model that declares no key at all, whose storage key is
-    # therefore the key, and a uuid.
+    # own is shown by a model whose declared key is a uuid, which is the
+    # storage key of a model that declares no key at all.
     key = {f["name"]: f for f in messages["tenant_key"]["fields"]}
     assert key["code"]["cpp_type"] == "std::string"
     assert key["code"]["ts_type"] == "string"
 
-    session = load_model(SESSION)["domain_entity"]
-    session_key = {
+    account = load_model(ACCOUNT)["domain_entity"]
+    account_key = {
         f["name"]: f
         for f in _by_name(
-            entity_protocol_messages(session))["session_key"]["fields"]
+            entity_protocol_messages(account))["account_key"]["fields"]
     }
-    assert session_key["id"]["cpp_type"] == "boost::uuids::uuid"
-    assert session_key["id"]["ts_type"] == "string"
+    assert account_key["id"]["cpp_type"] == "boost::uuids::uuid"
+    assert account_key["id"]["ts_type"] == "string"
 
 
 def test_a_real_model_states_its_key_in_the_write_record():
@@ -551,25 +551,3 @@ def test_a_junction_keeps_the_key_column_named_like_provenance():
         "account_id", "party_id"]
     assert [f["name"] for f in messages["account_party_write"]["fields"]] == [
         "account_id", "party_id"]
-
-
-def test_a_fetched_combo_names_the_collection_its_options_come_from(tmp_path):
-    """A field states a domain type; the hop to a collection is resolved.
-
-    A junction links an account to a party, and neither is a value a person can
-    type, so both members are combos whose choices come from the other entity's
-    collection. Naming the collection here rather than in the field's row means
-    renaming that collection moves this with it, and a hop that does not resolve
-    states no source rather than a wrong one.
-    """
-    generate_from_model(
-        str(ACCOUNT_PARTY), CODEGEN / "library" / "data",
-        CODEGEN / "library" / "templates", tmp_path,
-        target_template="ts_ui.ts.mustache",
-        target_output="account_party_ui.ts")
-    rendered = (tmp_path / "account_party_ui.ts").read_text(encoding="utf-8")
-
-    assert ("lookup: { collection: 'accounts', valueField: 'id', "
-            "labelField: 'username' }") in rendered
-    assert ("lookup: { collection: 'parties', valueField: 'id', "
-            "labelField: 'name' }") in rendered

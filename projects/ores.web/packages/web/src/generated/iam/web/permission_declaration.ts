@@ -42,7 +42,7 @@ export const permissionDescriptor: EntityDescriptor = {
     capabilities: {
         create: true,
         edit: true,
-        remove: false,
+        remove: true,
         history: false,
     },
     searchFields: [

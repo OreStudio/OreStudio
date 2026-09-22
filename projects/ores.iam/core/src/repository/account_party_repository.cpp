@@ -28,7 +28,6 @@
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_party_entity.hpp"
 #include "ores.iam.core/repository/account_party_mapper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
 #include <optional>
@@ -346,6 +345,11 @@ account_party_repository::remove(const boost::uuids::uuid& account_id,
                              "version"_c == expected);
 
     execute_delete_query(ctx_, query, lg(), "removing account party from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(account_id, party_id).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 

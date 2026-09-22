@@ -19,7 +19,8 @@
  *
  */
 
-import { flatten, type SourceCatalogue } from '../translate.js';
+import { flatten, mergeCatalogues, type SourceCatalogue } from '../translate.js';
+import { generatedMessages } from '../../entity/generatedEntities.js';
 
 /**
  * English, the source catalogue.
@@ -29,7 +30,7 @@ import { flatten, type SourceCatalogue } from '../translate.js';
  * named for what the message is, not where it appears, so moving a control does
  * not move its key.
  */
-export const en: SourceCatalogue = {
+const written: SourceCatalogue = {
   app: {
     name: 'ORE Studio',
     tagline: 'Enterprise-grade risk analytics, in the browser.',
@@ -183,6 +184,8 @@ export const en: SourceCatalogue = {
     last: 'Last',
     new: 'New',
     provenance: 'Provenance',
+    asOf: 'As of',
+    asOfNow: 'Now',
     general: 'General',
     related: 'Related',
   },
@@ -407,6 +410,16 @@ export const en: SourceCatalogue = {
     back: 'Back',
   },
 };
+
+/**
+ * The English catalogue: what people wrote, over what the models state.
+ *
+ * A model's words are the source for its own screen, so they are merged rather
+ * than copied. The hand-written catalogue wins where the two overlap, because
+ * a phrase somebody chose for a screen reads better than a field's label, and
+ * because the validation and feedback messages have nowhere else to live.
+ */
+export const en: SourceCatalogue = mergeCatalogues(generatedMessages, written);
 
 /** The English catalogue, flattened to dot paths. */
 export const enFlat = flatten(en);

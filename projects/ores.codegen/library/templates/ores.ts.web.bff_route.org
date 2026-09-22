@@ -103,19 +103,26 @@ The full template source. Edit here and re-tangle with
 /**
  * How the BFF reaches the {{{bff_route.entity}}} service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/{{{bff_route.component}}}/protocol/{{{bff_route.entity}}}_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{#bff_route.minted_write_default}}import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}{{^bff_route.minted_write_default}}import type { EntityRouteDescriptor } from '../../entity-routes.js';
+{{/bff_route.minted_write_default}}
 
 export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
   component: '{{{bff_route.component}}}',
   entity: '{{{bff_route.entity}}}',
   collection: '{{{bff_route.collection}}}',
   keyFields: [{{{bff_route.key_fields_block}}}],
+{{#bff_route.has_save}}  writeFields: [{{{bff_route.write_fields_block}}}],
+  writeDefaults: {{{bff_route.write_defaults_block}}},
+{{/bff_route.has_save}}  listHasAsOf: {{{bff_route.list_has_as_of}}},
+  listHasFilter: {{{bff_route.list_has_filter}}},
+  versionsHasFilter: {{{bff_route.versions_has_filter}}},
   subjects: {
     list: subjects.{{{bff_route.subjects_list}}},
 {{#bff_route.subjects_get}}    get: subjects.{{{bff_route.subjects_get}}},
@@ -138,10 +145,12 @@ export const {{{bff_route.entity_camel}}}Route: EntityRouteDescriptor = {
 | =entity_camel= | The same name in camel case, for the exported constant |
 | =collection= | The collection segment of the route, e.g. =tenant_types= |
 | =key_fields_block= | The key's members, in the order the model declares them, pre-rendered as a TypeScript array |
+| =write_fields_block=, =write_defaults_block=, =minted_write_default= | The write record's members, what each takes when the form carries none, and whether any member is minted by the caller; present only when the route serves a save |
 | =rows_field= | The array field the list response holds its rows in |
 | =history_rows_field= | The array field the history response holds its versions in; present only when the route is |
 | =subjects_list=, =subjects_get=, =subjects_save=, =subjects_remove=, =subjects_history= | The protocol module's =subjects= members, by message name |
-| =has_get=, =has_remove=, =has_history= | Whether the optional members are present, as TypeScript literals |
+| =has_save=, =has_get=, =has_remove=, =has_history= | Whether the optional members are present, as Mustache sections |
+| =list_has_as_of=, =list_has_filter=, =versions_has_filter= | Whether the list and versions requests declare those optional members, as TypeScript literals |
 
 * See also
 

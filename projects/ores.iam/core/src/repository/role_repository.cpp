@@ -192,7 +192,6 @@ role_repository::read_at_version(context ctx, const std::string& id, std::uint32
     return entities.front();
 }
 
-
 role_repository::remove_status
 role_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing role. " << "id: " << id;

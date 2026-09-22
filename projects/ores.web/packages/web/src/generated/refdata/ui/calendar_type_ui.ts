@@ -146,3 +146,33 @@ export const calendarTypeMeta = {
     columns: calendarTypeColumns,
     fields: calendarTypeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const calendarTypeMessages = {
+        calendar_type: {
+            title: 'Calendar Types',
+            singular: 'calendar type',
+            newTitle: 'New calendar type',
+            description: 'Reference data classifying what a calendar represents. Values include: public_holiday, central_bank_meeting, financial_centre, data_release, other. Lets a single calendar table hold heterogeneous entries (a national holiday calendar, a central bank\'s meeting schedule, a financial-centre business-day calendar) without collapsing their distinct provenance.',
+            fldCode: 'Code',
+            codePh: 'Enter calendar type code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

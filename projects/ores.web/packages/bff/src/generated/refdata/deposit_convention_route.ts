@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the deposit_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/deposit_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -38,6 +38,11 @@ export const depositConventionRoute: EntityRouteDescriptor = {
   entity: 'deposit_convention',
   collection: 'deposit_conventions',
   keyFields: ['id'],
+  writeFields: ['id', 'index_based', 'index', 'calendar', 'convention', 'end_of_month', 'day_count_fraction', 'settlement_days'],
+  writeDefaults: { id: '', index_based: false, index: null, calendar: null, convention: null, end_of_month: null, day_count_fraction: null, settlement_days: null },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_deposit_conventions_request,
     get: subjects.get_deposit_convention_request,

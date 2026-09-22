@@ -37,9 +37,13 @@ describe('the generated screen sets', () => {
     expect(generatedDescriptors.length).toBeGreaterThan(0);
   });
 
-  it('gives every entity a key, a collection and something to draw', () => {
+  it('gives every entity an address, a collection and something to draw', () => {
     for (const descriptor of generatedDescriptors) {
-      expect(descriptor.meta.keyField, descriptor.entity).not.toBe('');
+      // The address is the key the model declares, which is one member for
+      // most entities and the pair a junction links. A junction declares no
+      // natural key, so its metadata names none and the address is the whole
+      // key.
+      expect(descriptor.keyFields.length, descriptor.entity).toBeGreaterThan(0);
       expect(descriptor.meta.collection, descriptor.entity).not.toBe('');
       expect(descriptor.meta.columns.length, descriptor.entity).toBeGreaterThan(0);
       expect(descriptor.apiBase, descriptor.entity).toMatch(/^\/api\//);

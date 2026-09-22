@@ -178,3 +178,35 @@ export const sessionMeta = {
     columns: sessionColumns,
     fields: sessionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const sessionMessages = {
+        session: {
+            title: 'Sessions',
+            singular: 'session',
+            newTitle: 'New session',
+            description: 'A user session: one login or service-account connection, recorded for analytics, session listing and end-time tracking. The table is a TimescaleDB hypertable partitioned by start_time with 7-day chunks (see projects/ores.sql/create/iam/iam_sessions_create.sql). The table has no valid_from/valid_to, no GIST exclusion, no version column and no audit tail, and it keys on (id, start_time) rather than a single surrogate key -- the partition column must sit in the primary key of a hypertable. The :current_state: and :hypertable: flags in the * SQL ** Flags drawer select exactly that shape. The compound key is what makes this the first entity in the estate whose key carries a timestamp; the mapper, entity and generator templates gained the timestamp key-column branches they were missing. end_time is text not null default \'\', not a nullable timestamp, and client_ip is text, not inet. The model mirrors each column\'s real type; the domain projection is the column\'s type too, so a session\'s end_time is an empty string while the session is active and client_ip is a string. The richer readings (an instant, an IP address) belong to the consumer that needs them. The hand-written domain struct also carried party_id, visible_party_ids and username. No column backs any of them; they are the denormalised, party-scoped shape of a session, and the rule that an entity describes its table puts them on a message instead. They are declared as message fields on session_view in ores.iam.session_messages. The entity\'s CRUD handler and sub-registrar are switched off below: the hand-written session_handler already owns the iam.v1.sessions.* subjects that ores.iam.session_messages declares, and the generated session_handler.hpp would overwrite it. The generated session_protocol.hpp is suppressed by the same one-owner gate that the operation model already satisfies; only the competing handler is switched off here.',
+            fldAccountId: 'Account',
+            fldStartTime: 'Start',
+            fldEndTime: 'End',
+            fldClientIp: 'Client IP',
+            fldClientIdentifier: 'Client',
+            fldCountryCode: 'Country',
+            fldProtocol: 'Protocol',
+            colAccountId: 'Account',
+            colStartTime: 'Start',
+            colEndTime: 'End',
+            colClientIp: 'Client IP',
+            colCountryCode: 'Country',
+            colProtocol: 'Protocol',
+            colBytesSent: 'Bytes Sent',
+            colBytesReceived: 'Bytes Recv.',
+        }
+};

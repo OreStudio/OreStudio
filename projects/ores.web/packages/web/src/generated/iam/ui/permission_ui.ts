@@ -100,3 +100,26 @@ export const permissionMeta = {
     columns: permissionColumns,
     fields: permissionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const permissionMessages = {
+        permission: {
+            title: 'Permissions',
+            singular: 'permission',
+            newTitle: 'New permission',
+            description: 'An atomic permission that can be granted to roles. Permissions follow the hierarchical naming convention component::resource:action (for example iam::accounts:create; "*" grants everything and component::* grants every action within one component). The table is temporal (see projects/ores.sql/create/iam/iam_permissions_create.sql): it carries valid_from/valid_to, the GIST exclusion and the delete rule, but it has no version column and no audit tail -- permissions are system-defined constants seeded from bootstrap data, not user-editable records, so they need no change tracking. The :no_audit_columns: flag in the * SQL ** Flags drawer selects exactly that shape: it drops the version column and the four audit columns while keeping the transaction-time window. The :skip_uuid_check: suppression on id drops the nil-UUID check the hand-written table never had.',
+            fldCode: 'Code',
+            codePh: 'Enter a permission code',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colDescription: 'Description',
+        }
+};

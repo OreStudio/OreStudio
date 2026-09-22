@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the leg_type service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/leg_type_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -38,6 +38,11 @@ export const legTypeRoute: EntityRouteDescriptor = {
   entity: 'leg_type',
   collection: 'types',
   keyFields: ['code'],
+  writeFields: ['code', 'description'],
+  writeDefaults: { code: '', description: '' },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_leg_types_request,
     get: subjects.get_leg_type_request,

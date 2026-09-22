@@ -150,3 +150,34 @@ export const curveRoleMeta = {
     columns: curveRoleColumns,
     fields: curveRoleFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const curveRoleMessages = {
+        curve_role: {
+            title: 'Curve Roles',
+            singular: 'curve role',
+            newTitle: 'New curve role',
+            description: 'Reference data table defining the valid [[id:4A02B9BB-B4B5-45DE-9036-C81EAEE3E921][instrument_code]] curve-role values: DEPOSIT, FRA, SWAP -- the three pricing derivations ores.analytics.quant\'s curve_instrument_pricer implements (simple rate, implied forward, par-rate solve respectively) -- and the sentinel NONE for the great majority of instrument_code rows that are not curve instruments at all (options, credit, equity, and so on). NONE exists so instrument_code.curve_role can stay a required, FK-validated column rather than nullable free text, the same pattern [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit.NONE]] already establishes for tenor.unit. Managed by the system tenant, like other refdata code tables.',
+            fldCode: 'Code',
+            codePh: 'Enter curve role code',
+            fldName: 'Name',
+            namePh: 'Enter name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

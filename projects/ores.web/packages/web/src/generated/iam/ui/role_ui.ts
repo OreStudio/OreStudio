@@ -100,3 +100,26 @@ export const roleMeta = {
     columns: roleColumns,
     fields: roleFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const roleMessages = {
+        role: {
+            title: 'Roles',
+            singular: 'role',
+            newTitle: 'New role',
+            description: 'A named collection of permissions that can be assigned to accounts. Roles group related permissions for easier management: a "Trading" role might include permissions to read and execute trades, while a "Support" role might have read-only access to most resources. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_roles_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion and the delete rule, so the model takes the ordinary audited shape and needs no shape flag. The model describes the table alone. The hand-written domain struct also carried a std::vector<std::string> permission_codes that no column backs -- it is denormalised from ores_iam_role_permissions_tbl by an RBAC join. A joined shape is a message or a query result, never an entity member, so the member is not modelled and the generated role.hpp replaces it; the join itself stays in the hand-written authorization layer. The entity\'s CRUD handler and sub-registrar are switched off below: the hand-written role_handler already owns the iam.v1.roles.* subjects for the authorization protocol, and the generated role_handler.hpp would overwrite it. The generated role_protocol.hpp still declares the entity CRUD messages; only the competing handler is suppressed.',
+            fldName: 'Name',
+            namePh: 'Enter a role name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colName: 'Name',
+            colDescription: 'Description',
+        }
+};

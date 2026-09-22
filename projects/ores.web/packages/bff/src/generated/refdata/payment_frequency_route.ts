@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the payment_frequency service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -38,6 +38,11 @@ export const paymentFrequencyRoute: EntityRouteDescriptor = {
   entity: 'payment_frequency',
   collection: 'payment_frequencies',
   keyFields: ['code'],
+  writeFields: ['code', 'name', 'description', 'period_unit', 'period_multiplier', 'display_order'],
+  writeDefaults: { code: '', name: '', description: '', period_unit: '', period_multiplier: null, display_order: 0 },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_payment_frequencies_request,
     get: subjects.get_payment_frequency_request,

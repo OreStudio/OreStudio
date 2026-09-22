@@ -25,19 +25,24 @@
 /**
  * How the BFF reaches the crm_topology_config service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/crm_topology_config_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const crmTopologyConfigRoute: EntityRouteDescriptor = {
   component: 'refdata',
   entity: 'crm_topology_config',
   collection: 'crm_topology_configs',
   keyFields: ['name'],
+  writeFields: ['id', 'name', 'pivot_currency_code', 'enabled'],
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, name: '', pivot_currency_code: '', enabled: false },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_crm_topology_configs_request,
     get: subjects.get_crm_topology_config_request,

@@ -133,3 +133,30 @@ export const crmTopologyConfigMeta = {
     columns: crmTopologyConfigColumns,
     fields: crmTopologyConfigFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const crmTopologyConfigMessages = {
+        crm_topology_config: {
+            title: 'CRM Topology Configs',
+            singular: 'crm topology config',
+            newTitle: 'New crm topology config',
+            description: 'A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]\'s pivot currency and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (crm_driver_pair, a separate, config_id-referencing entity) that hang off it. ores.marketdata.service reads the enabled config per (tenant, party) and its enabled driver pairs, feeds them through ores.analytics.quant::topology_builder::build, and keeps one service::rate_engine per (tenant, party) up to date -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it is for market_series. Scoped to a tenant and a party so each party runs its own, independent CRM -- two parties in the same tenant may have entirely different topologies and never share an engine.',
+            fldName: 'Name',
+            namePh: 'e.g. primary',
+            fldPivotCurrencyCode: 'Pivot Currency',
+            fldEnabled: 'Enabled',
+            colName: 'Name',
+            colPivotCurrencyCode: 'Pivot Currency',
+            colEnabled: 'Enabled',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

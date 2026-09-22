@@ -21,7 +21,11 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { registerEntityRoutes, type EntityRouteDescriptor } from './entity-routes.js';
+import {
+  MINTED_WRITE_DEFAULT,
+  registerEntityRoutes,
+  type EntityRouteDescriptor,
+} from './entity-routes.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -66,6 +70,11 @@ function singleKeyDescriptor(): EntityRouteDescriptor {
     entity: 'tenant',
     collection: 'tenants',
     keyFields: ['code'],
+    writeFields: ['id', 'code', 'name'],
+    writeDefaults: { id: MINTED_WRITE_DEFAULT, code: '', name: '' },
+    listHasAsOf: false,
+    listHasFilter: false,
+    versionsHasFilter: false,
     subjects: {
       list: 'iam.v1.tenants.list',
       get: 'iam.v1.tenants.get',
@@ -76,6 +85,23 @@ function singleKeyDescriptor(): EntityRouteDescriptor {
     rowsField: 'tenants',
     getRowField: 'tenant',
     historyRowsField: 'versions',
+  };
+}
+
+/**
+ * A descriptor whose list request declares the optional members, and whose
+ * write record mints its surrogate key.
+ */
+function filteredDescriptor(): EntityRouteDescriptor {
+  return {
+    ...singleKeyDescriptor(),
+    collection: 'account_contact_informations',
+    keyFields: ['email'],
+    writeFields: ['id', 'email'],
+    writeDefaults: { id: MINTED_WRITE_DEFAULT, email: '' },
+    listHasAsOf: true,
+    listHasFilter: true,
+    versionsHasFilter: true,
   };
 }
 
@@ -91,6 +117,9 @@ function pairedKeyDescriptor(): EntityRouteDescriptor {
     entity: 'account_party',
     collection: 'account_parties',
     keyFields: ['account_id', 'party_id'],
+    listHasAsOf: false,
+    listHasFilter: false,
+    versionsHasFilter: false,
     subjects: {
       list: 'iam.v1.account_parties.list',
       get: 'iam.v1.account_parties.get',
@@ -144,16 +173,39 @@ describe('the canonical envelopes', () => {
     });
     expect(sent).toHaveLength(1);
     expect(sent[0]?.subject).toBe('iam.v1.tenants.put');
-    expect(sent[0]?.body).toEqual({
-      change: {
-        write: { code: 'ACME', name: 'Acme' },
-        precondition: { kind: 'must_not_exist', version: null },
-      },
-      intent: { reason_code: 'crud_create', commentary: 'created' },
+    const change = sent[0]?.body['change'] as { write: Record<string, unknown> };
+    expect(change.write['code']).toBe('ACME');
+    expect(change.write['name']).toBe('Acme');
+    expect(sent[0]?.body['change']).toMatchObject({
+      precondition: { kind: 'must_not_exist', version: null },
+    });
+    expect(sent[0]?.body['intent']).toEqual({
+      reason_code: 'crud_create',
+      commentary: 'created',
     });
     // The record carries the entity's own members: the intent is beside it,
     // not inside it, and no audit member is sent at all.
     expect(sent[0]?.body).not.toHaveProperty('data');
+    await server.close();
+  });
+
+  it('states every member of the write record, minting the key', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    await server.inject({
+      method: 'POST',
+      url: '/api/tenants',
+      payload: {
+        data: { code: 'ACME', name: 'Acme' },
+        intent: { reason_code: 'crud_create', commentary: '' },
+      },
+    });
+    // The wire format states every member a record declares, so a member the
+    // form did not carry takes the model's default, and the surrogate key the
+    // caller has to name gets a fresh identifier.
+    const write = (sent[0]?.body['change'] as { write: Record<string, unknown> })
+      .write;
+    expect(Object.keys(write).sort()).toEqual(['code', 'id', 'name']);
+    expect(write['id']).toMatch(/^[0-9a-f-]{36}$/);
     await server.close();
   });
 
@@ -171,6 +223,27 @@ describe('the canonical envelopes', () => {
     expect(sent[0]?.body).toMatchObject({
       change: { precondition: { kind: 'must_match_version', version: 7 } },
     });
+    await server.close();
+  });
+
+  it('answers a refused write with the service own words', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    replies = {
+      'iam.v1.tenants.put': {
+        result: { outcome: 'conflicting', message: 'the version is stale' },
+      },
+    };
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/tenants',
+      payload: {
+        data: { code: 'ACME' },
+        intent: { reason_code: 'crud_update', commentary: '' },
+        version: 7,
+      },
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({ message: 'the version is stale' });
     await server.close();
   });
 
@@ -194,12 +267,39 @@ describe('the canonical envelopes', () => {
     await server.close();
   });
 
-  it('states a type and an id for the one generic history request', async () => {
+  it('states the key and a page for the history request', async () => {
     const server = await withServer(singleKeyDescriptor());
     await server.inject({ method: 'GET', url: '/api/tenants/ACME/history' });
+    // The versions request addresses the entity's own key record, so the
+    // address and the request carry one key rather than two spellings of it.
+    // The order is the one order the store pages in.
     expect(sent[0]).toEqual({
       subject: 'iam.v1.tenants_versions.list',
-      body: { entity_type: 'ores.iam.tenant', entity_id: 'ACME' },
+      body: {
+        key: { code: 'ACME' },
+        offset: 0,
+        limit: 500,
+        order: { field: '', descending: false },
+      },
+    });
+    await server.close();
+  });
+
+  it('answers a history newest first', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    replies = {
+      'iam.v1.tenants_versions.list': {
+        result: { outcome: 'ok', message: '' },
+        versions: [{ version: 1 }, { version: 2 }, { version: 3 }],
+      },
+    };
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/tenants/ACME/history',
+    });
+    expect(response.json()).toEqual({
+      versions: [{ version: 3 }, { version: 2 }, { version: 1 }],
+      message: '',
     });
     await server.close();
   });
@@ -217,6 +317,38 @@ describe('the canonical envelopes', () => {
         order: { field: '', descending: false },
       },
     });
+    await server.close();
+  });
+
+  it('states the optional members the list request declares', async () => {
+    const server = await withServer(filteredDescriptor());
+    await server.inject({
+      method: 'GET',
+      url: '/api/account_contact_informations?offset=0&limit=25',
+    });
+    // A member the request declares is stated even when it carries nothing:
+    // the wire format refuses a message with a member absent.
+    expect(sent[0]?.body).toEqual({
+      offset: 0,
+      limit: 25,
+      order: { field: '', descending: false },
+      as_of: null,
+      filter: null,
+    });
+    await server.close();
+  });
+
+  it('answers the list total from the canonical response', async () => {
+    const server = await withServer(singleKeyDescriptor());
+    replies = {
+      'iam.v1.tenants.list': {
+        result: { outcome: 'ok', message: '' },
+        tenants: [{ code: 'ACME' }],
+        total: 59,
+      },
+    };
+    const response = await server.inject({ method: 'GET', url: '/api/tenants' });
+    expect(response.json()).toEqual({ rows: [{ code: 'ACME' }], totalCount: 59 });
     await server.close();
   });
 });

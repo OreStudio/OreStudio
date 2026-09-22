@@ -25,19 +25,24 @@
 /**
  * How the BFF reaches the calendar_event service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_event_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const calendarEventRoute: EntityRouteDescriptor = {
   component: 'refdata',
   entity: 'calendar_event',
   collection: 'calendar_events',
   keyFields: ['id'],
+  writeFields: ['id', 'calendar_code', 'event_date', 'diary_entry_type', 'name', 'description', 'source'],
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, calendar_code: '', event_date: '', diary_entry_type: '', name: '', description: null, source: null },
+  listHasAsOf: false,
+  listHasFilter: true,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_calendar_events_request,
     get: subjects.get_calendar_event_request,

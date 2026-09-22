@@ -242,27 +242,29 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     return result
 
 
-def generated_marker(template_name):
+def generated_marker(template_name, cmake=False):
     """
     Build the generated-file marker for a source output.
 
     Mirrors the marker the SQL templates carry, so a reader of a
-    generated header, implementation or TypeScript module can tell it is
-    codegen output and which template produced it.
+    generated header, implementation, build file or TypeScript module can
+    tell it is codegen output and which template produced it.
 
     Args:
         template_name (str): Basename of the template being rendered
+        cmake (bool): Emit CMake's ``#`` comments instead of a C block
 
     Returns:
         str: Comment block naming the template
     """
-    return (
-        "/**\n"
-        " * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY\n"
-        f" * Template: {template_name}\n"
-        " * To modify, update the template and regenerate.\n"
-        " */"
+    lines = (
+        "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
+        f"Template: {template_name}",
+        "To modify, update the template and regenerate.",
     )
+    if cmake:
+        return "\n".join(f"# {line}" for line in lines)
+    return "/**\n" + "\n".join(f" * {line}" for line in lines) + "\n */"
 
 
 def _emits_cpp(template_name):
@@ -273,6 +275,18 @@ def _emits_cpp(template_name):
     output is not C++ even if that template carries the C++ licence.
     """
     return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+
+
+def _emits_cmake(template_name):
+    """
+    Whether a template produces a CMake build file.
+
+    CMake carries no marker of its own, so a generated ``component_files.cmake``
+    or test ``CMakeLists.txt`` looked hand-written and invited a hand edit --
+    which the next regeneration then discarded. The marker is emitted with
+    ``#`` comments, which is what CMake reads.
+    """
+    return template_name.startswith('cmake_')
 
 
 def _emits_ts(template_name):
@@ -311,14 +325,15 @@ def render_template(template_path, data):
     extended_data = data.copy()
 
     template_name = os.path.basename(template_path)
-    for licence_key, emits in (
-        ('cpp_license', _emits_cpp),
-        ('ts_license', _emits_ts),
+    for licence_key, emits, cmake in (
+        ('cpp_license', _emits_cpp, False),
+        ('ts_license', _emits_ts, False),
+        ('cmake_license', _emits_cmake, True),
     ):
         if licence_key in extended_data and emits(template_name):
             extended_data[licence_key] = (
                 f"{extended_data[licence_key]}\n"
-                f"{generated_marker(template_name)}"
+                f"{generated_marker(template_name, cmake=cmake)}"
             )
 
     return _RENDERER.render(template_content, extended_data)
@@ -1958,6 +1973,8 @@ def ui_meta_projection(entity, model_path):
     fields = _ui_fields(visible_fields, entity_singular, nullable_by_field,
                         projects_dir)
     image_block = _ui_image(presentation, entity)
+    messages_block = _ui_messages(entity, presentation, visible_fields, columns,
+                                  entity_singular, key_field)
     return {
         'entity': entity_singular,
         'entity_camel': _ui_camel(entity_singular),
@@ -1968,12 +1985,85 @@ def ui_meta_projection(entity, model_path):
         # only holds when the key is one of the emitted fields.
         'key_in_fields': any(
             row.get('field') == key_field for row in visible_fields),
+        'has_messages': bool(messages_block),
+        'messages_block': messages_block or '',
         'has_image': bool(image_block),
         'image_block': image_block or '',
         'fields_block': _ui_render_array(fields, 0),
         'columns_block': _ui_render_array(
             _ui_columns(columns, entity_singular, presentation, icon_columns), 0),
     }
+
+
+def _ui_messages(entity, presentation, visible_fields, columns,
+                 entity_singular, key_field):
+    """The entity's own words, as the catalogue nested under its name.
+
+    The generated metadata refers to keys, and the words those keys resolve to
+    are the model's own: the detail field's label, the column's header, the
+    placeholder, the entity title and its brief. Emitting them beside the keys
+    is what stops every entity's labels being hand-copied into a catalogue, and
+    what keeps a label the model changes from being changed in one place only.
+
+    The words are English, because English is what the model states. A
+    translation for another language is a separate artefact, and until it
+    exists the translator falls back to these.
+    """
+    entity_singular = entity_singular or 'unknown'
+    singular = entity_singular.replace('_', ' ')
+    plural = (entity.get('entity_plural') or '').replace('_', ' ')
+    window_title = _ui_words(presentation.get('window_title'))
+    members = [
+        ('title', window_title or _ui_humanise(plural or entity_singular)),
+        ('singular', singular),
+        ('newTitle', f'New {singular}'),
+        ('description', _ui_words(entity.get('description') or entity.get('brief'))),
+    ]
+    for row in visible_fields:
+        field = row.get('field', '')
+        if not field:
+            continue
+        label = _ui_words(row.get('label')) or _ui_humanise(field)
+        members.append((f'fld{snake_to_pascal(field)}', label))
+        placeholder = _ui_words(row.get('placeholder'))
+        if placeholder:
+            members.append((f'{_ui_camel(field)}Ph', placeholder))
+    for column in columns:
+        field = column.get('field', '')
+        enum_name = column.get('enum_name', '')
+        if not enum_name:
+            continue
+        header = _ui_words(column.get('header')) or _ui_humanise(field)
+        members.append((f'col{enum_name}', header))
+    if not members:
+        return None
+    body = ',\n'.join(
+        ' ' * (_UI_MEMBER_INDENT + 4) + f'{name}: {_ui_str(value)}'
+        for name, value in members)
+    return ('{\n'
+            + ' ' * _UI_MEMBER_INDENT + f"{entity_singular}: {{\n"
+            + body + ',\n'
+            + ' ' * _UI_MEMBER_INDENT + '}\n'
+            + '}')
+
+
+def _ui_words(text):
+    """A model's prose on one line, because a literal spans one line.
+
+    A brief is written as a paragraph and a header may carry a line break, and
+    either would close the string it is written into.
+    """
+    return ' '.join(str(text or '').split())
+
+
+def _ui_humanise(name):
+    """A member's name as words, for a model that states none.
+
+    The words a person reads are the model's to state; this is the fallback for
+    a member the model left unlabelled, and it says the name rather than
+    nothing at all.
+    """
+    return name.replace('_', ' ').strip().title()
 
 
 def _ui_image(presentation, entity):
@@ -2236,13 +2326,27 @@ def bff_route_projection(entity, model_path):
         messages, f'list_{singular}_versions_request')
     versions_members = {field['name']
                         for field in (versions_request or {}).get('fields') or []}
-    has_audit_columns = bool(entity.get('has_audit_columns'))
+    write_defaults_block = _write_defaults_block(entity)
     projection = {
         'component': entity.get('component', ''),
         'entity': singular,
         'entity_camel': _ui_camel(singular),
         'collection': presentation.get('collection_name', ''),
         'key_fields_block': ', '.join(f"'{name}'" for name in key_members),
+        # The write record's members and what each takes when the form carries
+        # none. The wire format states every member, so a record assembled from
+        # the form alone would leave the rest absent and not decode.
+        'has_save': bool(subjects_save),
+        'write_fields_block': ', '.join(
+            f"'{field}'" for field in write_fields),
+        'write_defaults_block': write_defaults_block,
+        'minted_write_default': 'MINTED_WRITE_DEFAULT' in write_defaults_block,
+        # The optional members the list and versions requests declare. The same
+        # wire-format rule applies to a request: an optional member that is
+        # absent is a request the service cannot decode.
+        'list_has_as_of': _ui_bool('as_of' in list_members),
+        'list_has_filter': _ui_bool('filter' in list_members),
+        'versions_has_filter': _ui_bool('filter' in versions_members),
         'rows_field': _vector_field_name(list_response) or '',
         'subjects_list': subjects_list,
         'subjects_save': subjects_save,
@@ -2273,41 +2377,50 @@ def _ui_bool(value):
     return 'true' if value else 'false'
 
 
-def _write_defaults_block(entity):
-    """The value a write member takes when the form does not carry it.
+def _primary_key_columns(entity):
+    """The column names the entity's primary key is stated with, in order."""
+    primary_key = entity.get('primary_key') or {}
+    columns = [column.get('column')
+               for column in primary_key.get('columns') or []
+               if column.get('column')]
+    if not columns and primary_key.get('column'):
+        columns = [primary_key.get('column')]
+    return columns
 
-    A create sends the whole write record, and a member the form does not show
-    -- a surrogate key, a field the entity hides -- would otherwise go out
-    with no value at all, which is not a record the service can decode. Each
-    member takes the empty of its own type, and a surrogate primary key takes
-    a fresh identifier, because naming a row the store has never seen is the
+
+def _write_defaults_block(entity):
+    """What each write member takes when the form carries no value for it.
+
+    The wire format states every member a record declares, so a member the form
+    does not show -- a field the entity hides, a surrogate key it never asks
+    for -- still has to be sent, or the service cannot decode the record. Each
+    member takes the empty of its own wire type, and the caller mints the
+    surrogate key, because naming a row the store has never seen is the
     caller's to do.
 
-    Stated per member rather than inferred by the factory: only the model
-    knows which members are optional and which are identifiers.
+    The type read is the write record's own, not the column's: the domain type
+    holds a nullable member as an optional while the record states it plainly,
+    and the empty is the record's to state.
     """
-    from .org_loader import (  # noqa: PLC0415
-        _column_name,
-        write_record_columns,
-        write_record_for,
-    )
-    by_name = {_column_name(column): column
-               for column in write_record_columns(entity)}
+    from .org_loader import write_record_for  # noqa: PLC0415
+
     key_columns = set(_primary_key_columns(entity))
+    integers = ('std::int16_t', 'std::uint16_t', 'std::int32_t', 'std::uint32_t',
+                'std::int64_t', 'std::uint64_t', 'int')
     members = []
     for field in write_record_for(entity):
         name = field['name']
-        column = by_name.get(name) or {}
-        cpp_type = str(column.get('cpp_type') or field.get('cpp_type') or '')
-        if column.get('nullable'):
+        cpp_type = str(field.get('cpp_type') or '')
+        if cpp_type.startswith('std::optional<'):
             literal = 'null'
         elif cpp_type == 'boost::uuids::uuid':
-            literal = "'uuid'" if name in key_columns else 'null'
-        elif cpp_type in ('std::int32_t', 'std::uint32_t',
-                          'std::int64_t', 'std::uint64_t', 'int'):
+            literal = 'MINTED_WRITE_DEFAULT' if name in key_columns else 'null'
+        elif cpp_type in integers:
             literal = '0'
         elif cpp_type == 'bool':
             literal = 'false'
+        elif cpp_type == 'std::chrono::system_clock::time_point':
+            literal = "'1970-01-01T00:00:00Z'"
         else:
             literal = "''"
         members.append(f'{name}: {literal}')
@@ -4143,6 +4256,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'const std::string& {c["column"]}' for c in pk_columns
             )
             pk['args'] = ', '.join(c['column'] for c in pk_columns)
+            # The service's own key parameters, which name the type a caller
+            # holds rather than the text the store keeps. A uuid primary key is
+            # addressed as a uuid, so the signature alone says which key is
+            # wanted and a human-readable key cannot be passed where a storage
+            # key belongs -- the two are both text otherwise, and passing the
+            # wrong one compiles and reads as a missing record. A compound or
+            # non-uuid key has no uuid to name, so it stays text.
+            _single_uuid = (
+                len(pk_columns) == 1 and bool(pk_columns[0].get('is_uuid')))
+            pk['typed_params'] = (
+                f'const boost::uuids::uuid& {pk_columns[0]["column"]}'
+                if _single_uuid else pk['params'])
+            pk['typed_args'] = (
+                f'boost::uuids::to_string({pk_columns[0]["column"]})'
+                if _single_uuid else pk['args'])
+            pk['is_single_uuid'] = _single_uuid
             # The same key read from a protocol key record rather than from
             # bare parameters (the repository's own key parameters are text
             # for every column, so a uuid column is converted here and the
@@ -4287,14 +4416,32 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # key column (not just the first) so a compound key's change
             # notification can distinguish two rows that share only their
             # leading key column (e.g. subject_area's name across domains).
+            from .org_loader import (  # deferred to avoid circular import
+                _column_name, declared_key_column)
+            # The key the trigger announces is the key the model declares --
+            # the same one the event type carries and the same one a history
+            # request names. Building it from the storage key announces a key
+            # no reader of the event has, which is how an entity that plainly
+            # publishes events appeared to publish none.
+            _notify_key_column = declared_key_column(domain_entity)
+            if _notify_key_column is not None:
+                # A declared key may come from the natural keys or the plain
+                # columns, where the field is spelled ``name``; the templates
+                # below read ``column``.
+                _notify_column = dict(_notify_key_column)
+                _notify_column.setdefault(
+                    'column', _column_name(_notify_key_column))
+                notify_columns = [_notify_column]
+            else:
+                notify_columns = pk_columns
             pk['notify_declarations'] = '\n    '.join(
-                f"changed_{c['column']} {c['type']};" for c in pk_columns
+                f"changed_{c['column']} {c['type']};" for c in notify_columns
             )
             pk['notify_assign_old'] = '\n        '.join(
-                f"changed_{c['column']} := OLD.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := OLD.{c['column']};" for c in notify_columns
             )
             pk['notify_assign_new'] = '\n        '.join(
-                f"changed_{c['column']} := NEW.{c['column']};" for c in pk_columns
+                f"changed_{c['column']} := NEW.{c['column']};" for c in notify_columns
             )
             # The notification carries the key as its own object, because it is
             # the entity's key record: one column here, a pair there, and the
@@ -4303,7 +4450,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # The event carries the key the model declares, not the storage key,
             # so the comparison is stated in the declared key's own member.
             from .org_loader import (  # deferred to avoid circular import
-                declared_key_column, declared_key_field)
+                declared_key_field)
             _event_key = declared_key_column(domain_entity)
             if _event_key is not None:
                 _event_name = declared_key_field(domain_entity)
@@ -4315,9 +4462,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     for c in pk_columns)
             pk['notify_key_object'] = 'jsonb_build_object(' + ', '.join(
                 f"'{c['column']}', changed_{c['column']}"
-                for c in pk_columns) + ')'
+                for c in notify_columns) + ')'
             pk['notify_id_array'] = ', '.join(
-                f"changed_{c['column']}" for c in pk_columns
+                f"changed_{c['column']}" for c in notify_columns
             )
         # Process the presentation drawer
         if 'presentation' in domain_entity:
@@ -4982,6 +5129,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_protocol_messages,
             key_finders,
+            key_resolvers,
             declared_key_field,
             declared_key_column,
             key_is_primary,
@@ -5029,6 +5177,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # row. Stated as one list because the two are the same method with a
         # different column and suffix, and the template states the query once.
         domain_entity['key_finders'] = key_finders(domain_entity)
+        # The reads that resolve a declared key without the transaction-time
+        # window, which is what history needs so that a closed row is still
+        # addressable. Kept apart from key_finders because a model that states
+        # its own latest read has said nothing about this one.
+        domain_entity['key_resolvers'] = key_resolvers(domain_entity)
         # The key the model declares, and whether the store keeps it as the
         # storage key too. When the two differ the operations carry the
         # declared key and the reads resolve it; when they agree nothing is

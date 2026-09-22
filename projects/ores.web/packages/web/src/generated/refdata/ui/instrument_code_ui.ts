@@ -199,3 +199,41 @@ export const instrumentCodeMeta = {
     columns: instrumentCodeColumns,
     fields: instrumentCodeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const instrumentCodeMessages = {
+        instrument_code: {
+            title: 'Instrument Codes',
+            singular: 'instrument code',
+            newTitle: 'New instrument code',
+            description: 'General-purpose product catalogue: one row per instrument/product type the system knows about, covering every trade type in ORE\'s own authoritative oreTradeType enumeration (external/ore/xsd/instruments.xsd), plus one ORE Studio-specific addition, DEPO (ORE has no distinct money-market-deposit trade type — it models a deposit as a single-period Swap — so DEPO is added purely to give the IR Curve Template a distinct short-end label; its pricing still derives from the same par-rate formula a single-period swap would use). The code column is deliberately not ORE\'s own oreTradeType spelling: traders need something they can actually type quickly, and ORE\'s names (FxDoubleBarrierOption, EquityStrikeResettableOption) don\'t serve that. code is instead a short, FIX-inspired mnemonic (FRA, IRS, CDS, FXBAR, EQVS...), unique and typically under 10 characters. The literal ORE oreTradeType string, where one exists, is preserved separately in ore_trade_type (nullable — null only for DEPO) for future ORE trade-file interop; it is not itself validated or FK\'d anywhere, only carried as a reference. Each row that describes one instrument is tagged with the asset_class_code it belongs to; rows that do not are left untagged (see asset_class below). Not scoped to any single consumer: the IR Curve Template (which consumes the DEPO/FRA/IRS rates entries for its tenor roles) is the first consumer, but this catalogue exists independently for any future feature needing to classify or enumerate the instrument types the system supports. Managed by the system tenant, like other shared code tables.',
+            fldCode: 'Code',
+            codePh: 'Enter a short code (e.g. FRA)',
+            fldName: 'Name',
+            namePh: 'Enter full name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            fldAssetClass: 'Asset Class',
+            fldOreTradeType: 'ORE Trade Type',
+            oreTradeTypePh: 'Enter the literal ORE oreTradeType (if any)',
+            fldCurveRole: 'Curve Role',
+            fldDisplayOrder: 'Display Order',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colAssetClass: 'Asset Class',
+            colOreTradeType: 'ORE Trade Type',
+            colCurveRole: 'Curve Role',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

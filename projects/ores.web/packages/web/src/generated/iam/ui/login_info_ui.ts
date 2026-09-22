@@ -192,3 +192,37 @@ export const loginInfoMeta = {
     columns: loginInfoColumns,
     fields: loginInfoFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const loginInfoMessages = {
+        login_info: {
+            title: 'Login Info',
+            singular: 'login info',
+            newTitle: 'New login info',
+            description: 'Login tracking and security state for one account: the last successful login, the running failed-attempt count, the lock and online flags, the forced password-reset flag, and the IP address of the last success and the last attempt. One row per account, keyed by account_id. The table is current-state (see projects/ores.sql/create/iam/iam_login_info_create.sql): it carries no valid_from/valid_to, no GIST exclusion, no version column and no audit tail, unlike the bi-temporal tables every other domain_entity in this component generates. The :current_state: flag in the * SQL ** Flags drawer selects that shape. Three suppressions keep the generated DDL at exactly the constraints the hand-written table has: :skip_uuid_check: on account_id drops the nil-UUID check, :skip_check: on the account foreign key drops the account existence check, and the * SQL ** Indexes drawer restates the three hand-written indexes so none is lost.',
+            fldAccountId: 'Account',
+            accountIdPh: 'Enter the account identifier',
+            fldLastLogin: 'Last Login',
+            fldFailedLogins: 'Failed Logins',
+            fldLocked: 'Locked',
+            fldOnline: 'Online',
+            fldPasswordResetRequired: 'Password Reset Required',
+            fldLastIp: 'Last IP',
+            fldLastAttemptIp: 'Last Attempt IP',
+            colAccountId: 'Account',
+            colLastLogin: 'Last Login',
+            colFailedLogins: 'Failed Logins',
+            colLocked: 'Locked',
+            colOnline: 'Online',
+            colPasswordResetRequired: 'Password Reset Req.',
+            colLastIp: 'Last IP',
+            colLastAttemptIp: 'Last Attempt IP',
+        }
+};

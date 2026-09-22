@@ -141,3 +141,33 @@ export const bookPurposeTypeMeta = {
     columns: bookPurposeTypeColumns,
     fields: bookPurposeTypeFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const bookPurposeTypeMessages = {
+        book_purpose_type: {
+            title: 'Book Purpose Types',
+            singular: 'book purpose type',
+            newTitle: 'New book purpose type',
+            description: 'Reference data table defining the risk role a book plays — what kind of trading/operational activity happens in it, as distinct from its regulatory type (see regulatory_book_type) or how its ledger balance is fed. Examples: \'Trading\', \'Reserve\', \'Funding\', \'Wash\', \'Write-off\', \'Test\', \'Sales\', \'Sweep target\', \'Remittance target\'. Book purpose types are mutually exclusive — a book carries exactly one at a time — and managed by the system tenant. See [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] for the full analysis of why this is a lookup entity rather than independent boolean flags, and why the values are mutually exclusive with each other but independent of regulatory type and ledger feed.',
+            fldCode: 'Code',
+            codePh: 'Enter book purpose type code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldDescription: 'Description',
+            descriptionPh: 'Enter a description',
+            colCode: 'Code',
+            colName: 'Name',
+            colDescription: 'Description',
+            colDisplayOrder: 'Display Order',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

@@ -20,6 +20,7 @@
  */
 
 import { catalogueSchema, flatten, type SourceCatalogue } from '../translate.js';
+import { generatedMessageKeys } from '../../entity/generatedEntities.js';
 import { en as source } from './en.js';
 
 /** French. Typed against the English catalogue, so a stray key is a compile error. */
@@ -173,6 +174,8 @@ const fr: SourceCatalogue = {
     last: 'Dernière',
     new: 'Nouveau',
     provenance: 'Provenance',
+    asOf: 'À la date du',
+    asOfNow: 'Maintenant',
     general: 'Général',
     related: 'Associé',
   },
@@ -399,7 +402,7 @@ const fr: SourceCatalogue = {
   },
 };
 
-catalogueSchema(flatten(source)).parse(flatten(fr));
+catalogueSchema(flatten(source), generatedMessageKeys).parse(flatten(fr));
 export { fr };
 
 /** The catalogue, flattened to dot paths. */

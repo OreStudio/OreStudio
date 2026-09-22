@@ -25,19 +25,24 @@
 /**
  * How the BFF reaches the counterparty_identifier service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_identifier_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const counterpartyIdentifierRoute: EntityRouteDescriptor = {
   component: 'refdata',
   entity: 'counterparty_identifier',
   collection: 'counterparty_identifiers',
   keyFields: ['id_value'],
+  writeFields: ['id', 'counterparty_id', 'id_scheme', 'id_value', 'description'],
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, counterparty_id: null, id_scheme: '', id_value: '', description: '' },
+  listHasAsOf: false,
+  listHasFilter: true,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_counterparty_identifiers_request,
     get: subjects.get_counterparty_identifier_request,

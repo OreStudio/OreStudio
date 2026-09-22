@@ -176,3 +176,38 @@ export const countryMeta = {
     fields: countryFields,
     image: { field: 'image_id', kind: 'flag' },
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const countryMessages = {
+        country: {
+            title: 'Countries',
+            singular: 'country',
+            newTitle: 'New country',
+            description: 'ISO 3166-1 country definitions used for reference data. Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.',
+            fldAlpha2Code: 'Alpha-2 Code',
+            alpha2CodePh: 'Enter country alpha2 code',
+            fldAlpha3Code: 'Alpha-3 Code',
+            alpha3CodePh: 'Enter country alpha3 code',
+            fldNumericCode: 'Numeric Code',
+            numericCodePh: 'Enter ISO numeric code',
+            fldName: 'Name',
+            namePh: 'Enter display name',
+            fldOfficialName: 'Official Name',
+            officialNamePh: 'Enter official country name',
+            colAlpha2Code: 'Alpha-2 Code',
+            colAlpha3Code: 'Alpha-3 Code',
+            colNumericCode: 'Numeric Code',
+            colName: 'Name',
+            colOfficialName: 'Official Name',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

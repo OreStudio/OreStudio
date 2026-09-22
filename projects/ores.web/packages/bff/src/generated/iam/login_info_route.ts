@@ -25,19 +25,22 @@
 /**
  * How the BFF reaches the login_info service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/iam/protocol/login_info_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const loginInfoRoute: EntityRouteDescriptor = {
   component: 'iam',
   entity: 'login_info',
   collection: 'login_info',
   keyFields: ['account_id'],
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: false,
   subjects: {
     list: subjects.list_login_info_request,
     get: subjects.get_login_info_request,

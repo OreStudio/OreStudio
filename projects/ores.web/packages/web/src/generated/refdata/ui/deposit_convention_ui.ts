@@ -184,3 +184,39 @@ export const depositConventionMeta = {
     columns: depositConventionColumns,
     fields: depositConventionFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const depositConventionMessages = {
+        deposit_convention: {
+            title: 'Deposit Conventions',
+            singular: 'deposit convention',
+            newTitle: 'New deposit convention',
+            description: 'Specifies the settlement lag, calendar, and day count for short-term deposits used as the near-end instruments when bootstrapping a yield curve. Corresponds to the <Deposit> element in ORE conventions.xml. When index_based is true the remaining fields may be omitted and are instead inherited from the referenced IBOR index convention.',
+            fldIndexBased: 'Index Based',
+            fldIndex: 'Index',
+            indexPh: 'e.g. USD-LIBOR',
+            fldCalendar: 'Calendar',
+            calendarPh: 'e.g. TARGET',
+            fldConvention: 'Convention',
+            conventionPh: 'e.g. Following',
+            fldDayCountFraction: 'Day Count Fraction',
+            dayCountFractionPh: 'e.g. ACT/360',
+            fldEndOfMonth: 'End Of Month',
+            fldSettlementDays: 'Settlement Days',
+            colId: 'Id',
+            colIndexBased: 'Index Based',
+            colIndex: 'Index',
+            colCalendar: 'Calendar',
+            colDayCountFraction: 'DCF',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

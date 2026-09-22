@@ -40,6 +40,7 @@
  */
 import type { ComponentDefinition, EntityDefinition, ResolvedEntity } from './types.js';
 import type { EntityDescriptor } from '../entity/descriptor.js';
+import { generatedDescriptors } from '../entity/generatedEntities.js';
 import { tenantTypeDescriptor } from '../generated/iam/web/tenant_type_declaration.js';
 import { accountContactInformationDescriptor } from '../generated/iam/web/account_contact_information_declaration.js';
 import { accountTypeDescriptor } from '../generated/iam/web/account_type_declaration.js';
@@ -112,6 +113,40 @@ export function assertWiredPath(descriptor: EntityDescriptor): void {
         `'${descriptor.routeSegment}' but the registry declares no such path`,
     );
   }
+}
+
+/**
+ * The mark a generated entity gets when the curated list does not name it.
+ *
+ * A mark is a human choice, and the list above is where a person makes it. An
+ * entity whose model declared a screen and which nobody has chosen a mark for
+ * still has to render, so it takes the plain table rather than nothing.
+ */
+const GENERATED_ENTITY_ICON: EntityDefinition['icon'] = 'table';
+
+/**
+ * Adds every entity whose model declared a screen set.
+ *
+ * The list above states the order and the marks of the entities somebody
+ * curated; a model that opts into the web facet adds itself, so an entity with
+ * screens is an entity the navigation shows. An entity the list already
+ * declares keeps its id, its mark and its place; one declared as planned and
+ * since built takes the declaration rather than being listed twice.
+ */
+function withGenerated(component: ComponentDefinition): ComponentDefinition {
+  const byPath = new Map(component.entities.map((entity) => [entity.path, entity]));
+  for (const descriptor of generatedDescriptors) {
+    if (descriptor.component !== component.id) continue;
+    const declared = byPath.get(descriptor.routeSegment);
+    if (declared?.descriptor !== undefined) continue;
+    byPath.set(descriptor.routeSegment, {
+      id: declared?.id ?? descriptor.entity,
+      icon: declared?.icon ?? GENERATED_ENTITY_ICON,
+      path: descriptor.routeSegment,
+      descriptor,
+    });
+  }
+  return { ...component, entities: [...byPath.values()] };
 }
 
 export const iamComponent: ComponentDefinition = {
@@ -416,7 +451,8 @@ export const platformComponent: ComponentDefinition = {
  *
  * The order is the declaration. Nothing sorts it afterwards, which is what the Qt
  * client has to do for Data Quality because its order was implicit in plugin load
- * order.
+ * order. Each one gains the entities its models declare, so declaring a screen
+ * is what shows it.
  */
 export const COMPONENTS: readonly ComponentDefinition[] = [
   iamComponent,
@@ -427,7 +463,7 @@ export const COMPONENTS: readonly ComponentDefinition[] = [
   dataQualityComponent,
   computeComponent,
   workflowComponent,
-];
+].map(withGenerated);
 
 /** Components reached from the sidebar footer rather than the list. */
 export const PLATFORM_COMPONENTS: readonly ComponentDefinition[] = [platformComponent];

@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the overnight_index_convention service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/overnight_index_convention_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -38,6 +38,11 @@ export const overnightIndexConventionRoute: EntityRouteDescriptor = {
   entity: 'overnight_index_convention',
   collection: 'overnight_index_conventions',
   keyFields: ['id'],
+  writeFields: ['id', 'fixing_calendar', 'day_count_fraction', 'settlement_days'],
+  writeDefaults: { id: '', fixing_calendar: '', day_count_fraction: '', settlement_days: 0 },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_overnight_index_conventions_request,
     get: subjects.get_overnight_index_convention_request,

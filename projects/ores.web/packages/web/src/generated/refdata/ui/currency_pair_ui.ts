@@ -159,3 +159,32 @@ export const currencyPairMeta = {
     columns: currencyPairColumns,
     fields: currencyPairFields,
 } as const;
+/**
+ * The entity's own words, in English, keyed the way the catalogue is.
+ *
+ * The model states them: the detail field's label, the column's header, the
+ * placeholder, the title and the brief. They are emitted here rather than
+ * written into a catalogue by hand, so a label the model changes changes in
+ * one place, and a language that has no translation yet falls back to these
+ * rather than to a key nobody can read.
+ */
+export const currencyPairMessages = {
+        currency_pair: {
+            title: 'Currency Pairs',
+            singular: 'currency pair',
+            newTitle: 'New currency pair',
+            description: 'Currency pair identity: base/quote legs, deliverability, classification, and fixing source. Conventions (pip factor, tick size, calendars, business day convention) live 1:1 in [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase\'s existing *_convention entity family. spot_days, calendars, and G11 membership are *derived* at read time from the two legs, not stored here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design rationale.',
+            fldPairCode: 'Pair Code',
+            pairCodePh: 'e.g. EUR/USD',
+            fldBaseCurrency: 'Base Currency',
+            fldQuoteCurrency: 'Quote Currency',
+            fldClassification: 'Classification',
+            colPairCode: 'Pair',
+            colBaseCurrency: 'Base',
+            colQuoteCurrency: 'Quote',
+            colClassification: 'Classification',
+            colVersion: 'Version',
+            colModifiedBy: 'Modified By',
+            colRecordedAt: 'Recorded At',
+        }
+};

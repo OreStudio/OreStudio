@@ -25,10 +25,10 @@
 /**
  * How the BFF reaches the tenor service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import type { EntityRouteDescriptor } from '../../entity-routes.js';
@@ -38,6 +38,11 @@ export const tenorRoute: EntityRouteDescriptor = {
   entity: 'tenor',
   collection: 'tenors',
   keyFields: ['code'],
+  writeFields: ['code', 'display_name', 'description', 'sort_order', 'kind', 'unit', 'multiplier'],
+  writeDefaults: { code: '', display_name: '', description: '', sort_order: 0, kind: '', unit: '', multiplier: null },
+  listHasAsOf: false,
+  listHasFilter: false,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_tenors_request,
     get: subjects.get_tenor_request,

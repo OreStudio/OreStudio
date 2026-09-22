@@ -25,19 +25,24 @@
 /**
  * How the BFF reaches the party_contact_information service.
  *
- * The descriptor holds values and no functions: the collection, the natural
- * key, the members a write record carries and the subjects. The generic
- * factory builds the canonical envelopes from those, so the entity adds no
- * handler of its own and no envelope of its own.
+ * The descriptor holds values and no functions: the collection, the key, the
+ * members a write record carries, the optional members the requests declare
+ * and the subjects. The generic factory builds the canonical envelopes from
+ * those, so the entity adds no handler of its own and no envelope of its own.
  */
 import { subjects } from '@ores/wire-protocol/generated/refdata/protocol/party_contact_information_protocol';
-import type { EntityRouteDescriptor } from '../../entity-routes.js';
+import { MINTED_WRITE_DEFAULT, type EntityRouteDescriptor } from '../../entity-routes.js';
 
 export const partyContactInformationRoute: EntityRouteDescriptor = {
   component: 'refdata',
   entity: 'party_contact_information',
   collection: 'party_contact_informations',
   keyFields: ['contact_type'],
+  writeFields: ['id', 'contact_type', 'street_line_1', 'street_line_2', 'city', 'state', 'country_code', 'postal_code', 'phone', 'email', 'web_page'],
+  writeDefaults: { id: MINTED_WRITE_DEFAULT, contact_type: '', street_line_1: '', street_line_2: '', city: '', state: '', country_code: '', postal_code: '', phone: '', email: '', web_page: '' },
+  listHasAsOf: false,
+  listHasFilter: true,
+  versionsHasFilter: true,
   subjects: {
     list: subjects.list_party_contact_informations_request,
     get: subjects.get_party_contact_information_request,

@@ -395,19 +395,29 @@ std::uint32_t tenant_service::count_tenants() {
 }
 
 
-std::optional<domain::tenant> tenant_service::get_tenant_at_version(const std::string& id,
+std::optional<domain::tenant> tenant_service::get_tenant_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting tenant at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
-std::optional<domain::tenant> tenant_service::get_tenant(const std::string& id) {
+std::optional<domain::tenant> tenant_service::get_tenant(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting tenant. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
+}
+
+std::optional<domain::tenant> tenant_service::get_tenant_by_code(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenant by code: " << code;
+    messaging::tenant_key k;
+    k.code = code;
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 std::vector<domain::tenant> tenant_service::get_tenants(const std::vector<std::string>& ids) {
@@ -437,9 +447,9 @@ void tenant_service::save_tenants(const std::vector<domain::tenant>& tenants) {
     repo_.write(ctx_, ts);
 }
 
-void tenant_service::delete_tenant(const std::string& id) {
+void tenant_service::delete_tenant(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenant. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed tenant. " << "id: " << id;
 }
 
@@ -456,7 +466,12 @@ std::vector<domain::tenant> tenant_service::get_tenant_history(const std::string
     // history as having none.
     messaging::tenant_key k;
     k.code = key;
-    const auto found = read_one(repo_, ctx_, k);
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+    const auto found = repo_.read_any_by_code(ctx_, k.code);
     if (found.empty())
         return {};
     const auto& row = found.front();

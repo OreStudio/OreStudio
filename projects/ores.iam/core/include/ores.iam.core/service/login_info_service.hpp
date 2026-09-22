@@ -103,9 +103,12 @@ public:
     /**
      * @brief Retrieves a single login info by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The login info if found, std::nullopt otherwise.
      */
-    std::optional<domain::login_info> get_login_info(const std::string& account_id);
+    std::optional<domain::login_info> get_login_info(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Retrieves a batch of login info by primary key.
@@ -133,7 +136,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_login_info(const std::string& account_id);
+    void delete_login_info(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Deletes login info by their primary keys.

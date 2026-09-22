@@ -505,16 +505,16 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{/amend_activity}}
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_{{entity_singular_short}}_history(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}});
+        auto versions = svc.get_{{entity_singular_short}}_history({{#key_is_primary}}id_str{{/key_is_primary}}{{^key_is_primary}}v.{{{scaffold_prefix}}}{{declared_key}}{{/key_is_primary}}{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}});
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().{{{audit_prefix}}}change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_{{entity_singular_short}}(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}});
+        svc.delete_{{entity_singular_short}}({{#primary_key.is_single_uuid}}v.{{{scaffold_prefix}}}{{primary_key.column}}{{/primary_key.is_single_uuid}}{{^primary_key.is_single_uuid}}id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}{{/primary_key.is_single_uuid}});
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}).has_value());
-        REQUIRE(svc.get_{{entity_singular_short}}_history(id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}).size() == versions.size());
+        REQUIRE_FALSE(svc.{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{#primary_key.is_single_uuid}}v.{{{scaffold_prefix}}}{{primary_key.column}}{{/primary_key.is_single_uuid}}{{^primary_key.is_single_uuid}}id_str{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}{{/primary_key.is_single_uuid}}).has_value());
+        REQUIRE(svc.get_{{entity_singular_short}}_history({{#key_is_primary}}id_str{{/key_is_primary}}{{^key_is_primary}}v.{{{scaffold_prefix}}}{{declared_key}}{{/key_is_primary}}{{#primary_key.extra_columns}}, v.{{{scaffold_prefix}}}{{column}}{{/primary_key.extra_columns}}).size() == versions.size());
     }
 }
 {{/domain_entity}}

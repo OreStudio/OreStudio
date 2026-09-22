@@ -93,8 +93,12 @@ TEST_CASE("read_latest_role_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     REQUIRE(read_roles.size() == 1);
-    CHECK(read_roles[0].id == target_id);
-    CHECK(read_roles[0].name == r.name);
+    // version and recorded_at are stamped by the database, so they are taken
+    // from the read row; everything else must survive the round trip.
+    auto expected = r;
+    expected.version = read_roles[0].version;
+    expected.recorded_at = read_roles[0].recorded_at;
+    CHECK(read_roles[0] == expected);
 }
 
 TEST_CASE("read_nonexistent_role", tags) {

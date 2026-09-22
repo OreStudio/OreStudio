@@ -145,6 +145,23 @@ std::vector<domain::account> account_repository::read_latest(context ctx, const 
 }
 
 
+std::vector<domain::account> account_repository::read_any_by_username(context ctx,
+                                                                      const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any account by username: " << username;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+                       where("tenant_id"_c == tid && "username"_c == username) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<account_entity, domain::account>(
+        ctx,
+        query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(),
+        "Reading any account by username.");
+}
+
+
 std::vector<domain::account> account_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();

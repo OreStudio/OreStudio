@@ -42,7 +42,7 @@ country  (domain_entity, refdata)
 
   ✅  projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp  ←  cpp_domain_type_json_io.hpp.mustache
   ⚠️   projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp  ←  cpp_domain_type_class.hpp.mustache
-  ⚠️   projects/ores.web/packages/web/src/generated/refdata/ui/country_ui.ts  ←  ts_ui.ts.mustache
+  ⚠️   projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol/country_protocol.ts  ←  ts_protocol.ts.mustache
   ⚠️   projects/ores.sql/create/refdata/refdata_countries_create.sql  ←  sql_schema_non_temporal_create.mustache
   ...
 #+end_example

@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.crm_topology_config
 #+description: Codegen entity model for the refdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.

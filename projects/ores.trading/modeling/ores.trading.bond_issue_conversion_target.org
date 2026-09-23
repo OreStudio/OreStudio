@@ -2,7 +2,7 @@
 :ID: 46946dc3-d944-433d-8619-6fc39145d4b6
 :END:
 #+title: ores.trading.bond_issue_conversion_target
-#+description: Codegen entity model for the trading =bond_issue_conversion_target= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =bond_issue_conversion_target= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

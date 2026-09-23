@@ -1,0 +1,15 @@
+=== baseline: country TS units ===
+[dry-run] Generating country (domain_entity, refdata) — ores.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/country.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol/country_protocol.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/web/src/generated/refdata/ui/country_ui.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/bff/src/generated/refdata/country_route.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/web/src/generated/refdata/web/country_declaration.ts
+
+=== baseline: tenant TS units ===
+[dry-run] Generating tenant (domain_entity, iam) — ores.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/wire-protocol/src/generated/iam/domain/tenant.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/wire-protocol/src/generated/iam/protocol/tenant_protocol.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/web/src/generated/iam/ui/tenant_ui.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/bff/src/generated/iam/tenant_route.ts
+/mnt/development/OreStudio/ores_dev_eager_maxwell/projects/ores.web/packages/web/src/generated/iam/web/tenant_declaration.ts

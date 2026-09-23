@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 7E86030A-0EC6-4DFA-93B7-7E33419C63A3
+:END:
+#+title: compass task done silently skips the story row when a Decisions bullet names the task first
+#+description: Closing a task can leave its row in the story * Tasks table still open, and the command reports no error. The task flips to DONE, the journal is stamped, and the story row keeps its old state.
+
+Reproduction. Take a story whose * Decisions section mentions the task with an org link before the * Tasks table lists it. Run compass task done for that task. The output prints the state change and the journal line but not the usual linked-id message for the story row, and the row is unchanged.
+
+Root cause. _update_task_row_in_story in projects/ores.compass/src/compass.py scans the file in order for the first line containing the task UUID as an org link. A wrapped bullet in * Decisions matches first. The bullet splits into fewer than six cells, so the length guard fails, the function returns False, and the caller treats that as nothing to report.
+
+Impact. The state of the backlog silently disagrees with the state of the task. Nothing surfaces it: the command exits zero, prints nothing about the row, and compass lint does not check it.
+
+Fix direction. Bounds the search to the * Tasks table and reports when a task in that table has no matching row to update, so a miss is visible rather than silent.
+
+Found on 2026-09-23 while closing the web_iam_entities tasks on branch feature/retire-web-ui-codegen. The row for task 33010766 had to be set by hand to what the command intended.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

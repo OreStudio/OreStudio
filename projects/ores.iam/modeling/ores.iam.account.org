@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
-:ores.ts.web.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
 :END:
 #+title: ores.iam.account

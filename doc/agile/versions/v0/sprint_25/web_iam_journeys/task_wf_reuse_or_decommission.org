@@ -36,11 +36,11 @@ Blocked by: Inventory the reusable ores.web building material.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -79,3 +79,55 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Decided on 2026-09-23, and executed by
+[[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI
+codegen]]. That task is the only task this decision needed: the
+choice and the removal are one change.
+
+The decision reverses a line in the parent story. The story called the
+generated column and field metadata reusable building material. It is
+not. It describes the list-detail-history shell, and the hand-written
+journeys do not use that shell.
+
+**Reused. What a journey screen may build on.**
+
+- The =ores.ts.protocol= and =ores.ts.domain= facets, and every file
+  they write: the generated wire messages, the NATS subject constants
+  and the entity domain interfaces. This is the vocabulary the client
+  speaks to the server with.
+- The whole =@ores/wire-protocol= package.
+- The =ores.web= session provider and the HTTP transport to the BFF.
+- The BFF's NATS broker, session store, change-event streaming, rate
+  limiting, error mapping and site config. No journey touches these,
+  and none of them is per-entity.
+
+**Decommissioned. What a journey screen must not use.**
+
+- The =ores.ts.ui= facet: the generated presentation metadata, meaning
+  the columns and the fields.
+- The =ores.ts.web= facet: the entity declaration and the BFF route
+  descriptor.
+- The 247 generated files those two facets wrote: 97 presentation
+  metadata modules, 75 entity declarations and 75 BFF route
+  descriptors. Commit =877fb1e1ac= deletes them.
+- The entity screen framework in =packages/web/src/entity=, the
+  navigation registry, the hand-written pages, the change-event React
+  consumer and the UI primitives. Commit =e47043269f= deletes them.
+- The BFF entity-route factory and its registry.
+- Commit =3a40c9c57e= removes the three templates and the projections
+  that fed them.
+
+**The fate of the =AccountsPage= question.** =AccountsPage.tsx= was
+already deleted on 2026-09-22 by =c3027cbcf7=, before this decision, so
+it was never a candidate for reuse. See
+[[id:F50D4435-1508-47CD-A75C-EA67D97645EC][Inventory the reusable
+ores.web building material]].
+
+**The fate of story 131C14D1.** Superseded, and closed. Its premise is
+that one declaration per entity drives a shell that the shared
+components render. Both halves of that premise are gone, so no task
+under it can be done. Its primitive side survives: the protocol
+facets, =@ores/wire-protocol= and the transport stay, and the
+hand-written journey screens build on them. The story itself records
+this.

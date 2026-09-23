@@ -2,12 +2,12 @@
 :ID: F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42
 :END:
 #+title: Change notification
-#+description: Change notification for the ORE Studio web UI: NATS events, the channel to the browser, payload shape, shared routed subscriptions, visual language, and what the interface must not do.
+#+description: Change notification for the ORE Studio web UI: the NATS events, the channel to the browser, the payload shape, the shared routed subscriptions, and the visual language for a consumer that is not built yet.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-23
 
 What the interface does when the data underneath it moves.
 
@@ -16,6 +16,11 @@ already have changed. Neither can be allowed to say something untrue, and neithe
 may be reloaded out from under a person mid-sentence. This is the language for
 that, derived from what the Qt client does, written down so it is not reinvented
 per entity.
+
+*Status.* The transport survives: the BFF streams the events and holds the shared,
+routed subscriptions. The consumer does not exist. There are no screens and no
+routes, so nothing subscribes, nothing marks a row, and nothing pulses. §5 and §6
+specify the consumer that is still to be built.
 
 * 1. What the Qt client does
 
@@ -93,10 +98,11 @@ connections, and a person with six lists open wants one stream.
 GET /api/events           text/event-stream
 #+end_src
 
-The envelope already exists in the protocol package. =session-expired= and
-=party-changed= are already defined and are this channel's business, because they
-are the same question asked by different parts of the interface. This adds one
-kind:
+The envelope already exists in the protocol package. =connected=,
+=party-changed=, =session-expired= and =account-changed= are already declared, and
+the last three are this channel's business, because they are the same question
+asked by different parts of the interface. The consumer needs one more kind, which
+is specified here and not yet declared:
 
 #+begin_src ts
 { event: 'entity-changed', data: { component, entity, at } }
@@ -177,6 +183,9 @@ reasons nobody can see.
 
 ** Subscribing per entity, in the interface
 
+The interface hook is not built. Its shape is fixed here so the consumer does not
+invent a second one.
+
 #+begin_src ts
 // The list and the detail screen both use this, so both learn the same way.
 const { stale, markChanged, reload } = useEntityChanges('refdata', 'country');
@@ -188,25 +197,24 @@ the previous load, so the table can mark them.
 
 ** What the screen does with it
 
-#+begin_src tsx
-// The reload affordance carries the news.
-<Button
-  pending={stale}
-  onClick={reload}
-  title={stale ? t('entity.changed') : t('entity.refresh')}
->
-  {t('entity.refresh')}
-</Button>
+The consumer is not built. These are the two things it must do, and the shape of
+each.
 
-// The rows that moved are marked, worked out from the reload, not from the event.
-<DataTable columns={meta.columns} rows={rows} changed={changedRowKeys} {...} />
+#+begin_src text
+The reload affordance carries the news.
+  A button that pulses while stale, whose tooltip says what happened, and
+  whose click reloads.
+
+The rows that moved are marked, worked out from the reload, not from the event.
+  The table takes a set of changed row keys. A whole table flashing says
+  nothing; the four rows that changed say everything — and they are the four
+  the data says changed, which is the only account of it that can be trusted.
 #+end_src
 
-=changed= on the table is a set of row keys, not a flag. A whole table flashing
-says nothing; the four rows that changed say everything — and they are the four
-the data says changed, which is the only account of it that can be trusted.
-
 * 5. The visual language
+
+Not built: nothing renders these treatments yet. They are fixed here so the
+consumer does not invent a second language.
 
 Small, and the same everywhere, because a notification language that varies by
 screen is not a language.

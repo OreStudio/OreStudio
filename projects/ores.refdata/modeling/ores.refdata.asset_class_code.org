@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 8F6EE5AE-8B49-4A4C-97F8-E0517BE53775
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.asset_class_code
 #+description: Codegen entity model for the refdata asset_class_code table: the top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation, bond).

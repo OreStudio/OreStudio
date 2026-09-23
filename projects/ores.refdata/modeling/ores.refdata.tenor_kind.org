@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: E63689F3-92E1-48C7-8772-AA6FA6C45D40
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.tenor_kind
 #+description: Codegen entity model for the refdata tenor_kind table: whether a tenor resolves as a fixed period or by special convention-specific rule.

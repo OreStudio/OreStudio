@@ -28,8 +28,6 @@ import cookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
-import { registerEntityRoutes } from './entity-routes.js';
-import { entityRoutes } from './entity-route-registry.js';
 import {
   NatsTransport,
   OresClient,
@@ -387,20 +385,6 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     }
     return sessionResponse(activated);
   });
-
-  /**
-   * The entities whose screens their models declare, registered from their
-   * generated route descriptors.
-   *
-   * The descriptor states the collection, the key, the write record's members
-   * and the subjects; the factory states the canonical envelopes. Neither
-   * states a function, and the registry lists them all rather than the ones
-   * somebody remembered, so a screen the model declares is a screen this
-   * server serves.
-   */
-  for (const route of entityRoutes) {
-    registerEntityRoutes(server, requireSession, route);
-  }
 
   /**
    * The reasons a write may carry.

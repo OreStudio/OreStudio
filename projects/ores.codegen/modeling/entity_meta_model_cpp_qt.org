@@ -12,9 +12,9 @@
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
 the =** Presentation= drawer: the knobs an entity authors for its UI.
-The facet that once read them is gone; the surviving
-reader is [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]], which
-emits the drawer's columns and fields as TypeScript UI metadata. The
+The TypeScript facets that once read them are gone; the surviving
+reader is [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]], which
+renders a domain type for display. The
 knobs themselves are unchanged. Reading across the facets by name —
 =:domain_class:=, =:save_message_type:=, etc. below are just pointers
 back to types [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] and [[id:2832C7CE-3AB8-4E1B-A707-F1CEBD022598][C++ Protocol]] already generated —
@@ -24,7 +24,7 @@ so this page assumes those two.
 
 | Facet                     | Description                                       |
 |-----------------------------+------------------------------------------------------|
-| =ores.ts.ui=                 | TypeScript UI metadata: columns, fields, entity meta. |
+| =ores.cpp.presentation=      | Server-side rendering of a domain type for display.  |
 
 * The one thing to internalise before reading the knob tables
 

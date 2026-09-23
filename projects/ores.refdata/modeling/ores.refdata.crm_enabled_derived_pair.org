@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 5D9A3C6E-1F4B-4A8D-B7C2-6E0D3A9F5B1C
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.crm_enabled_derived_pair
 #+description: Codegen entity model for the refdata crm_enabled_derived_pair table; a curated derived (non-edge) currency pair a consumer may request from the CRM.

@@ -2,7 +2,7 @@
 :ID: 1E93BE86-58BF-40FB-BB93-132D639BDC87
 :END:
 #+title: ores.ts
-#+description: The TypeScript technical space: the wire payloads, the per-entity domain interfaces and the presentation metadata the TypeScript UI consumes, projected from the same org models that drive the C++ headers.
+#+description: The TypeScript technical space: the wire payloads and the per-entity domain interfaces the client speaks, projected from the same org models that drive the C++ headers.
 #+type: technical_space
 #+level: cross
 #+filetags: :codegen:physical-space:typescript:
@@ -17,10 +17,10 @@ space → facet → archetype) to resolve which archetypes an entity generates.
 
 * Summary
 
-The TypeScript projection. The UI moves to TypeScript, so it needs
-the same message shapes the C++ services speak, without hand-copying them.
-Every facet here renders from the org models that already drive the C++
-facets, so the two projections cannot drift.
+The TypeScript projection gives the client the same message shapes the C++
+services speak, without hand-copying them. Every facet here renders from the
+org models that already drive the C++ facets, so the two projections cannot
+drift.
 
 * Shared conventions
 
@@ -41,8 +41,6 @@ do not edit by hand.
 |-------+------------+-------------|
 | [[id:AA24D1D3-60B0-4650-900A-57B496BE1657][ores.ts.domain]] | 1 | Per-entity and per-junction domain interfaces: the TypeScript shape of the object the C++ domain class declares. |
 | [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] | 1 | Wire payload interfaces and NATS subject constants. |
-| [[id:3704B43E-423F-4558-907C-7E07BB7561BE][ores.ts.ui]] | 1 | Per-entity presentation metadata: the table's columns and the form's fields, as data. |
-| [[id:ed5b5c4d-f38d-4532-ba6f-3504b6d0f5b9][ores.ts.web]] | 2 | Per-entity web declarations: where an entity's screens live, what it can do, and how its BFF routes are reached, as data. |
 
 * See also
 

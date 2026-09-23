@@ -3,7 +3,7 @@
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.trade_party_role
-#+description: Codegen entity model for the trading =trade_party_role= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =trade_party_role= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

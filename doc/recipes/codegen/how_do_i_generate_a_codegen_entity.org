@@ -39,7 +39,6 @@ Generating country (domain_entity, refdata) — supported set
 #+begin_src sh
 ./compass.sh codegen entity generate country --address ores.sql.schema
 ./compass.sh codegen entity generate country --address ores.cpp.domain
-./compass.sh codegen entity generate country --address ores.ts.ui
 #+end_src
 
 *One command per layer* — the facet addresses you'll reach for most often
@@ -57,7 +56,6 @@ when regenerating a single layer (e.g. during a commissioning task):
 | C++ NATS sub-registrar   | =ores.cpp.nats-sub-registrar=  | per-entity subject registration            |
 | C++ NATS eventing        | =ores.cpp.nats-eventing=       | domain-changed event struct                |
 | C++ generator (synthetic)| =ores.cpp.generator=           | synthetic-data generator function          |
-| TypeScript UI metadata   | =ores.ts.ui=                   | table columns, detail fields, entity meta  |
 | C++ enum                 | =ores.cpp.enum=                | enum type + string conversion              |
 | CMake component wiring   | =ores.cmake.component=         | component CMakeLists.txt entries           |
 

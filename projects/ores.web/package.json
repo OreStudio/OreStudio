@@ -2,7 +2,7 @@
   "name": "ores.web",
   "version": "0.0.1",
   "private": true,
-  "description": "TypeScript UI for ORE Studio. Web first, local desktop packaging deferred.",
+  "description": "TypeScript client for ORE Studio. Web first, local desktop packaging deferred.",
   "type": "module",
   "engines": {
     "node": ">=22.11.0"
@@ -24,12 +24,10 @@
     "seed:account": "bash scripts/seed-test-account.sh",
     "ir:protocol": "python3 scripts/emit_protocol_ir.py --all --out .runtime/ir/protocol.ir.json",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/tsconfig.tsbuildinfo",
-    "verify:browser": "tsx scripts/verify-browser.ts",
     "stack": "bash scripts/dev-stack.sh"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
-    "playwright": "^1.57.0",
     "prettier": "3.9.8",
     "tsx": "^4.23.13",
     "typescript": "5.9.3"

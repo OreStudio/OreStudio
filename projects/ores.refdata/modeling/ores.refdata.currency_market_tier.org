@@ -1,9 +1,8 @@
 :PROPERTIES:
 :ID: 284D8D40-D243-4E75-885F-FDA5591FB22F
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.currency_market_tier
-#+description: Codegen entity model for the refdata =currency_market_tier= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata =currency_market_tier= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:

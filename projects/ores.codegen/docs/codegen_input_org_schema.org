@@ -48,7 +48,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 ** ores.codegen.entity
 
 Full-fidelity entity: drives C++ (domain class, mapper, repo, service),
-SQL (table DDL, triggers, constraints) and TypeScript (UI metadata).  The largest doc type (~83 files).
+SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain interfaces).  The largest doc type (~83 files).
 
 *** Frontmatter keywords
 

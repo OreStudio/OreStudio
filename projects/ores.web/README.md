@@ -120,19 +120,13 @@ development server. It waits for each port and prints the URL to open.
 
 ## Verification
 
-Two verifiers assert against the running system rather than a mock.
+One verifier asserts against the running system rather than a mock.
 
 `scripts/verify-login.ts` exercises the protocol layer. Its first assertion is a
 deliberately rejected login. A server that decoded the msgpack body answers with
 a message. A server that did not decode it never replies at all. A well-formed
 rejection therefore proves the subject, the encoding, and the response schema in
 one step.
-
-`scripts/verify-browser.ts` drives a real browser through the landing page, the
-Deployment page, the sign-in screen, a rejected credential, sign-in, and
-sign-out. It asserts the absence as well as the presence: no server field, no
-namespace, no connection chooser, and no master password anywhere. It captures
-screenshots under `.runtime/screenshots/`.
 
 Unit tests cover the pieces that must not drift. They include a golden-bytes
 test that an empty request encodes as the msgpack empty map, and that every
@@ -141,7 +135,6 @@ declared field is written even when the caller omits it.
 ```sh
 npm test
 npm run verify:login
-npm run verify:browser
 ```
 
 ## The test account
@@ -168,16 +161,17 @@ separate from the server that currently drives it.
 `ores.codegen` generates the TypeScript from the same org entity models that
 drive the C++ headers. Two facets write into this component:
 
-- `ores.ts.ui` writes `packages/web/src/generated/{component}/ui/{entity}_ui.ts`.
-  The file holds the table columns, the form fields, and the entity meta.
 - `ores.ts.protocol` writes
   `packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts`.
   The file holds the wire payload interfaces and the NATS subject constants.
+- `ores.ts.domain` writes
+  `packages/wire-protocol/src/generated/{component}/domain/{entity}.ts`.
+  The file holds the TypeScript shape of one entity or junction.
 
-Regenerate the UI metadata of one entity:
+Regenerate the wire types of one entity:
 
 ```sh
-./compass.sh codegen entity generate <entity> --address ores.ts.ui
+./compass.sh codegen entity generate <entity> --address ores.ts.protocol
 ```
 
 Regenerate all the TypeScript:
@@ -186,9 +180,7 @@ Regenerate all the TypeScript:
 ./compass.sh codegen regenerate --all --address ores.ts
 ```
 
-The hand-written `packages/web/src/ui-contract.ts` holds the shapes that the
-generated files conform to. Do not edit the generated files. Change the org
-model, then regenerate.
+Do not edit the generated files. Change the org model, then regenerate.
 
 A codegen drift check covers the generated output. It regenerates the models and
 fails when the checked-in files differ from the generated ones.

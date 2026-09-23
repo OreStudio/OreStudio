@@ -2,7 +2,7 @@
 :ID: 4A441171-D5FB-4942-B406-F0B9F7D32B87
 :END:
 #+title: ores.compute.result
-#+description: Codegen entity model for the compute =result= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the compute =result= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: compute
 #+filetags: :model:entity:compute:

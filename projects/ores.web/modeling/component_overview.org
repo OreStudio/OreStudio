@@ -41,7 +41,7 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
   the other domain services.
 - Change notifications that the services publish on their event subjects.
 - The org entity models under =projects/ores.*/modeling/=, which =ores.codegen=
-  reads at build time to generate the TypeScript UI metadata and protocol types.
+  reads at build time to generate the TypeScript protocol and domain types.
 - Browser requests on the =/api= HTTP surface.
 
 * Outputs
@@ -52,8 +52,7 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 - NATS requests and subscriptions that the BFF sends on behalf of the browser.
 - A first-party session cookie that holds the session token. The browser never
   receives the token itself.
-- Generated TypeScript in =packages/web/src/generated/= and
-  =packages/wire-protocol/src/generated/=.
+- Generated TypeScript in =packages/wire-protocol/src/generated/=.
 
 * Entry points
 
@@ -62,18 +61,16 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 - =projects/ores.web/packages/bff/src/server.ts= — the Fastify HTTP surface and
   the static browser bundle.
 - =projects/ores.web/packages/web/src/main.tsx= — the React browser entry point.
-- =projects/ores.web/packages/web/src/ui-contract.ts= — the hand-written shapes
-  that the generated UI metadata conforms to.
 - =projects/ores.web/package.json= — the workspace scripts: =build=, =test=,
-  =verify:login=, and =verify:browser=.
+  =typecheck=, =verify:login=, and =seed:account=.
 
 * Dependencies
 
 - =ores.iam.service= — authentication, sessions, accounts, and change reasons.
 - =ores.refdata.service= — reference data such as countries.
 - The other domain services that the browser reaches through the BFF.
-- =ores.codegen= — build-time generation of the TypeScript UI metadata and
-  protocol types.
+- =ores.codegen= — build-time generation of the TypeScript protocol and domain
+  types.
 - Node.js 22 or later.
 - Third-party libraries: Fastify, React, React Router, TanStack Query, TanStack
   Table, NATS.js, =@msgpack/msgpack=, Zod, Vite, Tailwind CSS, Vitest, and
@@ -82,19 +79,20 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 
 * See also
 
-- [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][The entity specification]] — the
-  entity archetypes, the list and detail screens, the audit rule, and the
-  implementation steps.
+- [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][The entity specification]] — a
+  superseded specification. It required one shared list, detail and history screen
+  per entity, driven by a generated declaration; those screens are deleted and the
+  interface is to be built from hand-written journey screens instead.
 - [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] —
-  the component declaration, the registry, the routes, and the file layout.
-- [[id:AE16BF31-1ECF-47C3-82C9-994B43BC0BD6][Codegen request: TypeScript UI
-  metadata]] — the request for the =ores.ts.ui= facet: what to emit and why.
+  the browser shell, the session, the transport to the BFF, the i18n catalogue,
+  the styling, and the wire-protocol package.
 - [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — the channel
   to the browser, the payload, and the visual language.
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]] — the icon
   vocabulary and the process for adding to it.
 - [[id:1B37530D-0729-4DA2-B586-629C08F9370F][Gaps: country against the
-  specification]] — the audit findings against the reference entity.
+  specification]] — a superseded audit. It measured screens and shared controls
+  that are now deleted, and its findings cannot be reproduced.
 - [[id:2BF2FFC1-B6A0-495E-9B14-E26ACF09EA55][Qt account screen: raw reference
   analysis]] — the historical analysis of the removed Qt client.
 - [[id:5E4C1A90-3B27-4E6D-9F01-7A2C8D4B6E15][Protocol types are generated from

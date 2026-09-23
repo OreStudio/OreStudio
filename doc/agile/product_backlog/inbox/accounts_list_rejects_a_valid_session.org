@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: C043DCD6-B660-430D-84F3-09BFB29F2188
+:END:
+#+title: iam.v1.accounts.list rejects a well-formed request from a valid session
+#+description: A logged-in session with a party cannot list accounts. The server answers iam.v1.accounts.list with bad_request, which aborts verify-login.ts before its last three checks run.
+
+Reproduction. Run scripts/dev-stack.sh start, seed an account, then npm run verify:login in projects/ores.web. The rejected-login checks pass, the login checks pass, and the run stops at accounts.list. Seed first with AUDIT_ACCOUNT set to a username that exists, because the default sysadmin does not exist in a restored database.
+
+What is ruled out. The generated account protocol module, the OresClient listAccounts call and verify-login.ts itself are all unchanged on the branch that found this, and no C++ or SQL is involved. The client sends the subject and the message shape its generated protocol declares.
+
+What is open. Whether the request is missing a member the handler requires, or the handler validates a member the session does not supply. A refusal is not the cause: the answer is bad_request, not forbidden. The script already records that the C++ list handler decodes offset and limit and then ignores them, so the handler is the place to look.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

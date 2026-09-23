@@ -291,19 +291,19 @@ def test_load_graph_parses_live_nodes():
         assert arch["output"]
 
 
-def test_the_web_facet_is_opt_in():
-    """A model emits web declarations and routes only when it opts in.
+def test_a_disabled_facet_is_opt_in():
+    """A facet marked disabled emits only for a model that opts in.
 
-    The route descriptor imports the entity's generated protocol module, and a
-    component's other TypeScript facets say nothing about whether that module
-    exists. The facet is default-off so an unscoped regeneration cannot
-    materialise a route whose import does not exist.
+    The override key is the facet's own address with an =enabled= suffix. A
+    facet the model did not enable is absent from its supported set, so an
+    unscoped regeneration cannot materialise its output.
     """
     g = load_graph(REPO_ROOT / "projects/ores.codegen/library/templates")
-    assert g.facet_default["ores.ts.web"] is False
-    assert "ores.ts.web" not in compute_supported_set({}, g, "domain_entity")
-    assert "ores.ts.web" in compute_supported_set(
-        {"ores.ts.web.enabled": "true"}, g, "domain_entity")
+    assert g.facet_default["ores.cpp.nats-event-cache"] is False
+    assert "ores.cpp.nats-event-cache" not in compute_supported_set(
+        {}, g, "domain_entity")
+    assert "ores.cpp.nats-event-cache" in compute_supported_set(
+        {"ores.cpp.nats-event-cache.enabled": "true"}, g, "domain_entity")
 
 
 def test_target_root_resolves_all_facets_on_live_graph():

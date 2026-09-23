@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 4A02B9BB-B4B5-45DE-9036-C81EAEE3E921
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.instrument_code
 #+description: Codegen entity model for the refdata instrument_code table: the full product/trade-type catalogue, keyed by a short idiomatic code and cross-referenced to ORE's oreTradeType where one exists.

@@ -1,13 +1,34 @@
 :PROPERTIES:
 :ID: 67E68899-3D29-4861-B4F8-B0C9536EC4C1
 :END:
-#+title: The entity specification
-#+description: The ORE Studio web entity specification: archetypes, vocabulary, layers, list and detail screens, audit and history rules, child records, icons, feedback, naming, Qt divergences, implementation steps and exceptions.
+#+title: The entity specification (superseded)
+#+description: Superseded specification of what an ORE Studio web entity screen must be: archetypes, vocabulary, layers, list and detail screens, audit and history rules, child records, icons, feedback, naming and implementation steps. Kept as a record; the screens it specifies are deleted.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-23
+
+*This page is superseded. Do not act on it.*
+
+The entity-screen approach is abandoned. This page specified one shared list
+screen, one shared detail screen and one shared history screen, driven by a
+generated entity declaration. All of that is deleted: the screens, the shared
+=DataTable= and =FieldControl= controls, the entity declaration and its generated
+UI metadata, the component registry, the routes, and =scripts/verify-country.ts=.
+The interface is to be built from hand-written journey screens instead, and a
+journey is not entity-shaped.
+
+Nothing here is a checklist now. Every "read this before writing entity code"
+instruction below, and every requirement in it, is void.
+
+Read =component_specification.org= for the current specification of the component:
+the shell, the session, the transport to the BFF, the i18n catalogue, and the
+wire-protocol package.
+
+The original specification follows unchanged as history.
+
+-----
 
 What it means to be an entity in this interface, written so that implementing
 entity number one hundred is the same process as entity number one.
@@ -19,9 +40,8 @@ document is the checklist.
 component declaration contains, is =component_specification.org=. This document
 covers the screens themselves.
 
-/What is not yet built/ is =gaps.org=: this specification read against the
-reference entity, with every requirement judged and the open gaps listed. Read it
-before planning work, and update it as the gaps close.
+/The audit of this specification/ is =gaps.org=: it judged every requirement
+against the reference entity. It is superseded for the same reason as this page.
 
 /What this document is./ It is derived from the Qt client, which already
 carries the accumulated decisions, but it is not a transcription of it. The Qt

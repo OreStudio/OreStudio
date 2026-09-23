@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-20
 #+updated: 2026-09-20
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Implement tenant and role as full entities: field-group tabs, a searchable forei
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -72,3 +72,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded on 2026-09-23. =tenant= and =role= were to be built as
+declarations on the shell, and the shell is deleted. The journey
+screens replace them and keep the generated protocol and domain types
+they were to read.

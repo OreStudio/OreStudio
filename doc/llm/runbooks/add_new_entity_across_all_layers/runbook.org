@@ -2,10 +2,10 @@
 :ID: 690BBD16-0C36-4D2C-9E2D-BC92AA93E5B2
 :END:
 #+title: Add a new entity across all layers
-#+description: Add a new domain entity with full-stack support: domain type, SQL schema, repository, service, UI metadata, CLI, HTTP, and tests.
+#+description: Add a new domain entity with full-stack support: domain type, SQL schema, repository, service, CLI, HTTP, and tests.
 #+type: runbook
 #+level: cross
-#+filetags: :llm:runbook:entity:domain:sql:qt:cli:http:
+#+filetags: :llm:runbook:entity:domain:sql:cli:http:
 #+created: 2026-05-26
 #+updated: 2026-05-27
 
@@ -13,7 +13,7 @@ This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a
 
 * Goal
 
-Add a new domain entity (e.g. currency, counterparty, trade) with support across all layers: domain type, SQL schema, repository, service, UI metadata, CLI commands, HTTP endpoints, and unit tests.
+Add a new domain entity (e.g. currency, counterparty, trade) with support across all layers: domain type, SQL schema, repository, service, CLI commands, HTTP endpoints, and unit tests.
 
 * Preconditions
 
@@ -33,15 +33,13 @@ In execution order:
 
 4. /Wire the service layer./ Add NATS handlers and service methods following the protocol conventions in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 
-5. /Declare the UI metadata./ Fill in the =** Presentation= drawer of the entity model: =collection_name=, =key_field=, and the =*** Columns= and =*** Detail fields= tables. The =ores.ts.ui= facet emits the entity's TypeScript UI metadata to =projects/ores.web/packages/web/src/generated/<component>/ui/<entity>_ui.ts=, which the shared =DataTable= and =FieldControl= render. See [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
+5. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
 
-6. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
+6. /Add HTTP endpoints./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] and [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create entity endpoints?]].
 
-7. /Add HTTP endpoints./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] and [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create entity endpoints?]].
+7. /Write unit tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] and [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] skill.
 
-8. /Write unit tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] and [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] skill.
-
-9. /Commit and PR./ Follow [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] for the full PR lifecycle.
+8. /Commit and PR./ Follow [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] for the full PR lifecycle.
 
 * Postconditions
 

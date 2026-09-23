@@ -33,6 +33,11 @@ const FIXTURE_DIR = join(HERE, 'fixtures/sprint_25')
 const DECK_DIR = join(HERE, 'fixtures/card_deck')
 const SPRINT_PATH = 'doc/agile/versions/v0/sprint_25/sprint.org'
 
+/* Fixtures carry a .org.txt suffix so no org tool in the repository can mistake
+ * a copy for an authored document, which would duplicate every :ID: it holds
+ * and let an id resolve to the fixture. */
+const FIXTURE_SUFFIX = '.org.txt'
+
 /* The live sprint is whatever the newest sprint directory is, so opening a
  * sprint does not leave this file asserting against the closed one. */
 const VERSIONS_DIR = join(HERE, '..', '..', '..', 'doc/agile/versions/v0')
@@ -67,26 +72,30 @@ const TREE = {
   dirty: false,
 }
 
-function fixtureDir(root, slug) {
+function readDocDir(root, slug, storyName, taskName) {
   return {
     slug,
-    story: readFileSync(join(root, slug, 'story.org'), 'utf8'),
+    story: readFileSync(join(root, slug, storyName), 'utf8'),
     tasks: readdirSync(join(root, slug))
-      .map((name) => /^task_(.+)\.org$/.exec(name))
+      .map((name) => taskName.exec(name))
       .filter((match) => match !== null)
       .map((match) => ({ slug: match[1], text: readFileSync(join(root, slug, match[0]), 'utf8') })),
   }
 }
 
-function dirsOf(root) {
+const fixtureDir = (root, slug) =>
+  readDocDir(root, slug, 'story' + FIXTURE_SUFFIX, /^task_(.+)\.org\.txt$/)
+const liveDir = (root, slug) => readDocDir(root, slug, 'story.org', /^task_(.+)\.org$/)
+
+function dirsOf(root, read = fixtureDir) {
   return readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => fixtureDir(root, entry.name))
+    .map((entry) => read(root, entry.name))
 }
 
 function fixtureModel(options = {}) {
   return buildModel({
-    doc: parseSprintDocument(fixtureText('sprint.org')),
+    doc: parseSprintDocument(fixtureText('sprint')),
     dirs: dirsOf(FIXTURE_DIR),
     options: {
       version: 'v0',
@@ -99,7 +108,7 @@ function fixtureModel(options = {}) {
 }
 
 function fixtureText(...parts) {
-  return readFileSync(join(FIXTURE_DIR, ...parts), 'utf8')
+  return readFileSync(join(FIXTURE_DIR, ...parts) + FIXTURE_SUFFIX, 'utf8')
 }
 
 function fixtureTasks() {
@@ -114,7 +123,7 @@ function liveModel(options = {}) {
   if (LIVE_DIR === null) return null
   return buildModel({
     doc: parseSprintDocument(readFileSync(join(LIVE_DIR, 'sprint.org'), 'utf8')),
-    dirs: dirsOf(LIVE_DIR),
+    dirs: dirsOf(LIVE_DIR, liveDir),
     options: { version: 'v0', sprintName: LIVE_SPRINT, sprintPath: LIVE_SPRINT_PATH, ...options },
   })
 }
@@ -173,7 +182,7 @@ function task(overrides = {}) {
 }
 
 test('a story carries the literal fields of its own org file', () => {
-  const parsed = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin')
+  const parsed = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story'), 'dsh_agile_plugin')
   assert.equal(parsed.id, STORY_ID)
   assert.equal(parsed.title, STORY_TITLE)
   assert.equal(parsed.type, 'story')
@@ -187,9 +196,9 @@ test('a story carries the literal fields of its own org file', () => {
 })
 
 test('the Story: and Task: title prefixes are stripped once', () => {
-  const parsedStory = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin')
+  const parsedStory = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story'), 'dsh_agile_plugin')
   const scaffold = parseTaskDocument(
-    fixtureText('dsh_agile_plugin', 'task_scaffold_dsh_agile_plugin.org'),
+    fixtureText('dsh_agile_plugin', 'task_scaffold_dsh_agile_plugin'),
     'scaffold_dsh_agile_plugin',
   )
   assert.equal(parsedStory.title.startsWith('Story:'), false)
@@ -200,11 +209,11 @@ test('the Story: and Task: title prefixes are stripped once', () => {
 
 test('state comes from the * Status table and from nowhere else', () => {
   const real = 'collapse_instrument_identity_into_trade'
-  const text = fixtureText('data-oriented-trading-model', `task_${real}.org`)
+  const text = fixtureText('data-oriented-trading-model', `task_${real}`)
   assert.equal(statusOf(text), 'DISCOVERED')
   assert.equal(parseTaskDocument(text, real).state, 'DISCOVERED')
   assert.equal(
-    parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin').state,
+    parseStoryDocument(fixtureText('dsh_agile_plugin', 'story'), 'dsh_agile_plugin').state,
     'DONE',
   )
 
@@ -235,7 +244,7 @@ test('a story with no Status table is UNKNOWN, and UNKNOWN sorts last', () => {
 
 test('a task carries its own branch, pr and environment', () => {
   const implement = parseTaskDocument(
-    fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin.org'),
+    fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin'),
     'implement_dsh_agile_plugin',
   )
   assert.equal(implement.id, IMPLEMENT_ID)
@@ -252,7 +261,7 @@ test('a task carries its own branch, pr and environment', () => {
 })
 
 test('the sprint document carries its own dates and the story themes', () => {
-  const sprint = parseSprintDocument(fixtureText('sprint.org'))
+  const sprint = parseSprintDocument(fixtureText('sprint'))
   assert.equal(sprint.title, 'Sprint 25')
   assert.equal(sprint.startDate, '2026-08-03')
   assert.equal(sprint.endDate, '2026-08-10')
@@ -263,7 +272,7 @@ test('the sprint document carries its own dates and the story themes', () => {
 // The upstream doubled token is preserved in the fixture, because it is the only
 // shape that exercises the cut.
 test('a single-token keyword is cut at its first whitespace', () => {
-  const doubled = parseStoryDocument(fixtureText('close-systemic-codegen-gaps', 'story.org'), 'x')
+  const doubled = parseStoryDocument(fixtureText('close-systemic-codegen-gaps', 'story'), 'x')
   assert.equal(doubled.environment, 'brave_hopper')
   const padded = '#+title: Story: X\n#+environment:   brave_hopper   brave_hopper\n'
   assert.equal(parseStoryDocument(padded, 'x').environment, 'brave_hopper')
@@ -272,7 +281,7 @@ test('a single-token keyword is cut at its first whitespace', () => {
 })
 
 test('the epic is the ** group heading the story row sits under', () => {
-  const sprintText = fixtureText('sprint.org')
+  const sprintText = fixtureText('sprint')
   const model = fixtureModel()
   assert.equal(fixtureStory('dsh_agile_plugin').epic, epicGroupOf(sprintText, STORY_ID))
   assert.equal(fixtureStory('dsh_agile_plugin').epic, 'Hotfixes')
@@ -441,7 +450,7 @@ test('tasks sort by state in table order, then by title', () => {
 test('every story directory in the fixture deck becomes exactly one card', () => {
   const dirs = dirsOf(DECK_DIR)
   const model = buildModel({
-    doc: parseSprintDocument(fixtureText('sprint.org')),
+    doc: parseSprintDocument(fixtureText('sprint')),
     dirs,
     options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, today: '2026-09-23' },
   })
@@ -453,7 +462,7 @@ test('every story directory in the fixture deck becomes exactly one card', () =>
   )
   for (const card of model.stories) {
     assert.ok(STATE_IDS.includes(card.state))
-    assert.equal(card.state, statusOf(readFileSync(join(DECK_DIR, card.slug, 'story.org'), 'utf8')))
+    assert.equal(card.state, statusOf(readFileSync(join(DECK_DIR, card.slug, 'story' + FIXTURE_SUFFIX), 'utf8')))
     assert.ok(card.id.length > 0)
     assert.ok(card.title.length > 0)
   }
@@ -514,7 +523,7 @@ test('the columns, counts and filters describe the fixture sprint', () => {
 
 test('DISCOVERED cards fold into the BACKLOG column', () => {
   const model = buildModel({
-    doc: parseSprintDocument(fixtureText('sprint.org')),
+    doc: parseSprintDocument(fixtureText('sprint')),
     dirs: [
       { slug: 'a', story: '#+title: Story: A\n\n* Status\n\n| State | DISCOVERED |\n', tasks: [] },
       { slug: 'b', story: '#+title: Story: B\n\n* Status\n\n| State | BACKLOG |\n', tasks: [] },
@@ -534,7 +543,7 @@ test('DISCOVERED cards fold into the BACKLOG column', () => {
 test('the UNKNOWN column appears only when a card lands in it', () => {
   assert.equal(fixtureModel().columns.some((column) => column.id === 'UNKNOWN'), false)
   const model = buildModel({
-    doc: parseSprintDocument(fixtureText('sprint.org')),
+    doc: parseSprintDocument(fixtureText('sprint')),
     dirs: [{ slug: 'a', story: '#+title: Story: A\n#+type: story\n', tasks: [] }],
     options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, today: '2026-09-23' },
   })
@@ -566,7 +575,7 @@ test('every field the model exposes is populated from the files, not defaulted',
     assert.notEqual(card.created, '')
     assert.notEqual(card.updated, '')
     assert.equal(card.path, `doc/agile/versions/v0/sprint_25/dsh_agile_plugin/task_${card.slug}.org`)
-    assert.equal(card.state, statusOf(fixtureText('dsh_agile_plugin', `task_${card.slug}.org`)))
+    assert.equal(card.state, statusOf(fixtureText('dsh_agile_plugin', `task_${card.slug}`)))
   }
   const scaffold = own.tasks.find((card) => card.slug === 'scaffold_dsh_agile_plugin')
   assert.equal(scaffold.id, SCAFFOLD_ID)
@@ -745,7 +754,7 @@ test('trees lists every work tree, sorted, each with its own work item', () => {
   assert.equal(model.trees[1].taskTitle, IMPLEMENT_TITLE)
   assert.equal(
     model.trees[1].state,
-    statusOf(fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin.org')),
+    statusOf(fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin')),
   )
   assert.equal(model.trees[2].label, 'jolly_knuth')
   // The fleet is a report: it never decides what the board shows.
@@ -890,7 +899,7 @@ test('every story directory in the live sprint becomes exactly one card', (t) =>
     return
   }
   const model = liveModel()
-  const dirs = dirsOf(LIVE_DIR)
+  const dirs = dirsOf(LIVE_DIR, liveDir)
   assert.equal(model.stories.length, dirs.length)
   assert.equal(model.counts.stories, dirs.length)
   assert.deepEqual(
@@ -899,7 +908,7 @@ test('every story directory in the live sprint becomes exactly one card', (t) =>
   )
   for (const card of model.stories) {
     assert.ok(STATE_IDS.includes(card.state))
-    assert.equal(card.state, statusOf(fixtureDir(LIVE_DIR, card.slug).story))
+    assert.equal(card.state, statusOf(liveDir(LIVE_DIR, card.slug).story))
     assert.notEqual(card.id, '')
     assert.notEqual(card.title, '')
   }
@@ -911,7 +920,7 @@ test('every live card and task carries the fields the board renders', (t) => {
     return
   }
   const model = liveModel()
-  const dirs = new Map(dirsOf(LIVE_DIR).map((dir) => [dir.slug, dir]))
+  const dirs = new Map(dirsOf(LIVE_DIR, liveDir).map((dir) => [dir.slug, dir]))
   assert.ok(model.stories.length > 0)
 
   // Fields the board renders unconditionally must arrive populated; the ones the

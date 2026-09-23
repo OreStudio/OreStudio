@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 0044D1B4-C6D2-481F-8EE0-60E0C7F091B9
+:END:
+#+title: Story: Prototype the post-setup IAM journeys in ores.web
+#+description: Revisit the post-setup IAM screens from first principles for ores.web: identify the member and tenant-administrator journeys, then prototype each one from the user's goal rather than from the domain entities.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:journeys:prototype:sprint_25:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+This story is a wayfinder map: an index of decisions. Each decision
+lives in its task. Tasks carry a =[wayfinder:<type>]= tag. Each task
+names its blockers in its goal. The frontier is every BACKLOG task
+whose blockers are all DONE.
+
+** Destination
+
+A user-journey document for every post-setup IAM journey, then clickable
+ores.web prototypes taken one journey at a time. The journeys come from what a
+person is trying to do, not from the domain entities, and the member's journeys
+and the tenant administrator's journeys are separate journeys with separate
+screens. Each journey is documented before it is prototyped, and each document
+names the operations and subjects it needs, so the server-side gaps are visible
+before any code is written.
+
+** Notes
+
+- This effort carries execution, not only decisions. The destination includes
+  the journey documents, then the prototypes, then the implementation.
+- Start from the user journey, never from the entity. An owned record such as
+  contact information or login information becomes a panel inside a journey,
+  not a screen of its own. A reference lookup is the likely exception, and
+  [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]]
+  settles it.
+- The list, detail and history primitives survive, but they are no longer per
+  entity. A journey is one screen organised around a goal, composing several
+  entity field sets as panels. That abandons the entity-level view, not the
+  primitives.
+- The generated TypeScript is building material, not the design. The protocol
+  messages and the column and field metadata are reused wherever they help.
+- A journey is documented as a =user_journey= document under
+  =doc/knowledge/journeys/=, grouped by logical topic rather than by component.
+  The contract is
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
+  and the recipe is
+  [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]].
+- Every journey document carries a wireframe and a table of the operations and
+  subjects it needs, each marked =exists=, =partial= or =missing=. Those tables
+  are where the server-side gaps surface.
+- A prototype records every modeling error and every missing server-side
+  operation it exposes. The inventory already names gaps the journeys are
+  expected to meet: no forgot-password operation, no account activate or
+  deactivate, no way for an administrator to end another account's session, no
+  subject for session statistics, and no image upload for a profile photo.
+- Screens are designed for the web, not cloned from ores.qt. Follow
+  [[file:../../../../../knowledge/ui/ui_design_principles.org][UI design principles]]
+  and [[file:../../../../../knowledge/ui/ux_language.org][UX language]].
+- One prototype per journey: a =prototype/<journey>= branch cut from
+  =feature/iam-screens-from-user-journeys=, with a
+  =[wayfinder:prototype]= ticket. Accepted prototypes merge back; the rest stay
+  on their branch as the record.
+- Pattern to copy: =prototype/first-run-journey=,
+  =prototype/new-tenant-journey= and =prototype/new-party-journey= -- the same
+  approach applied to the bootstrap journeys.
+- The word /journey/ is settled: a
+  [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] is a design
+  document, and the journey is the definition it becomes. The journey is not
+  server-side; its state is, and that state is a
+  [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+  =ores.workflow=. Most post-setup journeys keep no such state.
+  [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] records this
+  and the four composition classes.
+- The authoritative entity is /account/. "User" is not a defined term: it is one
+  value of account type, beside service, algorithm and LLM.
+- Grilling tasks: use the grilling and domain-modeling skills. Research tasks:
+  use the research skill. Prototype tasks: use the prototype skill.
+- Legacy reference: the ores.qt post-setup screens -- =MyAccountDialog=,
+  =SessionAuditDialog=, =AccountRolesWidget=, =AccountPartiesWidget=,
+  =AccountChildEntityTables= and =OrgChartWidget= -- and the screen-per-entity
+  web screens this map replaces.
+
+** Not yet specified
+
+- The prototype ticket for each journey, and the order they are taken in. One
+  journey at a time, from its document to a prototype to an implementation.
+- The implementation of the missing operations the documents expose: the
+  self-service profile update, the image upload, session statistics, ending
+  another account's session, and account activate or deactivate.
+- Where the gap log lives.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | The corpus is complete: 21 journeys in 8 groups, each with a wireframe, a NATS coverage table and related-journey links. Five server-side defects are filed as captures. |
+| Waiting on    | Nothing.                               |
+| Next          | Decide what to reuse and decommission, and where a prototype's gaps are recorded; then prototype one journey at a time. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- The journey catalogue names every post-setup IAM journey, with the
+  member's journeys and the tenant administrator's journeys listed
+  separately.
+- Every journey has an accepted prototype, or a recorded reason it has
+  none.
+- Every IAM operation a person can perform is reachable through some
+  journey.
+- Every non-secret IAM field is visible or editable somewhere.
+- No secret field reaches the browser. The forbidden fields are
+  =password_hash=, =password_salt=, =service_password_hash=,
+  =totp_secret=, every cleartext password field, and every JWT.
+- Service-only operations are listed as out of scope, so the gap is
+  deliberate.
+- Every modeling error and every missing server-side operation a
+  prototype exposed is recorded in the gap log.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:748DADF6-5AE0-4CC8-9300-0FED290B3065][Scaffold story: Prototype the post-setup IAM journeys in ores.web]] | DONE | | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:50B6E937-068D-40D6-8FE6-DDD0C5B89E0C][Inventory the IAM functionality a journey can surface]] | DONE | | 2026-09-23 | [wayfinder:research] Every IAM operation and field a post-setup screen can surface, split by actor, and whether a person photo exists at all. |
+| [[id:F50D4435-1508-47CD-A75C-EA67D97645EC][Inventory the reusable ores.web building material]] | DONE | | 2026-09-23 | [wayfinder:research] What exists in ores.web today, and the exact pattern the three bootstrap journey prototypes use. |
+| [[id:66EEA0FB-D837-4E3B-97DA-933C2108912D][Formalise the IAM vocabulary and the screen rules]] | DONE | | 2026-09-23 | [wayfinder:research] Canonical IAM terms, and the screen-specification rules the journeys must obey. |
+| [[id:D81067C6-C125-47DA-90A0-66A1A2509317][Identify the post-setup IAM journeys]] | DONE | | 2026-09-23 | [wayfinder:grilling] The catalogue of post-setup IAM journeys, member and tenant-administrator separately, derived from user goals rather than from the entities. |
+| [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]] | BACKLOG | | | [wayfinder:grilling] Which existing ores.web artefacts serve the hand-crafted journeys, and which are retired. |
+| [[id:1C16015E-AEAE-4B7D-BD00-7A5F50000D21][Decide how a prototype records a gap it exposes]] | BACKLOG | | | [wayfinder:grilling] Where a modeling error or a missing server-side operation is recorded when a prototype exposes one. |
+| [[id:E918F812-B235-4604-9DF7-6F59517C19F8][Create the user_journey document type]] | DONE | | 2026-09-23 | [wayfinder:task] A document type that describes a journey before it is built: sections, template, codegen registration, metadata. |
+| [[id:D48BC708-459E-4508-A6C4-631BAC079354][Document every post-setup IAM journey]] | DONE | | 2026-09-23 | [wayfinder:task] One high-level user-journey document per journey, grouped by topic, each with a wireframe and a NATS coverage assessment. |
+
+* Decisions
+
+- Charted 2026-09-23. This map supersedes the screen-per-entity
+  approach. The generated TypeScript stays as the data and API layer;
+  the screens are hand-crafted from journeys. Which artefacts are
+  decommissioned is
+  [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]]'s
+  to settle.
+- Charted 2026-09-23. The member's journeys and the tenant
+  administrator's journeys are separate journeys with separate screens.
+  The journey is the unit of design, so the journeys are identified
+  before any prototype is specified.
+- Charted 2026-09-23. Prototypes follow the bootstrap pattern: one
+  =prototype/<journey>= branch per journey, cut from
+  =feature/iam-screens-from-user-journeys=.
+- Charted 2026-09-23. The map stops at accepted prototypes.
+  Implementing the screens is a later story.
+- Charted 2026-09-23. Coverage bar: every IAM operation a person can
+  perform is reachable through some journey, and every non-secret field
+  is visible or editable somewhere. A prototype also records the
+  modeling errors and the missing server-side operations it exposes.
+- Charted 2026-09-23. System-administrator cross-tenant operations are
+  a later map.
+- [[id:50B6E937-068D-40D6-8FE6-DDD0C5B89E0C][Inventory the IAM functionality a journey can surface]]:
+  =account.image_id= is a real profile picture into =ores.assets=, so a
+  journey may show it. Contact details are one flat 1:1 child per
+  account, not a hierarchy. =login_info= is current-state only and
+  cannot carry a History screen. Accounts have no activate or
+  deactivate, only =locked=. There is no forgot-password operation, no
+  way for an administrator to end another account's session, and no
+  subject for session statistics. The secrets are =password_hash=,
+  =password_salt=, =service_password_hash=, =totp_secret=, every
+  cleartext password field and every JWT.
+- [[id:66EEA0FB-D837-4E3B-97DA-933C2108912D][Formalise the IAM vocabulary and the screen rules]]:
+  /journey/ is already a project term -- a server-stateful guided path
+  -- and /user/ is not a term at all, only one value of account type.
+  Screens are bound by =entity_specification.org= and
+  =component_specification.org=, which live in
+  =projects/ores.web/modeling/=. Neither UI document mentions journeys
+  or steps, so the journey shape has no written rule yet.
+  =ux_language.org= requires an event-log screen to be called *Audit*,
+  never History.
+- [[id:F50D4435-1508-47CD-A75C-EA67D97645EC][Inventory the reusable ores.web building material]]:
+  =AccountsPage.tsx= and the mainline prototype tree are both already
+  deleted, so the two rival implementations named in story
+  [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]]
+  are gone. All eleven IAM entities sit on the shared entity shell and
+  the BFF routes are uniform. The =JourneyStep= and =JourneyPage=
+  renderer survives on the prototype branches and in git history.
+- [[id:E918F812-B235-4604-9DF7-6F59517C19F8][Create the user_journey document type]]:
+  a journey is documented before it is built. Journeys live under
+  =doc/knowledge/journeys/<group>/journey_<slug>.org=, grouped by logical
+  topic, never by component. A PlantUML =salt= wireframe must not carry a
+  =title= directive.
+- [[id:D81067C6-C125-47DA-90A0-66A1A2509317][Identify the post-setup IAM journeys]]:
+  fourteen journeys in six topic groups. A journey is one person and one goal.
+  The member's journeys and the administrator's journeys are separate. List,
+  detail and history survive as primitives but are no longer per entity. Most
+  journeys carry no server-side state.
+- [[id:D48BC708-459E-4508-A6C4-631BAC079354][Document every post-setup IAM journey]]:
+  done. Fourteen documents, each with a rendered =salt= wireframe and a coverage
+  table. 105 claimed subjects were checked against the generated protocol and all
+  exist; every id-link resolves. The exercise paid for itself: it found three
+  server-side security defects, captured as
+  [[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]],
+  [[id:E87A316A-A387-4D0B-8221-9716F8A6AF07][Change-password ignores the current password]] and
+  [[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]],
+  plus the design gaps the coverage tables record.
+- 2026-09-23, after auditing every =ores.iam= data type and responsibility: the
+  corpus was incomplete. Every /entity/ was covered, which is why the gap was
+  invisible, but four message families had no journey at all — =login_messages=,
+  =signup_messages=, =bootstrap_messages= and =reset_messages= — and
+  =tenant_provisioning_messages= had none either. Seven journeys were added:
+  Sign in, Sign up, First run, New tenant, New party, Register a service account
+  and Retire or reset a tenant. The corpus is now 21 journeys in 8 groups, with
+  Entry and Setup as new groups. Every journey carries =* Related journeys=,
+  which is a UI requirement rather than an editorial one: each entry becomes a
+  link on the screen. The three setup journeys carry =* Prototype= and link the
+  throwaway branches =prototype/first-run-journey=,
+  =prototype/new-tenant-journey= and =prototype/new-party-journey=. The hub was
+  renamed from "Journeys" to "User Journeys", because these are client-side
+  journeys and a "journey" in =ores.workflow= is a different thing.
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] found two more
+  server-side defects, captured separately because they are defects rather than
+  design gaps: the generic delete can terminate the system tenant
+  ([[id:97E6AD78-87F1-4443-B06F-712F24AB11D4][Delete can terminate the system tenant]]),
+  because the guard lives in the lifecycle functions the generic path does not
+  call; and suspension is not enforced anywhere on the sign-in path
+  ([[id:0A586E9E-F9A9-4FB5-B113-FCB199E39E16][Suspending a tenant does not suspend it]]),
+  so a suspended tenant still admits its accounts.
+
+* Out of scope
+
+- System-administrator cross-tenant operations: tenant create, update
+  and delete, tenant provisioning, system bootstrap and system reset.
+- The bootstrap and first-run journeys, which
+  [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]]
+  already covers.
+- Service-only operations: service login, impersonation and the
+  publish-from-dq triggers, except as notes in the gap log.

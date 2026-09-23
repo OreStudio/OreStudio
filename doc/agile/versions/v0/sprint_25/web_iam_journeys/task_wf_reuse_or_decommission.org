@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 33010766-86C3-4C4B-A2CF-F21121318FCD
+:END:
+#+title: Task: Decide what building material to reuse and what to decommission
+#+description: [wayfinder:grilling] Which existing ores.web artefacts serve the hand-crafted journeys, and which are retired.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: which existing ores.web artefacts serve the hand-crafted
+journeys, and which are retired? Use the inventory in
+[[id:F50D4435-1508-47CD-A75C-EA67D97645EC][Inventory the reusable ores.web building material]].
+Decide the fate of the declaration-driven entity shell, the per-entity
+declaration files, the generated UI metadata, the hand-written
+=AccountsPage=, and the BFF route shapes. Decide also the fate of
+[[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]],
+which this map supersedes. State what a new journey screen may reuse
+and what it must build.
+
+Blocked by: Inventory the reusable ores.web building material.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

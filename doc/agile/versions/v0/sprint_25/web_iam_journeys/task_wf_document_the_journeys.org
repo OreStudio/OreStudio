@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: D48BC708-459E-4508-A6C4-631BAC079354
+:END:
+#+title: Task: Document every post-setup IAM journey
+#+description: [wayfinder:task] One high-level user-journey document per journey, grouped by topic, each with a wireframe and a NATS coverage assessment.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr: 2131
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Document every post-setup IAM journey at high level, one document per journey,
+grouped under =doc/knowledge/journeys/= by logical topic. Each document carries
+the goal, the actor and trigger, the steps, a wireframe, the entity models it
+composes, the operations and messages it needs with their subjects and status,
+and what is missing.
+
+Done when every journey in the catalogue has a document, a rendered wireframe,
+and a NATS coverage table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- Every journey in the catalogue has a document: 14 of 14.
+- Every document has a rendered wireframe, embedded with a caption: 14 of 14.
+- Every document has a NATS coverage table: 14 of 14.
+- Every subject claimed in a coverage table exists in the generated protocol:
+  105 of 105 checked.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2131][#2131]] | [agile,codegen,doc] Publish the post-setup IAM user journeys |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The capture attributes the unguarded reads to =account_operations_handler.hpp=; =list_accounts= and =get_account= are in =account_handler.hpp=, and =login_info_handler.hpp= has the same bug and is not cited | doc/agile/product_backlog/inbox/iam-handlers-skip-permission-checks.org | Accept | Corrected the What and References sections; now cites =account_handler.hpp= (75, 116) and =login_info_handler.hpp= (75, 116). Both verified in source before editing: each file declares =using ...has_permission;= and never calls it. |
+| 2 | =_lint_malformed_links= has no unit test, unlike =_lint_dangling_links= | projects/ores.compass/src/compass.py | Accept | Added =test_malformed_links_reported_and_placeholder_words_ignored=: a too-long and a too-short target are flagged, a well-formed one is not, and the hyphen-less placeholder is left alone. 3 passed. |
+| 3 | A UUID with every hyphen stripped would slip past both checks (minor, not blocking) | projects/ores.compass/src/compass.py | Decline | The hyphen-less case is the documented placeholder path; =[[id:UUID]]= and =[[id:target]]= appear in prose across the meta docs, so treating hyphen-less targets as attempts would fail the corpus. A 32-hex-character id does not occur in the repo. |
+
+* Result
+
+Done 2026-09-23. Fourteen journeys in six topic groups, all under
+=doc/knowledge/journeys/=.
+
+| Group | Journeys |
+|-------+----------|
+| Profile | Present myself; Keep my details current; Change someone's details |
+| Credentials | Protect my account; Rescue access; Audit sign-ins |
+| Access | Know what I may do; Change someone's access; Shape the role catalogue |
+| Membership | Choose where I work; Draw the reporting line |
+| Directory | See who has access; Bring someone in |
+| Tenancy | Tune the tenant |
+
+Each document carries the nine required sections, a rendered PlantUML =salt=
+wireframe embedded with a caption, and a coverage table marking every operation
+=exists=, =partial= or =missing=.
+
+Verified mechanically on 2026-09-23:
+
+- 14 documents, 14 wireframe sources, 14 rendered PNGs. Every =salt= diagram
+  renders, carries no =title= directive (the combination fails), and is ASCII.
+- 105 subjects claimed in coverage tables were checked against the generated
+  TypeScript under =packages/wire-protocol/src/generated/=. All 105 exist.
+- Every =[[id:...]]= link in the corpus resolves repo-wide, against 5,593 org
+  files.
+- The filetags are =user_journey= and =security= throughout.
+
+*What the exercise found.* The journeys were expected to surface modeling errors
+and missing server-side operations, and they did. The server-side defects are
+captured separately, because they are defects rather than design gaps:
+
+- [[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]] --
+  =password_hash=, =password_salt= and =totp_secret= are on the wire.
+- [[id:E87A316A-A387-4D0B-8221-9716F8A6AF07][Change-password ignores the current password]] -- a stolen token is
+  enough to set a new one.
+- [[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]] -- role assignment is
+  unguarded and the reads are too, which compounds the first two.
+
+The design gaps, recurring across journeys: no self-service write of a member's
+own profile or contact record; no image upload anywhere, so a photo cannot be
+set; no operation to end another account's session; no subject for session
+statistics or the auth event log; no forced password change; no joined read for
+the account roster; no reporting tree; no permission-to-role write, so a role
+bundle is read-only; and the three lookup validators read system-tenant rows
+only, which makes a tenant administrator's lookup writes inert.
+
+Next: take one journey at a time to prototype, starting with accounts.

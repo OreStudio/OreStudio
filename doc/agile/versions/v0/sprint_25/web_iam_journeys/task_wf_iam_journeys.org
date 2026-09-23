@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: D81067C6-C125-47DA-90A0-66A1A2509317
+:END:
+#+title: Task: Identify the post-setup IAM journeys
+#+description: [wayfinder:grilling] The catalogue of post-setup IAM journeys, member and tenant-administrator separately, derived from user goals rather than from the entities.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: what are the post-setup IAM journeys? Produce the catalogue,
+with the member's journeys and the tenant administrator's journeys
+listed separately, each named by the person's goal rather than by the
+entities it touches, and each small enough to prototype on its own.
+Take the operations and fields from
+[[id:50B6E937-068D-40D6-8FE6-DDD0C5B89E0C][Inventory the IAM functionality a journey can surface]]
+and the wording from
+[[id:66EEA0FB-D837-4E3B-97DA-933C2108912D][Formalise the IAM vocabulary and the screen rules]].
+For each journey state who runs it, what triggers it, where it starts
+and ends, and which operations it must reach. Say which journeys are
+new and which the existing screens already serve. Accounts come first.
+Settle also whether a post-setup journey carries server-side state, as
+the bootstrap journeys do, or is a run of screens only.
+
+Blocked by: Inventory the IAM functionality a journey can surface;
+Formalise the IAM vocabulary and the screen rules.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Agreed with the user on 2026-09-23.
+
+A journey is one person, one goal, carried to completion, with a definite start
+and end, and a screen a person can be dropped into without context. Under that
+rule "manage accounts" is not a journey and "bring someone in" is.
+
+Most post-setup journeys carry no server-side state. They are guided sequences
+over immediate operations. Where one does need resumable state, the journey is
+the definition and its progress is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in =ores.workflow=;
+the journey is not server-side, its state is.
+
+The member's journeys and the tenant administrator's journeys are separate
+journeys with separate screens. Fourteen journeys in six topic groups:
+
+#+ATTR_HTML: :class hug-leading
+| Group | Member journeys | Tenant-administrator journeys |
+|-------+-----------------+-------------------------------|
+| Profile | Present myself; Keep my details current | Change someone's details |
+| Credentials | Protect my account | Rescue access; Audit sign-ins |
+| Access | Know what I may do | Change someone's access; Shape the role catalogue |
+| Membership | Choose where I work | Draw the reporting line |
+| Directory | — | See who has access; Bring someone in |
+| Tenancy | — | Tune the tenant |
+
+The list, detail and history primitives survive, but they are no longer per
+entity. A journey is one screen organised around a goal, composing several
+entity field sets as panels. The entity shell's list-detail-history trio is
+abandoned as the organising unit.
+
+A journey carries no server state by default. What a journey *does* carry is a
+list of the operations it needs and the subjects that provide them, so the gaps
+are visible before any code is written.

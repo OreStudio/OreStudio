@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 97E6AD78-87F1-4443-B06F-712F24AB11D4
+:END:
+#+title: Delete can terminate the system tenant
+#+description: The tenant delete rule sets status='terminated' with no system-tenant guard, unlike every dedicated lifecycle function.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:tenancy:bug:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The generic entity delete can terminate the *system tenant*. Every dedicated
+lifecycle function refuses that explicitly; the delete rule the generic path
+actually uses does not.
+
+* Why
+
+Found on 2026-09-23 while documenting
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][User Journey: Retire or reset a tenant]].
+
+The system tenant holds the shared reference data and the system administration
+for the whole installation, so terminating it is close to unrecoverable.
+
+Evidence:
+
+1. Every dedicated function refuses it and demands system context.
+   =projects/ores.sql/create/iam/iam_tenant_terminator_create.sql:51= raises
+   "Cannot terminate the system tenant" when the id is the system tenant, and
+   line 56 raises unless the caller is in system tenant context.
+   =iam_tenant_deprovisioner_create.sql:65= and :70 do the same, and the purger
+   follows the same shape.
+2. The generic path does not go through them. The generated entity delete issues
+   a plain =DELETE= on =ores_iam_tenants_tbl=, and
+   =projects/ores.sql/create/iam/iam_tenants_create.sql:150-157= is the rule
+   that catches it:
+
+   #+begin_src sql
+   create or replace rule ores_iam_tenants_delete_rule as
+   on delete to "ores_iam_tenants_tbl" do instead (
+       update "ores_iam_tenants_tbl"
+       set valid_to = clock_timestamp(),
+           status = 'terminated'
+       where id = OLD.id
+         and valid_to = ores_utility_infinity_timestamp_fn();
+   );
+   #+end_src
+
+   No system-tenant guard, and no system-context check.
+3. =iam.v1.tenants.delete= reaches that rule and checks only
+   =iam::tenants:delete=. The dedicated =iam::tenants:terminate= permission is
+   seeded and held by =SuperAdmin=, but no operation uses it.
+
+So the guard exists, but in the wrong place: inside the functions the generic
+path does not call.
+
+The fix is to add the same guard to the delete rule — refuse when =OLD.id= is
+=ores_utility_system_tenant_id_fn()=. The check constraint at line 60
+(=id <> max_uuid or code = 'system'=) is a consistency rule about the row, not a
+deletion guard, and does not prevent this.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_tenants_create.sql:150-157= — the unguarded delete rule.
+- =projects/ores.sql/create/iam/iam_tenant_terminator_create.sql:51-57= — the guard that exists elsewhere.
+- =projects/ores.sql/create/iam/iam_tenant_deprovisioner_create.sql:65-71= — the same guard.
+
+* See also
+
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][User Journey: Retire or reset a tenant]]
+- [[id:0A586E9E-F9A9-4FB5-B113-FCB199E39E16][Suspending a tenant does not suspend it]]

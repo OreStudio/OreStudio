@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 3CA48F40-B601-497B-BA78-9822DBEBA8E5
+:END:
+#+title: User Journey: Know what I may do
+#+description: A member sees the roles they hold and the permissions those roles carry.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member sees the roles they hold and the permissions those roles carry.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see what I am allowed to do, and where it comes from." The member
+reads the roles on their account and the permissions those roles carry. The
+journey is done when the member can name every role they hold, and answer "may
+I do this?" for any action the system offers.
+
+* Actor and trigger
+
+The member: an account of type =user=, signed in, reading their own record. The
+trigger is a refusal — a screen answers "permission denied" — or curiosity from
+the account menu. It starts when the member opens *My access*, and ends when
+they close it. Nothing is written, so the journey keeps no server-side state.
+
+This is the read half of the access topic. An administrator changes the same
+records for somebody else — see
+[[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]].
+
+* Steps
+
+1. *Open my access.* The member chooses *My access*. The system reads the roles
+   assigned to the caller's account and lists them with their descriptions.
+2. *Read the roles.* Each row shows the role name and what the role is for. The
+   member's identity in the header comes from the session established at
+   sign-in, not from a second read.
+3. *Read the permissions.* The system reads the effective permissions of the
+   account and lists the codes. Each code follows =component::resource:action=,
+   so the member reads the component and the action from the code alone.
+4. *Follow a permission back.* The member picks a permission and asks which role
+   grants it. The system reads the permissions of the held roles and answers.
+5. *Leave.* The member closes the screen. No change has been made.
+
+* Screens and wireframes
+
+One screen, read-only. Three panels: the caller's identity, the roles they
+hold, and the permissions those roles carry. The member thinks of the three as
+one answer to one question, so they are panels of one screen rather than
+separate screens.
+
+#+caption: My access: who I am, the roles I hold, and the permissions they carry.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/access/wireframe_know_what_i_may_do.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The signed-in identity in the header: username and full name | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =role= | The roles the account holds: name and description | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+| =permission= | The atomic codes the roles bundle: code and description | [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] |
+| =account_role= | The junction row that links the account to each role | no entity model — junction table |
+| =role_permission= | The junction row that links each role to its permissions | no entity model — junction table |
+
+The two junctions have no entity model of their own: they are many-to-many
+links, and the joined shape is a query result rather than an entity. There is
+also no module entity and no module table. The component segment of the code —
+=iam= in =iam::accounts:read= — is what plays the part a module would play.
+
+No credential field appears on this screen. =password_hash=, =password_salt=,
+=service_password_hash=, =totp_secret= and cleartext passwords stay on the
+server, and no read in this journey returns them.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open my access | Read the roles on my account | =iam.v1.roles.by-account= | exists |
+| Open my access | Read my effective permissions | =iam.v1.roles.permissions-by-account= | exists |
+| Follow a permission back | Read the permissions one role bundles | =iam.v1.roles.permissions= | exists |
+
+The three reads are defined in
+[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
+Each proves that the caller has a session, but checks no permission and takes
+an arbitrary account id. So a member can read another account's access. That is
+the gap this journey exposes.
+
+* What is missing
+
+1. *No self-scoping and no permission gate.* =iam.v1.roles.by-account=,
+   =iam.v1.roles.permissions-by-account= and =iam.v1.roles.permissions= take an
+   arbitrary id and check only that the caller is signed in. The candidate is a
+   self form of each read, such as =iam.v1.roles.by-account-self=, or an
+   =iam::roles:read= check on the existing reads plus a check that the target
+   account is the caller's own.
+2. *No attribution of a permission to a role.* =permissions-by-account= returns
+   a flat list of codes. The screen can show the flat list, or read each held
+   role in turn, but no single read says "this permission arrives through that
+   role". The candidate is a response that pairs each code with the role that
+   grants it.
+3. *No assignment dates on the roles read.* =iam.v1.roles.by-account= returns
+   =role= records only. The junction row carries =assigned_by= and
+   =assigned_at=, but the response does not. A member cannot see when a role was
+   given or by whom. The administrator's side of the same gap is
+   [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]].
+
+* Related journeys
+
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — see the permissions a role you hold actually bundles
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the administrator's side of the same question, where roles are granted and revoked
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — permissions are exercised in a party, and the session picks one
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the user guide chapter
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access journeys]] — the group hub
+
+* See also
+
+- [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]]
+- [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

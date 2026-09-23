@@ -23,7 +23,7 @@ See [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-t
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D6][ores.cpp.oresmd.enums]] | All per-asset-class quote-type enums plus volatility_model_subtype. |
+| [[id:8A1B2C3D-4E5F-6A7B-8C9D-E1F2A3B4C5D6][ores.cpp.oresmd.enums]] | All per-asset-class quote-type enums plus volatility_model_subtype. |
 | [[id:9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][ores.cpp.oresmd.identifiers]] | Identifier and requirement structs with quote_type and vol fields. |
 | [[id:B4D5E6F7-A8B9-C0D1-E2F3-A4B5C6D7E8F9][ores.cpp.oresmd.parser]] | query_params, parse_*, validate_*, to_uri branches. |
 | [[id:E7A8B9C0-D1E2-F3A4-B5C6-D7E8F9A0B1C2][ores.cpp.oresmd.parser_tests]] | Parse, round-trip, and rejection Catch2 tests. |

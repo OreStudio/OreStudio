@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41
+:END:
+#+title: Entry journeys
+#+description: Getting in: signing in and out, and self-registration.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+Every other journey starts here. Signing in is where the account is authenticated,
+where the tenant is resolved from the hostname, where the party the person works
+as is chosen, and where the session is created that everything else runs inside.
+The failure paths matter as much as the happy one: a wrong password, a locked
+account, and a password that must change before anything else can happen.
+
+Signing out is the same journey from the other end. It ends the session and
+returns the person to the door.
+
+One case belongs elsewhere: the very first sign-in of a new installation, which
+is part of [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]].
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] | anyone with an account | Authenticate, choose a party, land — and sign out again |
+| [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] | a person with no account | Register, when the tenant allows self-registration |
+
+* Related
+
+- [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

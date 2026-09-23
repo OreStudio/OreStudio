@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 748DADF6-5AE0-4CC8-9300-0FED290B3065
+:END:
+#+title: Task: Scaffold story: Prototype the post-setup IAM journeys in ores.web
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold this story: the story and task documents, the sprint wiring,
+and the scaffold PR. Close this task before merging that PR. It decides
+nothing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story scaffolded on 2026-09-23 and carried through to a PR: the map, its nine
+tickets, the sprint wiring, the =user_journey= document type and the journey
+corpus.
+
+Seven of the nine tickets are DONE. Two remain open, because they are decisions
+the user has not taken yet:
+
+- [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]]
+- [[id:1C16015E-AEAE-4B7D-BD00-7A5F50000D21][Decide how a prototype records a gap it exposes]]
+
+The gap log the second ticket covers is served in the meantime by the
+product-backlog inbox: every server-side gap the journeys exposed is filed there
+as a capture, and the PR lists them.

@@ -95,6 +95,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =task= | =compass add task= | =--parent-dir= | =Goal=, =Status=, =Acceptance=, =Plan=, =Notes=, =Test Scenarios=, =PRs=, =Review=, =Result= |
 | =technical_space= | =compass add technical_space= | =--parent-dir= | =Summary=, =Facets=, =See also= |
 | =test_scenario= | =compass add test_scenario= | =--parent-dir= | =Before you start=, =Scenario Info=, =Steps=, =Results=, =Notes= |
+| =user_journey= | =compass add user_journey= | =--parent-dir= | =Goal=, =Actor and trigger=, =Steps=, =Screens and wireframes=, =Prototype=, =Entities composed=, =Operations and messages=, =What is missing=, =Related journeys=, =Related knowledge=, =See also= |
 | =version= | =compass add version= | =--parent-dir= | =Identity=, =Mission=, =Definition of done=, =Status=, =Sprints=, =Release scope= |
 
 # END generated types

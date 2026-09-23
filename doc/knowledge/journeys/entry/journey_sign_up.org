@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 33B0C287-8262-4C2A-9F7B-3F74C06586AE
+:END:
+#+title: User Journey: Sign up
+#+description: A person registers themselves when the tenant allows self-registration.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person registers themselves when the tenant allows self-registration.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I have no account and I want one." The person registers a username, an email
+address and a password, and the system creates the account. The journey is done
+when the confirmation appears and the account exists.
+
+The goal stops one step short of work. Registration creates an account; it does
+not give the person a place to work, and sign-in refuses an account with no
+party. So the honest end of this journey is a confirmation screen, not a
+workspace, and the person needs an administrator before the account is useful.
+
+* Actor and trigger
+
+A person with no account, on a tenant whose settings allow self-registration.
+The trigger is the *Sign up* link on the sign-in screen, or an invitation
+saying the tenant accepts registrations. It starts when they open the sign-up
+screen and ends when the account is created.
+
+This journey belongs to the person, not to an administrator: nobody is acting
+on somebody else's record. The administrator's version of "bring a person in"
+is [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]], and it
+creates a usable account in one go.
+
+One gate stands in front: the system flag =system.user_signups=. When it is off,
+registration is refused and the journey never starts. A second flag,
+=system.signup_requires_authorization=, is meant to gate registration on an
+approval step; no approval workflow exists, and the sign-up service refuses
+registration outright when that flag is on.
+
+* Steps
+
+1. *Open sign-up.* The person follows the *Sign up* link from the door. The
+   system shows the tenant it is serving, and a form with username, email,
+   password and confirmation. It decides from =system.user_signups= whether the
+   form or a closed notice is the right answer.
+2. *Enter the details.* The person supplies a username, an email address and a
+   password. The screen states the password rules so the person can satisfy them
+   before submitting; nothing about the tenant's policy is a surprise.
+3. *Submit.* The system checks that sign-ups are enabled, that the username is
+   free, that the email address is well formed and unused, and that the password
+   meets the policy. Each refusal is a sentence the person can act on: sign-ups
+   closed, username taken, email already registered, password too weak.
+4. *The account is created.* The server writes an account of type =user= with
+   the username, the email address and the password material, and seeds its
+   login record — no failed attempts, not locked, no reset required. It writes
+   no contact record and no profile.
+5. *The baseline role is granted.* The server assigns the =Viewer= role to the
+   new account. This is the only thing the account gains beyond existing, and it
+   is the floor every account starts from.
+6. *Nothing else is granted.* No party association is created. No reporting line
+   is drawn. No contact details, photo or job title exist. The account is a name
+   with a password.
+7. *Confirmation.* The system confirms the account was created and returns the
+   person to the door. It does not sign them in, and it cannot: the party check
+   would refuse the session anyway.
+8. *The account cannot sign in.* At the door, the credential check succeeds and
+   the party check fails. The reply is *Account has no party assignment. Please
+   contact your administrator.* The gap does not appear on the sign-up screen;
+   it appears here.
+
+The journey carries no state the server has to keep: there is nothing to resume.
+The only artefact is the account row, and it waits for an administrator.
+
+* Screens and wireframes
+
+One screen. The form, the refusal messages and the statement of what the new
+account receives are panels of that screen, because the last panel is the answer
+to the question the person will have next: what did I just get?
+
+#+caption: Sign up: the registration form, the refusals, and what the new account does and does not get.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/entry/wireframe_sign_up.png]]
+
+The panel that carries the weight is the last one. It says plainly that the
+account has no party and no profile, and that an account with no party is refused
+at sign-in. A screen that hides that would send the person back to the door to
+fail.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The username and email the person chose, and the password material the server keeps | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_type= | The new account is type =user=; the type decides whether password sign-in is offered at all | [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]] |
+| =login_info= | The security state seeded at registration: no failed attempts, not locked, no reset required | [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] |
+| =account_party= | The association that is *not* created — and whose absence is the refusal at the door | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
+| =role= | The =Viewer= baseline the server grants, and the only access the account holds | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+
+The password the person typed is never stored, only its hash, and the hash is
+not sent back. The screen shows the account id at most; nothing else about the
+account is readable by the caller.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open sign-up | Ask whether the deployment is provisioned | =iam.v1.bootstrap.status= | exists |
+| Open sign-up | Read =system.user_signups= to decide whether to offer the form | none | missing |
+| Submit | Create the account, its login record and its baseline role | =iam.v1.auth.signup= | exists |
+| Refusals | Say why registration was refused | =signup_response.message= | exists |
+| The account cannot sign in | Refuse an account that works in no party | carried by =iam.v1.auth.login= | exists |
+| Fix it | Give the new account a party | =iam.v1.account_parties.put= | partial |
+
+=iam.v1.auth.signup= comes from
+[[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]]: the
+request carries =principal=, =password= and =email=, and the response carries
+=success=, =message= and =account_id=. It is one of the few subjects that needs
+no session, because it is what a person without a session uses.
+=iam.v1.bootstrap.status= comes from
+[[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]].
+
+=partial= on =iam.v1.account_parties.put= means the junction subject exists —
+the junction model renders it — but it carries
+=iam::account_parties:write=, a tenant-administrator permission. The new member
+cannot give themselves the party they need, which is the point: the fix is
+somebody else's action.
+
+* What is missing
+
+1. *The web client cannot sign up at all.* The generated web protocol has no
+   sign-up subject and =wire-protocol/src/operations.ts= has no entry for it, so
+   the browser cannot call =iam.v1.auth.signup=. =SignUpPage.tsx= is a
+   destination rather than a form: it says accounts come from an administrator
+   and offers no fields. The candidate is a sign-up operation in the wire
+   client and a real form. Server-side, the subject exists and a legacy HTTP
+   route =POST /api/v1/auth/signup= already reaches it, which is how the gap
+   stayed invisible.
+2. *The screen cannot read the flag that gates it.* =system.user_signups= lives
+   in the variability settings, and the web protocol generates no settings
+   subject at all: the generated set covers =iam=, =refdata=, =dq=, =compute=
+   and the rest, but not =variability=. So the screen cannot know whether the
+   tenant allows registration, and the person learns the answer only by
+   submitting. The candidate is a readable tenant policy surface — a
+   public settings read for the flags that shape the door, or a field on the
+   bootstrap status.
+3. *A new account has no party, and nothing closes that gap.* Registration
+   creates the account and grants the =Viewer= role, and stops. The account is
+   refused at sign-in until an administrator adds it to a party. The candidate
+   is one of: registration places the account in a party the tenant nominates as
+   the default for new sign-ups, or the confirmation screen states what happens
+   next and to whom, or an approval step creates the association. This is the
+   journey's central gap: as built, registration alone does not get a person to
+   work.
+4. *The stated baseline and the built behaviour disagree.* The server assigns the
+   =Viewer= role at registration, so a new account does have a role. The
+   intended model is that an account gains a role when an administrator gives it
+   one. Either the grant is deliberate and should be documented as the baseline
+   every self-registered account receives, or it should be removed. The journey
+   cannot say which until that is decided.
+5. *The approval flag cannot be turned on.* =system.signup_requires_authorization=
+   is defined, and the sign-up service refuses registration outright when it is
+   set, with *Signup authorization workflow is not yet implemented.* Turning the
+   flag on therefore closes the door rather than gating it. The candidate is the
+   approval workflow itself, or the removal of the flag until it exists.
+6. *No confirmation reaches the person.* Registration returns an account id and
+   nothing else: no email, no verification link, no notice to an administrator
+   that somebody is waiting. A person can register and no one in the tenant ever
+   learns of it. The candidate is a notification on account creation, and an
+   email-verification step if the tenant wants one.
+7. *No rate limit on the door.* =rate-limit.ts= in the BFF guards the login
+   route. Registration is open to anyone who can reach the address and has no
+   comparable guard, so a tenant with sign-ups enabled can be filled with
+   accounts. The candidate is the same limiter on the sign-up route.
+
+* Related journeys
+
+- [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the next thing this person does, and where the missing party
+  surfaces as a refusal.
+- [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] — the administrator's path that creates a usable account
+  in one step, party and initial role included.
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — where the place a new account needs is created, when the
+  tenant has nowhere to put them yet.
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — where the role a new account should start with
+  is decided, since =Viewer= is currently granted without a choice.
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — where a deployment with no account at all creates its first
+  one, which is the other way accounts come into being.
+
+* Related knowledge
+
+- [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — the rule that an account with no party is refused
+  at sign-in, which is what makes this journey's gap a gap.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the component this journey belongs to.
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]] — the wireframe above.
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]] — the group.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the hub.
+
+* See also
+
+- [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]
+- [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]]
+- [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]]
+- [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]]
+- [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]]
+- [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]]

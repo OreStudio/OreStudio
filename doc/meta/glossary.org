@@ -395,6 +395,33 @@ sessions. See [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] for th
 | Owner           | cross-cutting                                   |
 | How to generate | [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the codegen recipe |
 
+* User journey
+:PROPERTIES:
+:ID: F44766FA-1E9C-416F-849A-E131101B2ECA
+:END:
+
+A design document describing what one person is trying to do: the actor, the
+trigger, the steps, the screens, the entity fields each screen shows, and the
+operations and messages each step needs. Lives under
+[[proj:doc/knowledge/journeys][=doc/knowledge/journeys/=]], one subfolder per group of journeys. The groups are
+logical topics, not components — a component is an implementation concept, and a
+journey is grouped by what the person is trying to do.
+
+A user journey is written before anything is built. The journey itself is the
+definition it becomes, and the state that lets a client resume it is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]]: the journey is not
+server-side, its state is. Most user journeys keep no such state at all. See
+[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] for the
+contract, and [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for how a
+journey is executed.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                       |
+|-----------------+---------------------------------------------|
+| Owner           | cross-cutting                               |
+| How to generate | [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]] in the codegen recipe |
+| Inventory       | [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] |
+
 * TODO state
 :PROPERTIES:
 :ID: 8A246D60-6A87-4B54-A023-564EC1965C61

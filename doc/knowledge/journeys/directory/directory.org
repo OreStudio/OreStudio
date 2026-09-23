@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: BEE7132B-C76F-4373-B776-13262F267ECE
+:END:
+#+title: Directory journeys
+#+description: The account roster, and bringing a person in.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+The roster is the administrator's starting point, and creating an account is the
+journey that fills it. Both treat an account as a record in a directory rather
+than as one person's own details.
+
+The roster journey has no single entity behind it. Its usefulness comes from
+joining the account, its sign-in state, its parties and its roles into one row,
+so the administrator can see who is locked, who is online, and who must change
+their password at next sign-in. That join is the journey's real work.
+
+An account is not always a person. It has four types — =user=, =service=,
+=algorithm= and =llm= — and only the first has a photo, a job title, a contact
+record or a party in the ordinary sense. A non-human account is still an
+identity that logs in, holds roles and appears in provenance, so it is created
+and managed here, but the journey is not the same one.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] | tenant administrator | Read the roster and each account's state |
+| [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] | tenant administrator | Create a person's account with its parties, roles and first password |
+| [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]] | tenant administrator | Create a non-human identity for a service, an algorithm or an LLM |
+
+* Related
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 66EEA0FB-D837-4E3B-97DA-933C2108912D
+:END:
+#+title: Task: Formalise the IAM vocabulary and the screen rules
+#+description: [wayfinder:research] Canonical IAM terms, and the screen-specification rules the journeys must obey.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/iam-screens-from-user-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Question: what are the canonical IAM terms, and which screen rules bind
+the journeys? Extract the IAM glossary, including the Tenant lifecycle
+section, and state how the project distinguishes account, party and
+tenant. Record where the word /user/ is defined, and whether /module/
+and /session/ are defined at all. Then collect the rules that constrain
+screens: =entity_specification.org=, =component_specification.org=, the
+UI design principles and the UX language. Name every term a prototype
+must not invent. Not blocked by anything.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Read on 2026-09-23 from the knowledge docs and the web specification.
+
+** Where the words live
+
+- The IAM knowledge doc is
+  doc/knowledge/security/identity_and_access_management.org (ID
+  =8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0=, alias =IAM=). Its glossary
+  covers IAM concepts and the Tenant lifecycle only.
+- =account=, =role= and =permission= are defined in the user manual,
+  not in the IAM doc:
+  doc/manual/user_guide/chapter_accounts_and_roles.org. "An /account/
+  is an *identity* -- it answers 'who is this?' ... An account grants
+  nothing by itself." "A /permission/ is the *atomic unit of
+  capability*." "A /role/ is a *named bundle of permissions* ... Roles
+  are the only bridge between the two: accounts never hold permissions
+  directly, they hold roles."
+- =tenant=: "a fully isolated organisational space -- its users,
+  reference data, and results are invisible to every other tenant"
+  (chapter_initial_setup.org).
+- =party=: "an internal legal entity participating in financial
+  transactions" (chapter_parties.org); inside a tenant, "a business
+  unit -- a legal entity, a branch, a trading desk, or any other
+  organisational subdivision" (chapter_tenants.org).
+
+** The term that collides with this map
+
+=Journey= is already defined in the IAM doc: "a guided path that takes a
+person through workflows and their own actions (sign-in, onboarding) in
+order. The journeys are /first run/, /new tenant/ and /new party/. The
+server keeps the journey's state, so any client can resume it where it
+stopped."
+
+So a project journey is a server-stateful path, not a run of screens.
+This map uses the word for post-setup paths as well. Whether those
+carry server-side state is not settled by the vocabulary, and
+[[id:D81067C6-C125-47DA-90A0-66A1A2509317][Identify the post-setup IAM journeys]] must settle it.
+
+Other glossary terms a prototype may rely on: /System bootstrap/,
+/Provision/, /Onboard/, /Account-party association/, /Seed profile/
+(=Empty operational= and =ACME demo=; a "Synthetic" profile is claimed
+by a bootstrap ticket but is not defined in the doc), /Configuration
+Phase/ and /Operation Phase/.
+
+** Words that are not defined
+
+- *user* is not a defined entity. It is one value of account type:
+  "Accounts come in four types ... /User/ for people, /Service/ for
+  OreStudio's own backend services, /Algorithm/ for automated
+  processes, and /LLM/ for large language model agents." Prefer
+  /account/ in the interface.
+- *module* has no definition. The IAM codegen docs say "components".
+- *session* has no glossary definition. It is a wire entity, not a
+  modelled domain term.
+
+** The screen specification
+
+=entity_specification.org= (761 lines) and
+=component_specification.org= (502 lines) are not under =doc/=; they
+live in projects/ores.web/modeling/. Rules that bind screens:
+
+- Fixed vocabulary, and "Never invent a synonym": Entity, Collection,
+  List screen, Detail screen, History screen, Reference data,
+  Transactional data, Lookup entity, Child entity, Junction entity,
+  Temporal, Audit fields, Provenance, Field group.
+- The generated standard (=ClientCountryModel= / =CountryMdiWindow=) is
+  the standard. The legacy hand-written accounts screens are "a good
+  reference for /what an entity screen contains/. It is not the
+  standard for /how it behaves/."
+- Layers: Screen / Query / Endpoint / Protocol. "Screen. Presentation
+  only. No fetching, no business rules, no knowledge of subjects or
+  wire field names."
+- Routes: list =/<collection>=, detail =/<collection>/:id=, new, edit,
+  history =/<collection>/:id/history=. "Read and edit share the detail
+  screen."
+- Detail tabs: General, one per declared field group, Related,
+  Provenance. "A tab that would be empty is not rendered."
+- "Every accepted write carries a reason." Provenance shows exactly
+  Version, Modified By, Performed By, Recorded At, Change Reason,
+  Commentary.
+- Unavailable actions are "not rendered, rather than rendered and
+  disabled".
+- Exceptions (§15): Lookup, Junction, Child, Singleton, Read-only,
+  Transactional. "An exception changes which screens exist and which
+  actions appear. It never changes the layout of the screens that do
+  exist."
+- =component_specification.org=: shared machinery is written once, and
+  "adding an entity should touch one new file ... plus the protocol
+  schemas that codegen is producing."
+
+** The naming rule that bites the sessions surface
+
+doc/knowledge/ui/ux_language.org separates the two words sharply:
+"History" always means versioned-entity history, with versions, a diff,
+Open and Revert. A screen that shows an event log -- "login sessions,
+dataset publications, job runs" -- must be called *Audit*, is read-only,
+and has Refresh but no versions, diff or revert.
+
+** The gap in the rules
+
+Neither =ui_design_principles.org= nor =ux_language.org= mentions
+journeys, wizards or steps. There is no documented rule for a step
+rail, progress, back-navigation, an irreversible step, or a retry
+inside a multi-step flow. The bootstrap prototypes' review, progress
+and handoff shape, and their blocking of Back across a final step, have
+no backing in these documents. If the post-setup journeys keep that
+shape, the rules must be written.

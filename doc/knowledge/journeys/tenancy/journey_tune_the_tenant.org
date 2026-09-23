@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: D730532F-4D1B-4344-B723-4F9F006B8041
+:END:
+#+title: User Journey: Tune the tenant
+#+description: A tenant administrator maintains tenant details and the reference lookups.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator maintains tenant details and the reference lookups.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the tenant's own details and the labels that classify things to stay
+correct." The administrator reads the tenant row and maintains the three
+lookups: account types, tenant types and tenant statuses. The journey is done
+when the lookups hold exactly the values the tenant uses, in the right order.
+
+* Actor and trigger
+
+The tenant administrator: an account of type =user= that holds the =TenantAdmin=
+role, signed in inside their own tenant. The trigger is a change in
+classification: a new kind of account, a new tenant lifecycle state, or a wrong
+label. It starts when the administrator opens *Tenant settings*, and ends when
+the lookup rows read correctly.
+
+Tenant create, update and delete are system-administrator work, and so are
+tenant provisioning and system reset. They are out of scope for this journey,
+which does not design them; the tenant panel on this screen is read-only. The
+subjects that do that work are =iam.v1.tenants.put=, =iam.v1.tenants.delete=,
+=iam.v1.tenants.provision-acme=, =iam.v1.tenants.complete-provisioning=,
+=iam.v1.system.reset-tenant= and =iam.v1.system.reset=. Each needs a
+system-level permission, and none of them is a step below.
+
+* Steps
+
+1. *Open tenant settings.* The administrator opens *Tenant settings*. The system
+   shows one screen: the tenant's own row, then one plain list per lookup.
+2. *Read the tenant row.* The system reads the caller's tenant and shows the
+   code, the name, the hostname, the type and the status.
+3. *Read the lookups.* The system lists the account types, the tenant types and
+   the tenant statuses. Each list shows the code, the display name, the
+   description and the display order.
+4. *Add or correct a lookup row.* The administrator edits a row or adds one. The
+   system writes it with the lookup's =put= operation and records the reason for
+   the change.
+5. *Remove a lookup row.* The administrator deletes a row the tenant no longer
+   uses. The system soft-deletes it with the lookup's =delete= operation.
+6. *Reorder.* The administrator changes the display order so the lists read in
+   the right sequence.
+7. *Leave.* The administrator goes back. The lookups offer the values they hold.
+
+* Screens and wireframes
+
+One screen. This is the one place in these journeys where a plain list of
+reference rows is the right screen: a lookup has no goal of its own, so it needs
+no panels beyond the list and its edit form. The tenant's own row sits above the
+lists because the type and the status columns are the very codes the lookups
+define.
+
+#+caption: Tenant settings: the tenant's own row above the three lookup lists.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenancy/wireframe_tune_the_tenant.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | Code, name, hostname, type and status, read-only here | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =account_type= | The codes that classify accounts | [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]] |
+| =tenant_type= | The codes that classify tenants | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
+| =tenant_status= | The codes for the tenant lifecycle | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+
+The three lookups share one shape: a code that is the primary key, a natural-key
+name, a description and a display order. That is why one plain list screen fits
+all three.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the tenant row | List the caller's tenant | =iam.v1.tenants.list= | exists |
+| Read the tenant row | Read one tenant by code | =iam.v1.tenants.get= | exists |
+| Read the lookups | List the account types | =iam.v1.account_types.list= | exists |
+| Read the lookups | List the tenant types | =iam.v1.tenant_types.list= | exists |
+| Read the lookups | List the tenant statuses | =iam.v1.tenant_statuses.list= | exists |
+| Add or correct a row | Write one account type | =iam.v1.account_types.put= | partial |
+| Add or correct a row | Write one tenant type | =iam.v1.tenant_types.put= | partial |
+| Add or correct a row | Write one tenant status | =iam.v1.tenant_statuses.put= | partial |
+| Remove a row | Delete one account type | =iam.v1.account_types.delete= | exists |
+| Remove a row | Delete one tenant type | =iam.v1.tenant_types.delete= | exists |
+| Remove a row | Delete one tenant status | =iam.v1.tenant_statuses.delete= | exists |
+
+The writes need =iam::account_types:write=, =iam::tenant_types:write= and
+=iam::tenant_statuses:write=. The =TenantAdmin= role holds every permission, so
+the administrator may call them. The lookups also have =put_many= and
+=delete_many= subjects, which a single edited row does not need.
+
+=partial= on the three writes is not about permission. It is about effect: the
+row is written, but the value never classifies anything. See below.
+
+* What is missing
+
+1. *The lookups are read from the system tenant, but written under the caller's
+   tenant.* The three validators -- =ores_iam_validate_account_type_fn=,
+   =ores_iam_validate_tenant_type_fn= and =ores_iam_validate_tenant_status_fn= --
+   read only rows whose =tenant_id= is the system tenant. A tenant administrator
+   writes rows under their own tenant, so those rows are inert: no account and no
+   tenant is ever validated against them. The candidate is to make the three
+   validators tenant-aware, or to make the lookup screens system-administrator
+   work. Until one of those lands, the screen must say that a change here does
+   not change what the system accepts.
+2. *No order guard.* =display_order= is a free integer with a default of zero,
+   and nothing makes it unique within a lookup. Two rows may share an order, and
+   the list order is then undefined. The candidate is a unique index or a stated
+   tie-break.
+3. *The tenant's own details are read-only here.* =iam.v1.tenants.put= exists and
+   needs =iam::tenants:write=, but it is system-administrator work by the
+   boundary above. The candidate, if a tenant administrator should correct the
+   display name or the description, is a narrow operation limited to those two
+   fields. Until it exists the panel is read-only.
+
+* Related journeys
+
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the other end of a tenant's life: provision the tenant whose details you are setting
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — suspend, terminate or reset the tenant whose details you are configuring
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the accounts inside the tenant you are configuring
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — the roles those accounts hold
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

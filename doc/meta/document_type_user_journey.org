@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: CA94C762-B0C8-40E7-85CE-D4C6355023CC
+:END:
+#+title: Document type: user_journey
+#+description: The contract for the user_journey document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:user_journey:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+This page defines the =user_journey= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this page
+carries only what is specific to =user_journey=.
+
+* Contract
+
+- Implements :: design intent. The journey is written before the screens are
+  built, and it is the document a prototype answers to.
+- Folder :: [[proj:doc/knowledge/journeys][=doc/knowledge/journeys/=]], one subfolder per group of
+  journeys. The groups are logical topics, not components: a component is an
+  implementation concept, and a journey is grouped by what the person is trying
+  to do.
+- Title :: =User Journey: <human readable title>=. The =User Journey: = prefix
+  is added by the codegen automatically when the type is =user_journey=.
+- File :: =journey_<slug>.org=, so the journeys sort together beneath their
+  group hub (=<group>.org=).
+- Tags :: =user_journey= (the document type) and =security= (the component
+  topic). The group is expressed by the folder, not by a tag: a group rename
+  would otherwise churn the [[id:F94957C5-382A-4D6E-B292-C02C2772F038][tag inventory]] for no gain.
+- Level :: =cross=.
+- Not stateful — no TODO, no =* Status= table. A journey is a design document,
+  not a unit of work; the work that builds it is a task somewhere else.
+- How to create :: see [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]] in the codegen recipe.
+- Required sections ::
+  - =* Goal= — what the person is trying to achieve, in their own words.
+  - =* Actor and trigger= — who runs it, what brings them there, where it
+    starts and ends, and which actor class it belongs to.
+  - =* Steps= — the ordered steps, each with what the person does and what the
+    system does in reply.
+  - =* Screens and wireframes= — PlantUML sketches exported to PNG beside the
+    document and embedded with a caption.
+  - =* Prototype= — optional. Where a clickable prototype exists, its branch,
+    route and source directory. A prototype lives on a throwaway
+    =prototype/<name>= branch and is never merged.
+  - =* Entities composed= — the entity models whose fields appear, and the panel
+    each one contributes.
+  - =* Operations and messages= — every operation with its NATS subject and
+    whether the server provides it today.
+  - =* What is missing= — every operation, field or message the journey needs
+    that the server does not provide.
+  - =* Related journeys= — the journeys reachable from this screen, and why a
+    person would go there. Each entry becomes a link on the screen, so this is
+    a UI requirement rather than an editorial one.
+  - =* Related knowledge= — the knowledge documents the journey depends on.
+  - =* See also= — related models, tasks and external references.
+
+* Relation to a journey
+
+A user journey is the design artefact. The journey itself is the definition it
+becomes when built — an ordered list of steps and the screens that carry them. A
+journey is not a server-side object: *the journey is not server-side, its state
+is*, and that state is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=, which is what lets any client resume it.
+
+Most user journeys need none of that. They are runs of screens over immediate
+operations and keep no server-side state at all. When one does need resumable
+state, it becomes a journey whose progress is a workflow instance. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for the
+composition classes and where the transaction boundary sits.
+
+* Why one screen, not one per entity
+
+A journey describes one screen composed around a goal. The list, detail and
+history primitives still exist, but they are composed into the journey rather
+than standing alone per entity: the account journey shows contact details and
+sign-in state as panels, not as separate screens. The entity models supply the
+fields; the journey decides which of them belong together and in what order.

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4
+:END:
+#+title: Profile journeys
+#+description: How a person is represented: name, photo, job title and contact details.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+A person is represented by more than one record. The
+[[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][account]] carries the name, photo,
+job title and reporting line; a separate contact record carries the address,
+telephone and web page. These journeys treat both as panels of one screen,
+because a person thinks of them as one thing.
+
+Two of the journeys are self-service and one is the same screen in an
+administrator's hands. The self-service pair are the journeys with the largest
+known gap: the server exposes no operation for a member to change their own
+name, photo, job title or contact details. Only an administrator can.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] | member | Show who I am: photo, name, job title, reporting line |
+| [[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]] | member | Keep my address, telephone and web page up to date |
+| [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] | tenant administrator | Correct a colleague's profile, photo and contact details |
+
+* Related
+
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

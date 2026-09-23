@@ -48,3 +48,30 @@ def test_dangling_links_reported_and_resolved_ones_are_not():
     assert [(path, target) for path, _line, target, _label in dangling] == [
         ("a.org", "CCCCCCCC-0000-0000-0000-000000000000"),
     ]
+
+
+def test_malformed_links_reported_and_placeholder_words_ignored():
+    """A target that looks like a UUID attempt but is not one is flagged.
+
+    _ID_LINK_RE requires exactly 36 characters, so a target of the wrong
+    length does not match it at all: the dangling check skips the link
+    silently and only a site build notices, when org refuses to export the
+    page. A hyphen-less target is treated as a placeholder word rather than
+    an attempt, whether it is the literal "UUID" used in prose or 32 hex
+    characters with the hyphens stripped.
+    """
+    files = [
+        (Path("a.org"),
+         "[[id:D602E114-F896-42CA-893A-A841AD6FC3221][one too many]]\n"
+         "[[id:D602E114-F896-42CA-893A-841AD6FC322][one too few]]\n"
+         "[[id:D602E114-F896-42CA-893A-841AD6FC3221][well formed]]\n"
+         "[[id:UUID][placeholder word]]\n"
+         "[[id:D602E114F89642CA893A841AD6FC3221][hyphens stripped]]\n"),
+    ]
+
+    malformed = compass._lint_malformed_links(files)
+
+    assert [(path, target) for path, _line, target in malformed] == [
+        ("a.org", "D602E114-F896-42CA-893A-A841AD6FC3221"),
+        ("a.org", "D602E114-F896-42CA-893A-841AD6FC322"),
+    ]

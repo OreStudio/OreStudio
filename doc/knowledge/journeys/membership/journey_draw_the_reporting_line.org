@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 36FC0D92-F532-4B6C-99FE-B669DB87C0FE
+:END:
+#+title: User Journey: Draw the reporting line
+#+description: A tenant administrator maintains who reports to whom.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator maintains who reports to whom.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see the shape of my organisation, and fix the line that is wrong."
+The administrator sets who each person reports to and reads the result as a
+tree. The journey is done when every person sits under the right manager and
+the tree has no surprises: no orphan who should have a manager, no loop.
+
+* Actor and trigger
+
+The tenant administrator, acting inside their tenant. The trigger is a joiner,
+a leaver, or a person who changed desk. It starts when the administrator opens
+*Reporting lines*, and ends when they leave the tree.
+
+The value of the journey is the shape, not the row. Today the field is edited
+one account at a time, from the account's detail screen, and the shape only
+appears when the administrator holds it in their head.
+
+* Steps
+
+1. *Open the reporting view.* The administrator chooses *Reporting lines*. The
+   system reads every account in the tenant and draws one card per person,
+   connected to the account they report to.
+2. *Read the shape.* The system lays the tree out by reporting depth: roots at
+   the top, each manager above the people who report to them. The administrator
+   sees the branches, and who has no manager.
+3. *Pick a person.* The administrator selects a card. The system shows the
+   account behind it: full name, job title, current manager, and the party they
+   work in.
+4. *Set the manager.* The administrator chooses another account in the tenant
+   and saves. The system records the change reason, writes a new account
+   version, and redraws the tree.
+5. *Clear a line.* When a person leaves a team with no successor, the
+   administrator clears the manager. The system records the same way and the
+   person becomes a root.
+6. *Leave.* The administrator goes back. The next reader of the account sees the
+   new line.
+
+Every step ends in a reply; nothing is queued. The journey holds no state of
+its own, and the tree the administrator sees is assembled by the client from a
+flat read, not fetched as a tree.
+
+* Screens and wireframes
+
+One screen with three panels: the tree, the selected account, and the save
+controls with their change reason. The tree is the point of the screen; the
+other two panels exist to change it.
+
+#+caption: Reporting lines: the reporting tree, the selected account's line, and the save controls with a change reason.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/membership/wireframe_reporting_line.png]]
+
+The tree panel is drawn from a flat list. The wireframe says so, because it
+decides what the screen can promise: no subtree can be fetched on its own, so
+the screen reads the whole roster and nests it.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | Full name, job title, and the reporting line itself | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_party= | The party a person works in, shown on the card as their office | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
+
+The reporting line is one field on the account: =reports_to_account_id= is a
+nullable soft self-reference to another row in the same table. There is no edge
+table and no separate hierarchy model. The reference is validated by foreign
+key, so a manager must exist; nothing else about the pair is validated.
+
+The tree this journey draws is the reporting line between people. It is not the
+[[id:ADC87ED3-153E-4FD9-BB87-DC9E184DA315][business unit]] tree, which places books
+and desks rather than people, and the account carries no business unit at all.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the reporting view | Read the tenant roster and every account's manager | =iam.v1.accounts.list= | exists |
+| Read the shape | Read the party each person works in | =iam.v1.account_parties.list_by_account_id= | exists |
+| Set the manager | Set =reports_to_account_id= | =iam.v1.accounts.update= | partial |
+| Set the manager | Read the change reasons for the picker | =dq.v1.change_reasons.list= | exists |
+| Clear a line | Clear =reports_to_account_id= | =iam.v1.accounts.update= | partial |
+
+=iam.v1.accounts.update= is the only writer of the field, and it is declared in
+=ores.iam.account_messages.org=: =reports_to_account_id= must be empty or name
+another account in the same tenant. =partial= here means the operation exists
+but covers more than this step: it needs =iam::accounts:update=, and its body
+carries the email, full name, default party, job title and image as well. A
+caller that changes the reporting line alone must send the other fields back
+unchanged, as =projects/ores.http/core/src/routes/iam_routes.cpp= does today.
+
+* What is missing
+
+1. *No tree read.* The server answers one flat page of accounts with
+   =reports_to_account_id= repeated per row. There is no subject that returns
+   the reporting structure: no children-by-manager read, no depth, no root
+   list, no subtree. Everything the screen shows about shape it computes in the
+   browser, and the whole roster has to arrive first. The candidate is a tree
+   read, for example =iam.v1.accounts.reporting_tree=, returning each account's
+   manager and depth, so a large tenant can page a branch rather than the
+   world.
+2. *No cycle check.* The handler validates the manager's UUID format and the
+   foreign key validates that the account exists. Nothing refuses =A reports to
+   B= when =B= already reports to =A=. The server accepts the pair, and the
+   result is a loop that has no root. Until a check exists, the client must
+   detect the loop and show it rather than draw it.
+3. *No reporting-line-only write.* Setting one field means sending the whole
+   =update_account_request=, so the screen must carry every other field it read.
+   A concurrent edit to the job title is silently overwritten by the stale copy
+   the screen holds. The candidate is either a narrow subject or a stated
+   precondition on the account version.
+4. *Nothing in the web client ships the screen.* The generated account
+   declaration marks the field as a column, and =wire-protocol/src/operations.ts=
+   maps it, but no web screen draws a tree or offers a manager picker. The Qt
+   client did: =OrgChartWidget=, added for Acme staff, read every tenant account
+   and drew one card per person connected by =reports_to_account_id=, and it
+   was removed with the =ores.qt= tree. This journey is that screen, rebuilt
+   against the web client and the canonical protocol.
+5. *Party names are still unreachable.* The card shows the office, which needs
+   the party's name; the account-party read carries =party_id= alone. This is
+   the same gap as on [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]], and the first branch to fix,
+   because both journeys show a party and neither can name one.
+6. *No history of the line.* The account is versioned, so a change is
+   recoverable through =iam.v1.accounts_versions.list=, but the tree screen
+   states none of it. An administrator who is asked "who did this person report
+   to last quarter" has no answer on this screen.
+
+* Related journeys
+
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster is where a person is picked, and it shows the roles and status the card does not.
+- [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] — the reporting line is a field on that screen, so the rest of the person's record is corrected there.
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — each card shows the party a person works in, and that party is chosen there.
+- [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] — a joiner arrives with no manager, so the new account is created there before the line is drawn here.
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership journeys]]
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+
+* See also
+
+- [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] - the model that carries the reporting line.

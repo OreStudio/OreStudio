@@ -60,6 +60,7 @@ TYPE_TO_TEMPLATE = {
     "archetype": "doc_archetype.org.mustache",
     "profile": "doc_profile.org.mustache",
     "feature": "doc_feature.org.mustache",
+    "user_journey": "doc_user_journey.org.mustache",
 }
 
 # entity_org --shape presets: knob bundles sampled from a known-good
@@ -163,6 +164,7 @@ PARENTLESS_TYPES = {
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
+    "user_journey",
 }
 
 
@@ -557,6 +559,8 @@ def main(argv=None):
         args.title = "Investigation: " + args.title
     elif args.type == "test_scenario" and not args.title.lower().startswith("test scenario:"):
         args.title = "Test Scenario: " + args.title
+    elif args.type == "user_journey" and not args.title.lower().startswith("user journey:"):
+        args.title = "User Journey: " + args.title
 
     # Optional fields.
     args.tags = fill_optional("tags", args.tags,
@@ -817,6 +821,12 @@ def main(argv=None):
         # deeper so feature and profile docs don't collide by slug.
         out_dir = parent_dir
         out_file = out_dir / f"variability_feature_{args.slug}.org"
+    elif args.type == "user_journey":
+        # Prefixed so the journey docs sort together beneath their topic hub:
+        # the hub is <topic>.org, so plain slugs would interleave with it.
+        leaf = args.slug if args.slug.startswith("journey_") else f"journey_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",
                        "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The

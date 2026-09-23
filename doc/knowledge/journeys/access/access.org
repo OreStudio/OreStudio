@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: CEE25F6D-FE57-43AE-9770-DAD0C1576520
+:END:
+#+title: Access journeys
+#+description: Roles, and the permissions each role bundles.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+An account holds no permission directly. It holds roles, each role bundles
+permissions, and every capability a person exercises arrives through that chain.
+These journeys follow the chain from both ends: the member reading it, and the
+administrator changing it.
+
+The role catalogue is the third journey, because a role is only useful once
+somebody has decided what it contains. The Qt client listed a role's permissions
+read-only and shipped no editor for them, so this journey is new ground.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] | member | See the roles I hold and the permissions they carry |
+| [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] | tenant administrator | Grant and revoke a colleague's roles |
+| [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] | tenant administrator | Define roles and the permissions each one bundles |
+
+* Related
+
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-based access control]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

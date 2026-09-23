@@ -133,10 +133,11 @@ before any code is written.
 | [[id:F50D4435-1508-47CD-A75C-EA67D97645EC][Inventory the reusable ores.web building material]] | DONE | | 2026-09-23 | [wayfinder:research] What exists in ores.web today, and the exact pattern the three bootstrap journey prototypes use. |
 | [[id:66EEA0FB-D837-4E3B-97DA-933C2108912D][Formalise the IAM vocabulary and the screen rules]] | DONE | | 2026-09-23 | [wayfinder:research] Canonical IAM terms, and the screen-specification rules the journeys must obey. |
 | [[id:D81067C6-C125-47DA-90A0-66A1A2509317][Identify the post-setup IAM journeys]] | DONE | | 2026-09-23 | [wayfinder:grilling] The catalogue of post-setup IAM journeys, member and tenant-administrator separately, derived from user goals rather than from the entities. |
-| [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]] | BACKLOG | | | [wayfinder:grilling] Which existing ores.web artefacts serve the hand-crafted journeys, and which are retired. |
+| [[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building material to reuse and what to decommission]] | DONE | | 2026-09-23 | [wayfinder:grilling] Which existing ores.web artefacts serve the hand-crafted journeys, and which are retired. |
 | [[id:1C16015E-AEAE-4B7D-BD00-7A5F50000D21][Decide how a prototype records a gap it exposes]] | BACKLOG | | | [wayfinder:grilling] Where a modeling error or a missing server-side operation is recorded when a prototype exposes one. |
 | [[id:E918F812-B235-4604-9DF7-6F59517C19F8][Create the user_journey document type]] | DONE | | 2026-09-23 | [wayfinder:task] A document type that describes a journey before it is built: sections, template, codegen registration, metadata. |
 | [[id:D48BC708-459E-4508-A6C4-631BAC079354][Document every post-setup IAM journey]] | DONE | | 2026-09-23 | [wayfinder:task] One high-level user-journey document per journey, grouped by topic, each with a wireframe and a NATS coverage assessment. |
+| [[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI codegen]] | STARTED | 2026-09-23 | | Remove codegen support for the TypeScript UI, keep the NATS protocol and domain facets, and reduce ores.web to a shell plus the transport core. |
 
 * Decisions
 

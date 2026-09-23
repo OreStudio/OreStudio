@@ -21,11 +21,11 @@ The IAM component has a screen for every entity its TypeScript messages describe
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Analysis done; approach recorded below. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first two tasks, which are the prerequisite. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-20                               |
 
 * Acceptance
@@ -40,15 +40,21 @@ The IAM component has a screen for every entity its TypeScript messages describe
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FEA81310-1D51-489D-8877-9362B74C191F][Drive the entity screens from one declaration]] | STARTED | 2026-09-20 | | Task for: Implement every IAM entity in the web client |
-| [[id:BB459070-1A52-4119-8873-CF277EBA3ECE][Close the entity-shell gaps a second entity would inherit]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
-| [[id:8B4A89EB-C62D-4910-9E28-9CA9EF82F3F7][Related records: children and junctions]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
-| [[id:3FC079C9-A221-415B-8DEB-03D8A3311E7A][The IAM reference lookups: account type, tenant type and tenant status]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
-| [[id:97C2E606-06E3-4D33-AF61-3CC66AA10F0D][The IAM audited entities: tenant and role]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
-| [[id:B3C0E7DC-0312-4F80-A85B-2EA2D8D01FD0][The IAM account archetype: secrets, children, relationships and actions]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
-| [[id:22A801A3-7289-45BE-86D7-24DD1742BE0C][The IAM read-only surfaces: permission, session and session statistics]] | BACKLOG | | | Task for: Implement every IAM entity in the web client |
+| [[id:FEA81310-1D51-489D-8877-9362B74C191F][Drive the entity screens from one declaration]] | DONE | 2026-09-20 | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:BB459070-1A52-4119-8873-CF277EBA3ECE][Close the entity-shell gaps a second entity would inherit]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:8B4A89EB-C62D-4910-9E28-9CA9EF82F3F7][Related records: children and junctions]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:3FC079C9-A221-415B-8DEB-03D8A3311E7A][The IAM reference lookups: account type, tenant type and tenant status]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:97C2E606-06E3-4D33-AF61-3CC66AA10F0D][The IAM audited entities: tenant and role]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:B3C0E7DC-0312-4F80-A85B-2EA2D8D01FD0][The IAM account archetype: secrets, children, relationships and actions]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
+| [[id:22A801A3-7289-45BE-86D7-24DD1742BE0C][The IAM read-only surfaces: permission, session and session statistics]] | DONE | | 2026-09-23 | Task for: Implement every IAM entity in the web client |
 
 * What a new entity costs today
+
+/Historical. This table is a measurement from 2026-09-20, and it is kept
+as the evidence for the decision below. All three of its named artefacts
+are deleted: =CountryDetailPage.tsx=, =web/src/api/countries.ts= and
+=country_field_groups.ts=. Do not read the table as the current cost of
+an entity./
 
 Measured, not estimated, against the one entity that is on the shared shell.
 =country= is the reference implementation and it is the only one.
@@ -375,3 +381,54 @@ in TypeScript".
 * Out of scope
 
 -
+
+* Result
+
+Superseded and closed on 2026-09-23. The story had one task on the
+branch and one merged; both its halves are gone.
+
+**What was abandoned.** The story's premise was that one declaration
+per entity drives a shared entity shell, and that codegen emits the
+declaration from the model. Neither half survives. Codegen no longer
+emits a TypeScript UI artefact at all: the =ores.ts.ui= and
+=ores.ts.web= facets are deleted, with the 247 generated files they
+wrote, and the BFF entity-route factory and its registry are deleted.
+The entity screen framework in =packages/web/src/entity=, the
+navigation registry, the hand-written pages, the change-event React
+consumer and the UI primitives are deleted with them. A declaration
+has nothing left to drive.
+
+**What replaced it.** The parent story,
+[[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup
+IAM journeys in ores.web]], identifies the journeys from user goals
+rather than from the entities, and the screens are hand-written from
+those journeys. The journey is the unit of design, so the screen a
+person sees follows the task a person is doing. The decision is
+recorded in
+[[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building
+material to reuse and what to decommission]], and
+[[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI
+codegen]] executed it.
+
+**The primitive side survives.** This is the part the journeys build
+on. The =ores.ts.protocol= and =ores.ts.domain= facets stay, so the
+generated wire messages, the NATS subject constants and the entity
+domain interfaces stay. The whole =@ores/wire-protocol= package stays.
+The =ores.web= session provider and the HTTP transport to the BFF stay,
+and the BFF keeps its NATS broker, session store, change-event
+streaming, rate limiting, error mapping and site config. So the
+vocabulary a screen speaks and the road to the server are both intact,
+and only the presentation layer was cut.
+
+**The seven tasks.** All seven are closed as superseded, each with its
+reason on the task. A task whose premise is "one declaration per entity
+on the shared shell" cannot be done when the declaration and the shell
+are gone. The first task,
+[[id:FEA81310-1D51-489D-8877-9362B74C191F][Drive the entity screens
+from one declaration]], had already merged as PR #2116; its Result
+records that the delivered work is retired.
+
+**The table above is historical.** "What a new entity costs today" is a
+measurement from 2026-09-20 and it is kept as the evidence for this
+decision. Its three named artefacts are deleted. The table is not a
+statement about the current cost of an entity.

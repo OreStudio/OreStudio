@@ -37,11 +37,11 @@ This task is a prerequisite for every entity task after it. While it is open, ea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] |
-| Now          | Started. The BFF route factory and the ores.ts.web facet are in; the shell and the hooks are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the shell against an IAM lookup -- tenant_type is the simplest, and its protocol, domain and metadata are all generated -- then convert country. |
+| Next         | Nothing. |
 | Last touched | 2026-09-20                               |
 
 * Acceptance
@@ -121,7 +121,17 @@ via its "Verifies task" field.
 
 * Result
 
-The branch also carries one out-of-scope fix, because it gated this task's
+Superseded on 2026-09-23, by the decision recorded in
+[[id:33010766-86C3-4C4B-A2CF-F21121318FCD][Decide what building
+material to reuse and what to decommission]] and executed by
+[[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI
+codegen]]. The declaration-driven shell and the generated TypeScript UI
+artefacts it read are deleted, with the =ores.ts.ui= and =ores.ts.web=
+facets and the BFF route factory. The task delivered real work and the
+work is gone; the protocol facets and the transport it left alone are
+what the journeys build on.
+
+The branch always carried one out-of-scope fix, because it gated this task's
 merge. The codegen gates each kept a component list of their own, and the
 twin-coverage gate scoped itself by committed output, so committing the
 first TypeScript twin for dq, marketdata, ore, compute and reporting

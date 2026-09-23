@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 32606E40-CCC2-4FFF-9CE4-2516CCC086B2
+:END:
+#+title: Story: Decommission ores.cli
+#+description: Remove the ores.cli component, its round-trip dataset, and the CLI recipes. An investigation found no capability that ores.shell or the service layer does not already provide.
+#+type: story
+#+level: s2
+#+filetags: :cli:tech_debt:decommission:sprint_26:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | STARTED | 2026-09-23 | | Task for: Decommission ores.cli |
+
+* Decisions
+
+* Out of scope
+
+-

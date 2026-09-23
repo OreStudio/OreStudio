@@ -2,7 +2,7 @@
 :ID: 352DD997-5ABB-4E4E-B83A-EF90455EAE52
 :END:
 #+title: Currencies
-#+description: Currency management in ORE Studio: ISO 4217, the Qt UI, auxiliary data (rounding types, market tiers, monetary natures), shell and CLI commands.
+#+description: Currency management in ORE Studio: ISO 4217, the Qt UI, auxiliary data (rounding types, market tiers, monetary natures), shell commands.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:currencies:refdata:user_guide:
@@ -43,7 +43,7 @@ in reverting to an earlier version, the point at which the bitemporal
 audit trail does its work. It then documents the [[*Auxiliary Data][auxiliary
 classification tables]] — rounding types, market tiers, and monetary
 natures — whose values a currency references, and finally shows the
-same operations automated from the [[*Shell commands][shell]] and the [[*CLI commands][CLI]]. The
+same operations automated from the [[*Shell commands][shell]]. The
 [[*Conclusion][Conclusion]] draws these steps together.
 
 ** Money, currency, and cash
@@ -504,32 +504,6 @@ currencies delete XTS
 currencies history USD
 #+end_example
 
-** CLI commands
-
-The =ores.cli= command-line tool provides a richer interface for
-automation. All currency commands live under =ores.cli refdata currencies=:
-
-#+begin_example
-# List all currencies as a table
-ores.cli refdata currencies list --tenant "$ORES_TENANT" --format table
-
-# List a specific currency as JSON
-ores.cli refdata currencies list --tenant "$ORES_TENANT" --format json --key EUR
-
-# Add a new currency
-ores.cli refdata currencies add \
-  --tenant "$ORES_TENANT" \
-  --iso-code XTS --name "Test Currency" \
-  --numeric-code 963 --modified-by operator \
-  --currency-type fiat
-
-# Delete a currency by ISO code
-ores.cli refdata currencies delete --tenant "$ORES_TENANT" --iso-code XTS
-
-# Export all currencies to a file
-ores.cli refdata currencies export --tenant "$ORES_TENANT" --output currencies.json
-#+end_example
-
 ** Conclusion
 
 The chapter set out to show that managing a currency well follows from
@@ -544,7 +518,7 @@ the Qt interface took the record from the list view down to a single
 detail dialog and through the editing and history workflows, where
 reverting to an earlier version demonstrated the bitemporal audit trail
 keeping the full record intact. The three auxiliary classification tables
-then fixed the vocabulary a currency may reference, and the shell and CLI
+then fixed the vocabulary a currency may reference, and the shell
 reproduced the same operations for scripted use. Currencies are the
 template: subsequent entity chapters follow this same progression.
 

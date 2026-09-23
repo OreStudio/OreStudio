@@ -475,7 +475,7 @@ See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2
 *** Manually authored facets
 
 These facets are authored rather than generated, and documented for parity:
-[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]], [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]], [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]].
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] and [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]].
 
 The key attributes of a logical element live in the /domain/ facet — regular
 C++ defining the domain =struct=. Each element lives on its native component

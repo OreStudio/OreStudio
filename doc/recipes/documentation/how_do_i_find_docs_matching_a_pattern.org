@@ -47,7 +47,7 @@ Each filter narrows the result; combining filters AND's them.
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh list --under doc/agile/versions/v0
-   ./projects/ores.compass/compass.sh list --under doc/recipes/cli
+   ./projects/ores.compass/compass.sh list --under doc/recipes/shell
    #+end_src
 
 5. /Combine filters/ for a precise lookup:

@@ -125,7 +125,7 @@ mappers, and NATS message handlers.
 Export every symbol that crosses a shared-library boundary, determined
 empirically by linker =undefined reference= errors.  In practice this
 includes repositories, services, and any helper classes used directly
-by service executables, test binaries, or =ores.cli=.  Entity structs
+by service executables or test binaries.  Entity structs
 and mapper helpers that remain internal to the =.core= library itself
 do not need export annotations.
 
@@ -158,11 +158,11 @@ ORES_X_SERVICE_LIBRARY)= to the lib target in =src/CMakeLists.txt=.
 
 The executable target (=main.cpp= only) exports nothing.
 
-** CLI and test executables
+** Test executables
 
-CLI (=ores.cli=) and test binaries are executables.  They may link
-against =ores.X.core= to exercise the DB layer directly, but they do
-not export symbols.
+Test binaries are executables.  They may link against
+=ores.X.core= to exercise the DB layer directly, but they do not
+export symbols.
 
 * Dependency rules
 
@@ -173,7 +173,6 @@ needs*:
 |----------+-------------------------------|
 | HTTP handler | =ores.X.api= |
 | Service executable | =ores.X.core= (and thus =ores.X.api= transitively) |
-| CLI | =ores.X.core= (exercises DB directly) |
 | Test executable | =ores.X.core= or =ores.X.api= as needed |
 
 Linking an HTTP handler directly to =ores.X.core= is an architectural

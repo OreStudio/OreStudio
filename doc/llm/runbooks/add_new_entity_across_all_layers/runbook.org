@@ -33,7 +33,7 @@ In execution order:
 
 4. /Wire the service layer./ Add NATS handlers and service methods following the protocol conventions in [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 
-5. /Add CLI commands./ Follow [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] and [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create entity commands?]] (CLI).
+5. /Add shell commands./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] and [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create entity commands?]] (ores.shell).
 
 6. /Add HTTP endpoints./ Follow [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] and [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create entity endpoints?]].
 

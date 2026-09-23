@@ -50,8 +50,8 @@
  * - Deprecated REPL client (functionality moved to ores.comms)
  * - Depends on: Foundation, Infrastructure, Domain
  *
- * **Application Layer** (`ores.cli`, `ores.web`, `ores.comms.service`)
- * - CLI: Command-line import/export of currencies in multiple formats
+ * **Application Layer** (`ores.shell`, `ores.web`, `ores.comms.service`)
+ * - Shell: Scripted NATS shell
  * - Web: the browser client in =ores.web=
  * - Service: Multi-client server hosting all backend services
  * - Depends on: All layers

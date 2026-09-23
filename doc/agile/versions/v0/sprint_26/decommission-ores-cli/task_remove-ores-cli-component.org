@@ -28,9 +28,9 @@ Delete projects/ores.cli/, the domain round-trip dataset and checker, the CLI re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Not yet started.                       |
+| Now          | The component, its round-trip chain and its recipes are deleted. Build and reference-sweep verification is running. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Verify the build, then raise the PR.   |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -41,9 +41,22 @@ Delete projects/ores.cli/, the domain round-trip dataset and checker, the CLI re
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four units, each landed as its own commit and checked before the next.
+
+1. Delete =projects/ores.cli/= and the =ores.cli= line in
+   =projects/CMakeLists.txt=.
+2. Delete the round-trip chain: =assets/test_data/domain_roundtrip/=,
+   =scripts/ore_domain_roundtrip_check.py=, and
+   =.github/workflows/ore_coverage.yml=.
+3. Delete =doc/recipes/cli/= and fix every live reference: the dangling
+   id links flagged by =compass lint=, the architecture pages, the
+   manual chapters, the recipe inventories, and the backlog story that
+   planned =ores.cli iam tenants list=.
+4. Verify: a reference sweep over live paths, a configure and build,
+   and =compass lint=.
+
+Fallback: the component is one commit, so if the build finds an
+unexpected dependent, =git revert= of that commit restores it.
 
 * Notes
 
@@ -71,3 +84,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-09-23, branch =feature/decommission-ores-cli=, off
+=origin/main= at =8d2565db07=.
+
+Deleted, in three commits:
+
+- =projects/ores.cli/=, 129 files and 12,922 lines of C++, plus its
+  =add_subdirectory= line. Nothing linked =ores.cli.lib=, and no codegen
+  model, template or drift registry named it.
+- The round-trip chain: =assets/test_data/domain_roundtrip/= (1474 XML
+  files), =scripts/ore_domain_roundtrip_check.py=, and
+  =.github/workflows/ore_coverage.yml=.
+- =doc/recipes/cli/=, 65 files, and every live reference to them.
+
+Checked against the acceptance criteria:
+
+- *Deleted.* All five are gone.
+- *Reference sweep.* =git grep= over live paths returns no hit outside
+  historical sprint archives, dated plans, discarded backlog entries and
+  the kanban test fixtures. Those keep their text as the record, and the
+  backlog items that planned CLI work now carry a retirement note and
+  point at =ores.shell=.
+- *Build.* =cmake --preset linux-clang-debug-make= configures and
+  =cmake --build --preset linux-clang-debug-make -j 8= exits 0. The
+  build was a full rebuild of 3,739 objects. =ores.shell.exe= and the
+  service executables link and build.
+- *Lint.* =compass lint= exits 0 with no dangling id link. The 158
+  durable-to-agile links are a pre-existing advisory, unchanged.
+
+Not run: =ctest=. The environment is stale (=.env= is version 20 against
+a required 22, and 23 services are missing), so the database-backed
+suites cannot run here. The build and the sweep are the evidence for
+this change; the deletion removes code rather than altering behaviour.
+
+Follow-up recorded, not done here: =ores::ore::xml::exporter::roundtrip=
+lost its only caller, and =ores.service::run_host_sync= now has one.
+Both are tracked in the story's out-of-scope list.

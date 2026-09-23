@@ -15,7 +15,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+ores.cli and its round-trip dataset are gone. The shipped packages no
+longer carry a second command-line client that reaches the database
+directly and bypasses the service layer. ores.shell is the single
+supported command surface.
 
 * Status
 
@@ -23,23 +26,53 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The component, its round-trip chain and its 65 recipes are deleted. Build and reference-sweep verification is running. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Verify the build and the reference sweep, then raise the PR. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
 
--
+- =projects/ores.cli/=, =doc/recipes/cli/=,
+  =assets/test_data/domain_roundtrip/=, and
+  =scripts/ore_domain_roundtrip_check.py= are gone, along with the
+  =ore_coverage= workflow and the =ores.cli= line in =projects/CMakeLists.txt=.
+- A reference sweep over live paths returns no =ores.cli= hit.
+- The tree configures and builds, and =compass lint= passes with no
+  dangling id link.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:22EDB3D2-10F7-4FBB-960B-2AD6AD9945D5][Delete the ores.cli component and its round-trip chain]] | STARTED | 2026-09-23 | | Task for: Decommission ores.cli |
+| [[id:BC0854B0-E6FD-4935-B326-7FDC654A80CB][Retire the orphaned ORE directory round-trip export]] | BACKLOG | | | ores::ore::xml::exporter::roundtrip lost its only caller when ores.cli was deleted. The directory-level round-trip has no test coverage and no consumer. Decide whether to delete the method and its options model or keep it as library API. |
 
 * Decisions
 
+- *Decommission instead of cleaning.* The component passed the
+  Component Clean Standard's automated half already, so a clean pass had
+  no validator failure to fix. Its 125 test cases are 95% argument
+  parsing, and the six that reach the database are covered better by the
+  repository and importer suites. Every command surface it carries has a
+  shell equivalent over the service layer.
+- *Delete the round-trip dataset rather than regenerate it.* Only
+  `ores.cli ore roundtrip` produced it. The CI job that compared it ran
+  without `--strict` and listed `assets/**` in its paths-ignore, so it
+  could not fail. `assets/test_data/golden_dataset/` is the dataset with
+  teeth, enforced by 13 Catch2 suites.
+- *Delete the CLI recipes rather than rewrite them for the shell.*
+  `doc/recipes/shell/` already covers the same topics, and the shell
+  recipes are tangled into the runnable script library.
+- *Keep the `ores_<env>_cli_user` database role and the
+  `cli@system.ores` service account for now.* The role is a developer
+  psql login, and renaming it reaches provisioning across environments.
+  Its justification is now historical.
+- *Drop bulk file import and export to the database.* It was the one
+  capability with no replacement, and no automated path called it.
+
 * Out of scope
 
--
+- The orphaned `ores::ore::xml::exporter::roundtrip`, tracked as a
+  follow-up task below.
+- Collapsing `ores.service::run_host_sync`, which now has one caller.

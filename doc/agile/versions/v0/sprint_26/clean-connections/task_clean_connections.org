@@ -57,7 +57,7 @@ item's result in the table below.
 |------+--------+----------|
 | B01 | pass | Baseline taken before any edit. =check_component_drift.py --component connections --dry-run= answers =Unknown component: 'connections'=, because the component is absent from =component_catalogue.org=. =regenerate_cmake_component_files.py --component ores.connections --check= reports 2 stale files: =src/component_files.cmake= and =tests/component_files.cmake= differ only by the generated-file marker. |
 | B02 | pass | Every model file classified by metatype. =projects/ores.connections/modeling/= held =component_overview.org= (=#+type: ores.codegen.component=), =ores.connections.puml= and =ores.connections.png=. 0 entities, 0 junctions, 0 operations, 0 messages. |
-| B03 | pass | All 70 non-test C++ files classified. 66 match a codegen archetype's output shape. 4 are hand-written C++ infrastructure: =repository/sqlite_context.{hpp,cpp}=, =export.hpp= and the umbrella header. The component's 3 =CMakeLists.txt= files are build files rather than C++ files. None is dead by the within-tree rule, and all 70 are unreachable from outside. |
+| B03 | pass | All 70 non-test C++ files classified. 66 match a codegen archetype's output shape. 4 are hand-written C++ infrastructure: =repository/sqlite_context.{hpp,cpp}=, =export.hpp= and the umbrella header. The =CMakeLists.txt= files are build files rather than C++ files. None is dead by the within-tree rule, and all 70 are unreachable from outside. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. Its one =subject_prefix= field is a string a user types into a bookmark, not a subject the component publishes on. |
 | B05 | pass | Captures and in-flight branches read. Two live captures under =doc/agile/product_backlog/next/= name the component. =persist_tag_colour_and_tag_dialog.org= is Qt-only and carries the =ores.qt= tag. =fix_component_doc_drift.org= names it in an =affected components at time of writing= snapshot that also names =ores.controller= and =ores.wt.service=, which =projects/= no longer holds either. Both are recorded under *Out of scope* on the story. =origin/feature/remove-the-legacy-qt-remnants= (PR #2138, now merged) does not touch the component. |
 | M01 | not applicable | No org model. The component held only its overview. |
@@ -88,11 +88,11 @@ item's result in the table below.
 | W04 | not applicable | The component owns no SQL script. Its storage was a local SQLite file, not a service schema. |
 | S01 | not applicable | No entity or junction, so no shell command unit. |
 | S02 | not applicable | No command, so no recipe and no destructive flag. |
-| H01 | not applicable | The component is deleted, so it cannot be audited, and its record is this task. The audit's automated half, =validate_docs.py=, covers the tree and passes apart from the pre-existing =ores.shell.iam= finding. The manual checks ran against =projects/ores.connections= before the removal, where they were clean: no leftover artefact, no platform macro, every file name snake_case. A repo-wide run of those same greps reports pre-existing hits outside this component, since five files outside =ores.platform= use =_WIN32= and =*stub*= matches eight codegen templates. Those belong to their own audits. |
+| H01 | not applicable | The component is deleted, so it cannot be audited, and its record is this task. The audit's automated half, =validate_docs.py=, covers the tree and passes apart from the pre-existing =ores.shell.iam= finding. The manual checks ran against =projects/ores.connections= before the removal, where they were clean: no leftover artefact, no platform macro, and every source file name snake_case apart from the umbrella header and =CMakeLists.txt=. A repo-wide run of those same greps reports pre-existing hits outside this component, since five files outside =ores.platform= use =_WIN32= and =*stub*= matches 21 files, eight of them codegen templates. Those belong to their own audits. |
 | H02 | pass | No legacy code remains. The component and every code and ground-truth reference to it are gone. Two references stay on purpose and are recorded under *Out of scope*. |
 | H03 | pass | The change deletes code and removes a generated env block, so no comment survives to review. The one surviving source edit, =env_init.py=, was read against the comment rules. Its removed block took its comments with it, and no comment was added. |
 | V01 | pass | =compass build= over the whole tree reached 100% with exit code 0, with =projects/CMakeLists.txt= no longer adding the component. Nothing linked what was removed. |
-| V02 | pass | The =ores.codegen= suite passes at 522 passed, and the =ores.compass= suite at 215 passed and 1 skipped. The compass suite covers the =env_init.py= edit. The 522 is 14 fewer than the 536 measured before the rebase, because trunk's PR #2138 removed =test_as_of_combo_fields.py= and =test_view_groups.py=. The component's own suites are deleted with it. |
+| V02 | pass | The =ores.codegen= suite passes at 522 passed, and the =ores.compass= suite at 215 passed and 1 skipped. No test covers the =env_init.py= edit. The removed block lay inside =env_init.run=, and the only test module that imports that file calls =_env_value= and =_resolve_web_env_id=, so the suite passes without touching the change. The 522 is 14 fewer than the 536 measured before the rebase, because trunk's PR #2138 removed =test_as_of_combo_fields.py= and =test_view_groups.py=. The component's own suites are deleted with it. |
 | V03 | not applicable | No entity and no service, so the database has nothing of this component to recreate. |
 | V04 | not applicable | No generated shell command, so nothing to run against the fleet. |
 | V05 | pass | Every gate run and green, apart from one inherited repo-wide finding: component drift (=iam=), model drift (2 known exceptions), protocol twin coverage, handler permissions, populate references, shell recipe inventory, =validate_docs.py= (apart from =ores.shell.iam=), =compass lint=, and the six checks of =.github/workflows/doc-lint.yml= (=build/scripts/rename_skills_to_compass_namespace.py=, =generate_skills_catalogue.py=, =generate_skill_type_tables.py=, =apply_skill_levels.py=, =link_skill_recipes.py= and =link_structure_notes.py=, each with =--check=). The inherited finding is the cmake source-list drift that G06 records. |
@@ -122,8 +122,8 @@ item's result in the table below.
   =repository/recent_party_mapper.{hpp,cpp}= and
   =repository/recent_party_repository.{hpp,cpp}=. The only caller of that
   family, =connection_manager::get_recent_parties=, has no caller of its
-  own. =get_child_folders= and =resolve_connection= are unreachable in the
-  same way.
+  own. =get_child_folders= has no caller either, and =resolve_connection=
+  has no production caller, only two cases in the service test.
 - Stale reference sweep. =projects/modeling/= (component_architecture.org,
   system_model_infrastructure.org, system_model_foundation.org, ores.puml),
   =projects/ores.security/modeling/component_overview.org=,
@@ -161,6 +161,7 @@ no behaviour to walk through. The build and the gates are the evidence.
 | 3 | =doc/knowledge/ui/icon_guidelines.org= still describes the Qt Connection Browser under its Server Link icon | doc/knowledge/ui/icon_guidelines.org:474,479 | fixed after the rebase | Inherited from the Qt deletion. PR #2138 reworked that page and merged without correcting this entry, so the rebased branch rewrites the usage prose and the icon keeps its name. |
 | 4 | A second live backlog capture names the component, and the B05 evidence claimed only one capture does | doc/agile/product_backlog/next/fix_component_doc_drift.org:24 | fixed, record corrected | Real. The B05 row now names both captures, and the story records this one under *Out of scope*. Its snapshot also lists =ores.controller= and =ores.wt.service=, which =projects/= no longer holds, so the list is stale beyond this story. |
 | 5 | The record's V02, B03, H01 and Notes rows stated numbers and claims the tree does not support | doc/agile/versions/v0/sprint_26/clean-connections/task_clean_connections.org:60,91,95,120 | fixed | Real, all four, and each reproduced. V02 said 536 codegen tests where the tree gives 522, because trunk's PR #2138 removed 14. B03 folded 3 =CMakeLists.txt= into a count of C++ files, so 66 C++ files are archetype-shaped rather than 63. The Notes said 7 transitively dead files and named a =recent_party_entity.cpp= that never existed, so the family is 6. H01 stated component-scoped negative checks as repo-wide, and five files outside =ores.platform= use =_WIN32=. |
+| 6 | The record said the compass suite covers the =env_init.py= edit, which no test can cover | doc/agile/versions/v0/sprint_26/clean-connections/task_clean_connections.org:95,174 | fixed | Real. The removed block lay inside =env_init.run=, and the only test module importing that file calls =_env_value= and =_resolve_web_env_id=. V02 and the Result now say the suite passes without covering the edit. Three precision notes are fixed with it: the repo-wide =*stub*= count is 21, snake_case holds for source files apart from the umbrella header and =CMakeLists.txt=, and =resolve_connection= has no production caller but two test cases. |
 
 * Result
 
@@ -172,18 +173,20 @@ role, no org model, and no codegen target.
 
 Verification. The whole tree builds with =compass build=, exit 0,
 re-proved on the rebased tree. The =ores.compass= suite passes at 215
-passed and 1 skipped, and it covers the =env_init.py= edit. The
-=ores.codegen= suite passes at 522. Every codegen gate passes, apart from
-the inherited repo-wide CMake source-list drift that G06 records.
-=compass lint= passes.
+passed and 1 skipped, and the =ores.codegen= suite at 522. No test covers
+the =env_init.py= edit, because the removed block lay inside
+=env_init.run= and no test calls it, so that edit rests on the diff and
+the build. Every codegen gate passes, apart from the inherited repo-wide
+CMake source-list drift that G06 records. =compass lint= passes.
 
-Three verification rounds found defects, and every one is fixed. The first
+Verification rounds found defects, and every one is fixed. The first
 independent verifier read the first patch and found two, fixed in the
 follow-up commit. A Claude review found a stale backlog capture, fixed
-next. The rebase onto trunk surfaced the icon inventory entry. The second
-independent verifier confirmed the removal is sound and failed the patch
-on four wrong statements in this record, all four corrected after I
-reproduced each one.
+next. The rebase onto trunk surfaced the icon inventory entry. A second
+independent verifier confirmed the removal is sound and then failed the
+patch on statements in this record. Each finding is corrected here after I
+reproduced it. The last one matters most: no test covers the =env_init.py=
+edit, so that change rests on the diff and the build.
 
 The removal is one commit and reverts on its own. The reference sweep is a
 second commit.

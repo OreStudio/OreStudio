@@ -102,11 +102,10 @@ The distinction to keep straight is between a *self-default* and a *consumed
 read*. A self-default writes a key from itself and proves nothing. A consumed
 read is another expression, or another key, reading the value.
 
-Both keys are still dead. They differ from the rest of the dead set in where
-they come from: the loader routes them out of the profile namespace, and 104
-entity models declare =item_var= in their Presentation drawer. So their removal
-belongs with the loader and the profiles rather than with this pass, and they
-are left in place here on purpose.
+Both keys are dead in substance. =item_var= went with the Qt list-window chrome
+in a later pass, once the models were swept. =has_pagination= is kept, because
+its feature document records it as a retired toggle that stays accepted as
+documentation.
 
 ** The related codegen code, and its size
 
@@ -117,12 +116,39 @@ The keys are the visible part. What carries them is larger:
 | The generator | 35 keys | =src/codegen/core.py= |
 | Profile flags routed into =presentation= | 12, of which =has_csv_xml_io= and =has_version_navigation= are read by nothing | =src/codegen/org_loader.py= |
 | Profile features declaring those flags | 12 features under =projects/modeling/variability_feature_*.org= | |
-| Entity models with a Presentation drawer | 115 models, 67 distinct drawer properties, of which 33 are referenced by the loader or the generator | =projects/*/modeling/*.org= |
+| Entity models with a Presentation drawer | 115 models, 67 distinct drawer properties | =projects/*/modeling/*.org= |
 | Validators reading the dict | =validate_explorer_interface=, =validate_parent_scoped_list= | =src/codegen/core.py= |
+
+** This story executes the Component Clean Standard, rules M09 and H02
+
+M09 asks that no Qt or Wt presentation drawer or property remain in a model, and
+names its check as a grep over the modeling directories. H02 asks the same of
+code. That grep stood at 656 hits at the start of this work and at 94 after it,
+and what remains is documentation rather than models.
+
+** One toggle is kept on the repository's own precedent
+
+=variability_feature_has_pagination.org= records that =has_pagination= was
+retired as a behavioural toggle on 2026-09-04, and that the literal stays
+accepted on entity orgs and profiles as documentation only. It is left exactly
+as it is, loader routing included, because deleting it would reverse a
+documented decision rather than remove a remnant.
+
+=has_csv_xml_io= and =has_version_navigation= carry no such note, and their
+stated effects name Qt artefacts the retirement deleted: the MDI window import
+dialog with its =csv_export_class= and =xml_export_class= helpers, and the
+detail dialog's version navigation controls. They are marked retired the same
+way =has_pagination= is, rather than deleted, so that a model or a profile still
+declaring one does not begin failing model drift for a reason that has nothing
+to do with Qt.
 
 * Out of scope
 
 - The name of =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=, a
-  Qt-named page that now documents the Presentation drawer.
+  Qt-named page whose content is corrected here but whose filename and ID stay.
 - =doc/analysis= and =doc/plans=, which hold most of the Qt references in the
   tree. They read as history. Confirm that before touching them.
+- The two validators, =validate_explorer_interface= and
+  =validate_parent_scoped_list=. Each guards a knob that still exists, so
+  removing the guard would remove a check on a model author rather than a
+  fragment of the Qt client.

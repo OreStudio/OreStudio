@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_25:v0:
 #+owner: marco
 #+branch: feature/health-review-2
-#+pr:
+#+pr: 2134
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2134][#2134]] | [agile] Close sprint 25: health review, story reset, release notes |
 
 * Review
 

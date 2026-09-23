@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 7B477025-132E-4B20-80B4-D8C9420880B8
+:END:
+#+title: Component Clean Standard
+#+description: The checklist a component passes to be clean: every wire type modelled and generated, every model on the current format and bound to a profile, no legacy or hand-written duplicate left, and every gate green -- the standard ores.iam and ores.refdata set in sprint 25.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:codegen:component:checklist:drift:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+* Summary
+
+A component is clean when every type it puts on the wire comes from an
+org model, every model is on the current format and bound to a
+variability profile, regeneration reproduces the checked-in tree byte
+for byte, no hand-written duplicate or legacy fragment remains, and
+every codegen gate passes with the component under test. =ores.iam=
+set this standard in sprint 25 and =ores.refdata= followed it; this
+page writes down what they did, item by item, so that the other
+components can follow it and so that the work can be automated. Each
+item names the check that proves it, where one exists. A component
+reaches the standard when every item that applies to it passes, and it
+then joins =COMPONENTS_UNDER_TEST= in
+=projects/ores.codegen/scripts/component_registry.py=.
+
+* Detail
+
+** How to read the checklist
+
+Each item has an identifier, the kind of component it applies to, and
+the evidence that proves it. The kinds are:
+
+- *All*: every C++ component.
+- *Protocol*: a component that serves or sends NATS messages.
+- *Entity*: a component with entity, junction or operation models, and
+  so with SQL, a repository and a service.
+
+An item that does not apply to a component is recorded as "not
+applicable" with the reason, never skipped in silence. An item that
+cannot pass is recorded as an exception with its reason, and the
+component stays out of the registry until the exception is resolved or
+accepted.
+
+Work in the order of the sections. Fix every defect at its source: a
+template, =org_loader.py=, a profile or a model. Never edit generated
+output, and never carry a shim for backwards compatibility: the
+database is recreated from scratch, so there is no migration to protect.
+
+Work one entity at a time. Regenerate, build and test after each one.
+Sprint 25 found five generator defects that a diff, the drift check and
+a typecheck all missed; only a build and a test run found them.
+
+** 1. Baseline and inventory
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =check_model_drift.py= output, kept on the task |
+| B02 | All | Classify every model file by metatype: entity, junction, operation, message, field group, module, component. Record and exclude the metatypes that carry no variability. | Survey table on the task |
+| B03 | All | Classify every hand-written C++ file (no generated marker): generatable (domain, repository, mapper, service, handler, registrar, protocol, generator, table and JSON I/O), infrastructure that stays hand-written, or dead. | Survey table on the task |
+| B04 | Protocol | List every NATS subject the component serves or sends, every protocol header, and every raw subject string outside a protocol header. | Survey table on the task |
+| B05 | All | Read the component's open captures and in-flight branches, so that the work does not collide with them. | Links on the task |
+
+** 2. Models
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| M01 | Entity | Every model is on the current org format. No legacy JSON model remains, and every =lookup_entity= is migrated to =domain_entity=. | Survey; =check_model_drift.py= |
+| M02 | Entity | Every entity is bound to a variability profile, or recorded as a no-match with its actual feature values and the reason. A forced bind to the nearest profile is not allowed. | Survey table; the compass-codegen-fix-drift method |
+| M03 | Entity | No model states a property its profile already fixes to the same value. Genuine overrides stay. | =check_model_drift.py= |
+| M04 | Entity | Features sit in the namespace the loader reads (for example =has_parent_id= at the entity root). A misplaced assignment is inert without any error. | Regeneration with the bind shows the expected change |
+| M05 | Entity | An entity describes its table. A joined or denormalised shape is a message, not an entity. A table with no history uses the current-state entity shape. | Model review |
+| M06 | Protocol | Every wire type the component exchanges is modelled: entities, junctions, operations, and the extra messages an entity declares in its =* Messages= section. No hand-written wire type remains. | =check_protocol_twin_coverage.py=; no hand-written protocol header |
+| M07 | Entity | Junctions name their singular, give each key column its real type, and declare =:read_only:=, =:client_read_only:= and =:party_id_is_target:= where they apply. Junction row-level security is tenant scoped. | Model review; generated junction stack |
+| M08 | Entity | Every custom C++ type is bound to the header that defines it. SQL type spellings are the canonical ones. Flags are booleans, not integers. | Model review; regeneration |
+| M09 | All | No legacy fragment remains in any model: no Qt or Wt presentation drawer or property, no property that names a retired message type, no feature the canonical protocol retired, no dead history property. | =grep= over the modeling directory for the retired keywords |
+| M10 | All | The component model (=component_overview.org=) is current, declares its parts, and a composite has its group model so that codegen generates its root =CMakeLists.txt=. | =validate_docs.sh=; regeneration |
+
+** 3. Protocol
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| P01 | Protocol | Every entity speaks the canonical NATS entity protocol: the canonical list (paged and ordered), get, put, delete, history, and the point-in-time read where the model offers it. | Generated protocol headers; the specification |
+| P02 | Protocol | Every subject the component owns is declared once, in its models. Every raw subject string in code references a generated constant. Record an exception only where the layering forbids the reference. | =grep= for subject literals |
+| P03 | Protocol | No duplicate subject, no unregistered derived message, and no declared message that nothing serves. Remove what nothing serves. | Registrar review; subject inventory |
+| P04 | Protocol | Operations that are not entity verbs (workflows, orchestrations) are operation models, and their messages generate from them. | Operation models; no hand-written protocol header |
+| P05 | Protocol | Every consumer in other components, the shell and the CLI follows the protocol change in the same piece of work. Nothing is carried for backwards compatibility. | Whole-tree build |
+| P06 | Protocol | An event cache warms through the canonical list and follows the canonical event actions. | Generated cache code |
+
+** 4. Generation
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| G01 | Entity | Regeneration is byte-identical to the checked-in tree and idempotent: a second run changes nothing. This covers SQL, C++ (domain, repository, mapper, service, handler, registrar, generators, eventing tests), shell units, shell recipes and the CMake source lists. | =check_component_drift.py --component <c>=, run twice |
+| G02 | All | Every hand-written file that the generation supersedes is deleted, together with dead headers and the hand-written protocol umbrella. | Survey B03 re-run: no generatable file left hand-written |
+| G03 | All | Every generated file carries the generated marker, and no hand-written file carries it. | =grep= for =AUTO-GENERATED FILE= against the survey |
+| G04 | Entity | The generated code reads like the component's best hand-written code. A finding is a template defect and is fixed in the template. | Review record on the task |
+| G05 | All | Every generator defect found is fixed at its source with a regression test in the codegen suite. | Codegen test suite |
+| G06 | All | The CMake source lists match the tree. | =regenerate_cmake_component_files.py --all --check= |
+
+** 5. Wiring and data
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| W01 | Entity | Every registrar family the regeneration materialises is composed at the component's composition points: the messaging registrar, the history providers and the event mappings. A family that is deliberately unwired is recorded with its reason. | Registrar review on the task |
+| W02 | Entity | Every permission a handler checks is seeded, and the roles that need it are granted it. | =check_handler_permissions.py= |
+| W03 | Entity | Every name a populate script uses is defined by a populate script. | =check_populate_references.py= |
+| W04 | Entity | Every SQL script (tables, triggers, notify triggers, row-level security) is reachable from the create and drop aggregators, and the service grants cover every table the service reads. | SQL schema validation (no =WIRE_001=); =compass db recreate= |
+
+** 6. Shell
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| S01 | Entity | Every verb of every entity and junction has a generated shell command unit and a test. The hand-written units the generation replaces are deleted. | Generated units; shell tests |
+| S02 | Entity | Every command has a generated literate recipe, and the recipe inventory lists them all. A destructive command is declared destructive in its model. | =regenerate_shell_recipe_inventory.py= |
+
+** 7. Structure and hygiene
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| H01 | All | The component passes the Component Architecture Audit, and its record is written. | Audit record; =validate_docs.sh= |
+| H02 | All | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. | Review record on the task |
+| H03 | All | Comments follow the project comment rules. | compass-code-review-comments pass |
+
+** 8. Verification
+
+| Id  | Applies to | Item | Evidence |
+|-----+------------+------+----------|
+| V01 | All | The whole tree builds, with the component's tests and every consumer. | =compass build= |
+| V02 | All | The codegen suite passes, and the component's test suites pass with the fleet up. | =compass test run= |
+| V03 | Entity | The database recreates from scratch, and the fleet starts and serves. | =compass db recreate -y -k=; =compass services start= |
+| V04 | Entity | Every generated shell command runs against the live fleet and answers. Record any command that cannot run, with the reason. | Recipe run log on the task |
+| V05 | All | Every codegen gate is green with the component added: component drift, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory and CMake source lists. | Each check script |
+| V06 | All | The component joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes with it listed. | =component_registry.py= diff |
+
+** What sprint 25 learned
+
+- A check that writes is a check that damages. Run the drift check with
+  =--dry-run= while a model is being drafted: an in-place =--all= run
+  overwrote sixteen hand-written files.
+- The drift gate cannot see an unwired registrar, and the eventing
+  tests register their own mappings. Check W01 by reading the
+  composition points.
+- A rename that the templates cannot carry yet is undone, not forced.
+  Rename the hand-written half of a pair before the generated half
+  supersedes it.
+- Only a live run finds some defects: the service grant and the notify
+  trigger wiring were found by a running fleet, not by ctest.
+- An unattended replay of commands can destroy an environment. Declare
+  destructive commands in their models.
+
+* See also
+
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] -- the structural checklist item H01 runs.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] -- the protocol items P01 to P06 enforce.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] -- the profiles items M02 to M04 bind to.
+- [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]] -- the per-entity bind method behind M02 and G01.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] -- the review behind G04 and H02.

@@ -92,6 +92,7 @@ How the codebase is put together.
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
 | [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |
 | [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] | The recurring per-component cleanliness check, and the conventions it enforces |
+| [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | The checklist a component passes to be clean and join the codegen gates |
 | [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake Setup]] | The preset menu, output layout, and the conventions every component build follows |
 
 * Infrastructure

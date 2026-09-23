@@ -49,6 +49,42 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------|
 | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25. |
 | [[id:6893E1EC-9F09-4185-897B-B7818473B3D9][Make compass site page the site check]] | DONE | 2026-09-23 | 2026-09-23 | The skills and recipes run compass site page as the site check; the full site build is for the first build in a checkout. |
+| [[id:640F2DD7-5FE1-44B0-B7D5-5316334B95E5][Bring every component to the component clean standard]] | DONE | 2026-09-23 | 2026-09-23 | Program story for the codegen pass: the Component Clean Standard, and the 35 component stories below in order. |
+| [[id:C9C01FAC-E281-46DF-9C3C-C718E7B6C003][Clean ores.platform to the component clean standard]] | BACKLOG | | | Bring ores.platform to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:A6D32783-BE66-4FE3-99A8-227BE7C7DE63][Clean ores.logging to the component clean standard]] | BACKLOG | | | Bring ores.logging to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA][Clean ores.utility to the component clean standard]] | BACKLOG | | | Bring ores.utility to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:CCFD90A3-A138-4744-8D99-217919BC13E5][Clean ores.orgmode to the component clean standard]] | BACKLOG | | | Bring ores.orgmode to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:0C33F2AE-49D2-4181-89F7-38B35F3A402E][Clean ores.diff to the component clean standard]] | BACKLOG | | | Bring ores.diff to the Component Clean Standard (Entity items): tier 1, foundation infrastructure. |
+| [[id:1AF1672B-C21F-4337-A9F3-4253008DB80D][Clean ores.storage to the component clean standard]] | BACKLOG | | | Bring ores.storage to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:7EF62300-3026-49F9-A663-A1F3705C70A1][Clean ores.security to the component clean standard]] | BACKLOG | | | Bring ores.security to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:E7AA802C-7052-4AF3-8DCF-17075DE9E96A][Clean ores.database to the component clean standard]] | BACKLOG | | | Bring ores.database to the Component Clean Standard (Entity items): tier 1, foundation infrastructure. |
+| [[id:B214CE7D-52DB-4873-AB38-3D6A18B6DB5F][Clean ores.nats to the component clean standard]] | BACKLOG | | | Bring ores.nats to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:78C2A5C6-20C8-4422-B74C-0182BC60D350][Clean ores.connections to the component clean standard]] | BACKLOG | | | Bring ores.connections to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:D8184684-9E77-4B7C-87E2-3596731EE427][Clean ores.eventing to the component clean standard]] | BACKLOG | | | Bring ores.eventing to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:FE7D0893-B457-47B8-AE36-6D1C26445A46][Clean ores.history to the component clean standard]] | BACKLOG | | | Bring ores.history to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] | BACKLOG | | | Bring ores.service to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:90EC913A-72AB-4D39-B432-B351C1FC965C][Clean ores.telemetry to the component clean standard]] | BACKLOG | | | Bring ores.telemetry to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:3EF24442-FC51-4024-8E3C-70C814C71BCA][Clean ores.geo to the component clean standard]] | BACKLOG | | | Bring ores.geo to the Component Clean Standard (All items): tier 2, higher infrastructure. |
+| [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] | BACKLOG | | | Bring ores.variability to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] | BACKLOG | | | Bring ores.fpml to the Component Clean Standard (All items): tier 2, higher infrastructure. |
+| [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] | BACKLOG | | | Bring ores.assets to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] | BACKLOG | | | Bring ores.http to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] | BACKLOG | | | Bring ores.scheduler to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] | BACKLOG | | | Bring ores.workspace to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] | BACKLOG | | | Bring ores.workflow to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] | BACKLOG | | | Bring ores.iam to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] | BACKLOG | | | Bring ores.refdata to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] | BACKLOG | | | Bring ores.analytics to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] | BACKLOG | | | Bring ores.compute to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] | BACKLOG | | | Bring ores.reporting to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | BACKLOG | | | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] | BACKLOG | | | Bring ores.marketdata to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | BACKLOG | | | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | BACKLOG | | | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] | BACKLOG | | | Bring ores.trading to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:2EF0EF31-6FED-48C7-BA6F-7006D29EFE60][Clean ores.testing to the component clean standard]] | BACKLOG | | | Bring ores.testing to the Component Clean Standard (All items): tier 4, client or test support. |
+| [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] | BACKLOG | | | Bring ores.cli to the Component Clean Standard (All items): tier 4, client or test support. |
+| [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] | BACKLOG | | | Bring ores.shell to the Component Clean Standard (All items): tier 4, client or test support. |
 
 ** Hotfixes
 

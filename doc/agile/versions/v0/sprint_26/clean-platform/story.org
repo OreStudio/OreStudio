@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: C9C01FAC-E281-46DF-9C3C-C718E7B6C003
+:END:
+#+title: Story: Clean ores.platform to the component clean standard
+#+description: Bring ores.platform to the Component Clean Standard (All items): tier 1, foundation infrastructure.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:codegen:clean_standard:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.platform meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]: the items marked All pass, each item that does not apply is recorded with its reason, and ores.platform joins =COMPONENTS_UNDER_TEST=. Order 1 of 35 in the sprint 26 component clean-up, tier 1 (foundation infrastructure).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the task. |
+| Last touched  | 2026-09-23                               |
+
+* Acceptance
+
+- Every checklist item that applies to a component of kind *All* passes, with its evidence recorded on the task.
+- Every item that does not apply is recorded as not applicable, with the reason.
+- Every generator defect found is fixed at its source, with a regression test.
+- ores.platform is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DE3200A3-7E68-40DE-B2C8-53FAF985B27D][Bring ores.platform to the clean standard]] | BACKLOG | | | Work ores.platform through the Component Clean Standard in order and record each item. |
+
+* Notes
+
+- Survey on 2026-09-23: 0 entity, junction or operation models; 32 C++ files outside tests, 0 of them generated (0%); 0 messaging headers, 0 of them hand-written.
+
+* Decisions
+
+* Out of scope
+
+-

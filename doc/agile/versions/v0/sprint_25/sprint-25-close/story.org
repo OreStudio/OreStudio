@@ -23,11 +23,11 @@ and the retrospective.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The story cleanup is done; the audit is clean. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Release notes and retrospective.       |
+| Next          | Nothing. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ and the retrospective.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:826C9671-AE0D-48CD-B8E6-666DF92DB4AF][Clean up the sprint 25 stories for close]] | DONE | 2026-09-23 | 2026-09-23 | Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work. |
+| [[id:76233168-3C44-4606-B6F9-518179F7D6A2][Write sprint 25 release notes]] | DONE | 2026-09-23 | 2026-09-23 | Generate the sprint 25 release notes from the merged PR data, fill the summary blurbs, render the charts and export the markdown for the draft GitHub release. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Sprint 25 is closed out. Health review 2 rated the sprint RED. Every
+other story is DONE (79) or ABANDONED (23), each with its reason, and
+=compass sprint audit= is clean. The skills catalogue remainder is an
+inbox story, and the IR work is one deferred capture. The release
+notes, the charts over the full sprint and the retrospective are
+written. The v0.0.25 tag and the draft GitHub release follow the merge.
+

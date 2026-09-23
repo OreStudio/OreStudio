@@ -8,7 +8,7 @@
 #+filetags: :v0:
 #+created: 2026-08-03
 #+start_date: 2026-08-03
-#+end_date: 2026-08-10
+#+end_date: 2026-09-23
 #+updated: 2026-09-23
 #+todo: STARTED | DONE
 
@@ -27,10 +27,10 @@ Resolve sprint drift on as many components as possible and progress IR curves wo
 | Previous       | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Start          | 2026-08-03                               |
 | End (expected) | 2026-08-10                           |
-| Now            | Sprint in flight.                      |
+| Now            | Closing. Every story is closed and the release notes are written. |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
-| Release Notes  | Added at end of sprint.                |
+| Next           | Tag v0.0.25, draft the release, and open sprint 26. |
+| Release Notes  | [[id:09608977-5D9E-42D6-9189-B3471C74640F][Sprint 25 release notes]] |
 | Last touched   | 2026-09-23                               |
 
 * Stories
@@ -108,7 +108,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:131C14D1-31D1-46EE-B697-B52EE3612F5F][Implement every IAM entity in the web client]] | DONE | 2026-09-20 | 2026-09-23 | Build every IAM entity inside =ores.web= from the shared entity shell, so a new entity is a declaration rather than a set of pages. The measurement is in the story: the one entity on the shell today costs about 877 lines of new files plus edits to six shared files, for 37 lines of real judgement, and the Qt client being replaced differed by 40-46% between two entities of the same kind. Closing that comes first; the eleven IAM wire types are then built in four groups. |
 | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] | ABANDONED | 2026-09-23 | 2026-09-23 | Revisit the post-setup IAM screens from first principles: identify the member and tenant-administrator journeys from user goals rather than from the entities, then prototype each one. Accounts come first. The map stops at accepted prototypes. |
 | [[id:187B03E4-D468-445A-B970-A048ED3FC430][Sprint health review — System 2 analysis]] | DONE | 2026-08-07 | 2026-09-23 | Recurring System 2 health reviews of sprint 25: review 1 at mid-sprint (AMBER), review 2 at close (RED). |
-| [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] | STARTED | 2026-09-23 | | Close out sprint 25: close every story that is finished, abandon the superseded codegen, web and half-finished approaches, split the skills catalogue story, and file one clean capture for the IR work. |
+| [[id:ABB0BD89-E149-4E8C-9EA0-5B3514DFE4C0][Sprint 25 closure: story cleanup and reset for sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Close out sprint 25: close every story that is finished, abandon the superseded codegen, web and half-finished approaches, split the skills catalogue story, and file one clean capture for the IR work. |
 
 ** Hotfixes
 
@@ -219,4 +219,42 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+See the [[id:09608977-5D9E-42D6-9189-B3471C74640F][release notes]]' Post Mortem section for the full write-up.
+Summary:
+
+** What worked
+
+- High throughput: 316 PRs merged and 80 stories closed DONE.
+- The drift method worked. Each component followed the same steps and
+  reached zero drift.
+- PRs merged fast, with a median of 1.9 hours from open to merge.
+- The close reset recorded every abandoned story with a reason, so
+  sprint 26 starts from a clean board.
+
+** What didn't work
+
+- The sprint ran 52 days against a 7-day plan. It did not close at the
+  lull, so a second full sprint of work went into the same document.
+- The mission did not change when the work moved to ores.web and
+  TypeScript. The mission then described less than half of the work.
+- 31 stories were STARTED at the close review, 10 of them with every
+  task done. The documents did not show the real work in progress.
+- 23 hotfixes. Cross-compiler failures were found by the scheduled CI
+  runs, after the merge.
+- Many approaches to the codegen problem ran at the same time, and
+  none of them finished.
+
+** Improve next sprint
+
+- Close the sprint at day 7. A lull ends a sprint; it does not
+  stretch it.
+- Change the mission when the direction changes, or open a new sprint.
+- Follow one order: codegen sync and drift for each module, then user
+  journeys, then UX.
+- Run a gcc or MSVC build before a merge that touches CMake, headers
+  or compiler flags.
+- Close a story when its last task closes.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

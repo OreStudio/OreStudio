@@ -8,7 +8,7 @@
 #+filetags: :remove_the_legacy_qt_remnants:sprint_26:v0:
 #+owner: marco
 #+branch: feature/remove-the-legacy-qt-remnants
-#+pr:
+#+pr: 2138
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2138][#2138]] | [codegen] Remove the legacy Qt remnants |
 
 * Review
 

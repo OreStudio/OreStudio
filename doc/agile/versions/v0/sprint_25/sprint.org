@@ -151,7 +151,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:54897BD4-A38C-4271-AA3B-CE79C43663E3][Hotfix: IAM current-state notify triggers are not wired into the aggregators]] | DONE | 2026-09-22 | 2026-09-22 | SQL schema validation fails on main with four WIRE_001 warnings because the login_info and session notify trigger scripts are not reachable from the create and drop aggregators; Continuous Linux and Nightly Build have been red since 2026-09-21. |
 | [[id:149FB6E6-F13E-4886-94C3-A3E2A79521BD][Hotfix: provision tenant publishes party-scoped bundle without party_id]] | DONE | | 2026-09-23 | Party provisioning published the first available bundle, a party-scoped one without a party_id, instead of the base bundle. Fixed in PR #1929. |
 | [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] | DONE | | 2026-09-22 | Revisit the ores.qt bootstrap wizards from first principles for ores.web, taking the ACME work into account. |
-| [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | STARTED | 2026-09-23 | | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
+| [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
 
 * Achievements
 

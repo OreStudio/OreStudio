@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -69,3 +69,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks, and the sprint wiring landed on
+=feature/dsh-agile-plugin= and ride the single feature PR rather than a separate
+scaffold PR. The story was scoped twice before implementation: first from a
+single work-item panel to a board, then from a board that could be pointed at any
+work tree to one that follows its session.

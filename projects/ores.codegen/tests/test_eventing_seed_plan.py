@@ -98,14 +98,39 @@ def test_closure_seeds_ancestors_before_the_rows_that_reference_them(
         "batch", "app", "app_version"]
     batch, app, app_version = items
     assert batch["parent_var"] == "workunit_id_parent"
-    assert batch["var"] == "batch_id_parent"
+    assert batch["var"] == "batch_parent"
     # The app row patches the app_version row that references it, and the
     # app_version row patches the workunit row.
-    assert app["parent_var"] == "app_version_id_parent"
-    assert app["var"] == "app_id_parent"
+    assert app["parent_var"] == "app_version_parent"
+    assert app["var"] == "app_parent"
     assert app["column"] == "app_id"
     assert app_version["parent_var"] == "workunit_id_parent"
-    assert app_version["var"] == "app_version_id_parent"
+    assert app_version["var"] == "app_version_parent"
+
+
+def test_ancestor_variables_stay_distinct_when_a_fk_column_repeats(
+        org_infos):
+    # synthetic's ir_curve_generation_config_process_parameter_value has a
+    # config_id FK to ir_curve_generation_config, whose own mandatory FK
+    # column is also config_id. The two rows are different types, so
+    # naming the ancestor after its FK column declared config_id_parent
+    # twice and compiled the wrong type into the write.
+    org_infos["ores_compute_workunits_tbl"]["mandatory_fks"] = [
+        {"column": "config_id", "table": "ores_compute_batches_tbl",
+         "target_column": "id"},
+    ]
+    org_infos["ores_compute_batches_tbl"]["mandatory_fks"] = [
+        {"column": "config_id", "table": "ores_compute_apps_tbl",
+         "target_column": "id"},
+    ]
+    items = _call(org_infos, parent_var="config_id_parent")
+    assert [i["parent_entity_singular"] for i in items] == ["app", "batch"]
+    app, batch = items
+    assert app["var"] == "app_parent"
+    assert batch["var"] == "batch_parent"
+    assert batch["parent_var"] == "config_id_parent"
+    assert app["parent_var"] == "batch_parent"
+    assert len({i["var"] for i in items} | {"config_id_parent"}) == 3
 
 
 def test_party_ancestors_are_skipped(org_infos):

@@ -1,0 +1,82 @@
+# ores.compute clean-standard inventory
+
+## B02 models by metatype (9)
+component    -                          component_overview.org
+entity       uuid-identified-lookup     ores.compute.app.org
+entity       uuid-identified-lookup     ores.compute.app_version.org
+junction     tenant-scoped-junction     ores.compute.app_version_platform_junction.org
+entity       uuid-identified-lookup     ores.compute.batch.org
+entity       uuid-identified-lookup     ores.compute.host.org
+module       -                          ores.compute.module.org
+entity       uuid-identified-lookup     ores.compute.result.org
+entity       uuid-identified-lookup     ores.compute.workunit.org
+
+## B03 C++ files outside tests (258)
+generated    189
+hand-written 69
+    1 api/include/ores.compute.api
+    3 api/include/ores.compute.api/domain
+    3 api/include/ores.compute.api/messaging
+    1 api/include/ores.compute.api/net
+    1 client/include/ores.compute.client
+    1 client/include/ores.compute.client/client
+    1 client/src/client
+    2 core/include/ores.compute.core
+    6 core/include/ores.compute.core/messaging
+    7 core/include/ores.compute.core/repository
+    2 core/src/messaging
+    4 core/src/repository
+    2 service/include/ores.compute.service
+    6 service/include/ores.compute.service/app
+    3 service/include/ores.compute.service/config
+    1 service/src
+    5 service/src/app
+    2 service/src/config
+    1 wrapper/include/ores.compute.wrapper
+    3 wrapper/include/ores.compute.wrapper/app
+    3 wrapper/include/ores.compute.wrapper/config
+    1 wrapper/include/ores.compute.wrapper/filesystem
+    1 wrapper/include/ores.compute.wrapper/net
+    1 wrapper/src
+    4 wrapper/src/app
+    2 wrapper/src/config
+    1 wrapper/src/filesystem
+    1 wrapper/src/net
+
+## B03 messaging headers (42)
+generated    33
+hand-written 9
+  projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp
+  projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp
+  projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/platform_handler.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/registrar.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/report_submit_handler.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/result_submit_handler.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/telemetry_handler.hpp
+  projects/ores.compute/core/include/ores.compute.core/messaging/work_handler.hpp
+
+## B04 declared subjects (40 across 10 protocol headers)
+app_protocol.hpp: compute.v1.apps.delete, compute.v1.apps.history, compute.v1.apps.list, compute.v1.apps.save
+app_version_platform_protocol.hpp: compute.v1.app_version_platforms.count_by_app_version_id, compute.v1.app_version_platforms.count_by_platform_id, compute.v1.app_version_platforms.delete, compute.v1.app_version_platforms.list, compute.v1.app_version_platforms.list_by_app_version_id, compute.v1.app_version_platforms.replace_by_app_version_id, compute.v1.app_version_platforms.save
+app_version_protocol.hpp: compute.v1.app_versions.delete, compute.v1.app_versions.history, compute.v1.app_versions.list, compute.v1.app_versions.save
+batch_protocol.hpp: compute.v1.batches.delete, compute.v1.batches.history, compute.v1.batches.list, compute.v1.batches.save
+host_protocol.hpp: compute.v1.hosts.delete, compute.v1.hosts.history, compute.v1.hosts.list, compute.v1.hosts.save
+platform_protocol.hpp: compute.v1.platforms.list
+result_protocol.hpp: compute.v1.results.delete, compute.v1.results.history, compute.v1.results.list, compute.v1.results.list_by_workunit_id, compute.v1.results.save
+telemetry_protocol.hpp: compute.v1.telemetry.get_grid_stats, compute.v1.telemetry.node_samples
+work_protocol.hpp: compute.v1.results.submit, compute.v1.work.heartbeat, compute.v1.work.pull, compute.v1.work.reap
+workunit_protocol.hpp: compute.v1.workunits.delete, compute.v1.workunits.history, compute.v1.workunits.list, compute.v1.workunits.list_by_batch_id, compute.v1.workunits.save
+
+## B04 raw subject literals in hand-written code (11)
+projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp:31 compute.v1.platforms.list
+projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp:36 compute.v1.telemetry.get_grid_stats
+projects/ores.compute/api/include/ores.compute.api/messaging/telemetry_protocol.hpp:83 compute.v1.telemetry.node_samples
+projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp:30 compute.v1.work.pull
+projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp:64 compute.v1.work.heartbeat
+projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp:69 compute.v1.work.reap
+projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp:87 compute.v1.results.submit
+projects/ores.compute/core/src/messaging/report_submit_handler.cpp:50 compute.v1.work.assignments.
+projects/ores.compute/service/src/app/workunit_dispatcher.cpp:132 compute.v1.work.assignments.
+projects/ores.compute/wrapper/src/app/application.cpp:654 compute.v1.work.assignments.>
+projects/ores.compute/wrapper/src/app/application.cpp:683 compute.v1.work.assignments.

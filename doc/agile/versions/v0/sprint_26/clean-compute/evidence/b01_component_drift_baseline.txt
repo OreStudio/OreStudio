@@ -1,0 +1,3479 @@
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/venv, got /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/scripts/../../ores.codegen/venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/venv, got /mnt/development/OreStudio/ores_dev_prime_origin/projects/ores.codegen/scripts/../../ores.codegen/venv
+Checking component 'compute-cpp' at address 'ores.cmake' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.cpp' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.doc' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.plantuml' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.shell' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.sql' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.ts.domain' (dry run, no writes)...
+Checking component 'compute-cpp' at address 'ores.ts.protocol' (dry run, no writes)...
+
+would change: projects/ores.compute/CMakeLists.txt
+--- a/projects/ores.compute/CMakeLists.txt
++++ b/projects/ores.compute/CMakeLists.txt
+@@ -16,6 +16,9 @@
+ # this program; if not, write to the Free Software Foundation, Inc., 51
+ # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ #
++# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
++# Template: cmake_composite_root.mustache
++# To modify, update the template and regenerate.
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/client)
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/app.hpp
+@@ -87,8 +87,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const app&, const app&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/app_version.hpp
+@@ -100,8 +100,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const app_version&, const app_version&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp
+@@ -124,6 +124,10 @@
+      * table has no code column.
+      */
+     std::string platform_code;
++    /**
++     * @brief Value equality, on the same terms as an entity's.
++     */
++    friend bool operator==(const app_version_platform&, const app_version_platform&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/batch.hpp
+@@ -88,8 +88,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const batch&, const batch&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/host.hpp
+@@ -120,8 +120,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const host&, const host&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/result.hpp
+@@ -134,8 +134,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const result&, const result&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/domain/workunit.hpp
+@@ -114,8 +114,26 @@
+ 
+     /**
+      * @brief Timestamp when this version of the record was recorded.
++     *
++     * The transaction-time window's start, which the store sets from its own
++     * clock. It travels with the audit members because it is only ever read
++     * with them: the history builder takes a version type that carries an
++     * actor *and* this timestamp, so an entity without the actor has no use
++     * for the timestamp either.
+      */
+     std::chrono::system_clock::time_point recorded_at;
++
++    /**
++     * @brief Value equality.
++     *
++     * Every generated domain type is a value: two of them are equal when their
++     * members are, whatever the entity means. A test that round-trips one
++     * through the wire asserts exactly that, so equality is part of the shape
++     * rather than something each entity decides -- an entity without it cannot
++     * be round-trip tested at all, which is why the omission went unnoticed
++     * until the diff payloads were the first generated types to have a test.
++     */
++    friend bool operator==(const workunit&, const workunit&) = default;
+ };
+ 
+ /**
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp
+@@ -26,64 +26,246 @@
+ #define ORES_COMPUTE_API_MESSAGING_APP_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/app.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_apps_request {
+-    using response_type = struct get_apps_response;
++struct app_key {
++    std::string name;
++};
++
++struct app_write {
++    boost::uuids::uuid id;
++    std::string name;
++    std::string description;
++};
++
++struct app_change {
++    app_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct app_removal {
++    app_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct app_lookup {
++    app_key key;
++    std::optional<ores::compute::domain::app> app;
++};
++
++struct app_event {
++    boost::uuids::uuid event_id;
++    app_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct app_version_key {
++    app_key app;
++    std::uint32_t version;
++};
++
++struct app_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_apps_request {
++    using response_type = struct list_apps_response;
+     static constexpr std::string_view nats_subject = "compute.v1.apps.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
++    static constexpr bool requires_session = true;
+     std::uint32_t offset = 0;
+     std::uint32_t limit = 100;
+-};
+-
+-struct get_apps_response {
++    ores::utility::domain::order order;
++};
++
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_platform_protocol.hpp
+@@ -26,118 +26,212 @@
+ #define ORES_COMPUTE_API_MESSAGING_APP_VERSION_PLATFORM_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/app_version_platform.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-/**
+- * @brief The app version platform row enriched with the joined row's
+- * display fields, so a screen needs one request for the whole set rather
+- * than one per row. The by-side read returns this view.
+- */
+-struct app_version_platform_view {
+-    ores::compute::domain::app_version_platform app_version_platform;
+-    std::string platform_code;
+-};
+-
+-struct get_app_version_platforms_request {
+-    using response_type = struct get_app_version_platforms_response;
++struct app_version_platform_key {
++    boost::uuids::uuid app_version_id;
++    boost::uuids::uuid platform_id;
++};
++
++struct app_version_platform_write {
++    boost::uuids::uuid app_version_id;
++    boost::uuids::uuid platform_id;
++    std::string package_uri;
++    std::string sha256;
++};
++
++struct app_version_platform_change {
++    app_version_platform_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct app_version_platform_removal {
++    app_version_platform_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct app_version_platform_lookup {
++    app_version_platform_key key;
++    std::optional<ores::compute::domain::app_version_platform> app_version_platform;
++};
++
++struct app_version_platforms_filter {
++    std::optional<boost::uuids::uuid> app_version_id;
++};
++
++struct app_version_platform_event {
++    boost::uuids::uuid event_id;
++    app_version_platform_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct list_app_version_platforms_request {
++    using response_type = struct list_app_version_platforms_response;
+     static constexpr std::string_view nats_subject = "compute.v1.app_version_platforms.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
++    static constexpr bool requires_session = true;
+     std::uint32_t offset = 0;
+     std::uint32_t limit = 100;
+-};
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp
+@@ -26,64 +26,248 @@
+ #define ORES_COMPUTE_API_MESSAGING_APP_VERSION_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/app_version.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_app_versions_request {
+-    using response_type = struct get_app_versions_response;
++struct app_version_key {
++    std::string wrapper_version;
++};
++
++struct app_version_write {
++    boost::uuids::uuid id;
++    boost::uuids::uuid app_id;
++    std::string wrapper_version;
++    std::string engine_version;
++    int min_ram_mb;
++};
++
++struct app_version_change {
++    app_version_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct app_version_removal {
++    app_version_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct app_version_lookup {
++    app_version_key key;
++    std::optional<ores::compute::domain::app_version> app_version;
++};
++
++struct app_version_event {
++    boost::uuids::uuid event_id;
++    app_version_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct app_version_version_key {
++    app_version_key app_version;
++    std::uint32_t version;
++};
++
++struct app_version_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_app_versions_request {
++    using response_type = struct list_app_versions_response;
+     static constexpr std::string_view nats_subject = "compute.v1.app_versions.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
++    static constexpr bool requires_session = true;
+     std::uint32_t offset = 0;
+     std::uint32_t limit = 100;
+-};
+-
+-struct get_app_versions_response {
++    ores::utility::domain::order order;
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/batch_protocol.hpp
+@@ -26,64 +26,246 @@
+ #define ORES_COMPUTE_API_MESSAGING_BATCH_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/batch.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_batches_request {
+-    using response_type = struct get_batches_response;
++struct batch_key {
++    std::string external_ref;
++};
++
++struct batch_write {
++    boost::uuids::uuid id;
++    std::string external_ref;
++    std::string status;
++};
++
++struct batch_change {
++    batch_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct batch_removal {
++    batch_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct batch_lookup {
++    batch_key key;
++    std::optional<ores::compute::domain::batch> batch;
++};
++
++struct batch_event {
++    boost::uuids::uuid event_id;
++    batch_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct batch_version_key {
++    batch_key batch;
++    std::uint32_t version;
++};
++
++struct batch_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_batches_request {
++    using response_type = struct list_batches_response;
+     static constexpr std::string_view nats_subject = "compute.v1.batches.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
++    static constexpr bool requires_session = true;
+     std::uint32_t offset = 0;
+     std::uint32_t limit = 100;
+-};
+-
+-struct get_batches_response {
++    ores::utility::domain::order order;
++};
++
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/host_protocol.hpp
+@@ -26,64 +26,252 @@
+ #define ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/host.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_hosts_request {
+-    using response_type = struct get_hosts_response;
++struct host_key {
++    std::string external_id;
++};
++
++struct host_write {
++    boost::uuids::uuid id;
++    std::string external_id;
++    std::string location;
++    int cpu_count;
++    std::int64_t ram_mb;
++    std::string gpu_type;
++    std::string display_name;
++    std::chrono::system_clock::time_point last_rpc_time;
++    double credit_total;
++};
++
++struct host_change {
++    host_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct host_removal {
++    host_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct host_lookup {
++    host_key key;
++    std::optional<ores::compute::domain::host> host;
++};
++
++struct host_event {
++    boost::uuids::uuid event_id;
++    host_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct host_version_key {
++    host_key host;
++    std::uint32_t version;
++};
++
++struct host_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_hosts_request {
++    using response_type = struct list_hosts_response;
+     static constexpr std::string_view nats_subject = "compute.v1.hosts.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
++    static constexpr bool requires_session = true;
+     std::uint32_t offset = 0;
+     std::uint32_t limit = 100;
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/result_protocol.hpp
+@@ -26,79 +26,281 @@
+ #define ORES_COMPUTE_API_MESSAGING_RESULT_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/result.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_results_request {
+-    using response_type = struct get_results_response;
++struct result_key {
++    boost::uuids::uuid id;
++};
++
++struct result_write {
++    boost::uuids::uuid id;
++    boost::uuids::uuid workunit_id;
++    boost::uuids::uuid host_id;
++    std::int64_t pgmq_msg_id;
++    int server_state;
++    int outcome;
++    std::string output_uri;
++    std::string error_message;
++    std::chrono::system_clock::time_point received_at;
++};
++
++struct result_change {
++    result_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct result_removal {
++    result_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct result_lookup {
++    result_key key;
++    std::optional<ores::compute::domain::result> result;
++};
++
++struct results_filter {
++    std::optional<boost::uuids::uuid> workunit_id;
++};
++
++struct result_event {
++    boost::uuids::uuid event_id;
++    result_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct result_version_key {
++    result_key result;
++    std::uint32_t version;
++};
++
++struct result_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_results_request {
++    using response_type = struct list_results_response;
+     static constexpr std::string_view nats_subject = "compute.v1.results.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
+
+would change: projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+--- a/projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
++++ b/projects/ores.compute/api/include/ores.compute.api/messaging/workunit_protocol.hpp
+@@ -26,79 +26,280 @@
+ #define ORES_COMPUTE_API_MESSAGING_WORKUNIT_PROTOCOL_HPP
+ 
+ #include "ores.compute.api/domain/workunit.hpp"
++#include "ores.utility/domain/protocol.hpp"
++#include <boost/uuid/uuid.hpp>
+ #include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+ namespace ores::compute::messaging {
+ 
+-struct get_workunits_request {
+-    using response_type = struct get_workunits_response;
++struct workunit_key {
++    std::string input_uri;
++};
++
++struct workunit_write {
++    boost::uuids::uuid id;
++    boost::uuids::uuid batch_id;
++    boost::uuids::uuid app_version_id;
++    std::string input_uri;
++    std::string config_uri;
++    int priority;
++    int target_redundancy;
++    boost::uuids::uuid canonical_result_id;
++};
++
++struct workunit_change {
++    workunit_write write;
++    ores::utility::domain::precondition precondition;
++};
++
++struct workunit_removal {
++    workunit_key key;
++    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
++};
++
++struct workunit_lookup {
++    workunit_key key;
++    std::optional<ores::compute::domain::workunit> workunit;
++};
++
++struct workunits_filter {
++    std::optional<boost::uuids::uuid> batch_id;
++};
++
++struct workunit_event {
++    boost::uuids::uuid event_id;
++    workunit_key key;
++    std::string action;
++    std::uint32_t version;
++    std::chrono::system_clock::time_point occurred_at;
++    std::optional<std::string> correlation_id;
++};
++
++struct workunit_version_key {
++    workunit_key workunit;
++    std::uint32_t version;
++};
++
++struct workunit_versions_filter {
++    std::optional<std::uint32_t> version;
++    std::optional<std::uint32_t> from_version;
++    std::optional<std::uint32_t> to_version;
++};
++
++struct list_workunits_request {
++    using response_type = struct list_workunits_response;
+     static constexpr std::string_view nats_subject = "compute.v1.workunits.list";
++    /**
++     * @brief Whether the caller must have established a session first.
++     *
++     * An operation that produces the session cannot present one, so a client
++     * reads this rather than assuming every call carries a token.
++     */
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/app_handler.hpp
+@@ -63,36 +63,139 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(app_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::app_service svc(req_ctx);
+-        get_apps_response resp;
+-        if (auto req = decode<get_apps_request>(msg)) {
+-            try {
+-                resp.apps = svc.list_apps(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_apps());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(app_handler_lg(), error) << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(app_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(app_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
++    /**
++     * @brief Serves compute.v1.apps.list.
++     *
++     * The adapter decides nothing: it proves the request, checks the
++     * permission a write needs, decodes the canonical request, calls the
++     * service and replies with the response the service filled. The outcome
++     * a caller reads -- missing, conflicting, denied -- is the service's
++     * answer, so the two cannot disagree about what happened.
++     */
++    void list_apps(ores::nats::message msg) {
++        BOOST_LOG_SEV(app_handler_lg(), debug) << "Handling " << msg.subject;
++        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
++        if (!req_ctx_expected) {
++            error_reply(nats_, msg, req_ctx_expected.error());
++            return;
++        }
++        const auto& req_ctx = *req_ctx_expected;
++        auto req = decode<list_apps_request>(msg);
++        if (!req) {
++            BOOST_LOG_SEV(app_handler_lg(), warn) << "Failed to decode: " << msg.subject;
++            error_reply(nats_, msg, ores::service::error_code::bad_request);
++            return;
++        }
++        service::app_service svc(req_ctx);
++        try {
++            auto response = svc.list_apps(*req);
++            BOOST_LOG_SEV(app_handler_lg(), debug) << "Completed " << msg.subject;
++            reply(nats_, msg, response);
++        } catch (const std::exception& e) {
++            // The service reports what it decided in the response; an
++            // exception here is the store failing, which is a different
++            // thing and is reported as such.
++            BOOST_LOG_SEV(app_handler_lg(), error) << msg.subject << " failed: " << e.what();
++            list_apps_response failure;
++            failure.result.outcome = ores::utility::domain::outcome::failed;
++            failure.result.code = "internal_error";
++            failure.result.message = e.what();
++            reply(nats_, msg, failure);
++        }
++    }
++
++    /**
++     * @brief Serves compute.v1.apps.get.
++     *
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_handler.hpp
+@@ -63,122 +63,381 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::app_version_service svc(req_ctx);
+-        get_app_versions_response resp;
+-        if (auto req = decode<get_app_versions_request>(msg)) {
+-            try {
+-                resp.app_versions = svc.list_app_versions(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_app_versions());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(app_version_handler_lg(), error)
+-                    << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
+-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        if (!has_permission(req_ctx, "compute::app_versions:write")) {
+-            error_reply(nats_, msg, ores::service::error_code::forbidden);
+-            return;
+-        }
+-        service::app_version_service svc(req_ctx);
+-        if (auto req = decode<save_app_version_request>(msg)) {
+-            try {
+-                svc.save_app_version(req->data);
+-                BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+-                reply(nats_, msg, save_app_version_response{.success = true});
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(app_version_handler_lg(), error)
+-                    << msg.subject << " failed: " << e.what();
+-                reply(nats_, msg, save_app_version_response{.success = false, .message = e.what()});
+-            }
+-        } else {
+-            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-        }
+-    }
+-
+-    void history(ores::nats::message msg) {
+-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::app_version_service svc(req_ctx);
+-        if (auto req = decode<get_app_version_history_request>(msg)) {
+-            try {
+-                auto hist = svc.get_app_version_history(req->id);
+-                BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+-                reply(
+-                    nats_,
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/app_version_platform_handler.hpp
+@@ -34,9 +34,6 @@
+ #include "ores.security/jwt/jwt_authenticator.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
+ #include "ores.service/service/request_context.hpp"
+-#include <boost/lexical_cast.hpp>
+-#include <boost/uuid/uuid_io.hpp>
+-#include <cstddef>
+ #include <optional>
+ 
+ namespace ores::compute::messaging {
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/batch_handler.hpp
+@@ -63,36 +63,139 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::batch_service svc(req_ctx);
+-        get_batches_response resp;
+-        if (auto req = decode<get_batches_request>(msg)) {
+-            try {
+-                resp.batches = svc.list_batches(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_batches());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
++    /**
++     * @brief Serves compute.v1.batches.list.
++     *
++     * The adapter decides nothing: it proves the request, checks the
++     * permission a write needs, decodes the canonical request, calls the
++     * service and replies with the response the service filled. The outcome
++     * a caller reads -- missing, conflicting, denied -- is the service's
++     * answer, so the two cannot disagree about what happened.
++     */
++    void list_batches(ores::nats::message msg) {
++        BOOST_LOG_SEV(batch_handler_lg(), debug) << "Handling " << msg.subject;
++        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
++        if (!req_ctx_expected) {
++            error_reply(nats_, msg, req_ctx_expected.error());
++            return;
++        }
++        const auto& req_ctx = *req_ctx_expected;
++        auto req = decode<list_batches_request>(msg);
++        if (!req) {
++            BOOST_LOG_SEV(batch_handler_lg(), warn) << "Failed to decode: " << msg.subject;
++            error_reply(nats_, msg, ores::service::error_code::bad_request);
++            return;
++        }
++        service::batch_service svc(req_ctx);
++        try {
++            auto response = svc.list_batches(*req);
++            BOOST_LOG_SEV(batch_handler_lg(), debug) << "Completed " << msg.subject;
++            reply(nats_, msg, response);
++        } catch (const std::exception& e) {
++            // The service reports what it decided in the response; an
++            // exception here is the store failing, which is a different
++            // thing and is reported as such.
++            BOOST_LOG_SEV(batch_handler_lg(), error) << msg.subject << " failed: " << e.what();
++            list_batches_response failure;
++            failure.result.outcome = ores::utility::domain::outcome::failed;
++            failure.result.code = "internal_error";
++            failure.result.message = e.what();
++            reply(nats_, msg, failure);
++        }
++    }
++
++    /**
++     * @brief Serves compute.v1.batches.get.
++     *
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/host_handler.hpp
+@@ -63,36 +63,139 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(host_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::host_service svc(req_ctx);
+-        get_hosts_response resp;
+-        if (auto req = decode<get_hosts_request>(msg)) {
+-            try {
+-                resp.hosts = svc.list_hosts(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_hosts());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(host_handler_lg(), error) << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(host_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(host_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
++    /**
++     * @brief Serves compute.v1.hosts.list.
++     *
++     * The adapter decides nothing: it proves the request, checks the
++     * permission a write needs, decodes the canonical request, calls the
++     * service and replies with the response the service filled. The outcome
++     * a caller reads -- missing, conflicting, denied -- is the service's
++     * answer, so the two cannot disagree about what happened.
++     */
++    void list_hosts(ores::nats::message msg) {
++        BOOST_LOG_SEV(host_handler_lg(), debug) << "Handling " << msg.subject;
++        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
++        if (!req_ctx_expected) {
++            error_reply(nats_, msg, req_ctx_expected.error());
++            return;
++        }
++        const auto& req_ctx = *req_ctx_expected;
++        auto req = decode<list_hosts_request>(msg);
++        if (!req) {
++            BOOST_LOG_SEV(host_handler_lg(), warn) << "Failed to decode: " << msg.subject;
++            error_reply(nats_, msg, ores::service::error_code::bad_request);
++            return;
++        }
++        service::host_service svc(req_ctx);
++        try {
++            auto response = svc.list_hosts(*req);
++            BOOST_LOG_SEV(host_handler_lg(), debug) << "Completed " << msg.subject;
++            reply(nats_, msg, response);
++        } catch (const std::exception& e) {
++            // The service reports what it decided in the response; an
++            // exception here is the store failing, which is a different
++            // thing and is reported as such.
++            BOOST_LOG_SEV(host_handler_lg(), error) << msg.subject << " failed: " << e.what();
++            list_hosts_response failure;
++            failure.result.outcome = ores::utility::domain::outcome::failed;
++            failure.result.code = "internal_error";
++            failure.result.message = e.what();
++            reply(nats_, msg, failure);
++        }
++    }
++
++    /**
++     * @brief Serves compute.v1.hosts.get.
++     *
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/result_handler.hpp
+@@ -63,36 +63,139 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::result_service svc(req_ctx);
+-        get_results_response resp;
+-        if (auto req = decode<get_results_request>(msg)) {
+-            try {
+-                resp.results = svc.list_results(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_results());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
++    /**
++     * @brief Serves compute.v1.results.list.
++     *
++     * The adapter decides nothing: it proves the request, checks the
++     * permission a write needs, decodes the canonical request, calls the
++     * service and replies with the response the service filled. The outcome
++     * a caller reads -- missing, conflicting, denied -- is the service's
++     * answer, so the two cannot disagree about what happened.
++     */
++    void list_results(ores::nats::message msg) {
++        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
++        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
++        if (!req_ctx_expected) {
++            error_reply(nats_, msg, req_ctx_expected.error());
++            return;
++        }
++        const auto& req_ctx = *req_ctx_expected;
++        auto req = decode<list_results_request>(msg);
++        if (!req) {
++            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
++            error_reply(nats_, msg, ores::service::error_code::bad_request);
++            return;
++        }
++        service::result_service svc(req_ctx);
++        try {
++            auto response = svc.list_results(*req);
++            BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
++            reply(nats_, msg, response);
++        } catch (const std::exception& e) {
++            // The service reports what it decided in the response; an
++            // exception here is the store failing, which is a different
++            // thing and is reported as such.
++            BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
++            list_results_response failure;
++            failure.result.outcome = ores::utility::domain::outcome::failed;
++            failure.result.code = "internal_error";
++            failure.result.message = e.what();
++            reply(nats_, msg, failure);
++        }
++    }
++
++    /**
++     * @brief Serves compute.v1.results.get.
++     *
+
+would change: projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/messaging/workunit_handler.hpp
+@@ -63,37 +63,139 @@
+         , ctx_(std::move(ctx))
+         , verifier_(std::move(verifier)) {}
+ 
+-    void list(ores::nats::message msg) {
+-        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Handling " << msg.subject;
+-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+-        if (!req_ctx_expected) {
+-            error_reply(nats_, msg, req_ctx_expected.error());
+-            return;
+-        }
+-        const auto& req_ctx = *req_ctx_expected;
+-        service::workunit_service svc(req_ctx);
+-        get_workunits_response resp;
+-        if (auto req = decode<get_workunits_request>(msg)) {
+-            try {
+-                resp.workunits = svc.list_workunits(req->offset, req->limit);
+-                resp.total_available_count = static_cast<int>(svc.count_workunits());
+-                resp.success = true;
+-            } catch (const std::exception& e) {
+-                BOOST_LOG_SEV(workunit_handler_lg(), error)
+-                    << msg.subject << " failed: " << e.what();
+-                resp.success = false;
+-                resp.message = e.what();
+-            }
+-        } else {
+-            BOOST_LOG_SEV(workunit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+-            return;
+-        }
+-        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Completed " << msg.subject;
+-        reply(nats_, msg, resp);
+-    }
+-
+-    void save(ores::nats::message msg) {
++    /**
++     * @brief Serves compute.v1.workunits.list.
++     *
++     * The adapter decides nothing: it proves the request, checks the
++     * permission a write needs, decodes the canonical request, calls the
++     * service and replies with the response the service filled. The outcome
++     * a caller reads -- missing, conflicting, denied -- is the service's
++     * answer, so the two cannot disagree about what happened.
++     */
++    void list_workunits(ores::nats::message msg) {
++        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Handling " << msg.subject;
++        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
++        if (!req_ctx_expected) {
++            error_reply(nats_, msg, req_ctx_expected.error());
++            return;
++        }
++        const auto& req_ctx = *req_ctx_expected;
++        auto req = decode<list_workunits_request>(msg);
++        if (!req) {
++            BOOST_LOG_SEV(workunit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
++            error_reply(nats_, msg, ores::service::error_code::bad_request);
++            return;
++        }
++        service::workunit_service svc(req_ctx);
++        try {
++            auto response = svc.list_workunits(*req);
++            BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Completed " << msg.subject;
++            reply(nats_, msg, response);
++        } catch (const std::exception& e) {
++            // The service reports what it decided in the response; an
++            // exception here is the store failing, which is a different
++            // thing and is reported as such.
++            BOOST_LOG_SEV(workunit_handler_lg(), error) << msg.subject << " failed: " << e.what();
++            list_workunits_response failure;
++            failure.result.outcome = ores::utility::domain::outcome::failed;
++            failure.result.code = "internal_error";
++            failure.result.message = e.what();
++            reply(nats_, msg, failure);
++        }
++    }
++
++    /**
++     * @brief Serves compute.v1.workunits.get.
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/app_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/app_version_platform_repository.hpp
+@@ -29,7 +29,10 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <boost/uuid/uuid.hpp>
++#include <cstdint>
++#include <optional>
+ #include <sqlgen/postgres.hpp>
+ #include <string>
+ #include <vector>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/app_version_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/batch_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/host_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/result_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/repository/workunit_repository.hpp
+@@ -29,6 +29,7 @@
+ #include "ores.compute.core/export.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <chrono>
+ #include <cstdint>
+ #include <optional>
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/app_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_APP_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/app.hpp"
++#include "ores.compute.api/messaging/app_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/app_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/app_version_platform_service.hpp
+@@ -26,10 +26,13 @@
+ #define ORES_COMPUTE_SERVICE_APP_VERSION_PLATFORM_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/app_version_platform.hpp"
++#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
+ #include "ores.compute.core/repository/app_version_platform_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+ #include "ores.logging/make_logger.hpp"
+ #include <boost/uuid/uuid.hpp>
++#include <cstdint>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/app_version_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_APP_VERSION_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/app_version.hpp"
++#include "ores.compute.api/messaging/app_version_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/app_version_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/batch_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_BATCH_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/batch.hpp"
++#include "ores.compute.api/messaging/batch_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/batch_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/host_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_HOST_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/host.hpp"
++#include "ores.compute.api/messaging/host_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/host_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/result_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_RESULT_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/result.hpp"
++#include "ores.compute.api/messaging/result_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/result_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+--- a/projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
++++ b/projects/ores.compute/core/include/ores.compute.core/service/workunit_service.hpp
+@@ -26,6 +26,7 @@
+ #define ORES_COMPUTE_CORE_SERVICE_WORKUNIT_SERVICE_HPP
+ 
+ #include "ores.compute.api/domain/workunit.hpp"
++#include "ores.compute.api/messaging/workunit_protocol.hpp"
+ #include "ores.compute.core/export.hpp"
+ #include "ores.compute.core/repository/workunit_repository.hpp"
+ #include "ores.database/domain/context.hpp"
+
+would change: projects/ores.compute/core/src/messaging/app_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/app_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/app_registrar.cpp
+@@ -39,19 +39,41 @@
+                       std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<app_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_apps_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_app_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_apps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_apps(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_app_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_app(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_apps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_apps(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_app_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_app(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_apps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_apps(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_app_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_app(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_app_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_apps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_apps(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        list_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_app_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_app_version(std::move(msg));
+         }));
+     return subs;
+ }
+
+would change: projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/app_version_platform_registrar.cpp
+@@ -40,32 +40,40 @@
+     std::vector<ores::nats::service::subscription> subs;
+     auto h =
+         std::make_shared<app_version_platform_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_app_version_platforms_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+     subs.push_back(nats.queue_subscribe(
+-        get_app_version_platforms_by_app_version_request::nats_subject,
++        list_app_version_platforms_request::nats_subject,
+         queue_group,
+-        [h](ores::nats::message msg) { h->list_by_app_version(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_app_version_platform_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++        [h](ores::nats::message msg) { h->list_app_version_platforms(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        get_app_version_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_app_version_platform(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_app_version_platforms_request::nats_subject,
++        queue_group,
++        [h](ores::nats::message msg) { h->get_many_app_version_platforms(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        put_app_version_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_app_version_platform(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_app_version_platforms_request::nats_subject,
++        queue_group,
++        [h](ores::nats::message msg) { h->put_many_app_version_platforms(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        delete_app_version_platform_request::nats_subject,
++        queue_group,
++        [h](ores::nats::message msg) { h->delete_app_version_platform(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        delete_many_app_version_platforms_request::nats_subject,
++        queue_group,
++        [h](ores::nats::message msg) { h->delete_many_app_version_platforms(std::move(msg)); }));
+     subs.push_back(
+-        nats.queue_subscribe(delete_app_version_platform_request::nats_subject,
++        nats.queue_subscribe(list_by_app_version_id_app_version_platforms_request::nats_subject,
+                              queue_group,
+-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(
+-        count_app_version_platforms_by_app_version_request::nats_subject,
+-        queue_group,
+-        [h](ores::nats::message msg) { h->count_by_app_version(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(
+-        count_app_version_platforms_by_platform_request::nats_subject,
+-        queue_group,
+-        [h](ores::nats::message msg) { h->count_by_platform(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(
+-        replace_app_version_platforms_by_app_version_request::nats_subject,
+-        queue_group,
+-        [h](ores::nats::message msg) { h->replace_by_app_version(std::move(msg)); }));
++                             [h](ores::nats::message msg) {
++                                 h->list_by_app_version_id_app_version_platforms(std::move(msg));
++                             }));
+     return subs;
+ }
+ 
+
+would change: projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/app_version_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/app_version_registrar.cpp
+@@ -39,19 +39,41 @@
+                               std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<app_version_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_app_versions_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_app_version_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_app_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_app_version(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_app_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_app_version(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_app_versions(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_app_version(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_app_version_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_app_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        list_app_version_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_app_version_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_app_version_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_app_version_version(std::move(msg));
+         }));
+     return subs;
+ }
+
+would change: projects/ores.compute/core/src/messaging/batch_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/batch_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/batch_registrar.cpp
+@@ -39,19 +39,41 @@
+                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<batch_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_batches_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_batch_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_batches_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_batches(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_batch_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_batch(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_batches_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_batches(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_batch_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_batch(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_batches_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_batches(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_batch_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_batch(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_batch_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_batches_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_batches(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        list_batch_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_batch_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_batch_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_batch_version(std::move(msg));
+         }));
+     return subs;
+ }
+
+would change: projects/ores.compute/core/src/messaging/host_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/host_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/host_registrar.cpp
+@@ -39,19 +39,41 @@
+                        std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<host_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_hosts_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_host_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_hosts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_hosts(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_host_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_host(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_hosts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_hosts(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_host_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_host(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_hosts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_hosts(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_host_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_host(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_host_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_hosts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_hosts(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        list_host_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_host_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_host_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_host_version(std::move(msg));
+         }));
+     return subs;
+ }
+
+would change: projects/ores.compute/core/src/messaging/result_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/result_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/result_registrar.cpp
+@@ -39,24 +39,46 @@
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<result_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_results_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_result_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_results(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_result(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_results(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_result(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_results(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_result_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_result(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_result_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_results_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_results(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_results_by_workunit_id_request::nats_subject,
++        list_by_workunit_id_results_request::nats_subject,
+         queue_group,
+-        [h](ores::nats::message msg) { h->list_by_workunit_id(std::move(msg)); }));
++        [h](ores::nats::message msg) { h->list_by_workunit_id_results(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_result_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_result_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_result_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_result_version(std::move(msg));
++        }));
+     return subs;
+ }
+ 
+
+would change: projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+--- a/projects/ores.compute/core/src/messaging/workunit_registrar.cpp
++++ b/projects/ores.compute/core/src/messaging/workunit_registrar.cpp
+@@ -39,23 +39,45 @@
+                            std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+     std::vector<ores::nats::service::subscription> subs;
+     auto h = std::make_shared<workunit_handler>(nats, std::move(ctx), std::move(verifier));
+-    subs.push_back(nats.queue_subscribe(get_workunits_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+-    subs.push_back(nats.queue_subscribe(save_workunit_request::nats_subject,
+-                                        queue_group,
+-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_workunits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_workunits(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_workunit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_workunit(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_many_workunits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_many_workunits(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_workunit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_workunit(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        put_many_workunits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->put_many_workunits(std::move(msg));
++        }));
+     subs.push_back(nats.queue_subscribe(
+         delete_workunit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->remove(std::move(msg));
++            h->delete_workunit(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_workunit_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->history(std::move(msg));
++        delete_many_workunits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->delete_many_workunits(std::move(msg));
+         }));
+     subs.push_back(nats.queue_subscribe(
+-        get_workunits_by_batch_id_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+-            h->list_by_batch_id(std::move(msg));
++        list_by_batch_id_workunits_request::nats_subject,
++        queue_group,
++        [h](ores::nats::message msg) { h->list_by_batch_id_workunits(std::move(msg)); }));
++    subs.push_back(nats.queue_subscribe(
++        list_workunit_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->list_workunit_versions(std::move(msg));
++        }));
++    subs.push_back(nats.queue_subscribe(
++        get_workunit_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
++            h->get_workunit_version(std::move(msg));
+         }));
+     return subs;
+ }
+
+would change: projects/ores.compute/core/src/repository/app_repository.cpp
+--- a/projects/ores.compute/core/src/repository/app_repository.cpp
++++ b/projects/ores.compute/core/src/repository/app_repository.cpp
+@@ -29,6 +29,7 @@
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
+ #include "ores.database/service/tenant_context.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+--- a/projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
++++ b/projects/ores.compute/core/src/repository/app_version_platform_repository.cpp
+@@ -29,7 +29,10 @@
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
+ #include <boost/uuid/uuid_io.hpp>
++#include <cstddef>
++#include <optional>
+ #include <sqlgen/postgres.hpp>
++#include <stdexcept>
+ #include <unordered_map>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/app_version_repository.cpp
+--- a/projects/ores.compute/core/src/repository/app_version_repository.cpp
++++ b/projects/ores.compute/core/src/repository/app_version_repository.cpp
+@@ -29,6 +29,7 @@
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
+ #include "ores.database/service/tenant_context.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/batch_repository.cpp
+--- a/projects/ores.compute/core/src/repository/batch_repository.cpp
++++ b/projects/ores.compute/core/src/repository/batch_repository.cpp
+@@ -28,6 +28,7 @@
+ #include "ores.compute.core/repository/batch_mapper.hpp"
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/host_repository.cpp
+--- a/projects/ores.compute/core/src/repository/host_repository.cpp
++++ b/projects/ores.compute/core/src/repository/host_repository.cpp
+@@ -28,6 +28,7 @@
+ #include "ores.compute.core/repository/host_mapper.hpp"
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/result_repository.cpp
+--- a/projects/ores.compute/core/src/repository/result_repository.cpp
++++ b/projects/ores.compute/core/src/repository/result_repository.cpp
+@@ -28,6 +28,7 @@
+ #include "ores.compute.core/repository/result_mapper.hpp"
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/repository/workunit_repository.cpp
+--- a/projects/ores.compute/core/src/repository/workunit_repository.cpp
++++ b/projects/ores.compute/core/src/repository/workunit_repository.cpp
+@@ -28,6 +28,7 @@
+ #include "ores.compute.core/repository/workunit_mapper.hpp"
+ #include "ores.database/repository/bitemporal_operations.hpp"
+ #include "ores.database/repository/helpers.hpp"
++#include "ores.utility/domain/protocol.hpp"
+ #include <sqlgen/postgres.hpp>
+ 
+ namespace ores::compute::repository {
+
+would change: projects/ores.compute/core/src/service/app_service.cpp
+--- a/projects/ores.compute/core/src/service/app_service.cpp
++++ b/projects/ores.compute/core/src/service/app_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/app_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/src/service/app_version_platform_service.cpp
+--- a/projects/ores.compute/core/src/service/app_version_platform_service.cpp
++++ b/projects/ores.compute/core/src/service/app_version_platform_service.cpp
+@@ -25,8 +25,13 @@
+ #include "ores.compute.core/service/app_version_platform_service.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
+ #include <boost/uuid/uuid_io.hpp>
++#include <cstddef>
++#include <cstdint>
++#include <optional>
+ #include <stdexcept>
++#include <string>
+ #include <utility>
++#include <vector>
+ 
+ namespace ores::compute::service {
+ 
+
+would change: projects/ores.compute/core/src/service/app_version_service.cpp
+--- a/projects/ores.compute/core/src/service/app_version_service.cpp
++++ b/projects/ores.compute/core/src/service/app_version_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/app_version_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/src/service/batch_service.cpp
+--- a/projects/ores.compute/core/src/service/batch_service.cpp
++++ b/projects/ores.compute/core/src/service/batch_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/batch_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/src/service/host_service.cpp
+--- a/projects/ores.compute/core/src/service/host_service.cpp
++++ b/projects/ores.compute/core/src/service/host_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/host_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/src/service/result_service.cpp
+--- a/projects/ores.compute/core/src/service/result_service.cpp
++++ b/projects/ores.compute/core/src/service/result_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/result_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/src/service/workunit_service.cpp
+--- a/projects/ores.compute/core/src/service/workunit_service.cpp
++++ b/projects/ores.compute/core/src/service/workunit_service.cpp
+@@ -23,9 +23,16 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.core/service/workunit_service.hpp"
++#include "ores.platform/time/datetime.hpp"
+ #include "ores.service/messaging/handler_helpers.hpp"
++#include <algorithm>
+ #include <cstdint>
++#include <iterator>
++#include <optional>
+ #include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
+ 
+ using ores::service::messaging::stamp;
+ 
+
+would change: projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/app_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/app.hpp"
+ #include "ores.compute.api/domain/app_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/app_changed_event.hpp"
++#include "ores.compute.api/eventing/app_event.hpp"
+ #include "ores.compute.api/generators/app_generator.hpp"
++#include "ores.compute.api/messaging/app_protocol.hpp"
+ #include "ores.compute.core/repository/app_repository.hpp"
+ #include "ores.compute.core/service/app_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/app_version_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/app_version.hpp"
+ #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/app_version_changed_event.hpp"
++#include "ores.compute.api/eventing/app_version_event.hpp"
+ #include "ores.compute.api/generators/app_version_generator.hpp"
++#include "ores.compute.api/messaging/app_version_protocol.hpp"
+ #include "ores.compute.core/repository/app_version_repository.hpp"
+ #include "ores.compute.core/service/app_version_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/batch_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/batch.hpp"
+ #include "ores.compute.api/domain/batch_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/batch_changed_event.hpp"
++#include "ores.compute.api/eventing/batch_event.hpp"
+ #include "ores.compute.api/generators/batch_generator.hpp"
++#include "ores.compute.api/messaging/batch_protocol.hpp"
+ #include "ores.compute.core/repository/batch_repository.hpp"
+ #include "ores.compute.core/service/batch_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/host_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/host.hpp"
+ #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/host_changed_event.hpp"
++#include "ores.compute.api/eventing/host_event.hpp"
+ #include "ores.compute.api/generators/host_generator.hpp"
++#include "ores.compute.api/messaging/host_protocol.hpp"
+ #include "ores.compute.core/repository/host_repository.hpp"
+ #include "ores.compute.core/service/host_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/result_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/result.hpp"
+ #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/result_changed_event.hpp"
++#include "ores.compute.api/eventing/result_event.hpp"
+ #include "ores.compute.api/generators/result_generator.hpp"
++#include "ores.compute.api/messaging/result_protocol.hpp"
+ #include "ores.compute.core/repository/result_repository.hpp"
+ #include "ores.compute.core/service/result_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+--- a/projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
++++ b/projects/ores.compute/core/tests/workunit_eventing_integration_tests.cpp
+@@ -24,12 +24,14 @@
+  */
+ #include "ores.compute.api/domain/workunit.hpp"
+ #include "ores.compute.api/domain/workunit_json_io.hpp" // IWYU pragma: keep.
+-#include "ores.compute.api/eventing/workunit_changed_event.hpp"
++#include "ores.compute.api/eventing/workunit_event.hpp"
+ #include "ores.compute.api/generators/workunit_generator.hpp"
++#include "ores.compute.api/messaging/workunit_protocol.hpp"
+ #include "ores.compute.core/repository/workunit_repository.hpp"
+ #include "ores.compute.core/service/workunit_service.hpp"
+ #include "ores.database/domain/context.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.eventing.api/domain/entity_event.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.api/domain/event_traits.hpp"
+ #include "ores.eventing.api/service/event_bus.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+
+would change: projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/app_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/app_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/app_event_registrar.hpp"
+-#include "ores.compute.api/eventing/app_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/app_event.hpp"
++#include "ores.compute.api/messaging/app_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/app_version_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/app_version_event_registrar.hpp"
+-#include "ores.compute.api/eventing/app_version_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/app_version_event.hpp"
++#include "ores.compute.api/messaging/app_version_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/batch_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/batch_event_registrar.hpp"
+-#include "ores.compute.api/eventing/batch_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/batch_event.hpp"
++#include "ores.compute.api/messaging/batch_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/host_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/host_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/host_event_registrar.hpp"
+-#include "ores.compute.api/eventing/host_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/host_event.hpp"
++#include "ores.compute.api/messaging/host_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/result_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/result_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/result_event_registrar.hpp"
+-#include "ores.compute.api/eventing/result_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/result_event.hpp"
++#include "ores.compute.api/messaging/result_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+--- a/projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
++++ b/projects/ores.compute/service/src/messaging/workunit_event_registrar.cpp
+@@ -23,8 +23,9 @@
+  * To modify, update the template and regenerate.
+  */
+ #include "ores.compute.service/messaging/workunit_event_registrar.hpp"
+-#include "ores.compute.api/eventing/workunit_changed_event.hpp"
+-#include "ores.eventing.api/domain/entity_change_event.hpp"
++#include "ores.compute.api/eventing/workunit_event.hpp"
++#include "ores.compute.api/messaging/workunit_protocol.hpp"
++#include "ores.eventing.api/domain/entity_event_traits.hpp"
+ #include "ores.eventing.core/service/entity_event_publisher.hpp"
+ #include "ores.eventing.core/service/registrar.hpp"
+ 
+
+would change: projects/ores.sql/create/compute/compute_app_versions_create.sql
+--- a/projects/ores.sql/create/compute/compute_app_versions_create.sql
++++ b/projects/ores.sql/create/compute/compute_app_versions_create.sql
+@@ -98,7 +98,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_app_versions_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.app_version';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_wrapper_version text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_wrapper_version := OLD.wrapper_version;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_wrapper_version := NEW.wrapper_version;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('wrapper_version', changed_wrapper_version);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.app_version',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.sql/create/compute/compute_apps_create.sql
+--- a/projects/ores.sql/create/compute/compute_apps_create.sql
++++ b/projects/ores.sql/create/compute/compute_apps_create.sql
+@@ -88,7 +88,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_apps_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.app';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_name text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_name := OLD.name;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_name := NEW.name;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('name', changed_name);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.app',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.sql/create/compute/compute_batches_create.sql
+--- a/projects/ores.sql/create/compute/compute_batches_create.sql
++++ b/projects/ores.sql/create/compute/compute_batches_create.sql
+@@ -89,7 +89,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_batches_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.batch';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_external_ref text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_external_ref := OLD.external_ref;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_external_ref := NEW.external_ref;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('external_ref', changed_external_ref);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.batch',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.sql/create/compute/compute_hosts_create.sql
+--- a/projects/ores.sql/create/compute/compute_hosts_create.sql
++++ b/projects/ores.sql/create/compute/compute_hosts_create.sql
+@@ -94,7 +94,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_hosts_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.host';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_external_id text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_external_id := OLD.external_id;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_external_id := NEW.external_id;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('external_id', changed_external_id);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.host',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.sql/create/compute/compute_results_create.sql
+--- a/projects/ores.sql/create/compute/compute_results_create.sql
++++ b/projects/ores.sql/create/compute/compute_results_create.sql
+@@ -139,7 +139,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_results_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.result';
+-    change_timestamp timestamptz := NOW();
++    change_action text;
++    changed_version integer := 0;
+     changed_id uuid;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
++        change_action := 'deleted';
+         changed_id := OLD.id;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
+         changed_id := NEW.id;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('id', changed_id);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.result',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.sql/create/compute/compute_workunits_create.sql
+--- a/projects/ores.sql/create/compute/compute_workunits_create.sql
++++ b/projects/ores.sql/create/compute/compute_workunits_create.sql
+@@ -124,7 +124,17 @@
+     for update;
+ 
+     if found then
+-        if NEW.version != 0 and NEW.version != current_version then
++        -- The write states what it believes about the row, and the store is
++        -- what decides. Version zero means one thing: no current row exists.
++        -- So a create that collides with a live row is refused here, for every
++        -- client, rather than by a check each client has to remember.
++        if NEW.version = 0 then
++            if not ores_utility_version_replace_allowed_fn() then
++                raise exception
++                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
++                    using errcode = '23505';
++            end if;
++        elsif NEW.version != current_version then
+             raise exception 'Version conflict: expected version %, but current version is %',
+                 NEW.version, current_version
+                 using errcode = 'P0002';
+
+would change: projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+--- a/projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
++++ b/projects/ores.sql/create/compute/compute_workunits_notify_trigger_create.sql
+@@ -27,23 +27,46 @@
+ returns trigger as $$
+ declare
+     notification_payload jsonb;
+-    entity_name text := 'ores.compute.workunit';
+-    change_timestamp timestamptz := NOW();
+-    changed_id uuid;
++    change_action text;
++    changed_version integer := 0;
++    changed_input_uri text;
++    changed_key jsonb;
+     changed_tenant_id text;
+ begin
+     if TG_OP = 'DELETE' then
+-        changed_id := OLD.id;
++        change_action := 'deleted';
++        changed_input_uri := OLD.input_uri;
++        changed_version := OLD.version;
+         changed_tenant_id := OLD.tenant_id::text;
++    elsif TG_OP = 'UPDATE' then
++        -- A versioned table's update is the internal close of the current
++        -- row; the insert that follows it carries the change. Announcing
++        -- both would report one change twice, so the close announces
++        -- nothing.
++        return null;
+     else
+-        changed_id := NEW.id;
++        -- The first version of a row is a create; every later one is an
++        -- update, because the row it replaces was already there.
++        if NEW.version <= 1 then
++            change_action := 'created';
++        else
++            change_action := 'updated';
++        end if;
++        changed_version := NEW.version;
++        changed_input_uri := NEW.input_uri;
+         changed_tenant_id := NEW.tenant_id::text;
+     end if;
+ 
++    changed_key := jsonb_build_object('input_uri', changed_input_uri);
++
+     notification_payload := jsonb_build_object(
+-        'entity', entity_name,
+-        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+-        'entity_ids', jsonb_build_array(changed_id),
++        'event_id', gen_random_uuid()::text,
++        'entity', 'ores.compute.workunit',
++        'key', changed_key::text,
++        'action', change_action,
++        'version', changed_version,
++        'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
++        'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
+         'tenant_id', changed_tenant_id
+     );
+ 
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_protocol.ts
+@@ -23,50 +23,182 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { App } from '../domain/app.js';
+-
+-export interface GetAppsRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++
++export interface AppKey {
++    name: string;
++}
++
++export interface AppWrite {
++    id: string;
++    name: string;
++    description: string;
++}
++
++export interface AppChange {
++    write: AppWrite;
++    precondition: Precondition;
++}
++
++export interface AppRemoval {
++    key: AppKey;
++    precondition: Precondition;
++}
++
++export interface AppLookup {
++    key: AppKey;
++    app: App | null;
++}
++
++export interface AppEvent {
++    event_id: string;
++    key: AppKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface AppVersionKey {
++    app: AppKey;
++    version: number;
++}
++
++export interface AppVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListAppsRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetAppsResponse {
++    order: Order;
++}
++
++export interface ListAppsResponse {
++    result: Result;
+     apps: App[];
+-    total_available_count: number;
+-    success: boolean;
+-    message: string;
+-}
+-
+-export interface SaveAppRequest {
+-    data: App;
+-}
+-
+-export interface SaveAppResponse {
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_platform_protocol.ts
+@@ -23,92 +23,158 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { AppVersionPlatform } from '../domain/app_version_platform.js';
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++import type { Scope } from '../../../utility/protocol.js';
+ 
+-export interface GetAppVersionPlatformsRequest {
++export interface AppVersionPlatformKey {
++    app_version_id: string;
++    platform_id: string;
++}
++
++export interface AppVersionPlatformWrite {
++    app_version_id: string;
++    platform_id: string;
++    package_uri: string;
++    sha256: string;
++}
++
++export interface AppVersionPlatformChange {
++    write: AppVersionPlatformWrite;
++    precondition: Precondition;
++}
++
++export interface AppVersionPlatformRemoval {
++    key: AppVersionPlatformKey;
++    precondition: Precondition;
++}
++
++export interface AppVersionPlatformLookup {
++    key: AppVersionPlatformKey;
++    app_version_platform: AppVersionPlatform | null;
++}
++
++export interface AppVersionPlatformsFilter {
++    app_version_id: string | null;
++}
++
++export interface AppVersionPlatformEvent {
++    event_id: string;
++    key: AppVersionPlatformKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface ListAppVersionPlatformsRequest {
+     offset: number;
+     limit: number;
++    order: Order;
++    filter: AppVersionPlatformsFilter | null;
+ }
+ 
+-export interface GetAppVersionPlatformsResponse {
++export interface ListAppVersionPlatformsResponse {
++    result: Result;
+     app_version_platforms: AppVersionPlatform[];
+-    total_available_count: number;
+-    success: boolean;
+-    message: string;
++    total: number;
+ }
+ 
+-export interface GetAppVersionPlatformsByAppVersionRequest {
+-    app_version_id: string;
+-    offset: number;
+-    limit: number;
++export interface GetAppVersionPlatformRequest {
++    key: AppVersionPlatformKey;
+ }
+ 
+-export interface GetAppVersionPlatformsByAppVersionResponse {
+-    app_version_platforms: AppVersionPlatformView[];
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/app_version_protocol.ts
+@@ -23,50 +23,184 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { AppVersion } from '../domain/app_version.js';
+-
+-export interface GetAppVersionsRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++
++export interface AppVersionKey {
++    wrapper_version: string;
++}
++
++export interface AppVersionWrite {
++    id: string;
++    app_id: string;
++    wrapper_version: string;
++    engine_version: string;
++    min_ram_mb: number;
++}
++
++export interface AppVersionChange {
++    write: AppVersionWrite;
++    precondition: Precondition;
++}
++
++export interface AppVersionRemoval {
++    key: AppVersionKey;
++    precondition: Precondition;
++}
++
++export interface AppVersionLookup {
++    key: AppVersionKey;
++    app_version: AppVersion | null;
++}
++
++export interface AppVersionEvent {
++    event_id: string;
++    key: AppVersionKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface AppVersionVersionKey {
++    app_version: AppVersionKey;
++    version: number;
++}
++
++export interface AppVersionVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListAppVersionsRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetAppVersionsResponse {
++    order: Order;
++}
++
++export interface ListAppVersionsResponse {
++    result: Result;
+     app_versions: AppVersion[];
+-    total_available_count: number;
+-    success: boolean;
+-    message: string;
+-}
+-
+-export interface SaveAppVersionRequest {
+-    data: AppVersion;
+-}
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/batch_protocol.ts
+@@ -23,50 +23,182 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { Batch } from '../domain/batch.js';
+-
+-export interface GetBatchesRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++
++export interface BatchKey {
++    external_ref: string;
++}
++
++export interface BatchWrite {
++    id: string;
++    external_ref: string;
++    status: string;
++}
++
++export interface BatchChange {
++    write: BatchWrite;
++    precondition: Precondition;
++}
++
++export interface BatchRemoval {
++    key: BatchKey;
++    precondition: Precondition;
++}
++
++export interface BatchLookup {
++    key: BatchKey;
++    batch: Batch | null;
++}
++
++export interface BatchEvent {
++    event_id: string;
++    key: BatchKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface BatchVersionKey {
++    batch: BatchKey;
++    version: number;
++}
++
++export interface BatchVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListBatchesRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetBatchesResponse {
++    order: Order;
++}
++
++export interface ListBatchesResponse {
++    result: Result;
+     batches: Batch[];
+-    total_available_count: number;
+-    success: boolean;
+-    message: string;
+-}
+-
+-export interface SaveBatchRequest {
+-    data: Batch;
+-}
+-
+-export interface SaveBatchResponse {
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/host_protocol.ts
+@@ -23,50 +23,188 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { Host } from '../domain/host.js';
+-
+-export interface GetHostsRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++
++export interface HostKey {
++    external_id: string;
++}
++
++export interface HostWrite {
++    id: string;
++    external_id: string;
++    location: string;
++    cpu_count: number;
++    ram_mb: number;
++    gpu_type: string;
++    display_name: string;
++    last_rpc_time: string;
++    credit_total: number;
++}
++
++export interface HostChange {
++    write: HostWrite;
++    precondition: Precondition;
++}
++
++export interface HostRemoval {
++    key: HostKey;
++    precondition: Precondition;
++}
++
++export interface HostLookup {
++    key: HostKey;
++    host: Host | null;
++}
++
++export interface HostEvent {
++    event_id: string;
++    key: HostKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface HostVersionKey {
++    host: HostKey;
++    version: number;
++}
++
++export interface HostVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListHostsRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetHostsResponse {
++    order: Order;
++}
++
++export interface ListHostsResponse {
++    result: Result;
+     hosts: Host[];
+-    total_available_count: number;
+-    success: boolean;
+-    message: string;
+-}
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/result_protocol.ts
+@@ -23,64 +23,211 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { Result } from '../domain/result.js';
+-
+-export interface GetResultsRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++import type { Scope } from '../../../utility/protocol.js';
++
++export interface ResultKey {
++    id: string;
++}
++
++export interface ResultWrite {
++    id: string;
++    workunit_id: string;
++    host_id: string;
++    pgmq_msg_id: number;
++    server_state: number;
++    outcome: number;
++    output_uri: string;
++    error_message: string;
++    received_at: string;
++}
++
++export interface ResultChange {
++    write: ResultWrite;
++    precondition: Precondition;
++}
++
++export interface ResultRemoval {
++    key: ResultKey;
++    precondition: Precondition;
++}
++
++export interface ResultLookup {
++    key: ResultKey;
++    result: Result | null;
++}
++
++export interface ResultsFilter {
++    workunit_id: string | null;
++}
++
++export interface ResultEvent {
++    event_id: string;
++    key: ResultKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface ResultVersionKey {
++    result: ResultKey;
++    version: number;
++}
++
++export interface ResultVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListResultsRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetResultsResponse {
++    order: Order;
++    filter: ResultsFilter | null;
++}
++
++export interface ListResultsResponse {
+
+would change: projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+--- a/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/compute/protocol/workunit_protocol.ts
+@@ -23,64 +23,210 @@
+  * To modify, update the template and regenerate.
+  */
+ import type { Workunit } from '../domain/workunit.js';
+-
+-export interface GetWorkunitsRequest {
++import type { ChangeIntent } from '../../../utility/protocol.js';
++import type { Order } from '../../../utility/protocol.js';
++import type { Precondition } from '../../../utility/protocol.js';
++import type { Result } from '../../../utility/protocol.js';
++import type { Scope } from '../../../utility/protocol.js';
++
++export interface WorkunitKey {
++    input_uri: string;
++}
++
++export interface WorkunitWrite {
++    id: string;
++    batch_id: string;
++    app_version_id: string;
++    input_uri: string;
++    config_uri: string;
++    priority: number;
++    target_redundancy: number;
++    canonical_result_id: string;
++}
++
++export interface WorkunitChange {
++    write: WorkunitWrite;
++    precondition: Precondition;
++}
++
++export interface WorkunitRemoval {
++    key: WorkunitKey;
++    precondition: Precondition;
++}
++
++export interface WorkunitLookup {
++    key: WorkunitKey;
++    workunit: Workunit | null;
++}
++
++export interface WorkunitsFilter {
++    batch_id: string | null;
++}
++
++export interface WorkunitEvent {
++    event_id: string;
++    key: WorkunitKey;
++    action: string;
++    version: number;
++    occurred_at: string;
++    correlation_id: string | null;
++}
++
++export interface WorkunitVersionKey {
++    workunit: WorkunitKey;
++    version: number;
++}
++
++export interface WorkunitVersionsFilter {
++    version: number | null;
++    from_version: number | null;
++    to_version: number | null;
++}
++
++export interface ListWorkunitsRequest {
+     offset: number;
+     limit: number;
+-}
+-
+-export interface GetWorkunitsResponse {
++    order: Order;
++    filter: WorkunitsFilter | null;
++}
++
++export interface ListWorkunitsResponse {
++    result: Result;
+
+would create: doc/recipes/shell/app_version_platforms/app_version_platform.org
+
+would create: doc/recipes/shell/app_versions/app_version.org
+
+would create: doc/recipes/shell/apps/app.org
+
+would create: doc/recipes/shell/batches/batch.org
+
+would create: doc/recipes/shell/hosts/host.org
+
+would create: doc/recipes/shell/results/result.org
+
+would create: doc/recipes/shell/workunits/workunit.org
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/app_event.hpp
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/app_version_event.hpp
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/batch_event.hpp
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/host_event.hpp
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/result_event.hpp
+
+would create: projects/ores.compute/api/include/ores.compute.api/eventing/workunit_event.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/app_version_platform_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/batch_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/host_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/result_commands.hpp
+
+would create: projects/ores.shell/compute/include/ores.shell/app/commands/compute/workunit_commands.hpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/app_version_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/app_version_platform_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/batch_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/host_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/result_commands.cpp
+
+would create: projects/ores.shell/compute/src/app/commands/compute/workunit_commands.cpp
+
+would create: projects/ores.shell/compute/tests/app_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/app_version_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/app_version_platform_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/batch_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/host_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/result_commands_tests.cpp
+
+would create: projects/ores.shell/compute/tests/workunit_commands_tests.cpp
+
+88 file(s) would change, 34 file(s) would be created (122 file(s) in total).
+The tree does not match its models. Run without --dry-run to apply the change, then commit the result.

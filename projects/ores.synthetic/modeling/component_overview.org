@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 96AB808A-DF49-410F-8A90-D1065A3716AC
+:END:
+#+title: ores.synthetic
+#+description: Synthetic market data generation: generation configs and their sub-configs, quant process parameter definitions, and the NATS service that publishes synthetic market data ticks.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :synthetic:component:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+name: synthetic
+#+full_name: ores.synthetic
+#+brief: Synthetic market data generation component
+#+component_kind: composite
+#+parts: api core service
+
+* Summary
+
+=ores.synthetic= generates synthetic market data. A generation config and
+its sub-configs (FX spot, IR curve, market data) are persisted entities,
+and the quant process parameter definitions supply the vocabulary those
+configs instantiate. The =.api= part carries the domain types, the
+generators, the feed implementations and the NATS protocol. The =.core=
+part owns the repositories, the CRUD services, the NATS handlers and the
+history providers. The =.service= part is the runnable host that wires
+them and runs the feeds. The component is structured as a composite with
+three sub-components and holds no code of its own.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]] | Domain types, feeds, generators, and NATS protocol schemas. |
+| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] | Repositories, services, NATS handlers, and history providers. |
+| [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] | NATS service entrypoint that wires the component and runs the feeds. |
+
+* See also
+
+- [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — the NATS subject and message catalogue.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the producer and consumer split this component serves.

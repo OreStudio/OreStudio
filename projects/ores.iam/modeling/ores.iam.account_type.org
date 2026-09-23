@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.iam.account_type
 #+description: Codegen entity model for the iam =account_type= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

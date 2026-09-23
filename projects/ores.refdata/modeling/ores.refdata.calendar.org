@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: C09DF2B2-0E14-4742-8BAC-5D5842069580
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.calendar
 #+description: ORE/QuantLib calendar reference data: a validated enumeration of business-day/holiday calendars, central-bank meeting calendars, and other named date collections.

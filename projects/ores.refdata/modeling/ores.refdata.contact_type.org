@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: EB3BE18B-A99C-464E-992B-C98AC421A7B9
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.contact_type
 #+description: Codegen entity model for the refdata =contact_type= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

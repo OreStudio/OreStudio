@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 3C284FE3-1DFC-46BA-A242-33F9A9A634C1
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.ledger_feed_type
 #+description: Codegen entity model for the refdata =ledger_feed_type= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

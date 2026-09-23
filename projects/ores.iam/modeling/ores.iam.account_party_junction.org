@@ -3,7 +3,6 @@
 :ores.cpp.nats-sub-registrar.enabled: nil
 :ores.cpp.service.enabled: nil
 :ores.cpp.shell-command.enabled: true
-:ores.ts.web.enabled: true
 :ID: D96E6889-A53B-41AF-A7F5-A3497A188BA0
 :END:
 #+title: ores.iam.account_party

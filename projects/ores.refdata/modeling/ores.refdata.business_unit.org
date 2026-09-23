@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: ADC87ED3-153E-4FD9-BB87-DC9E184DA315
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.business_unit
 #+description: Codegen entity model for the refdata =business_unit= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

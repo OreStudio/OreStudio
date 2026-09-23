@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: B2497625-247E-4B80-A5D2-926A453FB338
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.party_contact_information
 #+description: Codegen entity model for the refdata =party_contact_information= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

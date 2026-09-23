@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 1B88215B-1FE0-4CAF-B6AB-53F471963CA6
-:ores.ts.web.enabled: true
 :ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.currency_pair_convention

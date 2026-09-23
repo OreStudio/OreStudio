@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: F68E18C5-A704-40E8-A37B-4B8F5DCB5089
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.swap_convention
 #+description: Codegen entity model for the refdata =swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

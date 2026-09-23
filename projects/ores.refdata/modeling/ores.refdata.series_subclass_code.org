@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 465F0207-EAFD-46EC-851B-6912F86DC2D0
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.series_subclass_code
 #+description: Codegen entity model for the refdata series_subclass_code table: the fine-grained market series subclass taxonomy (spot, forward, volatility, yield, basis, fra, xccy, spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation).

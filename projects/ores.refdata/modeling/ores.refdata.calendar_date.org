@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 1DC67FAD-7543-4E63-A91D-9EE878A2EE8D
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.calendar_date
 #+description: Codegen junction model for calendar_dates -- the materialised, DQ-published output of instantiating a calendar template's rules/exceptions over a date range.

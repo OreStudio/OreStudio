@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: B72547F3-83B5-4F83-AA65-BBE16C191089
-:ores.ts.web.enabled: true
 :END:
 #+title: ores.refdata.overnight_index_convention
 #+description: Codegen entity model for the refdata =overnight_index_convention= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.

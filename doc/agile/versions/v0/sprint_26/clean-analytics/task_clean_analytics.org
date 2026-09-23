@@ -276,6 +276,22 @@ is left unverified by that: the regeneration identity (V06), the build
 (V01), every codegen gate (V05) and the database bring-up (V03) all pass
 on the real artifacts.
 
+** Rebases and re-verification
+
+The branch was cut from =main= at 8d2565db07. =main= then took PR #2138
+(the Qt remnants, which rewrites the same four analytics models) and PR
+#2140 (which deletes =ores.cli=), so the branch was rebased onto
+388a90445f. Two conflicts resolved: the model Presentation drawers keep
+this pass's two keys, and the two deleted =ores.cli= file lists stay
+deleted.
+
+Everything was re-verified on the new base. =check_component_drift.py
+--all= reports no drift, the CMake file lists, protocol twin coverage,
+handler permissions, populate references, recipe inventory and model
+drift are all clean, and the codegen suite passes (523; the count fell
+with the CLI component's tests). The whole-tree build follows the same
+rebase.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -28,9 +28,9 @@ ores.compute passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] |
-| Now          | Section 1 recorded. The component regenerates and its five libraries build. |
-| Waiting on   | Nothing. |
-| Next         | Work section 2, Models, and the shell scaffold S01 needs. |
+| Now          | Five codegen defects fixed with tests. The component regenerates byte-identically and its libraries and tests build. |
+| Waiting on   | The shell consumer migration, which blocks the whole-tree build. |
+| Next         | Migrate =compute_commands.cpp=, then build the shell component scaffold S01 needs. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -65,7 +65,7 @@ record each item's result in the table below.
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
 | M09  | Partial | The five codegen defects are fixed, and =result= no longer declares the audit column =modified_by= as its key. The presentation drawer remains in all six entity models. |
-| V01  | Partial | The component's five libraries build. The shell units are not wired, and the whole-tree build and the component's tests are not run yet. |
+| V01  | Blocked | The whole tree builds to 76 percent. The compute libraries and tests and the TypeScript package build. The one failure is the shell consumer on the retired protocol, below. |
 
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
@@ -122,6 +122,22 @@ which take a uuid where they took a string. Six call sites in
 With all of that, the component regenerates and all five of its libraries
 build. The regeneration was reverted once, before the fixes, because a
 commit that does not build is not a verifiable unit.
+
+** The shell consumer is on the retired protocol
+
+=projects/ores.shell/application/src/app/commands/compute_commands.cpp=
+hand-writes a compute command family against the pre-drift protocol, and
+the regenerated protocol retired every type it names. The compiler asks
+for =get_apps_request= to become =list_apps_request=,
+=get_app_versions_request= to become =list_app_versions_request=,
+=get_app_version_platforms_by_app_version_request= to become
+=list_app_version_platforms_by_app_version_id_request=,
+=get_batches_request= to become =list_batches_request=,
+=get_workunits_request= to become =list_workunits_request=,
+=get_results_request= to become =list_results_request=, and
+=resp->success= to become the result envelope. P05 requires this consumer
+to follow the protocol in the same piece of work, and S01 deletes the half
+the generated units supersede.
 
 ** B03 classification of the 69 hand-written C++ files
 

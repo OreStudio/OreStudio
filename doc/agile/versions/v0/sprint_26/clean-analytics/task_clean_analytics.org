@@ -82,7 +82,7 @@ record each item's result in the table below.
 | G02  | Pass. No generatable file was hand-written; the four superseded =*_changed_event.hpp= headers are deleted. | commit a74ebddd1e; B03 |
 | G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
 | G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
-| G05  | Not applicable this pass. No generator defect was found. | — |
+| G05  | Pass. One generator defect found and fixed at source: =key_finders= deduplicated a legacy finder against the declared key by column alone, so the repository dropped the read the service calls. Fixed in =org_loader.py= with a regression test. | commit bb7d9f5890; =test_org_loader_keys.py= |
 | G06  | Pass. Every component's two file lists regenerate clean. | =regenerate_cmake_component_files.py --all --check= (exit 0) |
 | W01  | Pass. The core registrar composes the generated =*_history_provider= family; the service composes the generated event mappings through the new =event_registrar= aggregate. No unwired family remains. | commit a74ebddd1e; =registrar.cpp=, =event_registrar.cpp= |
 | W02  | Pass. Every permission the analytics handlers check is seeded, and the =AnalyticsService= role holds =analytics::*=. | =check_handler_permissions.py=; =iam_roles_populate.sql= |
@@ -93,12 +93,12 @@ record each item's result in the table below.
 | H01  | Pass with recorded findings. | Audit note below |
 | H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
 | H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
-| V01  | Pending. | =compass build= |
-| V02  | Pending. | =compass test run= |
-| V03  | Pending. | =compass db recreate -y -k=; =compass services start= |
+| V01  | Pass. The whole tree builds, the shell adapter part and =ores.shell.exe= included. | =compass build= (exit 0) |
+| V02  | Codegen suite passes: 537 tests. The component suites wait on the fleet. | =pytest projects/ores.codegen/tests= (537 passed); =compass test run= |
+| V03  | In progress. The database recreates from scratch; the populate layer is running. | =compass db recreate -y -k= |
 | V04  | Pending. | recipe run log |
-| V05  | Pending. | each check script |
-| V06  | In progress. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=. | =component_registry.py=; =check_component_drift.py --all= |
+| V05  | Pass. component drift, model drift, protocol twin coverage (24 headers, 2 components), handler permissions (2 components, 152 codes), populate references, recipe inventory and the CMake source lists are all clean. | each check script, exit 0 |
+| V06  | Pass. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= reports no drift. | =component_registry.py=; =check_component_drift.py --all= (exit 0) |
 
 * Notes
 
@@ -225,6 +225,24 @@ core registrar. Each explains a non-obvious why: why the aggregate is the
 one hand-maintained call site, and why the subscription vector is held for
 the run. No comment restates code, narrates an edit, or trails a line.
 Generated files keep their template comments.
+
+** G05 generator defect
+
+The first build failed on
+=ores.analytics.core/service/pricing_model_config_service.cpp=: it called
+=repo.read_latest_by_name=, which the generated repository never declared.
+Root cause: =key_finders= in =org_loader.py= deduplicated the legacy
+=service_find_by_code_column= finder against the declared-key finder by
+column alone. The two are one method only when the suffix agrees, because
+the method is spelled for its suffix; the service resolves a caller's key
+through the declared-key read, so the two differ exactly when the legacy
+column is the declared key and the legacy method keeps the name =code=.
+The fix compares column and suffix together. An entity whose key is
+=code= stays byte-identical, which keeps iam's tree unchanged. The
+regression test is in =test_org_loader_keys.py=.
+
+The build then completed clean, and =check_component_drift.py --all=
+reports no drift.
 
 * Test Scenarios
 

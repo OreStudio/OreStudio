@@ -65,7 +65,8 @@ record each item's result in the table below.
 | G01  | Pass    | Regeneration is byte-clean and the component builds. =compass build ores.compute.api.lib ores.compute.core.lib ores.compute.service.lib ores.compute.wrapper.lib ores.compute.client.lib= exits 0. =evidence/g01_regeneration_run4.txt=. |
 | G05  | Pass    | Five generator defects, all in =org_loader.py=, fixed at source with eleven cases in =projects/ores.codegen/tests/test_protocol_name_collisions.py=. Details in Notes. |
 | M09  | Partial | The five codegen defects are fixed, and =result= no longer declares the audit column =modified_by= as its key. The presentation drawer remains in all six entity models. |
-| V01  | Blocked | The whole tree builds to 76 percent. The compute libraries and tests and the TypeScript package build. The one failure is the shell consumer on the retired protocol, below. |
+| V01  | Blocked | The whole tree builds to 76 percent. The compute libraries and tests, the TypeScript package and the new shell adapter part build. The one failure is the shell consumer on the retired protocol, below. |
+| S01  | Partial | The seven generated command units now have a component and build, with their tests. They are not registered in the REPL yet, and the hand-written commands they supersede are not deleted yet. |
 
 Items not listed are not yet worked. Sections 2 to 8 are open.
 
@@ -123,21 +124,41 @@ With all of that, the component regenerates and all five of its libraries
 build. The regeneration was reverted once, before the fixes, because a
 commit that does not build is not a verifiable unit.
 
-** The shell consumer is on the retired protocol
+** The shell consumer migration recipe
 
-=projects/ores.shell/application/src/app/commands/compute_commands.cpp=
-hand-writes a compute command family against the pre-drift protocol, and
-the regenerated protocol retired every type it names. The compiler asks
-for =get_apps_request= to become =list_apps_request=,
-=get_app_versions_request= to become =list_app_versions_request=,
-=get_app_version_platforms_by_app_version_request= to become
-=list_app_version_platforms_by_app_version_id_request=,
-=get_batches_request= to become =list_batches_request=,
-=get_workunits_request= to become =list_workunits_request=,
-=get_results_request= to become =list_results_request=, and
-=resp->success= to become the result envelope. P05 requires this consumer
-to follow the protocol in the same piece of work, and S01 deletes the half
-the generated units supersede.
+=compute_commands.cpp= needs three kinds of edit.
+
+1. Rename the retired request types. =get_apps_request= becomes
+   =list_apps_request=, and the same for =app_versions=, =hosts=,
+   =batches=, =workunits= and =results=.
+   =get_app_version_platforms_by_app_version_request= becomes
+   =list_app_version_platforms_by_app_version_id_request=.
+   =save_app_request=, =save_app_version_request=, =save_batch_request=
+   and =save_workunit_request= become their =put_= counterparts.
+2. Read the outcome from the envelope. The retired responses carried
+   =success= and =message=; the canonical response carries =result= of
+   type =ores::utility::domain::result=. So =!resp->success= becomes
+   =resp->result.outcome != ores::utility::domain::outcome::ok=, and
+   =resp->message= becomes =resp->result.message=.
+3. Reshape the writes. The retired save request wrapped the domain object
+   in a =data= member with a =from= helper. The canonical put request
+   carries a =change= record, which is a write plus a precondition, and an
+   =intent=. The generated =apps add= unit in
+   =projects/ores.shell/compute/src/app/commands/compute/app_commands.cpp=
+   builds exactly that, so the migration follows it.
+
+The =replace_app_version_platforms_by_app_version= operation is retired
+with no replacement, so =publish_package= composes its writes and
+removals, or drops the replace step.
+
+The generated units are already built, so the rest of S01 is to register
+them in =repl.cpp=, link =ores.shell.compute.lib= into
+=ores.shell.application=, and delete the commands they supersede:
+=list-apps=, =list-app-versions=, =list-hosts=, =list-batches=,
+=list-workunits=, =list-results=, =add-batch= and =delete-host=.
+=publish-package=, =dispatch-batch=, =list-platforms=, =grid-stats=,
+=download-input= and =download-output= stay, because no generated unit
+covers them.
 
 ** B03 classification of the 69 hand-written C++ files
 

@@ -73,6 +73,15 @@ const BOOT_TIMEOUT_MS = 90000
 const require = createRequire(resolve(REPO, 'projects', 'ores.web', 'package.json'))
 const { chromium } = require('playwright')
 
+/* The tree under test. The default is the harness's own repository; another work
+ * tree root replays the checks against whatever sprint that tree has on disk. */
+function resolveTree() {
+  const explicit = process.env['KANBAN_VERIFY_TREE']
+  return explicit !== undefined && explicit !== '' ? resolve(explicit) : REPO
+}
+
+const TREE = resolveTree()
+
 const assertions = []
 const measurements = {}
 const screenshots = []
@@ -118,6 +127,83 @@ async function allocatePort() {
   return port
 }
 
+const CLOSED_STATES = { DONE: true, ABANDONED: true }
+const columnIdOf = (story) => (story.state === 'DISCOVERED' ? 'BACKLOG' : story.state)
+const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`
+
+function dayNumber(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ''))
+  return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null
+}
+
+/* The board's own filter, mirrored from lib/client.js so a search can be checked
+ * against the stories the payload says should survive it. */
+function matchesQuery(story, query) {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return true
+  const fields = [story.title, story.id, story.epic, story.environment, ...(story.branches ?? [])]
+  for (const task of story.tasks ?? []) fields.push(task.title, task.environment)
+  return fields.some((field) => String(field ?? '').toLowerCase().includes(needle))
+}
+
+/* Every expectation the harness holds about the board comes from here, so a run
+ * passes for whatever sprint the repository is on rather than for one sprint's
+ * numbers. */
+function deriveExpectations(payload) {
+  const tree = payload?.tree ?? {}
+  const sprint = payload?.sprint ?? {}
+  const stories = payload?.stories ?? []
+  const counts = payload?.counts ?? {}
+  const columns = payload?.columns ?? []
+  const epics = payload?.filters?.epics ?? []
+  const currentStory = stories.filter((story) => story.id === tree.currentStoryId)[0] ?? null
+  const currentTask = currentStory
+    ? currentStory.tasks.filter((task) => task.id === tree.currentTaskId)[0] ?? currentStory.tasks[0] ?? null
+    : null
+
+  const start = dayNumber(sprint.startDate)
+  const end = dayNumber(sprint.endDate)
+  const today = dayNumber(new Date().toISOString().slice(0, 10))
+  const dayOfSprint = start === null || today === null ? null : Math.round((today - start) / 86400000) + 1
+  const totalDays = start === null || end === null ? null : Math.round((end - start) / 86400000) + 1
+
+  const epicCounts = new Map()
+  for (const story of stories) epicCounts.set(story.epic, (epicCounts.get(story.epic) ?? 0) + 1)
+  const columnCounts = columns.map((column) => ({
+    id: column.id,
+    title: column.title,
+    cards: stories.filter((story) => columnIdOf(story) === column.id).length,
+    sentCount: column.count,
+  }))
+  const tasksTotal = stories.reduce((sum, story) => sum + story.progress.total, 0)
+  const tasksDone = stories.reduce((sum, story) => sum + story.progress.done, 0)
+  const tileValues = {
+    stories: String(counts.stories),
+    'in-flight': String(stories.filter((story) => story.state === 'STARTED').length),
+    blocked: String(stories.filter((story) => story.state === 'BLOCKED').length),
+    'tasks-done': `${tasksDone}/${tasksTotal}`,
+  }
+  /* The epics a chip can narrow the board to: the ones that do not cover every
+   * story. A sprint whose one epic is on every story has nothing to filter. */
+  const filteringEpic = epics.filter((name) => (epicCounts.get(name) ?? 0) < stories.length)[0] ?? null
+  const searchQuery = currentTask ? currentTask.title : currentStory ? currentStory.title : ''
+  const searchIds = stories.filter((story) => matchesQuery(story, searchQuery)).map((story) => story.id).sort()
+
+  return {
+    tree, sprint, stories, counts, columns, epics, currentStory, currentTask,
+    dayOfSprint, totalDays, epicCounts, columnCounts, tileValues,
+    cardFaceBranchNames: [...new Set(stories.flatMap((story) => story.branches ?? []))],
+    cardPrNumbers: [...new Set(stories.flatMap((story) => story.prs ?? []))],
+    filteringEpic,
+    filteringEpicCount: filteringEpic === null ? null : epicCounts.get(filteringEpic),
+    searchQuery,
+    searchIds,
+    ageLine: currentStory === null || CLOSED_STATES[currentStory.state]
+      ? ''
+      : 'open ' + Math.max(0, Math.floor((Date.now() - Date.parse(currentStory.created)) / 86400000)) + 'd',
+  }
+}
+
 function bootServer(port) {
   const fd = openSync(SERVER_LOG, 'w')
   /* Started outside the repository on purpose: a server whose working directory
@@ -131,36 +217,63 @@ function bootServer(port) {
   return child
 }
 
-/* The sidebar lists the sessions of the active workspace alone, and this scratch
- * home is shared with other work, so the active workspace is often not ours.
- * Workspace rows are treeitems too, and a session row is the one that follows
- * its workspace row. */
+/* The sidebar lists the sessions of the active workspace alone, and the DSH home
+ * is shared with other work, so the active workspace is often not ours. Workspace
+ * rows are treeitems too; only a session row carries a relative-time badge, and
+ * the sessions of a workspace follow its "New Session" row. */
 async function openSession(page, label) {
   const title = 'ORE Studio: ' + label.split('_').filter(Boolean)
     .map((word) => word[0].toUpperCase() + word.slice(1)).join(' ')
   const known = () => page.getByText('DSH plugin experiments', { exact: false }).first()
-  if (await known().count() > 0) {
+  const openKnown = async (detail) => {
     await known().click()
-    return { opened: true, detail: 'DSH plugin experiments' }
+    return { opened: true, detail }
   }
-  const workspace = page.getByText(title, { exact: true }).first()
-  if (await workspace.count() > 0) {
-    await workspace.click()
-    await page.waitForTimeout(2500)
-  }
-  if (await known().count() > 0) {
-    await known().click()
-    return { opened: true, detail: `DSH plugin experiments (workspace ${title})` }
-  }
+  if (await known().count() > 0) return openKnown('DSH plugin experiments')
   const rows = page.locator('[role="treeitem"]')
-  const texts = (await rows.allInnerTexts().catch(() => [])).map((text) => text.replace(/\s+/g, ' ').trim())
-  const workspaceAt = texts.findIndex((text) => text === title)
-  const sessionAt = workspaceAt >= 0 ? workspaceAt + 1 : texts.findIndex((text) => / \d+ ?(min|h|d)$/.test(text))
-  if (sessionAt <= 0 || sessionAt >= texts.length || texts[sessionAt] === 'New Session') {
-    return { opened: false, detail: `no session row under ${title}; rows: ${texts.join(' | ').slice(0, 200)}` }
+  const readRows = async () => (await rows.allInnerTexts().catch(() => [])).map((text) => text.replace(/\s+/g, ' ').trim())
+  const isWorkspaceRow = (text) => text.startsWith('ORE Studio: ')
+  const sessionRowsBetween = (texts, from, to) => texts
+    .map((text, index) => ({ text, index }))
+    .filter((row) => row.index > from && row.index < to && row.text !== 'New Session' && !isWorkspaceRow(row.text))
+  /* A workspace row expands its own session list. Clicking the label can land on
+   * a child slot instead, so the row element itself is clicked, and again in the
+   * DOM when that left the row collapsed. */
+  const sessionsOf = async (target) => {
+    const texts = await readRows()
+    const workspaceAt = texts.findIndex((text) => text === target)
+    if (workspaceAt >= 0) {
+      let end = texts.length
+      for (let index = workspaceAt + 1; index < texts.length; index += 1) {
+        if (isWorkspaceRow(texts[index])) { end = index; break }
+      }
+      const found = sessionRowsBetween(texts, workspaceAt, end)
+      if (found.length > 0) return found
+    }
+    let lastWorkspaceAt = -1
+    for (let index = texts.length - 1; index >= 0; index -= 1) {
+      if (isWorkspaceRow(texts[index])) { lastWorkspaceAt = index; break }
+    }
+    return sessionRowsBetween(texts, lastWorkspaceAt, texts.length)
   }
-  await rows.nth(sessionAt).click()
-  return { opened: true, detail: `${texts[sessionAt]} (workspace ${title})` }
+  const title4 = title
+  const workspaceAt = (await readRows()).findIndex((text) => text === title4)
+  if (workspaceAt >= 0) {
+    await rows.nth(workspaceAt).click()
+    await page.waitForTimeout(2000)
+  }
+  if (await known().count() > 0) return openKnown(`DSH plugin experiments (workspace ${title})`)
+  let candidates = await sessionsOf(title)
+  if (candidates.length === 0 && workspaceAt >= 0) {
+    await page.evaluate((index) => document.querySelectorAll('[role="treeitem"]')[index]?.click(), workspaceAt)
+    await page.waitForTimeout(2000)
+    candidates = await sessionsOf(title)
+  }
+  if (candidates.length === 0) {
+    return { opened: false, detail: `no session row under ${title}; rows: ${(await readRows()).join(' | ').slice(0, 240)}` }
+  }
+  await rows.nth(candidates[0].index).click()
+  return { opened: true, detail: `${candidates[0].text} (workspace ${title})` }
 }
 
 /* The bound port is a claim until the boot log confirms it. A stale server on a
@@ -186,8 +299,8 @@ async function confirmBootUrl(child, port) {
   return { url: '', reason: `no "dsh web:" line in ${SERVER_LOG} after ${BOOT_TIMEOUT_MS / 1000}s` }
 }
 
-function nonBareWorkTreeLabels() {
-  const porcelain = execFileSync('git', ['-C', REPO, 'worktree', 'list', '--porcelain'], { encoding: 'utf8' })
+function nonBareWorkTreeLabels(tree) {
+  const porcelain = execFileSync('git', ['-C', tree, 'worktree', 'list', '--porcelain'], { encoding: 'utf8' })
   return porcelain.split('\n\n').map((block) => block.trim()).filter(Boolean)
     .filter((block) => !/^bare$/m.test(block))
     .map((block) => basename(/^worktree (.+)$/m.exec(block)[1]).replace(/^ores_dev_/, ''))
@@ -221,10 +334,10 @@ async function fetchState(origin, query) {
  * difference between a board for this session and a board for the server's
  * working directory. The server runs outside the repository, so `process.cwd()`
  * cannot answer, and one rung is asserted to fail. */
-async function checkResolutionLadder(origin) {
+async function checkResolutionLadder(origin, tree) {
   heading('2. the work-tree resolution ladder')
-  const withCwd = await fetchState(origin, `cwd=${encodeURIComponent(REPO)}`)
-  const bogusWithCwd = await fetchState(origin, `session=bogus&cwd=${encodeURIComponent(REPO)}`)
+  const withCwd = await fetchState(origin, `cwd=${encodeURIComponent(tree)}`)
+  const bogusWithCwd = await fetchState(origin, `session=bogus&cwd=${encodeURIComponent(tree)}`)
   const bogusAlone = await fetchState(origin, 'session=bogus')
   const bare = await fetchState(origin, '')
   const tmpCwd = await fetchState(origin, `cwd=/tmp`)
@@ -259,7 +372,7 @@ async function checkResolutionLadder(origin) {
   return withCwd
 }
 
-async function checkPayload(origin, repoFetch) {
+async function checkPayload(origin, repoFetch, tree) {
   heading('1. host payload against CONTRACT.md')
   const payload = repoFetch.json
 
@@ -279,21 +392,35 @@ async function checkPayload(origin, repoFetch) {
   check('host', 'the five canonical columns in table order, ABANDONED included', columnIds === COLUMN_IDS, columnIds)
 
   const sprint = payload.sprint ?? {}
+  const expected = deriveExpectations(payload)
   check('host', 'sprint.dayOfSprint is a number', typeof sprint.dayOfSprint === 'number', String(sprint.dayOfSprint))
-  check('host', 'sprint.dayOfSprint is not clamped to totalDays',
-    typeof sprint.totalDays === 'number' && sprint.dayOfSprint > sprint.totalDays,
-    `day ${sprint.dayOfSprint} of ${sprint.totalDays}`)
+  check('host', 'sprint.dayOfSprint is today minus startDate plus one',
+    sprint.dayOfSprint === expected.dayOfSprint,
+    `day ${sprint.dayOfSprint}, startDate ${sprint.startDate}, today ${new Date().toISOString().slice(0, 10)}`)
+  check('host', 'sprint.totalDays is endDate minus startDate plus one',
+    sprint.totalDays === expected.totalDays,
+    `total ${sprint.totalDays}, endDate ${sprint.endDate}`)
 
   const epics = payload.filters?.epics
-  check('host', 'filters.epics is a non-empty array', Array.isArray(epics) && epics.length > 0,
+  check('host', 'filters.epics is an array of non-empty epic names',
+    Array.isArray(epics) && epics.every((name) => typeof name === 'string' && name.trim() !== '')
+    && (epics.length > 0 || expected.stories.every((story) => story.epic === '')),
     Array.isArray(epics) ? epics.join(' ') : String(epics))
+
+  check('host', 'the column counts add up to the stories sent',
+    expected.columnCounts.reduce((sum, column) => sum + column.sentCount, 0) === expected.stories.length,
+    `${expected.columnCounts.map((column) => column.sentCount).join('+')} vs ${expected.stories.length}`)
 
   check('host', 'no session key in the payload', !('session' in payload))
   check('host', 'tree carries no isSession', !('isSession' in (payload.tree ?? {})))
   check('host', 'tree.currentStoryId is the story under test', payload.tree?.currentStoryId === STORY_ID,
     String(payload.tree?.currentStoryId))
+  check('host', 'the payload resolves a current story for the work tree', expected.currentStory !== null,
+    `currentStoryId ${payload.tree?.currentStoryId || '(empty)'}, by ${payload.tree?.by}`)
+  check('host', 'the current story carries its current task', expected.currentTask !== null,
+    `currentTaskId ${payload.tree?.currentTaskId || '(empty)'}`)
 
-  const expectedLabels = nonBareWorkTreeLabels()
+  const expectedLabels = nonBareWorkTreeLabels(tree)
   const sentLabels = (payload.trees ?? []).map((tree) => tree.label).sort()
   check('host', 'trees has one row per non-bare git work tree',
     sentLabels.length === expectedLabels.length,
@@ -311,14 +438,34 @@ async function checkPayload(origin, repoFetch) {
 
   measurements.payload = {
     sprint: sprint.title,
+    sprintName: sprint.name,
     dayOfSprint: sprint.dayOfSprint,
+    expectedDayOfSprint: expected.dayOfSprint,
     totalDays: sprint.totalDays,
+    expectedTotalDays: expected.totalDays,
     source: payload.tree?.source ?? null,
-    columns: payload.columns,
+    treeLabel: payload.tree?.label ?? null,
+    branch: payload.tree?.branch ?? null,
+    columns: expected.columnCounts,
     counts: payload.counts,
     trees: sentLabels,
     stories: payload.stories?.length ?? 0,
     filters: payload.filters,
+    currentStory: expected.currentStory && {
+      id: expected.currentStory.id,
+      title: expected.currentStory.title,
+      state: expected.currentStory.state,
+      epic: expected.currentStory.epic,
+      environment: expected.currentStory.environment,
+      branches: expected.currentStory.branches,
+      prs: expected.currentStory.prs,
+      progress: expected.currentStory.progress,
+    },
+    currentTask: expected.currentTask && { id: expected.currentTask.id, title: expected.currentTask.title, state: expected.currentTask.state },
+    filteringEpic: expected.filteringEpic,
+    filteringEpicCount: expected.filteringEpicCount,
+    searchQuery: expected.searchQuery,
+    searchMatches: expected.searchIds.length,
   }
   return payload
 }
@@ -526,11 +673,12 @@ try {
   check('boot', 'the boot URL carries a token', /\?token=\S+/.test(boot.url), boot.url.slice(0, 48) + '…')
 
   const origin = `http://127.0.0.1:${port}`
-  const repoQuery = `cwd=${encodeURIComponent(REPO)}`
+  const repoQuery = `cwd=${encodeURIComponent(TREE)}`
   const repoFetch = await fetchState(origin, repoQuery)
   measurements.hostWarmMs = (await fetchState(origin, repoQuery)).ms
-  payload = await checkPayload(origin, repoFetch)
-  await checkResolutionLadder(origin)
+  payload = await checkPayload(origin, repoFetch, TREE)
+  const expected = deriveExpectations(payload)
+  await checkResolutionLadder(origin, TREE)
 
   heading('3. browser: session and seat 1')
   mkdirSync(SHOT_DIR, { recursive: true })
@@ -596,19 +744,22 @@ try {
   check('seat1', 'seat 1 chip is rendered', (await chip.count()) > 0)
   const chipText = await chip.innerText().catch(() => '')
   const chipTitle = await chip.getAttribute('title').catch(() => '')
-  check('seat1', 'seat 1 readout carries tree.label', /bright_faraday/.test(chipText), chipText)
-  check('seat1', 'seat 1 readout carries the story title',
-    /Show the current agile work item inside DSH/.test(chipText + chipTitle))
-  check('seat1', 'seat 1 readout carries the task title',
-    /Build the ORE Studio kanban plugin for DSH/.test(chipText + chipTitle))
+  const chipBody = chipText + chipTitle
+  const storyTitleLead = String(expected.currentStory?.title ?? '').slice(0, 24)
+  const taskTitleLead = String(expected.currentTask?.title ?? '').slice(0, 20)
+  check('seat1', 'seat 1 readout carries tree.label', chipText.includes(String(expected.tree.label)), chipText)
+  check('seat1', 'seat 1 readout carries the current story title',
+    storyTitleLead !== '' && chipBody.includes(storyTitleLead), storyTitleLead)
+  check('seat1', 'seat 1 readout carries the current task title',
+    taskTitleLead !== '' && chipBody.includes(taskTitleLead), taskTitleLead)
 
   const appRequest = stateRequests.filter((request) => request.ok === true).pop() ?? stateRequests[0]
   console.log(`  in-app state request: session=${appRequest?.session} source=${appRequest?.source} label=${appRequest?.label} stories=${appRequest?.stories}`)
   check('seat1', 'the in-app request names a session and resolves a board',
     appRequest?.ok === true && typeof appRequest?.session === 'string' && appRequest.session !== '',
     `session=${appRequest?.session} source=${appRequest?.source} label=${appRequest?.label} reason=${appRequest?.reason}`)
-  check('seat1', 'the in-app board belongs to the session work tree', appRequest?.label === 'bright_faraday',
-    String(appRequest?.label))
+  check('seat1', 'the in-app board belongs to the session work tree', appRequest?.label === expected.tree.label,
+    `${appRequest?.label} vs ${expected.tree.label}`)
 
   heading('4. board')
   const tab = page.getByRole('tab', { name: 'Kanban' })
@@ -643,7 +794,7 @@ try {
         text: text(el),
       })),
       prLinks: all('[data-ores-kanban="card"] a[href*="/pull/"]').map((a) => a.getAttribute('href')),
-      cardBranchNames: all('[data-ores-kanban="card"]').map((el) => text(el)).filter((body) => /feature\//.test(body)),
+      cardBodies: all('[data-ores-kanban="card"]').map((el) => text(el)),
       refresh: !!document.querySelector('[data-ores-kanban="refresh"]'),
       styleTag: !!document.querySelector('style[data-plugin="ores-dsh-kanban"]'),
       search: !!document.querySelector('[data-ores-kanban="search"]'),
@@ -658,14 +809,24 @@ try {
   console.log('  tiles       :', JSON.stringify(dom.tiles))
   console.log('  columns     :', JSON.stringify(dom.columns))
 
-  check('board', 'the sprint line leads with tree.label', dom.sprintLine.startsWith('bright_faraday'), dom.sprintLine.slice(0, 90))
-  check('board', 'the sprint line shows the branch', dom.sprintLine.includes('feature/dsh-agile-plugin'))
+  check('board', 'the sprint line leads with tree.label',
+    dom.sprintLine.startsWith(String(expected.tree.label)), dom.sprintLine.slice(0, 90))
+  check('board', 'the sprint line shows the branch',
+    expected.tree.branch === '' || dom.sprintLine.includes(String(expected.tree.branch)), String(expected.tree.branch))
   check('board', 'the sprint line shows the sprint title and Day X of Y',
-    /Sprint 25/.test(dom.sprintLine) && /Day \d+ of \d+/.test(dom.sprintLine))
-  check('board', 'the sprint line shows the card count', /\d+ cards/.test(dom.sprintLine))
-  check('board', 'the fleet strip renders a chip per work tree', dom.fleet.length >= 3, dom.fleet.length + ' chips')
-  check('board', 'the bright_faraday fleet chip carries the "this tree" marker',
-    dom.fleet.some((entry) => entry.label === 'bright_faraday' && entry.thisTree === 'true' && /this tree/.test(entry.text)))
+    dom.sprintLine.includes(String(expected.sprint.title))
+    && dom.sprintLine.includes(`Day ${expected.dayOfSprint} of ${expected.totalDays}`),
+    `${expected.sprint.title} Day ${expected.dayOfSprint} of ${expected.totalDays}`)
+  check('board', 'the sprint line shows the card count',
+    dom.sprintLine.includes(`${expected.stories.length} cards`), `${expected.stories.length} cards`)
+  check('board', 'the fleet strip renders a chip per work tree',
+    dom.fleet.length === (payload?.trees ?? []).length, `${dom.fleet.length} chips vs ${(payload?.trees ?? []).length} rows`)
+  check('board', 'the fleet chips name every work tree',
+    JSON.stringify(dom.fleet.map((entry) => entry.label).sort())
+    === JSON.stringify((payload?.trees ?? []).map((row) => row.label).sort()))
+  check('board', 'the session work tree fleet chip carries the "this tree" marker',
+    dom.fleet.some((entry) => entry.label === expected.tree.label && entry.thisTree === 'true' && /this tree/.test(entry.text)),
+    String(expected.tree.label))
   check('board', 'exactly one fleet chip is this tree', dom.fleet.filter((entry) => entry.thisTree === 'true').length === 1)
   check('board', 'fleet chips are not buttons', dom.fleet.every((entry) => entry.tag !== 'button'),
     [...new Set(dom.fleet.map((entry) => entry.tag))].join(','))
@@ -674,25 +835,46 @@ try {
     const board = document.querySelector('[data-ores-kanban="board"]')
     return !!(fleet && board && (fleet.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING))
   }))
-  check('board', 'the four tiles render', dom.tiles.length === 4, dom.tiles.map((tile) => tile.key).join(','))
-  check('board', 'the five column headings render', dom.columns.length === 5, dom.columns.map((column) => column.id).join(','))
-  check('board', 'the column headings read Backlog and Started',
-    dom.columns.some((column) => /Backlog/.test(column.head)) && dom.columns.some((column) => /Started/.test(column.head)))
-  check('board', 'the board shows the story title', dom.boardText.includes('Show the current agile work item inside DSH'))
-  check('board', 'a card carries the environment bright_faraday', dom.cards.some((card) => /bright_faraday/.test(card.text)))
-  check('board', 'a card shows the task count line', dom.cards.some((card) => /\d+ tasks? · \d+ done/.test(card.text)))
-  check('board', 'no card face carries a branch name', dom.cardBranchNames.length === 0,
-    dom.cardBranchNames.length + ' card(s) with a feature/ branch; first: ' + (dom.cardBranchNames[0] ?? '').slice(0, 60))
+  check('board', 'the four tiles render the payload counts',
+    dom.tiles.length === 4 && dom.tiles.every((tile) => tile.text.includes(expected.tileValues[tile.key])),
+    JSON.stringify(expected.tileValues))
+  check('board', 'the columns are the payload columns in order, with the payload counts',
+    dom.columns.length === expected.columnCounts.length
+    && dom.columns.every((column, index) => column.id === expected.columnCounts[index].id
+      && column.head.includes(expected.columnCounts[index].title)
+      && column.head.includes(String(expected.columnCounts[index].sentCount))
+      && column.cards === expected.columnCounts[index].cards),
+    dom.columns.map((column) => `${column.id}:${column.cards}/${column.head}`).join(' ') + ' | payload '
+      + expected.columnCounts.map((column) => `${column.id}:${column.cards}/${column.sentCount}`).join(' '))
+  check('board', 'the board shows the current story title',
+    dom.boardText.includes(String(expected.currentStory?.title ?? '')), String(expected.currentStory?.title ?? ''))
+  check('board', 'the current card carries the environment chip',
+    dom.cards.some((card) => card.text.includes(String(expected.currentStory?.environment ?? ''))),
+    String(expected.currentStory?.environment ?? ''))
+  check('board', 'the current card shows the task count line',
+    dom.cards.some((card) => card.text.includes(
+      `${plural(expected.currentStory?.progress.total ?? 0, 'task')} · ${expected.currentStory?.progress.done} done`)),
+    `${expected.currentStory?.progress.total} tasks · ${expected.currentStory?.progress.done} done`)
+  check('board', 'no card face carries a payload branch name',
+    !dom.cardBodies.some((body) => expected.cardFaceBranchNames.some((branch) => branch !== '' && body.includes(branch))),
+    expected.cardFaceBranchNames.slice(0, 3).join(' '))
+  check('board', 'no card face carries a branch or PR path',
+    !dom.cardBodies.some((body) => /feature\//.test(body) || body.includes('/pull/')))
   check('board', 'no card face carries a PR link', dom.prLinks.length === 0, dom.prLinks.slice(0, 2).join(' '))
-  check('board', 'a card shows the open Nd age', dom.cards.some((card) => /open \d+d/.test(card.text)))
+  check('board', 'the current card shows the age line the payload implies',
+    expected.ageLine === ''
+      ? !dom.cards.some((card) => card.id === expected.currentStory?.id && /open \d+d/.test(card.text))
+      : dom.cards.some((card) => card.id === expected.currentStory?.id && card.text.includes(expected.ageLine)),
+    expected.ageLine === '' ? `state ${expected.currentStory?.state} carries no age` : expected.ageLine)
   check('board', 'the current story card carries the current marker',
     dom.cards.some((card) => card.current === 'true' && /current/.test(card.text)))
   check('board', 'the current card is tree.currentStoryId',
-    dom.cards.some((card) => card.current === 'true' && card.id === STORY_ID))
+    dom.cards.some((card) => card.current === 'true' && card.id === String(expected.tree.currentStoryId)))
   check('board', 'exactly one card is marked current', dom.cards.filter((card) => card.current === 'true').length === 1)
   check('board', 'no card carries a work-tree secondary marker', !dom.cards.some((card) => /this tree/.test(card.text)))
   check('board', 'no tree-switch affordance is in the view', dom.switchAffordances === 0, String(dom.switchAffordances))
-  check('board', 'the epic chip row renders from filters.epics', dom.epicChips.length > 0, dom.epicChips.join(' '))
+  check('board', 'the epic chip row is filters.epics',
+    JSON.stringify(dom.epicChips) === JSON.stringify(expected.epics), dom.epicChips.join(' '))
   check('board', 'the refresh control is present', dom.refresh)
   check('board', 'the style element is injected once', dom.styleTag)
   check('board', 'the search input is present', dom.search)
@@ -701,7 +883,7 @@ try {
   measurements.overflowBoardSummary = reportOverflow('board only, no detail panel', measurements.overflowBoard)
 
   heading('5. card detail, task expansion, Escape')
-  const targetCard = page.locator(`[data-ores-kanban="card"][data-story-id="${STORY_ID}"]`).first()
+  const targetCard = page.locator(`[data-ores-kanban="card"][data-story-id="${expected.tree.currentStoryId}"]`).first()
   check('detail', 'the current card is located', (await targetCard.count()) > 0)
   await targetCard.scrollIntoViewIfNeeded().catch(() => {})
   await page.waitForTimeout(400)
@@ -710,21 +892,33 @@ try {
   const detail = page.locator('[data-ores-kanban="detail"]').first()
   check('detail', 'the detail panel opens on card click', (await detail.count()) > 0)
   const detailText = await detail.innerText().catch(() => '')
-  check('detail', 'the detail lists id, state, environment, epic and dates',
-    detailText.includes(STORY_ID) && /STARTED/.test(detailText) && /environment/.test(detailText)
-    && /epic/.test(detailText) && /2026-09-23/.test(detailText))
-  check('detail', 'the detail lists the task rows',
-    /Build the ORE Studio kanban plugin for DSH/.test(detailText)
-    && /Scaffold story: Show the current agile work item inside DSH/.test(detailText))
-  const story = (payload?.stories ?? []).filter((entry) => entry.id === STORY_ID)[0]
-  const storyBranches = story?.branches ?? []
-  const storyPrs = story?.prs ?? []
+  const currentStory = expected.currentStory ?? {}
+  const detailFields = [
+    currentStory.id,
+    currentStory.state,
+    currentStory.environment,
+    currentStory.owner,
+    currentStory.epic,
+    currentStory.created,
+  ].filter((value) => typeof value === 'string' && value !== '')
+  check('detail', 'the detail lists the story id, state, environment, owner, epic and created date',
+    detailFields.length > 0 && detailFields.every((value) => detailText.includes(value)),
+    detailFields.filter((value) => !detailText.includes(value)).join(' | ') || detailFields.join(' '))
+  check('detail', 'the detail lists every task title of the story',
+    (currentStory.tasks ?? []).length > 0 && (currentStory.tasks ?? []).every((task) => detailText.includes(task.title)),
+    `${(currentStory.tasks ?? []).length} task(s)`)
+  const storyBranches = currentStory.branches ?? []
+  const storyPrs = currentStory.prs ?? []
   check('detail', 'the detail carries the story branch list',
-    storyBranches.length > 0 && storyBranches.every((branch) => detailText.includes(branch)),
-    storyBranches.join(' '))
-  check('detail', 'the detail carries no PR link for a story whose tasks carry no PR',
-    storyPrs.length > 0 || (await detail.locator('a[href*="/pull/"]').count()) === 0,
-    `${storyPrs.length} PR(s) on the story`)
+    storyBranches.length === 0
+      ? /branches/i.test(detailText)
+      : storyBranches.every((branch) => detailText.includes(branch)),
+    storyBranches.join(' ') || '(no branches)')
+  const detailHrefs = await detail.locator('a[href*="/pull/"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')))
+  check('detail', 'the detail carries a PR link for every PR the story has',
+    storyPrs.every((number) => detailHrefs.includes(`https://github.com/OreStudio/OreStudio/pull/${number}`))
+    && detailHrefs.length === storyPrs.length,
+    `${storyPrs.length} PR(s), ${detailHrefs.length} link(s): ${detailHrefs.slice(0, 3).join(' ')}`)
   await shot('verify-detail')
 
   if ((await page.locator('[data-ores-kanban="detail"]').count()) === 0) {
@@ -786,24 +980,6 @@ try {
     /blocked on/.test(expanded) && /blocked since/.test(expanded) && /created/.test(expanded)
     && /updated/.test(expanded) && /file/.test(expanded))
 
-  /* The story's own tasks carry no PR, so the PR half of the contract needs a
-   * story that has one. The payload names it; the face must still not show it. */
-  const prStory = (payload?.stories ?? []).filter((entry) => (entry.prs ?? []).length > 0)[0]
-  if (prStory) {
-    const prCard = page.locator(`[data-ores-kanban="card"][data-story-id="${prStory.id}"]`).first()
-    if (await prCard.count() > 0) {
-      await prCard.scrollIntoViewIfNeeded().catch(() => {})
-      await prCard.click()
-      await page.waitForTimeout(1200)
-      const hrefs = await page.locator('[data-ores-kanban="detail"] a[href*="/pull/"]')
-        .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')))
-      check('detail', 'the detail panel carries the story PR links',
-        prStory.prs.every((number) => hrefs.includes(`https://github.com/OreStudio/OreStudio/pull/${number}`)),
-        `${prStory.prs.length} PR(s), links: ${hrefs.slice(0, 3).join(' ')}`)
-      check('detail', 'that story card face carries no PR link',
-        (await page.locator(`[data-ores-kanban="card"][data-story-id="${prStory.id}"] a[href*="/pull/"]`).count()) === 0)
-    }
-  }
   await page.keyboard.press('Escape')
   await page.waitForTimeout(900)
   check('detail', 'Escape closes the detail panel', (await page.locator('[data-ores-kanban="detail"]').count()) === 0)
@@ -817,10 +993,12 @@ try {
   const popoverText = await popover.innerText().catch(() => '')
   check('popover', 'the popover has role=dialog', popoverRole === 'dialog', popoverRole)
   check('popover', 'aria-expanded is true while open', (await chip.getAttribute('aria-expanded')) === 'true')
-  check('popover', 'the popover lists the current story tasks',
-    /Build the ORE Studio kanban plugin for DSH/.test(popoverText))
+  check('popover', 'the popover lists every task of the current story',
+    (currentStory.tasks ?? []).length > 0 && (currentStory.tasks ?? []).every((task) => popoverText.includes(task.title)),
+    `${(currentStory.tasks ?? []).length} task(s)`)
   check('popover', 'the popover carries the environment and a current marker',
-    /bright_faraday/.test(popoverText) && /current/.test(popoverText))
+    popoverText.includes(String(currentStory.environment)) && /current/.test(popoverText),
+    String(currentStory.environment))
   await shot('verify-popover')
   await page.keyboard.press('Escape')
   await page.waitForTimeout(700)
@@ -828,22 +1006,30 @@ try {
 
   heading('7. filters and search')
   const cardsBefore = await page.locator('[data-ores-kanban="card"]').count()
-  check('filters', 'the board starts with cards', cardsBefore > 0, String(cardsBefore))
-  await page.locator('[data-ores-epic]').first().click()
+  check('filters', 'the board starts with every story in the sprint', cardsBefore === expected.stories.length,
+    `${cardsBefore} cards vs ${expected.stories.length} stories`)
+  if (expected.filteringEpic === null) {
+    console.log(`  no epic chip narrows the board: ${expected.epics.join(' ') || '(none)'} cover every story, so the epic filter is skipped`)
+  } else {
+    await page.locator(`[data-ores-epic="${expected.filteringEpic}"]`).first().click()
+    await page.waitForTimeout(900)
+    const afterEpic = await page.locator('[data-ores-kanban="card"]').count()
+    const epicActive = await page.locator('[data-ores-kanban="active-filters"]').innerText().catch(() => '')
+    check('filters', `the ${expected.filteringEpic} epic chip narrows the board to that epic's stories`,
+      afterEpic === expected.filteringEpicCount, `${cardsBefore} -> ${afterEpic}, expected ${expected.filteringEpicCount}`)
+    check('filters', 'the epic filter is individually clearable', /epic /.test(epicActive), epicActive.slice(0, 60))
+    await page.locator('[data-ores-kanban="clear"]').first().click()
+    await page.waitForTimeout(900)
+    check('filters', 'Clear after an epic filter restores the board',
+      (await page.locator('[data-ores-kanban="card"]').count()) === cardsBefore)
+  }
+  await page.locator('[data-ores-kanban="search"]').first().fill(expected.searchQuery)
   await page.waitForTimeout(900)
-  const afterEpic = await page.locator('[data-ores-kanban="card"]').count()
-  const epicActive = await page.locator('[data-ores-kanban="active-filters"]').innerText().catch(() => '')
-  check('filters', 'an epic chip filters the board', afterEpic < cardsBefore, `${cardsBefore} -> ${afterEpic}`)
-  check('filters', 'the epic filter is individually clearable', /epic /.test(epicActive), epicActive.slice(0, 60))
-  await page.locator('[data-ores-kanban="clear"]').first().click()
-  await page.waitForTimeout(900)
-  check('filters', 'Clear after an epic filter restores the board',
-    (await page.locator('[data-ores-kanban="card"]').count()) === cardsBefore)
-  await page.locator('[data-ores-kanban="search"]').first().fill('kanban plugin for DSH')
-  await page.waitForTimeout(900)
-  const searched = await page.locator('[data-ores-kanban="card"]').count()
+  const shownIds = await page.locator('[data-ores-kanban="card"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-story-id')).sort())
   const searchActive = await page.locator('[data-ores-kanban="active-filters"]').innerText().catch(() => '')
-  check('filters', 'search filters on a task title', searched > 0 && searched < cardsBefore, `${cardsBefore} -> ${searched}`)
+  check('filters', 'search shows exactly the stories the payload says match',
+    JSON.stringify(shownIds) === JSON.stringify(expected.searchIds),
+    `query "${expected.searchQuery.slice(0, 40)}" -> ${shownIds.length} of ${expected.searchIds.length} expected`)
   check('filters', 'the active search filter is shown', /search/.test(searchActive), searchActive.slice(0, 60))
   await shot('verify-filters')
   await page.locator('[data-ores-kanban="clear"]').first().click()
@@ -936,6 +1122,7 @@ writeFileSync(RESULT_FILE, JSON.stringify({
   bootUrl: `http://127.0.0.1:${port}/?token=…`,
   serverLog: SERVER_LOG,
   repo: REPO,
+  treeRoot: TREE,
   dshHome: DSH_HOME,
   profile: PROFILE,
   viewport: VIEWPORT,

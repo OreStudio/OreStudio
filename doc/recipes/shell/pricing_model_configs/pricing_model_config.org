@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: AF548E17-F214-5E57-B859-68C197C7003F
+:END:
+#+title: How do I run the pricing_model_configs commands from the shell?
+#+description: Every command the pricing_model_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:pricing_model_configs:
+
+This file documents the pricing_model_configs resource at the shell, one section per command. Every command is a subcommand of =pricing_model_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D51AE36E-9BE0-57BA-8F41-BEF600C17096
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.list=.
+
+#+name: pricing_model_configs-list
+#+begin_src ores-shell :tangle pricing_model_configs-list.ores :exports none
+pricing_model_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F06D5E3D-9FC2-51B3-BDBA-0BBAAA59DCE8
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs get <name>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.get=.
+
+#+name: pricing_model_configs-get
+#+begin_src ores-shell :tangle pricing_model_configs-get.ores :exports none
+pricing_model_configs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E9AEE27F-8345-53E6-9B94-C6E62DC062A9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs get-many <name>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.get_many=.
+
+#+name: pricing_model_configs-get-many
+#+begin_src ores-shell :tangle pricing_model_configs-get-many.ores :exports none
+pricing_model_configs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 02337CA7-A9C0-5D2B-8F4E-FC23DBACCA2C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs add <id> <name> <description> <config_variant> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.put=.
+
+#+name: pricing_model_configs-add
+#+begin_src ores-shell :tangle pricing_model_configs-add.ores :exports none
+pricing_model_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7E750329-3FBB-5B70-8379-09BF970923F2
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs set <id> <name> <description> <config_variant> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.put=.
+
+#+name: pricing_model_configs-set
+#+begin_src ores-shell :tangle pricing_model_configs-set.ores :exports none
+pricing_model_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0E0F4B5F-DC3B-52D6-92BC-72E60C7E0DD2
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs put-many --count <n> <id> <name> <description> <config_variant> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.put_many=.
+
+#+name: pricing_model_configs-put-many
+#+begin_src ores-shell :tangle pricing_model_configs-put-many.ores :exports none
+pricing_model_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B048027A-289D-5B7D-853E-A56FB88A7CC6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.delete=.
+
+#+name: pricing_model_configs-delete
+#+begin_src ores-shell :tangle pricing_model_configs-delete.ores :exports none
+pricing_model_configs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 801FF7BB-4DFF-53E2-A885-BFC16D9ACB30
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs.delete_many=.
+
+#+name: pricing_model_configs-delete-many
+#+begin_src ores-shell :tangle pricing_model_configs-delete-many.ores :exports none
+pricing_model_configs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 06D54473-9C62-545C-B12E-6B0F1D752D3B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs_versions.list=.
+
+#+name: pricing_model_configs-versions
+#+begin_src ores-shell :tangle pricing_model_configs-versions.ores :exports none
+pricing_model_configs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1FFB3C6C-4D67-524D-B901-BFF50F320A6A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_model_configs version <name> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_model_configs_versions.get=.
+
+#+name: pricing_model_configs-version
+#+begin_src ores-shell :tangle pricing_model_configs-version.ores :exports none
+pricing_model_configs version __none__ --version 1
+#+end_src
+

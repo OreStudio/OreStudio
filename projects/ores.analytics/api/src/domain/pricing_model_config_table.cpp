@@ -33,10 +33,12 @@ std::string convert_to_table(const std::vector<pricing_model_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Name" << "Variant" << "Description" << "Modified By" << "Version"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& pmc : v) {
-        table << fort::endr;
+        table << pmc.name << pmc.config_variant << pmc.description << pmc.modified_by << pmc.version
+              << fort::endr;
     }
     return table.to_string();
 }

@@ -1,0 +1,223 @@
+:PROPERTIES:
+:ID: DBF608CE-EB7D-5AD6-B2A0-2CAD7A624046
+:END:
+#+title: How do I run the pricing_engine_types commands from the shell?
+#+description: Every command the pricing_engine_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:pricing_engine_types:
+
+This file documents the pricing_engine_types resource at the shell, one section per command. Every command is a subcommand of =pricing_engine_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A54D6E08-370E-59FE-BAE3-2497E6C64FB6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.list=.
+
+#+name: pricing_engine_types-list
+#+begin_src ores-shell :tangle pricing_engine_types-list.ores :exports none
+pricing_engine_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7D7C9904-651F-5506-AC4A-314974AF48C5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types get <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.get=.
+
+#+name: pricing_engine_types-get
+#+begin_src ores-shell :tangle pricing_engine_types-get.ores :exports none
+pricing_engine_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 802A4ED8-A6EB-5DAA-B56C-27F28B010D7B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.get_many=.
+
+#+name: pricing_engine_types-get-many
+#+begin_src ores-shell :tangle pricing_engine_types-get-many.ores :exports none
+pricing_engine_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: AFF9415F-13AF-5BE5-95B3-38A93E94FF0A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types add <code> <description> <instrument_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.put=.
+
+#+name: pricing_engine_types-add
+#+begin_src ores-shell :tangle pricing_engine_types-add.ores :exports none
+pricing_engine_types add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 66EA5580-FEA1-5C1E-B90B-17BD84A4F175
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types set <code> <description> <instrument_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.put=.
+
+#+name: pricing_engine_types-set
+#+begin_src ores-shell :tangle pricing_engine_types-set.ores :exports none
+pricing_engine_types set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4402A138-C632-5682-8C45-D2A103FF242D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types put-many --count <n> <code> <description> <instrument_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.put_many=.
+
+#+name: pricing_engine_types-put-many
+#+begin_src ores-shell :tangle pricing_engine_types-put-many.ores :exports none
+pricing_engine_types put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 44DD7ABB-2DC3-58C2-A48E-338CCBAE399F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.delete=.
+
+#+name: pricing_engine_types-delete
+#+begin_src ores-shell :tangle pricing_engine_types-delete.ores :exports none
+pricing_engine_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2854A1DE-211D-5928-8D91-12F82F635A29
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types.delete_many=.
+
+#+name: pricing_engine_types-delete-many
+#+begin_src ores-shell :tangle pricing_engine_types-delete-many.ores :exports none
+pricing_engine_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 04F5FFCE-72D7-56E3-85E3-CBA53F0510E3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types_versions.list=.
+
+#+name: pricing_engine_types-versions
+#+begin_src ores-shell :tangle pricing_engine_types-versions.ores :exports none
+pricing_engine_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: AC1A68A1-4E81-5CB8-8076-2ABC6FAB6E09
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+pricing_engine_types version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.pricing_engine_types_versions.get=.
+
+#+name: pricing_engine_types-version
+#+begin_src ores-shell :tangle pricing_engine_types-version.ores :exports none
+pricing_engine_types version __none__ --version 1
+#+end_src
+

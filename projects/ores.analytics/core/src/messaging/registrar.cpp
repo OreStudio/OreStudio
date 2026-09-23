@@ -18,25 +18,14 @@
  *
  */
 #include "ores.analytics.core/messaging/registrar.hpp"
+#include "ores.analytics.core/messaging/pricing_engine_type_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_registrar.hpp"
+#include "ores.analytics.core/messaging/pricing_model_config_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_config_registrar.hpp"
+#include "ores.analytics.core/messaging/pricing_model_product_history_provider_registrar.hpp"
+#include "ores.analytics.core/messaging/pricing_model_product_parameter_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_product_parameter_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_product_registrar.hpp"
-
-// Generic history.v1.get subject.
-#include "ores.analytics.api/domain/pricing_engine_type.hpp"
-#include "ores.analytics.api/domain/pricing_model_config.hpp"
-#include "ores.analytics.api/domain/pricing_model_product.hpp"
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
-#include "ores.analytics.core/presentation/pricing_engine_type_history_field_mapper.hpp"
-#include "ores.analytics.core/presentation/pricing_model_config_history_field_mapper.hpp"
-#include "ores.analytics.core/presentation/pricing_model_product_history_field_mapper.hpp"
-#include "ores.analytics.core/presentation/pricing_model_product_parameter_history_field_mapper.hpp"
-#include "ores.analytics.core/service/pricing_engine_type_service.hpp"
-#include "ores.analytics.core/service/pricing_model_config_service.hpp"
-#include "ores.analytics.core/service/pricing_model_product_parameter_service.hpp"
-#include "ores.analytics.core/service/pricing_model_product_service.hpp"
-#include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
@@ -69,47 +58,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(subs, register_pricing_model_product_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_product_parameter_handlers(nats, ctx, verifier));
 
-    // Generic history.v1.get subject and provider registrations.
+    // Generic history.v1.get subject and the generated per-entity providers.
     {
         auto& hist_registry = history_registry();
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "analytics", "ores.analytics.service", ctx, verifier));
 
-        hist_registry.register_history_provider(
-            "ores.analytics.pricing_engine_type",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::pricing_engine_type_service svc(scoped_ctx);
-                auto versions = svc.get_type_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_pricing_engine_type_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.analytics.pricing_model_config",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::pricing_model_config_service svc(scoped_ctx);
-                auto versions = svc.get_config_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_pricing_model_config_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.analytics.pricing_model_product",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::pricing_model_product_service svc(scoped_ctx);
-                auto versions = svc.get_product_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_pricing_model_product_fields);
-            });
-
-        hist_registry.register_history_provider(
-            "ores.analytics.pricing_model_product_parameter",
-            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-                service::pricing_model_product_parameter_service svc(scoped_ctx);
-                auto versions = svc.get_parameter_history(entity_id);
-                return ores::history::service::build_entity_history_versions(
-                    versions, presentation::render_pricing_model_product_parameter_fields);
-            });
+        register_pricing_engine_type_history_provider(hist_registry);
+        register_pricing_model_config_history_provider(hist_registry);
+        register_pricing_model_product_history_provider(hist_registry);
+        register_pricing_model_product_parameter_history_provider(hist_registry);
     }
 
     return subs;

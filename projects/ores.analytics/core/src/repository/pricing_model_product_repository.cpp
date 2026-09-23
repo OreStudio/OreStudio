@@ -28,6 +28,7 @@
 #include "ores.analytics.core/repository/pricing_model_product_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::analytics::repository {
@@ -41,19 +42,79 @@ std::string pricing_model_product_repository::sql() {
     return generate_create_table_sql<pricing_model_product_entity>(lg());
 }
 
+ores::utility::domain::precondition
+pricing_model_product_repository::replace_claim(context ctx,
+                                                const domain::pricing_model_product& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::pricing_model_product
+pricing_model_product_repository::apply_claim(context ctx,
+                                              const domain::pricing_model_product& v,
+                                              const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void pricing_model_product_repository::write(context ctx, const domain::pricing_model_product& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model product. " << "id: " << v.id;
-    execute_write_query(ctx,
-                        pricing_model_product_mapper::map(v),
-                        lg(),
-                        "Writing pricing model product to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void pricing_model_product_repository::write(context ctx,
                                              const std::vector<domain::pricing_model_product>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model products. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void pricing_model_product_repository::write(context ctx,
+                                             const domain::pricing_model_product& v,
+                                             const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model product. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
-                        pricing_model_product_mapper::map(v),
+                        pricing_model_product_mapper::map(t),
+                        lg(),
+                        "Writing pricing model product to database.");
+}
+
+void pricing_model_product_repository::write(
+    context ctx,
+    const std::vector<domain::pricing_model_product>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model products. Count: " << v.size();
+    std::vector<domain::pricing_model_product> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx,
+                        pricing_model_product_mapper::map(batch),
                         lg(),
                         "Writing pricing model products to database.");
 }
@@ -88,6 +149,46 @@ pricing_model_product_repository::read_latest(context ctx, const std::string& id
         [](const auto& entities) { return pricing_model_product_mapper::map(entities); },
         lg(),
         "Reading latest pricing model product by id.");
+}
+
+std::vector<domain::pricing_model_product>
+pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
+    context ctx, const std::string& pricing_engine_type_code) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest pricing model product by pricing_engine_type_code: "
+        << pricing_engine_type_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<pricing_model_product_entity>> |
+        where("tenant_id"_c == tid && "pricing_engine_type_code"_c == pricing_engine_type_code &&
+              "valid_to"_c == max.value());
+
+    return execute_read_query<pricing_model_product_entity, domain::pricing_model_product>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_product_mapper::map(entities); },
+        lg(),
+        "Reading latest pricing model product by pricing_engine_type_code.");
+}
+
+std::vector<domain::pricing_model_product>
+pricing_model_product_repository::read_any_by_pricing_engine_type_code(
+    context ctx, const std::string& pricing_engine_type_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any pricing model product by pricing_engine_type_code: "
+                               << pricing_engine_type_code;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<pricing_model_product_entity>> |
+        where("tenant_id"_c == tid && "pricing_engine_type_code"_c == pricing_engine_type_code) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<pricing_model_product_entity, domain::pricing_model_product>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_product_mapper::map(entities); },
+        lg(),
+        "Reading any pricing model product by pricing_engine_type_code.");
 }
 
 
@@ -129,14 +230,37 @@ std::optional<domain::pricing_model_product> pricing_model_product_repository::r
     return entities.front();
 }
 
-void pricing_model_product_repository::remove(context ctx, const std::string& id) {
+pricing_model_product_repository::remove_status pricing_model_product_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<pricing_model_product_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing pricing model product from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void pricing_model_product_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::pricing_model_product> pricing_model_product_repository::read_latest(
@@ -176,6 +300,23 @@ std::uint32_t pricing_model_product_repository::get_total_product_count(context 
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active pricing model product count: " << count;
     return count;
+}
+
+std::vector<domain::pricing_model_product>
+pricing_model_product_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<pricing_model_product_entity>> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<pricing_model_product_entity, domain::pricing_model_product>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_product_mapper::map(entities); },
+        lg(),
+        "Reading latest pricing model products by ids.");
+    return result;
 }
 
 void pricing_model_product_repository::remove(context ctx, const std::vector<std::string>& ids) {

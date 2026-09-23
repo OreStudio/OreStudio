@@ -18,18 +18,12 @@
  *
  */
 #include "ores.analytics.service/app/application.hpp"
-#include "ores.analytics.api/eventing/pricing_engine_type_changed_event.hpp"
-#include "ores.analytics.api/eventing/pricing_model_config_changed_event.hpp"
-#include "ores.analytics.api/eventing/pricing_model_product_changed_event.hpp"
-#include "ores.analytics.api/eventing/pricing_model_product_parameter_changed_event.hpp"
 #include "ores.analytics.core/messaging/registrar.hpp"
 #include "ores.analytics.service/app/application_exception.hpp"
+#include "ores.analytics.service/messaging/event_registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
-#include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -42,20 +36,11 @@ namespace ores::analytics::service::app {
 
 using namespace ores::logging;
 namespace ev = ores::eventing;
-namespace adev = ores::analytics::eventing;
 
 namespace {
 
 constexpr std::string_view service_name = "ores.analytics.service";
 constexpr std::string_view service_version = ORES_VERSION;
-
-void publish_entity_event(ores::nats::service::client& nats,
-                          const std::string& subject,
-                          const ev::domain::entity_change_event& notif) {
-    // Delegate to the shared hardened publisher: it rethrows on failure so
-    // the event_bus surfaces the lost notification at error.
-    ev::service::publish_entity_event(nats, subject, notif);
-}
 
 } // namespace
 
@@ -88,68 +73,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
-    ev::service::registrar::register_mapping<adev::pricing_engine_type_changed_event>(
-        event_source, "ores.analytics.pricing_engine_type", "ores_analytics_pricing_engine_types");
-
-    auto pricing_engine_type_sub = event_bus.subscribe<adev::pricing_engine_type_changed_event>(
-        [&nats](const adev::pricing_engine_type_changed_event& e) {
-            publish_entity_event(
-                nats,
-                "ores.analytics.pricing_engine_type_changed",
-                ev::domain::entity_change_event{.entity = "ores.analytics.pricing_engine_type",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    ev::service::registrar::register_mapping<adev::pricing_model_config_changed_event>(
-        event_source,
-        "ores.analytics.pricing_model_config",
-        "ores_analytics_pricing_model_configs");
-
-    auto pricing_model_config_sub = event_bus.subscribe<adev::pricing_model_config_changed_event>(
-        [&nats](const adev::pricing_model_config_changed_event& e) {
-            publish_entity_event(
-                nats,
-                "ores.analytics.pricing_model_config_changed",
-                ev::domain::entity_change_event{.entity = "ores.analytics.pricing_model_config",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.config_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    ev::service::registrar::register_mapping<adev::pricing_model_product_changed_event>(
-        event_source,
-        "ores.analytics.pricing_model_product",
-        "ores_analytics_pricing_model_products");
-
-    auto pricing_model_product_sub = event_bus.subscribe<adev::pricing_model_product_changed_event>(
-        [&nats](const adev::pricing_model_product_changed_event& e) {
-            publish_entity_event(
-                nats,
-                "ores.analytics.pricing_model_product_changed",
-                ev::domain::entity_change_event{.entity = "ores.analytics.pricing_model_product",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.product_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    ev::service::registrar::register_mapping<adev::pricing_model_product_parameter_changed_event>(
-        event_source,
-        "ores.analytics.pricing_model_product_parameter",
-        "ores_analytics_pricing_model_product_parameters");
-
-    auto pricing_model_product_parameter_sub =
-        event_bus.subscribe<adev::pricing_model_product_parameter_changed_event>(
-            [&nats](const adev::pricing_model_product_parameter_changed_event& e) {
-                publish_entity_event(nats,
-                                     "ores.analytics.pricing_model_product_parameter_changed",
-                                     ev::domain::entity_change_event{
-                                         .entity = "ores.analytics.pricing_model_product_parameter",
-                                         .timestamp = e.timestamp,
-                                         .entity_ids = e.parameter_ids,
-                                         .tenant_id = e.tenant_id});
-            });
+    // Each entity's mapping is generated; the aggregate is the one
+    // hand-maintained call site. The subscriptions are held here for the
+    // lifetime of the run, because destroying one unsubscribes it.
+    auto event_subs =
+        messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

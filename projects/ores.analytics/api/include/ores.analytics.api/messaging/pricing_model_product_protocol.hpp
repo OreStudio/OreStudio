@@ -26,64 +26,250 @@
 #define ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::analytics::messaging {
 
-struct get_pricing_model_products_request {
-    using response_type = struct get_pricing_model_products_response;
+struct pricing_model_product_key {
+    std::string pricing_engine_type_code;
+};
+
+struct pricing_model_product_write {
+    boost::uuids::uuid id;
+    boost::uuids::uuid pricing_model_config_id;
+    std::string pricing_engine_type_code;
+    std::string model;
+    std::string engine;
+};
+
+struct pricing_model_product_change {
+    pricing_model_product_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct pricing_model_product_removal {
+    pricing_model_product_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct pricing_model_product_lookup {
+    pricing_model_product_key key;
+    std::optional<ores::analytics::domain::pricing_model_product> pricing_model_product;
+};
+
+struct pricing_model_product_event {
+    boost::uuids::uuid event_id;
+    pricing_model_product_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct pricing_model_product_version_key {
+    pricing_model_product_key pricing_model_product;
+    std::uint32_t version;
+};
+
+struct pricing_model_product_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_pricing_model_products_request {
+    using response_type = struct list_pricing_model_products_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
 };
 
-struct get_pricing_model_products_response {
+struct list_pricing_model_products_response {
+    ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product> products;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_pricing_model_product_request {
-    using response_type = struct save_pricing_model_product_response;
-    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.save";
-    ores::analytics::domain::pricing_model_product data;
-
-    static save_pricing_model_product_request
-    from(ores::analytics::domain::pricing_model_product v) {
-        return {.data = std::move(v)};
-    }
+struct get_pricing_model_product_request {
+    using response_type = struct get_pricing_model_product_response;
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    pricing_model_product_key key;
 };
 
-struct save_pricing_model_product_response {
-    bool success = false;
-    std::string message;
+struct get_pricing_model_product_response {
+    ores::utility::domain::result result;
+    std::optional<ores::analytics::domain::pricing_model_product> pricing_model_product;
+};
+
+struct get_many_pricing_model_products_request {
+    using response_type = struct get_many_pricing_model_products_response;
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<pricing_model_product_key> keys;
+};
+
+struct get_many_pricing_model_products_response {
+    ores::utility::domain::result result;
+    std::vector<pricing_model_product_lookup> entries;
+};
+
+struct put_pricing_model_product_request {
+    using response_type = struct put_pricing_model_product_response;
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    pricing_model_product_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_pricing_model_product_response {
+    ores::utility::domain::result result;
+    ores::analytics::domain::pricing_model_product pricing_model_product;
+};
+
+struct put_many_pricing_model_products_request {
+    using response_type = struct put_many_pricing_model_products_response;
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<pricing_model_product_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_pricing_model_products_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::pricing_model_product> products;
 };
 
 struct delete_pricing_model_product_request {
     using response_type = struct delete_pricing_model_product_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    pricing_model_product_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_pricing_model_product_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_pricing_model_product_history_request {
-    using response_type = struct get_pricing_model_product_history_response;
-    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.history";
-    std::string id;
+struct delete_many_pricing_model_products_request {
+    using response_type = struct delete_many_pricing_model_products_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.pricing_model_products.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<pricing_model_product_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_pricing_model_product_history_response {
-    std::vector<ores::analytics::domain::pricing_model_product> history;
-    bool success = false;
-    std::string message;
+struct delete_many_pricing_model_products_response {
+    ores::utility::domain::result result;
 };
+
+struct list_pricing_model_product_versions_request {
+    using response_type = struct list_pricing_model_product_versions_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.pricing_model_products_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    pricing_model_product_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<pricing_model_product_versions_filter> filter;
+};
+
+struct list_pricing_model_product_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::pricing_model_product> versions;
+    std::uint64_t total;
+};
+
+struct get_pricing_model_product_version_request {
+    using response_type = struct get_pricing_model_product_version_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.pricing_model_products_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    pricing_model_product_version_key key;
+};
+
+struct get_pricing_model_product_version_response {
+    ores::utility::domain::result result;
+    ores::analytics::domain::pricing_model_product version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace pricing_model_product_event_subjects {
+inline constexpr std::string_view created = "analytics.v1.pricing_model_products_events.created";
+inline constexpr std::string_view updated = "analytics.v1.pricing_model_products_events.updated";
+inline constexpr std::string_view deleted = "analytics.v1.pricing_model_products_events.deleted";
+}
 
 }
 

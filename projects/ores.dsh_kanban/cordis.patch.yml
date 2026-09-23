@@ -1,0 +1,5 @@
+# Insert the ORE Studio kanban plugin into a profile's composition.
+# Node resolves ores-dsh-kanban from the profile's node_modules.
+- insert:
+    - id: ores-dsh-kanban
+      name: 'ores-dsh-kanban'

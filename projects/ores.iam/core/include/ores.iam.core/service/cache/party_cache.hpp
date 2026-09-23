@@ -179,9 +179,8 @@ public:
             }
             auto aux = children_t.persistent();
             cache_.replace_partition(tenant_id, entries, aux);
-            BOOST_LOG_SEV(party_cache_lg(), debug)
-                << "Loaded " << kept << " parties for tenant " << tenant_id
-                << " (of " << count << " read)";
+            BOOST_LOG_SEV(party_cache_lg(), debug) << "Loaded " << kept << " parties for tenant "
+                                                   << tenant_id << " (of " << count << " read)";
             return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_cache_lg(), warn)

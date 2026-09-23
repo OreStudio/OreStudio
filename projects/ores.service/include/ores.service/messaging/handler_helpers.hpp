@@ -265,9 +265,8 @@ std::optional<Req> decode(const ores::nats::message& msg) {
     using namespace ores::logging;
     auto r = ores::nats::default_wire_codec().decode<Req>(msg.data);
     if (!r) {
-        BOOST_LOG_SEV(decode_lg(), warn) << "Failed to decode " << msg.subject
-                                         << " (" << msg.data.size()
-                                         << " bytes): " << r.error().what();
+        BOOST_LOG_SEV(decode_lg(), warn) << "Failed to decode " << msg.subject << " ("
+                                         << msg.data.size() << " bytes): " << r.error().what();
         return std::nullopt;
     }
     return *r;

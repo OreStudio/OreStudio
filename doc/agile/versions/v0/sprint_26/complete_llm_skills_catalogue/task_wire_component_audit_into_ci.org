@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: DA77CBDB-6C6C-4033-8794-53A35C1FD2CB
+:ID: C8C1316A-07A5-47E2-9077-FF0664C511AF
 :END:
-#+title: Task: Convert the remaining integer flags to boolean
-#+description: Three columns are still integer flags where the schema's convention is boolean, and an integer flag reads differently through the text protocol.
+#+title: Task: Run the component architecture audit in CI
+#+description: validate_docs.py is the audit's automated half and no workflow runs it; its exception file kept a real finding quiet until someone looked by hand.
 #+type: task
 #+level: s1
-#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-12
-#+updated: 2026-09-12
+#+created: 2026-09-11
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every flag column is boolean, so none of them can be parsed or compared as an integer by accident.
+The component architecture audit's mechanical checks fail the build, and every suppression in its exception file is visible rather than silent.
 
 * Status
 
@@ -31,14 +31,13 @@ Every flag column is boolean, so none of them can be parsed or compared as an in
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-12                               |
+| Last touched | 2026-09-11                               |
 
 * Acceptance
 
-- is_initial, is_terminal and is_virtual are boolean in their models and regenerated DDL.
-- Their entities and domain types agree, with no mapper conversion between them.
-- Any hand-written predicate comparing them to 0 or 1 is corrected, and any parse uses text_to_bool.
-- Each has a one-shot migration for databases that predate the change.
+- validate_docs.py runs in CI on every push and pull request that touches projects/.
+- Each remaining line in docs_exceptions.txt states its reason and has a task, or is deleted.
+- The audit document records that the automated half is enforced and which half remains manual.
 
 * Plan
 

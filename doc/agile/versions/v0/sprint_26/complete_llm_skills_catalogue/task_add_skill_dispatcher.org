@@ -5,14 +5,14 @@
 #+description: compass-act, compass-act-all and compass-export: resolve a target's type, look up the verbs registered against it, and run the chosen one.
 #+type: task
 #+level: s1
-#+filetags: :llm:skills:compass:dispatch:complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :llm:skills:compass:dispatch:complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
-#+updated: 2026-08-26
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

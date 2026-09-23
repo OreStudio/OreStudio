@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: B69BF02C-9E16-4DAF-BC0C-C5DBE0EC1BF4
+:ID: 4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC
 :END:
-#+title: Task: Make a nullable tenant column an optional type
-#+description: nullable_tenant_id makes the SQL column nullable but codegen still emits a non-optional tenant_id, and system() is a real tenant rather than an absence, so NULL and system are conflated; synthetic's mapper throws on a NULL tenant row.
+#+title: Task: Give report_definition a profile that describes it
+#+description: report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value.
 #+type: task
 #+level: s1
-#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-12
-#+updated: 2026-09-12
+#+created: 2026-09-11
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A nullable tenant column produces an optional domain and entity type, and a NULL tenant row round-trips instead of throwing.
+report_definition binds to a profile whose assignments it actually satisfies, and the model-drift exception for it is removed.
 
 * Status
 
@@ -31,14 +31,13 @@ A nullable tenant column produces an optional domain and entity type, and a NULL
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-12                               |
+| Last touched | 2026-09-11                               |
 
 * Acceptance
 
-- nullable_tenant_id true emits an optional tenant type in the domain struct and the repository entity.
-- The generated mapper maps SQL NULL to an empty optional rather than calling from_string on an empty value.
-- synthetic.market_data_generation_config no longer throws on a row whose tenant_id is NULL, proved by a test that reads such a row.
-- scheduler.job_definition's hand-written optional tenant_id matches what codegen emits.
+- report_definition either binds to a profile it satisfies or declares its features without a binding.
+- The KNOWN_MODEL_DRIFT entry in check_model_drift.py is removed.
+- If a new profile is added, it meets the catalogue's bar of naming a genuinely recurring combination rather than one entity.
 
 * Plan
 

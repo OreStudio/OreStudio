@@ -5,14 +5,14 @@
 #+description: The design type has a contract and no mustache template, so compass add design does not exist; audit every type contract against the template library.
 #+type: task
 #+level: s1
-#+filetags: :codegen:documentation:document_types:complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :codegen:documentation:document_types:complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-27
-#+updated: 2026-08-27
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

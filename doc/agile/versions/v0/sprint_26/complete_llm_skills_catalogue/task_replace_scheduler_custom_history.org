@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC
+:ID: 6110D479-CAF3-4915-8A64-698193893402
 :END:
-#+title: Task: Give report_definition a profile that describes it
-#+description: report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value.
+#+title: Task: Replace the scheduler's custom history with the generic provider
+#+description: The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error.
 #+type: task
 #+level: s1
-#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-11
-#+updated: 2026-09-11
+#+created: 2026-09-12
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-report_definition binds to a profile whose assignments it actually satisfies, and the model-drift exception for it is removed.
+Job definition history comes from the generic history provider and the audit dialog shows real records.
 
 * Status
 
@@ -30,14 +30,15 @@ report_definition binds to a profile whose assignments it actually satisfies, an
 | Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-11                               |
+| Next         | Start the first task. |
+| Last touched | 2026-09-23 |
 
 * Acceptance
 
-- report_definition either binds to a profile it satisfies or declares its features without a binding.
-- The KNOWN_MODEL_DRIFT entry in check_model_drift.py is removed.
-- If a new profile is added, it meets the catalogue's bar of naming a genuinely recurring combination rather than one entity.
+- job_definition_handler's custom history is gone and a history_provider_registrar serves the entity, as iam and analytics do.
+- JobDefinitionAuditDialog shows actual history rather than an empty list.
+- The response no longer conflates definition version history with job_instance execution records; whichever it returns is what it is named for.
+- If instance execution history is still unimplemented, that is stated rather than reported as success with no rows.
 
 * Plan
 

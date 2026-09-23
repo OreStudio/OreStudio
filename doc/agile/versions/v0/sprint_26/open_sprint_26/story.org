@@ -41,6 +41,7 @@ closed.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:98441E1A-3359-46C0-8131-31D95A6067EF][Open sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25. |
+| [[id:FB9F3A98-7F57-4462-8120-85B5E61DE6CC][Pull the skills catalogue story into sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Move Complete the LLM skills catalogue from the product backlog inbox into sprint 26, where sprint 25's close split it for. |
 
 * Decisions
 
@@ -50,7 +51,8 @@ closed.
 
 * Result
 
-Sprint 26 is open with its mission, and sprint 25 is closed. No stories
-carried over. The version bump and the vcpkg update are left for a
+Sprint 26 is open with its mission, and sprint 25 is closed. No story
+carried over from sprint 25 itself; the skills catalogue story it split
+out at close moved in from the product backlog inbox. The version bump and the vcpkg update are left for a
 separate change.
 

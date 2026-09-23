@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 6110D479-CAF3-4915-8A64-698193893402
+:ID: 07494555-8EDB-48C2-8425-CB86EE366FDC
 :END:
-#+title: Task: Replace the scheduler's custom history with the generic provider
-#+description: The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error.
+#+title: Task: Model the scheduler's hand-written operations and remove them together
+#+description: read_all_active, find_by_name twice, schedule, schedule_batch and unschedule are live and hand-written; they must be modelled in the same change that stops hand-maintaining them, or the tree builds against operations that no longer exist.
 #+type: task
 #+level: s1
-#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-12
-#+updated: 2026-09-12
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Job definition history comes from the generic history provider and the audit dialog shows real records.
+Every hand-written job_definition operation is either modelled or carried in a paste block, and scheduler-cpp regenerates without losing behaviour.
 
 * Status
 
@@ -35,10 +35,11 @@ Job definition history comes from the generic history provider and the audit dia
 
 * Acceptance
 
-- job_definition_handler's custom history is gone and a history_provider_registrar serves the entity, as iam and analytics do.
-- JobDefinitionAuditDialog shows actual history rather than an empty list.
-- The response no longer conflates definition version history with job_instance execution records; whichever it returns is what it is named for.
-- If instance execution history is still unimplemented, that is stated rather than reported as success with no rows.
+- read_all_active is modelled or pasted; scheduler_loop still loads jobs across tenants.
+- Both find_by_name overloads survive; saving a definition with an existing name still updates in place rather than violating the unique index.
+- schedule, schedule_batch and unschedule survive; ores.reporting's report_scheduling_service still compiles against the same protocol types in api.
+- The modelling and the removal land in one change — no commit removes an operation before its replacement exists.
+- The facets that remain unsafe are disabled explicitly in the model's Physical space table, each with its reason.
 
 * Plan
 

@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 4C97BB89-71E9-479A-BC04-4BA00D006052
+:ID: D38BFC7E-FCE8-418E-BD4F-294E1AAD1456
 :END:
-#+title: Task: Decide how an exact decimal is represented in C++
-#+description: 55 financial columns are numeric(28,10) for exactness and pair with double, which cannot represent most decimal fractions and holds fewer digits than the column.
+#+title: Task: Settle whether a profile fixes a feature or defaults it
+#+description: A model overrides a profile assignment and calls it a default, while the profile says it fixes the value; two bindings the model-drift check found need correcting either way.
 #+type: task
 #+level: s1
-#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
+#+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-12
-#+updated: 2026-09-12
+#+created: 2026-09-11
+#+updated: 2026-09-23
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A quantity stored as exact decimal is represented in C++ without silently rounding.
+Profile binding has one stated meaning, and the two bindings that contradict it are corrected or re-bound.
 
 * Status
 
@@ -31,13 +31,14 @@ A quantity stored as exact decimal is represented in C++ without silently roundi
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-12                               |
+| Last touched | 2026-09-11                               |
 
 * Acceptance
 
-- The risk is quantified: which columns are read, modified and written back, and whether any value can change by a round trip.
-- A representation is chosen — a decimal type, a scaled integer, or double with the limits stated and accepted.
-- If double is kept, the pairing table records it as a decision rather than a weakness.
+- The variability model states whether an assignment fixes a value or supplies an overridable default.
+- compute.result either stops binding uuid-identified-lookup or stops overriding has_change_reason_cache.
+- reporting.report_instance either declares parent_entity_singular or stops binding fk-scoped-child.
+- Both KNOWN_MODEL_DRIFT entries are removed.
 
 * Plan
 

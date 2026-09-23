@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-analytics:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-analytics
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.analytics passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Sections B to H are done and committed. Verification (V) is running: the whole-tree build is in progress. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Finish V01 and V02, recreate the database (V03), run the generated recipes against the fleet (V04), run every gate (V05), and close V06. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -57,9 +57,174 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01  | Pass. Baseline recorded before any edit: component drift 53 changed + 20 created = 73 files; no model drift for analytics. | =check_component_drift.py --component analytics-cpp --dry-run= (exit 1); =check_model_drift.py --summary= |
+| B02  | Pass. 4 =domain_entity= models, 1 =module=, 1 =ores.codegen.component=. The module and the component overview carry no variability and are excluded. No junction, operation or message model. | Inventory note below |
+| B03  | Pass. 220 non-test C++ files: 112 generated, 108 hand-written. No generatable file is hand-written; see the inventory note. | Inventory note below |
+| B04  | Pass. 4 protocol headers, 16 subjects. Raw subject strings outside headers are the entity identity constants in the domain headers plus the eventing names; the service literal is removed by the event-registrar port. | Inventory note below |
+| B05  | Pass with a recorded overlap. | Inventory note below |
+| M01  | Pass. Every model is on the current org format. No JSON model and no =lookup_entity= remains. | B02 inventory; =find= and =grep= over =modeling/= |
+| M02  | Pass. All four entities bind to a variability profile; no no-match to record. | model =:profile:=; =check_model_drift.py --summary= |
+| M03  | Pass. No model states a property its profile already fixes. | =check_model_drift.py --summary=: no drift |
+| M04  | Pass. The =ores.cpp.shell-command.enabled= opt-in sits at the entity root, where =org_loader= reads it, and the regeneration it enables produces the shell units and the table columns. | =org_loader.py= line 3764; G01 diff |
+| M05  | Pass. Each entity describes one table with history; no joined or denormalised shape. | model review; generated SQL |
+| M06  | Pass. Every wire type is modelled and generated. All four protocol headers are generated; none is hand-written. | B03; generated headers |
+| M07  | Not applicable. The component has no junction model. | B02 inventory |
+| M08  | Pass. Column types are =text= and =uuid= only; no custom C++ type and no integer flag. | =grep= of =:type:= and =:cpp_type:= over =modeling/= |
+| M09  | Pass. Each Presentation drawer carries =collection_name= and =key_field= alone; the retired protocol class names and the Qt keys are gone, and no retired keyword remains in =modeling/=. | commit 02d7be50c4; M09 =grep= |
+| M10  | Pass. The composite group model drives the root CMakeLists (now marked generated); every part carries a =component_overview.org=, and =ores.shell.analytics= is registered in its parent. | G01 diff; =validate_docs.sh= |
+| P01  | Pass. Every entity answers the canonical set: =list=, =get=, =get_many=, =put=, =put_many=, =delete=, =delete_many=, =versions.list=, =versions.get=. | the four generated protocol headers, nine subjects each |
+| P02  | Pass with one recorded exception. Hand-written code holds no raw analytics subject literal left; the component name ="analytics"= passed to =register_history_handlers= is the same literal the iam registrar passes. | B04; =registrar.cpp= |
+| P03  | Pass. 36 subjects, none duplicated; the generated registrar subscribes every one, so no declared message is unserved. | subject inventory; generated registrar review |
+| P04  | Not applicable. The component has no operation model. | B02 inventory |
+| P05  | Pass. Every consumer moves in the same change: =application.cpp=, the core registrar, =repl.cpp= and the shell aggregator. | commit a74ebddd1e |
+| P06  | Not applicable. No analytics entity declares an event cache. | no =nats-event-cache= output generated |
+| G01  | Pending V06. | =check_component_drift.py --all= |
+| G02  | Pass. No generatable file was hand-written; the four superseded =*_changed_event.hpp= headers are deleted. | commit a74ebddd1e; B03 |
+| G03  | Pass. Every generated file carries the marker and no hand-written file does. | marker =grep= against the B03 inventory |
+| G04  | Pass. The regenerated output matches the reference shapes; no template defect surfaced. | generated-code review record |
+| G05  | Not applicable this pass. No generator defect was found. | — |
+| G06  | Pass. Every component's two file lists regenerate clean. | =regenerate_cmake_component_files.py --all --check= (exit 0) |
+| W01  | Pass. The core registrar composes the generated =*_history_provider= family; the service composes the generated event mappings through the new =event_registrar= aggregate. No unwired family remains. | commit a74ebddd1e; =registrar.cpp=, =event_registrar.cpp= |
+| W02  | Pass. Every permission the analytics handlers check is seeded, and the =AnalyticsService= role holds =analytics::*=. | =check_handler_permissions.py=; =iam_roles_populate.sql= |
+| W03  | Pass. | =check_populate_references.py= |
+| W04  | Pending V03. Every analytics script is reachable from the create, RLS and drop aggregators. | aggregator review; =compass db recreate= |
+| S01  | Pass. One generated command unit, source and test per entity; the hand-written aggregator registers them; there were no hand-written units to delete. | =projects/ores.shell/analytics/=; =analytics_commands.cpp= |
+| S02  | Pass. Four literate recipes generate, one per entity, and the inventory lists all of them. | =regenerate_shell_recipe_inventory.py --check= (exit 0) |
+| H01  | Pass with recorded findings. | Audit note below |
+| H02  | Pass. The retired event headers are deleted and the registrar's duplicate history providers are removed; no dead or commented-out code remains. | commit a74ebddd1e |
+| H03  | Pass. The comment pass over the changed and added comments found no clutter, no narration and no end-of-line comment. | Comment note below |
+| V01  | Pending. | =compass build= |
+| V02  | Pending. | =compass test run= |
+| V03  | Pending. | =compass db recreate -y -k=; =compass services start= |
+| V04  | Pending. | recipe run log |
+| V05  | Pending. | each check script |
+| V06  | In progress. =analytics-cpp= is listed in =COMPONENTS_UNDER_TEST=. | =component_registry.py=; =check_component_drift.py --all= |
 
 * Notes
+
+** B02 model inventory
+
+| Model | Metatype | Profile |
+|-------+----------+---------|
+| =ores.analytics.pricing_engine_type= | domain_entity | simple-lookup |
+| =ores.analytics.pricing_model_config= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.pricing_model_product= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.pricing_model_product_parameter= | domain_entity | uuid-identified-lookup |
+| =ores.analytics.module= | module (excluded: structural, no variability) | — |
+| =component_overview.org= | component (excluded: documentation model) | — |
+
+No legacy JSON model remains and no =lookup_entity= remains, so M01 is
+already satisfied.
+
+** B03 hand-written file inventory
+
+| Part | Hand-written | Classification |
+|------+--------------+----------------|
+| api | 2 (=export.hpp=, =ores.analytics.api.hpp=) | infrastructure: export macro and aggregate header |
+| core | 4 (=export.hpp=, =ores.analytics.core.hpp=, =messaging/registrar.{hpp,cpp}=) | infrastructure: export macro, aggregate header, and the messaging composition point W01 covers |
+| service | 13 (=app/=, =config/=, =main.cpp=) | infrastructure: the service host, options and parser |
+| quant | 89 | hand-written quantitative math library; stays hand-written |
+
+No hand-written file is generatable, so G02 has no deletion target in
+this list. The =core/messaging/registrar.cpp= history-provider block is a
+hand-written duplicate of the generated =*_history_provider_registrar=
+family and is removed by W01.
+
+** B04 protocol subject inventory
+
+Four protocol headers, all generated, all under
+=api/include/ores.analytics.api/messaging/=: =pricing_engine_type_protocol.hpp=,
+=pricing_model_config_protocol.hpp=, =pricing_model_product_protocol.hpp=,
+=pricing_model_product_parameter_protocol.hpp=. Sixteen subjects in the
+retired vocabulary, four per entity: =list=, =save=, =delete=, =history=
+under =analytics.v1.<plural>=. Regeneration replaces the vocabulary with
+the canonical one.
+
+Raw subject strings outside a protocol header:
+
+- =ores.analytics.<entity>= in each domain header, the entity identity the
+  history registry and the event mapping key on;
+- =ores.analytics.<entity>_changed= in each generated =eventing/*_changed_event.hpp=,
+  retired by the canonical =eventing/*_event.hpp=;
+- three literals in the hand-written =service/src/app/application.cpp=
+  (="ores.analytics.<entity>_changed"=), removed by the W01 port.
+
+** B05 open work and in-flight branches
+
+Open captures, read so this pass does not collide:
+[[id:0B099F52-9011-4339-A346-78089A8D5815][Move generic quant primitives to ores.analytics]],
+[[id:B5A279DE-316F-49F1-B0D7-26167388BE19][Evaluate adding screamer to ores.analytics]],
+[[id:12F85A5B-A253-4CA8-AAC5-F19700689D72][Replace hardcoded permission strings with per-component constants]],
+[[id:9297CB27-F58B-4AF7-9F56-5E077778773A][Fix repo-wide component_overview.org drift]].
+None is in flight against this tree; the permission-constants capture
+becomes relevant at W02 because the generated handlers carry literal
+permission strings.
+
+In-flight branches:
+
+- =feature/remove-the-legacy-qt-remnants= (eager_maxwell, PR #2138) edits the
+  same four analytics models for M09. It removes the Qt keys
+  (=item_var=, =settings_group=, =window_title=, =icon=) that this pass also
+  removes, so the two changes overlap on those four lines and the merge
+  conflict is a trivial same-result one. This pass removes the retired
+  protocol class properties as well, which that branch does not.
+- =feature/codegen-ts-messages-analytics= (solid_dirac) carries only agile and
+  documentation commits; no code overlap.
+- The analytics codegen drift story is STARTED in another environment,
+  waiting on its post-merge live system test. That test and this pass
+  exercise the same component; this pass does not touch its records.
+
+** B01 baseline, verbatim
+
+=check_component_drift.py --component analytics-cpp --dry-run= reports 53
+changed and 20 created files (73 total), exit 1. By area: core 28+4 tests,
+api 12+4 eventing created, service 4, shell/analytics 12 created, SQL 8,
+web TypeScript 4, shell recipes 4 created, analytics root CMakeLists 1.
+
+=check_model_drift.py --summary= reports "No model drift: every bound model
+agrees with its profile (2 known exception(s))"; both exceptions are in
+ores.compute and ores.reporting, not analytics.
+
+** H01 audit note
+
+The Component Architecture Audit ran on =ores.analytics= and on the new
+=ores.shell.analytics= part. Fixed in this pass:
+
+- the quant part's =See also= listed its entries by file path and named no
+  sibling; it now uses org-roam id-links and lists the other parts;
+- =system_model_domain.org= omitted =ores.analytics.quant= from the
+  sub-component table and described the component as risk-result
+  aggregation, which no part does; the row is listed and the narrative and
+  the core role now describe the pricing model configuration and quant math
+  the parts hold;
+- the models lost their Table display sections, so the generated tables
+  rendered an empty header and no rows.
+
+Recorded findings (not fixed here):
+
+- The System Model's expectation of a per-component messaging reference is
+  unmet repo-wide. The iam part overview links one whose id
+  (=D3C4E5F6-A7B8-9012-CDEF-123456789012=) exists nowhere in the tree, and
+  no generator produces one. A new document type with no precedent is a
+  documentation decision, not a mechanical fix.
+- =ores.shell.iam= has no =modeling/ores.shell.iam.puml=, so
+  =validate_docs.sh= reports one =MISSING_PUML= violation on the tree. It
+  is pre-existing and belongs to that part, not this story.
+- The complexity measure: 10965 NLOC over 492 functions at an average CCN
+  of 2.8, with five warnings. The generated parts dominate the raw totals,
+  so they are a template signal; the warnings are all in the hand-written
+  quant library. Top file by CCN: =curve_bootstrap_engine::bootstrap= at
+  CCN 24 and 112 NLOC, followed by =quadratic_gaussian_process= at CCN 23.
+  Recorded for a later refactoring pass; the audit fixes nothing here.
+
+** H03 comment note
+
+The comment pass covered the comments this change adds or moves:
+=event_registrar.hpp=, =event_registrar.cpp=, =application.cpp= and the
+core registrar. Each explains a non-obvious why: why the aggregate is the
+one hand-maintained call site, and why the subscription vector is held for
+the run. No comment restates code, narrates an edit, or trails a line.
+Generated files keep their template comments.
 
 * Test Scenarios
 

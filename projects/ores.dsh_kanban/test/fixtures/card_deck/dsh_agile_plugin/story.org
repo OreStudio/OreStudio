@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3085B911-3030-4AB8-976F-0F037D4332E7
+:END:
+#+title: Story: Show the current agile work item inside DSH
+#+description: A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.
+#+type: story
+#+level: s2
+#+filetags: :dsh:agile:plugin:tooling:sprint_25:v0:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A DSH plugin that shows the sprint as a kanban board inside the DSH web
+session. The board reads the agile org tree directly, so it is never stale, and
+it surfaces the properties the org files already carry: the environment working
+each story and task, the state, the branch, the PR, the epic, and the task
+progress. Every session shows its own work tree's board and nothing else.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-23                             |
+| End           | 2026-09-23                             |
+
+* Acceptance
+
+- The board renders in a live DSH session and reads the current sprint from
+  =doc/agile/versions=, with no build step and no stale index.
+- Every card shows the story's environment, state, epic, and task progress.
+- Every session shows its own work tree's board, and a session never shows
+  another work tree's board.
+- A read-only fleet strip reports which work tree is on which story and task.
+- Story and task details are reachable from the board without leaving the
+  session.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A81CB08-A606-4E30-A717-88B810308137][Scaffold story: Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2612E669-545E-4482-8115-E9C1A3278770][Build the ORE Studio kanban plugin for DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
+
+* Decisions
+
+- The board reads the org tree, not the site's =graphdata.json=. The export is a
+  build-time snapshot rebuilt whole-repo by Emacs, and it cannot see the newest
+  stories, including this one.
+- The board follows its session and has no work tree picker. One DSH instance
+  hosts sessions from every work tree, and a board showing one work tree's data
+  inside another's session is the confusing case. Switching work tree means
+  switching session.
+- The work tree resolves through three strict rungs and never through the
+  process working directory. The shipped unit starts the server in the user's
+  home, so that fallback would fail every session, and in a scratch instance it
+  silently answered with the repository root, which made a broken lookup look
+  correct.
+- =tree.source= reports which rung resolved the tree, so a fallback board cannot
+  pass for a session board.
+- The card face carries the environment, epic, progress, and age. Branches,
+  pull requests, and owner live only in the detail panel: a story carries
+  several branches and PRs, and owner reads the same across the sprint.
+- The state vocabulary is one ordered table that drives the columns, the counts,
+  and the ordering, so an unknown state cannot silently become a known one.
+- The browser half is one hand-written file with no build step, so the plugin is
+  five files and iterates by hot swap rather than by a toolchain.
+- The plugin carries the ORE Studio version and installs as an independent copy
+  from a tarball, so a work tree change cannot disturb a profile that has it.
+
+* Out of scope
+
+- Writing back to the org tree. The board is read-only; =compass= remains the
+  only way agile artefacts change.
+- Comparing one story's state across work trees. The contract specifies the
+  route for it but nothing builds it.
+- A CI job is not the only gap: the plugin's tests run in
+  =.github/workflows/dsh-kanban.yml=, added with this story.

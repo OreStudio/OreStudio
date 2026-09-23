@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
@@ -17,20 +17,23 @@ import {
   resolveItem,
 } from '../lib/agile.js'
 
-// The live org tree is the fixture: these parsers are only worth anything against
-// the files they read in production. Other agents close, start and abandon work in
-// this tree while the suite runs, so a test asserts a literal only for a field an
-// edit cannot move, and every expected value comes from the file, not from the
-// code under test.
-const SPRINT_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  '..',
-  'doc/agile/versions/v0/sprint_25',
-)
-const STORY_DIR = join(SPRINT_DIR, 'dsh_agile_plugin')
+// Two sources of truth, chosen by what the assertion can survive.
+//
+// `test/fixtures/` holds verbatim copies of the agile documents taken from this
+// work tree. Every literal expected value is read from a fixture: CI checks out
+// the pull request merged with the base branch, so the live sprint directory is
+// whatever other work has made it, and a number read from there fails for
+// reasons that have nothing to do with this plugin.
+//
+// The live directory is still read, but only for invariants that hold whatever
+// the data says. The live block at the foot of this file skips itself when the
+// directory is not present, so the fixture assertions stay hermetic.
+const HERE = dirname(fileURLToPath(import.meta.url))
+const FIXTURE_DIR = join(HERE, 'fixtures/sprint_25')
+const DECK_DIR = join(HERE, 'fixtures/card_deck')
 const SPRINT_PATH = 'doc/agile/versions/v0/sprint_25/sprint.org'
+const LIVE_DIR = join(HERE, '..', '..', '..', 'doc/agile/versions/v0/sprint_25')
+
 const STORY_ID = '3085B911-3030-4AB8-976F-0F037D4332E7'
 const SCAFFOLD_ID = '8A81CB08-A606-4E30-A717-88B810308137'
 const IMPLEMENT_ID = '2612E669-545E-4482-8115-E9C1A3278770'
@@ -38,12 +41,10 @@ const STORY_TITLE = 'Show the current agile work item inside DSH'
 const SCAFFOLD_TITLE = `Scaffold story: ${STORY_TITLE}`
 const IMPLEMENT_TITLE = 'Build the ORE Studio kanban plugin for DSH'
 const BRANCH = 'feature/dsh-agile-plugin'
-const ELSEWHERE_TASK_ID = '826C9671-AE0D-48CD-B8E6-666DF92DB4AF'
 
-const sprintText = readFileSync(join(SPRINT_DIR, 'sprint.org'), 'utf8')
-const storyText = readFileSync(join(STORY_DIR, 'story.org'), 'utf8')
-const scaffoldText = readFileSync(join(STORY_DIR, 'task_scaffold_dsh_agile_plugin.org'), 'utf8')
-const implementText = readFileSync(join(STORY_DIR, 'task_implement_dsh_agile_plugin.org'), 'utf8')
+const BRANCHABLE = 'ir-rates-followups'
+const PR_STORY = 'acme_corporation_followups'
+const PR_STORY_PRS = [1824, 1825, 1830, 1839, 1852, 1958, 1968, 1983, 1986]
 
 const TREE = {
   root: '/w/ores_dev_bright_faraday',
@@ -54,19 +55,68 @@ const TREE = {
   dirty: false,
 }
 
-function storyFile(slug) {
-  return readFileSync(join(SPRINT_DIR, slug, 'story.org'), 'utf8')
+function fixtureDir(root, slug) {
+  return {
+    slug,
+    story: readFileSync(join(root, slug, 'story.org'), 'utf8'),
+    tasks: readdirSync(join(root, slug))
+      .map((name) => /^task_(.+)\.org$/.exec(name))
+      .filter((match) => match !== null)
+      .map((match) => ({ slug: match[1], text: readFileSync(join(root, slug, match[0]), 'utf8') })),
+  }
 }
 
-function taskFile(slug, file) {
-  return readFileSync(join(SPRINT_DIR, slug, `task_${file}.org`), 'utf8')
+function dirsOf(root) {
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => fixtureDir(root, entry.name))
 }
 
-function taskFiles(slug) {
-  return readdirSync(join(SPRINT_DIR, slug))
-    .map((name) => /^task_(.+)\.org$/.exec(name))
-    .filter((match) => match !== null)
-    .map((match) => match[1])
+function fixtureModel(options = {}) {
+  return buildModel({
+    doc: parseSprintDocument(fixtureText('sprint.org')),
+    dirs: dirsOf(FIXTURE_DIR),
+    options: {
+      version: 'v0',
+      sprintName: 'sprint_25',
+      sprintPath: SPRINT_PATH,
+      today: '2026-09-23',
+      ...options,
+    },
+  })
+}
+
+function fixtureText(...parts) {
+  return readFileSync(join(FIXTURE_DIR, ...parts), 'utf8')
+}
+
+function fixtureTasks() {
+  return fixtureModel().stories.flatMap((story) => story.tasks)
+}
+
+function fixtureStory(slug) {
+  return fixtureModel().stories.find((story) => story.slug === slug)
+}
+
+function liveModel(options = {}) {
+  if (!existsSync(LIVE_DIR)) return null
+  return buildModel({
+    doc: parseSprintDocument(readFileSync(join(LIVE_DIR, 'sprint.org'), 'utf8')),
+    dirs: dirsOf(LIVE_DIR),
+    options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, ...options },
+  })
+}
+
+// The `#+keyword:` value as the file literally carries it.
+function keywordOf(text, name) {
+  const row = new RegExp(`^#\\+${name}:[ \\t]*(.*)$`, 'm').exec(text)
+  return row ? row[1].trim() : ''
+}
+
+// A single-token keyword is read up to its first whitespace, because upstream
+// carries `#+environment: brave_hopper brave_hopper`.
+function firstTokenOf(text, name) {
+  return (keywordOf(text, name).replace(/\s+/g, ' ').split(' ')[0] ?? '')
 }
 
 // The Status row as the file literally carries it, which is the only thing an
@@ -76,24 +126,20 @@ function statusOf(text) {
   return row ? row[1].trim().replace(/\s+/g, ' ').toUpperCase() : 'UNKNOWN'
 }
 
-function story(overrides = {}) {
-  return {
-    id: '00000000-0000-0000-0000-00000000000A',
-    slug: 'a',
-    title: 'A story',
-    state: 'BACKLOG',
-    epic: '',
-    description: '',
-    environment: '',
-    created: '',
-    updated: '',
-    path: '',
-    progress: { done: 0, total: 0, abandoned: 0 },
-    branches: [],
-    prs: [],
-    tasks: [],
-    ...overrides,
+// The `**` group heading the story's row sits under in the sprint document.
+function epicGroupOf(text, id) {
+  let group = ''
+  let inStories = false
+  for (const line of text.split(/\r?\n/)) {
+    const heading = /^(\*+)\s+(.*)$/.exec(line)
+    if (heading) {
+      if (heading[1].length === 1) inStories = heading[2].trim().toLowerCase() === 'stories'
+      else if (inStories && heading[1].length === 2) group = heading[2].trim()
+      continue
+    }
+    if (inStories && line.includes(`[[id:${id}]`)) return group
   }
+  return ''
 }
 
 function task(overrides = {}) {
@@ -114,43 +160,8 @@ function task(overrides = {}) {
   }
 }
 
-function readSprintDirs() {
-  return readdirSync(SPRINT_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const dir = join(SPRINT_DIR, entry.name)
-      const tasks = readdirSync(dir, { withFileTypes: true })
-        .map((item) => /^task_(.+)\.org$/.exec(item.name))
-        .filter((match) => match !== null)
-        .map((match) => ({ slug: match[1], text: readFileSync(join(dir, match[0]), 'utf8') }))
-      return { slug: entry.name, story: readFileSync(join(dir, 'story.org'), 'utf8'), tasks }
-    })
-}
-
-function realModel(options = {}) {
-  return buildModel({
-    doc: parseSprintDocument(sprintText),
-    dirs: readSprintDirs(),
-    options: {
-      version: 'v0',
-      sprintName: 'sprint_25',
-      sprintPath: SPRINT_PATH,
-      today: '2026-09-23',
-      ...options,
-    },
-  })
-}
-
-function realTasks() {
-  return realModel().stories.flatMap((story) => story.tasks)
-}
-
-function sprintStory(slug) {
-  return realModel().stories.find((story) => story.slug === slug)
-}
-
 test('a story carries the literal fields of its own org file', () => {
-  const parsed = parseStoryDocument(storyText, 'dsh_agile_plugin')
+  const parsed = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin')
   assert.equal(parsed.id, STORY_ID)
   assert.equal(parsed.title, STORY_TITLE)
   assert.equal(parsed.type, 'story')
@@ -164,8 +175,11 @@ test('a story carries the literal fields of its own org file', () => {
 })
 
 test('the Story: and Task: title prefixes are stripped once', () => {
-  const parsedStory = parseStoryDocument(storyText, 'dsh_agile_plugin')
-  const scaffold = parseTaskDocument(scaffoldText, 'scaffold_dsh_agile_plugin')
+  const parsedStory = parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin')
+  const scaffold = parseTaskDocument(
+    fixtureText('dsh_agile_plugin', 'task_scaffold_dsh_agile_plugin.org'),
+    'scaffold_dsh_agile_plugin',
+  )
   assert.equal(parsedStory.title.startsWith('Story:'), false)
   assert.equal(scaffold.title.startsWith('Task:'), false)
   assert.equal(scaffold.title, SCAFFOLD_TITLE)
@@ -174,10 +188,13 @@ test('the Story: and Task: title prefixes are stripped once', () => {
 
 test('state comes from the * Status table and from nowhere else', () => {
   const real = 'collapse_instrument_identity_into_trade'
-  const text = taskFile('data-oriented-trading-model', real)
+  const text = fixtureText('data-oriented-trading-model', `task_${real}.org`)
   assert.equal(statusOf(text), 'DISCOVERED')
   assert.equal(parseTaskDocument(text, real).state, 'DISCOVERED')
-  assert.equal(parseStoryDocument(storyFile('dsh_agile_plugin'), 'dsh_agile_plugin').state, 'STARTED')
+  assert.equal(
+    parseStoryDocument(fixtureText('dsh_agile_plugin', 'story.org'), 'dsh_agile_plugin').state,
+    'DONE',
+  )
 
   // #+todo: lists the states a task may take; it is not the task's state.
   const invented = `#+title: Task: X\n#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED\n\n* Status\n\n| Field | Value |\n|-------+-------|\n| State | BLOCKED |\n`
@@ -205,12 +222,15 @@ test('a story with no Status table is UNKNOWN, and UNKNOWN sorts last', () => {
 })
 
 test('a task carries its own branch, pr and environment', () => {
-  const implement = parseTaskDocument(implementText, 'implement_dsh_agile_plugin')
+  const implement = parseTaskDocument(
+    fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin.org'),
+    'implement_dsh_agile_plugin',
+  )
   assert.equal(implement.id, IMPLEMENT_ID)
   assert.equal(implement.title, IMPLEMENT_TITLE)
   assert.equal(implement.type, 'task')
   assert.equal(implement.branch, BRANCH)
-  assert.equal(implement.pr, '')
+  assert.equal(implement.pr, '2135')
   assert.equal(implement.environment, 'bright_faraday')
   assert.equal(implement.blockedOn, '')
   assert.equal(implement.blockedSince, '')
@@ -220,7 +240,7 @@ test('a task carries its own branch, pr and environment', () => {
 })
 
 test('the sprint document carries its own dates and the story themes', () => {
-  const sprint = parseSprintDocument(sprintText)
+  const sprint = parseSprintDocument(fixtureText('sprint.org'))
   assert.equal(sprint.title, 'Sprint 25')
   assert.equal(sprint.startDate, '2026-08-03')
   assert.equal(sprint.endDate, '2026-08-10')
@@ -228,42 +248,75 @@ test('the sprint document carries its own dates and the story themes', () => {
   assert.equal(sprint.epics.get(STORY_ID), 'Hotfixes')
 })
 
+// The upstream doubled token is preserved in the fixture, because it is the only
+// shape that exercises the cut.
 test('a single-token keyword is cut at its first whitespace', () => {
-  const doubled = readFileSync(join(SPRINT_DIR, 'close-systemic-codegen-gaps/story.org'), 'utf8')
-  assert.equal(parseStoryDocument(doubled, 'close-systemic-codegen-gaps').environment, 'brave_hopper')
+  const doubled = parseStoryDocument(fixtureText('close-systemic-codegen-gaps', 'story.org'), 'x')
+  assert.equal(doubled.environment, 'brave_hopper')
   const padded = '#+title: Story: X\n#+environment:   brave_hopper   brave_hopper\n'
-  const parsed = parseStoryDocument(padded, 'x')
-  assert.equal(parsed.environment, 'brave_hopper')
+  assert.equal(parseStoryDocument(padded, 'x').environment, 'brave_hopper')
   const multi = '#+title: Story: X\n#+description:  two   spaces   collapse\n'
   assert.equal(parseStoryDocument(multi, 'x').description, 'two spaces collapse')
 })
 
 test('the epic is the ** group heading the story row sits under', () => {
-  const model = realModel()
-  assert.equal(sprintStory('dsh_agile_plugin').epic, 'Hotfixes')
-  assert.equal(sprintStory('acme_corporation_followups').epic, 'Product')
+  const sprintText = fixtureText('sprint.org')
+  const model = fixtureModel()
+  assert.equal(fixtureStory('dsh_agile_plugin').epic, epicGroupOf(sprintText, STORY_ID))
+  assert.equal(fixtureStory('dsh_agile_plugin').epic, 'Hotfixes')
+  assert.equal(fixtureStory(PR_STORY).epic, 'Product')
   assert.deepEqual(model.filters.epics, ['Hotfixes', 'Product'])
+  // Every story row in the sprint document is under a theme, and no story card
+  // carries a theme the document does not name.
   assert.deepEqual(
     [...new Set(model.stories.map((story) => story.epic))].sort(),
-    ['', 'Hotfixes', 'Product'],
+    ['Hotfixes', 'Product'],
   )
-  // Two story directories carry no row in the sprint's Stories tables, so no
-  // group heading encloses them and their epic is "".
-  assert.deepEqual(
-    model.stories.filter((story) => story.epic === '').map((story) => story.slug).sort(),
-    ['fix_provisioning_base_bundle', 'sprint_health_review'],
+
+  const synthetic = [
+    '* Stories',
+    '',
+    '** Tooling',
+    '',
+    '*** Epic: DSH integration',
+    '',
+    '| Story | State | Start | End | Description |',
+    '|-------+-------+-------+-----+-------------|',
+    `| [[id:${STORY_ID}][${STORY_TITLE}]] | STARTED | | | desc |`,
+    '',
+    '** Hotfixes',
+    '',
+    '| Story | State | Start | End | Description |',
+    '|-------+-------+-------+-----+-------------|',
+    `| [[id:${SCAFFOLD_ID}][under hotfixes]] | DONE | | | desc |`,
+    '',
+    '* Achievements',
+    '',
+    '** Not a theme',
+    '',
+    '| Story | State | Start | End | Description |',
+    '|-------+-------+-------+-----+-------------|',
+    `| [[id:${IMPLEMENT_ID}][outside Stories]] | DONE | | | desc |`,
+  ].join('\n')
+  const doc = parseSprintDocument(synthetic)
+  assert.equal(doc.epics.get(STORY_ID), 'Tooling')
+  assert.equal(doc.epics.get(SCAFFOLD_ID), 'Hotfixes')
+  assert.equal(doc.epics.has(IMPLEMENT_ID), false)
+  const uniqueIds = new Set(
+    [...sprintText.matchAll(/^\|\s*\[\[id:([0-9A-Fa-f-]+)\]/gm)].map((match) => match[1].toUpperCase()),
   )
+  assert.equal(parseSprintDocument(sprintText).epics.size, uniqueIds.size)
 })
 
 test('dayOfSprint is the true day, never clamped to the sprint span', () => {
-  const model = realModel({ today: '2026-09-23' })
+  const model = fixtureModel({ today: '2026-09-23' })
   assert.equal(model.sprint.startDate, '2026-08-03')
   assert.equal(model.sprint.totalDays, 8)
   assert.equal(model.sprint.dayOfSprint, 52)
   assert.ok(model.sprint.dayOfSprint > model.sprint.totalDays)
-  assert.equal(realModel({ today: '2026-08-03' }).sprint.dayOfSprint, 1)
-  assert.equal(realModel({ today: '2026-08-10' }).sprint.dayOfSprint, 8)
-  assert.equal(realModel({ today: '2026-08-11' }).sprint.dayOfSprint, 9)
+  assert.equal(fixtureModel({ today: '2026-08-03' }).sprint.dayOfSprint, 1)
+  assert.equal(fixtureModel({ today: '2026-08-10' }).sprint.dayOfSprint, 8)
+  assert.equal(fixtureModel({ today: '2026-08-11' }).sprint.dayOfSprint, 9)
 })
 
 test('a sprint without dates reports null days, never zero', () => {
@@ -281,29 +334,27 @@ test('a sprint without dates reports null days, never zero', () => {
   assert.equal(model.sprint.dayOfSprint, null)
 })
 
-test('progress counts done, abandoned and total against the real task files', () => {
-  const slug = 'ir-rates-followups'
-  const files = taskFiles(slug)
-  const states = files.map((file) => statusOf(taskFile(slug, file)))
-  const story = sprintStory(slug)
-  assert.equal(files.length, 20)
+test('progress counts done, abandoned and total against the story task files', () => {
+  const dir = fixtureDir(FIXTURE_DIR, BRANCHABLE)
+  const states = dir.tasks.map((task) => statusOf(task.text))
+  const story = fixtureStory(BRANCHABLE)
+  assert.equal(dir.tasks.length, 20)
   assert.equal(states.filter((state) => state === 'DONE').length, 11)
   assert.equal(states.filter((state) => state === 'ABANDONED').length, 2)
   assert.deepEqual(story.progress, { done: 11, total: 20, abandoned: 2 })
 })
 
 test('the branches and prs unions drop empties and sort', () => {
-  const model = realModel()
-  const own = sprintStory('dsh_agile_plugin')
+  const own = fixtureStory('dsh_agile_plugin')
   assert.deepEqual(own.branches, [BRANCH])
   assert.deepEqual(own.tasks.map((task) => task.branch), [BRANCH, BRANCH])
-  assert.deepEqual(own.prs, [])
+  assert.deepEqual(own.prs, [2135])
 
-  // A story whose tasks carry real PR numbers: nine tasks, nine distinct PRs,
-  // one empty #+pr: dropped, and the union sorted ascending.
-  const followups = sprintStory('acme_corporation_followups')
-  assert.deepEqual(followups.prs, [1824, 1825, 1830, 1839, 1852, 1958, 1968, 1983, 1986])
-  assert.equal(followups.tasks.filter((task) => task.pr === '').length, 1)
+  // Nine tasks carry a real PR number, one file is empty, and two tasks share
+  // PR 1958, so the union is sorted, deduplicated and free of the empty value.
+  const followups = fixtureStory(PR_STORY)
+  assert.deepEqual(followups.prs, PR_STORY_PRS)
+  assert.equal(followups.tasks.length, 11)
   assert.deepEqual(
     followups.prs,
     [...new Set(followups.tasks.map((task) => parsePrNumber(task.pr)).filter((pr) => pr !== null))].sort(
@@ -367,7 +418,7 @@ test('tasks sort by state in table order, then by title', () => {
     'DONE',
     'UNKNOWN',
   ])
-  const real = sprintStory('dsh_agile_plugin')
+  const real = fixtureStory('dsh_agile_plugin')
   const ranked = [...real.tasks].sort((a, b) => {
     const order = columnOrder(a.state) - columnOrder(b.state)
     return order !== 0 ? order : a.title < b.title ? -1 : a.title > b.title ? 1 : 0
@@ -375,63 +426,44 @@ test('tasks sort by state in table order, then by title', () => {
   assert.deepEqual(real.tasks.map((task) => task.slug), ranked.map((task) => task.slug))
 })
 
-test('every story directory in the sprint becomes a card', () => {
-  const model = realModel()
-  const dirs = readSprintDirs()
-  assert.equal(model.stories.length, 103)
+test('every story directory in the fixture deck becomes exactly one card', () => {
+  const dirs = dirsOf(DECK_DIR)
+  const model = buildModel({
+    doc: parseSprintDocument(fixtureText('sprint.org')),
+    dirs,
+    options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, today: '2026-09-23' },
+  })
   assert.equal(model.stories.length, dirs.length)
-  assert.equal(model.counts.stories, 103)
+  assert.equal(model.counts.stories, dirs.length)
   assert.deepEqual(
     model.stories.map((story) => story.slug).sort(),
     dirs.map((dir) => dir.slug).sort(),
   )
   for (const card of model.stories) {
     assert.ok(STATE_IDS.includes(card.state))
-    assert.equal(card.state, statusOf(storyFile(card.slug)))
-    assert.equal(card.id.length, 36)
+    assert.equal(card.state, statusOf(readFileSync(join(DECK_DIR, card.slug, 'story.org'), 'utf8')))
+    assert.ok(card.id.length > 0)
+    assert.ok(card.title.length > 0)
   }
 })
 
-test('the theme comes from the ** group the row sits under, not a deeper heading', () => {
-  const text = [
-    '* Stories',
-    '',
-    '** Tooling',
-    '',
-    '*** Epic: DSH integration',
-    '',
-    '| Story | State | Start | End | Description |',
-    '|-------+-------+-------+-----+-------------|',
-    `| [[id:${STORY_ID}][${STORY_TITLE}]] | STARTED | | | desc |`,
-    '',
-    '** Hotfixes',
-    '',
-    '| Story | State | Start | End | Description |',
-    '|-------+-------+-------+-----+-------------|',
-    `| [[id:${SCAFFOLD_ID}][under hotfixes]] | DONE | | | desc |`,
-    '',
-    '* Achievements',
-    '',
-    '** Not a theme',
-    '',
-    '| Story | State | Start | End | Description |',
-    '|-------+-------+-------+-----+-------------|',
-    `| [[id:${IMPLEMENT_ID}][outside Stories]] | DONE | | | desc |`,
-  ].join('\n')
-  const doc = parseSprintDocument(text)
-  assert.equal(doc.epics.get(STORY_ID), 'Tooling')
-  assert.equal(doc.epics.get(SCAFFOLD_ID), 'Hotfixes')
-  assert.equal(doc.epics.has(IMPLEMENT_ID), false)
-  const bare = parseSprintDocument(sprintText)
-  const uniqueIds = new Set(
-    [...sprintText.matchAll(/^\|\s*\[\[id:([0-9A-Fa-f-]+)\]/gm)].map((match) => match[1].toUpperCase()),
+test('the columns are the state table, and count the cards', () => {
+  const model = fixtureModel()
+  assert.deepEqual(model.columns, [
+    { id: 'BACKLOG', title: 'Backlog', count: 0 },
+    { id: 'STARTED', title: 'Started', count: 3 },
+    { id: 'BLOCKED', title: 'Blocked', count: 0 },
+    { id: 'DONE', title: 'Done', count: 2 },
+    { id: 'ABANDONED', title: 'Abandoned', count: 0 },
+  ])
+  assert.equal(
+    model.columns.reduce((total, column) => total + column.count, 0),
+    model.counts.stories,
   )
-  assert.equal(bare.epics.size, uniqueIds.size)
-  assert.equal(sprintStory('dsh_agile_plugin').epic, 'Hotfixes')
 })
 
-test('the columns, counts and filters describe the whole sprint', () => {
-  const model = realModel()
+test('the columns, counts and filters describe the fixture sprint', () => {
+  const model = fixtureModel()
   assert.deepEqual(model.sprint, {
     version: 'v0',
     name: 'sprint_25',
@@ -442,43 +474,35 @@ test('the columns, counts and filters describe the whole sprint', () => {
     totalDays: 8,
     path: SPRINT_PATH,
   })
-  assert.deepEqual(model.columns, [
-    { id: 'BACKLOG', title: 'Backlog', count: 7 },
-    { id: 'STARTED', title: 'Started', count: 32 },
-    { id: 'BLOCKED', title: 'Blocked', count: 1 },
-    { id: 'DONE', title: 'Done', count: 63 },
-    { id: 'ABANDONED', title: 'Abandoned', count: 0 },
-  ])
   assert.deepEqual(model.counts, {
-    stories: 103,
-    storiesDone: 63,
-    storiesStarted: 32,
-    storiesBlocked: 1,
-    tasks: 447,
-    tasksDone: 314,
+    stories: 5,
+    storiesDone: 2,
+    storiesStarted: 3,
+    storiesBlocked: 0,
+    tasks: 55,
+    tasksDone: 37,
   })
   assert.equal(
     model.columns.reduce((total, column) => total + column.count, 0),
     model.counts.stories,
   )
+  assert.deepEqual(
+    model.filters.epics,
+    [...new Set(model.stories.map((story) => story.epic))].filter((epic) => epic !== '').sort(),
+  )
   assert.deepEqual(model.filters.epics, ['Hotfixes', 'Product'])
   assert.deepEqual(model.filters.environments, [
     'brave_hopper',
     'bright_faraday',
-    'clever_dijkstra',
     'eager_maxwell',
-    'festive_dijkstra',
-    'jolly_knuth',
     'merry_newton',
     'prime_origin',
-    'solid_dirac',
-    'swift_curie',
   ])
 })
 
 test('DISCOVERED cards fold into the BACKLOG column', () => {
   const model = buildModel({
-    doc: parseSprintDocument(sprintText),
+    doc: parseSprintDocument(fixtureText('sprint.org')),
     dirs: [
       { slug: 'a', story: '#+title: Story: A\n\n* Status\n\n| State | DISCOVERED |\n', tasks: [] },
       { slug: 'b', story: '#+title: Story: B\n\n* Status\n\n| State | BACKLOG |\n', tasks: [] },
@@ -496,16 +520,9 @@ test('DISCOVERED cards fold into the BACKLOG column', () => {
 })
 
 test('the UNKNOWN column appears only when a card lands in it', () => {
-  assert.equal(realModel().columns.some((column) => column.id === 'UNKNOWN'), false)
-  assert.deepEqual(realModel().columns.map((column) => column.id), [
-    'BACKLOG',
-    'STARTED',
-    'BLOCKED',
-    'DONE',
-    'ABANDONED',
-  ])
+  assert.equal(fixtureModel().columns.some((column) => column.id === 'UNKNOWN'), false)
   const model = buildModel({
-    doc: parseSprintDocument(sprintText),
+    doc: parseSprintDocument(fixtureText('sprint.org')),
     dirs: [{ slug: 'a', story: '#+title: Story: A\n#+type: story\n', tasks: [] }],
     options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, today: '2026-09-23' },
   })
@@ -521,8 +538,7 @@ test('the UNKNOWN column appears only when a card lands in it', () => {
 })
 
 test('every field the model exposes is populated from the files, not defaulted', () => {
-  const model = realModel()
-  const own = sprintStory('dsh_agile_plugin')
+  const own = fixtureStory('dsh_agile_plugin')
   assert.equal(own.description.length > 40, true)
   assert.equal(own.title, STORY_TITLE)
   assert.equal(own.slug, 'dsh_agile_plugin')
@@ -538,21 +554,13 @@ test('every field the model exposes is populated from the files, not defaulted',
     assert.notEqual(card.created, '')
     assert.notEqual(card.updated, '')
     assert.equal(card.path, `doc/agile/versions/v0/sprint_25/dsh_agile_plugin/task_${card.slug}.org`)
-    assert.equal(card.state, statusOf(taskFile('dsh_agile_plugin', card.slug)))
+    assert.equal(card.state, statusOf(fixtureText('dsh_agile_plugin', `task_${card.slug}.org`)))
   }
   const scaffold = own.tasks.find((card) => card.slug === 'scaffold_dsh_agile_plugin')
   assert.equal(scaffold.id, SCAFFOLD_ID)
   assert.equal(scaffold.title, SCAFFOLD_TITLE)
   assert.equal(scaffold.scaffold, true)
-  assert.equal(model.sprint.title, 'Sprint 25')
-  assert.deepEqual(model.counts, {
-    stories: 103,
-    storiesDone: 63,
-    storiesStarted: 32,
-    storiesBlocked: 1,
-    tasks: 447,
-    tasksDone: 314,
-  })
+  assert.equal(fixtureModel().sprint.title, 'Sprint 25')
 })
 
 test('environments that appear only on tasks still reach the filter', () => {
@@ -588,23 +596,28 @@ test('environments that appear only on tasks still reach the filter', () => {
 test('the work item resolves by branch, then by journal task id', () => {
   const entry = { date: '2026-09-23 11:09', taskId: IMPLEMENT_ID }
   const scaffoldEntry = { date: '2026-09-23 10:56', taskId: SCAFFOLD_ID }
-  assert.deepEqual(resolveItem(realTasks(), BRANCH, entry), {
+  assert.deepEqual(resolveItem(fixtureTasks(), BRANCH, null), {
+    storyId: STORY_ID,
+    taskId: IMPLEMENT_ID,
+    by: 'branch',
+  })
+  assert.deepEqual(resolveItem(fixtureTasks(), BRANCH, entry), {
     storyId: STORY_ID,
     taskId: IMPLEMENT_ID,
     by: 'branch',
   })
   // The journal wins over the fallback even when its task is the earlier one.
-  assert.deepEqual(resolveItem(realTasks(), BRANCH, scaffoldEntry), {
+  assert.deepEqual(resolveItem(fixtureTasks(), BRANCH, scaffoldEntry), {
     storyId: STORY_ID,
     taskId: SCAFFOLD_ID,
     by: 'branch',
   })
-  assert.deepEqual(resolveItem(realTasks(), 'feature/nothing-here', entry), {
+  assert.deepEqual(resolveItem(fixtureTasks(), 'feature/nothing-here', entry), {
     storyId: '',
     taskId: '',
     by: 'none',
   })
-  assert.deepEqual(resolveItem(realTasks(), '', entry), { storyId: '', taskId: '', by: 'none' })
+  assert.deepEqual(resolveItem(fixtureTasks(), '', entry), { storyId: '', taskId: '', by: 'none' })
 })
 
 test('with no journal it takes the latest update, then the first path', () => {
@@ -631,7 +644,7 @@ test('with no journal it takes the latest update, then the first path', () => {
 })
 
 test('the tree object describes the session work tree and its own item', () => {
-  const model = realModel({
+  const model = fixtureModel({
     tree: { ...TREE, entry: { taskId: IMPLEMENT_ID } },
     source: 'session',
   })
@@ -649,11 +662,11 @@ test('the tree object describes the session work tree and its own item', () => {
   })
   assert.equal('session' in model, false)
   assert.equal('isSession' in model.tree, false)
-  assert.equal(realModel({ tree: { ...TREE }, source: 'cwd' }).tree.source, 'cwd')
+  assert.equal(fixtureModel({ tree: { ...TREE }, source: 'cwd' }).tree.source, 'cwd')
 })
 
 test('tree.by separates sprint-only from none', () => {
-  const matched = realModel({ tree: { ...TREE, entry: null } })
+  const matched = fixtureModel({ tree: { ...TREE, entry: null } })
   assert.equal(matched.tree.by, 'branch')
 
   const noSprint = buildModel({
@@ -669,7 +682,7 @@ test('tree.by separates sprint-only from none', () => {
   })
   assert.equal(noSprint.tree.by, 'none')
 
-  const sprintOnly = realModel({ tree: { ...TREE, branch: 'feature/nothing-here', entry: null } })
+  const sprintOnly = fixtureModel({ tree: { ...TREE, branch: 'feature/nothing-here', entry: null } })
   assert.equal(sprintOnly.tree.by, 'sprint-only')
   assert.equal(sprintOnly.tree.currentStoryId, '')
   assert.equal(sprintOnly.tree.currentTaskId, '')
@@ -694,7 +707,7 @@ test('trees lists every work tree, sorted, each with its own work item', () => {
       entry: null,
     },
   ]
-  const model = realModel({ tree: { ...TREE, entry: { taskId: IMPLEMENT_ID } }, trees })
+  const model = fixtureModel({ tree: { ...TREE, entry: { taskId: IMPLEMENT_ID } }, trees })
   assert.deepEqual(model.trees.map((tree) => tree.label), [
     'brave_hopper',
     'bright_faraday',
@@ -718,11 +731,14 @@ test('trees lists every work tree, sorted, each with its own work item', () => {
   assert.equal(model.trees[1].currentTaskId, IMPLEMENT_ID)
   assert.equal(model.trees[1].storyTitle, STORY_TITLE)
   assert.equal(model.trees[1].taskTitle, IMPLEMENT_TITLE)
-  assert.equal(model.trees[1].state, statusOf(implementText))
+  assert.equal(
+    model.trees[1].state,
+    statusOf(fixtureText('dsh_agile_plugin', 'task_implement_dsh_agile_plugin.org')),
+  )
   assert.equal(model.trees[2].label, 'jolly_knuth')
   // The fleet is a report: it never decides what the board shows.
   assert.equal(model.tree.label, 'bright_faraday')
-  assert.equal(model.stories.length, 103)
+  assert.equal(model.stories.length, dirsOf(FIXTURE_DIR).length)
 })
 
 test('the trees list is capped at 40 rows', () => {
@@ -733,7 +749,7 @@ test('the trees list is capped at 40 rows', () => {
     branch: 'feature/x',
     entry: null,
   }))
-  const model = realModel({ tree: { ...TREE, entry: null }, trees })
+  const model = fixtureModel({ tree: { ...TREE, entry: null }, trees })
   assert.equal(model.trees.length, 40)
   assert.equal(model.trees[0].label, 't00')
   assert.equal(model.trees[39].label, 't39')
@@ -741,7 +757,7 @@ test('the trees list is capped at 40 rows', () => {
 })
 
 test('a work tree whose journal names a task this sprint lacks still reports it', () => {
-  const model = realModel({
+  const model = fixtureModel({
     tree: { ...TREE, entry: null },
     trees: [
       {
@@ -751,7 +767,7 @@ test('a work tree whose journal names a task this sprint lacks still reports it'
         root: '/w/ores_dev_brave_hopper',
         branch: 'feature/health-review-2',
         entry: {
-          taskId: ELSEWHERE_TASK_ID,
+          taskId: '826C9671-AE0D-48CD-B8E6-666DF92DB4AF',
           storyTitle: 'Sprint 25 closure: story cleanup and reset for sprint 26',
           taskTitle: 'Clean up the sprint 25 stories for close',
           state: 'DONE',
@@ -767,7 +783,7 @@ test('a work tree whose journal names a task this sprint lacks still reports it'
     branch: 'feature/health-review-2',
     isSession: false,
     currentStoryId: '',
-    currentTaskId: ELSEWHERE_TASK_ID,
+    currentTaskId: '826C9671-AE0D-48CD-B8E6-666DF92DB4AF',
     storyTitle: 'Sprint 25 closure: story cleanup and reset for sprint 26',
     taskTitle: 'Clean up the sprint 25 stories for close',
     state: 'DONE',
@@ -776,16 +792,21 @@ test('a work tree whose journal names a task this sprint lacks still reports it'
 })
 
 test('a journal PR reaches the row, and none reads as an empty string', () => {
-  const model = realModel({
+  const model = fixtureModel({
     tree: { ...TREE, entry: null },
     trees: [
       {
         ...TREE,
         label: 'a',
         root: '/w/ores_dev_a',
-        entry: { taskId: ELSEWHERE_TASK_ID, state: 'DONE', pr: parsePrNumber('#2103') },
+        entry: { taskId: '826C9671-AE0D-48CD-B8E6-666DF92DB4AF', state: 'DONE', pr: parsePrNumber('#2103') },
       },
-      { ...TREE, label: 'b', root: '/w/ores_dev_b', entry: { taskId: ELSEWHERE_TASK_ID, state: 'DONE', pr: '' } },
+      {
+        ...TREE,
+        label: 'b',
+        root: '/w/ores_dev_b',
+        entry: { taskId: '826C9671-AE0D-48CD-B8E6-666DF92DB4AF', state: 'DONE', pr: '' },
+      },
     ],
   })
   assert.equal(model.trees[0].pr, '2103')
@@ -793,7 +814,7 @@ test('a journal PR reaches the row, and none reads as an empty string', () => {
 })
 
 test('a work tree with no journal still gets a row', () => {
-  const model = realModel({
+  const model = fixtureModel({
     tree: { ...TREE, entry: null },
     trees: [
       {
@@ -844,5 +865,136 @@ test('a journal entry parses into the fields the tree row carries', () => {
     state: 'STARTED',
     branch: BRANCH,
     pr: '2135',
+  })
+})
+
+// The live sprint directory is a moving document: other work trees close, start
+// and abandon stories in it while this suite runs. Everything below holds for
+// any data, so it proves the parser against the real tree without failing on an
+// edit it did not make. The block skips itself when the tree is absent.
+test('every story directory in the live sprint becomes exactly one card', (t) => {
+  if (!existsSync(LIVE_DIR)) {
+    t.skip('the live sprint directory is not present')
+    return
+  }
+  const model = liveModel()
+  const dirs = dirsOf(LIVE_DIR)
+  assert.equal(model.stories.length, dirs.length)
+  assert.equal(model.counts.stories, dirs.length)
+  assert.deepEqual(
+    model.stories.map((story) => story.slug).sort(),
+    dirs.map((dir) => dir.slug).sort(),
+  )
+  for (const card of model.stories) {
+    assert.ok(STATE_IDS.includes(card.state))
+    assert.equal(card.state, statusOf(fixtureDir(LIVE_DIR, card.slug).story))
+    assert.notEqual(card.id, '')
+    assert.notEqual(card.title, '')
+  }
+})
+
+test('every live card and task carries the fields the board renders', (t) => {
+  if (!existsSync(LIVE_DIR)) {
+    t.skip('the live sprint directory is not present')
+    return
+  }
+  const model = liveModel()
+  const dirs = new Map(dirsOf(LIVE_DIR).map((dir) => [dir.slug, dir]))
+  assert.ok(model.stories.length > 0)
+
+  // Fields the board renders unconditionally must arrive populated; the ones the
+  // org documents leave optional must still be the document's own value, never a
+  // default the parser invented.
+  for (const card of model.stories) {
+    const dir = dirs.get(card.slug)
+    assert.ok(card.id.length > 0)
+    assert.ok(card.title.length > 0)
+    assert.equal(typeof card.environment, 'string')
+    assert.equal(card.created, keywordOf(dir.story, 'created'))
+    assert.equal(card.updated, keywordOf(dir.story, 'updated'))
+    assert.equal(card.environment, firstTokenOf(dir.story, 'environment'))
+    for (const item of card.tasks) {
+      const text = dir.tasks.find((task) => task.slug === item.slug).text
+      assert.ok(item.id.length > 0)
+      assert.ok(item.title.length > 0)
+      assert.equal(typeof item.environment, 'string')
+      assert.equal(item.environment, firstTokenOf(text, 'environment'))
+      // A task's state comes from its own `* Status` table and nowhere else.
+      assert.equal(item.state, statusOf(text))
+    }
+    // The branch list is the union of the branches its own tasks carry.
+    assert.deepEqual(card.branches, [...new Set(card.tasks.map((item) => item.branch))].filter((b) => b !== '').sort())
+    assert.equal(card.progress.total, card.tasks.length)
+    assert.equal(card.progress.done, card.tasks.filter((item) => item.state === 'DONE').length)
+    assert.equal(card.progress.abandoned, card.tasks.filter((item) => item.state === 'ABANDONED').length)
+  }
+})
+
+test('the live columns come from the state table and count the live cards', (t) => {
+  if (!existsSync(LIVE_DIR)) {
+    t.skip('the live sprint directory is not present')
+    return
+  }
+  const model = liveModel()
+  const canonical = [
+    { id: 'BACKLOG', title: 'Backlog' },
+    { id: 'STARTED', title: 'Started' },
+    { id: 'BLOCKED', title: 'Blocked' },
+    { id: 'DONE', title: 'Done' },
+    { id: 'ABANDONED', title: 'Abandoned' },
+  ]
+  assert.deepEqual(model.columns.map(({ id, title }) => ({ id, title })), canonical)
+  assert.equal(
+    model.columns.reduce((total, column) => total + column.count, 0),
+    model.counts.stories,
+  )
+  for (const column of model.columns) {
+    assert.equal(
+      column.count,
+      model.stories.filter((story) => {
+        const state = story.state
+        return state === column.id || (column.id === 'BACKLOG' && state === 'DISCOVERED')
+      }).length,
+    )
+  }
+  assert.deepEqual(
+    model.filters.epics,
+    [...new Set(model.stories.map((story) => story.epic))].filter((epic) => epic !== '').sort(),
+  )
+  assert.deepEqual(
+    model.filters.environments,
+    [
+      ...new Set(
+        model.stories
+          .flatMap((story) => [story.environment, ...story.tasks.map((item) => item.environment)])
+          .filter((environment) => environment !== ''),
+      ),
+    ].sort(),
+  )
+})
+
+test('the live work item resolves by branch to a task of the live sprint', (t) => {
+  if (!existsSync(LIVE_DIR)) {
+    t.skip('the live sprint directory is not present')
+    return
+  }
+  const model = liveModel()
+  const tasks = model.stories.flatMap((story) => story.tasks)
+  assert.ok(tasks.length > 0)
+
+  // Any branch the live sprint still carries is a fair input: the resolution it
+  // produces must be a real task of this sprint, sitting on that branch.
+  const branch = tasks.find((item) => item.branch !== '').branch
+  const resolved = resolveItem(tasks, branch, null)
+  assert.equal(resolved.by, 'branch')
+  assert.notEqual(resolved.taskId, '')
+  const carrying = tasks.find((item) => item.id === resolved.taskId)
+  assert.equal(carrying.branch, branch)
+
+  // A branch no task carries resolves to nothing rather than to a near match.
+  assert.deepEqual(resolveItem(tasks, 'feature/no-such-branch-here', null), {
+    storyId: '',
+    taskId: '',
+    by: 'none',
   })
 })

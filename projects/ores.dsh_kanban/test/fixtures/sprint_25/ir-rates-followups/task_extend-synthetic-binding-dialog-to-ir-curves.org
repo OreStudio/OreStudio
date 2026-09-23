@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 48D6933D-05F4-4B34-B796-FE1B4A2A6444
+:END:
+#+title: Task: Extend SyntheticBindingDialog to cover IR curve configs
+#+description: SyntheticBindingDialog only ever lists fx_spot_generation_config records and bulk-creates feed bindings for them; ir_curve_generation_config has no equivalent, so IR curve feed ticks can never be persisted into market_observations even manually, unlike FX. Generalize the dialog (or add a sibling) to cover IR curves too, matching this story's own goal of bringing IR curves to FX parity.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/extend-synthetic-binding-dialog-to-ir-curves
+#+pr: 1735
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Discovered while manually verifying vintage-aware IR curve seeding
+([[id:FC800706-1673-4E48-84C2-22569E836DF5][task]]): =ores_marketdata_feed_bindings_tbl= is what makes the
+marketdata service persist a synthetic feed's ticks as
+=market_observations= (subscribing to =synthetic.v1.tick.<source_name>=
+and republishing on the tenant-scoped stream) -- without a binding, a
+feed's ticks flow over NATS but are never stored, so there is no way
+to inspect a curve's live/historical rate afterwards (e.g. via SQL, or
+any screen backed by =market_observations=).
+
+=SyntheticBindingDialog= (=projects/ores.qt/marketdata/src/
+SyntheticBindingDialog.cpp=) is the existing manual tool for this --
+it lists =fx_spot_generation_config= records and bulk-creates bindings
+for the ones a user checks. It has no =ir_curve_generation_config=
+equivalent at all: an IR curve feed's ticks can never be persisted,
+even by hand, today. This story's own goal is bringing IR curve feeds
+to FX's existing quality bar -- this is one more gap in that parity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- =SyntheticBindingDialog= (or a sibling reachable the same way) lists
+  =ir_curve_generation_config= records alongside/instead of FX ones,
+  with the same checklist-and-bulk-create-bindings behaviour,
+  including pre-ticking rows that already have a binding.
+- After binding an IR curve feed and starting it, its ticks land in
+  =ores_marketdata_market_observations_tbl= the same way FX's already
+  do -- verifiable by SQL or any observation-backed screen.
+- No regression to the existing FX-only flow for callers that only
+  ever bind FX configs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+=SyntheticBindingDialog= currently operates directly on
+=std::vector<fx_spot_generation_config>= end to end (=loadConfigs=/
+=populateTable=/=createBindings=). Rather than duplicating that whole
+pipeline for IR, introduce one local, dialog-internal
+=BindableConfig { kind, ore_key, source_name }= struct that both
+config kinds convert into, and make the pipeline operate on
+=std::vector<BindableConfig>= instead of the FX domain type directly:
+
+- =loadConfigs()= fires both =get_fx_spot_generation_configs_request=
+  and =get_ir_curve_generation_configs_request= (existing defaults,
+  matching current FX-only behaviour) and merges both into one
+  =BindableConfig= list once both return.
+- FX's =ore_key= is already a stored field, used as-is.
+- IR curve configs have no =ore_key= field -- =feed_binding.ore_key=
+  is described as "an official ORE market series" key, and
+  =ir_curve_feed.cpp= already computes exactly that for its own
+  =market_series= qualifier lookup: =currency_code + "/" +
+  strip_currency_prefix(currency_code, index_name)= (e.g.
+  ="USD/LIBOR-3M"=). Mirror that same computation locally (the
+  prefix-stripping helper is already duplicated client-side in
+  =IrCurveEditor.cpp='s anonymous namespace for the same reason --
+  service-layer code isn't linkable from Qt).
+- Add a "Type" column (FX/IR) to the table so mixed rows aren't
+  ambiguous once both kinds can appear together.
+- =createBindings()= is otherwise kind-agnostic already (it only ever
+  read =ore_key=/=source_name= off the FX struct) -- no change needed
+  there beyond the type change.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:E7249ACB-D839-43D9-BF38-864C5A7AB93F][Bind and verify an IR curve feed via SyntheticBindingDialog]] | PARTIAL PASS | Steps 1-5 (this task's own acceptance) PASS. Step 6 ("no regression to FX-only flow") failed for a pre-existing gap unrelated to this task's changes -- feed_binding has no product-kind filter at all, so FxSpotGridWindow already rendered every binding as FX; IR bindings simply exposed it. Spun out as [[id:C2F23164-99A2-4640-8DA2-8BFB017ACB12][Task: Feed bindings have no product-kind filter]]. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1735][#1735]] | [qt] Extend SyntheticBindingDialog to cover IR curve configs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | FX Spot grid regression not called out in PR description | (PR body) | Accepted | Already tracked as a separate follow-up task; not blocking, but adding an explicit callout. |
+| 2 | IR ore_key is bare qualifier, not FX's SERIES_TYPE/METRIC/QUALIFIER shape | SyntheticBindingDialog.cpp | Accepted | Added a comment explaining it's deliberate and harmless today (curve_feed_ingest_loop never reads feed_binding.ore_key for IR); flagged for the follow-up task. |
+| 3 | loadConfigs() fails the whole dialog closed if IR service is unavailable | SyntheticBindingDialog.cpp | Accepted | IR fetch failure now logs a warning and falls back to FX-only rows instead of aborting the load. |
+
+* Result
+
+=SyntheticBindingDialog= now lists =ir_curve_generation_config= records
+alongside FX ones via a local =BindableConfig= merge, adds a Type
+(FX/IR) column, and binds IR curve feeds through the same
+=createBindings()= pipeline FX already used. Manually verified:
+binding and starting an IR curve feed persists its ticks into
+=ores_marketdata_market_observations_tbl=, matching FX's existing
+behaviour; pre-ticking for already-bound rows works for both kinds.
+
+Testing surfaced a pre-existing gap this task's own acceptance didn't
+anticipate: =feed_binding= carries no product-kind discriminator, so
+FX-only screens (=FxSpotGridWindow= confirmed, others likely) treat
+every binding as FX regardless of what it actually binds. IR bindings
+simply exposed a filtering gap that was always there. Tracked
+separately as [[id:C2F23164-99A2-4640-8DA2-8BFB017ACB12][Task: Feed bindings have no product-kind filter]] rather
+than blocking this task on it.
+
+Also surfaced, unrelated to this task's code: Barclays Plc provisioning
+via the 2026-realistic bundle never seeds CRM topology (majors/
+minors/exotics) -- captured separately in the product backlog.

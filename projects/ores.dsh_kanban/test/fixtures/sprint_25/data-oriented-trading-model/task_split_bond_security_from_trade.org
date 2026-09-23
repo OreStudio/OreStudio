@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 0C525D24-F52E-49AB-8301-47BE637C10A2
+:END:
+#+title: Task: Split the bond security from the trade, following ORE
+#+description: Bond static data — the issue, its legs, and a future's contract terms — is stored once per trade because every bond table hangs off instrument_id, which carries trade_id; ORE holds the same data once per security in a reference datum.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bond's static data is stored once per security and referenced by trades, matching ORE's trade and reference-datum split.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- The shared bond entities are keyed by the ORE reference datum id, which is SecurityId for a bond and ContractName for a bond future.
+- bond_future keeps only what ORE keeps on the trade and its contract terms move to a shared entity.
+- bond_leg and its rate, amount and amortization tables hang off the security rather than the instrument.
+- bond_issue gains the six fields ORE has and we lack, and loses bond_notional, which ORE holds on the trade.
+- The fields duplicated against the leg tables — currency, coupon rate, coupon frequency, day count — are held once.
+- A trade that states its bond inline rather than by reference still round-trips.
+- The ORE round-trip stays at zero loss across the bond products and the trade envelope.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Plan
+
+ORE is the ground truth. The job is to apply data-oriented principles
+to ORE's data model, not to invent one, and not to diverge without
+recording why.
+
+** What ORE's model says
+
+=ReferenceData= is a list of =ReferenceDatum=. Each datum carries an
+=id= attribute, an optional =validFrom=, a =Type= element, and one
+payload from a closed choice of thirteen. So the key is the datum id,
+not a business name: a bond's is its =SecurityId=, a bond future's is
+its =ContractName=.
+
+Three things follow that we already believe. =id= plus =Type= plus a
+closed choice is the explicit-variation rule from
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] — per-type tables against a closed variant, not
+an inheritance web. =validFrom= means ORE already treats this data as
+time-varying, which our bitemporal tables carry natively. And because
+the key is a datum id, no entity needs the words "reference data" in
+its name: we name the thing, as =bond_issue= already does, which also
+keeps clear of =ores.refdata=.
+
+** The relationship the schema states
+
+=bondReferenceDatum= is exactly =bondData= minus =SecurityId=,
+=BondNotional=, =Payer= and =CreditRisk=.
+
+That is the split, stated by ORE itself. Everything else on a bond is
+static data about the security. The four exceptions are the trade's
+own: which security, how much, which side, and whether credit risk
+applies.
+
+=bondFutureData= says the same thing in the other direction: v17 cut
+it to =ContractName=, =ContractNotional= and =LongShort=, plus the new
+=ApplyConversionFactor= and =UseFuturePrice=, and moved the thirteen
+contract terms into =bondFutureReferenceDatum=.
+
+** Where our model disagrees
+
+Every bond table hangs off =instrument_id=, and =bond_instrument=
+carries =trade_id=. So all of it is per trade:
+
+- =bond_future= holds twelve contract terms that belong to the
+  contract. Ten trades on one Bund future repeat them ten times.
+- =bond_leg= and its rate, amount and amortization tables hold the
+  coupon schedule, currency and day count. In ORE these are =LegData=
+  /inside/ =bondReferenceDatum=, so they belong to the security.
+- =bond_issue= is the one entity already shared — no =trade_id=, keyed
+  by =security_id= — and it is =bondReferenceDatum= under another
+  name. It is missing =CreditGroup=, =VolatilityCurveId=,
+  =PriceQuoteMethod=, =PriceQuoteBaseValue=, =SubType= and
+  =PriceType=; it carries =bond_notional=, which ORE puts on the
+  trade; and its =currency=, =coupon_rate=, =coupon_frequency_code=
+  and =day_count_code= duplicate the leg tables.
+
+So the pattern to follow already exists in our own model. =bond_issue=
+is the shape; the rest of the bond family does not follow it.
+
+** The decision this turns on
+
+ORE lets a trade state its bond either way: =bondData= carries
+=SecurityId= /and/ every static field, so a portfolio can be
+self-contained or can lean on a reference datum. Our model has to
+round-trip both, which is what the inline acceptance criterion is for.
+Normalising on the security is right; the inline case then populates
+the security rather than bypassing it.
+
+** Sequence
+
+Shared entities first, because the per-trade tables point at them.
+Model, mapper and tests move together — no commit removes a column
+before its replacement exists. The component audit runs before the
+task closes.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

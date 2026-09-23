@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 86CA88E8-E054-488B-B548-2AC4F9801D15
+:END:
+#+title: Task: Fix missing dataset dependency edges for currency refdata datasets
+#+description: Fresh db recreate + Acme provisioning aborts the base refdata publish at step 0: publication_service::resolve_publication_order() topologically sorts bundle members, and datasets with no declared dependency edges become sinks that float to the front. refdata.currency_pairs has no edge to iso.currencies, so it publishes before any currencies exist (error: Invalid base_currency EUR, no active currency found), the 38-step workflow aborts, and nothing else in the base bundle publishes, which cascades into the acme_lei_import failing on missing business centres (error: Invalid business_centre GBLO, must be one of WRLD). Same bug class fixed for refdata.calendars depending on iso.countries in commit 9527e7590; the currency siblings were never given edges.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-base-bundle-dataset-dependency-edges
+#+pr: 1935
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fresh db recreate + Acme Corporation provisioning must complete end-to-end. Today it aborts at the very first step of the base refdata publish: publication_service::resolve_publication_order() topologically sorts bundle members and datasets with no declared dependency edges become sinks that float to the front, so refdata.currency_pairs publishes before any iso.currencies exist and its insert trigger hard-raises ("Invalid base_currency: EUR. No active currency found"). The whole 38-step base publish then aborts, which cascades into the acme_lei_import failing on missing business centres ("Invalid business_centre: GBLO. Must be one of: WRLD"). The fix declares the missing dependency edges on the five currency refdata datasets, mirroring the refdata.calendars -> iso.countries precedent (commit 9527e7590), so dependency-graph resolution orders every dataset after the data it references.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- refdata.currency_pairs declares a dependency on iso.currencies
+- refdata.currency_pair_conventions declares a dependency on refdata.currency_pairs
+- refdata.currency_calendars declares dependencies on refdata.calendars and iso.currencies
+- refdata.currency_countries declares dependencies on iso.countries and iso.currencies
+- refdata.currency_pair_convention_calendars declares dependencies on refdata.currency_pair_conventions and refdata.calendars
+- Fresh db recreate + Acme provisioning completes with base refdata fully published and the LEI import succeeding
+
+* Plan
+
+1. Root-cause the abort: reproduce the provisioning failure, then trace publication_service::resolve_publication_order() (boost adjacency list, topological sort with sinks floated to the front) to confirm the missing-edge bug class.
+2. Add dependency edges to the five seed populate scripts, inside each dataset's registration DO block, via ores_dq_dataset_dependencies_upsert_fn(tenant, dataset_code, dependency_code, role), with the role capturing the kind of reference:
+   - refdata.currency_pairs -> iso.currencies (currency_reference)
+   - refdata.currency_pair_conventions -> refdata.currency_pairs (currency_pair_reference)
+   - refdata.currency_calendars -> refdata.calendars (calendar_reference), iso.currencies (currency_reference)
+   - refdata.currency_countries -> iso.countries (country_reference), iso.currencies (currency_reference)
+   - refdata.currency_pair_convention_calendars -> refdata.currency_pair_conventions (currency_pair_reference), refdata.calendars (calendar_reference)
+3. Verify against the live DB by re-dispatching bundles publish base --wait and acme_lei_import, then the full acceptance run: stop services, db recreate -y -k, start services, run the Acme provisioning script end-to-end.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1935][#1935]] | [sql] Declare currency refdata dataset dependencies for bundle publish |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All five acceptance points shipped as dependency edges in the seed populate scripts under projects/ores.sql/populate/refdata/ (one commit: f26dc44fa, "[sql] Declare currency refdata dataset dependencies for bundle publish"):
+
+- refdata.currency_pairs -> iso.currencies
+- refdata.currency_pair_conventions -> refdata.currency_pairs
+- refdata.currency_calendars -> refdata.calendars, iso.currencies
+- refdata.currency_countries -> iso.countries, iso.currencies
+- refdata.currency_pair_convention_calendars -> refdata.currency_pair_conventions, refdata.calendars
+
+Acceptance verified end-to-end on a fresh database (schema 0.0.25, seeded from the fix commit): after db recreate and a full fleet start, the Acme provisioning script completes — the base bundle publishes all 38 datasets in dependency-correct order (iso.currencies immediately before refdata.currency_pairs; refdata.currency_pair_conventions, refdata.currency_countries, refdata.calendars, refdata.currency_pair_convention_calendars, refdata.currency_calendars after their references; fpml.business_center last), acme_lei_import completes, and the holding group provisions with its UK/US/HK subsidiaries. Published refdata for the acme tenant: 168 currencies, 179 currency pairs, 179 pair conventions, 60 calendars, 213 business centres (incl. GBLO, the original missing centre), 35 currency calendars, 39 currency countries, 5 LEI parties. Build clean (linux-clang-debug-make); full suite green via compass build rat (71/71 test targets, including ores.refdata.core.tests: 3424 assertions in 237 test cases).
+
+Known, unrelated pre-existing issue surfaced by the same run: synthetic.themes.realistic_2026 fails in every group ("Invalid parameter_definition_id: <uuid>. No active yield_curve_process_parameter_definition found with this id", raised by ores_synthetic_config_process_parameter_values_insert_fn) — a synthetic-config seed gap with no dependency on this change; flagged for a separate task.

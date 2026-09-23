@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: E95A3D20-7BE2-4126-89F6-896F0F965C90
+:END:
+#+title: Story: Asset-class-agnostic Market Simulator client: shared IR/FX config UX
+#+description: The Market Simulator client (ores.qt synthetic) implements the same generation-config experience once per asset class: MarketSimulatorWindow builds the tree, walks selections, and dispatches edit/new/delete per asset class (its delete dispatch is hardcoded to FX, so IR curve deletes silently no-op), IrCurveEditor was copy-adapted from FxSpotRateEditor, and the process-parameter rows IR drives from the parameter-definitions table are the same table FX fills with hardcoded labels. Make the client stack asset-class-agnostic so a new asset class registers once instead of copying the window or the editor again.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:marketdata:qt:refactor:sprint_25:v0:
+#+created: 2026-09-03
+#+updated: 2026-09-03
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Market Simulator client is asset-class-agnostic. One tree builder,
+one selection walk, and one new/edit/delete dispatch serve every
+generation-config kind; the kind of the selected node is derived once
+and used by every action. One embedded generation-config editor
+framework (provenance/instrument/process tabs, preview charts,
+Simple/Advanced parameter table) is parameterised by kind instead of
+copied per asset class. The process-parameter rows are data-driven for
+every asset class from its parameter-definitions table, replacing the
+FX editor's hardcoded rows. A new asset class is a config table, a
+parameter-definitions table, and one registration — the window and the
+editor framework are not copied again.
+
+* Motivation
+
+The IR curve work (IrCurveEditor, the tree rows, the config CRUD in the
+Market Simulator) was carried out by copy-adapting the FX
+implementation. The copy-paste already produced a defect: observed
+2026-09-03, deleting an IR curve config from the tree sends the FX
+delete request (=delete_fx_spot_generation_config_request=) because
+=onDeleteClicked='s feed branch is hardcoded to FX; the FX handler
+silently no-ops on the unknown id, so the delete appears to succeed and
+the config stays in the tree and keeps publishing. The same copy-paste
+has also produced divergence: the IR process-parameter rows are driven
+by the yield_curve_process_parameter_definitions table (data-driven
+labels added 2026-08-31), while the FX editor hardcodes its parameter
+rows ("κ (reversion speed)") — two different implementations of the
+same table.
+
+The copy-paste produced a further defect in the IR editor, observed
+during the BK PR review (PR #2000, 2026-09-04): the price-source
+vintage lock does not disable =initial_rate= on the Simple parameter
+page. =updatePriceSourceEnablement()= disables the Advanced page's
+=initialRateSpin_= correctly, then walks the Simple page's rows
+matching cell text against the parameter name ="initial_rate"= — but
+the Simple page's cells show the short label ("Initial rate"), so the
+match never fires. Re-entering Simple mode via the toggle also does not
+re-run the enablement. The shared editor base this story builds reads
+the parameter name from the model, so the lock lands in the
+data-driven row keyed on =parameter_name= instead of matching display
+text.
+
+* Duplication inventory
+
+Verified 2026-09-03 against the tree on =feature/bk-feature-test-scenario=.
+Parallel per-asset-class code in =MarketSimulatorWindow.cpp=:
+
+- =buildFeedItem(fx)= vs =buildIrCurveFeedItem(ir)= — two tree row
+  builders.
+- =pairsUnderIndex= vs =irCurvesUnderIndex=; =selectedFxPairs= vs
+  =selectedIrCurves= — parallel selection walks over the
+  =fxPairs_=/=irCurves_= member maps.
+- =openFxEditorForNew/Edit= vs =openIrCurveEditorForNew/Edit= — parallel
+  editor openers.
+- =editEntity= dispatches correctly by map membership; =onDeleteClicked=
+  does not — the defect above.
+
+Parallel editor code:
+
+- =IrCurveEditor.cpp= was copy-adapted from =FxSpotRateEditor.cpp=: both
+  embed provenance/instrument/process scaffolding, preview charts, and a
+  Simple/Advanced parameter table in the Market Simulator's right panel.
+- IR parameter rows: data-driven via =ClientYieldCurveProcessParameterDefinitionModel=
+  and the definitions table. FX parameter rows: hardcoded in
+  =FxSpotRateEditor.cpp=. One of these implementations should serve both.
+
+Scope note: the per-entity client stacks
+(=Client*Model=, =*Controller=, =*MdiWindow=, =*DetailDialog=) and the
+service-layer per-entity code are codegen-generated; their duplication
+is generative and is the codegen template's business, not this story's.
+The hand-written window/editor layer above them is the target.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Capture created; not decomposed.       |
+| Waiting on    | Nothing.                               |
+| Next          | Decompose into tasks.                  |
+| Last touched  | 2026-09-03                               |
+
+* Acceptance
+
+- MarketSimulatorWindow derives the selected node's kind once; the
+  new/edit/delete actions dispatch through one path. The
+  delete-dispatch defect class (IR action sending an FX request) is
+  gone.
+- One tree-row builder and one selection walk serve every config kind;
+  adding a config kind adds no per-kind branch to the window.
+- One embedded generation-config editor framework serves FX pairs and
+  IR curves. The parameter rows are data-driven for both asset classes;
+  the FX editor's hardcoded rows are replaced.
+- A new asset class plugs in with a config table, a
+  parameter-definitions table, and one registration. The window and the
+  editor framework are not copied.
+- Client feed control-plane code (folder start/stop fan-out, per-config
+  start/stop loops) stays with
+  [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]],
+  which already owns it; this story covers the config CRUD, tree, and
+  editor paths only.

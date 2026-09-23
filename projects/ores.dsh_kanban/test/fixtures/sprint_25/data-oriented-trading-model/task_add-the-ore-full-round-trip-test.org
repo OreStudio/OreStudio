@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: D2D32410-37A1-4C2D-BE3E-3DDD60AD7BF1
+:END:
+#+title: Task: Add the ORE full round trip test
+#+description: A full round trip test driven entirely through the service layer via ores.shell commands: take an ORE example document, upload it, import it to the database, export it back to XML, and classify the differences with the project's own diff script. The bond products and the envelope must read zero. Runs only after the mapper path losses are fixed, per the user's ordering.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/rework-bond-ores-mapping
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One command drives an ORE XML document through the database and back, and the output differs from the input only in ordering and numeric or boolean spelling.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                             |
+
+* Acceptance
+
+- A =.ores= script takes an ORE example document, uploads it, imports
+  it, exports it back, and writes the XML.
+- The script drives the service layer through =ores.shell=. It does
+  not call =ores.cli=.
+- =scripts/ore_mapper_roundtrip_diff.py= compares the source document
+  to the round-tripped output. The bond products and the envelope read
+  zero lost and zero unexplained pairs.
+- A live run against the environment records the per-product counts.
+
+* Plan
+
+One script with three steps, then the classifier over the result. The
+script runner aborts on the first error, which suits a gate.
+
+This task depends on the two before it. It starts only when the
+mapper path reads zero loss and the shell has the three verbs.
+
+* Notes
+
+Carried over from the parent story, the binding scope answers:
+
+- The bond products and the trade envelope are the scope. The other
+  products in the tree are counted debt.
+- Content that no table holds must survive the round trip, so the
+  shared tables land first.
+
+The first live run of this test failed, and the cause was not in the
+container or the tables. reflect-cpp wrote every variant untagged and
+read it back by declaration order, so =trade_instrument= decoded as
+=std::monostate= on both the wire and the storage blob, and the export
+carried no product block at all. See
+[[id:FCC206C0-D808-40CC-86E8-14F687B0AB57][Fix silent instrument loss
+from untagged variant serialisation]]. This test is what surfaced it:
+the mapper path never crosses the codec, so no earlier test could.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=projects/ores.shell/scripts/library/ore/how_do_i_round_trip_an_ore_document_through_the_database.ores=
+drives one ORE example document through the database and back, using
+only =ores.shell= verbs: =ore upload=, =ore import=, =ore export=. It
+is tangled from the recipe at
+[[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE
+document through the database]], so the prose and the script stay one
+artefact.
+
+=scripts/ore_mapper_roundtrip_diff.py= classifies the source against
+the output, order-blind. It exits 0 only when the bond products and the
+trade envelope read zero lost and zero unexplained, with no document
+missing an output.
+
+Two live runs, each on a fresh database with its own provisioning and
+its own request id:
+
+| Document | Request id | Export | In scope | Out of scope | Worst relative error |
+|----------+------------+--------+----------+--------------+----------------------|
+| =Cash_BondRepo_and_Bond.xml= | =a4f3433a-521b-40b2-ae25-279af93fcad2= | 1775 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 2.247e-8 |
+| =BondOption_StrikePrice_StrikeYield.xml= | =1b016671-221d-4aaa-96b1-c333535f2bcb= | 2169 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 5.455e-9 |
+
+Both runs classified =Documents: 1  Failures: 0  Skipped: 0=. The
+second document exercises a different product family: the option block,
+the strike group and the exercise dates.
+
+The only differences left are element order, which the classifier is
+order-blind to, and two numerics collapsing to =xs:float= precision
+(=28371509.989758= to =28371510=, and =0.0178= to =0.0177999996=),
+both classified =numeric=.
+
+The first run failed before the codec defect was fixed: the same
+document exported 653 bytes with no product block and 27 lost pairs in
+scope. The export is now 1775 bytes and carries both products whole.
+
+** The re-run over the payload
+
+Both documents were run again after the untagged-variant codec was
+replaced. =trade_export_item::instrument= is now an =instrument_payload=,
+and no =std::variant= reaches the wire. The payload is
+document-independent, so the same documents must reproduce the same
+numbers, and they do:
+
+| Document | Request id | Export | In scope | Out of scope | Worst relative error |
+|----------+------------+--------+----------+--------------+----------------------|
+| =Cash_BondRepo_and_Bond.xml= | =f88c963c-cc7f-4528-b8b2-719734155630= | 1775 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 2.247e-8 |
+| =BondOption_StrikePrice_StrikeYield.xml= | =d57ae6e0-7894-4f0b-beb5-bb308c750f25= | 2169 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 5.455e-9 |
+
+Each re-run again took a fresh database, its own provisioning and its own
+request id. The exported byte counts and the worst relative errors are
+identical to the two runs above, which is the evidence that the payload
+carries the instrument whole rather than by a guess. The runs above were
+taken with variant tagging in the tree, so they verified the tagged build
+and not the payload that replaced it.
+
+The rows the import wrote were counted directly, so the export is known
+to read from storage and not from memory. The bond document left 2
+trades, 2 bond instruments, 1 bond issue, 1 bond repo, 1 bond leg and 2
+leg amounts. The option document left 2 trades, 2 bond instruments, 1
+bond issue and 2 bond options, with no legs and no leg rates, which is
+what a document stating no =LegData= should leave.
+
+Recorded debt:
+
+- The export returns every trade in the database, so the test needs one
+  document per fresh database. The classifier compares one document.
+- The import's book creation is not request-id-scoped, so a second
+  import for the same party violates =books_party_id_name_uniq_idx=.
+  The script works around it with a per-request portfolio name; the
+  index collision itself is not fixed.
+- Two documents is not the bond corpus. A per-document sweep across all
+  50 bond-carrying example documents is not measured.

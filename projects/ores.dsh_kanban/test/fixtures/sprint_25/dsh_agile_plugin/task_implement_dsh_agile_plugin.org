@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 2612E669-545E-4482-8115-E9C1A3278770
+:END:
+#+title: Task: Build the ORE Studio kanban plugin for DSH
+#+description: A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.
+#+type: task
+#+level: s1
+#+filetags: :dsh_agile_plugin:sprint_25:v0:
+#+owner: marco
+#+branch: feature/dsh-agile-plugin
+#+pr: 2135
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A DSH plugin that shows the sprint as a kanban board inside the DSH web
+session. The board reads the agile org tree directly, so it is never stale,
+and it surfaces the properties the org files already carry: the environment
+working each story and task, the state, the branch, the PR, the owner, the
+epic, and the task progress. The work tree the session runs in is
+highlighted, and one control filters the board to a single environment.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- The board renders in a live DSH session and reads the current sprint from
+  =doc/agile/versions=, with no build step and no stale index.
+- Every card shows the story's environment, state, epic, task progress,
+  branch, and PR.
+- The session's own work tree is identified and its story is highlighted.
+- Filtering by environment answers which story and task a given work tree
+  is on.
+- Story and task details are reachable from the board without leaving the
+  session.
+
+* Plan
+
+The board is a read-only view over the org tree, so the work split three ways
+and the seams were frozen before either half was written.
+
+- =CONTRACT.md= names every payload field, the resolution rules, and both client
+  seats. The host half was built and measured against it first, and the browser
+  half then consumed it. The two halves changed without touching each other.
+- The host reads the org tree. =lib/agile.js= is a pure transform from org text
+  to the model, so the parser is tested with no server and no filesystem.
+  =lib/git.js= owns the only process boundary, answering the work tree list and
+  each work tree's journal.
+- The browser half is one hand-written file loaded verbatim by the module
+  loader, with no build step and no dependencies beyond React from the platform
+  module table. That keeps the whole plugin to five files.
+
+The design changed twice under review, both times from the user. The first scope
+was a single work-item panel, and it became a board. The second was a board that
+could be pointed at any work tree; that came out, because a board showing one
+work tree's data inside another work tree's session is the confusing case, and
+the fleet strip became a read-only overview instead.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2135][#2135]] | [dsh] Add the ORE Studio kanban board plugin |
+
+* Review
+
+An independent reviewer read all five files against =CONTRACT.md= and produced a
+defect list. Every accepted item is fixed; the declines are recorded.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The session's work tree came from a field meaning "created in", and any usable value returned a confident board | lib/index.js | accept | Replaced with three strict rungs, no =process.cwd()= fallback, and =tree.source= so a fallback board cannot pass for a session board. In the shipped unit that fallback is the user's home, so it would have failed every session. |
+| 2 | One style element with two owners, so the first seat to unmount stripped the other | lib/client.js | accept | Reference counted. |
+| 3 | =parsePrNumber= took the first digit run in any text, so prose became a link to a real pull request | lib/agile.js | accept | Anchored to a bare number, optionally prefixed with =. |
+| 4 | Cache keyed by directory and never swept | lib/index.js | accept | Keyed by the resolved work tree root, swept on write. |
+| 5 | The documented test command fails on the shipped Node | CONTRACT.md | accept | Corrected to an invocation that runs. |
+| 6 | =findSprint= read and parsed 25 =sprint.org= files to return one | lib/index.js | accept | Picks the newest by directory name, then reads it once. |
+| 7 | =git status= ran for all eleven work trees to fill fields nothing rendered | lib/git.js | accept | =dirty= and =detached= dropped from the fleet rows. Together with item 6 the cold request fell from about 0.6s to 0.22s. |
+| 8 | The client re-derived the column set the contract says it must not repeat | lib/client.js | accept | Deleted; an empty =columns= renders the empty-board message. |
+| 9 | Seven tests re-derived their own expected value | test/agile.test.mjs | accept | Rewritten to literal values read from the real files, with the uncovered behaviour added. |
+| 10 | =owner= rendered on the card and in the detail | lib/client.js | accept | User decision: it reads the same across the sprint, so it left both the board and the payload. |
+| 11 | Branches and pull requests on the card face | lib/client.js | accept | User decision. Measuring it found a defect the reviewer had not seen: each card's PR-link row overflowed its own width by up to 548px. |
+| 12 | A failed git read could report =detached: false= | lib/git.js | decline | The contract types it as a boolean, so a missing key would contradict the payload. A failed read yields an empty branch, which distinguishes the two. |
+| 13 | The seat 1 popover is left-anchored and would clip on a narrow viewport | lib/client.js | decline | Measured at 900x800 with no clipping. It would clip only below 584px, which the shell does not reach. |
+
+* Result
+
+=projects/ores.dsh_kanban= is a DSH web plugin that renders the session's own
+work tree's sprint as a kanban board, read from the org tree on disk. It is
+read-only, it has no build step, and it is five files.
+
+What it shows. A five-column board of the sprint's stories, coloured by state,
+with the session's own story outlined and scrolled into view. Each card carries
+the story's environment, epic, task progress, and age. A read-only fleet strip
+lists every work tree and what each is currently on. A header readout names the
+current environment, story, and task without opening the board. The detail panel
+carries the story's id, state, environment, epic, dates, description, branches,
+and pull requests, then every task with its own state, environment, branch, and
+PR.
+
+How it resolves the work tree. Three strict rungs: the host session store, then
+a directory that must land on a work tree root of this repository, then failure.
+There is no fallback to the process working directory, because the shipped unit
+starts the server in the user's home and that fallback would answer for a
+directory that is not a work tree. =tree.source= reports the rung taken.
+
+Measured. 31 host tests, 87 browser assertions in a real Chrome against a real
+instance, exit 0. Payload 470KB. Cold request 0.22s, cached 0.01s. No page
+errors.
+
+Packaging. The plugin carries the ORE Studio version, enforced against
+=CMakeLists.txt= by =scripts/check-manifest.mjs=, and =scripts/install.mjs=
+installs it into a profile as an independent copy extracted from a versioned
+tarball rather than as a link into a work tree.
+
+Verification. =scripts/verify.mjs= is the client gate. It binds its own port,
+copies the scratch home so it can run beside a served instance, refuses to
+continue unless the boot log names the port it bound, asserts the resolution
+ladder, drives the board in a real browser, and measures overflow rather than
+leaving it to the eye. A workflow runs the manifest check, a parse check on the
+browser bundle, and the host tests, because no existing workflow reaches this
+component.

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: F628C22E-E488-43EF-8B0C-9C6FA5893E9A
+:END:
+#+title: Task: Add a product short code to trade type
+#+description: Add a short mnemonic code to trade_type, mint one for each of the 119 product types, and correct the identifiers table on every product knowledge page.
+#+type: task
+#+level: s1
+#+filetags: :trading:identity:refdata:data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-13
+#+updated: 2026-09-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=trade_type= carries =code=, which holds ORE's =TradeType= string:
+=Bond=, =BondTRS=, =EquityAutoDeltaHedgedOption=. Those values are
+ORE's, they are long, and a trader cannot key them quickly.
+
+=counterparty= already holds the pattern this task wants. Its
+=short_code= is a natural key, described in the model as "a brief
+mnemonic code used in trading systems", and it sits beside
+=full_name=.
+
+This task gives =trade_type= the same treatment: a short mnemonic
+code of three to six characters, distinct from ORE's =code=, minted
+once for each of the 119 product types.
+
+It also corrects a claim the documentation already makes. The
+identifiers table on each of the 88 product knowledge pages carries a
+row labelled "ORE Studio product code" whose value is ORE's
+=TradeType= code. No ORE Studio product code exists yet, so that
+label names something the model does not hold.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-13                               |
+
+* Acceptance
+
+- =trade_type= carries a =short_code= column, marked =natural_key=,
+  following the =counterparty.short_code= precedent.
+- Every one of the 119 rows in
+  =trading_trade_types_populate.sql= carries a short code of three to
+  six characters.
+- Short codes are unique across the catalogue, and a uniqueness
+  constraint enforces it rather than convention.
+- The identifiers table on every product knowledge page states the
+  short code under a label that matches what the model holds, and the
+  row naming ORE's own code says so.
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] carries the short code alongside the ORE
+  code, so the two can be read against each other.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Open questions for the plan.
+
+- Whether the short code is allocated by hand per product or derived
+  from the ORE code by a rule. A rule is reproducible, but it will
+  collide: =EquityForwardVolatilityAgreement= and
+  =FxForwardVolatilityAgreement= share most of their words.
+- Whether the short code or ORE's =code= is the primary key. ORE's
+  =code= is the primary key today and the wire format depends on it,
+  so the short code is most likely a second natural key rather than a
+  replacement.
+- Whether =Failed= needs a short code. It is ORE's marker for a trade
+  it could not build and the product catalogue excludes it, so it
+  probably does not.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

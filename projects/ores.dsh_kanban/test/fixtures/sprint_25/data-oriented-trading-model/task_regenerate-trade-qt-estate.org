@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 5A01EEBC-3955-4B1D-8490-698F1DCF824E
+:END:
+#+title: Task: Regenerate the trade Qt estate
+#+description: The nine ores.qt Trade files are still hand-written, and four of them read execution_timestamp as a string.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/regenerate-trade-qt-estate
+#+pr: 2101
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-18
+#+updated: 2026-09-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nine ores.qt Trade files come from the model like the rest of the trade estate, so regenerating trade no longer has to stop at the Qt boundary.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                            |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Abandoned. Qt is no longer the target. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing here. A TypeScript experiment replaces it. |
+| Last touched | 2026-09-18                               |
+
+* Acceptance
+
+- The nine ores.qt Trade files regenerate, with any bespoke members org-declared through the implements mechanism
+- The four files reading execution_timestamp as a string are reconciled with whatever domain type the model settles on
+- Regenerating trade is idempotent and leaves the tree clean; the full build and ctest stay green against a live environment
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2101][#2101]] | [codegen] Let the entity guard see the nullable enum the template carries |
+
+* Review
+
+Round 1, PR #2101. The fix itself was confirmed by the reviewer, who
+traced the template independently rather than taking the body's word for
+it. Two non-blocking nits, both accepted.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Module docstring still says nine type flags; the tuple now holds ten | test_entity_struct_column_coverage.py | Accept | Counted the tuple: ten. Docstring corrected |
+| 2 | The Status table's State cell still read BACKLOG while Now, Next and the story row all said abandoned | task_regenerate-trade-qt-estate.org | Accept | My miss: the abandon commit matched on STARTED, which the cell never held. Set to ABANDONED |
+
+* Result
+
+Abandoned before implementation, on the evidence the investigation
+produced rather than on a change of taste.
+
+Codegen can reach the envelope: the detail-dialog template already
+supports tabbing by view group, =DetailDialogBase= is already a
+=QWidget= so a generated dialog embeds without a base-class change, the
+foreign-key graph is available for selectors, and the eleven paste
+points in the dialog implementation are the same augmentation mechanism
+the service layer now uses. None of that was the obstacle.
+
+The obstacle is that the effort to make a UI fit codegen and C++ was
+outrunning what the UI was worth. Two findings made that concrete. The
+instrument form dispatch is pure data and would generate cleanly, but
+the =.ui= template has no paste point, so an extra widget has nowhere
+declared to sit -- a new seam invented for the UI alone. And bond, the
+freshest model, showed the deeper problem: =bond_instrument= carries
+five columns, all foreign keys, while the economics live across
+=bond_issue=, =bond_leg= and =bond_leg_rate=. A form per entity gives a
+form over a junction row. The containment that would let codegen follow
+the family is not modelled -- =bond_leg= names =instrument_id= as a
+plain column and declares no foreign key at all -- so generating a
+usable instrument form needs a data-model change before it needs a
+template change.
+
+The direction is now a TypeScript UI using ordinary code reuse rather
+than codegen. Trade work ends at the C++ layer.
+
+* Notes
+
+One fix is kept and travels separately: the entity struct-coverage guard
+refused a nullable scoped enum, which stopped trade regenerating
+altogether. That is not Qt work and it blocks anyone regenerating trade,
+so it is not abandoned with the rest.

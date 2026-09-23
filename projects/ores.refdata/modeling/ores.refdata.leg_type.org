@@ -2,7 +2,7 @@
 :ID: 40DDDC9B-1913-4B8C-A313-E2D694C5B156
 :END:
 #+title: ores.refdata.leg_type
-#+description: Codegen entity model for the refdata leg_type table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata leg_type table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:

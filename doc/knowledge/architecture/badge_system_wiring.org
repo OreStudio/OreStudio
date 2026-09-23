@@ -15,15 +15,13 @@ ORE Studio resolves pill badges from the database through a three-
 layer system: =ores.dq= owns the four domain entities
 (=badge_severity=, =code_domain=, =badge_definition=, =badge_mapping=);
 =ores.sql= seeds them at install time; and the UI resolves a
-=(domain, entity_code)= pair to a colour. For codegen-backed entities,
-adding a new badge needs no hand-written UI code — the entity's
-presentation drawer carries the badge in two table columns
-(=is_badge=/=badge_key=), and the generator emits those as =codeDomain=
-in the entity's TypeScript UI metadata. Only the SQL population entry is
-manual. Because a missing SQL entry fails silently (the resolver falls
-back to the shared fallback colour, not an error), it is the step most
-often forgotten. The UI-side resolver went with the Qt client and is not
-rebuilt yet — see §UI resolution below. Return to
+=(domain, entity_code)= pair to a colour. An entity's presentation
+drawer carries the badge in two table columns (=is_badge=/=badge_key=).
+Only the SQL population entry is manual. Because a missing SQL entry
+fails silently (the resolver falls back to the shared fallback colour,
+not an error), it is the step most often forgotten. The UI-side resolver
+went with the Qt client and is not rebuilt yet — see §UI resolution below.
+Return to
 [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
@@ -63,16 +61,14 @@ structure per new badge domain is always three blocks:
 The Qt client held the badge resolver: =ores.qt.api='s =BadgeCache=,
 filled at login and injected into an =EntityItemDelegate= that painted
 the badge columns and resolved the combo entries. That client is
-removed. The TypeScript web client in =ores.web= holds the generated UI
-metadata and a shared =DataTable=, but it carries no badge resolver yet,
-so nothing resolves or paints a badge today. *Do not look for a live resolver;*
-there is none.
+removed. The TypeScript web client in =ores.web= carries no badge
+resolver yet, so nothing resolves or paints a badge today. *Do not look
+for a live resolver;* there is none.
 
 What survives is the contract on the model side. A column or detail
 field carries =is_badge= and =badge_key= in the entity's presentation
-drawer, and the generator emits the pair as =codeDomain= in the
-entity's =_ui.ts= file. A screen that reads =codeDomain= resolves it
-against the code domains below and paints the badge definition's
+drawer. A screen that reads those keys resolves them against the code
+domains below and paints the badge definition's
 colours. Two rules from the old resolver are kept here, because they
 are the part most easily got wrong:
 
@@ -137,6 +133,5 @@ script partway through and leaves the DB half-populated — re-run
   ='algorithm'=, ='llm'= (because =ClientAccountModel= returns
   =account.account_type= verbatim).
 - UI wiring: the =account_type= column carries =is_badge= and
-  =badge_key: account_type=, which the generator emits as
-  =codeDomain= in the entity's =_ui.ts= file. The delegate and the
-  combo painting went with the Qt client (§UI resolution above).
+  =badge_key: account_type= in the presentation drawer. The delegate
+  and the combo painting went with the Qt client (§UI resolution above).

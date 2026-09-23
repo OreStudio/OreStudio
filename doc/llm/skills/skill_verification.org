@@ -108,8 +108,7 @@ which is a gap worth closing on its own terms.
 ** Rung 4: The Interface
 
 The desktop client is removed. The TypeScript web client in =ores.web=
-is the interface now: its list, detail and history screens render the
-generated UI metadata. The rung stays in the ladder because that client
+is the interface now. The rung stays in the ladder because that client
 needs it, and the rule below is what governs it.
 
 The rule that governs the choice of mechanism:

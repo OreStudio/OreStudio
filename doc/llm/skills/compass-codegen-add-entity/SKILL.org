@@ -34,11 +34,9 @@ association tables). If it does not exist, scaffold it with
 =compass add entity_org ...= before proceeding. See
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
 
-The model also carries the entity's UI metadata: the =** Presentation=
-drawer holds =collection_name=, =key_field=, and the =*** Columns= and
-=*** Detail fields= tables. The =ores.ts.ui= facet emits that drawer to a
-TypeScript file per entity, so the UI layer is a codegen run over the model
-rather than a hand-written layer of its own.
+The model also carries the entity's summary capability in the =** Presentation=
+drawer: =collection_name=, =key_field=, and the =*** Columns= and
+=*** Detail fields= tables. The C++ presentation facets read that drawer.
 
 ** Step 2 — Create one task per layer
 

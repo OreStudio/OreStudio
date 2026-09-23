@@ -2,7 +2,7 @@
 :ID: 8FB6949F-05C1-4867-91F3-B9B6FA2329EC
 :END:
 #+title: ores.refdata.counterparty
-#+description: Codegen entity model for the refdata =counterparty= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata =counterparty= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:

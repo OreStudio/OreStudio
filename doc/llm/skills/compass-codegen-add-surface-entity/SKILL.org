@@ -32,10 +32,6 @@ repository and table I/O are implemented. See
 [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for the full
 layer ordering.
 
-The TypeScript UI is not in this table. Its metadata comes from the entity
-model's =** Presentation= drawer, which the =ores.ts.ui= facet emits, so it
-is a codegen run over the model rather than a hand-written surface.
-
 * How to use this skill
 
 1. /Pick the surface/ and read its row below. The row names the build target,

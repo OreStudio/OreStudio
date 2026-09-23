@@ -28,7 +28,7 @@ Source models that drive generation for this entity.
 
 The =currency_table.org= table model this doc previously listed was retired
 (its SQL sections merged into =ores.refdata.currency.org=); the entity now
-generates SQL, C++, and TypeScript UI metadata from that single file.
+generates SQL and C++ from that single file.
 
 * SQL
 
@@ -137,16 +137,6 @@ Test data generator.
 | Artefact | Archetype |
 |----------+-----------|
 | [[proj:projects/ores.refdata/core/include/ores.refdata.core/messaging/currency_handler.hpp][currency_handler.hpp]] | [[proj:projects/ores.codegen/library/templates/cpp_nats_handler.hpp.mustache][cpp_nats_handler.hpp.mustache]] |
-
-* TypeScript UI metadata (ores.ts.ui)
-
-Desktop UI metadata: the column table, detail fields and entity meta
-that the TypeScript client renders currency from, with no hand-written
-screen.
-
-| Artefact | Archetype |
-|----------+-----------|
-| [[proj:projects/ores.web/packages/web/src/generated/refdata/ui/currency_ui.ts][currency_ui.ts]] | [[proj:projects/ores.codegen/library/templates/ts_ui.ts.mustache][ts_ui.ts.mustache]] |
 
 * Other projections
 

@@ -35,7 +35,7 @@ matches the entity being commissioned —
 =simple-text-key= (country-like), =fk-scoped= (book-like),
 =hierarchical-composite= (party/counterparty-like), =richest=
 (currency-like, every optional knob exercised), or =timeseries=
-(market_observation-like, no UI metadata). Each pre-populates the
+(market_observation-like, no presentation drawer). Each pre-populates the
 scaffold's Flags/SQL/Presentation sections with that shape's knobs already
 set correctly,
 sampled from a real, proven-correct reference entity — omit =--shape=

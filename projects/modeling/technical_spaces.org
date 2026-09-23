@@ -17,7 +17,7 @@ actual components, directories, templates, and [[id:D7D53D71-C9E8-43AE-AA42-E58E
 nodes that implement them.
 
 A [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] (a =value= such as =currency=) projects simultaneously
-into every enabled [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] — C++ domain + repository + UI metadata,
+into every enabled [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] — C++ domain + repository + presentation,
 SQL DDL + trigger, CMake build target — each producing its own
 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical artefacts]] via the [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] transformation.
 

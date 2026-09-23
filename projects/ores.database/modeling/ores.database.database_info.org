@@ -2,7 +2,7 @@
 :ID: 3267354B-A74E-4CE5-B37F-9E30950D94C7
 :END:
 #+title: ores.database.database_info
-#+description: Codegen entity model for the database =database_info= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the database =database_info= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: database
 #+filetags: :model:entity:database:

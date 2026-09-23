@@ -2,7 +2,7 @@
 :ID: B94A2D2A-7653-4165-AD13-B13008BE3B5A
 :END:
 #+title: ores.refdata.business_day_convention_type
-#+description: Codegen entity model for the refdata business_day_convention_type table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the refdata business_day_convention_type table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:

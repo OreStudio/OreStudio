@@ -18,7 +18,7 @@ How do I regenerate all the code for a domain entity?
 
 * Answer
 
-Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL, all C++ layers, and the TypeScript UI metadata), so there is no component-wide diff to scope or discard:
+Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL and all C++ layers), so there is no component-wide diff to scope or discard:
 
 #+begin_src sh
 ./compass.sh codegen entity generate rounding_type

@@ -2,7 +2,7 @@
 :ID: 7E9C4A16-2B8D-4F31-9A57-1D6E80C3B942
 :END:
 #+title: ores.trading.instrument_option_premium
-#+description: Codegen entity model for the trading =instrument_option_premium= table. Drives the C++ domain class, mapper, repository, service, generator, TypeScript UI metadata, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the trading =instrument_option_premium= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:

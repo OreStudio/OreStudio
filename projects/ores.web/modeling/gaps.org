@@ -1,13 +1,28 @@
 :PROPERTIES:
 :ID: 1B37530D-0729-4DA2-B586-629C08F9370F
 :END:
-#+title: Gaps: country against the specification
-#+description: Comparison of the implemented country entity against the ORE Studio web entity specification, listing correctness gaps, missing list-screen fundamentals, shared-control gaps, history gaps, divergences and open questions.
+#+title: Gaps: country against the specification (superseded)
+#+description: Superseded audit of the country entity screens against the ORE Studio web entity specification. The audit and the screens it audited are gone; kept as a record.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-23
+
+*This page is superseded. Do not act on its findings.*
+
+Every finding below audits the entity screens and their shared machinery: the
+list, detail and history pages, =DataTable.tsx=, =FieldControl.tsx=, the generated
+UI metadata, and =scripts/verify-country.ts=. All of those are deleted. The
+package now holds a shell and a transport, and no screens.
+
+The findings cannot be closed and cannot be reproduced, so this page is a record
+of an audit rather than a work list. Read
+=component_specification.org= for what the component specifies today.
+
+The original audit follows, unchanged, as history.
+
+-----
 
 What the reference entity does not yet do that =entity_specification.org= says it
 should. Written down because an audit that lives only in a conversation is an
@@ -28,6 +43,11 @@ reading. Nothing here is speculation.
 | /partial/ | Implemented with a gap |
 | /missing/ | Not implemented |
 | /diverged/ | Implemented differently from what the specification says |
+
+/The status column is frozen./ The file names, the line references and the
+=verify-country.ts= checks below describe the tree as it stood on 2026-09-19. None
+of them resolve now, and no status can be re-checked. Do not attempt to fix a
+finding or to reproduce it.
 
 The largest category in the audit is /met, unverified/. Code exists; no check
 exercises it. The write path is gated behind =--write=, so the default run
@@ -249,6 +269,8 @@ fields and does not fill them in, so a count of changed records is a count of
 nothing. Counts need a server-side change; the blink does not.
 
 * How to use this
+
+There is nothing to do. This section is kept with the audit as part of the record.
 
 Work in tiers, and run the verification after each change rather than at the end.
 Several of these interact through shared state — the reverted attempt at gap 1 is

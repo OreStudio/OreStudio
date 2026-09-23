@@ -17,8 +17,10 @@ does not happen: the table below is the whole vocabulary, and adding to it is a
 process with a checklist rather than a decision made at a call site.
 
 Derived from the Qt client's =doc/knowledge/ui/icon_guidelines.org=, which is the
-source of truth for the artwork itself. Used by
-=entity_specification.org= and =component_specification.org=.
+source of truth for the artwork itself. The two specifications that once used it
+are superseded: =entity_specification.org= describes entity screens that are
+deleted, and =component_specification.org= now specifies the browser shell and
+the transport.
 
 * 1. The system
 
@@ -220,10 +222,11 @@ Step 4 is the one that matters. An icon added to the module but not to the
 specification is an icon the next person will not find, and will re-add under a
 different concept.
 
-* 5. Entity actions
+* 5. Actions an entity screen used
 
-The subset used by entity screens, which is what the entity specification
-reproduces. Listed here so the two documents can be checked against each other.
+The subset the entity screens used. Those screens are deleted, so nothing
+consumes this table today. It stays as the vocabulary the journey screens draw
+on when they need the same actions.
 
 | Action | Icon | Size |
 |---+---+---|

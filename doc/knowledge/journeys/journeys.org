@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: D602E114-F896-42CA-893A-841AD6FC3221
+:END:
+#+title: User Journeys
+#+description: Index of user journeys — what a person is trying to do in the client, before anything is built.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:index:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+A [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] describes what one person is trying to do, before anything is
+built. Each journey is one document: the actor, the trigger, the steps, a
+wireframe of the screen, the entity models it composes, and the operations and
+messages each step needs — including the ones the server does not provide yet.
+
+These are *client-side journeys*. They describe what a person does in the
+interface, which screens they move between, and what each screen shows. They are
+not [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journeys]] in the server sense,
+which are stateful paths in =ores.workflow= that a client can resume. A
+client-side journey usually keeps no server-side state at all; where one needs
+resumable state it becomes a server-side journey, and the document says so.
+
+Journeys are grouped by /logical topic/, never by component. A component is an
+implementation concept, and it changes as the code moves; what a person is
+trying to do does not. A journey belongs to the group a designer would look in,
+not to the folder the code happens to live in.
+
+* Groups
+
+#+ATTR_HTML: :class hug-leading
+| Group | What it gathers |
+|-------+-----------------|
+| [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry]] | Getting in: signing in and out, and self-registration |
+| [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] | Standing up an installation: first run, a new tenant, a new party |
+| [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile]] | How a person is represented: name, photo, job title, contact details |
+| [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials]] | Passwords, sign-in state, and the audit of who signed in |
+| [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] | Roles, and the permissions each role bundles |
+| [[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership]] | Which parties a person works in, and who they report to |
+| [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory]] | The account roster, and bringing accounts in |
+| [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things |
+
+* How to read a journey
+
+Every journey carries the same sections. =* Goal= says what the person wants in
+their own words. =* Actor and trigger= says who runs it and what brings them
+there. =* Steps= is the path. =* Screens and wireframes= shows the screen, which
+composes several entity field sets into one place. =* Entities composed= names
+the models whose fields appear. =* Operations and messages= lists every NATS
+subject the journey needs and marks each one =exists=, =partial= or =missing=.
+=* What is missing= gathers the gaps, which are the work that has to happen
+before the journey can be built. =* Related journeys= is not documentation
+decoration: the screen should carry a link for each one, so a person can move
+between related screens without going back to a menu.
+
+* Prototypes
+
+Some journeys already have a clickable prototype on a throwaway branch. The
+journey document links it under =* Prototype=; the branch is kept as the record
+and is not merged. The first-setup prototypes are the model for the rest.
+
+* One screen, not one per entity
+
+A journey is one screen organised around a goal. The list, detail and history
+primitives still exist, but they are composed into the journey rather than
+standing alone per entity: contact details and sign-in state are panels on the
+account journey, not screens of their own. The entity models supply the fields;
+the journey decides which fields belong together and in what order.
+
+* Adding a journey
+
+Group a new journey by the topic a designer would look it up under, then
+scaffold it into that group's folder:
+
+#+begin_src sh :results verbatim
+compass add user_journey \
+  --slug <slug> \
+  --parent-dir doc/knowledge/journeys/<group> \
+  --title "<title>" \
+  --description "<one line>" \
+  --tags "user_journey,security"
+#+end_src
+
+The file is =journey_<slug>.org=. Wire it into the group hub's table. The full
+contract is on [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]];
+the recipe is [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]].

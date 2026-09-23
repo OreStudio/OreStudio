@@ -67,6 +67,16 @@ backstop is shaped as it is once the application-level model above is
 clear. An agent changing a query that crosses a tenant boundary should
 have read this page first.
 
+** What a person does with it
+
+[[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — everything above says what
+the system enforces. This one records what a person is trying to do, written from
+the goal rather than from the entity. Read it when the question is "what should
+this screen do" rather than "what does this entity hold". Each journey document
+also lists the operations and subjects its steps need, so the distance between
+the design and the server shows up as a table rather than as a surprise during
+the build.
+
 * Reading it in reverse
 
 There is one case for inverting the order. If you are debugging a query

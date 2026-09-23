@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 4C062ECC-D6D4-4BA4-8F96-10E141663D9C
+:END:
+#+title: User Journey: New tenant
+#+description: A system administrator provisions a tenant from a seed profile and hands it over.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator provisions a tenant from a seed profile and hands it over.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want a new tenant my organisation can start working in." The system
+administrator chooses a starting point, describes the tenant, reviews it and
+runs provisioning. The journey is done when the tenant is /active/, its parties
+exist, and its administrator can sign in.
+
+* Actor and trigger
+
+The system administrator: the account created by
+[[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], signed in, and acting
+outside every tenant. The trigger is *New tenant* on the Tenants page. The
+journey starts there and ends at the handoff, where the tenant administrator
+takes over.
+
+This is one of the three journeys that carry server-side state. Provisioning
+runs on the server and takes minutes. It can fail half way. The state lives in
+=ores.workflow=, so the person can leave the page and come back, and the shell
+can drive the same steps. Every other group in this corpus describes a journey
+that keeps no such state. The order is fixed: this journey needs a running
+installation and a signed-in system administrator, so it cannot be the first
+thing that happens on an empty database.
+
+* Steps
+
+1. *Choose a starting point.* The system shows one card per
+   [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][seed profile]], each with a
+   tagline, three bullets and its counts: /Empty operational/ for real use, and
+   /ACME demo/ for demos and testing. The ACME card carries the ACME logo. The
+   person picks one. Nothing is created yet.
+2. *Describe the tenant.* The person names the tenant and its administrator.
+   /Empty operational/ asks for the code, name and hostname, the root LEI, the
+   counterparty set and the administrator's password. /ACME demo/ fills in the
+   code (=acme_corporation=), the name, the hostname, and the administrator
+   username and email; the details sit behind *Change settings*, and only the
+   administrator's password stays blank. Every new password uses the shared
+   =NewPasswordField=, which shows the policy, the strength and a confirmation.
+3. *Review.* The person reads one summary: starting point, tenant name and
+   code, administrator, and the profile's parameters. The screen states how many
+   steps the profile runs. Nothing is created until the person confirms.
+4. *Provisioning.* The person confirms. The system starts the
+   [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][provision]] workflow and the
+   page lists one line per workflow step: create the tenant and its admin,
+   publish the base reference data, import the counterparties, import the
+   parties, provision each party, complete. Each line reads pending, running,
+   done or failed. *This is the step that carries the state.* The person can
+   leave the page and come back. A failed step stops the instance, the tenant
+   stays /provisioning/, and a retry resumes from the failed step; completed
+   steps are kept. A tenant that should not continue can be discarded.
+5. *Hand off.* The tenant is /active/. The page shows the tenant's
+   administrator as =username@code= and offers two exits. *Continue as tenant
+   admin* signs out, signs in as that administrator, and opens their first
+   sign-in. *Hand off to someone else* signs out and shows the username to pass
+   on; that person sets their own password at first sign-in. The web keeps the
+   administrator's password in memory only until this point, and never writes
+   it to storage.
+
+The rail is flat: a person sees five steps and never a journey inside a
+journey. Steps that change server state are final, so there is no Back past
+them. The text is short: no introduction box, because the rail already lists
+the steps, and the "you can leave and come back" note belongs on the
+provisioning step alone.
+
+* Screens and wireframes
+
+One page with a flat step rail on the left and one step at a time. The tenant
+header, the profile's logo and the tenant name, appears on every step after the
+profile is chosen. The logo sits on a light tile, because ACME's black text
+fails on the dark theme.
+
+#+caption: New tenant: a flat step rail on the left, the chosen profile's cards, and one step at a time.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/setup/wireframe_new_tenant.png]]
+
+* Prototype
+
+Accepted by the user on 2026-09-22. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record.
+
+- Branch :: =prototype/new-tenant-journey=
+- Route :: =/iam/tenant/onboard=
+- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/=
+- Design record :: [[id:7C655052-D82F-485A-A506-6F0C496546C6][Task: Prototype the new tenant journey]]
+
+Variant A, the stepper page, is the accepted one and is the base the first run
+journey builds on. Two other variants are kept on the branch and were rejected:
+B, a drawer over the Tenants list, and C, one progressive page. The prototype
+also settled the small things: the profile fills in the tenant details, the
+logo comes from the image store in the real build and not from the bundle, and
+every new password uses one shared field.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | Code, name, hostname, type and status of the tenant being created | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =tenant_type= | The classification the provision step sets | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
+| =tenant_status= | The tenant moves from /provisioning/ to /active/ | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+| =account= | The tenant administrator the profile creates: username, email, account type, password (write only) | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_contact_information= | The administrator's email and contact details | [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] |
+| =account_party= | The [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]] between the administrator and the tenant's first party | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
+| =counterparty= | The tenant-wide counterparties the profile publishes | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
+| Seed profile | The ordered workflow steps, the parameters, and the tenant details the profile prefills | none — no model and no subject exist |
+
+The password material — =password_hash=, =password_salt= and
+=service_password_hash= — never reaches this screen. The password field writes
+a hash server-side; no read returns one.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose a starting point | List the seed profiles | none | missing |
+| Choose a starting point | Read a profile's parameter schema | none | missing |
+| Describe the tenant | Submit the tenant and its administrator | none | missing |
+| Describe the tenant (ACME) | Provision the ACME demo tenant | =iam.v1.tenants.provision-acme= | partial |
+| Review | Start the provision-tenant workflow | none | missing |
+| Provisioning | Follow the workflow instance's progress | none | missing |
+| Provisioning | Mark provisioning complete | =iam.v1.tenants.complete-provisioning= | exists |
+| Provisioning | Retry from the failed step | none | missing |
+| Provisioning | Discard a failed tenant | =iam.v1.tenants.delete= | partial |
+| Hand off | Sign out | =iam.v1.auth.logout= | exists |
+| Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
+
+=iam.v1.tenants.provision-acme= and =iam.v1.tenants.complete-provisioning= are
+declared in
+[[id:E37DCAAC-30A3-4E7E-890D-EBD226538690][ores.iam.tenant_provisioning_messages]];
+=iam.v1.auth.login= and =iam.v1.auth.logout= are declared in
+[[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]]. All of
+them exist in the generated web protocol.
+
+=iam.v1.tenants.provision-acme= is =partial=: it exists and runs the whole
+provisioning server-side through internal actor impersonation, but it is
+ACME-only, it takes no seed profile, and it returns all its steps at the end,
+so it streams no progress. The generic profile-driven request does not exist.
+
+=iam.v1.tenants.delete= is =partial= for discard: it soft-deletes the tenant
+row and its delete rule sets the status to /terminated/, but it does not stop a
+running workflow and does not clean up half-provisioned data.
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] records
+that gap in full.
+
+* What is missing
+
+1. *No journey state.* The journey lives in =ores.workflow=, next to the
+   workflow instance: kind, current step, the tenant and workflow instance ids,
+   and the actors who may resume. No =ores.workflow= component and no journey
+   subject exist today. The candidate is =iam.v1.journeys.get-active= plus the
+   events that move the journey on. Until it exists the client keeps the
+   current step in memory, and "you can leave and come back" is not true.
+2. *No seed profile model and no read.* A profile is registered data that
+   orders step kinds from a fixed catalogue: =publish_bundle=,
+   =import_lei_hierarchy=, =provision_party=, =load_staff=, =attach_photos=,
+   =start_market_feeds=. No entity and no subject exist. The candidates are
+   =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get=, including each
+   profile's parameter schema and its prefilled tenant details. The screen must
+   keep the two cards in code until then.
+3. *No generic provision-tenant request.* The accepted contract wants one
+   request that takes the profile code and its parameters, returns a workflow
+   instance id at once, and streams progress. The candidate is
+   =iam.v1.tenants.provision=.
+4. *No streamed progress.* =provision_acme_tenant_response= returns its steps
+   only at the end; the shell waits up to 45 minutes with no feedback. The
+   candidate is a =workflow_instance_changed= event, or a
+   =iam.v1.workflow_instances.get= read the page can poll.
+5. *No retry.* The contract keeps completed steps and resumes from the failed
+   one. Nothing starts a retry. The candidate is
+   =iam.v1.workflow_instances.retry=.
+6. *No discard that stops the workflow.* =iam.v1.tenants.delete= terminates the
+   row but leaves the workflow running and the partial data in place. The
+   candidate is =iam.v1.tenants.discard=, owned by the system administrator.
+
+* Related journeys
+
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — these same steps run inline there, for the first tenant on an empty installation
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — add a legal entity to the tenant you just created
+- [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the tenant administrator's first sign-in, where the forced password change lands
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — change the tenant's settings once it is active
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — suspend, reset or discard a tenant whose provisioning failed
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the Tenant lifecycle: /Provision/, /Seed profile/, /Onboard/
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — the user guide chapter on what a tenant is
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
+
+* See also
+
+- [[id:7C655052-D82F-485A-A506-6F0C496546C6][Task: Prototype the new tenant journey]]
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Task: Decide the seed profile contract]]
+- [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Task: Decide the bootstrap workflow catalogue]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

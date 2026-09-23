@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30
+:END:
+#+title: Setup journeys
+#+description: Standing up an installation: first run, a new tenant, a new party.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+These are the first-system-setup journeys: an empty database becomes a usable
+installation, a tenant is brought into service, and a party is added to a tenant
+with the accounts that work in it.
+
+They were designed and prototyped first, on throwaway branches, and those
+prototypes are the model the later journeys follow. Where a journey here has a
+prototype, the document links it.
+
+*The one group that carries server-side state.* A setup journey runs work that
+takes time and can fail half way, so the path it describes is backed by a
+[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][journey]] in the server sense: the state
+lives in =ores.workflow=, the person can leave the page and come back, and the
+shell can drive the same steps. The document is still a user journey — a design
+document — but it is the one kind whose screens are a view onto server-side
+state. Every other group describes a path over immediate operations, which keeps
+no such state.
+
+The order matters. First run is the only one that can happen on an empty
+database; the other two need a running installation and a signed-in
+administrator.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | nobody, then the system administrator | Welcome, create the system administrator, first tenant inline, first sign-in |
+| [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | system administrator | Choose a seed profile, describe the tenant, review, provisioning, hand off |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | tenant administrator | Find the legal entity, describe it, review, provisioning, next steps |
+
+* Related
+
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

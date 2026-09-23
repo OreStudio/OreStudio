@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 4A98E343-6EAE-4969-8E83-01F507D92490
+:END:
+#+title: User Journey: Change someone's details
+#+description: A tenant administrator corrects a colleague's profile, photo and contact details.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator corrects a colleague's profile, photo and contact details.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want a colleague's record to be right, without waiting for them." The tenant
+administrator corrects a colleague's profile, photo and contact details, usually
+after a move, a name change, or a data-quality report. The journey is done when
+the colleague's screen reads correctly and the correction is on the record with
+a reason.
+
+* Actor and trigger
+
+The tenant administrator: an account that holds =iam::accounts:update= and
+=iam::account_contact_informations:write= inside its tenant. The trigger is a
+support request, a joiner correction, or a data-quality review. It starts when
+the administrator finds the colleague on *Change someone's details*, and ends
+when they leave it.
+
+This journey runs the same screen as the two member journeys, with two
+differences. The administrator first chooses the person, and the permission
+check passes. That is the whole difference: the member sees the screen and
+cannot save; the administrator sees the same screen and can. The member
+journeys are [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] and
+[[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]].
+
+* Steps
+
+1. *Find the person.* The administrator searches for the colleague by username
+   or name. The system lists the matches inside the tenant.
+2. *Open the record.* The administrator picks a person. The system shows the
+   same screen the member sees: photo and identity on the left, contact details
+   beside them, both editable.
+3. *Correct the profile.* The administrator edits the full name, job title and
+   reporting line, and picks a new photo. The reporting line must be another
+   account in the same tenant.
+4. *Correct the contact details.* The administrator edits the street, city,
+   postcode, telephone, contact email and web page.
+5. *Save.* The system asks why the record changed, records the reason, and
+   writes a new version of the account and of the contact record. Because two
+   records change, the screen shows both new versions.
+6. *Leave.* The administrator goes back to the directory. The colleague's screen
+   now reads correctly.
+
+* Screens and wireframes
+
+One screen, and it is the member's screen with a person search above it. The
+photo and identity panel and the contact details panel are the same two panels
+in both journeys; this journey only adds the picker that chooses whose record is
+in view.
+
+#+caption: Change someone's details: a person search above the same profile and contact panels the member sees.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/profile/wireframe_change_someones_details.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The colleague's name, photo, job title and reporting line; the record the administrator writes | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_contact_information= | The colleague's address, city, postcode, telephone, contact email and web page | [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] |
+
+The picker reads =account= through the list operation that the directory
+journeys also use. The contact panel is the same entity the member journeys
+edit; only the caller and the permission differ.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the person | List accounts in the tenant | =iam.v1.accounts.list= | exists |
+| Open the record | Read the account | =iam.v1.accounts.get= | exists |
+| Open the record | Read the contact record | =iam.v1.account_contact_informations.list_by_account_id= | exists |
+| Correct the profile | Set full name, job title, reporting line | =iam.v1.accounts.update= | exists |
+| Replace the photo | Upload an image, receive its id | none | missing |
+| Replace the photo | Set the photo on the account | =iam.v1.accounts.update= | exists |
+| Correct the contact details | Write the contact record | =iam.v1.account_contact_informations.put= | exists |
+| Save | Record the reason, write a new version | shared change-reason flow | exists |
+
+Both write subjects need a permission the administrator holds.
+=iam.v1.accounts.update= needs =iam::accounts:update=, and
+=iam.v1.account_contact_informations.put= needs
+=iam::account_contact_informations:write=. The tenant-administrator role holds
+both, which is what makes this journey =exists= where the member's journey is
+=partial=. The account subjects come from
+[[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]], and
+both writes carry the shared change intent.
+
+* What is missing
+
+1. *No image upload.* The administrator can set =image_id=, but nothing puts a
+   new image there: the BFF serves =/api/images= and =/api/images/:id= as reads
+   only. The candidate is an upload path into =ores.assets= that returns an
+   image id. Until it exists, the picker can only offer images the tenant
+   already holds.
+2. *Two records, two writes, no single save.* The profile and the contact
+   details live in different records, so one Save sends
+   =iam.v1.accounts.update= and =iam.v1.account_contact_informations.put= as
+   separate requests, and nothing makes the pair atomic. Until a composite
+   operation exists, the screen must send both and say which record failed.
+3. *Two email fields.* =account.email= is the colleague's login address and
+   =account_contact_information.email= is the contact address.
+   =iam.v1.accounts.update= writes the first and the contact put writes the
+   second, so the screen must label them, or the administrator changes the wrong
+   one.
+
+* Related journeys
+
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] — this is the same screen as the person sees it, so an administrator goes there to check what they will see.
+- [[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]] — the contact half of this screen, which the person keeps for themselves when they can.
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster is where the person is picked, and it shows the roles this screen does not.
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the access half of the same colleague record, changed from the same place.
+- [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — the reporting line is a field on this screen, and the tree shows the shape it sits in.
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

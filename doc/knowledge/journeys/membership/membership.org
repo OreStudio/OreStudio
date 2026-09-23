@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: EC3EDE29-5A12-44C0-80A5-D96ADAF2898F
+:END:
+#+title: Membership journeys
+#+description: Which parties a person works in, and who they report to.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+An account /works in/ a party. The association decides which parties the account
+may act for: at sign-in an account that works in more than one party chooses one,
+and it can switch later. The reporting line is the other half of the same idea —
+it records who answers to whom inside the organisation.
+
+Both journeys are about a person's place in the organisation rather than about
+their identity. The rules are strict in one direction: an account with no party
+is refused at sign-in.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] | member | Pick the party I act for, and switch between mine |
+| [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] | tenant administrator | Maintain who reports to whom |
+
+* Related
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

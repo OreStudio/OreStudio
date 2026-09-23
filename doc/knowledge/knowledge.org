@@ -120,6 +120,9 @@ features. Each component's own page carries its script inventory.
 
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — design direction, typography, colour, spacing,
   depth and motion, and the icon catalogue that follows from them.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — what a person is trying to
+  do, written down before it is built: the goal, the steps, the wireframe, the
+  entity fields composed into one screen, and the operations each step needs.
 
 * Security
 

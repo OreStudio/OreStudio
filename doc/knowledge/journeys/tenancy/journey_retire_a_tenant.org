@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 00179132-3463-45E9-A6FC-75B0F3EBCC8E
+:END:
+#+title: User Journey: Retire or reset a tenant
+#+description: A system administrator suspends, terminates or resets a tenant.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator suspends, terminates or resets a tenant.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to end a tenant's life, or clear it out and start again." The system
+administrator suspends, terminates, deprovisions, purges or resets a tenant.
+Every one of these actions reaches every account inside the tenant, and most of
+them cannot be undone. The journey is done when the tenant's status reads what
+the administrator intended and the data is in the state they chose.
+
+* Actor and trigger
+
+The system administrator: an account that holds the =SuperAdmin= role and acts
+from the system tenant. The trigger is a tenant that must stop, or a
+development cycle that must start over. It starts when the administrator opens
+*Tenant settings* and picks a tenant, and ends when the operation's reply reads
+correctly.
+
+This is the destructive end of the tenant topic. A tenant administrator
+maintains their own tenant's details and cannot reach these operations — see
+[[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]]. Creating and
+provisioning a tenant is the setup journey
+[[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]].
+
+* Steps
+
+1. *Choose the tenant.* The administrator opens *Tenant settings* and picks a
+   tenant. The system lists every tenant and shows the code, the name, the
+   hostname, the type and the current status of the one chosen.
+2. *Read the status path.* The system shows the four seeded statuses in order —
+   =bootstrapping=, =active=, =suspended=, =terminated= — and marks where this
+   tenant sits. The path runs one way. A tenant enters at =bootstrapping=,
+   becomes =active= when its provisioning wizards finish, and is =terminated=
+   when its life ends. Only the two resets send a tenant back to
+   =bootstrapping=.
+3. *Read what each operation destroys.* The administrator opens the destructive
+   panel. The system labels every operation with its effect in plain words, and
+   with whether the server provides it today.
+4. *Choose one operation.* Suspend stops sign-in. Terminate keeps all data and
+   makes the tenant unusable. Deprovision ends every session and hides the
+   tenant's data. Purge deletes every row, the tenant included. Reset returns
+   the tenant to bootstrapping. Reset the system purges every non-system
+   tenant.
+5. *Read the consequence.* Before anything is sent, the screen states the
+   target and the loss. For a suspension it says that nothing is deleted. For a
+   purge it says that the data cannot be recovered. The two are not allowed to
+   look alike.
+6. *Confirm.* The system names the tenant in the confirmation and requires the
+   administrator to type the tenant's code. The destructive buttons stay
+   disabled until the typed code matches the tenant's own code. The system
+   re-reads the tenant's version so a change made since the screen opened is
+   caught rather than overwritten.
+7. *Run the operation.* The system sends the operation and shows the reply. The
+   tenant's status and the operation history update to match.
+8. *Leave.* The administrator goes back. The tenant list now shows the new
+   status, or the tenant is gone.
+
+The step from =bootstrapping= to =active= is not here. It runs at the end of
+[[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]], through
+=iam.v1.tenants.complete-provisioning=.
+
+* Screens and wireframes
+
+One screen. The tenant's row, the status path, the destructive panel and the
+confirmation are panels of that screen rather than separate screens, because
+the administrator reads them together before one decision. The destructive
+panel is the reason the screen exists, and it must not be a menu item that acts
+on click: the confirmation is part of the screen, not a browser dialog.
+
+#+caption: Retire or reset a tenant: the tenant and its status above the destructive operations, with a confirmation that names the tenant.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenancy/wireframe_retire_a_tenant.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | Code, name, hostname, type and status; the row every operation targets | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =tenant_status= | The four lifecycle codes the status path shows | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+| =session= | The sessions deprovision ends | [[id:7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63][ores.iam.session]] |
+| =login_info= | The sign-in records deprovision and purge delete | [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] |
+
+The tenant row is the only row the screen writes. Its =status= column is the
+whole point: it is what the administrator reads before the operation and what
+the operation changes. =tenant_status= is a lookup of four codes, not a state
+machine — nothing in the server refuses a transition, so the screen must order
+the operations itself.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the tenant | List the tenants | =iam.v1.tenants.list= | exists |
+| Choose the tenant | Read the current row and version | =iam.v1.tenants.get= | exists |
+| Read the status path | List the tenant statuses | =iam.v1.tenant_statuses.list= | exists |
+| Suspend | Set the status to =suspended= | none | missing |
+| Terminate | Run =ores_iam_terminate_tenant_fn= | none | missing |
+| Terminate | Soft-delete the row; the delete rule sets =terminated= | =iam.v1.tenants.delete= | partial |
+| Deprovision | Run =ores_iam_deprovision_tenant_fn= | none | missing |
+| Purge | Run =ores_iam_purge_tenant_fn= then =ores_iam_hard_delete_tenants_fn= | none | missing |
+| Reset one tenant | Return the tenant to bootstrapping | =iam.v1.system.reset-tenant= | exists |
+| Reset one tenant | Soft-delete admin data, keep bootstrap state | none | missing |
+| Reset the system | Purge every non-system tenant | =iam.v1.system.reset= | exists |
+
+*Only the two resets have a NATS subject.* =iam.v1.system.reset-tenant= needs
+=iam::system:reset-tenant= and calls =ores_iam_reset_tenant_bootstrap_fn=,
+which soft-deletes the curated admin tables, flips Operational parties to
+=Inactive=, re-enables =system.bootstrap_mode= and sets the tenant's status to
+=bootstrapping=. =iam.v1.system.reset= needs =iam::system:reset= and calls
+=ores_iam_reset_system_fn=, which hard-purges every non-system tenant, ends the
+system tenant's sessions, removes the system admin accounts and re-enables
+bootstrap mode. Both permissions sit on =SuperAdmin=, and each handler refuses
+a caller that does not hold it.
+
+*Terminate, suspend, deprovision and purge have no subject.* They are reachable
+only by SQL, and each of the four functions demands system tenant context:
+=ores_iam_terminate_tenant_fn=, =ores_iam_deprovision_tenant_fn=,
+=ores_iam_purge_tenant_fn= and =ores_iam_hard_delete_tenants_fn=. None of them
+is called by any handler. Suspend has no SQL function at all: it exists as the
+seeded status =suspended= and the seeded permission =iam::tenants:suspend=, and
+nothing performs it.
+
+=iam.v1.tenants.delete= does terminate a tenant, because the tenant delete rule
+sets =status = 'terminated'= and closes the row. That is why it is =partial=
+rather than =missing=: it checks =iam::tenants:delete=, not
+=iam::tenants:terminate=, and unlike =ores_iam_terminate_tenant_fn= it does not
+require system tenant context and does not refuse the system tenant.
+
+The permissions =iam::tenants:suspend= and =iam::tenants:terminate= are seeded
+and held by =SuperAdmin=, but no handler uses either one. They are placeholders
+for the two subjects that do not exist.
+
+* What is missing
+
+1. *No suspend operation.* The status row, the permission and the promise that
+   "users cannot log in" all exist; the operation does not. The candidate is
+   =iam.v1.tenants.suspend=, using the seeded =iam::tenants:suspend= permission
+   and a function that writes the new status version. Until it exists the
+   screen must not offer suspend.
+2. *A suspended tenant is not actually stopped.* Nothing in the sign-in path
+   reads a tenant's status, so an account in a tenant whose status is
+   =suspended= still signs in. The status would change nothing even if a
+   function wrote it. The candidate is a sign-in guard that refuses any tenant
+   whose status is not =active=. This is the more important of the two gaps:
+   the vocabulary promises an effect that no code delivers.
+3. *No subject for terminate, deprovision or purge.* Each has a function and
+   none has a message. The candidates are =iam.v1.tenants.terminate=,
+   =iam.v1.tenants.deprovision= and =iam.v1.tenants.purge=, each requiring
+   system tenant context and a system-level permission. Until they exist, these
+   operations are console work, and the screen must say so.
+4. *The generic delete can terminate the system tenant.* The dedicated
+   functions all refuse =ffffffff-ffff-ffff-ffff-ffffffffffff=, and the delete
+   rule does not. A caller holding =iam::tenants:delete= can therefore end the
+   system tenant through =iam.v1.tenants.delete=. The candidate is to apply the
+   same guard to the delete path, or to give the destructive operations their
+   own subjects and take delete out of the lifecycle.
+5. *No subject for a party-level reset.* =ores_iam_reset_tenant_fn= clears the
+   admin-created data and leaves the tenant active and provisioned; it is
+   SQL-only. The subject that exists runs the bootstrap reset instead, which
+   also sends the tenant back to =bootstrapping= and re-fires the wizards.
+   "Clear the tenant out but do not reset its provisioning" has no path today.
+   The candidate is =iam.v1.tenants.reset=.
+6. *No transition guard and no server-side confirmation beyond the tenant
+   code.* =tenant_status= is a lookup, so nothing refuses a purge of an active
+   tenant or a reset of a suspended one. =iam.v1.system.reset= carries no
+   payload at all, so nothing at the server names what it destroys. The
+   candidates are a stated transition rule the three functions enforce, and a
+   confirmation token on the system reset.
+
+* Related journeys
+
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — maintain the tenant's own details and the status codes this screen walks
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the other end of a tenant's life: provision the tenant this screen retires
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the sessions that survive a suspension, and the sign-in records purge deletes
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — the state the system reset returns the installation to
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:37671A0B-2043-439C-B4FF-1C9805EBD1DB][ores.iam.reset_messages]]
+- [[id:E37DCAAC-30A3-4E7E-890D-EBD226538690][ores.iam.tenant_provisioning_messages]]

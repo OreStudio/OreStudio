@@ -1,0 +1,55 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>REPORTING LINES: ACME BANK</b>
+  --
+  <b>REPORTING TREE</b>
+  {#
+    . | Account | Job title | Reports to
+    . | maria.silva | Head of Trading | none
+    . . | jdoe | Senior Trader | maria.silva
+    . . | rsmith | Risk Analyst | maria.silva
+    . . | akhan | Junior Trader | jdoe
+    . | pjones | Head of Risk | none
+    . . | tnguyen | Market Risk Analyst | pjones
+  }
+  {#
+    The tree is drawn from the flat account list.
+    One row per account: reports_to_account_id names the parent.
+  }
+  --
+  {#
+    Selected account | rsmith
+    Full name | Robert Smith
+    Job title | Risk Analyst
+    Reports to | maria.silva
+    Party | London Branch
+  }
+  --
+  {#
+    Change reason | Select a reason
+    Commentary | Describe why the line changed
+  }
+  --
+  [ Save line ] | [ Clear line ] | [ Cancel ]
+}
+
+@enduml

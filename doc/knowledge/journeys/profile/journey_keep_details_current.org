@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 71515FD0-8089-493F-9D9C-36877392DB33
+:END:
+#+title: User Journey: Keep my details current
+#+description: A member keeps their address, telephone and web page up to date.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member keeps their address, telephone and web page up to date.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the system to reach me at the right address." The member keeps the
+address, city, postcode, telephone and web page that colleagues and the system
+use. The journey is done when the contact panel reads correctly, and the member
+stops having to correct a colleague who used an old number.
+
+* Actor and trigger
+
+The member: an account of type =user=, signed in, acting on their own contact
+record. The trigger is a move, a new telephone number, or a nudge when a record
+looks stale. It starts when the member opens *My details*, and ends when they
+leave it.
+
+This is the contact-details half of the profile topic. The identity half is
+[[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]]. An administrator
+runs the same screen for somebody else, with permission, in
+[[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]].
+
+* Steps
+
+1. *Open my details.* The member chooses *My details* from the account menu. The
+   system shows one screen: photo and identity on the left, contact details
+   beside them.
+2. *Read the current record.* The system loads the member's own account and the
+   single contact record attached to it, and fills the panel with the current
+   street, city, postcode, telephone, email and web page.
+3. *Correct the address.* The member edits the street lines, city, postcode and
+   country. The system validates the country against the tenant's country list.
+4. *Correct how to reach me.* The member edits the telephone, the contact email
+   and the web page. The system keeps the contact email separate from the login
+   address.
+5. *Save.* The system asks why the record changed, records the reason, and writes
+   a new version of the contact record. The panel shows the new values and the
+   new version.
+6. *Leave.* The member goes back. Nothing else changes, because the member does
+   not change their own identity here.
+
+* Screens and wireframes
+
+One screen. The photo and identity form one panel and the contact details
+another, because the member reads them together even though only the contact
+panel is editable here.
+
+#+caption: My details: contact details editable beside the read-only identity panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/profile/wireframe_keep_details_current.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The account the contact record belongs to; username, full name, job title and photo, shown read-only beside the form | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_contact_information= | The street lines, city, state, country code, postal code, phone, email and web page that this journey edits | [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] |
+
+The identity panel is read-only here and belongs to
+[[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]], because a member
+does not change their own name or job title from this journey.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open my details | Read the account | =iam.v1.accounts.get= | exists |
+| Open my details | Read the contact record | =iam.v1.account_contact_informations.list_by_account_id= | exists |
+| Save | Write the contact record | =iam.v1.account_contact_informations.put= | partial |
+| Save | Record the reason, write a new version | shared change-reason flow | exists |
+
+The account subjects come from
+[[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. The
+contact subjects are derived from the =account_contact_information= entity
+model, and =iam.v1.account_contact_informations.put= carries the same shared
+change intent as the account write.
+
+=iam.v1.account_contact_informations.put= exists, but it needs
+=iam::account_contact_informations:write=, a tenant-administrator permission. A
+member cannot call it for their own record. So =partial= here means the
+operation exists and the caller may not use it.
+
+* What is missing
+
+1. *No self-service update.* There is no subject for a member to write their own
+   contact record. The candidate is
+   =iam.v1.account_contact_informations.update-self=, restricted to the caller's
+   own account and to the fields a member owns. Until it exists, the screen must
+   show the contact panel read-only and say that a tenant administrator makes
+   the change.
+2. *No image upload.* If the screen shows the photo, the member cannot change
+   it: the BFF serves =/api/images= and =/api/images/:id= as reads only, and
+   nothing uploads a new image. The candidate is an upload path into
+   =ores.assets= that returns an image id.
+3. *Two email fields.* =account.email= is the login address and
+   =account_contact_information.email= is the contact address. The member can
+   change the first through =iam.v1.accounts.update-email=, but not the second.
+   The screen must label them, so the member does not expect one to change the
+   other.
+
+* Related journeys
+
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] — the identity panel is read-only here, and the name, job title and photo are edited there.
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — the parties panel sits on this screen, and the party a person acts for is chosen there.
+- [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] — the login address and password are account credentials, not contact details, so they are changed there.
+- [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] — an administrator edits the same contact panel for a colleague who cannot do it themselves.
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

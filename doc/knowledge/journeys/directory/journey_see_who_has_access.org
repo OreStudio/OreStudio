@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 99ABD4E6-A69E-4D3F-902D-A69EBE2A565F
+:END:
+#+title: User Journey: See who has access
+#+description: A tenant administrator reads the account roster and each account's state.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator reads the account roster and each account's state.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see who can get in, and what state each of them is in." The
+administrator reads one screen and gets one row per person. The journey is done
+when every row answers three questions: can this account sign in, what can it
+reach, and does it owe a password change.
+
+* Actor and trigger
+
+The tenant administrator: an account of type =user= that holds the =TenantAdmin=
+role, signed in inside their own tenant. The trigger is a question about access:
+a joiner, a leaver, a lock-out, or a periodic review. It starts when the
+administrator opens *Directory*, and ends when the roster reads correctly.
+
+This journey writes nothing. It is the read half of the directory topic; the
+write half is [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]].
+
+* Steps
+
+1. *Open the roster.* The administrator opens *Directory*. The system shows one
+   screen: a filter panel, one row per account, and a state panel for the
+   selected row.
+2. *Read the accounts.* The system lists every account in the tenant. Each row
+   shows the username, the full name, the account type and the job title.
+3. *Attach the sign-in state.* The system reads the login record for each
+   account and adds the locked flag, the online flag, the last sign-in time and
+   the password-change flag to the row.
+4. *Attach the parties.* The system reads the account's party links and turns
+   each party id into a name. The row lists the parties the account may act for.
+5. *Attach the roles.* The system reads the roles assigned to the account. The
+   row lists the role names.
+6. *Filter.* The administrator narrows the list, for example to locked accounts,
+   or to accounts that must change their password. The filter runs on the rows
+   already loaded.
+7. *Leave.* The administrator goes back. Nothing was written, so the journey
+   carries no state.
+
+* Screens and wireframes
+
+One screen. The filter, the roster table and the selected account's state are
+panels of that screen, because the administrator reads them as one answer. The
+join is the screen's real work: =account= holds the identity, =login_info= holds
+the state, =account_party= holds the scope and =role= holds the access.
+
+#+caption: The roster: a filter, one row per account, and the selected account's state.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/directory/wireframe_see_who_has_access.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | Username, full name, account type, job title | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =login_info= | Locked, online, last sign-in, failed logins, password change due | [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] |
+| =account_party= | The parties the account may act for | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
+| =party= | The name behind each party link | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =role= | The role names assigned to the account | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+
+The screen shows no field from =password_hash=, =password_salt= or =totp_secret=.
+Those columns are secret.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the roster | Read the rows and their state in one call | none | missing |
+| Read the accounts | List the tenant's accounts | =iam.v1.accounts.list= | exists |
+| Attach the sign-in state | List the tenant's login records | =iam.v1.login_info.list= | exists |
+| Attach the parties | List one account's party links | =iam.v1.account_parties.list_by_account_id= | exists |
+| Attach the parties | Resolve the party ids to names | =refdata.v1.parties.get_many= | exists |
+| Attach the roles | List one account's roles | =iam.v1.roles.by-account= | exists |
+| Read a row in full | Read one account by key | =iam.v1.accounts.get= | exists |
+
+The server has no joined read. =iam.v1.accounts.list= returns accounts only, and
+its request carries =offset=, =limit= and =order= and nothing else. The screen
+builds the row itself: one =accounts.list= call, one =login_info.list= call,
+then one =roles.by-account= call and one =account_parties.list_by_account_id=
+call for every account on the page. A page of fifty accounts costs more than a
+hundred calls. The join is the journey's real work, and the screen owns it
+today.
+
+=iam.v1.accounts.get= returns one account by key. It is not a substitute for the
+roster, because the roster needs the login state and the assignments as well.
+
+* What is missing
+
+1. *No joined read.* Every row is assembled from four resources, and two of them
+   are read once per account. The candidate is one read,
+   =iam.v1.accounts.list_with_state=, that returns the account with its login
+   state, its party links and its roles. Until it exists the screen composes the
+   calls above and pages the per-account calls.
+2. *No filter and no stated order on the roster request.* =iam.v1.accounts.list=
+   takes no filter, so the screen cannot ask for locked accounts, or for
+   accounts that must change their password. The handler also refuses a stated
+   order, so the page arrives in key order and the screen cannot sort by
+   username, state or sign-in date. The screen loads pages, sorts them and
+   filters them in the client. The candidate is a filter and a sort on the list
+   request, or on the joined read.
+3. *Roles are read one account at a time.* =iam.v1.roles.by-account= takes one
+   =account_id=. There is no bulk read for a page of accounts. The candidate is
+   =iam.v1.roles.by-accounts=.
+4. *Party names need a second call.* The link carries a =party_id= only, so the
+   screen resolves the names with =refdata.v1.parties.get_many=. The joined read
+   should carry the name, or the link should.
+5. *The read is not permission-gated.* =iam::accounts:read= and
+   =iam::login_info:read= exist in the permission list, but no handler checks
+   them. Any signed-in account can list every account and every sign-in record
+   in the tenant. The candidate is to enforce both on the read handlers.
+6. *The account read carries secrets.* The generated =Account= type carries
+   =password_hash=, =password_salt= and =totp_secret=, so =accounts.list= and
+   =accounts.get= deliver them to the browser. The candidate is to drop them
+   from the wire type, because a screen cannot be trusted to ignore a secret it
+   is handed.
+
+* Related journeys
+
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the row you are looking at is the person whose access you want to change.
+- [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] — a locked account is read here and unlocked there.
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the roster shows who may sign in, and the audit shows who actually did.
+- [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] — the new colleague you cannot find in the roster is created there.
+- [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]] — a non-human identity also appears in this roster, and is created there.
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 9AB6C90E-5338-435A-9559-4E426D612EB6
+:END:
+#+title: User Journey: New party
+#+description: A tenant administrator adds a party and links the accounts that work in it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator adds a party and links the accounts that work in it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want a legal entity my team can work as, with the accounts that work in it."
+The tenant administrator finds the legal entity in the GLEIF register, or adds
+it by name when it has no LEI, names the party, and chooses the accounts that
+work in it. The journey is done when the party is /active/, its essential data
+is published, and its accounts can sign in to it.
+
+* Actor and trigger
+
+The tenant administrator: an account of type =user= that holds the
+tenant-administrator role, signed in, and acting inside one tenant. The trigger
+is *New party* on the Parties page. It also starts from *Add another party* at
+the end of this journey. The manual path, "It has no LEI: add it by name", is
+the same journey with the search skipped. The tenant administrator never
+chooses the tenant: the session already names it.
+
+This is one of the three journeys that carry server-side state. Provisioning
+runs on the server and can fail half way. The state lives in =ores.workflow=,
+so the person can leave the page and come back, and the shell can drive the
+same steps. Every other group in this corpus describes a journey that keeps no
+such state. The order is fixed: this journey needs a running installation, a
+signed-in tenant administrator and a tenant that is already /active/.
+
+* Steps
+
+1. *Find the legal entity.* The person searches the GLEIF register by name or
+   by LEI. Each result shows the legal name, the country, the LEI and the
+   parent entity, so a subsidiary is recognisable as one. The person picks one,
+   or chooses *It has no LEI: add it by name* and types the name instead.
+   Nothing is created yet.
+2. *Describe the party.* The person sets a short name, taken from the legal
+   name, and ticks the *accounts that work in it*: this is the
+   [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]].
+   Accounts that work in the party can sign in to it and act for it, and can
+   switch between parties later. The tenant administrator's own account is
+   ticked by default. There is no data-size question: counterparties are
+   tenant-wide, and the party's bundles come from the tenant's seed profile.
+3. *Review.* The person reads one summary: legal entity, LEI, short name, the
+   accounts, and the party data. The screen states that nothing is created
+   until the person confirms.
+4. *Provisioning.* The person confirms. The system starts the
+   [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][provision]] workflow for the
+   party and lists its steps: create the party, activate it, publish its
+   essential data, link its accounts, complete. Each line reads pending,
+   running, done or failed. *This is the step that carries the state.* The
+   person can leave the page and come back. A failed step stops the instance,
+   the party stays inactive, and a retry resumes from the failed step; the
+   completed steps are kept.
+5. *Next steps.* The party is /active/. The page offers three exits: switch to
+   the new party and work in it now, set up its books, or add another party.
+   The person can also just go back; the Parties page lists the new party as
+   active.
+
+The rail is flat: a person sees five steps. Steps that change server state are
+final, so there is no Back past them.
+
+* Screens and wireframes
+
+The same journey page as the tenant journeys: a flat step rail on the left and
+one step at a time. The party header, the short name and the LEI, appears on
+every step after the legal entity is chosen.
+
+#+caption: New party: a flat step rail on the left, the GLEIF results, and one step at a time.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/setup/wireframe_new_party.png]]
+
+* Prototype
+
+Accepted by the user on 2026-09-22. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record.
+
+- Branch :: =prototype/new-party-journey=
+- Route :: =/refdata/party/new=
+- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/=
+- Design record :: [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Task: Prototype the new party journey]]
+
+The party journey was the first built on the shared journey page, and it proved
+the step library: the tenant journey's steps and the party journey's steps come
+from the same place. It also settled two things. Counterparties are tenant-wide,
+so the Qt wizard's dataset-size question is gone. And the accounts that work in
+the party are chosen here, in the describe step, not in a later wizard.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =party= | Short name, legal name, status and type of the party being created | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =party_identifier= | The LEI of the legal entity, under the LEI scheme | [[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]] |
+| =party_id_scheme= | Names the identifier scheme the LEI belongs to | [[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] |
+| =party_status= | The party moves to /active/ at the activate step | [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]] |
+| =party_type= | The classification the create step sets | [[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]] |
+| =account= | The accounts the picker offers, and the one that runs the journey | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =account_party= | The accounts that work in the party — the association this journey writes | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
+| =counterparty= | The tenant-wide counterparties the tenant's seed profile already published | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
+| GLEIF legal entity | Legal name, country, LEI and parent, read from the register | none — no model and no subject exist |
+
+No password or secret appears on this screen at all. The person chooses which
+accounts work in the party; the accounts themselves are created elsewhere.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the legal entity | Search the GLEIF register by name or LEI | none | missing |
+| Find the legal entity | List the parties already in the tenant | =refdata.v1.parties.list= | exists |
+| Describe the party | List the accounts that may work in the party | =iam.v1.accounts.list= | exists |
+| Describe the party | Read the existing account-party associations | =iam.v1.account_parties.list= | exists |
+| Review | Start the provision-party workflow | none | missing |
+| Provisioning | Create the party | =refdata.v1.parties.put= | exists |
+| Provisioning | Activate the party | =refdata.v1.parties.put= | exists |
+| Provisioning | Publish the party's essential data | none | missing |
+| Provisioning | Link the accounts that work in it | =iam.v1.account_parties.put_many= | exists |
+| Provisioning | Mark the party provisioning complete | none | missing |
+| Provisioning | Retry from the failed step | none | missing |
+| Next steps | Switch to the new party | =iam.v1.accounts.switch-party= | exists |
+| Next steps | Read the party's books | =refdata.v1.books.list= | exists |
+
+The two =iam.v1.account_parties= subjects are declared in
+[[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]];
+=iam.v1.accounts.list= and =iam.v1.accounts.switch-party= are declared in
+[[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. The
+=refdata.v1.parties= and =refdata.v1.books= subjects are generated from their
+entity models. All of them exist in the generated web protocol.
+
+Activation is =partial= in effect: =refdata.v1.parties.put= writes the row,
+including the status, so the activate step has a subject. But nothing runs the
+party workflow around it, so the screen cannot show progress or resume a
+failure.
+
+* What is missing
+
+1. *No GLEIF search.* Nothing reads the GLEIF register. The register is a
+   public API outside ORE Studio, so the candidate is a server-side search that
+   proxies it and returns legal name, country, LEI and parent, for example
+   =refdata.v1.legal_entities.search=. Until it exists the
+   screen can only offer the manual path.
+2. *No journey state.* The journey lives in =ores.workflow=, next to the
+   workflow instance: kind, current step, the party and workflow instance ids,
+   and the actors who may resume. No =ores.workflow= component and no journey
+   subject exist today. The candidate is =iam.v1.journeys.get-active= plus the
+   events that move the journey on.
+3. *No provision-party request.* The contract makes /provision party/ its own
+   workflow: activate, onboard, membership, party bundles. No subject starts it.
+   The candidate is =refdata.v1.parties.provision=, taking the party id and the
+   chosen accounts, returning a workflow instance id at once.
+4. *No publish of the essential data.* The =party_essentials= bundle holds
+   =ore.report_definitions= and =crm_topology=. Only the ACME handler publishes
+   it today. The candidate is a publish step inside the provision-party
+   workflow, or =refdata.v1.parties.publish-essentials= for a party on its own.
+5. *No completion signal.* Nothing states that a party finished provisioning,
+   so the screen cannot tell "still running" from "done". The candidate is the
+   same =workflow_instance_changed= event the tenant journey needs, or a
+   =refdata.v1.parties.get= read of the status.
+6. *No streamed progress and no retry.* The party steps run client-side in the
+   shell today, so there is nothing to stream and nothing to resume. The
+   candidates are the workflow instance progress read and
+   =iam.v1.workflow_instances.retry=.
+
+* Related journeys
+
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — switch to the party you just created, and set it as your default
+- [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]] — create the accounts that will work in the new party
+- [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — set who reports to whom inside the new party
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the tenant's seed profile decides the bundles every party gets
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — where the first party is created with the first tenant
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — /Provision/, /Onboard/, /Account-party association/, /Seed profile/
+- [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] — the user guide chapter on what a party is
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
+
+* See also
+
+- [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Task: Prototype the new party journey]]
+- [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Task: Decide the bootstrap workflow catalogue]]
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Task: Decide the seed profile contract]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

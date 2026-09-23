@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 3C753578-BC0E-433C-92B5-38031F050ADC
+:END:
+#+title: User Journey: Change someone's access
+#+description: A tenant administrator grants and revokes a colleague's roles.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator grants and revokes a colleague's roles.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I need to give a colleague the roles their job needs, and take away the ones
+it does not." The tenant administrator sets the role list on a colleague's
+account. The journey is done when the colleague's access reads correctly, and
+the record of the change names the administrator, the time and the reason.
+
+* Actor and trigger
+
+The tenant administrator: an account inside one tenant that holds
+=iam::roles:assign= and =iam::roles:revoke=. The trigger is a joiner, a move
+between desks, or a leaver. It starts when the administrator opens a
+colleague's account from *Accounts*, and ends when the role list is right and
+the change is recorded. This is an administrator acting on someone else's
+record inside their tenant.
+
+This is the write half of the access topic. The colleague's own read-only view
+is [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]].
+
+* Steps
+
+1. *Find the colleague.* The administrator opens *Accounts* and picks the
+   person. The system lists the accounts in the tenant, so tenant isolation
+   decides who is visible.
+2. *Read what they hold.* The system reads the roles assigned to the account
+   and shows them. This list is the starting point.
+3. *Choose a role to grant.* The administrator opens the role picker. The
+   system lists the roles defined in the tenant, with their descriptions.
+4. *Grant the role.* The administrator selects a role and confirms. The system
+   writes an =account_role= row. The row records =assigned_by= (the
+   administrator), =assigned_at= (the time), the change reason and the
+   commentary. This step is what makes the grant auditable.
+5. *Revoke a role.* The administrator selects a held role, removes it, and
+   gives a reason. The system closes the assignment: it sets =valid_to= on the
+   open row instead of deleting it, so the grant stays in the history.
+6. *Confirm.* The system re-reads the role list. The administrator checks the
+   result. The change takes effect on the colleague's next sign-in.
+7. *Leave.* The administrator closes the screen.
+
+The assignment row carries =assigned_by=, =assigned_at=, =change_reason_code=
+and =change_commentary=, so a granted role is auditable in a way a plain join
+table would not be. A revoke closes the row and a later re-grant opens a new
+one, so the whole history of a person's access stays readable.
+
+* Screens and wireframes
+
+One screen: the colleague's access. The identity header, the roles they hold
+with the assignment audit, the role picker that adds a role, and the change
+reason and commentary. The administrator does all of this in one place, so the
+panels belong together.
+
+#+caption: Change someone's access: the colleague, the roles they hold with who assigned each one, the role picker, and the change reason.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/access/wireframe_change_someones_access.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The colleague whose access changes: username, full name, account type | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =role= | The roles held and the roles on offer: name and description | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+| =account_role= | The assignment: =assigned_by=, =assigned_at=, =change_reason_code= and =change_commentary= | no entity model — junction table |
+| =permission= | Not shown here. What the roles carry belongs to [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] | [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] |
+
+The =account_role= row is more than a join. It carries an audit tail, so the
+grant itself is a record with an author, a time and a reason. There is no
+module entity and no module table in this model: the component segment of a
+permission code such as =iam::roles:assign= is what plays the part a module
+would play.
+
+This screen shows no credential field. =password_hash=, =password_salt=,
+=service_password_hash=, =totp_secret=, cleartext passwords and JWTs must never
+reach the browser. The account read currently returns credential material
+anyway, and that is a gap named below.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the colleague | List the accounts in the tenant | =iam.v1.accounts.list= | exists |
+| Read what they hold | Read the roles on the account | =iam.v1.roles.by-account= | exists |
+| Choose a role to grant | List the roles defined in the tenant | =iam.v1.roles.list= | exists |
+| Grant the role | Assign a role to the account | =iam.v1.roles.assign= | exists |
+| Revoke a role | Revoke a role from the account | =iam.v1.roles.revoke= | exists |
+| Confirm | Read the assignment row: who, when, why | none | missing |
+
+The role subjects are defined in
+[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
+=iam.v1.roles.revoke= checks =iam::roles:revoke= before it acts.
+=iam.v1.roles.assign= checks nothing at all, so any signed-in account can grant
+any role inside its tenant. The operation exists and the caller may use it;
+the missing check is the gap below.
+
+* What is missing
+
+1. *No assignment read.* No subject returns the =account_role= row, so
+   =assigned_by=, =assigned_at=, =change_reason_code= and =change_commentary=
+   cannot be shown even though they are stored. The candidate is
+   =iam.v1.roles.assignments-by-account=, returning each role with its
+   assignment fields. Until it exists, the screen shows the role list without
+   the audit evidence.
+2. *No permission check on assign.* =iam.v1.roles.assign= does not test
+   =iam::roles:assign=, while =iam.v1.roles.revoke= does test
+   =iam::roles:revoke=. The candidate is to apply the same check to assign, so
+   the operation matches its twin.
+3. *No reason on the message.* =assign_role_request= and =revoke_role_request=
+   carry only =account_id= and =role_id=. The row has change reason and
+   commentary columns, and the insert trigger validates the reason, but the
+   client cannot set either field. The candidate is to add
+   =change_reason_code= and =change_commentary= to both requests, or to add
+   =iam.v1.roles.assign-with-reason= and its revoke twin.
+4. *The account read carries credential material.* =iam.v1.accounts.list= and
+   =iam.v1.accounts.get= return the whole =account= wire shape, which includes
+   =password_hash=, =password_salt= and =totp_secret=. The picker needs only a
+   username and a full name. The candidate is a summary shape for the picker,
+   or a server-side redaction, so credential material never leaves the server.
+   =service_password_hash= is absent from the wire shape already, and must stay
+   absent.
+5. *No guard on an empty role list.* The account screen warns when an account
+   has no party, but stays silent when it has no role (see the user guide
+   chapter). The same silence applies when a revoke removes the last role. The
+   candidate is a warning before the last role is revoked.
+
+* Related journeys
+
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the colleague's own read-only view of the roles you grant here
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — define or fix a role before the picker offers it
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster you pick the colleague from and return to afterwards
+- [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]] — create the non-human account when the role belongs to a service or an algorithm
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the user guide chapter
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access journeys]] — the group hub
+
+* See also
+
+- [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]
+- [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

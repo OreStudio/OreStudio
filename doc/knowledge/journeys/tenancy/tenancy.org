@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816
+:END:
+#+title: Tenancy journeys
+#+description: The tenant itself, and the lookups that classify things.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+
+The tenant is the boundary everything else lives inside: its accounts, its
+reference data and its results are invisible to every other tenant. This group
+holds the journeys that maintain the tenant's own details, that end its life, and
+that keep the reference lookups which classify accounts and tenants.
+
+The lookups are the only place in these journeys where a plain list of reference
+rows is the right screen. They have no goal of their own, which is exactly why
+they belong here rather than in a journey about a person.
+
+Creating a tenant is not here. Provisioning one is a setup journey, because it
+does work that takes time and can fail half way — see
+[[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]].
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] | tenant administrator | Maintain tenant details and the reference lookups |
+| [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] | system administrator | Suspend, terminate or reset a tenant, and clear what it leaves behind |
+
+* Related
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

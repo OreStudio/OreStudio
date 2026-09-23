@@ -2,13 +2,14 @@
 
 Release notes for [Sprint 25](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_25/sprint.html).
 
-Sprint 25 set out to resolve codegen drift on as many components as possible and to progress the IR curves work. Six components became drift-free under one method (compass-codegen-fix-drift), and the drift checks now run in CI. The IR work added the FOMC-dated OIS short end, the full ORE quote-type coverage in oresmd, and six new IR process engines. Then the sprint changed direction: the Qt and Wt clients left the repository, ores.web took their place, and the NATS protocol got a canonical specification with C++ and TypeScript generated from one model. The sprint ran 52 days against a 7-day plan, with a lull of three weeks in the middle, and 23 of its 80 finished stories were hotfixes. At close, the sprint was reset: 23 stories were abandoned so that sprint 26 starts clean.
+Sprint 25 was an experimental sprint. It set out to resolve codegen drift on as many components as possible and to progress the IR curves work, and it tried many different approaches to get there: safe drift per C++ component, profile binds, trading instruments ported to codegen, generated shell commands, a data-oriented trading model, protocol messages generated into C++ and TypeScript, the move from Qt to ores.web, and journey-first screens. Each approach taught something, and several shipped real results: six components are drift-free, the drift checks run in CI, oresmd covers every ORE quote type, the USD SOFR curve has an FOMC-dated short end, and ores.web replaced the Qt and Wt clients. At close, the sprint settled on the last approach: for each module, sync codegen and clear its drift, then analyse the user journeys, then build the UX. The other approaches closed with their reasons recorded (23 stories abandoned), so sprint 26 starts from that one method. The experiment was expensive: the sprint ran 52 days against a 7-day plan, and 23 of its 80 finished stories were hotfixes.
 
 ---
 
 
 # ✅ Highlights
 
+-   An experimental sprint: many approaches to the codegen and UI problems ran side by side. The sprint settled on the last one, which is the method for sprint 26: codegen sync and drift for each module, then user journeys, then UX.
 -   Six components are drift-free: ores.dq, ores.iam, ores.trading, ores.synthetic, ores.compute, and ores.analytics. ores.reporting has its bind merged. The codegen drift checks run in CI.
 -   The Qt and Wt clients left the repository. ores.web, a TypeScript client, replaces them.
 -   The NATS entity protocol has a canonical specification. IAM and refdata use it, and their C++ and TypeScript messages generate from one model.

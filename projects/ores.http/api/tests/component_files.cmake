@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_tests.mustache
+# To modify, update the template and regenerate.
 set(files
     "endpoint_registry_tests.cpp"
     "http_request_tests.cpp"

@@ -32,7 +32,19 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const FIXTURE_DIR = join(HERE, 'fixtures/sprint_25')
 const DECK_DIR = join(HERE, 'fixtures/card_deck')
 const SPRINT_PATH = 'doc/agile/versions/v0/sprint_25/sprint.org'
-const LIVE_DIR = join(HERE, '..', '..', '..', 'doc/agile/versions/v0/sprint_25')
+
+/* The live sprint is whatever the newest sprint directory is, so opening a
+ * sprint does not leave this file asserting against the closed one. */
+const VERSIONS_DIR = join(HERE, '..', '..', '..', 'doc/agile/versions/v0')
+const LIVE_SPRINT = (() => {
+  if (!existsSync(VERSIONS_DIR)) return null
+  const names = readdirSync(VERSIONS_DIR).filter((name) => /^sprint_\d+$/.test(name))
+  if (names.length === 0) return null
+  const number = (name) => Number(name.slice('sprint_'.length))
+  return names.sort((a, b) => number(a) - number(b)).at(-1)
+})()
+const LIVE_DIR = LIVE_SPRINT === null ? null : join(VERSIONS_DIR, LIVE_SPRINT)
+const LIVE_SPRINT_PATH = LIVE_SPRINT === null ? '' : `doc/agile/versions/v0/${LIVE_SPRINT}/sprint.org`
 
 const STORY_ID = '3085B911-3030-4AB8-976F-0F037D4332E7'
 const SCAFFOLD_ID = '8A81CB08-A606-4E30-A717-88B810308137'
@@ -99,11 +111,11 @@ function fixtureStory(slug) {
 }
 
 function liveModel(options = {}) {
-  if (!existsSync(LIVE_DIR)) return null
+  if (LIVE_DIR === null) return null
   return buildModel({
     doc: parseSprintDocument(readFileSync(join(LIVE_DIR, 'sprint.org'), 'utf8')),
     dirs: dirsOf(LIVE_DIR),
-    options: { version: 'v0', sprintName: 'sprint_25', sprintPath: SPRINT_PATH, ...options },
+    options: { version: 'v0', sprintName: LIVE_SPRINT, sprintPath: LIVE_SPRINT_PATH, ...options },
   })
 }
 
@@ -873,7 +885,7 @@ test('a journal entry parses into the fields the tree row carries', () => {
 // any data, so it proves the parser against the real tree without failing on an
 // edit it did not make. The block skips itself when the tree is absent.
 test('every story directory in the live sprint becomes exactly one card', (t) => {
-  if (!existsSync(LIVE_DIR)) {
+  if (LIVE_DIR === null) {
     t.skip('the live sprint directory is not present')
     return
   }
@@ -894,7 +906,7 @@ test('every story directory in the live sprint becomes exactly one card', (t) =>
 })
 
 test('every live card and task carries the fields the board renders', (t) => {
-  if (!existsSync(LIVE_DIR)) {
+  if (LIVE_DIR === null) {
     t.skip('the live sprint directory is not present')
     return
   }
@@ -931,7 +943,7 @@ test('every live card and task carries the fields the board renders', (t) => {
 })
 
 test('the live columns come from the state table and count the live cards', (t) => {
-  if (!existsSync(LIVE_DIR)) {
+  if (LIVE_DIR === null) {
     t.skip('the live sprint directory is not present')
     return
   }
@@ -974,7 +986,7 @@ test('the live columns come from the state table and count the live cards', (t) 
 })
 
 test('the live work item resolves by branch to a task of the live sprint', (t) => {
-  if (!existsSync(LIVE_DIR)) {
+  if (LIVE_DIR === null) {
     t.skip('the live sprint directory is not present')
     return
   }

@@ -5,7 +5,7 @@
 #+description: A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card.
 #+type: story
 #+level: s2
-#+filetags: :dsh:agile:plugin:tooling:sprint_25:v0:
+#+filetags: :dsh:agile:plugin:tooling:sprint_26:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
 #+environment: bright_faraday
@@ -26,7 +26,7 @@ progress. Every session shows its own work tree's board and nothing else.
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | DONE                              |
-| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |

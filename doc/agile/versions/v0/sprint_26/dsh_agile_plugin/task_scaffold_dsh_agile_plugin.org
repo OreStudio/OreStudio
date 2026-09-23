@@ -5,7 +5,7 @@
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :dsh_agile_plugin:sprint_25:v0:
+#+filetags: :dsh_agile_plugin:sprint_26:v0:
 #+owner: marco
 #+branch: feature/dsh-agile-plugin
 #+pr:

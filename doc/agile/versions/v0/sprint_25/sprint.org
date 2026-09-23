@@ -22,14 +22,14 @@ Resolve sprint drift on as many components as possible and progress IR curves wo
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                              |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Start          | 2026-08-03                               |
 | End (expected) | 2026-08-10                           |
-| Now            | Closing. Every story is closed and the release notes are written. |
+| Now            | Closed. See [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. |
 | Waiting on     | Nothing.                               |
-| Next           | Tag v0.0.25, draft the release, and open sprint 26. |
+| Next           | Nothing.                               |
 | Release Notes  | [[id:09608977-5D9E-42D6-9189-B3471C74640F][Sprint 25 release notes]] |
 | Last touched   | 2026-09-23                               |
 

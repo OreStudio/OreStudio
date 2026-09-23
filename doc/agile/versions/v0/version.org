@@ -7,7 +7,7 @@
 #+level: s4
 #+filetags: :v0:
 #+created: 2024-06-15
-#+updated: 2026-07-02
+#+updated: 2026-09-23
 #+todo: STARTED | RELEASED
 
 This page documents *v0* — the 0.x.x [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series of ORE Studio. It
@@ -22,10 +22,10 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 24 open.                                                   |
+| Now              | Sprint 26 open.                                                   |
 | Waiting on       | Nothing.                                                          |
 | Next             | Pick the first story.                                            |
-| Last touched     | 2026-07-21                                                        |
+| Last touched     | 2026-09-23                                                        |
 
 * Sprints
 
@@ -59,4 +59,5 @@ the current sprint; the rest are closed.
 | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] | 2026-07-02 | 2026-07-10 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
 | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] | 2026-07-11 | 2026-07-21 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
 | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] | 2026-07-21 | 2026-08-03 | Continue commissioning work across components; improve IR generation.          |
-| [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] | 2026-08-03 |            | Resolve sprint drift on as many components as possible; progress IR curves.    |
+| [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] | 2026-08-03 | 2026-09-23 | Resolve sprint drift on as many components as possible; progress IR curves.    |
+| [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] | 2026-09-23 |            | Codegen sync and drift per module, then user journeys, then UX.                |

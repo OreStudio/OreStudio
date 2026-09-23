@@ -4330,6 +4330,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_date'] = (col.get('type') == 'date' or
                                   col.get('cpp_type') == 'std::chrono::year_month_day')
+                is_timestamp_type = col.get('type') in (
+                    'timestamp', 'timestamptz', 'timestamp with time zone'
+                )
+                col['is_timestamp'] = is_timestamp_type
+                col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
+                col['is_required_timestamp'] = is_timestamp_type and not col.get('nullable', False)
                 col['iter_var'] = iter_var
         # Add lowercase versions and UUID/date flags for left/right columns
         if 'left' in junction:

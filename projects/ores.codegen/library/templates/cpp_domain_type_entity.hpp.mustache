@@ -138,7 +138,24 @@ struct {{name_singular}}_entity {
     std::string {{right.column}};
     int version = 0;
 {{#columns}}
+{{#is_uuid}}
+    std::string {{name}};
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    std::optional<std::string> {{name}};
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> {{name}};
+{{/is_optional_timestamp}}
+{{#is_required_timestamp}}
+    std::string {{name}};
+{{/is_required_timestamp}}
+{{#is_date}}
+    std::string {{name}};
+{{/is_date}}
+{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
 {{/columns}}
     std::string modified_by;
     std::string performed_by;

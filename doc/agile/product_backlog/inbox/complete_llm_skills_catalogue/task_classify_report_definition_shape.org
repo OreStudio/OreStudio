@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 9747E4C5-734E-4F75-AD8B-CEB4C9089B76
+:ID: 4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC
 :END:
-#+title: Task: Give every composite a group model
-#+description: Eight composites have no group-level component_overview.org, so codegen cannot generate their root CMakeLists and their parts are undeclared.
+#+title: Task: Give report_definition a profile that describes it
+#+description: report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value.
 #+type: task
 #+level: s1
-#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every composite has a group model declaring its kind and its parts, so its root CMakeLists is generated rather than hand-written.
+report_definition binds to a profile whose assignments it actually satisfies, and the model-drift exception for it is removed.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DISCOVERED                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,9 @@ Every composite has a group model declaring its kind and its parts, so its root 
 
 * Acceptance
 
-- ores.assets, ores.http, ores.marketdata, ores.ore, ores.qt, ores.synthetic, ores.telemetry and ores.variability each have a modeling/component_overview.org declaring component_kind composite and parts.
-- Regenerating each of them produces the checked-in root CMakeLists byte-identically.
-- ores.sql is decided either way: it is a tool component whose only part is modeling.
+- report_definition either binds to a profile it satisfies or declares its features without a binding.
+- The KNOWN_MODEL_DRIFT entry in check_model_drift.py is removed.
+- If a new profile is added, it meets the catalogue's bar of naming a genuinely recurring combination rather than one entity.
 
 * Plan
 

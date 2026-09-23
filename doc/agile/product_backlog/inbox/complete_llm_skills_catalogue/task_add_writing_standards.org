@@ -5,7 +5,7 @@
 #+description: Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports.
 #+type: task
 #+level: s1
-#+filetags: :doc:writing:skills:knowledge:attribution:unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :doc:writing:skills:knowledge:attribution:complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -45,7 +45,7 @@ take none of the three, and that exclusion list needs stating.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

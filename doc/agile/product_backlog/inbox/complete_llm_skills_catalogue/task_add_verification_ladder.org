@@ -5,7 +5,7 @@
 #+description: Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks.
 #+type: task
 #+level: s1
-#+filetags: :verification:codegen:drift:testing:shell:unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :verification:codegen:drift:testing:shell:complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Verification is a ladder, not a final phase, and work never skips a rung below w
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

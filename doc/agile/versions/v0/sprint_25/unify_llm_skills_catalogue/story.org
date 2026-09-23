@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC
 :END:
-#+title: Story: Unify the LLM skills catalogue
-#+description: Give the skills catalogue one coherent mental model: a compass- namespace, a layered taxonomy of principles, methods and process actions, standardised terminology, and attributed imports from the pstack and Matt Pocock skill sets.
+#+title: Story: Lay the foundation of the LLM skills catalogue
+#+description: Put the skills catalogue on one model: the compass- namespace, cybernetic levels, cited principles, ported methods, the compass-helm mode, selection instrumentation and the regulator specification, with the codegen and build fixes that work surfaced.
 #+type: story
 #+level: s2
 #+filetags: :llm:skills:claude_code:refactor:naming:sprint_25:v0:
 #+created: 2026-08-25
-#+updated: 2026-08-25
+#+updated: 2026-09-23
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,21 +21,31 @@ Our 79 skills describe our process well but never tell an agent how to think or 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-25                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-09-23 |
 
 * Acceptance
 
-- Every skill in the catalogue carries the compass- prefix, and the naming conventions document records the amended prefix and verb registers.
-- The catalogue is layered into principles, methods and process actions, and the layering is documented with the reasoning behind it.
-- Every imported skill records its upstream repository, path, commit and divergence, and a manifest lists them all.
-- Terminology is consistent across all skills: one word per concept, recorded in the naming conventions document.
-- No imported skill duplicates an existing one; overlaps are folded into a single skill and the loser is retired through compass-skill-delete.
-- The deployed bundle builds and every skill loads.
+Narrowed at sprint 25 close to what shipped. The unmet criteria of the
+original story (one word per concept across all skills, no duplicate
+imports, the deployed bundle proven end to end) moved to
+[[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]].
+
+- Every skill carries the compass- prefix, and the naming conventions
+  document records the prefix and the verb registers.
+- The catalogue is layered into principles, methods and process actions,
+  and the regulator specification documents the layering and its
+  reasoning.
+- Every skill declares its cybernetic level, and the declared System
+  attenuates which skills a session sees.
+- Upstream skills are referenced, not copied. The pstack Collection
+  classifies each one.
+- compass-helm exists as the sticky entry point, and skill selection is
+  recorded as it happens.
 
 * Documents
 
@@ -62,7 +72,7 @@ in when history is genuinely needed.
 | [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] | knowledge, durable | How the framework relates to the upstream collection, skill by skill |
 | [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] | knowledge, durable, external | The properties of the agent the framework regulates |
 
-The design goes =LANDED= when this story closes. Its =#+outcome:= names
+The design goes =LANDED= when [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] closes. Its =#+outcome:= names
 the specification, and the durable documents lose their target-state
 banners only once they describe the catalogue as it runs.
 
@@ -82,46 +92,19 @@ Tasks are listed in intended execution order.
 | [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | DONE | 2026-09-10 | 2026-09-10 | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
 | [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | DONE | 2026-09-10 | 2026-09-10 | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
 | [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | DONE | 2026-09-10 | 2026-09-10 | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
-| [[id:894E9BD8-6808-403A-9878-ABFA51710A74][Add a knowledge gap check for domain work]] | BACKLOG | | | A compass check that extracts the domain concepts a work item names and reports which have no resolving knowledge document. |
 | [[id:A7BCF024-9222-40C3-9151-AFE9C9B4BDBE][Cite the principles under the citation function]] | DONE | 2026-09-10 | 2026-09-10 | Cite the thirteen adopted pstack principles from our catalogue and write the thin local bindings; they are referenced upstream, not copied. |
 | [[id:08F7F925-49B2-40E0-A298-E300353CAE2E][Port the sequencing function and bind it to recipes and actions]] | DONE | 2026-09-10 | 2026-09-10 | Import the adopted methods and interview skills as compass-method skills, with every step bound to one of our actions or recipes. |
 | [[id:60C7573C-763F-466D-A174-61C3A78616AF][Build compass-helm, the sticky mode]] | DONE | 2026-09-10 | 2026-09-10 | One sticky entry point that declares the session System, matches work to a method, copies its phases in verbatim, and routes to actions, recipes and deliberation. |
-| [[id:BC52784C-64A6-47D2-AE13-BA8530C34507][Bind the Council to the convening function]] | BACKLOG | | | Wire the Council of High Intelligence in as the convening function, and route error detection to the checkers that are genuinely independent. |
-| [[id:26921590-0B75-401F-80C6-52CDF76104CD][Reconcile duplicate skills and standardise terminology]] | BACKLOG | | | Fold every overlapping import into a single skill, retire the losers through compass-skill-delete, and sweep the catalogue onto the agreed vocabulary. |
-| [[id:C4ADAD7A-949E-48D3-941D-706E7B71D30D][Verify the rebuilt skill catalogue end to end]] | BACKLOG | | | Regenerate, rebuild, deploy and prove the whole catalogue loads and dispatches, with no stale directories left behind. |
 | [[id:2DF7DE1E-77CA-419E-90E6-E70DF5223314][Wire the codegen drift checks into CI and close the false claim]] | DONE | 2026-09-11 | 2026-09-11 | check_component_drift.py exists but no workflow runs it, while a nightly PR body tells readers it does; model drift has no checker at all. |
-| [[id:628EA44F-1136-426F-AFD1-F28844AB048B][Make generated-ness a target property the dispatcher enforces]] | BACKLOG | | | Teach the dispatcher that an artefact is generated, so hand-editing is never an offered verb, and fold profile selection into the register-matching discipline. |
-| [[id:92D846C1-253F-47EA-A7F6-9A737FF1145B][Define the agent operating model for unattended runs]] | BACKLOG | | | How agents are configured, isolated, bounded and recovered when compass-helm is started on them and left running. |
-| [[id:B0768518-B564-407A-87CD-9C0D9168126E][Decide and build the Qt verification mechanism]] | BACKLOG | | | Settle how Qt work is verified: widget tests under the offscreen platform, a scripted in-app control surface, and external screen automation only for pixel work. |
-| [[id:D03D90DB-BDEB-4E98-A44A-384CCA790903][Implement the verification ladder and its stack discipline]] | BACKLOG | | | Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks. |
-| [[id:0829C5A8-A104-44CA-ADC5-819EFC5F31A1][Add a skill eval harness driven by mechanical verdicts]] | BACKLOG | | | Re-run closed tasks in a throwaway worktree under a changed skill and grade against what actually landed, using the independent checkers rather than a judge model. |
-| [[id:96FCA6C1-7E9C-4D25-BFE1-ADB308E58172][Establish the writing standards and the genres they govern]] | BACKLOG | | | Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports. |
-| [[id:9F694794-A0A0-4625-A6C9-38B8743EC2FF][Add the missing document type templates to codegen]] | BACKLOG | | | The design type has a contract and no mustache template, so compass add design does not exist; audit every type contract against the template library. |
 | [[id:39264768-EE92-4DB1-B048-3C960415B358][Specify the skills framework as a regulator]] | DONE | 2026-09-07 | 2026-09-07 | Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation. |
-| [[id:86F4C1E0-6F35-4AA7-9C95-3991D4F5F831][Delegate the remaining skill commands to recipes]] | DISCOVERED | | | Multi-step skills still carry commands their recipes own; sweep the 105 remaining shell blocks so the command lives in exactly one place. |
 | [[id:A849F82C-0AE6-4217-90FC-F17443B3C168][Enable the compiler warnings the code assumes]] | DONE | 2026-09-11 | 2026-09-11 | The build sets -Werror and nothing else, so -Wall and -Wextra diagnostics never fire; enable them and clear what they surface. |
 | [[id:6D872794-2934-49EA-80EC-F1E64D23AC10][Make a generated marker name a generator that writes it]] | DONE | | | Four documents carry a BEGIN generated marker naming a script that never writes them, so the region reads as derived and is hand-maintained or empty. |
-| [[id:4302B38D-B857-464E-97C1-A7E54A2DE70C][Validate the matching rule and the decline path in use]] | DISCOVERED | | | The matching rule and the mode's refusal are specified and each has at most one run behind it; gather evidence from real uses and amend what the cases break. |
 | [[id:A6DB4F4C-D4F5-4913-AFD3-CC791A921517][Clear the codegen drift in analytics, refdata and scheduler]] | DONE | 2026-09-11 | 2026-09-11 | Regenerating three components rewrites 116 checked-in files and creates 24 that were never committed; the generated tree and the generator disagree. |
-| [[id:ADF5BBA5-4461-4CA9-9A01-B64A713D5110][Wt account delete, lock and unlock confirm then do nothing]] | DISCOVERED | | | Three confirmation dialogs in the Wt UI reload the account list on Yes and never perform the action; the id they are given is unused. |
 | [[id:4CB973CA-86B7-4476-85F2-0F11626BFB27][Apply the unique suffix that requires_unique_suffix asks for]] | ABANDONED | 2026-09-11 | 2026-09-11 | Filed on a false premise. requires_unique_suffix is applied correctly wherever it is set; the unused counter that prompted it is drift in trade, recorded on the codegen drift task. |
-| [[id:4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC][Give report_definition a profile that describes it]] | BACKLOG | | | report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value. |
-| [[id:D38BFC7E-FCE8-418E-BD4F-294E1AAD1456][Settle whether a profile fixes a feature or defaults it]] | BACKLOG | | | A model overrides a profile assignment and calls it a default, while the profile says it fixes the value; two bindings the model-drift check found need correcting either way. |
 | [[id:294FFF1A-E70B-489A-B7A3-40F57528B46E][Resync the job_definition model with its hand-written code]] | DONE | 2026-09-12 | 2026-09-12 | The scheduler model's column shapes do not match the hand-written struct, so regenerating emits wrong types rather than wrong formatting; the model must be corrected before any facet can be regenerated. |
 | [[id:82B0DD7E-4DB1-4F99-AF73-6FBB6C258786][Nest quant under analytics and register the role]] | DONE | 2026-09-11 | 2026-09-11 | ores.analytics.quant sits as a dotted sibling where the signed-off layout is nested parts under a composite root, and quant is in neither the sub-component catalogue nor the signed-off folder catalogue. |
-| [[id:C8C1316A-07A5-47E2-9077-FF0664C511AF][Run the component architecture audit in CI]] | BACKLOG | | | validate_docs.py is the audit's automated half and no workflow runs it; its exception file kept a real finding quiet until someone looked by hand. |
 | [[id:4B43941A-957B-4FC9-82BD-AB131F541825][Register composite parts in their component CMakeLists]] | DONE | 2026-09-11 | 2026-09-11 | Eighteen composites still register each part in projects/CMakeLists.txt; the target shape adds the component there and its parts in the component's own CMakeLists. |
-| [[id:9747E4C5-734E-4F75-AD8B-CEB4C9089B76][Give every composite a group model]] | BACKLOG | | | Eight composites have no group-level component_overview.org, so codegen cannot generate their root CMakeLists and their parts are undeclared. |
 | [[id:3B57DD4B-E6CB-48CC-803A-74834270AB9E][Bind custom C++ types to the headers that define them]] | DONE | 2026-09-12 | 2026-09-12 | A column can declare any cpp_type but its header is listed separately by hand, so the two can drift apart or the include can be forgotten entirely. |
-| [[id:B69BF02C-9E16-4DAF-BC0C-C5DBE0EC1BF4][Make a nullable tenant column an optional type]] | BACKLOG | | | nullable_tenant_id makes the SQL column nullable but codegen still emits a non-optional tenant_id, and system() is a real tenant rather than an absence, so NULL and system are conflated; synthetic's mapper throws on a NULL tenant row. |
-| [[id:07494555-8EDB-48C2-8425-CB86EE366FDC][Model the scheduler's hand-written operations and remove them together]] | BACKLOG | | | read_all_active, find_by_name twice, schedule, schedule_batch and unschedule are live and hand-written; they must be modelled in the same change that stops hand-maintaining them, or the tree builds against operations that no longer exist. |
-| [[id:6110D479-CAF3-4915-8A64-698193893402][Replace the scheduler's custom history with the generic provider]] | BACKLOG | | | The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error. |
-| [[id:9FE3FA66-514B-4C67-83E7-11973B8E520E][Clear the ores.scheduler component audit findings]] | BACKLOG | | | The audit found a generator facet name that disagrees with the tree, an uncatalogued builder folder, three registered handlers with no subject row, and a documented history behaviour that does not exist. |
-| [[id:DA77CBDB-6C6C-4033-8794-53A35C1FD2CB][Convert the remaining integer flags to boolean]] | BACKLOG | | | Three columns are still integer flags where the schema's convention is boolean, and an integer flag reads differently through the text protocol. |
-| [[id:4AF1BDC5-0711-4EF7-ACEF-0E81DF074409][Converge the two SQL type spellings]] | BACKLOG | | | integer and int, and timestamp with time zone and timestamptz, are each spelled two ways across the models, so anything grouping columns by type sees two populations where there is one. |
-| [[id:3E099614-7B88-49F5-8A9B-E91C55AB9890][Give calendar dates a date type in C++]] | BACKLOG | | | 49 date columns pair with std::string against 4 with year_month_day, so most dates are unvalidated strings that every consumer reparses. |
-| [[id:4C97BB89-71E9-479A-BC04-4BA00D006052][Decide how an exact decimal is represented in C++]] | BACKLOG | | | 55 financial columns are numeric(28,10) for exactness and pair with double, which cannot represent most decimal fractions and holds fewer digits than the column. |
-| [[id:08B4D983-5972-49D2-8639-46A475710CA3][Mark generated output in every technical space, not just SQL]] | BACKLOG | | | Generated SQL says AUTO-GENERATED DO NOT EDIT; generated C++, CMake, doc and oresmd say nothing, so 106 of 133 templates produce files a reader cannot tell are generated. |
 
 * Decisions
 
@@ -218,3 +201,7 @@ Tasks are listed in intended execution order.
 * Out of scope
 
 -
+
+* Result
+
+Closed at sprint 25 close with the 21 tasks that shipped: the compass- namespace, the cybernetic levels, the cited principles and ported methods, compass-helm, the selection instrument, the regulator specification, and the codegen and build fixes the work found. The story was renamed from "Unify the LLM skills catalogue" and its acceptance narrowed to match. The 28 open tasks moved, UUIDs intact, to [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] in the product backlog inbox, for sprint 26.

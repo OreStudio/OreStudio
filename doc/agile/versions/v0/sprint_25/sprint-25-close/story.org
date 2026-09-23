@@ -15,7 +15,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Own the final steps of sprint 25: the close health review, a cleanup
+that leaves no half-finished stories for sprint 26, the release notes
+and the retrospective.
 
 * Status
 
@@ -23,20 +25,23 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | The story cleanup is done; the audit is clean. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Release notes and retrospective.       |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
 
--
+- Every other sprint 25 story is DONE or ABANDONED, and
+  =compass sprint audit= is clean.
+- Release notes are generated and linked from the sprint's Status table.
+- The sprint's Retrospective section is filled.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:826C9671-AE0D-48CD-B8E6-666DF92DB4AF][Clean up the sprint 25 stories for close]] | STARTED | 2026-09-23 | | Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work. |
+| [[id:826C9671-AE0D-48CD-B8E6-666DF92DB4AF][Clean up the sprint 25 stories for close]] | DONE | 2026-09-23 | 2026-09-23 | Close every finished story, abandon the superseded and half-finished ones, split the skills catalogue story, and file one capture for the IR work. |
 
 * Decisions
 

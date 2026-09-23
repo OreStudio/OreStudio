@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC
+:ID: D38BFC7E-FCE8-418E-BD4F-294E1AAD1456
 :END:
-#+title: Task: Give report_definition a profile that describes it
-#+description: report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value.
+#+title: Task: Settle whether a profile fixes a feature or defaults it
+#+description: A model overrides a profile assignment and calls it a default, while the profile says it fixes the value; two bindings the model-drift check found need correcting either way.
 #+type: task
 #+level: s1
-#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-report_definition binds to a profile whose assignments it actually satisfies, and the model-drift exception for it is removed.
+Profile binding has one stated meaning, and the two bindings that contradict it are corrected or re-bound.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DISCOVERED                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,10 @@ report_definition binds to a profile whose assignments it actually satisfies, an
 
 * Acceptance
 
-- report_definition either binds to a profile it satisfies or declares its features without a binding.
-- The KNOWN_MODEL_DRIFT entry in check_model_drift.py is removed.
-- If a new profile is added, it meets the catalogue's bar of naming a genuinely recurring combination rather than one entity.
+- The variability model states whether an assignment fixes a value or supplies an overridable default.
+- compute.result either stops binding uuid-identified-lookup or stops overriding has_change_reason_cache.
+- reporting.report_instance either declares parent_entity_singular or stops binding fk-scoped-child.
+- Both KNOWN_MODEL_DRIFT entries are removed.
 
 * Plan
 

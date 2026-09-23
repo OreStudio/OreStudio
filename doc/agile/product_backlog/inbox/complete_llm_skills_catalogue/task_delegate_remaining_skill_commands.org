@@ -5,7 +5,7 @@
 #+description: Multi-step skills still carry commands their recipes own; sweep the 105 remaining shell blocks so the command lives in exactly one place.
 #+type: task
 #+level: s1
-#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -50,7 +50,7 @@ two kinds before writing any prose, because the mechanical half needs none.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DISCOVERED                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Discovered while separating the boundaries. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

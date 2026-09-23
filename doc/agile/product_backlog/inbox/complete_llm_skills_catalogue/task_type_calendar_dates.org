@@ -1,43 +1,43 @@
 :PROPERTIES:
-:ID: C8C1316A-07A5-47E2-9077-FF0664C511AF
+:ID: 3E099614-7B88-49F5-8A9B-E91C55AB9890
 :END:
-#+title: Task: Run the component architecture audit in CI
-#+description: validate_docs.py is the audit's automated half and no workflow runs it; its exception file kept a real finding quiet until someone looked by hand.
+#+title: Task: Give calendar dates a date type in C++
+#+description: 49 date columns pair with std::string against 4 with year_month_day, so most dates are unvalidated strings that every consumer reparses.
 #+type: task
 #+level: s1
-#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+filetags: :complete_llm_skills_catalogue:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-11
-#+updated: 2026-09-11
+#+created: 2026-09-12
+#+updated: 2026-09-12
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The component architecture audit's mechanical checks fail the build, and every suppression in its exception file is visible rather than silent.
+A date column carries a date type in C++, not a string.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DISCOVERED                              |
-| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-11                               |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
-- validate_docs.py runs in CI on every push and pull request that touches projects/.
-- Each remaining line in docs_exceptions.txt states its reason and has a task, or is deleted.
-- The audit document records that the automated half is enforced and which half remains manual.
+- date columns pair with std::chrono::year_month_day in their models.
+- Consumers that parse or lexically compare the string are updated to use the typed value.
+- The conversion is sequenced so each component still builds, rather than changing all 49 at once.
 
 * Plan
 

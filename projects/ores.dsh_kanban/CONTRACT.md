@@ -381,12 +381,16 @@ A full-width, read-only board, in this order:
    header carries the column title and its count, coloured by state. Cards are
    the stories whose state maps to that column and that pass the filters.
 6. **Card face.** The story title, an environment chip in monospace, the epic,
-   the owner, a task progress bar with `done/total`, the branch list, the PR
-   numbers as links to `https://github.com/OreStudio/OreStudio/pull/<n>`, and
-   `open Nd` age from `created`. A 3px left border in the story's epic colour. A
-   task count line such as `2 tasks · 1 done`. The card for
-   `tree.currentStoryId` carries an accent outline and a `current` marker, and is
-   scrolled into view when the view first mounts.
+   the owner, a task progress bar with `done/total`, and `open Nd` age from
+   `created`. A 3px left border in the story's epic colour. A task count line
+   such as `2 tasks · 1 done`. The card for `tree.currentStoryId` carries an
+   accent outline and a `current` marker, and is scrolled into view when the view
+   first mounts.
+
+   Branches and pull requests do not appear on the card face. A story can carry
+   several of each, so they crowd the face without answering what the board is
+   for. Both live in the card detail panel, which is where someone who wants them
+   is already looking.
 7. **Card detail.** Clicking a card opens a panel on the right of the view: the
    story's id, state badge, environment, owner, epic, created and updated dates,
    description, branches, and PR list, then every task as a row with a state

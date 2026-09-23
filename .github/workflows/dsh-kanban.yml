@@ -1,0 +1,60 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: DSH Kanban
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths: &plugin-paths
+      - 'projects/ores.dsh_kanban/**'
+      - '.github/workflows/dsh-kanban.yml'
+  pull_request:
+    paths: *plugin-paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The plugin is a DSH profile bundle, not a CMake component and not part of
+  # ores.web, so no other workflow reaches it. Its browser half is served to the
+  # harness verbatim, which means a syntax error there is only ever caught by a
+  # person looking at a blank panel.
+  plugin:
+    name: plugin
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Manifest and bundle wiring
+        # The loader resolves this plugin by name and follows its exports; a
+        # renamed id or a moved path fails the browser roster silently.
+        run: node scripts/check-manifest.mjs
+        working-directory: projects/ores.dsh_kanban
+      - name: Client bundle parses
+        # Served verbatim to the browser, so a parse error is invisible until
+        # the panel fails to appear.
+        run: node --check lib/client.js
+        working-directory: projects/ores.dsh_kanban
+      - name: Host tests
+        run: node --test
+        working-directory: projects/ores.dsh_kanban

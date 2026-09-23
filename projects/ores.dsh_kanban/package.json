@@ -1,6 +1,6 @@
 {
   "name": "ores-dsh-kanban",
-  "version": "0.1.0",
+  "version": "0.0.25",
   "private": true,
   "description": "DSH plugin: the ORE Studio sprint as a kanban board, read from the org tree.",
   "type": "module",

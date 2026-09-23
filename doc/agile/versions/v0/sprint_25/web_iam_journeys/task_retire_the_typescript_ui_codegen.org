@@ -26,11 +26,11 @@ Codegen emits no TypeScript UI artefact. ores.web is a shell with no screens and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -72,3 +72,52 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. Codegen no longer emits the TypeScript UI, and `ores.web` holds a shell
+and the transport rather than screens.
+
+The two facets that are the client's way to the server stay:
+`ores.ts.protocol` for the wire messages and the NATS subject constants, and
+`ores.ts.domain` for the entity domain interfaces. The three that were
+presentation or screen wiring go: `ores.ts.ui`, `ores.ts.web.entity_declaration`
+and `ores.ts.web.bff_route`, with their templates, the two withholding gates and
+the four projections that existed only to feed them.
+
+What went with them:
+
+- 247 generated files: 97 presentation-metadata modules, 75 entity declarations
+  and 75 BFF route descriptors. All 247 carried the generated marker and a
+  `Template:` line at the base commit, so none of them was hand-written.
+- The `:ores.ts.web.enabled:` key from the 75 models that opted in.
+- The entity screen framework, the navigation registry, the four hand-written
+  pages, the change-event consumer and the UI primitives.
+- The BFF entity-route factory and its registry, which built the canonical list,
+  get, save, delete and history envelopes that journeys replace.
+- Seven modules with no caller left, found by a reachability check:
+  `connections.ts`, `wire.ts`, `hierarchy.ts`, `entities/index.ts`,
+  `changeReasons.ts`, `site.ts` and `brand.ts`, with the two brand images.
+- The generated entity words from the translation catalogue, which retired the
+  exemption `catalogueSchema` existed to support.
+
+The check that proves the cut is the generator's own unit list.
+`compass codegen entity generate country --address ores.ts --dry-run` printed
+five units before and prints two after, and the two are the protocol and domain
+pair.
+
+Verification. `check_component_drift.py --all --dry-run` reports no drift and now
+checks only the two kept facets. The template tangle over 177 facet docs
+produces an empty diff. 536 codegen tests pass, and they now run in CI on every
+pull request. Protocol twin coverage is intact. Typecheck is clean, 70 TypeScript
+tests pass, the build bundles 246 modules, and `compass lint` passes along with
+all seven doc-lint gates. Against the live server, `verify:login` completes an
+mTLS handshake, is refused in our schema, and logs in with a session that has a
+party.
+
+Two things this change found and did not fix, both pre-existing and both
+captured: `iam.v1.accounts.list` answers bad_request to a well-formed request,
+and `compass task done` can leave a story row open without saying so.
+
+One decision to state plainly. The journey story calls the generated column and
+field metadata reusable building material. This task deletes it, because the
+instruction was to keep what talks to the server, and that metadata is
+presentation. The reversal is recorded on task `33010766`.

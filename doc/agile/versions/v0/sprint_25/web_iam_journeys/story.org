@@ -137,7 +137,7 @@ before any code is written.
 | [[id:1C16015E-AEAE-4B7D-BD00-7A5F50000D21][Decide how a prototype records a gap it exposes]] | BACKLOG | | | [wayfinder:grilling] Where a modeling error or a missing server-side operation is recorded when a prototype exposes one. |
 | [[id:E918F812-B235-4604-9DF7-6F59517C19F8][Create the user_journey document type]] | DONE | | 2026-09-23 | [wayfinder:task] A document type that describes a journey before it is built: sections, template, codegen registration, metadata. |
 | [[id:D48BC708-459E-4508-A6C4-631BAC079354][Document every post-setup IAM journey]] | DONE | | 2026-09-23 | [wayfinder:task] One high-level user-journey document per journey, grouped by topic, each with a wireframe and a NATS coverage assessment. |
-| [[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI codegen]] | STARTED | 2026-09-23 | | Remove codegen support for the TypeScript UI, keep the NATS protocol and domain facets, and reduce ores.web to a shell plus the transport core. |
+| [[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Retire the TypeScript UI codegen]] | DONE | 2026-09-23 | 2026-09-23 | Remove codegen support for the TypeScript UI, keep the NATS protocol and domain facets, and reduce ores.web to a shell plus the transport core. |
 
 * Decisions
 

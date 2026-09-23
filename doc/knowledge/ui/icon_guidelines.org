@@ -471,13 +471,13 @@ Connection verified, authenticated connection.
 *Usage*: Verified connection, authenticated session, secure link confirmed.
 
 *** Server Link
-Server connection bookmark, saved connection, connection browser.
+Server connection bookmark, saved connection.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_server_link_20_regular.svg]]
 - Filled: None (removed with the Qt client)
 
-*Usage*: Connection browser window, saved server connections, bookmark management.
-Opens the Connection Browser MDI window for managing server connection bookmarks.
+*Usage*: Saved server connections and bookmark management. The Connection
+Browser window that opened from it was removed with the Qt client.
 
 ** Files & Documents
 

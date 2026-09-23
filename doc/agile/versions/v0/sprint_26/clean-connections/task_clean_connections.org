@@ -59,7 +59,7 @@ item's result in the table below.
 | B02 | pass | Every model file classified by metatype. =projects/ores.connections/modeling/= held =component_overview.org= (=#+type: ores.codegen.component=), =ores.connections.puml= and =ores.connections.png=. 0 entities, 0 junctions, 0 operations, 0 messages. |
 | B03 | pass | All 70 non-test C++ files classified. 63 match a codegen archetype's output shape, and 7 are hand-written infrastructure: =repository/sqlite_context.{hpp,cpp}=, =export.hpp=, the umbrella header, and the three =CMakeLists.txt=. None is dead by the within-tree rule, and all 70 are unreachable from outside. |
 | B04 | not applicable | The component serves and sends no NATS subject and has no protocol header. Its one =subject_prefix= field is a string a user types into a bookmark, not a subject the component publishes on. |
-| B05 | pass | Captures and in-flight branches read. Two live captures under =doc/agile/product_backlog/next/= name the component. =persist_tag_colour_and_tag_dialog.org= is Qt-only and carries the =ores.qt= tag. =fix_component_doc_drift.org= names it in an =affected components at time of writing= snapshot that also names =ores.controller= and =ores.wt.service=, which =projects/= no longer holds either. Both are recorded under *Out of scope* on the story. =origin/feature/remove-the-legacy-qt-remnants= (PR #2138) does not touch the component. |
+| B05 | pass | Captures and in-flight branches read. Two live captures under =doc/agile/product_backlog/next/= name the component. =persist_tag_colour_and_tag_dialog.org= is Qt-only and carries the =ores.qt= tag. =fix_component_doc_drift.org= names it in an =affected components at time of writing= snapshot that also names =ores.controller= and =ores.wt.service=, which =projects/= no longer holds either. Both are recorded under *Out of scope* on the story. =origin/feature/remove-the-legacy-qt-remnants= (PR #2138, now merged) does not touch the component. |
 | M01 | not applicable | No org model. The component held only its overview. |
 | M02 | not applicable | No entity model, so no variability profile to bind. |
 | M03 | not applicable | No model states a property, so none can repeat its profile. |
@@ -156,7 +156,7 @@ no behaviour to walk through. The build and the gates are the evidence.
 |---+-----------------+------+----------+-------|
 | 1 | The System Model diagram still drew =connections --> security= after the component node was removed, so PlantUML would create a ghost component | projects/modeling/ores.puml:285 | fixed | The third commit removes the edge, and the source now has no reference to the alias. Its blocks and notes balance. |
 | 2 | The two sprint-history de-links existed only in the working tree, so both commits still carried a dangling id link | doc/agile/versions/v0/sprint_02/client_server_foundations/story.org, doc/agile/versions/v0/sprint_03/client_console_qt_integration/story.org | fixed | The third commit commits them. |
-| 3 | =doc/knowledge/ui/icon_guidelines.org= still describes the Qt Connection Browser under its Server Link icon | doc/knowledge/ui/icon_guidelines.org:479 | accepted, out of scope | Inherited from the Qt deletion. PR #2138 reworks that page and owns it. Now recorded under *Out of scope* on the story. |
+| 3 | =doc/knowledge/ui/icon_guidelines.org= still describes the Qt Connection Browser under its Server Link icon | doc/knowledge/ui/icon_guidelines.org:474,479 | fixed after the rebase | Inherited from the Qt deletion. PR #2138 reworked that page and merged without correcting this entry, so the rebased branch rewrites the usage prose and the icon keeps its name. |
 | 4 | A second live backlog capture names the component, and the B05 evidence claimed only one capture does | doc/agile/product_backlog/next/fix_component_doc_drift.org:24 | fixed, record corrected | Real. The B05 row now names both captures, and the story records this one under *Out of scope*. Its snapshot also lists =ores.controller= and =ores.wt.service=, which =projects/= no longer holds, so the list is stale beyond this story. |
 
 * Result
@@ -174,7 +174,10 @@ row. Every codegen gate passes, apart from the inherited repo-wide CMake
 source-list drift that G06 records. =compass lint= passes. An independent
 verifier read the diff against the standard and found two defects, both
 fixed in the follow-up commit. A Claude review of the pull request agreed
-with the diff and found one more stale reference, also fixed there.
+with the diff and found one more stale reference, also fixed there. The
+rebase onto trunk, after PR #2138 merged, surfaced one more. The icon
+inventory still described the deleted Qt Connection Browser, and the
+rebased branch corrects it.
 
 The removal is one commit and reverts on its own. The reference sweep is a
 second commit.

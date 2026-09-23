@@ -91,9 +91,9 @@ registry item is recorded as the accepted exception on the task.
 
 - The retired Qt client's manual chapter. =doc/manual/user_guide/chapter_connecting.org=
   still describes =connections.db= and gives =ores.qt= paths for it. That
-  is deliberate. PR #2138 makes the whole manual the record of the retired
-  client and its chapters the domain source, so the chapter is history
-  rather than a live reference. That PR owns it.
+  is deliberate. PR #2138, now merged, makes the whole manual the record
+  of the retired client and its chapters the domain source, so the chapter
+  is history rather than a live reference.
 - The two sprint-history pages that name the component. Their links to the
   deleted =:ID:= became plain text, so the history reads and =compass lint=
   passes. The pages stay.
@@ -120,9 +120,6 @@ registry item is recorded as the accepted exception on the task.
 - The local =.env= still holds =ORES_CONNECTIONS_MASTER_PASSWORD=. The file
   is gitignored, and =compass env configure= drops the variable now that
   =env_init.py= stopped writing it.
-- =doc/knowledge/ui/icon_guidelines.org= still describes the Qt Connection
-  Browser under its Server Link icon. PR #2138 reworks that page and owns
-  it.
 
 * Result
 

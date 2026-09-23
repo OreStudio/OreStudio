@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 550682A6-6AAC-4939-BB2B-80D53091E4FA
+:END:
+#+title: Task: Retire the TypeScript UI codegen
+#+description: Remove codegen support for the TypeScript UI, keep the NATS protocol and domain facets, and reduce ores.web to a shell plus the transport core.
+#+type: task
+#+level: s1
+#+filetags: :web_iam_journeys:sprint_25:v0:
+#+owner: marco
+#+branch: feature/retire-web-ui-codegen
+#+pr: 2133
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-23
+#+updated: 2026-09-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Codegen emits no TypeScript UI artefact. ores.web is a shell with no screens and no screen wiring. Every NATS primitive the client needs to talk to the server survives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0044D1B4-C6D2-481F-8EE0-60E0C7F091B9][Prototype the post-setup IAM journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-23                               |
+
+* Acceptance
+
+- compass codegen entity generate <entity> --address ores.ts emits the domain and protocol units only.
+- check_component_drift.py --all is clean and checks only ores.ts.domain and ores.ts.protocol.
+- npm run typecheck and npm test pass in projects/ores.web.
+- compass lint passes, with no dangling links to the retired facet pages.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2133][#2133]] | [codegen] Retire the TypeScript UI codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

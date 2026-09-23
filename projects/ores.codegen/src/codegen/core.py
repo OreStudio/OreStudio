@@ -4146,6 +4146,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             protocol_operations,
             shell_menu_name,
             shell_recipe_document,
+            sibling_entity_singulars,
             write_record_for,
         )
         for _field in (
@@ -4177,8 +4178,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if target_template == 'domain_types.ts.mustache':
             _reject_silent_entity_domain_ts_gap(model_path, domain_entity)
         # The standard CRUD message list, derived once so the TypeScript
-        # twin renders from the same shapes the C++ entity block states.
-        domain_entity['messages'] = entity_protocol_messages(domain_entity)
+        # twin renders from the same shapes the C++ entity block states. The
+        # component's other entities are read here because the versions
+        # sub-resource steps aside when a sibling entity already owns its
+        # derived names.
+        domain_entity['messages'] = entity_protocol_messages(
+            domain_entity, sibling_entity_singulars(model_path))
         # Every read by something other than the storage key. The legacy
         # opt-in contributes one; a model whose declared key is not its storage
         # key contributes one more, so the address a caller holds resolves to a

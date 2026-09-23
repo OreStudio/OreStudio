@@ -2965,7 +2965,36 @@ def paged_list_messages(
     ]
 
 
-def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
+@lru_cache(maxsize=None)
+def _entity_singulars_in(model_dir: str) -> frozenset[str]:
+    """The entity singulars declared in one modeling directory, read once."""
+    singulars: set[str] = set()
+    for path in sorted(Path(model_dir).glob("*.org")):
+        doc = parse_org(path.read_text(encoding="utf-8"))
+        if doc.frontmatter.get("type") != "ores.codegen.entity":
+            continue
+        singular = (doc.frontmatter.get("entity_singular") or "").strip()
+        if singular:
+            singulars.add(singular)
+    return frozenset(singulars)
+
+
+def sibling_entity_singulars(model_path: Any) -> frozenset[str]:
+    """The entity singulars modelled beside ``model_path``, its siblings.
+
+    A model's version facet is named after the entity's singular, so an
+    entity and an entity named ``<that singular>_version`` in the same
+    component derive the same type, service and handler names. The facet
+    reads this set so it can step aside; see ``entity_protocol_messages``.
+    """
+    if not model_path:
+        return frozenset()
+    return _entity_singulars_in(str(Path(model_path).resolve().parent))
+
+
+def entity_protocol_messages(
+        entity: dict[str, Any],
+        sibling_singulars: frozenset[str] | None = None) -> list[dict[str, Any]]:
     """Derive an entity's canonical message list, as the specification states it.
 
     The list is the one model both protocol twins render: the C++
@@ -2984,6 +3013,16 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     A ``current_state`` entity derives no versions sub-resource: it has no
     valid_from/valid_to axis, so it has no version to read.
+
+    Two names are chosen to avoid a collision rather than by derivation
+    alone. The versions sub-resource is named after the singular, so a
+    sibling entity named ``<singular>_version`` owns every one of its
+    names; the facet then takes the plural as its stem and the sibling
+    keeps what its own model states. The response envelope states its
+    outcome in a member named ``result``, so an entity of that name gives
+    its payload a suffixed member instead. ``sibling_singulars`` is the
+    set from ``sibling_entity_singulars``; without it the singular is used
+    as before.
     """
     component = entity.get("component", "")
     singular = entity.get("entity_singular", "")
@@ -2991,6 +3030,9 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
     plural_short = entity.get("entity_plural_short") or plural
     domain_type = f"ores::{component}::domain::{singular}"
     key = f"{singular}_key"
+    facet_stem = (
+        plural if f"{singular}_version" in (sibling_singulars or ()) else singular)
+    payload_member = "result_value" if singular == "result" else singular
     key_columns = frozenset(
         _column_name(column)
         for column in (entity.get("primary_key") or {}).get("columns") or [])
@@ -3036,10 +3078,10 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
         # ``no_audit_columns`` keeps a validity window with no version in it.
         # The gate is the version column, not the current-state flag, because
         # the two are not the same claim.
-        messages.append(_ts_message(f"{singular}_version_key", fields=[
+        messages.append(_ts_message(f"{facet_stem}_version_key", fields=[
             _ts_field(singular, key),
             _ts_field("version", "std::uint32_t")]))
-        messages.append(_ts_message(f"{singular}_versions_filter",
+        messages.append(_ts_message(f"{facet_stem}_versions_filter",
                                     fields=versions_filter_fields()))
 
     list_filter = (_ts_field("filter", f"std::optional<{plural}_filter>")
@@ -3062,7 +3104,7 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                     fields=[_ts_field("key", key)]),
         _ts_message(f"get_{singular}_response", fields=[
             _ts_field("result", _RESULT),
-            _ts_field(singular, f"std::optional<{domain_type}>")]),
+            _ts_field(payload_member, f"std::optional<{domain_type}>")]),
         _ts_message(f"get_many_{plural}_request",
                     response_type=f"get_many_{plural}_response",
                     subject=request_subject(component, plural, "get_many"),
@@ -3077,7 +3119,7 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
                             _ts_field("intent", _INTENT)]),
         _ts_message(f"put_{singular}_response", fields=[
             _ts_field("result", _RESULT),
-            _ts_field(singular, domain_type)]),
+            _ts_field(payload_member, domain_type)]),
         _ts_message(f"put_many_{plural}_request",
                     response_type=f"put_many_{plural}_response",
                     subject=request_subject(component, plural, "put_many"),
@@ -3120,17 +3162,17 @@ def entity_protocol_messages(entity: dict[str, Any]) -> list[dict[str, Any]]:
 
     if entity.get("has_audit_columns"):
         messages += paged_list_messages(
-            f"list_{singular}_versions",
+            f"list_{facet_stem}_versions",
             versions_subject(component, plural, "list"),
             [_ts_field("key", key)],
-            _ts_field("filter", f"std::optional<{singular}_versions_filter>"),
+            _ts_field("filter", f"std::optional<{facet_stem}_versions_filter>"),
             "versions", domain_type)
         messages += [
-            _ts_message(f"get_{singular}_version_request",
-                        response_type=f"get_{singular}_version_response",
+            _ts_message(f"get_{facet_stem}_version_request",
+                        response_type=f"get_{facet_stem}_version_response",
                         subject=versions_subject(component, plural, "get"),
-                        fields=[_ts_field("key", f"{singular}_version_key")]),
-            _ts_message(f"get_{singular}_version_response", fields=[
+                        fields=[_ts_field("key", f"{facet_stem}_version_key")]),
+            _ts_message(f"get_{facet_stem}_version_response", fields=[
                 _ts_field("result", _RESULT),
                 _ts_field("version", domain_type)]),
         ]

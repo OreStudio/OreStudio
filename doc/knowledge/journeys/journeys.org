@@ -84,3 +84,7 @@ compass add user_journey \
 The file is =journey_<slug>.org=. Wire it into the group hub's table. The full
 contract is on [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]];
 the recipe is [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]].
+
+* See also
+
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.

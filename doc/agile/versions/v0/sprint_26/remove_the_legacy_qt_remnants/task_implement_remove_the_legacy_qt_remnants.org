@@ -73,8 +73,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Delivered and verified, with one named remainder. Six commits on this branch
 remove the Qt residue the retirement left in codegen and in the documentation.
 Every unit was checked against the generator's drift gate before the next began.

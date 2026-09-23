@@ -906,22 +906,21 @@ Copy the icons to the correct locations:
 #+begin_example
 # Fluent UI icons (regular and filled variants)
 cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_regular.svg" \
-   projects/ores.qt/application/resources/icons/fluentui/regular/
+   projects/ores.web/packages/web/src/assets/icons/regular/
 
 cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_filled.svg" \
-   projects/ores.qt/application/resources/icons/fluentui/filled/
+   projects/ores.web/packages/web/src/assets/icons/filled/
 
 # Solar icons (Linear and Bold variants)
 cp ".../arrows-action/Linear/upload-square.svg" \
-   projects/ores.qt/application/resources/icons/solarized/Linear/
 
 cp ".../arrows-action/Bold/upload-square.svg" \
-   projects/ores.qt/application/resources/icons/solarized/Bold/
 #+end_example
 
 ** Step 3: Update Resource File
 
-Add the new icons to =projects/ores.qt/application/resources/resources.qrc=:
+# The icons are copied into the surviving set. The Qt resource file
+# that used to list them went with the ores.qt tree.
 
 #+begin_src xml
 <!-- Fluent UI icons -->
@@ -929,8 +928,6 @@ Add the new icons to =projects/ores.qt/application/resources/resources.qrc=:
 <file>icons/fluentui/filled/ic_fluent_arrow_upload_20_filled.svg</file>
 
 <!-- Solar icons -->
-<file>icons/solarized/Linear/upload-square.svg</file>
-<file>icons/solarized/Bold/upload-square.svg</file>
 #+end_src
 
 ** Step 4: Add Enum Entry

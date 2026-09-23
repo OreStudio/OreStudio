@@ -160,6 +160,25 @@ drawer properties this branch deleted. Both are prose rewrites rather than
 mechanical edits, and no gate verifies them, so neither is attempted in this
 pass. The manual note makes both survivable for a reader in the meantime.
 
+** The independent verifier found a cascade the removal did not finish
+
+Reviewed before landing. The verifier reproduced the central claim more strongly
+than the branch did: it rendered refdata from both revisions, 2788 files each
+with no difference, and marketdata, 234 each with no difference. Both sit
+outside the drift gate, which covers =iam= only.
+
+It also falsified the claim that the loops went. =hidden_columns= is still built
+and marked in =core.py= while its write to =presentation= is gone.
+=has_badge_columns= and =has_self_colour_columns= are still written with no
+reader left, because the =needs_item_delegate= consumer went.
+=parent_pascal= is assigned once and never used.
+
+That is a cascade rather than three separate misses: each removal orphans the
+next, and the same is true of =has_parent_relationship= and then
+=parent_entity_singular=, which four models still declare. The method is the one
+already proven here, key by key with the drift gate between each, and it belongs
+to this task rather than to a rushed pass before a merge.
+
 * Out of scope
 
 - The name of =projects/ores.codegen/modeling/entity_meta_model_cpp_qt.org=, a
